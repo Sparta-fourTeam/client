@@ -1,0 +1,43 @@
+default_install_hook_types:
+  - pre-commit
+  - commit-msg
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        files: \.(cs|json|asmdef)$
+
+      - id: mixed-line-ending
+        args: [ --fix=lf ]
+        files: \.cs$
+
+      - id: end-of-file-fixer
+        files: \.(cs|json|asmdef)$
+
+      - id: check-merge-conflict
+
+      - id: check-added-large-files
+        args: [--maxkb=5000]
+        exclude: \.(png|jpg|jpeg|fbx|wav|mp3|unity|asset|meta)$
+
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.4.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.29.1
+    hooks:
+      - id: gitleaks
+
+  - repo: local
+    hooks:
+      - id: dotnet-format
+        name: dotnet format
+        entry: dotnet format ProjectNova.sln --no-restore --include
+        language: system
+        files: ^Assets/.*\.cs$
+        exclude: ^Assets/.*(\.Generated\.cs|/Plugins/|/ThirdParty/)$

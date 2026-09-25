@@ -1,0 +1,51 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.cs]
+indent_style = space
+indent_size = 4
+
+# 네임스페이스 선언 스타일 고정 (Unity C# 버전별 파일 스코프 지원 여부 편차 방지)
+csharp_style_namespace_declarations = block_scoped:warning
+
+# 중괄호 새 줄 (Allman)
+csharp_new_line_before_open_brace = all
+csharp_new_line_before_else = true
+csharp_new_line_before_catch = true
+csharp_new_line_before_finally = true
+
+# var 사용: 타입이 명확할 때만 권장 (강제 아님)
+csharp_style_var_for_built_in_types = false:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_var_elsewhere = false:suggestion
+
+# using 지시문 정렬 (System.* 먼저)
+dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = false
+
+# 네이밍: private 필드 _camelCase
+dotnet_naming_rule.private_fields_underscore.severity = suggestion
+dotnet_naming_rule.private_fields_underscore.symbols = private_fields
+dotnet_naming_rule.private_fields_underscore.style = underscore_camel_case
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+dotnet_naming_style.underscore_camel_case.capitalization = camel_case
+dotnet_naming_style.underscore_camel_case.required_prefix = _
+
+# 한 줄 if문 중괄호 생략 방지 (Allman 스타일에서 가장 흔한 버그 원인)
+csharp_prefer_braces = true:warning
+
+# 안 쓰는 using 경고
+dotnet_diagnostic.IDE0005.severity = warning
+
+# 접근제한자 명시 강제 (C#은 생략 시 암묵적 private이라 혼동 방지)
+dotnet_style_require_accessibility_modifiers = for_non_interface_members:warning
+dotnet_diagnostic.IDE0040.severity = warning
+
+[*.{json,asmdef}]
+indent_size = 2
