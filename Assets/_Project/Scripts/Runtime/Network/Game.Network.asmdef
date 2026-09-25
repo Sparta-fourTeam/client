@@ -1,0 +1,19 @@
+{
+    "name": "Game.Network",
+    "rootNamespace": "Game.Network",
+    "references": [
+        "Game.Core",
+        "MessagePipe",
+        "UniTask",
+        "VContainer"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

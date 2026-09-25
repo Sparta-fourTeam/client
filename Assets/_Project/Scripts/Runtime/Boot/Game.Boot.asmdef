@@ -1,0 +1,22 @@
+{
+    "name": "Game.Boot",
+    "rootNamespace": "Game.Boot",
+    "references": [
+        "Game.Core",
+        "Game.Network",
+        "Game.View",
+        "MessagePipe",
+        "MessagePipe.VContainer",
+        "UniTask",
+        "VContainer"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
