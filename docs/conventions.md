@@ -1,0 +1,40 @@
+# 클라이언트 규칙
+
+공통 작업 규칙(브랜치, 커밋, PR)은 조직 `.github` 레포의 `CONTRIBUTING.md`를 본다.
+
+## 네임스페이스
+
+폴더 경로를 따른다: **어셈블리 이름 + 시스템 폴더**. 예) `Core/Growth` → `Game.Core.Growth`, `View/Hud` → `Game.View.Hud`, `Tests/EditMode` → `Game.Tests`
+
+- 시스템 폴더 아래로는 늘리지 않는다. `Core/Growth/Skills/`도 `Game.Core.Growth`다
+- 모든 코드는 네임스페이스 안에 둔다. 전역 클래스 금지
+- 네임스페이스와 같은 이름의 클래스를 만들지 않는다. `Game.Core.Wave` 안에 `Wave` 클래스를 만들면 컴파일 에러가 난다
+- asmdef의 Root Namespace가 설정되어 있어 새 스크립트에 루트는 자동으로 들어간다. 하위 부분은 IDE 제안대로 맞춘다
+
+## 인게임
+
+- `Time.timeScale`은 StageManager만 바꾼다
+- 팝업 연출과 Mock 지연은 unscaled time을 쓴다 (`UniTask.Delay(..., ignoreTimeScale: true)`)
+- 클리어·실패 판정은 StageJudge 한 곳에서, `LateTick`에 한 번만 한다
+- 엔트리포인트끼리 실행 순서에 기대지 않는다. 순서가 필요하면 메시지나 명시적 호출로 연결한다
+
+## 메시지
+
+[messages.md](messages.md)를 본다.
+
+## 구독 해제
+
+- 순수 C# 클래스는 `IDisposable`을 구현하고 `Dispose`에서 해제한다
+- MonoBehaviour 뷰는 `HudView`를 상속하고 구독을 `Track()`으로 감싼다
+
+## 인스톨러
+
+- 다른 시스템이 쓰는 인터페이스는 구현 전에 스텁을 먼저 등록한다
+- 씬 오브젝트 등록(`RegisterComponentInHierarchy`)은 인스톨러에 넣지 않는다. 샌드박스 씬과 테스트에서 인스톨러를 재사용하기 위해서다
+
+## 데이터와 API
+
+- 밸런스 수치·해금·재화·보상은 서버, 판 안의 진행 상태·쿨타임·에셋은 클라이언트
+- 게임 테이블은 도메인 모델로 변환해 쓴다. 전투 발급·제출 요청과 응답만 예외로 `Core/Api`의 타입을 그대로 쓴다
+- 프리팹·아이콘은 테이블의 `PrefabKey`/`IconKey`로 찾는다
+- 지금은 Mock 응답 JSON이 API 스펙 원본이다. Mock도 실제 에러 코드(`DATA_OUTDATED`, `BATTLE_EXPIRED` 등)를 돌려줄 수 있어야 한다. 서버 개발이 시작되면 원본을 서버 springdoc 스펙으로 옮긴다
