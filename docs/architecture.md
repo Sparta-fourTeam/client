@@ -68,7 +68,12 @@ flowchart TD
 | 서버 통신, JSON, 저장 | Network |
 | 화면, 입력, 연출 | View |
 | 여러 계층 연결 (스코프, 씬 전환) | Boot |
+| 씬 전환 인터페이스 (`ISceneNavigator`, `ITransitionCurtain`, `StageContext`) | Core (`Core/Navigation`) |
 
-- Core가 바깥 기능을 써야 하면 인터페이스는 Core, 구현은 바깥에 둔다 (`IBattleApi`처럼)
+- Core가 바깥 기능을 써야 하면 인터페이스는 Core, 구현은 바깥에 둔다 (`IBattleApi`처럼). 씬 전환도 같은 규칙이라 인터페이스는 `Core/Navigation`, 구현(`SceneLoader`, Root 스코프 등록)은 Boot다
 - 새 기능은 새 어셈블리가 아니라 기존 계층 안의 폴더로 만든다
 - 새 어셈블리는 에디터 전용 코드, 외부 SDK, 개발용 툴처럼 성격이 다른 코드가 생길 때만 E가 만든다
+
+### 백엔드 전환
+
+Network 안에서 `Local`과 `Http` 두 구현을 그룹 단위로 스위치한다. 규칙은 [conventions.md](conventions.md)를 본다. 어셈블리는 네 개 그대로고, Network 아래 `Local`·`Http`·`Dto` 폴더만 늘어난다.

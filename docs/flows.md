@@ -30,7 +30,8 @@ flowchart TD
 
 | 어디서 | 무슨 일이 | 그다음 |
 | --- | --- | --- |
-| 스테이지 시작 | `DATA_OUTDATED` | 테이블 재동기화 후 다시 발급 |
+| 스테이지 시작 | `DATA_OUTDATED` | Boot로 이동해 재동기화 후 다시 발급 |
+| 스테이지 시작 | `INSUFFICIENT_ENERGY`, `STAGE_LOCKED` | Lobby로 이동 |
 | 스테이지 시작 | 그 밖의 실패 | 재시도 또는 Lobby |
 | 전투 진행 | 일시정지에서 포기하기 | 판정 없이 결과 전송으로 |
 | 결과 전송 | 네트워크·서버 오류 | 자동 재시도 3회 → 수동 재시도 버튼 |
@@ -44,27 +45,42 @@ flowchart TD
 - 재시도 요청은 처음 만든 스냅샷을 그대로 쓴다. 매번 새로 만들면 `playTime`이 달라져 다른 요청이 된다
 - 골드는 `+=`가 아니라 서버 잔액으로 덮어쓴다. 재전송 때 두 번 표시되는 것을 막는다
 
-## 스킬 선택
+## 씬 흐름
+
+```mermaid
+flowchart LR
+    Boot[Boot<br/>로그인, 테이블 동기화] --> Lobby[Lobby<br/>로비]
+    Lobby --> Stage[Stage<br/>전투]
+    Stage -->|DATA_OUTDATED| Boot
+    Stage -->|INSUFFICIENT_ENERGY, STAGE_LOCKED| Lobby
+    Lobby --> Stage
+```
+
+씬은 Boot, Lobby, Stage 셋뿐이다. 인터페이스(`ISceneNavigator` 등)는 Core, 전환 구현은 Boot에 있다([architecture.md](architecture.md)).
+
+## 웨이브 게이지와 카드 선택
 
 ```mermaid
 flowchart TD
-    A[웨이브<br/>적 사망] -->|EnemyDied| B[성장<br/>경험치 누적]
-    B -->|LevelUp| C[스테이지 흐름<br/>레벨업 상태, 게임 정지]
-    C -->|StageStateChanged| D[스킬 선택 팝업<br/>선택지 3개]
-    D -.->|Upgrade| E[성장<br/>스킬 획득·강화]
+    A[웨이브<br/>적 처치] -->|EnemyDied| B[웨이브<br/>게이지 증가]
+    B -->|WaveGaugeChanged| H[HUD<br/>게이지 표시]
+    B -->|WaveGaugeFilled| C[스테이지 흐름<br/>CardSelect 상태, 게임 정지]
+    C -->|StageStateChanged| D[카드 선택 팝업<br/>선택지 3개]
+    D -.->|PickCard| SM[스테이지 흐름<br/>StageManager]
+    SM -->|CardPicked| E[성장<br/>카드 획득·강화]
     E -->|SkillChanged| F[HUD<br/>스킬 아이콘]
     E -->|SkillChanged| G[성장<br/>시전·패시브 반영]
     classDef logic fill:#0f5445,stroke:#2f9b7c,color:#e6f4ef
     classDef ui fill:#7a2e15,stroke:#d0643a,color:#fdebe3
     classDef server fill:#4a4a46,stroke:#8a8a84,color:#f0f0ec
     classDef bus fill:#1c1c1c,stroke:#9a9a9a,color:#ffffff
-    class A,B,C,E,G logic
-    class D,F ui
+    class A,B,C,SM,E,G logic
+    class D,F,H ui
 ```
 
-선택이 끝나면 팝업이 스테이지 흐름에 알린다(호출). 남은 레벨업이 있으면 새 선택지가 다시 뜨고, 없으면 전투로 돌아간다.
+카드를 고르면 팝업이 `StageManager.PickCard(cardId)`를 호출하고(호출), `CardPicked`는 StageManager가 발행한다. 웨이브당 카드는 정확히 1장이고, 마지막 웨이브는 카드 없이 클리어한다.
 
-- 일시정지 후 레벨업으로 돌아올 때는 선택지를 새로 뽑지 않는다. 일시정지로 리롤하는 꼼수를 막기 위해서다
+- 일시정지 후 CardSelect로 돌아올 때는 선택지를 새로 뽑지 않는다. 일시정지로 리롤하는 꼼수를 막기 위해서다
 
 ## 스테이지 상태 머신
 
@@ -75,15 +91,13 @@ stateDiagram-v2
     [*] --> Starting
     Starting --> Playing: 전투 발급 성공
     Playing --> Paused: 일시정지, 백그라운드
-    Playing --> LevelUp: LevelUp 수신
+    Playing --> CardSelect: WaveGaugeFilled 수신
     Playing --> Submitting: StageEnded 수신
     Paused --> Playing: 계속하기
-    Paused --> LevelUp: 레벨업 중이었으면 복귀
+    Paused --> CardSelect: 카드 선택 중이었으면 복귀
     Paused --> Submitting: 포기하기
-    LevelUp --> LevelUp: 남은 레벨업 있음
-    LevelUp --> Playing: 스킬 선택 완료
-    LevelUp --> Paused: 백그라운드
-    LevelUp --> Submitting: 레벨업 중 클리어
+    CardSelect --> Playing: 카드 선택 완료
+    CardSelect --> Paused: 백그라운드
     Submitting --> Finished: 전송 성공
     Finished --> [*]
 ```

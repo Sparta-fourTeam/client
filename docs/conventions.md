@@ -14,7 +14,7 @@
 ## 인게임
 
 - `Time.timeScale`은 StageManager만 바꾼다
-- 팝업 연출과 Mock 지연은 unscaled time을 쓴다 (`UniTask.Delay(..., ignoreTimeScale: true)`)
+- 팝업 연출과 Local 백엔드 지연은 unscaled time을 쓴다 (`UniTask.Delay(..., ignoreTimeScale: true)`)
 - 클리어·실패 판정은 StageJudge 한 곳에서, `LateTick`에 한 번만 한다
 - 엔트리포인트끼리 실행 순서에 기대지 않는다. 순서가 필요하면 메시지나 명시적 호출로 연결한다
 
@@ -37,4 +37,7 @@
 - 밸런스 수치·해금·재화·보상은 서버, 판 안의 진행 상태·쿨타임·에셋은 클라이언트
 - 게임 테이블은 도메인 모델로 변환해 쓴다. 전투 발급·제출 요청과 응답만 예외로 `Core/Api`의 타입을 그대로 쓴다
 - 프리팹·아이콘은 테이블의 `PrefabKey`/`IconKey`로 찾는다
-- 지금은 Mock 응답 JSON이 API 스펙 원본이다. Mock도 실제 에러 코드(`DATA_OUTDATED`, `BATTLE_EXPIRED` 등)를 돌려줄 수 있어야 한다. 서버 개발이 시작되면 원본을 서버 springdoc 스펙으로 옮긴다
+- 1주차는 저장되는 Local 구현(`Network/Local`)을 쓴다. `save.json`에 저장되어 재실행해도 값이 유지된다. `MockData` 폴더는 Local이 읽는 초기 테이블 JSON을 두는 곳이다
+- Local도 ApiDog 명세와 같은 DTO(`Network/Dto`)로 변환하고, 서버와 같은 오류 코드(`INSUFFICIENT_GOLD` 등)로 `ApiException`을 던진다
+- 서버 전환은 `BackendSettings`(ScriptableObject)의 스위치로 그룹 단위로 한다: Account(`IAuthApi`, `IDataApi`)를 먼저, Player(`IPlayerApi`, `IBattleApi`, `IUpgradeApi`, `IEnergyApi`) 4개는 한 번에 전환한다. 넷 다 지갑을 건드리므로 따로 바꾸면 로컬과 서버 잔액이 어긋난다
+- 로컬 데이터는 서버로 이관하지 않는다. 전환 후에는 새 계정으로 시작하고, Local에서 만든 미전송 결과는 서버로 보내지 않는다

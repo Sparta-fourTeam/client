@@ -14,20 +14,28 @@
 
 | 메시지 | 종류 | 발행 클래스 |
 | --- | --- | --- |
-| `EnemyDied` | 사건 | EnemySpawner |
+| `StageStateChanged` | Buffered | StageManager |
 | `WaveStarted` | 사건 | WaveManager |
-| `AllWavesSpawned` | 사건 | WaveManager |
+| `SpawnCountdown` | Buffered | WaveManager |
+| `EnemyDied` | 사건 | EnemySpawner |
+| `WaveGaugeChanged` | Buffered | WaveProgress |
+| `WaveGaugeFilled` | 사건 | WaveProgress |
+| `CardPicked` | 사건 | StageManager |
+| `SkillChanged` | 사건 | SkillInventory |
 | `WallHpChanged` | Buffered | Wall |
 | `WallDestroyed` | 사건 | Wall |
-| `ExpChanged` | Buffered | ExperienceSystem |
-| `LevelUp` | 사건 | ExperienceSystem |
-| `SkillChanged` | 사건 | SkillInventory |
 | `StageEnded` | 사건 | StageJudge |
-| `StageStateChanged` | Buffered | StageManager |
 | `StartFailed` | 사건 | StageManager |
 | `StageResult` | 사건 | StageManager |
 | `SubmitFailed` | 사건 | StageManager |
 | `SubmitRejected` | 사건 | StageManager |
+| `WalletChanged` | Buffered | LobbyModel |
+| `EnergyChanged` | Buffered | EnergyClock |
+| `UpgradeChanged` | 사건 | UpgradeService |
+| `ProgressChanged` | Buffered | LobbyModel |
+| `LobbyRequestFailed` | 사건 | UpgradeService, EnergyClock |
+
+로비 메시지(`WalletChanged`, `EnergyChanged`, `UpgradeChanged`, `ProgressChanged`, `LobbyRequestFailed`)는 새 파일 `Core/Messages/LobbyMessages.cs`에 둔다.
 
 ## 구독처 확인: MessagePipe Diagnostics
 
