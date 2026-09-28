@@ -14,15 +14,10 @@ namespace Game.View
             _entries = entries;
         }
 
-        public EnemyView GetPrefab(EnemyType type)
+        public EnemyPrefabEntry GetEntry(EnemyType type)
         {
-            return _entries.Find(e => e.Type == type).Prefab;
-        }
-
-        // 타입에 해당하는 이동 속도 조회
-        public float GetSpeed(EnemyType type)
-        {
-            return _entries.Find(e => e.Type == type).Speed;
+            var exists = _entries.Find(e => e.Type == type);
+            return exists.Prefab == null ? throw new InvalidOperationException($"EnemyType.{type}에 해당하는 EnemyPrefabEntry가 없습니다.") : exists;
         }
     }
 

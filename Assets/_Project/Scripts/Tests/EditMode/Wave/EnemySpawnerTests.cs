@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using Game.Core;
+using UnityEngine;
 
 namespace Game.Tests
 {
@@ -7,13 +8,19 @@ namespace Game.Tests
     {
         private class FakeEnemyViewFactory : IEnemyViewFactory
         {
+            private readonly float _speed;
+
             public int CreateCallCount;
             public Enemy LastCreatedEnemy;
 
-            public void Create(Enemy enemy)
+            public FakeEnemyViewFactory(float speed) => _speed = speed;
+
+            public Enemy Create(Vector2 spawnPosition, EnemyType type)
             {
                 CreateCallCount++;
-                LastCreatedEnemy = enemy;
+                LastCreatedEnemy = new Enemy(spawnPosition, _speed, type);
+
+                return LastCreatedEnemy;
             }
         }
 
@@ -22,13 +29,6 @@ namespace Game.Tests
             private readonly float _fixedValue;
             public FakeRandomProvider(float fixedValue) => _fixedValue = fixedValue;
             public float Range(float min, float max) => _fixedValue; // 항상 이 값만 반환
-        }
-
-        private class FakeEnemySpeedProvider : IEnemySpeedProvider
-        {
-            private readonly float _speed;
-            public FakeEnemySpeedProvider(float speed) => _speed = speed;
-            public float GetSpeed(EnemyType type) => _speed;
         }
 
         private static WaveData CreateTestWaveData()
@@ -48,11 +48,10 @@ namespace Game.Tests
         public void Advance_SpawnsExactlyOncePerFixedInterval()
         {
             var waveData = CreateTestWaveData();
-            var factory = new FakeEnemyViewFactory();
+            var factory = new FakeEnemyViewFactory(3.0f);
             var random = new FakeRandomProvider(1f); // 랜덤이지만 항상 1초로 고정
-            var speedProvider = new FakeEnemySpeedProvider(2f);
 
-            var spawner = new EnemySpawner(factory, waveData, random, speedProvider);
+            var spawner = new EnemySpawner(factory, waveData, random);
 
             spawner.Advance(0.9f); // 아직 1초 안 지남
             Assert.AreEqual(0, factory.CreateCallCount);
@@ -65,11 +64,10 @@ namespace Game.Tests
         public void Advance_MovesSpawnedEnemyUsingSpeedFromProvider()
         {
             var waveData = CreateTestWaveData();
-            var factory = new FakeEnemyViewFactory();
+            var factory = new FakeEnemyViewFactory(3.0f);
             var random = new FakeRandomProvider(1f); // 스폰 간격도, 스폰 X 위치도 항상 1로 고정
-            var speedProvider = new FakeEnemySpeedProvider(3f); // 이 타입은 초당 3만큼 이동
 
-            var spawner = new EnemySpawner(factory, waveData, random, speedProvider);
+            var spawner = new EnemySpawner(factory, waveData, random);
 
             spawner.Advance(1f); // 스폰 발생
             var spawnedY = factory.LastCreatedEnemy.Position.y;

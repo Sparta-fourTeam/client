@@ -19,6 +19,7 @@ namespace Game.Core
 
         public Vector2 Position { get; private set; }
         public EnemyType Type => _type;
+        public float Speed => _speed;
 
         // 스폰 위치, 이동 속도, 타입 지정해서 몬스터 생성
         public Enemy(Vector2 spawnPosition, float speed, EnemyType type)

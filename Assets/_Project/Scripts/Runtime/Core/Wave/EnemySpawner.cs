@@ -8,7 +8,6 @@ namespace Game.Core
     {
         private readonly IEnemyViewFactory _enemyViewFactory;
         private readonly WaveData _waveData;
-        private readonly IEnemySpeedProvider _speedProvider;
 
         // TODO : 적 제거 (사망 / 화면 밖 이탈) 로직 붙일 때 처리 예정 
         private readonly List<Enemy> _activeEnemies = new();
@@ -23,13 +22,11 @@ namespace Game.Core
         public EnemySpawner(
             IEnemyViewFactory enemyViewFactory,
             WaveData waveData,
-            IRandomProvider randomProvider,
-            IEnemySpeedProvider speedProvider)
+            IRandomProvider randomProvider)
         {
             _enemyViewFactory = enemyViewFactory;
             _waveData = waveData;
             _randomProvider = randomProvider;
-            _speedProvider = speedProvider;
             _nextSpawnInterval = RollSpawnInterval();
         }
 
@@ -81,11 +78,9 @@ namespace Game.Core
         {
             var spawnX = _randomProvider.Range(_waveData.SpawnPositionXMin, _waveData.SpawnPositionXMax);
             var spawnPosition = new Vector2(spawnX, _waveData.SpawnPositionY);
-            var speed = _speedProvider.GetSpeed(_waveData.EnemyType);
+            var enemy = _enemyViewFactory.Create(spawnPosition, _waveData.EnemyType);
 
-            var enemy = new Enemy(spawnPosition, speed, _waveData.EnemyType);
             _activeEnemies.Add(enemy);
-            _enemyViewFactory.Create(enemy);
             _spawnedCountInOnceSpawn++;
         }
 
