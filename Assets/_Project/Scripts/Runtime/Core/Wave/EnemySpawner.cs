@@ -8,6 +8,7 @@ namespace Game.Core.Wave
     {
         private readonly IEnemyViewFactory _enemyViewFactory;
         private readonly WaveData _waveData;
+        private readonly IEnemySpeedProvider _speedProvider;
 
         // TODO : 적 제거 (사망 / 화면 밖 이탈) 로직 붙일 때 처리 예정 
         private readonly List<Enemy> _activeEnemies = new();
@@ -19,11 +20,16 @@ namespace Game.Core.Wave
 
         private float _nextSpawnInterval;
 
-        public EnemySpawner(IEnemyViewFactory enemyViewFactory, WaveData waveData, IRandomProvider randomProvider)
+        public EnemySpawner(
+            IEnemyViewFactory enemyViewFactory,
+            WaveData waveData,
+            IRandomProvider randomProvider,
+            IEnemySpeedProvider speedProvider)
         {
             _enemyViewFactory = enemyViewFactory;
             _waveData = waveData;
             _randomProvider = randomProvider;
+            _speedProvider = speedProvider;
             _nextSpawnInterval = RollSpawnInterval();
         }
 
@@ -35,6 +41,8 @@ namespace Game.Core.Wave
         // 스폰 로직
         public void Advance(float deltaTime)
         {
+            MoveActiveEnemies(deltaTime);
+
             _elapsedTime += deltaTime;
 
             if (_isWaitingForNextSpawn)
@@ -67,13 +75,15 @@ namespace Game.Core.Wave
             }
         }
 
-        // WaveData의 속도, 타입 그대로 쓰고 스폰 X 위치만 랜덤으로 정해서 생성
+        // WaveData의 타입 그대로 쓰고 속도는 타입별로 EnemySpeedProvider에서 조회
+        // 스폰 X 위치만 랜덤으로 정해서 생성
         private void Spawn()
         {
             var spawnX = _randomProvider.Range(_waveData.SpawnPositionXMin, _waveData.SpawnPositionXMax);
             var spawnPosition = new Vector2(spawnX, _waveData.SpawnPositionY);
+            var speed = _speedProvider.GetSpeed(_waveData.EnemyType);
 
-            var enemy = new Enemy(spawnPosition, _waveData.EnemySpeed, _waveData.EnemyType);
+            var enemy = new Enemy(spawnPosition, speed, _waveData.EnemyType);
             _activeEnemies.Add(enemy);
             _enemyViewFactory.Create(enemy);
             _spawnedCountInOnceSpawn++;
@@ -83,6 +93,15 @@ namespace Game.Core.Wave
         private float RollSpawnInterval()
         {
             return _randomProvider.Range(_waveData.SpawnIntervalMin, _waveData.SpawnIntervalMax);
+        }
+
+        // 스폰된 적 전부 매 프레임 이동
+        private void MoveActiveEnemies(float deltaTime)
+        {
+            foreach (var enemy in _activeEnemies)
+            {
+                enemy.Move(deltaTime);
+            }
         }
     }
 }

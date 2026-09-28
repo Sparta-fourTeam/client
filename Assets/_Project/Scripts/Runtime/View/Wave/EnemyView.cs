@@ -18,6 +18,12 @@ namespace Game.View.Wave
         {
             return _entries.Find(e => e.Type == type).Prefab;
         }
+
+        // 타입에 해당하는 이동 속도 조회
+        public float GetSpeed(EnemyType type)
+        {
+            return _entries.Find(e => e.Type == type).Speed;
+        }
     }
 
     [Serializable]
@@ -25,6 +31,7 @@ namespace Game.View.Wave
     {
         public EnemyType Type;
         public EnemyView Prefab;
+        public float Speed; // 해당 타입의 이동 속도
     }
 
     public class EnemyView : MonoBehaviour

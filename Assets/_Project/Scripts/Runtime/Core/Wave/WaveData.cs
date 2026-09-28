@@ -7,7 +7,6 @@ namespace Game.Core.Wave
         public int SpawnCount { get; }
         public float SpawnCooldown { get; }
         public EnemyType EnemyType { get; }
-        public float EnemySpeed { get; }
         public float SpawnPositionXMin { get; }
         public float SpawnPositionXMax { get; }
         public float SpawnPositionY { get; }
@@ -18,7 +17,6 @@ namespace Game.Core.Wave
             int spawnCount,
             float spawnCooldown,
             EnemyType enemyType,
-            float enemySpeed,
             float spawnPositionXMin,
             float spawnPositionXMax,
             float spawnPositionY)
@@ -28,7 +26,6 @@ namespace Game.Core.Wave
             SpawnCount = spawnCount;
             SpawnCooldown = spawnCooldown;
             EnemyType = enemyType;
-            EnemySpeed = enemySpeed;
             SpawnPositionXMin = spawnPositionXMin;
             SpawnPositionXMax = spawnPositionXMax;
             SpawnPositionY = spawnPositionY;

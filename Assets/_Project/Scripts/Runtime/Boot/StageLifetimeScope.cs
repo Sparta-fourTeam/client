@@ -26,7 +26,6 @@ namespace Game.Boot
                 spawnCount: 5,
                 spawnCooldown: 3f,
                 enemyType: EnemyType.Normal,
-                enemySpeed: 2f,
                 spawnPositionXMin: -4f,
                 spawnPositionXMax: 4f,
                 spawnPositionY: 5f);
