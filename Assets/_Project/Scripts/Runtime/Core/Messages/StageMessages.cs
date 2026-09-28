@@ -1,5 +1,6 @@
 namespace Game.Core.Messages
 {
+
     public enum StageOutcome
     {
         Clear,
@@ -14,10 +15,5 @@ namespace Game.Core.Messages
         {
             Outcome = outcome;
         }
-    }
-
-    public readonly struct FinalWaveCleared
-    {
-
     }
 }

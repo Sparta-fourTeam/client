@@ -16,7 +16,7 @@ namespace Game.Core.Stage
 
         public StageJudge(
             ISubscriber<WallDestroyed> wallDestroyedSubscriber,
-            ISubscriber<FinalWaveCleared> finalWaveClearedSubscriber,
+            ISubscriber<WaveGaugeFilled> waveGaugeFilledSubscriber,
             IPublisher<StageEnded> stageEndedPublisher)
         {
             _stageEndedPublisher = stageEndedPublisher;
@@ -24,7 +24,7 @@ namespace Game.Core.Stage
             // 메시지를 받은 순간에는 기록만 하고, 판정은 LateTick에서 한다
             _subscriptions = DisposableBag.Create(
                 wallDestroyedSubscriber.Subscribe(_ => _wallDestroyed = true),
-                finalWaveClearedSubscriber.Subscribe(_ => _finalWaveCleared = true));
+                waveGaugeFilledSubscriber.Subscribe(OnWaveGaugeFilled));
         }
 
         public void LateTick()
@@ -44,6 +44,14 @@ namespace Game.Core.Stage
         public void Dispose()
         {
             _subscriptions.Dispose();
+        }
+
+        private void OnWaveGaugeFilled(WaveGaugeFilled message)
+        {
+            if (message.IsFinalWave)
+            {
+                _finalWaveCleared = true;
+            }
         }
     }
 }
