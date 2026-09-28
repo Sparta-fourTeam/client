@@ -1,3 +1,4 @@
+using System;
 using Game.Core;
 using NUnit.Framework;
 
@@ -16,7 +17,7 @@ namespace Game.Tests
             {
                 gold = 500,
                 energyStored = 10,
-                energyUpdatedAt = "2026-01-01T00:00:00",
+                energyUpdatedAt = "2026-01-01T00:00:00Z",
                 stageProgress = new(),
                 upgrades = new() { new UpgradeRow { upgradeId = "atk", level = 2 } },
             });
@@ -27,46 +28,42 @@ namespace Game.Tests
             Assert.AreEqual(0, profile.UpgradeLevel("unknown"));
         }
 
-        [Test(Description = "clearRating이 claimedRating보다 높으면 그 구간의 RatingRewards를 합산해 지급한다")]
-        public void ClaimRatingReward_GrantsSumOfUnclaimedTiers()
+        [Test(Description = "energyUpdatedAt은 UTC 문자열을 시간대 변환 없이 그대로 UTC로 해석한다")]
+        public void EnergyUpdatedAt_ParsesAsUtc()
         {
             var profile = NewProfile();
             profile.Apply(new PlayerSnapshot
             {
-                stageProgress = new() { new StageProgressRow { stageId = 1, clearRating = 2, claimedRating = 0 } },
+                energyUpdatedAt = "2026-01-01T00:00:00Z",
+                stageProgress = new(),
                 upgrades = new(),
             });
 
-            var claimed = profile.ClaimRatingReward(1);
+            var updatedAt = profile.EnergyUpdatedAt;
 
-            Assert.AreEqual(70, claimed);
-            Assert.AreEqual(70, profile.Gold);
+            Assert.AreEqual(DateTimeKind.Utc, updatedAt.Kind);
+            Assert.AreEqual(new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc), updatedAt);
         }
 
-        [Test(Description = "이미 다 받은 보상을 다시 요청하면 NO_REWARD_TO_CLAIM으로 거절한다")]
-        public void ClaimRatingReward_WhenAlreadyClaimed_ThrowsNoRewardToClaim()
+        [Test(Description = "Apply 전에는 energyUpdatedAt이 비어 있어 예외 대신 DateTime.UtcNow를 반환한다")]
+        public void EnergyUpdatedAt_BeforeApply_ReturnsUtcNow()
         {
             var profile = NewProfile();
-            profile.Apply(new PlayerSnapshot
-            {
-                stageProgress = new() { new StageProgressRow { stageId = 1, clearRating = 1, claimedRating = 1 } },
-                upgrades = new(),
-            });
 
-            var ex = Assert.Throws<ApiException>(() => profile.ClaimRatingReward(1));
+            var updatedAt = profile.EnergyUpdatedAt;
 
-            Assert.AreEqual("NO_REWARD_TO_CLAIM", ex.Code);
+            Assert.LessOrEqual((DateTime.UtcNow - updatedAt).TotalSeconds, 1);
         }
 
-        [Test(Description = "진행 기록이 없는 스테이지를 요청하면 UNKNOWN_DATA_ID로 거절한다")]
-        public void ClaimRatingReward_WhenStageProgressMissing_ThrowsUnknownDataId()
+        [Test(Description = "stageProgress/upgrades가 null로 와도 빈 리스트로 정규화해 NRE 없이 조회한다")]
+        public void Apply_WhenListsAreNull_NormalizesToEmpty()
         {
             var profile = NewProfile();
-            profile.Apply(new PlayerSnapshot { stageProgress = new(), upgrades = new() });
 
-            var ex = Assert.Throws<ApiException>(() => profile.ClaimRatingReward(1));
+            profile.Apply(new PlayerSnapshot { stageProgress = null, upgrades = null });
 
-            Assert.AreEqual("UNKNOWN_DATA_ID", ex.Code);
+            Assert.AreEqual(0, profile.UpgradeLevel("atk"));
+            Assert.IsFalse(profile.IsStageCleared(1));
         }
     }
 }

@@ -20,7 +20,18 @@ namespace Game.Core
 
         public GameDataStore()
         {
-            _rawJson = TableNames.ToDictionary(n => n, n => Resources.Load<TextAsset>($"MockData/{n}").text);
+            _rawJson = new Dictionary<string, string>();
+            foreach (var name in TableNames)
+            {
+                var asset = Resources.Load<TextAsset>($"MockData/{name}");
+                if (asset == null)
+                {
+                    throw new InvalidOperationException($"Resources/MockData/{name}.json을 찾을 수 없습니다");
+                }
+
+                _rawJson[name] = asset.text;
+            }
+
             Monsters = new Table<int, MonsterDefinition>(ParseIndexed<int, MonsterDefinition>("Monsters", d => d.Id));
             Stages = new Table<int, StageDefinition>(ParseIndexed<int, StageDefinition>("Stages", d => d.Id));
             Upgrades = new Table<string, UpgradeDefinition>(ParseIndexed<string, UpgradeDefinition>("Upgrades", d => d.UpgradeId));
@@ -30,7 +41,22 @@ namespace Game.Core
 
         public string RawJson(string name) => _rawJson[name];
 
-        private Dictionary<TKey, TValue> ParseIndexed<TKey, TValue>(string name, Func<TValue, TKey> keyOf) =>
-            JsonConvert.DeserializeObject<List<TValue>>(_rawJson[name]).ToDictionary(keyOf);
+        private Dictionary<TKey, TValue> ParseIndexed<TKey, TValue>(string name, Func<TValue, TKey> keyOf)
+        {
+            var list = JsonConvert.DeserializeObject<List<TValue>>(_rawJson[name]);
+            var map = new Dictionary<TKey, TValue>();
+            foreach (var item in list)
+            {
+                var key = keyOf(item);
+                if (map.ContainsKey(key))
+                {
+                    throw new InvalidOperationException($"{name} 테이블에 중복된 키가 있습니다: {key}");
+                }
+
+                map.Add(key, item);
+            }
+
+            return map;
+        }
     }
 }
