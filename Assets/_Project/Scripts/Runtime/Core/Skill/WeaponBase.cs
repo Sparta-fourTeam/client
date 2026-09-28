@@ -5,7 +5,7 @@ namespace Game.Core
     public abstract class WeaponBase
     {
         protected WeaponData data;
-        protected Transform owner;
+        protected Transform caster;
         public int Level { get; private set; } = 1;
         protected float cooldownTimer = 0;
 
@@ -16,10 +16,10 @@ namespace Game.Core
 
 
 
-        public WeaponBase(WeaponData data, Transform owner)
+        public WeaponBase(WeaponData data, Transform caster)
         {
             this.data = data;
-            this.owner = owner;
+            this.caster = caster;
             var stats = data.baseStats;
 
             currentCooldown = stats.TotalCooldown();
@@ -40,9 +40,27 @@ namespace Game.Core
 
         protected abstract void OnFire();
 
-        public void LevelUp()
+        public void LevelUp(WeaponUpgradeOption option)
         {
-            if (Level < data.maxLevel) { Level++; }
+            if (Level >= data.maxLevel)
+            {
+                return;
+            }
+
+            Level++;
+
+            switch (option.type)
+            {
+                case UpgradeType.AttackSpeed:
+                    currentCooldown = Mathf.Max(0.1f, currentCooldown - option.value * 0.01f);
+                    break;
+                case UpgradeType.Damage:
+                    currentDamage += option.value;
+                    break;
+                case UpgradeType.ProjectileCount:
+                    currentHitCount += Mathf.RoundToInt(option.value);
+                    break;
+            }
         }
     }
 }
