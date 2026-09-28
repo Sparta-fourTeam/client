@@ -1,4 +1,5 @@
 using System;
+using Game.Core.Combat;
 using Game.Core.Messages;
 using MessagePipe;
 using UnityEngine;
@@ -6,7 +7,7 @@ using VContainer;
 
 namespace Game.Core.Defense
 {
-    public sealed class Wall : MonoBehaviour
+    public sealed class Wall : MonoBehaviour, IDamageable
     {
         private IBufferedPublisher<WallHpChanged> _hpChangedPublisher;
         private IPublisher<WallDestroyed> _destroyedPublisher;
