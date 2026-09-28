@@ -23,6 +23,30 @@ namespace Game.Core
         public int UpgradeLevel(string id) => _snapshot.upgrades.Find(u => u.upgradeId == id)?.level ?? 0;
         public bool IsStageCleared(int stageId) => _snapshot.stageProgress.Find(s => s.stageId == stageId)?.IsCleared ?? false;
 
+        /// <summary>안 받은 rating 보상을 전부 골드로 지급하고 받은 금액을 반환한다</summary>
+        public int ClaimRatingReward(int stageId)
+        {
+            var row = _snapshot.stageProgress.Find(s => s.stageId == stageId)
+                ?? throw new ApiException { Kind = ApiErrorKind.Rejected, Code = "UNKNOWN_DATA_ID" };
+
+            if (!row.HasUnclaimedReward)
+            {
+                throw new ApiException { Kind = ApiErrorKind.Rejected, Code = "NO_REWARD_TO_CLAIM" };
+            }
+
+            var rewards = _data.Stages.GetOrThrow(stageId).RatingRewards;
+            var amount = 0;
+            for (var rating = row.claimedRating + 1; rating <= row.clearRating; rating++)
+            {
+                amount += rewards[rating - 1];
+            }
+
+            row.claimedRating = row.clearRating;
+            _snapshot.gold += amount;
+            Changed?.Invoke(this);
+            return amount;
+        }
+
         /// <summary>서버(or Local) 스냅샷으로 상태를 통째로 덮어쓰고 Changed를 방송한다</summary>
         public void Apply(PlayerSnapshot snap)
         {
