@@ -1,7 +1,5 @@
 using Game.Core.Defense;
-using Game.View.Defense;
 using UnityEngine;
-using VContainer;
 
 namespace Game.View.Enemies
 {
@@ -11,29 +9,34 @@ namespace Game.View.Enemies
         [SerializeField] private int _damage = 1;
         [SerializeField] private float _interval = 1f;
 
-        private IWall _wall;
+        private Wall _wall;
         private WallAttack _attack;
 
         public bool IsAttacking => _attack != null;
 
-        [Inject]
-        public void Construct(IWall wall)
-        {
-            _wall = wall;
-        }
-
         private void OnTriggerEnter2D(Collider2D other)
         {
-            if (IsAttacking || !other.TryGetComponent<WallView>(out _))
+            if (IsAttacking || !other.TryGetComponent<Wall>(out Wall wall))
             {
                 return;
             }
-            _attack = new WallAttack(_wall, _damage, _interval);
+
+            _wall = wall;
+            _attack = new WallAttack(_interval);
         }
 
         private void Update()
         {
-            _attack?.Tick(Time.deltaTime);
+            if (_attack == null || _wall.IsDestroyed)
+            {
+                return;
+            }
+
+            int hits = _attack.Tick(Time.deltaTime);
+            for (int i = 0; i < hits && !_wall.IsDestroyed; i++)
+            {
+                _wall.TakeDamage(_damage);
+            }
         }
     }
 }
