@@ -1,0 +1,5 @@
+[
+  { "Id": 1, "Exp": 10, "Hp": 30, "Damage": 5, "GaugeValue": 10, "Speed": 2.5, "AttackInterval": 1.0, "IsBoss": false },
+  { "Id": 2, "Exp": 25, "Hp": 60, "Damage": 8, "GaugeValue": 20, "Speed": 2.0, "AttackInterval": 1.2, "IsBoss": false },
+  { "Id": 100, "Exp": 200, "Hp": 500, "Damage": 30, "GaugeValue": 100, "Speed": 1.5, "AttackInterval": 2.0, "IsBoss": true }
+]
