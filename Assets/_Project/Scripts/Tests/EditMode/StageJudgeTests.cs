@@ -10,7 +10,7 @@ namespace Game.Tests
     public sealed class StageJudgeTests
     {
         private IPublisher<WallDestroyed> _wallDestroyed;
-        private IPublisher<FinalWaveCleared> _finalWaveCleared;
+        private IPublisher<WaveGaugeFilled> _waveGaugeFilled;
         private List<StageEnded> _ended;
         private IDisposable _endedSubscription;
         private StageJudge _judge;
@@ -21,12 +21,12 @@ namespace Game.Tests
             var builder = new BuiltinContainerBuilder();
             builder.AddMessagePipe();
             builder.AddMessageBroker<WallDestroyed>();
-            builder.AddMessageBroker<FinalWaveCleared>();
+            builder.AddMessageBroker<WaveGaugeFilled>();
             builder.AddMessageBroker<StageEnded>();
             IServiceProvider provider = builder.BuildServiceProvider();
 
             _wallDestroyed = provider.GetRequiredService<IPublisher<WallDestroyed>>();
-            _finalWaveCleared = provider.GetRequiredService<IPublisher<FinalWaveCleared>>();
+            _waveGaugeFilled = provider.GetRequiredService<IPublisher<WaveGaugeFilled>>();
 
             _ended = new List<StageEnded>();
             _endedSubscription = provider.GetRequiredService<ISubscriber<StageEnded>>()
@@ -34,7 +34,7 @@ namespace Game.Tests
 
             _judge = new StageJudge(
                 provider.GetRequiredService<ISubscriber<WallDestroyed>>(),
-                provider.GetRequiredService<ISubscriber<FinalWaveCleared>>(),
+                provider.GetRequiredService<ISubscriber<WaveGaugeFilled>>(),
                 provider.GetRequiredService<IPublisher<StageEnded>>());
         }
 
@@ -59,7 +59,7 @@ namespace Game.Tests
         [Test(Description = "마지막 웨이브를 완료하면 LateTick에서 클리어를 1번 발행한다")]
         public void LateTick_FinalWaveCleared_PublishesClear()
         {
-            _finalWaveCleared.Publish(new FinalWaveCleared());
+            _waveGaugeFilled.Publish(new WaveGaugeFilled(true));
 
             _judge.LateTick();
 
@@ -71,7 +71,7 @@ namespace Game.Tests
         public void LateTick_BothInSameFrame_PublishesClear()
         {
             _wallDestroyed.Publish(new WallDestroyed());
-            _finalWaveCleared.Publish(new FinalWaveCleared());
+            _waveGaugeFilled.Publish(new WaveGaugeFilled(true));
 
             _judge.LateTick();
 
@@ -85,7 +85,7 @@ namespace Game.Tests
             _wallDestroyed.Publish(new WallDestroyed());
             _judge.LateTick();
 
-            _finalWaveCleared.Publish(new FinalWaveCleared());
+            _waveGaugeFilled.Publish(new WaveGaugeFilled(true));
             _judge.LateTick();
 
             Assert.AreEqual(1, _ended.Count);
@@ -115,6 +115,14 @@ namespace Game.Tests
             _judge.Dispose();
 
             _wallDestroyed.Publish(new WallDestroyed());
+            _judge.LateTick();
+            Assert.AreEqual(0, _ended.Count);
+        }
+
+        [Test(Description = "마지막이 아닌 웨이브의 게이지가 차면 판정하지 않는다")]
+        public void LateTick_NonFinalWaveFilled_PublishesNothing()
+        {
+            _waveGaugeFilled.Publish(new WaveGaugeFilled(false));
             _judge.LateTick();
 
             Assert.AreEqual(0, _ended.Count);
