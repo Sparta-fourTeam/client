@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Game.Core.Combat;
 using Game.Core.Defense;
 using Game.Core.Messages;
 using MessagePipe;
@@ -102,6 +103,19 @@ namespace Game.Tests
             Assert.AreEqual(7, wall.CurrentHp);
             Assert.AreEqual(7, _hp.Published.Last().Current);
             Assert.IsFalse(wall.IsDestroyed);
+        }
+
+        // IDamageable로 다뤄도 HP가 줄어드는지 (몬스터는 벽을 IDamageable로만 알고 공격함)
+        [Test]
+        public void TakeDamage_ViaIDamageable_ReducesHp()
+        {
+            Wall wall = CreateWall(10);
+            IDamageable target = wall;
+
+            target.TakeDamage(3);
+
+            Assert.AreEqual(7, wall.CurrentHp);
+            Assert.AreEqual(7, _hp.Published.Last().Current);
         }
 
         // HP보다 큰 데미지(999)를 맞아도 음수가 아니라 0이 되는지
