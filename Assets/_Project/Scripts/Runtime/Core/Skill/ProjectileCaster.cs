@@ -3,11 +3,12 @@ using UnityEngine.Pool;
 
 namespace Game.Core
 {
-    public class ProjectileWeapon : WeaponBase
+    public class ProjectileCaster : WeaponBase
     {
         private ObjectPool<Projectile> pool;
+        private const float ProjectileLifetime = 3f;
 
-        public ProjectileWeapon(WeaponData data, GameObject prefab, Transform owner) : base(data, owner)
+        public ProjectileCaster(WeaponData data, GameObject prefab, Transform caster) : base(data, caster)
         {
             pool = new ObjectPool<Projectile>(
                 createFunc: () => Object.Instantiate(prefab).GetComponent<Projectile>(),
@@ -24,7 +25,7 @@ namespace Game.Core
         {
             Debug.Log("OnFire()");
             Projectile projectile = pool.Get();
-            projectile.Init(pool, owner.position, Vector3.up, currentDamage, data.baseStats.speed);
+            projectile.Init(pool, caster.position, Vector3.up, currentDamage, data.baseStats.speed, ProjectileLifetime);
         }
     }
 }

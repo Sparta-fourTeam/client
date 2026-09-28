@@ -67,9 +67,20 @@ namespace Game.Core
 
         public void AddWeapon(int weaponId)
         {
-            var data = testDataTable[weaponId];
-            var prefab = prefabEntries.Find(e => e.id == weaponId).prefab;
-            weapons.Add(new ProjectileWeapon(data, prefab, transform));
+            if (!testDataTable.TryGetValue(weaponId, out var data))
+            {
+                Debug.LogWarning($"[WeaponController] weaponId={weaponId}에 해당하는 WeaponData가 없습니다.");
+                return;
+            }
+
+            var entry = prefabEntries.Find(e => e.id == weaponId);
+            if (entry == null)
+            {
+                Debug.LogWarning($"[WeaponController] weaponId={weaponId}에 해당하는 프리팹 엔트리가 없습니다.");
+                return;
+            }
+
+            weapons.Add(new ProjectileCaster(data, entry.prefab, transform));
         }
 
         public void WeaponLevelUp(int weaponId)

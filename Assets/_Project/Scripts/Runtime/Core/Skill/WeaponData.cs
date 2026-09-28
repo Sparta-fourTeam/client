@@ -7,7 +7,6 @@ namespace Game.Core
         public int id;
         public string name;
         public string desc;
-        public string projectilePrefabKey;
         public WeaponBaseStats baseStats;
         public List<WeaponUpgradeOption> upgrades;
         public int maxLevel;
