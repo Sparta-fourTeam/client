@@ -36,6 +36,7 @@ namespace Game.Tests
                 provider.GetRequiredService<ISubscriber<WallDestroyed>>(),
                 provider.GetRequiredService<ISubscriber<WaveGaugeFilled>>(),
                 provider.GetRequiredService<IPublisher<StageEnded>>());
+            _judge.Initialize();
         }
 
         [TearDown]
@@ -45,87 +46,68 @@ namespace Game.Tests
             _endedSubscription.Dispose();
         }
 
-        [Test(Description = "벽이 파괴되면 LateTick에서 실패를 1번 발행한다")]
-        public void LateTick_WallDestroyed_PublishesFail()
+        [Test(Description = "벽이 파괴되면 실패를 1번 발행한다")]
+        public void WallDestroyed_PublishesFail()
         {
             _wallDestroyed.Publish(new WallDestroyed());
-
-            _judge.LateTick();
 
             Assert.AreEqual(1, _ended.Count);
             Assert.AreEqual(StageOutcome.Fail, _ended[0].Outcome);
         }
 
-        [Test(Description = "마지막 웨이브를 완료하면 LateTick에서 클리어를 1번 발행한다")]
-        public void LateTick_FinalWaveCleared_PublishesClear()
+        [Test(Description = "마지막 웨이브를 완료하면 클리어를 1번 발행한다")]
+        public void FinalWaveCleared_PublishesClear()
         {
             _waveGaugeFilled.Publish(new WaveGaugeFilled(true));
-
-            _judge.LateTick();
-
-            Assert.AreEqual(1, _ended.Count);
-            Assert.AreEqual(StageOutcome.Clear, _ended[0].Outcome);
-        }
-
-        [Test(Description = "같은 프레임에 벽 파괴와 웨이브 완료가 모두 오면 클리어로 판정한다")]
-        public void LateTick_BothInSameFrame_PublishesClear()
-        {
-            _wallDestroyed.Publish(new WallDestroyed());
-            _waveGaugeFilled.Publish(new WaveGaugeFilled(true));
-
-            _judge.LateTick();
 
             Assert.AreEqual(1, _ended.Count);
             Assert.AreEqual(StageOutcome.Clear, _ended[0].Outcome);
         }
 
         [Test(Description = "실패로 판정된 뒤에 웨이브 완료가 와도 다시 판정하지 않는다")]
-        public void LateTick_AfterJudged_DoesNotPublishAgain()
+        public void AfterFail_FinalWave_DoesNotPublishAgain()
         {
             _wallDestroyed.Publish(new WallDestroyed());
-            _judge.LateTick();
 
             _waveGaugeFilled.Publish(new WaveGaugeFilled(true));
-            _judge.LateTick();
 
             Assert.AreEqual(1, _ended.Count);
             Assert.AreEqual(StageOutcome.Fail, _ended[0].Outcome);
         }
 
-        [Test(Description = "아무 일도 없으면 LateTick이 불려도 발행하지 않는다")]
-        public void LateTick_NothingHappened_PublishesNothing()
+        [Test(Description = "신호가 없으면 발행하지 않는다")]
+        public void NothingHappened_PublishesNothing()
         {
-            _judge.LateTick();
-            _judge.LateTick();
-
-            Assert.AreEqual(0, _ended.Count);
-        }
-
-        [Test(Description = "LateTick 전에는 신호를 받아도 발행하지 않는다")]
-        public void BeforeLateTick_PublishesNothing()
-        {
-            _wallDestroyed.Publish(new WallDestroyed());
 
             Assert.AreEqual(0, _ended.Count);
         }
 
         [Test(Description = "Dispose 뒤에는 벽이 파괴돼도 판정하지 않는다")]
-        public void LateTick_AfterDispose_PublishesNothing()
+        public void AfterDispose_PublishesNothing()
         {
             _judge.Dispose();
 
             _wallDestroyed.Publish(new WallDestroyed());
-            _judge.LateTick();
             Assert.AreEqual(0, _ended.Count);
         }
 
         [Test(Description = "마지막이 아닌 웨이브의 게이지가 차면 판정하지 않는다")]
-        public void LateTick_NonFinalWaveFilled_PublishesNothing()
+        public void NonFinalWaveFilled_PublishesNothing()
         {
             _waveGaugeFilled.Publish(new WaveGaugeFilled(false));
-            _judge.LateTick();
 
             Assert.AreEqual(0, _ended.Count);
+        }
+
+        [Test(Description = "클리어로 판정된 뒤에 벽이 파괴돼도 다시 판정하지 않는다")]
+        public void AfterClear_WallDestroyed_DoesNotPublishAgain()
+        {
+            _waveGaugeFilled.Publish(new WaveGaugeFilled(true));
+
+            _wallDestroyed.Publish(new WallDestroyed());
+
+            Assert.AreEqual(1, _ended.Count);
+            Assert.AreEqual(StageOutcome.Clear, _ended[0].Outcome);
         }
     }
 }
