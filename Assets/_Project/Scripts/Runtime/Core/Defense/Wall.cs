@@ -1,22 +1,29 @@
 using System;
 using Game.Core.Messages;
 using MessagePipe;
+using UnityEngine;
+using VContainer;
 
 namespace Game.Core.Defense
 {
-    public sealed class Wall : IWall
+    public sealed class Wall : MonoBehaviour
     {
-        private readonly IBufferedPublisher<WallHpChanged> _hpChangedPublisher;
-        private readonly IPublisher<WallDestroyed> _destroyedPublisher;
+        private IBufferedPublisher<WallHpChanged> _hpChangedPublisher;
+        private IPublisher<WallDestroyed> _destroyedPublisher;
 
         public int CurrentHp { get; private set; }
-        public int MaxHp { get; }
+        public int MaxHp { get; private set; }
         public bool IsDestroyed { get; private set; }
 
-        public Wall(
-            int maxHp,
-            IBufferedPublisher<WallHpChanged> hpChangedPublisher,
+        [Inject]
+        public void Construct(IBufferedPublisher<WallHpChanged> hpChangedPublisher,
             IPublisher<WallDestroyed> destroyedPublisher)
+        {
+            _hpChangedPublisher = hpChangedPublisher;
+            _destroyedPublisher = destroyedPublisher;
+        }
+
+        public void Initialize(int maxHp)
         {
             if (maxHp <= 0)
             {
@@ -25,16 +32,14 @@ namespace Game.Core.Defense
 
             MaxHp = maxHp;
             CurrentHp = maxHp;
-            _hpChangedPublisher = hpChangedPublisher;
-            _destroyedPublisher = destroyedPublisher;
+            IsDestroyed = false;
 
-            // 늦게 구독한 HUD도 초기 HP를 받도록 한 번 발행
             _hpChangedPublisher.Publish(new WallHpChanged(CurrentHp, MaxHp));
         }
 
         public void TakeDamage(int amount)
         {
-            if (IsDestroyed || amount <= 0)
+            if (IsDestroyed || amount <= 0 || MaxHp <= 0)
             {
                 return;
             }
@@ -42,7 +47,7 @@ namespace Game.Core.Defense
             CurrentHp = Math.Max(0, CurrentHp - amount);
             _hpChangedPublisher.Publish(new WallHpChanged(CurrentHp, MaxHp));
 
-            if (CurrentHp == 0)
+            if (CurrentHp <= 0)
             {
                 IsDestroyed = true;
                 _destroyedPublisher.Publish(new WallDestroyed());
