@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using Game.Core;
 using Game.Network;
 using NUnit.Framework;
 

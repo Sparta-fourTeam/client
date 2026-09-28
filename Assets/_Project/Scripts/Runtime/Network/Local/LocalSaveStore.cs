@@ -4,15 +4,18 @@ using UnityEngine;
 
 namespace Game.Network
 {
+    /// <summary>세이브 데이터를 JSON 파일로 저장/로드하는 Local 백엔드 구현</summary>
     public sealed class LocalSaveStore
     {
         private readonly string _filePath;
 
+        /// <summary>filePath를 생략하면 Application.persistentDataPath/save.json을 쓴다 (테스트에서는 임시 경로를 주입)</summary>
         public LocalSaveStore(string filePath = null)
         {
             _filePath = filePath ?? Path.Combine(Application.persistentDataPath, "save.json");
         }
 
+        /// <summary>파일이 없으면 기본값의 LocalSave를 반환한다</summary>
         public LocalSave Load()
         {
             if (!File.Exists(_filePath))
@@ -24,6 +27,7 @@ namespace Game.Network
             return JsonConvert.DeserializeObject<LocalSave>(json);
         }
 
+        /// <summary>이전 저장 내용을 덮어쓴다</summary>
         public void Flush(LocalSave save)
         {
             File.WriteAllText(_filePath, JsonConvert.SerializeObject(save));
