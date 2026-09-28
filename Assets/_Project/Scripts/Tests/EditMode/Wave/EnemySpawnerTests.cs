@@ -1,7 +1,7 @@
 using NUnit.Framework;
-using Game.Core.Wave;
+using Game.Core;
 
-namespace Game.Tests.Wave
+namespace Game.Tests
 {
     public class EnemySpawnerTests
     {

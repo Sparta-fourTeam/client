@@ -1,4 +1,4 @@
-namespace Game.Core.Wave
+namespace Game.Core
 {
     public class WaveData
     {

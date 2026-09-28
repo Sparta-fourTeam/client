@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using VContainer.Unity;
 
-namespace Game.Core.Wave
+namespace Game.Core
 {
     public class EnemySpawner : ITickable
     {

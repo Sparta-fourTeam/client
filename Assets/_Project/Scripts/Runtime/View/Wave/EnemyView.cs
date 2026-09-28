@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using Game.Core.Wave;
+using Game.Core;
 using UnityEngine;
 
-namespace Game.View.Wave
+namespace Game.View
 {
     public class EnemyPrefabTable
     {

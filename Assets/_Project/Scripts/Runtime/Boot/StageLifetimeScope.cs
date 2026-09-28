@@ -1,6 +1,6 @@
 using Game.Core.Defense;
-using Game.Core.Wave;
-using Game.View.Wave;
+using Game.Core;
+using Game.View;
 using VContainer;
 using VContainer.Unity;
 
