@@ -42,5 +42,17 @@ namespace Game.Tests
             Assert.AreEqual(100, current);
             Assert.AreEqual(0, nextIn);
         }
+
+        [Test(Description = "updatedAt이 미래 시각이어도(기기 시계 오차) 에너지가 줄어들지 않는다")]
+        public void At_WhenUpdatedAtIsInFuture_DoesNotDecreaseEnergy()
+        {
+            var now = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            var updatedAt = now.AddSeconds(150);
+
+            var (current, nextIn) = EnergyRule.At(50, updatedAt, now, Config);
+
+            Assert.AreEqual(50, current);
+            Assert.AreEqual(60f, nextIn, 0.01f);
+        }
     }
 }

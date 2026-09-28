@@ -13,6 +13,6 @@ namespace Game.Core
         }
 
         public TValue GetOrThrow(TKey key) =>
-            _map.TryGetValue(key, out var v) ? v : throw new ApiException { Kind = ApiErrorKind.Rejected, Code = "UNKNOWN_DATA_ID" };
+            _map.TryGetValue(key, out var v) ? v : throw new ApiException(ApiErrorKind.Rejected, "UNKNOWN_DATA_ID");
     }
 }

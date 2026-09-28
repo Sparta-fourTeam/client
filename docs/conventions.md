@@ -4,9 +4,9 @@
 
 ## 네임스페이스
 
-폴더 경로를 따른다: **어셈블리 이름 + 시스템 폴더**. 예) `Core/Growth` → `Game.Core.Growth`, `View/Hud` → `Game.View.Hud`, `Tests/EditMode` → `Game.Tests`
+**어셈블리 이름 그대로** 쓴다. 폴더 경로는 네임스페이스에 반영하지 않는다. 예) `Core/Api`, `Core/Data`, `Core/Growth` 모두 `Game.Core`, `View/Hud`도 `Game.View`, `Tests/EditMode`는 `Game.Tests`
 
-- 시스템 폴더 아래로는 늘리지 않는다. `Core/Growth/Skills/`도 `Game.Core.Growth`다
+- 시스템 폴더를 더 잘게 나눠도 네임스페이스는 늘어나지 않는다. 폴더가 너무 잘게 쪼개지면 오히려 참조가 지저분해지기 때문
 - 모든 코드는 네임스페이스 안에 둔다. 전역 클래스 금지
 - 네임스페이스와 같은 이름의 클래스를 만들지 않는다. `Game.Core.Wave` 안에 `Wave` 클래스를 만들면 컴파일 에러가 난다
 - asmdef의 Root Namespace가 설정되어 있어 새 스크립트에 루트는 자동으로 들어간다. 하위 부분은 IDE 제안대로 맞춘다
@@ -39,5 +39,5 @@
 - 프리팹·아이콘은 테이블의 `PrefabKey`/`IconKey`로 찾는다
 - 1주차는 저장되는 Local 구현(`Network/Local`)을 쓴다. `save.json`에 저장되어 재실행해도 값이 유지된다. `MockData` 폴더는 Local이 읽는 초기 테이블 JSON을 두는 곳이다
 - Local도 ApiDog 명세와 같은 DTO(`Network/Dto`)로 변환하고, 서버와 같은 오류 코드(`INSUFFICIENT_GOLD` 등)로 `ApiException`을 던진다
-- 서버 전환은 `BackendSettings`(ScriptableObject)의 스위치로 그룹 단위로 한다: Account(`IAuthApi`, `IDataApi`)를 먼저, Player(`IPlayerApi`, `IBattleApi`, `IUpgradeApi`, `IEnergyApi`) 4개는 한 번에 전환한다. 넷 다 지갑을 건드리므로 따로 바꾸면 로컬과 서버 잔액이 어긋난다
+- 서버 전환은 `BackendSettings`(ScriptableObject)의 스위치로 그룹 단위로 한다: Account(`IAuthApi`, `IDataApi`)를 먼저, Player(`IPlayerApi`, `IBattleApi`, `IUpgradeApi`, `IEnergyApi`, `IStageApi`) 5개는 한 번에 전환한다. 다섯 다 지갑을 건드리므로 따로 바꾸면 로컬과 서버 잔액이 어긋난다
 - 로컬 데이터는 서버로 이관하지 않는다. 전환 후에는 새 계정으로 시작하고, Local에서 만든 미전송 결과는 서버로 보내지 않는다

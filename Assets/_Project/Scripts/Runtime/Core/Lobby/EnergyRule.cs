@@ -12,7 +12,7 @@ namespace Game.Core
                 return (stored, 0);
             }
 
-            double elapsed = (now - updatedAt).TotalSeconds;
+            double elapsed = Math.Max(0, (now - updatedAt).TotalSeconds);
             int gained = (int)(elapsed / c.RegenSeconds);
             int current = Math.Min(c.Max, stored + gained);
             float nextIn = current >= c.Max ? 0 : (float)(c.RegenSeconds - elapsed % c.RegenSeconds);
