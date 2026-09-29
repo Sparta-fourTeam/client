@@ -10,7 +10,8 @@ namespace Game.Core
 
         protected override void OnFire()
         {
-            // TODO: 히트스캔 로직 (후속 작업)
+            // TODO: 실제 명중 판정/데미지 적용은 충돌 시스템 붙인 뒤 구현
+            Debug.Log($"OnFire() [Hitscan] Damage: {stats.Damage}, HitCount: {stats.HitCount}");
         }
     }
 }

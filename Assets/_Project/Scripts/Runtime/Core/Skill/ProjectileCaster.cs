@@ -24,8 +24,12 @@ namespace Game.Core
         protected override void OnFire()
         {
             Debug.Log("OnFire()");
-            Projectile projectile = pool.Get();
-            projectile.Init(pool, caster.position, Vector3.up, currentDamage, data.baseStats.speed, ProjectileLifetime);
+
+            for (int i = 0; i < stats.HitCount; i++)
+            {
+                Projectile projectile = pool.Get();
+                projectile.Init(pool, caster.position, Vector3.up, stats.Damage, data.baseStats.speed, ProjectileLifetime);
+            }
         }
     }
 }

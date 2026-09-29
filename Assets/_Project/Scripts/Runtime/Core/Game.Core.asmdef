@@ -4,7 +4,9 @@
     "references": [
         "MessagePipe",
         "UniTask",
-        "VContainer"
+        "VContainer",
+        "UnityEngine.UI",
+        "Unity.TextMeshPro"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
