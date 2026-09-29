@@ -1,8 +1,7 @@
 using System.Collections.Generic;
-using Game.Core;
 using UnityEngine;
 
-namespace Game.View
+namespace Game.Core
 {
     public class EnemyViewFactory : MonoBehaviour, IEnemyViewFactory
     {
