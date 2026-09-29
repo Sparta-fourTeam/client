@@ -8,6 +8,7 @@ namespace Game.Core
     {
         private readonly IEnemyViewFactory _enemyViewFactory;
         private readonly WaveData _waveData;
+        private readonly SpawnArea _spawnArea;
 
         // TODO : 적 제거 (사망 / 화면 밖 이탈) 로직 붙일 때 처리 예정 
         private readonly List<Enemy> _activeEnemies = new();
@@ -22,10 +23,12 @@ namespace Game.Core
         public EnemySpawner(
             IEnemyViewFactory enemyViewFactory,
             WaveData waveData,
+            SpawnArea spawnArea,
             IRandomProvider randomProvider)
         {
             _enemyViewFactory = enemyViewFactory;
             _waveData = waveData;
+            _spawnArea = spawnArea;
             _randomProvider = randomProvider;
             _nextSpawnInterval = RollSpawnInterval();
         }
@@ -72,12 +75,14 @@ namespace Game.Core
             }
         }
 
-        // WaveData의 타입 그대로 쓰고 속도는 타입별로 EnemySpeedProvider에서 조회
-        // 스폰 X 위치만 랜덤으로 정해서 생성
+        // WaveData의 타입 그대로 쓰고 위치는 SpawnArea의 현재 범위에서 매번 새로 뽑는다
         private void Spawn()
         {
-            var spawnX = _randomProvider.Range(_waveData.SpawnPositionXMin, _waveData.SpawnPositionXMax);
-            var spawnPosition = new Vector2(spawnX, _waveData.SpawnPositionY);
+            var min = _spawnArea.Min;
+            var max = _spawnArea.Max;
+            var spawnX = _randomProvider.Range(min.x, max.x);
+            var spawnY = _randomProvider.Range(min.y, max.y);
+            var spawnPosition = new Vector2(spawnX, spawnY);
             var enemy = _enemyViewFactory.Create(spawnPosition, _waveData.EnemyType);
 
             _activeEnemies.Add(enemy);

@@ -2,14 +2,6 @@ using UnityEngine;
 
 namespace Game.Core
 {
-    // 적 종류
-    public enum EnemyType
-    {
-        Normal,
-        Elite,
-        Boss
-    }
-
     public class Enemy
     {
         // 아래쪽 방향으로 이동.
@@ -19,7 +11,6 @@ namespace Game.Core
 
         public Vector2 Position { get; private set; }
         public EnemyType Type => _type;
-        public float Speed => _speed;
 
         // 스폰 위치, 이동 속도, 타입 지정해서 몬스터 생성
         public Enemy(Vector2 spawnPosition, float speed, EnemyType type)

@@ -13,6 +13,7 @@ namespace Game.Boot
             builder.RegisterComponentInHierarchy<Wall>();
             builder.Register<IRandomProvider, UnityRandomProvider>(Lifetime.Scoped);
             builder.RegisterComponentInHierarchy<EnemyViewFactory>().AsImplementedInterfaces();
+            builder.RegisterComponentInHierarchy<SpawnArea>();
             builder.RegisterInstance(CreateWaveData());
             builder.RegisterEntryPoint<EnemySpawner>(Lifetime.Scoped);
         }
@@ -25,10 +26,8 @@ namespace Game.Boot
                 spawnIntervalMax: 0.5f,
                 spawnCount: 5,
                 spawnCooldown: 3f,
-                enemyType: EnemyType.Normal,
-                spawnPositionXMin: -4f,
-                spawnPositionXMax: 4f,
-                spawnPositionY: 5f);
+                enemyType: EnemyType.Normal
+                );
         }
     }
 }

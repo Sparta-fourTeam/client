@@ -38,20 +38,24 @@ namespace Game.Tests
                 spawnIntervalMax: 0.5f,
                 spawnCount: 5,
                 spawnCooldown: 3f,
-                enemyType: EnemyType.Normal,
-                spawnPositionXMin: -4f,
-                spawnPositionXMax: 4f,
-                spawnPositionY: 5f);
+                enemyType: EnemyType.Normal);
+        }
+
+        private static SpawnArea CreateTestSpawnArea()
+        {
+            var go = new GameObject("SpawnArea");
+            return go.AddComponent<SpawnArea>();
         }
 
         [Test]
         public void Advance_SpawnsExactlyOncePerFixedInterval()
         {
             var waveData = CreateTestWaveData();
+            var spawnArea = CreateTestSpawnArea();
             var factory = new FakeEnemyViewFactory(3.0f);
             var random = new FakeRandomProvider(1f); // 랜덤이지만 항상 1초로 고정
 
-            var spawner = new EnemySpawner(factory, waveData, random);
+            var spawner = new EnemySpawner(factory, waveData, spawnArea, random);
 
             spawner.Advance(0.9f); // 아직 1초 안 지남
             Assert.AreEqual(0, factory.CreateCallCount);
@@ -64,10 +68,11 @@ namespace Game.Tests
         public void Advance_MovesSpawnedEnemyUsingSpeedFromProvider()
         {
             var waveData = CreateTestWaveData();
+            var spawnArea = CreateTestSpawnArea();
             var factory = new FakeEnemyViewFactory(3.0f);
-            var random = new FakeRandomProvider(1f); // 스폰 간격도, 스폰 X 위치도 항상 1로 고정
+            var random = new FakeRandomProvider(1f);
 
-            var spawner = new EnemySpawner(factory, waveData, random);
+            var spawner = new EnemySpawner(factory, waveData, spawnArea, random);
 
             spawner.Advance(1f); // 스폰 발생
             var spawnedY = factory.LastCreatedEnemy.Position.y;
@@ -75,7 +80,6 @@ namespace Game.Tests
             spawner.Advance(0.5f); // 다음 스폰 간격(1초) 안 지남 -> 이동만 발생
             var movedY = factory.LastCreatedEnemy.Position.y;
 
-            // 아래쪽으로 speed(3) * deltaTime(0.5) 만큼 이동했는지 검증
             Assert.AreEqual(spawnedY - 3f * 0.5f, movedY, 0.0001f);
         }
     }
