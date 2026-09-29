@@ -8,7 +8,6 @@ namespace Game.Core
         SceneId Current { get; }
         UniTask GoToLoading();
         UniTask GoToLobby();
-        UniTask GoToBoot();
         UniTask GoToStage(int stageId);
         UniTask RestartStage();
     }

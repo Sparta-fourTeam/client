@@ -1,6 +1,7 @@
 using Cysharp.Threading.Tasks;
 using Game.Core;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using VContainer.Unity;
 
 namespace Game.Boot
@@ -17,6 +18,13 @@ namespace Game.Boot
 
         public void Start()
         {
+            // RootLifetimeScope는 autoRun으로 항상 생성되므로, Boot 씬이 아닌 씬(Stage 단독 실행,
+            // 샌드박스 씬 등)에서 Play했을 때는 로비로 강제 이동시키지 않는다.
+            if (SceneManager.GetActiveScene().name != nameof(SceneId.Boot))
+            {
+                return;
+            }
+
             RunAsync().Forget(Debug.LogException);
         }
 

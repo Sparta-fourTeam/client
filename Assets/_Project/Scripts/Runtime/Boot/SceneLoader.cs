@@ -26,8 +26,6 @@ namespace Game.Boot
 
         public UniTask GoToLobby() => Load(SceneId.Lobby);
 
-        public UniTask GoToBoot() => Load(SceneId.Boot);
-
         public UniTask GoToStage(int stageId)
         {
             _stageContext.Set(stageId);
@@ -50,12 +48,21 @@ namespace Game.Boot
             try
             {
                 await _curtain.Close();
-                using (LifetimeScope.EnqueueParent(_root))
+                try
                 {
-                    await SceneManager.LoadSceneAsync(next.ToString(), LoadSceneMode.Single).ToUniTask();
+                    using (LifetimeScope.EnqueueParent(_root))
+                    {
+                        await SceneManager.LoadSceneAsync(next.ToString(), LoadSceneMode.Single).ToUniTask();
+                    }
+
+                    Current = next;
+                }
+                catch
+                {
+                    await _curtain.Open();
+                    throw;
                 }
 
-                Current = next;
                 await _curtain.Open();
             }
             finally

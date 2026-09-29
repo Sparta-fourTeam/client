@@ -1,3 +1,4 @@
+using System;
 using Cysharp.Threading.Tasks;
 using Game.Core;
 using UnityEngine;
@@ -28,9 +29,19 @@ namespace Game.Boot
 
         private async UniTask RunAsync()
         {
-            await _auth.Login();
-            var snapshot = await _player.GetMe();
-            _profile.Apply(snapshot);
+            try
+            {
+                await _auth.Login();
+                var snapshot = await _player.GetMe();
+                _profile.Apply(snapshot);
+            }
+            catch (Exception ex)
+            {
+                // TODO(error-ui): 재시도 또는 에러 팝업 훅 자리. 지금은 로그만 남기고 Loading 화면에 머문다.
+                Debug.LogException(ex);
+                return;
+            }
+
             await _nav.GoToLobby();
         }
     }
