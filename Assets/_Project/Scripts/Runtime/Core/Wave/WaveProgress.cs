@@ -90,7 +90,8 @@ namespace Game.Core
 
         private void PublishGauge()
         {
-            _gaugeChangedPublisher.Publish(new WaveGaugeChanged(_kills, _waves.Peek().EnemyCount));
+            WaveStarted current = _waves.Peek();
+            _gaugeChangedPublisher.Publish(new WaveGaugeChanged(current.WaveIndex, _kills, _waves.Peek().EnemyCount));
         }
     }
 }
