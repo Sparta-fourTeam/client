@@ -25,6 +25,7 @@ namespace Game.Core
 
         public int UpgradeLevel(string id) => _snapshot.upgrades.Find(u => u.upgradeId == id)?.level ?? 0;
         public bool IsStageCleared(int stageId) => _snapshot.stageProgress.Find(s => s.stageId == stageId)?.IsCleared ?? false;
+        public bool HasUnclaimedReward(int stageId) => _snapshot.stageProgress.Find(s => s.stageId == stageId)?.HasUnclaimedReward ?? false;
 
         /// <summary>서버(or Local) 스냅샷으로 상태를 통째로 덮어쓰고 Changed를 방송한다</summary>
         public void Apply(PlayerSnapshot snap)
