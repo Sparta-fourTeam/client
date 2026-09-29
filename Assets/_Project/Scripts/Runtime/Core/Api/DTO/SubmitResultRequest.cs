@@ -14,7 +14,6 @@ namespace Game.Core
         public List<string> buildLog;
         public string createdAt;
 
-
         /// <summary>클리어 시점의 벽 잔여 체력 비율(0~100). clearRating(1~3) 판정에 쓰인다</summary>
         public int wallHpPercent;
     }
