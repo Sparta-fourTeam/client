@@ -1,18 +1,28 @@
+using System;
 using System.Collections.Generic;
+using Game.Core.Messages;
+using MessagePipe;
 using UnityEngine;
 using VContainer.Unity;
 
 namespace Game.Core
 {
-    public class EnemySpawner : ITickable
+    public class EnemySpawner : IInitializable, IDisposable, ITickable
     {
         private readonly IEnemyViewFactory _enemyViewFactory;
-        private readonly WaveData _waveData;
+        private readonly EnemySpawnConfig _enemySpawnConfig;
         private readonly SpawnArea _spawnArea;
+        private readonly IRandomProvider _randomProvider;
+        private readonly ISubscriber<WaveStarted> _waveStartedSubscriber;
+        private readonly ISubscriber<WaveGaugeFilled> _waveGaugeFilledSubscriber;
 
         // TODO : 적 제거 (사망 / 화면 밖 이탈) 로직 붙일 때 처리 예정 
         private readonly List<Enemy> _activeEnemies = new();
-        private readonly IRandomProvider _randomProvider;
+
+        private IDisposable _subscriptions;
+        private bool _isSpawningAllowed;
+
+        private int _currentBurstSize; // 이번 웨이브에서 한 번에(한 버스트에) 몇 마리씩 스폰할지
 
         private float _elapsedTime;
         private int _spawnedCountInOnceSpawn;
@@ -22,15 +32,32 @@ namespace Game.Core
 
         public EnemySpawner(
             IEnemyViewFactory enemyViewFactory,
-            WaveData waveData,
+            EnemySpawnConfig enemySpawnConfig,
             SpawnArea spawnArea,
-            IRandomProvider randomProvider)
+            IRandomProvider randomProvider,
+            ISubscriber<WaveStarted> waveStartedSubscriber,
+            ISubscriber<WaveGaugeFilled> waveGaugeFilledSubscriber)
         {
             _enemyViewFactory = enemyViewFactory;
-            _waveData = waveData;
+            _enemySpawnConfig = enemySpawnConfig;
             _spawnArea = spawnArea;
             _randomProvider = randomProvider;
+            _waveStartedSubscriber = waveStartedSubscriber;
+            _waveGaugeFilledSubscriber = waveGaugeFilledSubscriber;
             _nextSpawnInterval = RollSpawnInterval();
+        }
+
+        public void Initialize()
+        {
+            DisposableBagBuilder bag = DisposableBag.CreateBuilder();
+            _waveStartedSubscriber.Subscribe(OnWaveStarted).AddTo(bag);
+            _waveGaugeFilledSubscriber.Subscribe(OnWaveGaugeFilled).AddTo(bag);
+            _subscriptions = bag.Build();
+        }
+
+        public void Dispose()
+        {
+            _subscriptions?.Dispose();
         }
 
         public void Tick()
@@ -43,11 +70,16 @@ namespace Game.Core
         {
             MoveActiveEnemies(deltaTime);
 
+            if (!_isSpawningAllowed)
+            {
+                return;
+            }
+
             _elapsedTime += deltaTime;
 
             if (_isWaitingForNextSpawn)
             {
-                if (_elapsedTime >= _waveData.SpawnCooldown)
+                if (_elapsedTime >= _enemySpawnConfig.SpawnCooldown)
                 {
                     _elapsedTime = 0f;
                     _spawnedCountInOnceSpawn = 0;
@@ -69,10 +101,24 @@ namespace Game.Core
             _nextSpawnInterval = RollSpawnInterval();
 
             // 스폰 수량 채웠으면 대기 상태 전환
-            if (_spawnedCountInOnceSpawn >= _waveData.SpawnCount)
+            if (_spawnedCountInOnceSpawn >= _currentBurstSize)
             {
                 _isWaitingForNextSpawn = true;
             }
+        }
+
+        private void OnWaveStarted(WaveStarted message)
+        {
+            _isSpawningAllowed = true;
+            _currentBurstSize = message.EnemyCount;
+            _elapsedTime = 0f;
+            _spawnedCountInOnceSpawn = 0;
+            _isWaitingForNextSpawn = false;
+        }
+
+        private void OnWaveGaugeFilled(WaveGaugeFilled message)
+        {
+            _isSpawningAllowed = false;
         }
 
         // WaveData의 타입 그대로 쓰고 위치는 SpawnArea의 현재 범위에서 매번 새로 뽑는다
@@ -83,19 +129,17 @@ namespace Game.Core
             var spawnX = _randomProvider.Range(min.x, max.x);
             var spawnY = _randomProvider.Range(min.y, max.y);
             var spawnPosition = new Vector2(spawnX, spawnY);
-            var enemy = _enemyViewFactory.Create(spawnPosition, _waveData.EnemyType);
+            var enemy = _enemyViewFactory.Create(spawnPosition, _enemySpawnConfig.EnemyType);
 
             _activeEnemies.Add(enemy);
             _spawnedCountInOnceSpawn++;
         }
 
-        // 스폰 간격 랜덤
         private float RollSpawnInterval()
         {
-            return _randomProvider.Range(_waveData.SpawnIntervalMin, _waveData.SpawnIntervalMax);
+            return _randomProvider.Range(_enemySpawnConfig.SpawnIntervalMin, _enemySpawnConfig.SpawnIntervalMax);
         }
 
-        // 스폰된 적 전부 매 프레임 이동
         private void MoveActiveEnemies(float deltaTime)
         {
             foreach (var enemy in _activeEnemies)
