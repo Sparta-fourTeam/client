@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using Newtonsoft.Json;
 using UnityEngine;
@@ -9,13 +10,21 @@ namespace Game.Network
     {
         private readonly string _filePath;
 
-        // VContainer 등록용
-        public LocalSaveStore() { }
-
-        /// <summary>filePath를 생략하면 Application.persistentDataPath/save.json을 쓴다 (테스트에서는 임시 경로를 주입)</summary>
-        public LocalSaveStore(string filePath = null)
+        /// <summary>기본 경로(Application.persistentDataPath/save.json)를 사용한다.</summary>
+        public LocalSaveStore()
+            : this(Path.Combine(Application.persistentDataPath, "save.json"))
         {
-            _filePath = filePath ?? Path.Combine(Application.persistentDataPath, "save.json");
+        }
+
+        /// <summary>지정한 경로를 사용한다. (테스트에서 임시 경로 주입용)</summary>
+        public LocalSaveStore(string filePath)
+        {
+            if (string.IsNullOrWhiteSpace(filePath))
+            {
+                throw new ArgumentException("파일 경로가 비어 있습니다.", nameof(filePath));
+            }
+
+            _filePath = filePath;
         }
 
         // LocalSave의 필드 기본값(예: stageProgress 시드 1행)을 Newtonsoft가 리스트에 이어붙이지 않고
