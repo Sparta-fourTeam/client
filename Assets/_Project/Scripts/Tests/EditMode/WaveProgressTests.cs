@@ -202,5 +202,18 @@ namespace Game.Tests
                 Assert.AreEqual(3, received.Max);
             }
         }
+
+        [Test(Description = "게이지 메시지에는 지금 채우고 있는 웨이브 번호가 담긴다")]
+        public void Gauge_CarriesWaveIndexOfFillingWave()
+        {
+            StartWave(3, waveIndex: 1);
+            StartWave(5, waveIndex: 2);   // 2번 웨이브가 시작돼도
+
+            KillEnemies(1);
+            Assert.AreEqual(1, _changed.Last().WaveIndex);   // 게이지는 아직 1번 웨이브
+
+            KillEnemies(2);                                    // 1번 웨이브 가득
+            Assert.AreEqual(2, _changed.Last().WaveIndex);   // 이제 2번 웨이브
+        }
     }
 }

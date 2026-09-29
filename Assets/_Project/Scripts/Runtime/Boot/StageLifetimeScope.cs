@@ -4,6 +4,7 @@ using Game.Core.Stage;
 using VContainer;
 using VContainer.Unity;
 
+
 namespace Game.Boot
 {
     public sealed class StageLifetimeScope : LifetimeScope

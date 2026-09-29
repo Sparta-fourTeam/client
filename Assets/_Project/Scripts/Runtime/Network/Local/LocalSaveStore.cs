@@ -1,6 +1,8 @@
+using System;
 using System.IO;
 using Newtonsoft.Json;
 using UnityEngine;
+using VContainer;
 
 namespace Game.Network
 {
@@ -9,11 +11,31 @@ namespace Game.Network
     {
         private readonly string _filePath;
 
-        /// <summary>filePath를 생략하면 Application.persistentDataPath/save.json을 쓴다 (테스트에서는 임시 경로를 주입)</summary>
-        public LocalSaveStore(string filePath = null)
+        /// <summary>기본 경로(Application.persistentDataPath/save.json)를 사용한다.</summary>
+        [Inject]
+        public LocalSaveStore()
+            : this(Path.Combine(Application.persistentDataPath, "save.json"))
         {
-            _filePath = filePath ?? Path.Combine(Application.persistentDataPath, "save.json");
         }
+
+        /// <summary>지정한 경로를 사용한다. (테스트에서 임시 경로 주입용)</summary>
+        public LocalSaveStore(string filePath)
+        {
+            if (string.IsNullOrWhiteSpace(filePath))
+            {
+                throw new ArgumentException("파일 경로가 비어 있습니다.", nameof(filePath));
+            }
+
+            _filePath = filePath;
+        }
+
+        // LocalSave의 필드 기본값(예: stageProgress 시드 1행)을 Newtonsoft가 리스트에 이어붙이지 않고
+        // JSON 내용으로 통째로 교체하게 한다. 없으면 Load()를 반복할 때마다 기본값 행이 계속 중복된다.
+        private static readonly JsonSerializerSettings ReplaceCollections =
+            new JsonSerializerSettings { ObjectCreationHandling = ObjectCreationHandling.Replace };
+
+        /// <summary>저장 파일이 이미 있는지(기존 계정인지) 확인한다</summary>
+        public bool Exists() => File.Exists(_filePath);
 
         /// <summary>파일이 없으면 기본값의 LocalSave를 반환한다</summary>
         public LocalSave Load()
@@ -24,7 +46,7 @@ namespace Game.Network
             }
 
             var json = File.ReadAllText(_filePath);
-            return JsonConvert.DeserializeObject<LocalSave>(json);
+            return JsonConvert.DeserializeObject<LocalSave>(json, ReplaceCollections);
         }
 
         /// <summary>이전 저장 내용을 덮어쓴다</summary>

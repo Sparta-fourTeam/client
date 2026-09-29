@@ -1,5 +1,4 @@
 using System;
-using System.Globalization;
 
 namespace Game.Core
 {
@@ -20,16 +19,13 @@ namespace Game.Core
         public int EnergyStored => _snapshot.energyStored;
 
         /// <summary>energyUpdatedAt을 UTC로 해석한다. Apply 전(값 없음)에는 DateTime.UtcNow를 반환한다</summary>
-        public DateTime EnergyUpdatedAt =>
-            string.IsNullOrEmpty(_snapshot.energyUpdatedAt)
-                ? DateTime.UtcNow
-                : DateTime.Parse(_snapshot.energyUpdatedAt, CultureInfo.InvariantCulture,
-                    DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal);
+        public DateTime EnergyUpdatedAt => EnergyRule.ParseUpdatedAt(_snapshot.energyUpdatedAt);
 
         public EnergyConfig EnergyConfig => _data.Energy;
 
         public int UpgradeLevel(string id) => _snapshot.upgrades.Find(u => u.upgradeId == id)?.level ?? 0;
         public bool IsStageCleared(int stageId) => _snapshot.stageProgress.Find(s => s.stageId == stageId)?.IsCleared ?? false;
+        public bool HasUnclaimedReward(int stageId) => _snapshot.stageProgress.Find(s => s.stageId == stageId)?.HasUnclaimedReward ?? false;
 
         /// <summary>서버(or Local) 스냅샷으로 상태를 통째로 덮어쓰고 Changed를 방송한다</summary>
         public void Apply(PlayerSnapshot snap)

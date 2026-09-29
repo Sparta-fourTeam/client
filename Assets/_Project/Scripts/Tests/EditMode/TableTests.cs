@@ -24,5 +24,21 @@ namespace Game.Tests
             Assert.AreEqual(ApiErrorKind.Rejected, ex.Kind);
             Assert.AreEqual("UNKNOWN_DATA_ID", ex.Code);
         }
+
+        [Test(Description = "존재하는 키는 Contains가 true를 반환한다")]
+        public void Contains_WhenKeyExists_ReturnsTrue()
+        {
+            var table = new Table<int, string>(new Dictionary<int, string> { { 1, "a" } });
+
+            Assert.IsTrue(table.Contains(1));
+        }
+
+        [Test(Description = "없는 키는 Contains가 false를 반환한다")]
+        public void Contains_WhenKeyMissing_ReturnsFalse()
+        {
+            var table = new Table<int, string>(new Dictionary<int, string>());
+
+            Assert.IsFalse(table.Contains(999));
+        }
     }
 }
