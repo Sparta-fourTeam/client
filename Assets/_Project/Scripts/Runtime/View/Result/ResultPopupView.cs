@@ -13,18 +13,21 @@ namespace Game.View
     {
         [SerializeField] private GameObject _panel;
         [SerializeField] private TMP_Text _titleText;
+        [SerializeField] private TMP_Text _stageText;
         [SerializeField] private TMP_Text _killsText;
         [SerializeField] private TMP_Text _waveText;
         [SerializeField] private TMP_Text _timeText;
         [SerializeField] private Button _lobbyButton;
 
         private BattleStats _stats;
+        private StageContext _stageContext;
         private ISceneNavigator _navigator;
 
         [Inject]
-        public void Construct(ISubscriber<StageEnded> stageEnded, BattleStats stats, ISceneNavigator navigator)
+        public void Construct(ISubscriber<StageEnded> stageEnded, BattleStats stats, StageContext stageContext, ISceneNavigator navigator)
         {
             _stats = stats;
+            _stageContext = stageContext;
             _navigator = navigator;
             Track(stageEnded.Subscribe(OnStageEnded));
         }
@@ -38,6 +41,7 @@ namespace Game.View
         private void OnStageEnded(StageEnded message)
         {
             _titleText.text = message.Outcome == StageOutcome.Clear ? "클리어" : "실패";
+            _stageText.text = _stageContext.StageId > 0 ? $"Stage {_stageContext.StageId}" : "-";
             _killsText.text = $"처치 {_stats.Kills}";
             _waveText.text = _stats.ReachedWave > 0 ? $"WAVE {_stats.ReachedWave}" : "-";
             _timeText.text = FormatTime(_stats.PlayTime);
