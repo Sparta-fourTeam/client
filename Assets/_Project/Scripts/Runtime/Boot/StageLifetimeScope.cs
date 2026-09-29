@@ -1,8 +1,10 @@
 using Game.Core;
 using Game.Core.Defense;
 using Game.Core.Stage;
+using Game.View;
 using VContainer;
 using VContainer.Unity;
+
 
 namespace Game.Boot
 {
