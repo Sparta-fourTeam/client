@@ -9,7 +9,7 @@ namespace Game.Core
 {
     public class EnemySpawner : IInitializable, IDisposable, ITickable
     {
-        private readonly IEnemyViewFactory _enemyViewFactory;
+        private readonly IEnemyFactory _enemyViewFactory;
         private readonly EnemySpawnConfig _enemySpawnConfig;
         private readonly SpawnArea _spawnArea;
         private readonly IRandomProvider _randomProvider;
@@ -17,7 +17,7 @@ namespace Game.Core
         private readonly ISubscriber<WaveGaugeFilled> _waveGaugeFilledSubscriber;
 
         // TODO : 적 제거 (사망 / 화면 밖 이탈) 로직 붙일 때 처리 예정 
-        private readonly List<Enemy> _activeEnemies = new();
+        private readonly List<EnemyModel> _activeEnemies = new();
 
         private IDisposable _subscriptions;
         private bool _isSpawningAllowed;
@@ -31,7 +31,7 @@ namespace Game.Core
         private float _nextSpawnInterval;
 
         public EnemySpawner(
-            IEnemyViewFactory enemyViewFactory,
+            IEnemyFactory enemyViewFactory,
             EnemySpawnConfig enemySpawnConfig,
             SpawnArea spawnArea,
             IRandomProvider randomProvider,

@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Game.Core
 {
-    public class EnemyViewFactory : MonoBehaviour, IEnemyViewFactory
+    public class EnemyFactory : MonoBehaviour, IEnemyFactory
     {
         // 인스펙터에서 EnemyType 별 프리팹, 속도 매핑을 채움
         [SerializeField]
@@ -16,11 +16,11 @@ namespace Game.Core
             _table = new EnemyPrefabTable(_enemyPrefabEntries);
         }
 
-        public Enemy Create(Vector2 spawnPosition, EnemyType type)
+        public EnemyModel Create(Vector2 spawnPosition, EnemyType type)
         {
             var entry = _table.GetEntry(type);
             var view = Object.Instantiate(entry.Prefab);
-            var enemy = new Enemy(spawnPosition, entry.Speed, type);
+            var enemy = new EnemyModel(spawnPosition, entry.Speed, type);
             view.Bind(enemy);
 
             return enemy;

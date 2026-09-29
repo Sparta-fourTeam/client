@@ -18,7 +18,7 @@ namespace Game.Boot
             builder.RegisterEntryPoint<BattleStats>().AsSelf();
             builder.RegisterEntryPoint<WaveProgress>();
             builder.Register<IRandomProvider, UnityRandomProvider>(Lifetime.Scoped);
-            builder.RegisterComponentInHierarchy<EnemyViewFactory>().AsImplementedInterfaces();
+            builder.RegisterComponentInHierarchy<EnemyFactory>().AsImplementedInterfaces();
             builder.RegisterComponentInHierarchy<SpawnArea>();
             builder.RegisterInstance(CreateWaveData());
             builder.RegisterEntryPoint<EnemySpawner>(Lifetime.Scoped);

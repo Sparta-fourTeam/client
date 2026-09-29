@@ -2,28 +2,24 @@ using UnityEngine;
 
 namespace Game.Core
 {
-    public class Enemy
+    public class Enemy : MonoBehaviour
     {
-        // 아래쪽 방향으로 이동.
-        private static readonly Vector2 _moveDirection = Vector2.down;
-        private readonly float _speed; // 적 이동 속도
-        private readonly EnemyType _type; // 적 타입
+        private EnemyModel _enemyModel;
 
-        public Vector2 Position { get; private set; }
-        public EnemyType Type => _type;
-
-        // 스폰 위치, 이동 속도, 타입 지정해서 몬스터 생성
-        public Enemy(Vector2 spawnPosition, float speed, EnemyType type)
+        public void Bind(EnemyModel enemyModel)
         {
-            Position = spawnPosition;
-            _speed = speed;
-            _type = type;
+            _enemyModel = enemyModel;
         }
 
-        // 매 프레임 speed만큼 이동
-        public void Move(float deltaTime)
+        private void Update()
         {
-            Position += _moveDirection * (_speed * deltaTime);
+            // Instantiate 직후 Bind가 호출 되기 전 null 체크
+            if (_enemyModel == null)
+            {
+                return;
+            }
+
+            transform.position = _enemyModel.Position;
         }
     }
 }
