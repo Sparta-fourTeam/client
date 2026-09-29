@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Game.Core
@@ -5,26 +6,27 @@ namespace Game.Core
     public abstract class WeaponBase
     {
         protected WeaponData data;
+        public WeaponData Data => data;
         protected Transform caster;
         public int Level { get; private set; } = 1;
         protected float cooldownTimer = 0;
 
-        protected float currentCooldown;
-        protected float currentDamage;
-        protected int currentHitCount;
+        protected IWeaponStats stats;
+        private readonly Dictionary<string, int> acquiredCardCounts = new Dictionary<string, int>();
 
-
-
+        public bool IsMaxLevel => Level >= data.maxLevel;
 
         public WeaponBase(WeaponData data, Transform caster)
         {
             this.data = data;
             this.caster = caster;
-            var stats = data.baseStats;
 
-            currentCooldown = stats.TotalCooldown();
-            currentDamage = stats.TotalDamage();
-            currentHitCount = stats.hitCount;
+            stats = new BaseWeaponStats(data.baseStats);
+        }
+
+        public int GetAcquiredCount(string cardId)
+        {
+            return acquiredCardCounts.TryGetValue(cardId, out var count) ? count : 0;
         }
 
         public void Tick()
@@ -34,7 +36,7 @@ namespace Game.Core
             if (cooldownTimer <= 0)
             {
                 OnFire();
-                cooldownTimer = currentCooldown;
+                cooldownTimer = stats.Cooldown;
             }
         }
 
@@ -49,17 +51,18 @@ namespace Game.Core
 
             Level++;
 
-            switch (option.type)
+            acquiredCardCounts[option.id] = GetAcquiredCount(option.id) + 1;
+
+            foreach (var effect in option.effects)
             {
-                case UpgradeType.AttackSpeed:
-                    currentCooldown = Mathf.Max(0.1f, currentCooldown - option.value * 0.01f);
-                    break;
-                case UpgradeType.Damage:
-                    currentDamage += option.value;
-                    break;
-                case UpgradeType.ProjectileCount:
-                    currentHitCount += Mathf.RoundToInt(option.value);
-                    break;
+                stats = effect.type switch
+                {
+                    UpgradeType.AttackSpeed => new AttackSpeedUpgrade(stats, effect.value),
+                    UpgradeType.Damage => new DamageUpgrade(stats, effect.value),
+                    UpgradeType.ProjectileCount => new ProjectileCountUpgrade(stats, effect.value),
+                    UpgradeType.HitCount => new HitCountUpgrade(stats, (int)effect.value),
+                    _ => throw new System.NotImplementedException()
+                };
             }
         }
     }
