@@ -29,11 +29,13 @@ namespace Game.Core.Messages
     //WaveProgress 발행
     public readonly struct WaveGaugeChanged
     {
+        public int WaveIndex { get; }
         public int Current { get; }
         public int Max { get; }
 
-        public WaveGaugeChanged(int current, int max)
+        public WaveGaugeChanged(int waveIndex, int current, int max)
         {
+            WaveIndex = waveIndex;
             Current = current;
             Max = max;
         }
