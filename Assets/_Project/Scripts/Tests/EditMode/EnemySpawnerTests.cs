@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using NUnit.Framework;
 using Game.Core;
 using UnityEngine;
@@ -27,8 +28,17 @@ namespace Game.Tests
         private class FakeRandomProvider : IRandomProvider
         {
             private readonly float _fixedValue;
+
+            // Range가 어떤 min/max로 호출됐는지 순서대로 기록
+            public readonly List<(float Min, float Max)> Calls = new();
+
             public FakeRandomProvider(float fixedValue) => _fixedValue = fixedValue;
-            public float Range(float min, float max) => _fixedValue; // 항상 이 값만 반환
+
+            public float Range(float min, float max)
+            {
+                Calls.Add((min, max));
+                return _fixedValue; // 항상 이 값만 반환
+            }
         }
 
         private static WaveData CreateTestWaveData()
@@ -81,6 +91,27 @@ namespace Game.Tests
             var movedY = factory.LastCreatedEnemy.Position.y;
 
             Assert.AreEqual(spawnedY - 3f * 0.5f, movedY, 0.0001f);
+        }
+
+        [Test]
+        public void Advance_SpawnsUsingSpawnAreaXAndYBoundsSeparately()
+        {
+            var waveData = CreateTestWaveData();
+            var spawnArea = CreateTestSpawnArea();
+            spawnArea.transform.position = new Vector3(2f, 5f, 0f); // X, Y를 다른 값으로 둬서 뒤바뀜을 잡을 수 있게 함
+
+            var factory = new FakeEnemyViewFactory(3.0f);
+            var random = new FakeRandomProvider(1f);
+
+            var spawner = new EnemySpawner(factory, waveData, spawnArea, random);
+
+            spawner.Advance(1f); // 스폰 발생
+
+            var expectedXCall = (spawnArea.Min.x, spawnArea.Max.x);
+            var expectedYCall = (spawnArea.Min.y, spawnArea.Max.y);
+
+            CollectionAssert.Contains(random.Calls, expectedXCall);
+            CollectionAssert.Contains(random.Calls, expectedYCall);
         }
     }
 }
