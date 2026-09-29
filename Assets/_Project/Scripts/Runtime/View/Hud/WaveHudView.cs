@@ -7,7 +7,7 @@ using VContainer;
 
 namespace Game.View
 {
-    public class WaveHubView : HudView
+    public sealed class WaveHudView : HudView
     {
         [SerializeField] private TMP_Text _waveText;
         [SerializeField] private Image _gaugeFill;

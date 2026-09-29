@@ -7,7 +7,7 @@ using VContainer;
 
 namespace Game.View
 {
-    public class WallHpHudView : HudView
+    public sealed class WallHpHudView : HudView
     {
         [SerializeField] private Image _hpFill;
         [SerializeField] private TMP_Text _hpText;
