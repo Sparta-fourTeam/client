@@ -1,4 +1,6 @@
+using Game.Core;
 using Game.Core.Defense;
+using Game.Core.Stage;
 using Game.Core;
 using Game.View;
 using VContainer;
@@ -11,6 +13,8 @@ namespace Game.Boot
         protected override void Configure(IContainerBuilder builder)
         {
             builder.RegisterComponentInHierarchy<Wall>();
+            builder.RegisterEntryPoint<StageJudge>();
+            builder.RegisterEntryPoint<WaveProgress>();
             builder.Register<IRandomProvider, UnityRandomProvider>(Lifetime.Scoped);
             builder.RegisterComponentInHierarchy<EnemyViewFactory>().AsImplementedInterfaces();
             builder.RegisterComponentInHierarchy<SpawnArea>();
