@@ -1,19 +1,25 @@
 using UnityEngine;
 
-namespace Game.Core.Wave
+namespace Game.Core
 {
     public class Enemy : MonoBehaviour
     {
-        // Start is called once before the first execution of Update after the MonoBehaviour is created
-        void Start()
+        private EnemyModel _enemyModel;
+
+        public void Bind(EnemyModel enemyModel)
         {
-        
+            _enemyModel = enemyModel;
         }
 
-        // Update is called once per frame
-        void Update()
+        private void Update()
         {
-        
+            // Instantiate 직후 Bind가 호출 되기 전 null 체크
+            if (_enemyModel == null)
+            {
+                return;
+            }
+
+            transform.position = _enemyModel.Position;
         }
     }
 }
