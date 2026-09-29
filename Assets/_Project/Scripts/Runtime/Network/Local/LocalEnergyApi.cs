@@ -20,7 +20,7 @@ namespace Game.Network
         {
             if (source == EnergySource.Ad)
             {
-                // TODO 광고 연동
+                // TODO(server): 광고 보상 미정 — 예: 보상량 확정 후 save.wallet.energyStored += adRewardAmount;
                 throw new ApiException(ApiErrorKind.Rejected, "AD_ENERGY_NOT_SUPPORTED");
             }
 

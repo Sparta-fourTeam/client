@@ -17,6 +17,7 @@ namespace Game.Network
         {
             var save = _store.Load();
             _store.Flush(save);
+            // TODO(server): 토큰/리비전 하드코딩 — 예: 실제 로그인 응답의 accessToken/dataRevision으로 교체
             return UniTask.FromResult(new LoginResponse { accessToken = "local-dev-token", dataRevision = 1 });
         }
     }
