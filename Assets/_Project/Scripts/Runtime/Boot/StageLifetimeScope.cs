@@ -20,7 +20,6 @@ namespace Game.Boot
             builder.RegisterInstance(CreateWaveData());
             builder.RegisterEntryPoint<EnemySpawner>(Lifetime.Scoped);
             builder.RegisterEntryPoint<WaveManager>();
-            builder.RegisterComponentInHierarchy<SceneNavButton>();
         }
 
         // TODO : 현재는 하드코딩, 추후 로컬 데이터 연동시 수정할 수 있음.
