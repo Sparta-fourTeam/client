@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
-using Game.Core;
 
-namespace Game.View
+namespace Game.Core
 {
     public class EnemyPrefabTable
     {

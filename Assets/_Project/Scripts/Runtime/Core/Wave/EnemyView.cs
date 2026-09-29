@@ -1,7 +1,6 @@
-using Game.Core;
 using UnityEngine;
 
-namespace Game.View
+namespace Game.Core
 {
     public class EnemyView : MonoBehaviour
     {

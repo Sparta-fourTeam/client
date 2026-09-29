@@ -1,8 +1,6 @@
 using System;
-using Game.Core;
-using UnityEngine;
 
-namespace Game.View
+namespace Game.Core
 {
     [Serializable]
     public struct EnemyPrefabEntry
