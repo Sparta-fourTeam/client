@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using Newtonsoft.Json;
 using UnityEngine;
+using VContainer;
 
 namespace Game.Network
 {
@@ -11,6 +12,7 @@ namespace Game.Network
         private readonly string _filePath;
 
         /// <summary>기본 경로(Application.persistentDataPath/save.json)를 사용한다.</summary>
+        [Inject]
         public LocalSaveStore()
             : this(Path.Combine(Application.persistentDataPath, "save.json"))
         {

@@ -17,9 +17,7 @@ namespace Game.Boot
             builder.RegisterMessagePipe();
 
             builder.Register<GameDataStore>(Lifetime.Singleton);
-            // VContainer는 filePath(string) 파라미터의 C# 기본값을 인식하지 못하고 타입으로 해석을 시도해 실패한다.
-            // 명시적으로 null을 공급해 LocalSaveStore() 기본 경로 분기를 타게 한다.
-            builder.Register<LocalSaveStore>(Lifetime.Singleton).WithParameter("filePath", (string)null);
+            builder.Register<LocalSaveStore>(Lifetime.Singleton);
             builder.Register<PlayerProfile>(Lifetime.Singleton);
 
             // 서버가 붙으면 이 7줄만 Http*Api로 교체하면 된다
