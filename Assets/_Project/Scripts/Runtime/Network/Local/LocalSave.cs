@@ -11,5 +11,7 @@ namespace Game.Network
         public WalletRow wallet = new();
         public List<StageProgressRow> stageProgress = new() { new StageProgressRow { stageId = 1, clearRating = 0 } };
         public List<UpgradeRow> upgrades = new();
+        public List<BattleRow> battles = new();
+        public List<LedgerRow> ledger = new();
     }
 }
