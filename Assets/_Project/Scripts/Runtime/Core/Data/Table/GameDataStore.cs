@@ -9,7 +9,7 @@ namespace Game.Core
     /// <summary>Resources/MockData의 테이블 JSON을 읽어 도메인 모델 테이블로 만든다</summary>
     public sealed class GameDataStore
     {
-        private static readonly string[] TableNames = { "Monsters", "Stages", "Upgrades", "Energy" };
+        private static readonly string[] TableNames = { "Monsters", "Stages", "Upgrades", "Energy", "Cards" };
         private readonly Dictionary<string, string> _rawJson;
 
         public Dictionary<string, int> Revisions { get; }
@@ -17,6 +17,7 @@ namespace Game.Core
         public Table<int, StageDefinition> Stages { get; }
         public Table<string, UpgradeDefinition> Upgrades { get; }
         public EnergyConfig Energy { get; }
+        public Table<string, CardDefinition> Cards { get; }
 
         public GameDataStore()
         {
@@ -36,6 +37,9 @@ namespace Game.Core
             Stages = new Table<int, StageDefinition>(ParseIndexed<int, StageDefinition>("Stages", d => d.Id));
             Upgrades = new Table<string, UpgradeDefinition>(ParseIndexed<string, UpgradeDefinition>("Upgrades", d => d.UpgradeId));
             Energy = JsonConvert.DeserializeObject<EnergyConfig>(_rawJson["Energy"]);
+            Cards = new Table<string, CardDefinition>(ParseIndexed<string, CardDefinition>("Cards", d => d.Id));
+
+            // TODO(server): 전부 1 고정 — 예: 빌드에 포함된 테이블 버전 메타데이터로 교체
             Revisions = TableNames.ToDictionary(n => n, _ => 1);
         }
 
