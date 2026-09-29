@@ -6,7 +6,7 @@ namespace Game.Core
     public struct EnemyPrefabEntry
     {
         public EnemyType Type;
-        public EnemyView Prefab;
+        public Enemy Prefab;
         public float Speed; // 해당 프리팹의 이동 속도
     }
 }

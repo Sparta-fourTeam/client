@@ -10,19 +10,19 @@ namespace Game.Tests
 {
     public class EnemySpawnerTests
     {
-        private class FakeEnemyViewFactory : IEnemyViewFactory
+        private class FakeEnemyViewFactory : IEnemyFactory
         {
             private readonly float _speed;
 
             public int CreateCallCount;
-            public Enemy LastCreatedEnemy;
+            public EnemyModel LastCreatedEnemy;
 
             public FakeEnemyViewFactory(float speed) => _speed = speed;
 
-            public Enemy Create(Vector2 spawnPosition, EnemyType type)
+            public EnemyModel Create(Vector2 spawnPosition, EnemyType type)
             {
                 CreateCallCount++;
-                LastCreatedEnemy = new Enemy(spawnPosition, _speed, type);
+                LastCreatedEnemy = new EnemyModel(spawnPosition, _speed, type);
 
                 return LastCreatedEnemy;
             }
