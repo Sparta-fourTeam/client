@@ -1,3 +1,4 @@
+using Game.Core;
 using Game.Core.Defense;
 using Game.Core.Stage;
 using VContainer;
@@ -11,6 +12,7 @@ namespace Game.Boot
         {
             builder.RegisterComponentInHierarchy<Wall>();
             builder.RegisterEntryPoint<StageJudge>();
+            builder.RegisterEntryPoint<WaveProgress>();
         }
     }
 }
