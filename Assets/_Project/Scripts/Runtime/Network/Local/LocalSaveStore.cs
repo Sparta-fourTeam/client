@@ -34,6 +34,9 @@ namespace Game.Network
         private static readonly JsonSerializerSettings ReplaceCollections =
             new JsonSerializerSettings { ObjectCreationHandling = ObjectCreationHandling.Replace };
 
+        /// <summary>저장 파일이 이미 있는지(기존 계정인지) 확인한다</summary>
+        public bool Exists() => File.Exists(_filePath);
+
         /// <summary>파일이 없으면 기본값의 LocalSave를 반환한다</summary>
         public LocalSave Load()
         {

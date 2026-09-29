@@ -14,5 +14,7 @@ namespace Game.Core
 
         public TValue GetOrThrow(TKey key) =>
             _map.TryGetValue(key, out var v) ? v : throw new ApiException(ApiErrorKind.Rejected, "UNKNOWN_DATA_ID");
+
+        public bool Contains(TKey key) => _map.ContainsKey(key);
     }
 }

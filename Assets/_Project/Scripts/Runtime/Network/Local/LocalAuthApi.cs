@@ -1,3 +1,4 @@
+using System;
 using Cysharp.Threading.Tasks;
 using Game.Core;
 
@@ -7,15 +8,25 @@ namespace Game.Network
     public sealed class LocalAuthApi : IAuthApi
     {
         private readonly LocalSaveStore _store;
+        private readonly GameDataStore _data;
 
-        public LocalAuthApi(LocalSaveStore store)
+        public LocalAuthApi(LocalSaveStore store, GameDataStore data)
         {
             _store = store;
+            _data = data;
         }
 
         public UniTask<LoginResponse> Login()
         {
+            bool isNewAccount = !_store.Exists();
             var save = _store.Load();
+
+            if (isNewAccount)
+            {
+                save.wallet.energyStored = _data.Energy.Max;
+                save.wallet.energyUpdatedAt = DateTime.UtcNow.ToString("O");
+            }
+
             _store.Flush(save);
             // TODO(server): 토큰/리비전 하드코딩 — 예: 실제 로그인 응답의 accessToken/dataRevision으로 교체
             return UniTask.FromResult(new LoginResponse { accessToken = "local-dev-token", dataRevision = 1 });

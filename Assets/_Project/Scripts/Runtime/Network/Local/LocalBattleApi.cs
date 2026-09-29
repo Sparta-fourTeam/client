@@ -16,10 +16,16 @@ namespace Game.Network
             _data = data;
         }
 
+        // TODO(server): dataRevision 미사용 — 서버 연동 시 최신 테이블 버전과 다르면 DATA_OUTDATED로 거절
         public UniTask<StartBattleResponse> StartBattle(int stageId, int dataRevision)
         {
             var save = _store.Load();
             _data.Stages.GetOrThrow(stageId);
+
+            if (!save.stageProgress.Exists(p => p.stageId == stageId))
+            {
+                throw new ApiException(ApiErrorKind.Rejected, "STAGE_LOCKED");
+            }
 
             var (current, _) = EnergyRule.At(save.wallet.energyStored,
                 EnergyRule.ParseUpdatedAt(save.wallet.energyUpdatedAt), DateTime.UtcNow, _data.Energy);
@@ -74,14 +80,14 @@ namespace Game.Network
 
             if (req.cleared)
             {
-                ApplyClearRating(save, battle.stageId, req.wallHpPercent);
+                ApplyClearRating(save, battle.stageId, req.wallHpPercent, _data.Stages);
             }
 
             _store.Flush(save);
             return UniTask.FromResult(new SubmitResultResponse { cleared = req.cleared, rewardGold = reward });
         }
 
-        private static void ApplyClearRating(LocalSave save, int stageId, int wallHpPercent)
+        private static void ApplyClearRating(LocalSave save, int stageId, int wallHpPercent, Table<int, StageDefinition> stages)
         {
             int rating = wallHpPercent >= 100 ? 3 : wallHpPercent >= 50 ? 2 : 1;
 
@@ -91,7 +97,7 @@ namespace Game.Network
                 progress.clearRating = rating;
             }
 
-            if (!save.stageProgress.Exists(p => p.stageId == stageId + 1))
+            if (stages.Contains(stageId + 1) && !save.stageProgress.Exists(p => p.stageId == stageId + 1))
             {
                 save.stageProgress.Add(new StageProgressRow { stageId = stageId + 1, clearRating = 0 });
             }

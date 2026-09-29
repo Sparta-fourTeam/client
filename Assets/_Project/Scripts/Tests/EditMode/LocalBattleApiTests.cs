@@ -61,6 +61,31 @@ namespace Game.Tests
             Assert.AreEqual("INSUFFICIENT_ENERGY", ex.Code);
         }
 
+        [Test(Description = "진행 기록이 없는 스테이지는 STAGE_LOCKED로 거절한다")]
+        public void StartBattle_StageWithoutProgress_ThrowsStageLocked()
+        {
+            SeedEnergy(10);
+
+            var ex = Assert.Throws<ApiException>(() => _api.StartBattle(2, 1).GetAwaiter().GetResult());
+
+            Assert.AreEqual("STAGE_LOCKED", ex.Code);
+        }
+
+        [Test(Description = "마지막 스테이지를 클리어해도 테이블에 없는 다음 스테이지의 진행 기록은 만들지 않는다")]
+        public void SubmitResult_ClearingLastStage_DoesNotCreateProgressForMissingNextStage()
+        {
+            SeedEnergy(10);
+            var save = _store.Load();
+            save.stageProgress.Add(new StageProgressRow { stageId = 3, clearRating = 0 });
+            _store.Flush(save);
+            var start = _api.StartBattle(3, 1).GetAwaiter().GetResult();
+
+            _api.SubmitResult(new SubmitResultRequest { battleId = start.battleId, cleared = true, wallHpPercent = 100 })
+                .GetAwaiter().GetResult();
+
+            Assert.IsFalse(_store.Load().stageProgress.Exists(p => p.stageId == 4));
+        }
+
         [Test(Description = "존재하지 않는 battleId로 결과를 제출하면 INVALID_ID로 거절한다")]
         public void SubmitResult_UnknownBattleId_ThrowsInvalidId()
         {
