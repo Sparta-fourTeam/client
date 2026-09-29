@@ -1,5 +1,4 @@
 using System;
-using System.Globalization;
 
 namespace Game.Core
 {
@@ -20,11 +19,7 @@ namespace Game.Core
         public int EnergyStored => _snapshot.energyStored;
 
         /// <summary>energyUpdatedAt을 UTC로 해석한다. Apply 전(값 없음)에는 DateTime.UtcNow를 반환한다</summary>
-        public DateTime EnergyUpdatedAt =>
-            string.IsNullOrEmpty(_snapshot.energyUpdatedAt)
-                ? DateTime.UtcNow
-                : DateTime.Parse(_snapshot.energyUpdatedAt, CultureInfo.InvariantCulture,
-                    DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal);
+        public DateTime EnergyUpdatedAt => EnergyRule.ParseUpdatedAt(_snapshot.energyUpdatedAt);
 
         public EnergyConfig EnergyConfig => _data.Energy;
 
