@@ -14,6 +14,8 @@ namespace Game.Boot
             builder.RegisterComponentInHierarchy<Wall>();
             builder.RegisterEntryPoint<StageJudge>();
             builder.RegisterEntryPoint<WaveProgress>();
+
+            builder.RegisterEntryPoint<BattleStats>().AsSelf();
         }
     }
 }
