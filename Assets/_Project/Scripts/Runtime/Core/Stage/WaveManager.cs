@@ -64,7 +64,7 @@ namespace Game.Core.Stage
             WavePlan plan = _waves[waveIndex];
             bool isFinalWave = waveIndex == _waves.Count - 1;
 
-            _waveStartedPublisher.Publish(new WaveStarted(waveIndex, plan.EnemyCount, isFinalWave));
+            _waveStartedPublisher.Publish(new WaveStarted(waveIndex + 1, plan.EnemyCount, isFinalWave));
         }
 
         // TODO : 현재는 하드코딩, 추후 데이터 연동시 수정할 수 있음.
