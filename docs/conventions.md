@@ -15,7 +15,7 @@
 
 - `Time.timeScale`은 StageManager만 바꾼다
 - 팝업 연출과 Local 백엔드 지연은 unscaled time을 쓴다 (`UniTask.Delay(..., ignoreTimeScale: true)`)
-- 클리어·실패 판정은 StageJudge 한 곳에서, `LateTick`에 한 번만 한다
+- 클리어·실패 판정은 StageJudge 한 곳에서, 먼저 도착한 신호로 판당 한 번만 한다. 매 프레임 확인하지 않고 메시지를 받을 때 판정한다
 - 엔트리포인트끼리 실행 순서에 기대지 않는다. 순서가 필요하면 메시지나 명시적 호출로 연결한다
 
 ## 메시지

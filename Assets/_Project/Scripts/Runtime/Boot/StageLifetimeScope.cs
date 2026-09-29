@@ -1,4 +1,5 @@
 using Game.Core.Defense;
+using Game.Core.Stage;
 using VContainer;
 using VContainer.Unity;
 
@@ -9,6 +10,7 @@ namespace Game.Boot
         protected override void Configure(IContainerBuilder builder)
         {
             builder.RegisterComponentInHierarchy<Wall>();
+            builder.RegisterEntryPoint<StageJudge>();
         }
     }
 }
