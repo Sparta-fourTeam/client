@@ -157,8 +157,7 @@ namespace Game.Tests
             return new EnemySpawnConfig(
                 spawnIntervalMin: 0.1f,
                 spawnIntervalMax: 0.5f,
-                spawnCooldown: 3f,
-                enemyType: EnemyType.Normal);
+                spawnCooldown: 3f);
         }
 
         // 스포너와 무관하게 쓰는 더미 적

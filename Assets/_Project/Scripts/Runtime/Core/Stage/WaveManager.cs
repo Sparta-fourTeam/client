@@ -64,7 +64,7 @@ namespace Game.Core.Stage
             WavePlan plan = _waves[waveIndex];
             bool isFinalWave = waveIndex == _waves.Count - 1;
 
-            _waveStartedPublisher.Publish(new WaveStarted(waveIndex + 1, plan.EnemyCount, isFinalWave));
+            _waveStartedPublisher.Publish(new WaveStarted(waveIndex + 1, plan.EnemyCount, isFinalWave, plan.MaxEliteCount, plan.MaxBossCount));
         }
 
         // TODO : 현재는 하드코딩, 추후 데이터 연동시 수정할 수 있음.
@@ -73,18 +73,22 @@ namespace Game.Core.Stage
             return new List<WavePlan>
             {
                 new WavePlan(enemyCount: 5),
-                new WavePlan(enemyCount: 8),
-                new WavePlan(enemyCount: 10),
+                new WavePlan(enemyCount: 8,  maxEliteCount: 2),
+                new WavePlan(enemyCount: 10, maxBossCount: 1),
             };
         }
 
         private readonly struct WavePlan
         {
             public int EnemyCount { get; }
+            public int MaxEliteCount { get; }
+            public int MaxBossCount { get; }
 
-            public WavePlan(int enemyCount)
+            public WavePlan(int enemyCount, int maxEliteCount = 0, int maxBossCount = 0)
             {
                 EnemyCount = enemyCount;
+                MaxEliteCount = maxEliteCount;
+                MaxBossCount = maxBossCount;
             }
         }
     }

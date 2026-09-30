@@ -33,6 +33,8 @@ namespace Game.Core
         private bool _isWaitingForNextSpawn; // 다음 스폰 기다리는 상태
 
         private float _nextSpawnInterval;
+        private int _remainingElite; // 남은 엘리트 몬스터 수
+        private int _remainingBoss; // 남은 보스 몬스터 수
 
         public EnemySpawner(
             IEnemyFactory enemyViewFactory,
@@ -122,6 +124,8 @@ namespace Game.Core
             _elapsedTime = 0f;
             _spawnedCountInOnceSpawn = 0;
             _isWaitingForNextSpawn = false;
+            _remainingElite = message.MaxEliteCount;
+            _remainingBoss = message.MaxBossCount;
         }
 
         private void OnWaveGaugeFilled(WaveGaugeFilled message)
@@ -129,7 +133,25 @@ namespace Game.Core
             _isSpawningAllowed = false;
         }
 
-        // WaveData의 타입 그대로 쓰고 위치는 SpawnArea의 현재 범위에서 매번 새로 뽑는다
+        private EnemyType PickEnemyType()
+        {
+            if(_remainingBoss > 0)
+            {
+                _remainingBoss--;
+                return EnemyType.Boss;
+            }
+
+            if(_remainingElite > 0 && _randomProvider.Range(0f, 1f) < _enemySpawnConfig.EliteSpawnChance)
+            {
+                _remainingElite--;
+                return EnemyType.Elite;
+            }
+
+            return EnemyType.Normal;
+        }
+
+
+        // PickEnemyType으로 타입을 고르고 위치는 SpawnArea의 현재 범위에서 매번 새로 뽑는다
         private void Spawn()
         {
             var min = _spawnArea.Min;
@@ -137,7 +159,7 @@ namespace Game.Core
             var spawnX = _randomProvider.Range(min.x, max.x);
             var spawnY = _randomProvider.Range(min.y, max.y);
             var spawnPosition = new Vector2(spawnX, spawnY);
-            var enemy = _enemyViewFactory.Create(spawnPosition, _enemySpawnConfig.EnemyType);
+            var enemy = _enemyViewFactory.Create(spawnPosition, PickEnemyType());
 
             _activeEnemies.Add(enemy);
             _spawnedCountInOnceSpawn++;
