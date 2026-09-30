@@ -16,13 +16,20 @@ namespace Game.Tests
 
             public int CreateCallCount;
             public EnemyModel LastCreatedEnemy;
+            public readonly List<EnemyModel> Created = new();
+
+            // 채워두면 스폰 위치 대신 이 위치를 순서대로 사용 (GetNearest 테스트용)
+            public readonly Queue<Vector2> PositionOverrides = new();
 
             public FakeEnemyViewFactory(float speed) => _speed = speed;
 
             public EnemyModel Create(Vector2 spawnPosition, EnemyType type)
             {
+                var position = PositionOverrides.Count > 0 ? PositionOverrides.Dequeue() : spawnPosition;
+
                 CreateCallCount++;
-                LastCreatedEnemy = new EnemyModel(spawnPosition, _speed, type);
+                LastCreatedEnemy = new EnemyModel(position, _speed, type);
+                Created.Add(LastCreatedEnemy);
 
                 return LastCreatedEnemy;
             }
@@ -93,6 +100,38 @@ namespace Game.Tests
             var go = new GameObject("SpawnArea");
             return go.AddComponent<SpawnArea>();
         }
+
+        // 지정한 위치에 적을 스폰해 둔 스포너. 속도 0이라 적이 움직이지 않음
+        private static EnemySpawner CreateSpawnerWithEnemies(params Vector2[] positions)
+        {
+            var factory = new FakeEnemyViewFactory(0f);
+            foreach (var position in positions)
+            {
+                factory.PositionOverrides.Enqueue(position);
+            }
+
+            var waveStarted = new FakeSubscriber<WaveStarted>();
+            var spawner = new EnemySpawner(
+                factory,
+                CreateTestWaveData(),
+                CreateTestSpawnArea(),
+                new FakeRandomProvider(1f), // 스폰 간격 1초
+                waveStarted,
+                new FakeSubscriber<WaveGaugeFilled>());
+            spawner.Initialize();
+
+            // 버스트를 넉넉히 줘서 쿨다운 없이 1초마다 1마리씩 스폰
+            waveStarted.Publish(new WaveStarted(waveIndex: 1, enemyCount: 10, isFinalWave: false));
+            for (int i = 0; i < positions.Length; i++)
+            {
+                spawner.Advance(1f);
+            }
+
+            Assert.AreEqual(positions.Length, factory.CreateCallCount); // 준비 확인
+            return spawner;
+        }
+
+
 
         [Test]
         public void Advance_BeforeWaveStarted_DoesNotSpawn()
@@ -230,6 +269,125 @@ namespace Game.Tests
 
             spawner.Advance(1f); // 다음 스폰 간격 지남 -> 다음 버스트의 1번째 스폰 -> 계속 반복돼야 함
             Assert.AreEqual(3, factory.CreateCallCount);
+        }
+
+
+
+        // 가까운 적 관련 테스트
+        [Test]
+        public void GetNearest_NoEnemies_ReturnsZeroAndEmptyResults()
+        {
+            var provider = CreateSpawnerWithEnemies();
+            var results = new List<IEnemyTarget>();
+
+            int filled = provider.GetNearest(Vector2.zero, 3, results);
+
+            Assert.AreEqual(0, filled);
+            Assert.AreEqual(0, results.Count);
+        }
+
+        [Test]
+        public void GetNearest_ClearsResultsFirst()
+        {
+            var provider = CreateSpawnerWithEnemies(new Vector2(0f, 1f));
+            var stale = new EnemyModel(Vector2.zero, 0f, EnemyType.Normal);
+            var results = new List<IEnemyTarget> { stale, stale }; // 이전 결과가 남아 있는 상태
+
+            int filled = provider.GetNearest(Vector2.zero, 3, results);
+
+            Assert.AreEqual(1, filled);
+            Assert.AreEqual(1, results.Count);
+            CollectionAssert.DoesNotContain(results, stale);
+        }
+
+        [Test]
+        public void GetNearest_SortsByDistanceFromOrigin()
+        {
+            var provider = CreateSpawnerWithEnemies(
+                new Vector2(0f, 10f),
+                new Vector2(0f, 2f),
+                new Vector2(0f, 5f));
+            var results = new List<IEnemyTarget>();
+
+            int filled = provider.GetNearest(Vector2.zero, 3, results);
+
+            Assert.AreEqual(3, filled);
+            Assert.AreEqual(2f, results[0].Position.y, 0.0001f);
+            Assert.AreEqual(5f, results[1].Position.y, 0.0001f);
+            Assert.AreEqual(10f, results[2].Position.y, 0.0001f);
+        }
+
+        [Test]
+        public void GetNearest_LimitsToCount_KeepsClosest()
+        {
+            var provider = CreateSpawnerWithEnemies(
+                new Vector2(0f, 10f),
+                new Vector2(0f, 2f),
+                new Vector2(0f, 5f));
+            var results = new List<IEnemyTarget>();
+
+            int filled = provider.GetNearest(Vector2.zero, 2, results);
+
+            Assert.AreEqual(2, filled);
+            Assert.AreEqual(2, results.Count);
+            Assert.AreEqual(2f, results[0].Position.y, 0.0001f);
+            Assert.AreEqual(5f, results[1].Position.y, 0.0001f);
+        }
+
+        [Test]
+        public void GetNearest_CountGreaterThanEnemies_ReturnsAllEnemies()
+        {
+            var provider = CreateSpawnerWithEnemies(
+                new Vector2(0f, 1f),
+                new Vector2(0f, 2f));
+            var results = new List<IEnemyTarget>();
+
+            int filled = provider.GetNearest(Vector2.zero, 10, results);
+
+            Assert.AreEqual(2, filled);
+            Assert.AreEqual(2, results.Count);
+        }
+
+        [TestCase(0)]
+        [TestCase(-1)]
+        public void GetNearest_NonPositiveCount_ReturnsZeroAndEmptyResults(int count)
+        {
+            var provider = CreateSpawnerWithEnemies(new Vector2(0f, 1f));
+            var stale = new EnemyModel(Vector2.zero, 0f, EnemyType.Normal);
+            var results = new List<IEnemyTarget> { stale };
+
+            int filled = provider.GetNearest(Vector2.zero, count, results);
+
+            Assert.AreEqual(0, filled);
+            Assert.AreEqual(0, results.Count); // count가 0 이하여도 비우는 건 해야 함
+        }
+
+        [Test]
+        public void GetNearest_UsesBothXAndYDistance()
+        {
+            var provider = CreateSpawnerWithEnemies(
+                new Vector2(0f, 0f),  // from(5,0)까지 거리 5
+                new Vector2(5f, 3f)); // from(5,0)까지 거리 3
+            var results = new List<IEnemyTarget>();
+
+            provider.GetNearest(new Vector2(5f, 0f), 1, results);
+
+            Assert.AreEqual(new Vector2(5f, 3f), results[0].Position);
+        }
+
+        [Test]
+        public void GetNearest_CalledTwice_ReturnsSameResult()
+        {
+            var provider = CreateSpawnerWithEnemies(
+                new Vector2(0f, 3f),
+                new Vector2(0f, 1f));
+            var first = new List<IEnemyTarget>();
+            var second = new List<IEnemyTarget>();
+
+            provider.GetNearest(Vector2.zero, 2, first);
+            provider.GetNearest(Vector2.zero, 2, second);
+
+            CollectionAssert.AreEqual(first, second); // 같은 적, 같은 순서
         }
     }
 }

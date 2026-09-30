@@ -7,7 +7,7 @@ using VContainer.Unity;
 
 namespace Game.Core
 {
-    public class EnemySpawner : IInitializable, IDisposable, ITickable
+    public class EnemySpawner : IInitializable, IDisposable, ITickable, IEnemyTargetProvider
     {
         private readonly IEnemyFactory _enemyViewFactory;
         private readonly EnemySpawnConfig _enemySpawnConfig;
@@ -18,6 +18,7 @@ namespace Game.Core
 
         // TODO : 적 제거 (사망 / 화면 밖 이탈) 로직 붙일 때 처리 예정 
         private readonly List<EnemyModel> _activeEnemies = new();
+
 
         private IDisposable _subscriptions;
         private bool _isSpawningAllowed;
@@ -146,6 +147,25 @@ namespace Game.Core
             {
                 enemy.Move(deltaTime);
             }
+        }
+
+        public int GetNearest(Vector2 from, int count, List<IEnemyTarget> results)
+        {
+            results.Clear();
+            if (count <= 0)
+            {
+                return 0;
+            }
+
+            results.AddRange(_activeEnemies);
+            results.Sort((a, b) => (a.Position - from).sqrMagnitude.CompareTo((b.Position - from).sqrMagnitude));
+
+            if (results.Count > count)
+            {
+                results.RemoveRange(count, results.Count - count);
+            }
+
+            return results.Count;
         }
     }
 }
