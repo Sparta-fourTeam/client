@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Game.Core
 {
-    public class EnemyModel
+    public class EnemyModel : IEnemyTarget
     {
         // 아래쪽 방향으로 이동.
         private static readonly Vector2 _moveDirection = Vector2.down;
@@ -24,6 +24,10 @@ namespace Game.Core
         public void Move(float deltaTime)
         {
             Position += _moveDirection * (_speed * deltaTime);
+        }
+
+        public void TakeDamage(int amount)
+        {
         }
     }
 }
