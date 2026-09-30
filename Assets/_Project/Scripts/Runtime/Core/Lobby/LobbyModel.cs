@@ -5,7 +5,7 @@ using VContainer.Unity;
 
 namespace Game.Core
 {
-    public class LobbyModel : IStartable, IDisposable
+    public sealed class LobbyModel : IStartable, IDisposable
     {
         private readonly PlayerProfile _profile;
         private readonly IBufferedPublisher<WalletChanged> _walletChangedPublisher;
@@ -27,7 +27,7 @@ namespace Game.Core
             _profile.Changed -= OnProfileChanged;
         }
 
-        public void OnProfileChanged(PlayerProfile profile)
+        private void OnProfileChanged(PlayerProfile profile)
         {
             _walletChangedPublisher.Publish(new WalletChanged(profile.Gold));
         }

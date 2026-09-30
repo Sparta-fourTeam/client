@@ -1,4 +1,3 @@
-// Assets/_Project/Scripts/Tests/EditMode/EnergyClockTests.cs
 using System;
 using System.Collections.Generic;
 using Game.Core;
