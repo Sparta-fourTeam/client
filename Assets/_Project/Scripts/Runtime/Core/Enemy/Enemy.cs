@@ -12,12 +12,12 @@ namespace Game.Core
         private IDisposable _subscriptions;
 
         public void Bind(EnemyModel enemyModel,
-            EnemyProjectile proejctilePrefab,
+            EnemyProjectile projectilePrefab,
             ISubscriber<EnemyHpChanged> hpChanged,
             ISubscriber<EnemyDied> died)
         {
             _enemyModel = enemyModel;
-            _projectilePrefab = proejctilePrefab;
+            _projectilePrefab = projectilePrefab;
             _enemyModel.ProjectileFired += OnProjectileFired;
 
             var bag = DisposableBag.CreateBuilder();
