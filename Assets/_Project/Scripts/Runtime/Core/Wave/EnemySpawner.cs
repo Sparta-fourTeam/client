@@ -16,7 +16,8 @@ namespace Game.Core
         private readonly ISubscriber<WaveStarted> _waveStartedSubscriber;
         private readonly ISubscriber<WaveGaugeFilled> _waveGaugeFilledSubscriber;
 
-        // TODO : 적 제거 (사망 / 화면 밖 이탈) 로직 붙일 때 처리 예정 
+        // 필드에 있는 적
+        // 죽은 적은 다음 Tick에 제거, EnemyDied는 EnemyModel이 발행
         private readonly List<EnemyModel> _activeEnemies = new();
 
 
@@ -143,9 +144,15 @@ namespace Game.Core
 
         private void MoveActiveEnemies(float deltaTime)
         {
-            foreach (var enemy in _activeEnemies)
+            for (int i = _activeEnemies.Count - 1; i >= 0; i--)
             {
-                enemy.Move(deltaTime);
+                if (_activeEnemies[i].IsDead)
+                {
+                    _activeEnemies.RemoveAt(i);
+                    continue;
+                }
+
+                _activeEnemies[i].Move(deltaTime);
             }
         }
 
@@ -157,7 +164,14 @@ namespace Game.Core
                 return 0;
             }
 
-            results.AddRange(_activeEnemies);
+            foreach(var enemy in _activeEnemies)
+            {
+                if(!enemy.IsDead)
+                {
+                    results.Add(enemy);
+                }
+            }
+
             results.Sort((a, b) => (a.Position - from).sqrMagnitude.CompareTo((b.Position - from).sqrMagnitude));
 
             if (results.Count > count)

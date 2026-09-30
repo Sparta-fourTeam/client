@@ -8,5 +8,6 @@ namespace Game.Core
         public EnemyType Type;
         public Enemy Prefab;
         public float Speed; // 해당 프리팹의 이동 속도
+        public int MaxHp;
     }
 }
