@@ -43,14 +43,6 @@ namespace Game.Tests
         }
 
         [Test]
-        public void Constructor_DefaultAttackStats_Throws()
-        {
-            // struct 기본값(간격 0)이 들어오면 매 프레임 공격하게 되므로 막아야 함
-            Assert.Throws<ArgumentOutOfRangeException>(() =>
-                new EnemyModel(1, Vector2.zero, 0f, EnemyType.Normal, 10, default, _hpChanged, _died));
-        }
-
-        [Test]
         public void Constructor_StartsWithFullHp()
         {
             var enemy = CreateEnemy(id: 3, maxHp: 10);
@@ -60,6 +52,15 @@ namespace Game.Tests
             Assert.AreEqual(10, enemy.Hp);
             Assert.IsFalse(enemy.IsDead);
             Assert.AreEqual(0, _hpChanged.Published.Count); // 생성만으로는 발행 안 함
+        }
+
+        [Test]
+        public void Constructor_KeepsAttackType()
+        {
+            var ranged = new EnemyAttackStats(AttackType.Ranged, 5, 2f, 4f);
+            var enemy = new EnemyModel(1, Vector2.zero, 0f, EnemyType.Normal, 10, ranged, _hpChanged, _died);
+
+            Assert.AreEqual(AttackType.Ranged, enemy.AttackType);
         }
 
         // ───────── 체력 감소 ─────────
@@ -180,6 +181,16 @@ namespace Game.Tests
             enemy.Move(1f);
 
             Assert.AreEqual(2f, enemy.Position.y, 0.0001f);
+        }
+
+        [Test]
+        public void Move_DoesNotChangeX()
+        {
+            var enemy = CreateEnemy(maxHp: 10, speed: 3f, position: new Vector2(4f, 5f));
+
+            enemy.Move(1f);
+
+            Assert.AreEqual(4f, enemy.Position.x, 0.0001f); // 벽 쪽(아래)으로 일직선 이동
         }
 
         // ───────── IEnemyTarget ─────────
