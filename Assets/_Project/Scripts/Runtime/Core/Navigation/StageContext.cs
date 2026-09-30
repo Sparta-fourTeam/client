@@ -5,6 +5,15 @@ namespace Game.Core
     {
         public int StageId { get; private set; }
 
+        public string BattleId { get; private set; }
+        public int Seed { get; private set; }
+
         public void Set(int stageId) => StageId = stageId;
+
+        public void SetBattle(string battleId, int seed)
+        {
+            BattleId = battleId;
+            Seed = seed;
+        }
     }
 }

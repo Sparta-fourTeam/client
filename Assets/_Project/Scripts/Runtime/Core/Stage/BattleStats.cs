@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Game.Core.Messages;
 using MessagePipe;
 using UnityEngine;
@@ -9,8 +10,9 @@ namespace Game.Core
     public sealed class BattleStats : IInitializable, ITickable, IDisposable
     {
         private readonly ISubscriber<EnemyDied> _enemyDiedSubscriber;
-        private readonly ISubscriber<WaveGaugeChanged> _waveGaugeChangedSubscriber;
+        private readonly ISubscriber<WaveGaugeChanged> _waveGaugeChangedSubscriber; // todo 웨이브 게이지 채워질때마다 판단하디말고 다 채워졌을때
         private readonly ISubscriber<StageEnded> _stageEndedSubscriber;
+        private readonly ISubscriber<WallHpChanged> _wallHpChanged;
 
         private IDisposable _subscriptions;
 
@@ -18,15 +20,20 @@ namespace Game.Core
         public int ReachedWave { get; private set; }
         public float PlayTime { get; private set; }
         public bool IsEnded { get; private set; }
+        public int WallHpPercent { get; private set; } = 100;
+        public int CompletedWaves => Math.Max(0, ReachedWave - 1);
+        public List<string> BuildLog { get; } = new();
 
         public BattleStats(
             ISubscriber<EnemyDied> enemyDiedSubscriber,
             ISubscriber<WaveGaugeChanged> waveGaugeChangedSubscriber,
-            ISubscriber<StageEnded> stageEndedSubscriber)
+            ISubscriber<StageEnded> stageEndedSubscriber,
+            ISubscriber<WallHpChanged> wallHpChanged)
         {
             _enemyDiedSubscriber = enemyDiedSubscriber;
             _waveGaugeChangedSubscriber = waveGaugeChangedSubscriber;
             _stageEndedSubscriber = stageEndedSubscriber;
+            _wallHpChanged = wallHpChanged;
         }
 
         public void Initialize()
@@ -35,6 +42,7 @@ namespace Game.Core
             _enemyDiedSubscriber.Subscribe(_ => OnEnemyDied()).AddTo(bag);
             _waveGaugeChangedSubscriber.Subscribe(OnWaveGaugeChanged).AddTo(bag);
             _stageEndedSubscriber.Subscribe(_ => IsEnded = true).AddTo(bag);
+            _wallHpChanged.Subscribe(e => WallHpPercent = e.Max <= 0 ? 0 : e.Current * 100 / e.Max).AddTo(bag);
             _subscriptions = bag.Build();
         }
 
@@ -52,6 +60,11 @@ namespace Game.Core
             }
 
             PlayTime += deltaTime;
+        }
+
+        public void RecordCard(string cardId)
+        {
+            BuildLog.Add(cardId);
         }
 
         public void Dispose()
