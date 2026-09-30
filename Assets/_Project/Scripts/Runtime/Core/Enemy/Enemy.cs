@@ -40,7 +40,9 @@ namespace Game.Core
         private void OnProjectileFired(EnemyProjectileModel projectile)
         {
             if (_projectilePrefab == null)
+            {
                 return;
+            }
 
             var view = Instantiate(_projectilePrefab, projectile.Position, Quaternion.identity);
             view.Bind(projectile);
@@ -49,22 +51,34 @@ namespace Game.Core
         private void OnHpChanged(EnemyHpChanged message)
         {
             if (message.EnemyId != _enemyModel.Id)
+            {
                 return;
+            }
         }
 
         private void OnDied(EnemyDied message)
         {
             if (message.EnemyId != _enemyModel.Id)
+            {
                 return;
+            }
+
             Destroy(gameObject);
         }
 
         private void OnDestroy()
         {
-            if(_enemyModel != null)
+            if (_enemyModel != null)
+            {
                 _enemyModel.ProjectileFired -= OnProjectileFired;
+            }
 
             _subscriptions?.Dispose();
+        }
+
+        public void TakeDamage(int damage)
+        {
+            _enemyModel.TakeDamage(damage);
         }
     }
 }
