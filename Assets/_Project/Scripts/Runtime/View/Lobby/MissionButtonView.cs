@@ -1,3 +1,5 @@
+using Cysharp.Threading.Tasks;
+using Game.Core;
 using Game.Core.Messages;
 using MessagePipe;
 using TMPro;
@@ -14,14 +16,26 @@ namespace Game.View
         [SerializeField] private MissionScreenView _missionScreen;   // 씬의 MissionScreen을 연결
 
         [Inject]
-        public void Construct(IBufferedSubscriber<ProgressChanged> progressChanged)
+        public void Construct(IBufferedSubscriber<ProgressChanged> progressChanged, LobbyProfileRefresher refresher)
         {
             Track(progressChanged.Subscribe(OnProgressChanged));
+            EnableWhenLoaded(refresher).Forget();
         }
 
         private void Awake()
         {
+            // 전투에서 돌아온 직후엔 해금 정보가 이전 값이라, 프로필을 다시 받을 때까지 막는다
+            _button.interactable = false;
             _button.onClick.AddListener(() => _missionScreen.Open());
+        }
+
+        private async UniTaskVoid EnableWhenLoaded(LobbyProfileRefresher refresher)
+        {
+            await refresher.WhenLoaded;
+            if (this != null)
+            {
+                _button.interactable = true;
+            }
         }
 
         private void OnProgressChanged(ProgressChanged message)
