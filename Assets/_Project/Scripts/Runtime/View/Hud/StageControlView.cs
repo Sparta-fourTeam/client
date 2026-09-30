@@ -31,6 +31,9 @@ namespace Game.View
 
         private void Awake()
         {
+            // 첫 StageStateChanged가 오기 전까지는 누를 수 없게 시작한다
+            _speedButton.interactable = false;
+            _pauseButton.interactable = false;
             _speedButton.onClick.AddListener(OnSpeedClicked);
             _pauseButton.onClick.AddListener(() => _stageManager.Pause());
             UpdateSpeedLabel();
