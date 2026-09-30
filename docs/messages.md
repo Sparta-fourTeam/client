@@ -33,7 +33,7 @@
 | `EnergyChanged` | Buffered | EnergyClock |
 | `UpgradeChanged` | 사건 | UpgradeService |
 | `ProgressChanged` | Buffered | LobbyModel |
-| `LobbyRequestFailed` | 사건 | UpgradeService, EnergyClock |
+| `LobbyRequestFailed` | 사건 | UpgradeService, EnergyRecovery |
 
 로비 메시지(`WalletChanged`, `EnergyChanged`, `UpgradeChanged`, `ProgressChanged`, `LobbyRequestFailed`)는 새 파일 `Core/Messages/LobbyMessages.cs`에 둔다.
 

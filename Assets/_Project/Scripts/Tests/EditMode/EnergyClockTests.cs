@@ -14,6 +14,11 @@ namespace Game.Tests
             public DateTime UtcNow { get; set; }
         }
 
+        private sealed class FakeEnergyApi
+        {
+
+        }
+
         private static readonly DateTime T0 = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         private FakeClock _clock;

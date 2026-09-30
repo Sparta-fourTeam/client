@@ -9,8 +9,11 @@ namespace Game.Boot
         protected override void Configure(IContainerBuilder builder)
         {
             builder.Register<IUtcClock, SystemUtcClock>(Lifetime.Singleton);
+            builder.RegisterEntryPoint<LobbyProfileRefresher>().AsSelf();
             builder.RegisterEntryPoint<LobbyModel>();
             builder.RegisterEntryPoint<EnergyClock>();
+            builder.Register<BattleLauncher>(Lifetime.Scoped);
+            builder.Register<EnergyRecovery>(Lifetime.Scoped);
         }
     }
 }

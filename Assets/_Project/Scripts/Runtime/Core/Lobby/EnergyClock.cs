@@ -19,7 +19,9 @@ namespace Game.Core
     {
         private readonly PlayerProfile _profile;
         private readonly IUtcClock _clock;
+        private readonly IEnergyApi _energyApi;
         private readonly IBufferedPublisher<EnergyChanged> _energyChangedPublisher;
+        private readonly IPublisher<LobbyRequestFailed> _requestFailedPublisher;
 
         private int _lastCurrent = -1;
         private int _lastMax = -1;

@@ -9,11 +9,16 @@ namespace Game.Core
     {
         private readonly PlayerProfile _profile;
         private readonly IBufferedPublisher<WalletChanged> _walletChangedPublisher;
+        private readonly IBufferedPublisher<ProgressChanged> _progressChangedPublisher;
 
-        public LobbyModel(PlayerProfile profile, IBufferedPublisher<WalletChanged> walletChangedPublisher)
+        public LobbyModel(
+            PlayerProfile profile,
+            IBufferedPublisher<WalletChanged> walletChangedPublisher,
+            IBufferedPublisher<ProgressChanged> progressChangedPublisher)
         {
             _profile = profile;
             _walletChangedPublisher = walletChangedPublisher;
+            _progressChangedPublisher = progressChangedPublisher;
         }
 
         public void Start()
@@ -30,6 +35,7 @@ namespace Game.Core
         private void OnProfileChanged(PlayerProfile profile)
         {
             _walletChangedPublisher.Publish(new WalletChanged(profile.Gold));
+            _progressChangedPublisher.Publish(new ProgressChanged(profile.HighestUnlockedStage));
         }
     }
 }

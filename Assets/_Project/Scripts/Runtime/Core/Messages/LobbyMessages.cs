@@ -22,5 +22,25 @@ namespace Game.Core.Messages
         }
     }
 
+    public readonly struct ProgressChanged
+    {
+        public int HighestUnlockedStage { get; }
+
+        public ProgressChanged(int highestUnlockedStage)
+        {
+            HighestUnlockedStage = highestUnlockedStage;
+        }
+    }
+
+    /// <summary>로비 요청(에너지 회복 등)이 거절됐다. 발행: EnergyRecovery</summary>
+    public readonly struct LobbyRequestFailed
+    {
+        public string Code { get; }
+
+        public LobbyRequestFailed(string code)
+        {
+            Code = code;
+        }
+    }
 
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 
 namespace Game.Core
 {
@@ -35,6 +36,17 @@ namespace Game.Core
             _snapshot = snap;
             Changed?.Invoke(this);
         }
+
+        /// <summary>진행 기록에 줄이 있으면 해금 (LocalBattleApi의 STAGE_LOCKED 판정과 같은 규칙)</summary>
+        public bool IsStageUnlocked(int stageId) => _snapshot.stageProgress.Exists(s => s.stageId == stageId);
+
+        /// <summary>0 = 클리어 안 함, 1 = 클리어, 2 = 체력 50%, 3 = 체력 100%</summary>
+        public int ClearRating(int stageId) => _snapshot.stageProgress.Find(s => s.stageId == stageId)?.clearRating ?? 0;
+
+        /// <summary>도전 가능한 가장 높은 스테이지. 기록이 없으면 1</summary>
+        public int HighestUnlockedStage =>
+            _snapshot.stageProgress.Count == 0 ? 1 : _snapshot.stageProgress.Max(s => s.stageId);
+
 
         public PlayerSnapshot Snapshot() => _snapshot;
     }
