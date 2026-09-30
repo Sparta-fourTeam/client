@@ -19,6 +19,11 @@ namespace Game.Core.Defense
         public int MaxHp { get; private set; }
         public bool IsDestroyed { get; private set; }
 
+        [SerializeField]
+        private float _attackLineOffset;
+
+        public float AttackLineY => transform.position.y + _attackLineOffset;
+
         [Inject]
         public void Construct(IBufferedPublisher<WallHpChanged> hpChangedPublisher,
             IPublisher<WallDestroyed> destroyedPublisher)

@@ -105,3 +105,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 897cffcf7f4909e47ac58834477ce275, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Game.View::Game.View.Wave.EnemyView
+  _speed: 2
+  _attackType: 0
+  _damage: 5
+  _attackInterval: 1
+  _attackRange: 1.5
+  _projectilePrefab: {fileID: 6940759657125676971, guid: b21e1b571797a984abd123376e5056e5, type: 3}

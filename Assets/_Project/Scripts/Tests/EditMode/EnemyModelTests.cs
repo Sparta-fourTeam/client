@@ -16,6 +16,8 @@ namespace Game.Tests
             public void Publish(T message) => Published.Add(message);
         }
 
+        private static readonly EnemyAttackStats TestAttack = new EnemyAttackStats(AttackType.Melee, 10, 1f, 0f);
+
         private FakePublisher<EnemyHpChanged> _hpChanged;
         private FakePublisher<EnemyDied> _died;
 
@@ -28,7 +30,7 @@ namespace Game.Tests
 
         private EnemyModel CreateEnemy(int id = 1, int maxHp = 10, float speed = 0f, Vector2 position = default)
         {
-            return new EnemyModel(id, position, speed, EnemyType.Normal, maxHp, _hpChanged, _died);
+            return new EnemyModel(id, position, speed, EnemyType.Normal, maxHp, TestAttack, _hpChanged, _died);
         }
 
         // ───────── 생성 ─────────
@@ -50,6 +52,15 @@ namespace Game.Tests
             Assert.AreEqual(10, enemy.Hp);
             Assert.IsFalse(enemy.IsDead);
             Assert.AreEqual(0, _hpChanged.Published.Count); // 생성만으로는 발행 안 함
+        }
+
+        [Test]
+        public void Constructor_KeepsAttackType()
+        {
+            var ranged = new EnemyAttackStats(AttackType.Ranged, 5, 2f, 4f);
+            var enemy = new EnemyModel(1, Vector2.zero, 0f, EnemyType.Normal, 10, ranged, _hpChanged, _died);
+
+            Assert.AreEqual(AttackType.Ranged, enemy.AttackType);
         }
 
         // ───────── 체력 감소 ─────────
@@ -128,7 +139,7 @@ namespace Game.Tests
             var order = new List<string>();
             var hp = new OrderRecorder<EnemyHpChanged>(order, "hp");
             var died = new OrderRecorder<EnemyDied>(order, "died");
-            var enemy = new EnemyModel(1, Vector2.zero, 0f, EnemyType.Normal, 10, hp, died);
+            var enemy = new EnemyModel(1, Vector2.zero, 0f, EnemyType.Normal, 10, TestAttack, hp, died);
 
             enemy.TakeDamage(10);
 
@@ -149,6 +160,8 @@ namespace Game.Tests
             Assert.AreEqual(1, _died.Published.Count); // 사망은 한 번만
         }
 
+        // ───────── 이동 ─────────
+
         [Test]
         public void Move_AfterDeath_DoesNotMove()
         {
@@ -168,6 +181,16 @@ namespace Game.Tests
             enemy.Move(1f);
 
             Assert.AreEqual(2f, enemy.Position.y, 0.0001f);
+        }
+
+        [Test]
+        public void Move_DoesNotChangeX()
+        {
+            var enemy = CreateEnemy(maxHp: 10, speed: 3f, position: new Vector2(4f, 5f));
+
+            enemy.Move(1f);
+
+            Assert.AreEqual(4f, enemy.Position.x, 0.0001f); // 벽 쪽(아래)으로 일직선 이동
         }
 
         // ───────── IEnemyTarget ─────────
