@@ -25,7 +25,7 @@ namespace Game.Core
             this.targetProvider = targetProvider;
         }
 
-        private void Awake()
+        private void Start()
         {
             TestTable();
             AddWeapon(1);
