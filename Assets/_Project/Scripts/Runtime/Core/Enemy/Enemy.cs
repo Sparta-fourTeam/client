@@ -21,5 +21,6 @@ namespace Game.Core
 
             transform.position = _enemyModel.Position;
         }
+
     }
 }

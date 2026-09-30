@@ -12,14 +12,18 @@ namespace Game.Core
         protected float cooldownTimer = 0;
 
         protected IWeaponStats stats;
+        protected IEnemyTargetProvider targetProvider;
         private readonly Dictionary<string, int> acquiredCardCounts = new Dictionary<string, int>();
+        private readonly List<IEnemyTarget> targetBuffer = new List<IEnemyTarget>(TargetCandidateCount);
+        private const int TargetCandidateCount = 8;
 
         public bool IsMaxLevel => Level >= data.maxLevel;
 
-        public WeaponBase(WeaponData data, Transform caster)
+        public WeaponBase(WeaponData data, Transform caster, IEnemyTargetProvider targetProvider)
         {
             this.data = data;
             this.caster = caster;
+            this.targetProvider = targetProvider;
 
             stats = new BaseWeaponStats(data.baseStats);
         }
@@ -41,6 +45,33 @@ namespace Game.Core
         }
 
         protected abstract void OnFire();
+
+        // GetNearest로 뽑은 후보 중 사거리 안에서 y값(벽에 가장 가까운 값)이 제일 낮은 적을 고른다
+        protected IEnemyTarget FindTarget(float maxRange)
+        {
+            targetProvider.GetNearest(caster.position, TargetCandidateCount, targetBuffer);
+
+            IEnemyTarget best = null;
+            float bestY = float.MaxValue;
+            float maxRangeSqr = maxRange * maxRange;
+
+            foreach (var candidate in targetBuffer)
+            {
+                float distSqr = ((Vector2)caster.position - candidate.Position).sqrMagnitude;
+                if (distSqr > maxRangeSqr)
+                {
+                    continue;
+                }
+
+                if (candidate.Position.y < bestY)
+                {
+                    bestY = candidate.Position.y;
+                    best = candidate;
+                }
+            }
+
+            return best;
+        }
 
         public void LevelUp(WeaponUpgradeOption option)
         {
