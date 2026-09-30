@@ -23,6 +23,10 @@ namespace Game.Editor
         private int _wallDamage = 10;
         private Vector2 _scroll;
 
+        private int _walletGold = 12500;
+        private int _energyCurrent = 7;
+        private int _energyMax = 100;
+
         [MenuItem("Tools/Project Nova/Message Debugger")]
         private static void Open()
         {
@@ -52,6 +56,7 @@ namespace Game.Editor
             DrawStageMessages();
             DrawWallMessages();
             DrawStageManagerCalls();
+            DrawLobbyMessages();
             EditorGUILayout.EndScrollView();
         }
 
@@ -213,6 +218,31 @@ namespace Game.Editor
                         stageManager.SetSpeed(2f);
                     }
                 }
+            }
+        }
+
+        private void DrawLobbyMessages()
+        {
+            Header("로비");
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                _walletGold = EditorGUILayout.IntField("골드",_walletGold);
+
+                if (GUILayout.Button("WalletChanged"))
+                {
+                    PublishBuffered(new WalletChanged(_walletGold));
+                }
+            }
+
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                _energyCurrent = EditorGUILayout.IntField("현재 에너지", _energyCurrent);
+                _energyMax = EditorGUILayout.IntField("최대 에너지", _energyMax);
+            }
+
+            if (GUILayout.Button("EnergyChanged (표시만 바뀜, 실제 에너지는 그대로)"))
+            {
+                PublishBuffered(new EnergyChanged(_energyCurrent, _energyMax));
             }
         }
 
