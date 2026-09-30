@@ -27,6 +27,9 @@ namespace Game.Editor
         private int _energyCurrent = 7;
         private int _energyMax = 100;
 
+        private int _fakeSkillCount = 3;
+        private readonly System.Collections.Generic.List<FakeSkillStatus> _fakeSkills = new System.Collections.Generic.List<FakeSkillStatus>();
+
         [MenuItem("Tools/Project Nova/Message Debugger")]
         private static void Open()
         {
@@ -56,8 +59,67 @@ namespace Game.Editor
             DrawStageMessages();
             DrawWallMessages();
             DrawStageManagerCalls();
+            DrawSkillMessages();
             DrawLobbyMessages();
             EditorGUILayout.EndScrollView();
+        }
+
+        // 가짜 스킬의 쿨타임을 진행시킨다. 창이 그려질 때만 갱신되지 않도록 에디터 업데이트에서 돈다
+        private void OnEnable()
+        {
+            EditorApplication.update += TickFakeSkills;
+        }
+
+        private void OnDisable()
+        {
+            EditorApplication.update -= TickFakeSkills;
+        }
+
+        private void TickFakeSkills()
+        {
+            if (!Application.isPlaying)
+            {
+                _fakeSkills.Clear();
+                return;
+            }
+
+            foreach (var skill in _fakeSkills)
+            {
+                skill.Tick(Time.deltaTime);
+            }
+        }
+
+        // 실제 무기 대신 가짜 스킬로 HUD 스킬 슬롯을 확인한다. 실제 연결 전용 임시 버튼이다
+        private void DrawSkillMessages()
+        {
+            Header("스킬 슬롯 (가짜 데이터, 실제 무기와 무관)");
+            _fakeSkillCount = EditorGUILayout.IntSlider("스킬 수", _fakeSkillCount, 0, 6);
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                if (GUILayout.Button("SkillChanged 발행 (가짜)"))
+                {
+                    _fakeSkills.Clear();
+                    string[] keys = { "fake_arrow", "fake_fireball", "fake_lightning", "fake_ice", "fake_kunai", "fake_extra" };
+                    float[] cooldowns = { 1.0f, 1.8f, 2.5f, 4f, 6f, 3f };
+                    for (int i = 0; i < _fakeSkillCount; i++)
+                    {
+                        // 칸마다 쿨타임 진행이 달라 보이도록 시작 값을 엇갈리게 준다
+                        _fakeSkills.Add(new FakeSkillStatus(i + 1, i + 1, keys[i], cooldowns[i], cooldowns[i] * (i % 3) / 3f));
+                    }
+
+                    PublishBuffered(new SkillChanged(_fakeSkills.ToArray()));
+                }
+
+                if (GUILayout.Button("레벨 +1 후 재발행"))
+                {
+                    foreach (var skill in _fakeSkills)
+                    {
+                        skill.Level++;
+                    }
+
+                    PublishBuffered(new SkillChanged(_fakeSkills.ToArray()));
+                }
+            }
         }
 
         private void DrawStatus()
@@ -226,7 +288,7 @@ namespace Game.Editor
             Header("로비");
             using (new EditorGUILayout.HorizontalScope())
             {
-                _walletGold = EditorGUILayout.IntField("골드",_walletGold);
+                _walletGold = EditorGUILayout.IntField("골드", _walletGold);
 
                 if (GUILayout.Button("WalletChanged"))
                 {
