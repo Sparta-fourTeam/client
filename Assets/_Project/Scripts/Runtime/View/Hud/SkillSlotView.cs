@@ -17,7 +17,12 @@ namespace Game.View
 
         private void Awake()
         {
-            Clear();
+            // 스코프 주입(LifetimeScope.Awake, 실행 순서 -5000)이 이 Awake보다 먼저라서, 버퍼에 남아 있던 SkillChanged가
+            // 이미 Bind를 마쳤을 수 있다. 그때는 지우지 않는다. 아직 아무것도 못 받은 칸만 빈 틀로 만든다
+            if (_status == null)
+            {
+                Clear();
+            }
         }
 
         public void Bind(ISkillStatus status, Sprite icon)
