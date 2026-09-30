@@ -16,6 +16,12 @@ namespace Game.Tests
             public SubmitResultRequest LastRequest;
             public Exception ToThrow;
 
+            /// <summary>SubmitResult가 받은 요청을 순서대로 모두 기록한다 (재시도가 같은 요청인지 본다)</summary>
+            public readonly List<SubmitResultRequest> Requests = new();
+
+            /// <summary>0보다 크면 이 횟수만큼만 ToThrow를 던지고 그 뒤로는 성공한다</summary>
+            public int ThrowCount = int.MaxValue;
+
             public UniTask<StartBattleResponse> StartBattle(int stageId, int dataRevision)
             {
                 throw new NotSupportedException();
@@ -24,7 +30,8 @@ namespace Game.Tests
             public UniTask<SubmitResultResponse> SubmitResult(SubmitResultRequest req)
             {
                 LastRequest = req;
-                if (ToThrow != null)
+                Requests.Add(req);
+                if (ToThrow != null && Requests.Count <= ThrowCount)
                 {
                     throw ToThrow;
                 }
@@ -106,6 +113,7 @@ namespace Game.Tests
                 null,
                 provider.GetRequiredService<IPublisher<SubmitRejected>>(),
                 provider.GetRequiredService<IPublisher<SubmitFailed>>());
+            _manager.RetryDelay = TimeSpan.Zero;
             _manager.Start();
         }
 
@@ -255,20 +263,117 @@ namespace Game.Tests
             Assert.AreEqual(StageState.Submitting, _manager.State);
         }
 
-        [Test(Description = "네트워크나 일시적 오류로 제출이 실패하면 멈추지 않고 SubmitFailed를 발행한다 (재시도는 #89)")]
+        [Test(Description = "네트워크나 일시적 오류가 계속되면 처음 1번과 자동 재시도 3번을 보낸 뒤 재시도할 수 있는 SubmitFailed를 발행한다")]
         [TestCase(ApiErrorKind.Transient, "SERVER_BUSY")]
         [TestCase(ApiErrorKind.Network, "NETWORK")]
-        public void StageEnded_TransientOrNetwork_PublishesSubmitFailed(ApiErrorKind kind, string code)
+        public void StageEnded_TransientOrNetwork_RetriesThenPublishesRetryableFailure(ApiErrorKind kind, string code)
         {
             _api.ToThrow = new ApiException(kind, code);
 
             _stageEnded.Publish(new StageEnded(StageOutcome.Clear));
 
+            Assert.AreEqual(1 + StageManager.AutoRetryCount, _api.Requests.Count);
             Assert.AreEqual(1, _failed.Count);
             Assert.AreEqual(code, _failed[0].Code);
+            Assert.IsTrue(_failed[0].Retryable);
             Assert.AreEqual(0, _rejected.Count);
             Assert.AreEqual(0, _results.Count);
             Assert.AreEqual(StageState.Submitting, _manager.State);
+        }
+
+        [Test(Description = "자동 재시도는 처음 만든 요청을 그대로 다시 보낸다 (playTime, createdAt이 달라지면 다른 요청이 된다)")]
+        public void AutoRetry_SendsSameRequestEveryTime()
+        {
+            _api.ToThrow = new ApiException(ApiErrorKind.Transient, "SERVER_BUSY");
+
+            _stageEnded.Publish(new StageEnded(StageOutcome.Clear));
+
+            Assert.AreEqual(1 + StageManager.AutoRetryCount, _api.Requests.Count);
+            Assert.That(_api.Requests, Is.All.SameAs(_api.Requests[0]));
+        }
+
+        [Test(Description = "자동 재시도 중에 성공하면 실패를 알리지 않고 결과를 발행한다")]
+        public void AutoRetry_SucceedsMidway_PublishesResultWithoutFailure()
+        {
+            _api.ToThrow = new ApiException(ApiErrorKind.Network, "NETWORK");
+            _api.ThrowCount = 2;
+
+            _stageEnded.Publish(new StageEnded(StageOutcome.Clear));
+
+            Assert.AreEqual(3, _api.Requests.Count);
+            Assert.AreEqual(0, _failed.Count);
+            Assert.AreEqual(1, _results.Count);
+            Assert.AreEqual(StageState.Finished, _manager.State);
+        }
+
+        [Test(Description = "거절은 다시 보내도 같은 결과라 재시도하지 않는다")]
+        public void Rejected_IsNotRetried()
+        {
+            _api.ToThrow = new ApiException(ApiErrorKind.Rejected, "INVALID_ID");
+
+            _stageEnded.Publish(new StageEnded(StageOutcome.Fail));
+
+            Assert.AreEqual(1, _api.Requests.Count);
+            Assert.AreEqual(1, _rejected.Count);
+            Assert.AreEqual(0, _failed.Count);
+        }
+
+        [Test(Description = "자동 재시도가 모두 실패한 뒤 RetrySubmit하면 같은 요청을 다시 보내고, 성공하면 결과를 발행하고 Finished가 된다")]
+        public void RetrySubmit_AfterFailure_SendsSameRequestAndFinishes()
+        {
+            _api.ToThrow = new ApiException(ApiErrorKind.Network, "NETWORK");
+            _stageEnded.Publish(new StageEnded(StageOutcome.Clear));
+            var first = _api.Requests[0];
+            _api.ToThrow = null;
+
+            _manager.RetrySubmit();
+
+            Assert.AreEqual(1 + StageManager.AutoRetryCount + 1, _api.Requests.Count);
+            Assert.AreSame(first, _api.LastRequest);
+            Assert.AreEqual(1, _results.Count);
+            Assert.AreEqual(StageState.Finished, _manager.State);
+            Assert.AreEqual(1, _failed.Count);
+        }
+
+        [Test(Description = "수동 재시도가 다시 실패하면 자동 재시도 없이 한 번만 보내고 다시 SubmitFailed를 발행한다")]
+        public void RetrySubmit_FailsAgain_SendsOnceAndPublishesFailureAgain()
+        {
+            _api.ToThrow = new ApiException(ApiErrorKind.Network, "NETWORK");
+            _stageEnded.Publish(new StageEnded(StageOutcome.Clear));
+            var before = _api.Requests.Count;
+
+            _manager.RetrySubmit();
+
+            Assert.AreEqual(before + 1, _api.Requests.Count);
+            Assert.AreEqual(2, _failed.Count);
+            Assert.AreEqual(StageState.Submitting, _manager.State);
+        }
+
+        [Test(Description = "수동 재시도는 Submitting 상태를 다시 발행해 전송 중 표시가 다시 뜨게 한다")]
+        public void RetrySubmit_RepublishesSubmitting()
+        {
+            _api.ToThrow = new ApiException(ApiErrorKind.Network, "NETWORK");
+            _stageEnded.Publish(new StageEnded(StageOutcome.Clear));
+            _states.Clear();
+
+            _manager.RetrySubmit();
+
+            Assert.AreEqual(StageState.Submitting, _states[0]);
+        }
+
+        [Test(Description = "제출할 요청이 없거나 이미 끝났으면 RetrySubmit은 무시된다")]
+        public void RetrySubmit_WithNothingToRetry_IsIgnored()
+        {
+            _manager.RetrySubmit();
+            Assert.AreEqual(0, _api.Requests.Count);
+            Assert.AreEqual(StageState.Playing, _manager.State);
+
+            _stageEnded.Publish(new StageEnded(StageOutcome.Clear));
+            var afterSuccess = _api.Requests.Count;
+            _manager.RetrySubmit();
+
+            Assert.AreEqual(afterSuccess, _api.Requests.Count);
+            Assert.AreEqual(1, _results.Count);
         }
 
         [Test(Description = "예상 밖 예외로 제출이 실패해도 Submitting에서 멈추지 않도록 UNEXPECTED로 SubmitFailed를 발행한다")]
@@ -281,6 +386,8 @@ namespace Game.Tests
 
             Assert.AreEqual(1, _failed.Count);
             Assert.AreEqual("UNEXPECTED", _failed[0].Code);
+            Assert.IsFalse(_failed[0].Retryable);
+            Assert.AreEqual(1, _api.Requests.Count);
         }
 
         [Test(Description = "Dispose하면 timeScale이 1로 복구된다")]
