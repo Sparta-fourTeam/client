@@ -17,7 +17,7 @@
 - 팝업 연출과 Local 백엔드 지연은 unscaled time을 쓴다 (`UniTask.Delay(..., ignoreTimeScale: true)`)
 - 클리어·실패 판정은 StageJudge 한 곳에서, 먼저 도착한 신호로 판당 한 번만 한다. 매 프레임 확인하지 않고 메시지를 받을 때 판정한다
 - 엔트리포인트끼리 실행 순서에 기대지 않는다. 순서가 필요하면 메시지나 명시적 호출로 연결한다
-- Stage 씬은 로비에서 `BattleLauncher`가 전투를 발급받은 뒤에 들어와야 `StageContext`가 채워진다. 실제 흐름을 확인할 때는 **Tools → Project Nova → Play From Boot**를 켜서 재생을 Boot 씬부터 시작한다. 끄면 열어 둔 씬에서 재생한다 (Unity에는 이 값을 바꾸는 기본 메뉴가 없어 직접 만들었다)
+- Stage 씬은 로비에서 `BattleLauncher`가 전투를 발급받은 뒤에 들어와야 `StageContext`가 채워진다. 실제 흐름을 확인할 때는 **Tools → Project Nova → Play From Boot**를 켜서 재생을 Boot 씬부터 시작한다. 끄면 열어 둔 씬에서 재생한다. 켠 선택은 에디터를 다시 켜도 유지되고, 프로젝트 폴더마다 따로 저장된다 (Unity에는 이 값을 바꾸는 기본 메뉴가 없고 값 자체도 재시작하면 풀려서 직접 만들었다)
 
 ## 메시지
 
