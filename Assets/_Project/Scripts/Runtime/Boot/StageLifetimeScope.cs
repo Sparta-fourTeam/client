@@ -13,8 +13,6 @@ namespace Game.Boot
         {
             builder.RegisterComponentInHierarchy<Wall>();
             builder.RegisterComponentInHierarchy<WeaponController>();
-            // 스킬이 적을 찾는 창구. EnemySpawner가 구현하면 이 등록을 교체한다 (스텁은 항상 "적 없음")
-            builder.Register<IEnemyTargetProvider, NullEnemyTargetProvider>(Lifetime.Scoped);
             builder.RegisterEntryPoint<StageClock>().AsSelf();
             builder.RegisterEntryPoint<StageManager>().AsSelf();
             builder.RegisterEntryPoint<StageJudge>();
@@ -25,7 +23,7 @@ namespace Game.Boot
             builder.RegisterComponentInHierarchy<EnemyFactory>().AsImplementedInterfaces();
             builder.RegisterComponentInHierarchy<SpawnArea>();
             builder.RegisterInstance(CreateWaveData());
-            builder.RegisterEntryPoint<EnemySpawner>(Lifetime.Scoped);
+            builder.RegisterEntryPoint<EnemySpawner>(Lifetime.Scoped).AsSelf().As<IEnemyTargetProvider>();
             builder.RegisterEntryPoint<WaveManager>();
         }
 
