@@ -1,4 +1,5 @@
 using System.Linq;
+using Cysharp.Threading.Tasks;
 using Game.Core;
 using Game.Core.Defense;
 using Game.Core.Messages;
@@ -27,6 +28,12 @@ namespace Game.Editor
         private int _energyCurrent = 7;
         private int _energyMax = 100;
 
+        private int _launchStageId = 1;
+        private int _resultKills = 24;
+        private int _resultWave = 3;
+        private float _resultPlayTime = 125f;
+        private int _resultGold = 350;
+
         [MenuItem("Tools/Project Nova/Message Debugger")]
         private static void Open()
         {
@@ -52,6 +59,7 @@ namespace Game.Editor
 
             _scroll = EditorGUILayout.BeginScrollView(_scroll);
             DrawStatus();
+            DrawBattleLaunch();
             DrawWaveMessages();
             DrawStageMessages();
             DrawWallMessages();
@@ -129,6 +137,56 @@ namespace Game.Editor
                 if (GUILayout.Button("StageEnded (Fail)"))
                 {
                     Publish(new StageEnded(StageOutcome.Fail));
+                }
+            }
+
+            // 결과 팝업이 구독하는 최종 결과. 서버 제출을 거치지 않고 표시만 확인할 때 쓴다
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                _resultKills = EditorGUILayout.IntField("처치", _resultKills);
+                _resultWave = EditorGUILayout.IntField("웨이브", _resultWave);
+            }
+
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                _resultPlayTime = EditorGUILayout.FloatField("플레이 시간(초)", _resultPlayTime);
+                _resultGold = EditorGUILayout.IntField("보상 골드", _resultGold);
+            }
+
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                if (GUILayout.Button("StageResult (Clear)"))
+                {
+                    Publish(new StageResult(true, _resultKills, _resultWave, _resultPlayTime, _resultGold));
+                }
+
+                if (GUILayout.Button("StageResult (Fail)"))
+                {
+                    Publish(new StageResult(false, _resultKills, _resultWave, _resultPlayTime, _resultGold));
+                }
+            }
+        }
+
+        // 로비 UI가 BattleLauncher에 연결되기 전에도 실제 전투 발급(에너지 소모 포함)으로 Stage에 들어가 결과 흐름까지 확인하는 용도
+        private void DrawBattleLaunch()
+        {
+            Header("전투 시작 (BattleLauncher 경유, 로비에서 사용)");
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                _launchStageId = EditorGUILayout.IntField("스테이지", _launchStageId);
+                if (GUILayout.Button("전투 발급 후 Stage 진입"))
+                {
+                    var api = Resolve<IBattleApi>();
+                    var context = Resolve<StageContext>();
+                    var navigator = Resolve<ISceneNavigator>();
+                    var startFailed = Resolve<IPublisher<StartFailed>>();
+                    if (api == null || context == null || navigator == null || startFailed == null)
+                    {
+                        Debug.LogWarning("[MessageDebugger] BattleLauncher에 필요한 서비스를 찾지 못했습니다 (Boot 씬에서 시작했는지 확인)");
+                        return;
+                    }
+
+                    new BattleLauncher(api, context, navigator, startFailed).Launch(_launchStageId).Forget(Debug.LogException);
                 }
             }
         }
@@ -226,7 +284,7 @@ namespace Game.Editor
             Header("로비");
             using (new EditorGUILayout.HorizontalScope())
             {
-                _walletGold = EditorGUILayout.IntField("골드",_walletGold);
+                _walletGold = EditorGUILayout.IntField("골드", _walletGold);
 
                 if (GUILayout.Button("WalletChanged"))
                 {
