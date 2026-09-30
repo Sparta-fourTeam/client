@@ -19,8 +19,21 @@ namespace Game.View
         [SerializeField] private TMP_Text _killsText;
         [SerializeField] private TMP_Text _waveText;
         [SerializeField] private TMP_Text _timeText;
-        [SerializeField] private TMP_Text _rewardText;
+        [SerializeField] private TMP_Text _bubbleText;
         [SerializeField] private Button _lobbyButton;
+
+        [Header("보상 (골드가 첫 칸. 다른 보상 아이템이 생기면 목록에 더한다)")]
+        [SerializeField] private ResultRewardListView _rewardList;
+        [SerializeField] private Sprite _goldIcon;
+
+        // 아직 데이터가 없어 채우지 않는다. 별점은 _starsView.SetCount(n), 무기별 피해량은 _damageList.Show(rows)를
+        // OnStageResult에서 부르면 된다. 호출하기 전에는 두 영역이 꺼져 있다
+        [Header("데이터 연결 전 (StageResult에 아직 없음)")]
+        [SerializeField] private ResultStarsView _starsView;
+        [SerializeField] private ResultDamageListView _damageList;
+
+        private const string ClearBubble = "어때요? 이 정도쯤이야!";
+        private const string FailBubble = "으으... 다음엔 꼭...!";
 
         private StageContext _stageContext;
         private ISceneNavigator _navigator;
@@ -43,10 +56,11 @@ namespace Game.View
         {
             _titleText.text = result.Cleared ? "Clear !" : "Fail !";
             _stageText.text = _stageContext.StageId > 0 ? $"Stage {_stageContext.StageId}" : "-";
-            _killsText.text = $"처치 {result.Kills}";
-            _waveText.text = result.ReachedWave > 0 ? $"도달 웨이브 {result.ReachedWave}" : "도달 웨이브 -";
-            _timeText.text = $"플레이 시간 {FormatTime(result.PlayTime)}";
-            _rewardText.text = $"획득 골드 {result.RewardGold:N0}";
+            _killsText.text = $"처치\n{result.Kills}";
+            _waveText.text = result.ReachedWave > 0 ? $"도달 웨이브\n{result.ReachedWave}" : "도달 웨이브\n-";
+            _timeText.text = $"플레이 시간\n{FormatTime(result.PlayTime)}";
+            _bubbleText.text = result.Cleared ? ClearBubble : FailBubble;
+            _rewardList.Show(new[] { new ResultRewardItem(_goldIcon, result.RewardGold) });
             _lobbyButton.interactable = true;
             _panel.SetActive(true);
         }
