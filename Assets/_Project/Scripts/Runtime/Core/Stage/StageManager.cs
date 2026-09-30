@@ -23,14 +23,24 @@ namespace Game.Core
         private readonly IPublisher<SubmitRejected> _submitRejected;
         private readonly IPublisher<SubmitFailed> _submitFailed;
 
+        /// <summary>일시적 실패와 네트워크 실패 때 자동으로 다시 보내는 횟수 (docs/flows.md)</summary>
+        public const int AutoRetryCount = 3;
+
         private float _speed = 1f;
         private StageState _beforePause;
         private string _battleId;
         private IDisposable _subscription;
 
+        // 처음 만든 요청을 재시도에도 그대로 쓴다. 다시 만들면 playTime과 createdAt이 달라 다른 요청이 된다
+        private SubmitResultRequest _pendingRequest;
+        private bool _submitting;
+
         private List<WeaponController.UpgradeChoice> _choices = new();
 
         public StageState State { get; private set; } = StageState.Starting;
+
+        /// <summary>자동 재시도 사이의 간격. 테스트에서 0으로 줄인다</summary>
+        public TimeSpan RetryDelay { get; set; } = TimeSpan.FromSeconds(1);
 
         /// <summary>CardSelect 상태에서 UI가 표시할 카드 후보</summary>
         public IReadOnlyList<WeaponController.UpgradeChoice> Choices => _choices;
@@ -171,7 +181,7 @@ namespace Game.Core
         {
             ChangeState(StageState.Submitting);
 
-            var request = new SubmitResultRequest
+            _pendingRequest = new SubmitResultRequest
             {
                 battleId = _battleId,
                 cleared = cleared,
@@ -183,35 +193,80 @@ namespace Game.Core
                 createdAt = DateTime.UtcNow.ToString("O")
             };
 
-            SubmitResultResponse response;
-            try
+            await Submit(AutoRetryCount);
+        }
+
+        /// <summary>SubmitFailed(Retryable) 뒤에 플레이어가 재시도를 눌렀을 때. 처음 만든 요청을 그대로 다시 보낸다.
+        /// 제출 중이거나 보낼 요청이 없으면 무시한다(연타 방지)</summary>
+        public void RetrySubmit()
+        {
+            if (State != StageState.Submitting || _pendingRequest == null || _submitting)
             {
-                response = await _battleApi.SubmitResult(request);
-            }
-            catch (ApiException e) when (e.Kind == ApiErrorKind.Rejected)
-            {
-                // 여기서 로비로 이동하지 않는다: 이동하면 Stage 씬이 사라져 거절 안내가 보이지 않는다.
-                // 안내를 보여주고 로비로 보내는 것은 SubmitRejected를 구독하는 뷰의 몫이다 (docs/flows.md: 거절 안내 후 Lobby)
-                _submitRejected.Publish(new SubmitRejected(e.Code));
-                return;
-            }
-            catch (ApiException e)
-            {
-                // Transient, Network: 지금은 재시도 없이 실패를 알려 나갈 길을 준다. 이게 없으면 Submitting에서 영영 멈춘다.
-                // 자동 재시도 3회와 수동 재시도는 #89
-                _submitFailed.Publish(new SubmitFailed(e.Code));
-                return;
-            }
-            catch (Exception e)
-            {
-                // 예상 밖 예외도 같은 이유로 잡는다. 원인은 로그로 남긴다
-                Debug.LogException(e);
-                _submitFailed.Publish(new SubmitFailed("UNEXPECTED"));
                 return;
             }
 
-            _result.Publish(new StageResult(response.cleared, _stats.Kills, _stats.ReachedWave, _clock.ElapsedSeconds, response.rewardGold));
-            ChangeState(StageState.Finished);
+            // 같은 상태를 다시 발행해 "전송 중" 표시가 다시 뜨고 실패 안내가 닫히게 한다
+            ChangeState(StageState.Submitting);
+            Submit(0).Forget(Debug.LogException);
+        }
+
+        /// <summary>요청을 보낸다. 일시적 실패와 네트워크 실패는 autoRetries번까지 자동으로 다시 보낸다</summary>
+        private async UniTask Submit(int autoRetries)
+        {
+            _submitting = true;
+            try
+            {
+                SubmitResultResponse response = null;
+                var sent = false;
+                for (var attempt = 0; !sent; attempt++)
+                {
+                    try
+                    {
+                        response = await _battleApi.SubmitResult(_pendingRequest);
+                        sent = true;
+                    }
+                    catch (ApiException e) when (e.Kind == ApiErrorKind.Rejected)
+                    {
+                        // 여기서 로비로 이동하지 않는다: 이동하면 Stage 씬이 사라져 거절 안내가 보이지 않는다.
+                        // 안내를 보여주고 로비로 보내는 것은 SubmitRejected를 구독하는 뷰의 몫이다 (docs/flows.md: 거절 안내 후 Lobby)
+                        _pendingRequest = null;
+                        _submitRejected.Publish(new SubmitRejected(e.Code));
+                        return;
+                    }
+                    catch (ApiException e)
+                    {
+                        // Transient, Network
+                        if (attempt < autoRetries)
+                        {
+                            if (RetryDelay > TimeSpan.Zero)
+                            {
+                                // 연출과 같은 이유로 unscaled time. 포기에서는 timeScale이 0이다
+                                await UniTask.Delay(RetryDelay, ignoreTimeScale: true);
+                            }
+
+                            continue;
+                        }
+
+                        _submitFailed.Publish(new SubmitFailed(e.Code, retryable: true));
+                        return;
+                    }
+                    catch (Exception e)
+                    {
+                        // 예상 밖 예외는 다시 보내도 같은 결과일 가능성이 커서 재시도하지 않는다. 원인은 로그로 남긴다
+                        Debug.LogException(e);
+                        _submitFailed.Publish(new SubmitFailed("UNEXPECTED"));
+                        return;
+                    }
+                }
+
+                _pendingRequest = null;
+                _result.Publish(new StageResult(response.cleared, _stats.Kills, _stats.ReachedWave, _clock.ElapsedSeconds, response.rewardGold));
+                ChangeState(StageState.Finished);
+            }
+            finally
+            {
+                _submitting = false;
+            }
         }
 
         private void ChangeState(StageState next)
