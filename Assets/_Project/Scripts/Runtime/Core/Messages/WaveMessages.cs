@@ -18,11 +18,17 @@ namespace Game.Core.Messages
         public int EnemyCount { get; }
         public bool IsFinalWave { get; }
 
-        public WaveStarted(int waveIndex, int enemyCount, bool isFinalWave)
+        public int MaxEliteCount { get; }
+        public int MaxBossCount { get; }
+
+        public WaveStarted(int waveIndex, int enemyCount, bool isFinalWave, 
+                            int maxEliteCount = 0, int maxBossCount = 0)
         {
             WaveIndex = waveIndex;
             EnemyCount = enemyCount;
             IsFinalWave = isFinalWave;
+            MaxEliteCount = maxEliteCount;
+            MaxBossCount = maxBossCount;
         }
     }
 

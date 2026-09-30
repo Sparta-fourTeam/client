@@ -18,6 +18,7 @@ namespace Game.Core
         private IPublisher<EnemyDied> _diedPublisher;
         private ISubscriber<EnemyHpChanged> _hpChangedSubscriber;
         private ISubscriber<EnemyDied> _diedSubscriber;
+        private IRandomProvider _randomProvider;
 
         private int _nextEnemyId;
 
@@ -29,6 +30,13 @@ namespace Game.Core
             {
                 ValidateEntry(entry);
             }
+
+            // EnemyType마다 엔트리 최소 1개 있는지 체크
+            foreach (EnemyType type in System.Enum.GetValues(typeof(EnemyType)))
+            {
+                if (!_enemyPrefabEntries.Exists(e => e.Type == type))
+                    Debug.LogError($"[EnemyFactory] EnemyType.{type} 엔트리가 없습니다.", this);
+            }
         }
 
         [Inject]
@@ -36,18 +44,20 @@ namespace Game.Core
             IPublisher<EnemyHpChanged> hpChangedPublisher,
             IPublisher<EnemyDied> diedPublisher,
             ISubscriber<EnemyHpChanged> hpchangedSubscriber,
-            ISubscriber<EnemyDied> diedSubscriber
+            ISubscriber<EnemyDied> diedSubscriber,
+            IRandomProvider randomProvider
             )
         {
             _hpChangedPublisher = hpChangedPublisher;
             _diedPublisher = diedPublisher;
             _hpChangedSubscriber = hpchangedSubscriber;
             _diedSubscriber = diedSubscriber;
+            _randomProvider = randomProvider;
         }
 
         public EnemyModel Create(Vector2 spawnPosition, EnemyType type)
         {
-            var entry = _table.GetEntry(type);
+            var entry = _table.GetRandomEntry(type, _randomProvider);
             var enemy = new EnemyModel(
                 ++_nextEnemyId, spawnPosition, entry.Speed, type, entry.MaxHp,
                 entry.CreateAttackStats(),

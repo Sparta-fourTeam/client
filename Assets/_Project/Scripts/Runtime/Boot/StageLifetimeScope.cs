@@ -34,8 +34,7 @@ namespace Game.Boot
             return new EnemySpawnConfig(
                 spawnIntervalMin: 0.1f,
                 spawnIntervalMax: 0.5f,
-                spawnCooldown: 3f,
-                enemyType: EnemyType.Normal
+                spawnCooldown: 3f
                 );
         }
     }
