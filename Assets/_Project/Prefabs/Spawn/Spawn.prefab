@@ -47,9 +47,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Game.View::Game.View.EnemyViewFactory
   _enemyPrefabEntries:
   - Type: 0
-    Prefab: {fileID: 4685488075804649445, guid: eedef41ae584e7948b908250bd9a7241, type: 3}
+    Prefab: {fileID: 6311776197841859623, guid: 70a166a28c1780c469109fc1d97d3411, type: 3}
+    ProjectilePrefab: {fileID: 6940759657125676971, guid: b21e1b571797a984abd123376e5056e5, type: 3}
     Speed: 1
-    MaxHp: 15
+    MaxHp: 100
+    AttackType: 1
+    Damage: 1
+    AttackInterval: 1
+    AttackRange: 2
 --- !u!114 &1027409405871136764
 MonoBehaviour:
   m_ObjectHideFlags: 0
