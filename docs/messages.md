@@ -46,6 +46,15 @@
 
 설정은 1단계에 E가 Stage 스코프에 한 번 넣어둔다. 스택 트레이스 수집은 느려서 에디터와 개발 빌드에서만 켠다.
 
+## 발행 확인: Message Debugger
+
+Diagnostics 창은 구독만 보여주고 발행은 못 한다. 내 UI나 로직이 메시지를 제대로 받는지 보려면 플레이 중에 **Tools → Project Nova → Message Debugger**를 연다. 버튼으로 메시지를 직접 발행한다.
+
+- 사용법: Boot 씬에서 재생해 Stage 씬까지 들어간 뒤 연다. `EnemyDied x5`를 누르면 웨이브 1이 끝나 카드 선택까지 이어진다
+- 판정(`StageEnded`)은 StageJudge를 거치지 않고 바로 발행된다. 판정 로직 자체를 확인할 때는 `WallDestroyed`나 `WaveGaugeFilled`를 쓴다
+- Buffered 메시지(`WallHpChanged`)는 `IBufferedPublisher`로 발행한다. 새 메시지를 추가하면 `Scripts/Editor/MessageDebugWindow.cs`에 버튼을 같이 넣는다
+- 에디터 전용 어셈블리(`Game.Editor`)라 빌드에는 포함되지 않는다
+
 ```csharp
 var o = builder.RegisterMessagePipe(options => {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
