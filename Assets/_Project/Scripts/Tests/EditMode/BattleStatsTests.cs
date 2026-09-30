@@ -21,6 +21,7 @@ namespace Game.Tests
             builder.AddMessageBroker<EnemyDied>();
             builder.AddMessageBroker<WaveGaugeChanged>();
             builder.AddMessageBroker<StageEnded>();
+            builder.AddMessageBroker<WallHpChanged>();
             IServiceProvider provider = builder.BuildServiceProvider();
 
             _enemyDied = provider.GetRequiredService<IPublisher<EnemyDied>>();
@@ -30,7 +31,8 @@ namespace Game.Tests
             _stats = new BattleStats(
                 provider.GetRequiredService<ISubscriber<EnemyDied>>(),
                 provider.GetRequiredService<ISubscriber<WaveGaugeChanged>>(),
-                provider.GetRequiredService<ISubscriber<StageEnded>>());
+                provider.GetRequiredService<ISubscriber<StageEnded>>(),
+                provider.GetRequiredService<ISubscriber<WallHpChanged>>());
             _stats.Initialize();
         }
 
@@ -126,6 +128,29 @@ namespace Game.Tests
 
             Assert.AreEqual(0, _stats.Kills);
             Assert.AreEqual(0, _stats.ReachedWave);
+        }
+
+        [Test(Description = "고른 카드는 선택한 순서대로 빌드 로그에 쌓인다")]
+        public void RecordCard_AppendsToBuildLog()
+        {
+            _stats.RecordCard("arrow_sharp");
+            _stats.RecordCard("weapon_2");
+
+            CollectionAssert.AreEqual(new[] { "arrow_sharp", "weapon_2" }, _stats.BuildLog);
+        }
+
+        [Description("완료한 웨이브는 도달 웨이브 - 1이며 0 밑으로 내려가지 않는다")]
+        [TestCase(0, 0)]
+        [TestCase(1, 0)]
+        [TestCase(4, 3)]
+        public void CompletedWaves_IsReachedWaveMinusOne(int reachedWave, int expected)
+        {
+            if (reachedWave > 0)
+            {
+                GaugeOnWave(reachedWave);
+            }
+
+            Assert.AreEqual(expected, _stats.CompletedWaves);
         }
     }
 }
