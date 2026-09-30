@@ -16,6 +16,8 @@ namespace Game.Tests
             public void Publish(T message) => Published.Add(message);
         }
 
+        private static readonly EnemyAttackStats TestAttack = new EnemyAttackStats(AttackType.Melee, 10, 1f, 0f);
+
         private FakePublisher<EnemyHpChanged> _hpChanged;
         private FakePublisher<EnemyDied> _died;
 
@@ -28,7 +30,7 @@ namespace Game.Tests
 
         private EnemyModel CreateEnemy(int id = 1, int maxHp = 10, float speed = 0f, Vector2 position = default)
         {
-            return new EnemyModel(id, position, speed, EnemyType.Normal, maxHp, _hpChanged, _died);
+            return new EnemyModel(id, position, speed, EnemyType.Normal, maxHp, TestAttack, _hpChanged, _died);
         }
 
         // ───────── 생성 ─────────
@@ -38,6 +40,14 @@ namespace Game.Tests
         public void Constructor_NonPositiveMaxHp_Throws(int maxHp)
         {
             Assert.Throws<ArgumentOutOfRangeException>(() => CreateEnemy(maxHp: maxHp));
+        }
+
+        [Test]
+        public void Constructor_DefaultAttackStats_Throws()
+        {
+            // struct 기본값(간격 0)이 들어오면 매 프레임 공격하게 되므로 막아야 함
+            Assert.Throws<ArgumentOutOfRangeException>(() =>
+                new EnemyModel(1, Vector2.zero, 0f, EnemyType.Normal, 10, default, _hpChanged, _died));
         }
 
         [Test]
@@ -128,7 +138,7 @@ namespace Game.Tests
             var order = new List<string>();
             var hp = new OrderRecorder<EnemyHpChanged>(order, "hp");
             var died = new OrderRecorder<EnemyDied>(order, "died");
-            var enemy = new EnemyModel(1, Vector2.zero, 0f, EnemyType.Normal, 10, hp, died);
+            var enemy = new EnemyModel(1, Vector2.zero, 0f, EnemyType.Normal, 10, TestAttack, hp, died);
 
             enemy.TakeDamage(10);
 
@@ -148,6 +158,8 @@ namespace Game.Tests
             Assert.AreEqual(1, _hpChanged.Published.Count);
             Assert.AreEqual(1, _died.Published.Count); // 사망은 한 번만
         }
+
+        // ───────── 이동 ─────────
 
         [Test]
         public void Move_AfterDeath_DoesNotMove()

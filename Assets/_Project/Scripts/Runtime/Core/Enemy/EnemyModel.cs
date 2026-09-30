@@ -1,4 +1,5 @@
 using System;
+using Game.Core.Defense;
 using Game.Core.Messages;
 using MessagePipe;
 using UnityEngine;
@@ -11,20 +12,28 @@ namespace Game.Core
         private static readonly Vector2 _moveDirection = Vector2.down;
         private readonly float _speed; // 적 이동 속도
         private readonly EnemyType _type; // 적 타입
+        private readonly EnemyAttackStats _attack; // 공격 값
 
         private readonly IPublisher<EnemyHpChanged> _hpChangedPublisher;
         private readonly IPublisher<EnemyDied> _diedPublisher;
 
+        private float _attackTimer; // 공격 시간, 적 별로 공격 시작한 시간이 다르니까
+
         public Vector2 Position { get; private set; }
         public EnemyType Type => _type;
+
+        public AttackType AttackType => _attack.Type;
 
         public int Id { get; }
         public int MaxHp { get; }
         public int Hp { get; private set; }
         public bool IsDead => Hp <= 0;
 
+        public event Action<EnemyProjectileModel> ProjectileFired; // 원거리 투사체 생성 용
+
         // 스폰 위치, 이동 속도, 타입 지정해서 몬스터 생성
         public EnemyModel(int id, Vector2 spawnPosition, float speed, EnemyType type, int maxHp,
+            EnemyAttackStats attack,
             IPublisher<EnemyHpChanged> hpChangedPublisher,
             IPublisher<EnemyDied> diedPublisher)
         {
@@ -39,6 +48,7 @@ namespace Game.Core
             Hp = maxHp;
             _hpChangedPublisher = hpChangedPublisher;
             _diedPublisher = diedPublisher;
+            _attack = attack;
         }
 
         // 매 프레임 speed만큼 이동
@@ -47,6 +57,32 @@ namespace Game.Core
             if (IsDead) return;
 
             Position += _moveDirection * (_speed * deltaTime);
+        }
+
+        public bool IsInAttackRange(Wall wall)
+        {
+            return Position.y - wall.AttackLineY <= _attack.Range;
+        }
+
+
+        public void Attack(float deltaTime, Wall wall, EnemyProjectileSystem projectiles)
+        {
+            if (IsDead || wall.IsDestroyed) return;
+
+            _attackTimer += deltaTime;
+            if (_attackTimer < _attack.Interval) return;
+
+            _attackTimer -= _attack.Interval;
+
+            if (_attack.Type == AttackType.Melee)
+            {
+                wall.TakeDamage(_attack.Damage);
+            }
+            else
+            {
+                var projectile = projectiles.Fire(Position, _attack.Damage);
+                ProjectileFired?.Invoke(projectile);
+            }
         }
 
         public void TakeDamage(int amount)

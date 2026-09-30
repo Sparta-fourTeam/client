@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Game.Core.Defense;
 using Game.Core.Messages;
 using MessagePipe;
 using UnityEngine;
@@ -19,7 +20,8 @@ namespace Game.Core
         // 필드에 있는 적
         // 죽은 적은 다음 Tick에 제거, EnemyDied는 EnemyModel이 발행
         private readonly List<EnemyModel> _activeEnemies = new();
-
+        private readonly Wall _wall;
+        private readonly EnemyProjectileSystem _projectiles;
 
         private IDisposable _subscriptions;
         private bool _isSpawningAllowed;
@@ -38,7 +40,9 @@ namespace Game.Core
             SpawnArea spawnArea,
             IRandomProvider randomProvider,
             ISubscriber<WaveStarted> waveStartedSubscriber,
-            ISubscriber<WaveGaugeFilled> waveGaugeFilledSubscriber)
+            ISubscriber<WaveGaugeFilled> waveGaugeFilledSubscriber,
+            Wall wall,
+            EnemyProjectileSystem projectiles)
         {
             _enemyViewFactory = enemyViewFactory;
             _enemySpawnConfig = enemySpawnConfig;
@@ -46,6 +50,8 @@ namespace Game.Core
             _randomProvider = randomProvider;
             _waveStartedSubscriber = waveStartedSubscriber;
             _waveGaugeFilledSubscriber = waveGaugeFilledSubscriber;
+            _wall = wall;
+            _projectiles = projectiles;
             _nextSpawnInterval = RollSpawnInterval();
         }
 
@@ -70,7 +76,7 @@ namespace Game.Core
         // 스폰 로직
         public void Advance(float deltaTime)
         {
-            MoveActiveEnemies(deltaTime);
+            TickCombat(deltaTime);
 
             if (!_isSpawningAllowed)
             {
@@ -142,18 +148,32 @@ namespace Game.Core
             return _randomProvider.Range(_enemySpawnConfig.SpawnIntervalMin, _enemySpawnConfig.SpawnIntervalMax);
         }
 
-        private void MoveActiveEnemies(float deltaTime)
+        // 적 움직임, 공격 로직
+        private void TickCombat(float deltaTime)
         {
             for (int i = _activeEnemies.Count - 1; i >= 0; i--)
             {
-                if (_activeEnemies[i].IsDead)
+                var enemy = _activeEnemies[i];
+                if (enemy.IsDead)
                 {
                     _activeEnemies.RemoveAt(i);
                     continue;
                 }
 
-                _activeEnemies[i].Move(deltaTime);
+                // 사거리 안이면 공격
+                // 밖이면 벽 쪽으로 이동
+                if (enemy.IsInAttackRange(_wall))
+                {
+                    enemy.Attack(deltaTime, _wall, _projectiles);
+                }
+                else
+                {
+                    enemy.Move(deltaTime);
+                }
             }
+
+            // 투사체 처리
+            _projectiles.Tick(deltaTime, _wall);
         }
 
         public int GetNearest(Vector2 from, int count, List<IEnemyTarget> results)

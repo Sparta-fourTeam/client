@@ -23,6 +23,7 @@ namespace Game.Boot
             builder.RegisterComponentInHierarchy<EnemyFactory>().AsImplementedInterfaces();
             builder.RegisterComponentInHierarchy<SpawnArea>();
             builder.RegisterInstance(CreateWaveData());
+            builder.Register<EnemyProjectileSystem>(Lifetime.Scoped);
             builder.RegisterEntryPoint<EnemySpawner>(Lifetime.Scoped).AsSelf().As<IEnemyTargetProvider>();
             builder.RegisterEntryPoint<WaveManager>();
         }
