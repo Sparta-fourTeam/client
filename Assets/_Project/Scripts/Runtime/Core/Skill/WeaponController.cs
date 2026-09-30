@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using Game.Core.Messages;
+using MessagePipe;
 using UnityEngine;
 using VContainer;
 
@@ -18,11 +20,13 @@ namespace Game.Core
         private Dictionary<int, WeaponData> testDataTable;
         private List<WeaponBase> weapons = new List<WeaponBase>();
         private IEnemyTargetProvider targetProvider;
+        private IBufferedPublisher<SkillChanged> skillChanged;
 
         [Inject]
-        public void Construct(IEnemyTargetProvider targetProvider)
+        public void Construct(IEnemyTargetProvider targetProvider, IBufferedPublisher<SkillChanged> skillChanged)
         {
             this.targetProvider = targetProvider;
+            this.skillChanged = skillChanged;
         }
 
         private void Start()
@@ -38,7 +42,7 @@ namespace Game.Core
                 {
                     1, new WeaponData
                     {
-                        id = 1, name = "화살", castType = CastType.Projectile,
+                        id = 1, name = "화살", iconKey = "weapon_arrow", castType = CastType.Projectile,
                         baseStats = new WeaponBaseStats { cooldown = 1.0f, baseDamage = 10f, range = 22f, speed = 20f, hitCount = 1 },
                         maxLevel = 99,
                         upgrades = new List<WeaponUpgradeOption>
@@ -80,7 +84,7 @@ namespace Game.Core
                 {
                     2, new WeaponData
                     {
-                        id = 2, name = "화염탄", castType = CastType.Projectile,
+                        id = 2, name = "화염탄", iconKey = "weapon_fireball", castType = CastType.Projectile,
                         baseStats = new WeaponBaseStats { cooldown = 1.8f, baseDamage = 12f, range = 20f, speed = 16f, hitCount = 1 },
                         maxLevel = 99,
                         upgrades = new List<WeaponUpgradeOption>
@@ -98,7 +102,7 @@ namespace Game.Core
                 {
                     3, new WeaponData
                     {
-                        id = 3, name = "낙뢰", castType = CastType.Hitscan,
+                        id = 3, name = "낙뢰", iconKey = "weapon_lightning", castType = CastType.Hitscan,
                         baseStats = new WeaponBaseStats { cooldown = 2.5f, baseDamage = 25f, range = 20f, speed = 14f, hitCount = 1 },
                         maxLevel = 99,
                         upgrades = new List<WeaponUpgradeOption>
@@ -147,6 +151,13 @@ namespace Game.Core
             }
 
             weapons.Add(WeaponFactory.Create(data, entry.prefab, transform, targetProvider));
+            PublishSkills();
+        }
+
+        /// <summary>보유 무기 전체의 스냅샷을 HUD에 알린다. Buffered로 발행해야 나중에 켜진 구독자도 현재 목록을 받는다</summary>
+        private void PublishSkills()
+        {
+            skillChanged.Publish(new SkillChanged(new List<ISkillStatus>(weapons)));
         }
 
         public void WeaponLevelUp(int weaponId)
@@ -225,6 +236,7 @@ namespace Game.Core
             else
             {
                 choice.Weapon.LevelUp(choice.Option);
+                PublishSkills();
             }
         }
 

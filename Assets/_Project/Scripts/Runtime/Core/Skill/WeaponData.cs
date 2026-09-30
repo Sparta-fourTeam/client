@@ -9,6 +9,9 @@ namespace Game.Core
         public int id;
         public string name;
         public string desc;
+
+        /// <summary>HUD가 아이콘을 찾는 키 (SkillIconTable). 컨벤션상 아이콘은 테이블의 IconKey로 찾는다</summary>
+        public string iconKey;
         public CastType castType;
         public WeaponBaseStats baseStats;
         public List<WeaponUpgradeOption> upgrades;
