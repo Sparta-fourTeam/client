@@ -50,46 +50,46 @@ MonoBehaviour:
     Prefab: {fileID: 6311776197841859623, guid: 70a166a28c1780c469109fc1d97d3411, type: 3}
     ProjectilePrefab: {fileID: 6940759657125676971, guid: b21e1b571797a984abd123376e5056e5, type: 3}
     Speed: 1
-    MaxHp: 30
+    MaxHp: 10
     AttackType: 1
-    Damage: 2
+    Damage: 1
     AttackInterval: 3
     AttackRange: 2
   - Type: 0
     Prefab: {fileID: 4685488075804649445, guid: eedef41ae584e7948b908250bd9a7241, type: 3}
     ProjectilePrefab: {fileID: 0}
     Speed: 2
-    MaxHp: 50
+    MaxHp: 15
     AttackType: 0
     Damage: 1
     AttackInterval: 2
-    AttackRange: 0
-  - Type: 2
-    Prefab: {fileID: 7187176536582799020, guid: 1954ba4f587d1d646819481aecf0ede5, type: 3}
-    ProjectilePrefab: {fileID: 0}
-    Speed: 1.25
-    MaxHp: 150
-    AttackType: 0
-    Damage: 5
-    AttackInterval: 1.8
     AttackRange: 0
   - Type: 1
     Prefab: {fileID: 6311776197841859623, guid: a73362f167b46e84bbef04c82c95a1fc, type: 3}
     ProjectilePrefab: {fileID: 6940759657125676971, guid: b21e1b571797a984abd123376e5056e5, type: 3}
     Speed: 0.5
-    MaxHp: 45
+    MaxHp: 25
     AttackType: 1
-    Damage: 3
+    Damage: 2
     AttackInterval: 2.5
     AttackRange: 2
   - Type: 1
     Prefab: {fileID: 4685488075804649445, guid: 3e4124bbebca72048b38a59d202ee1c4, type: 3}
     ProjectilePrefab: {fileID: 0}
     Speed: 1.8
-    MaxHp: 67
+    MaxHp: 30
     AttackType: 0
     Damage: 3
     AttackInterval: 2.5
+    AttackRange: 0
+  - Type: 2
+    Prefab: {fileID: 7187176536582799020, guid: 1954ba4f587d1d646819481aecf0ede5, type: 3}
+    ProjectilePrefab: {fileID: 0}
+    Speed: 1.25
+    MaxHp: 50
+    AttackType: 0
+    Damage: 5
+    AttackInterval: 1.8
     AttackRange: 0
 --- !u!114 &1027409405871136764
 MonoBehaviour:
