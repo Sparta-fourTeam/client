@@ -8,6 +8,8 @@ namespace Game.Core
         private ObjectPool<HitscanEffect> pool;
         private const float EffectLifetime = 0.3f;
 
+
+
         public HitscanCaster(WeaponData data, GameObject prefab, Transform caster, IEnemyTargetProvider targetProvider) : base(data, caster, targetProvider)
         {
             pool = new ObjectPool<HitscanEffect>(
@@ -33,9 +35,8 @@ namespace Game.Core
                 }
 
                 var effect = pool.Get();
-                effect.Init(pool, new Vector3(target.Position.x, target.Position.y, 0f), EffectLifetime);
+                effect.Init(pool, new Vector3(target.Position.x, target.Position.y, 0f), stats.Damage, EffectLifetime);
 
-                target.TakeDamage((int)stats.Damage);
             }
         }
     }
