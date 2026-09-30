@@ -138,19 +138,5 @@ namespace Game.Tests
 
             CollectionAssert.AreEqual(new[] { "arrow_sharp", "weapon_2" }, _stats.BuildLog);
         }
-
-        [Description("완료한 웨이브는 도달 웨이브 - 1이며 0 밑으로 내려가지 않는다")]
-        [TestCase(0, 0)]
-        [TestCase(1, 0)]
-        [TestCase(4, 3)]
-        public void CompletedWaves_IsReachedWaveMinusOne(int reachedWave, int expected)
-        {
-            if (reachedWave > 0)
-            {
-                GaugeOnWave(reachedWave);
-            }
-
-            Assert.AreEqual(expected, _stats.CompletedWaves);
-        }
     }
 }

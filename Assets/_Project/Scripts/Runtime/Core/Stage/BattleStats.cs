@@ -21,7 +21,6 @@ namespace Game.Core
         public float PlayTime { get; private set; }
         public bool IsEnded { get; private set; }
         public int WallHpPercent { get; private set; } = 100;
-        public int CompletedWaves => Math.Max(0, ReachedWave - 1);
         public List<string> BuildLog { get; } = new();
 
         public BattleStats(

@@ -167,7 +167,6 @@ namespace Game.Core
                 battleId = _battleId,
                 cleared = cleared,
                 reachedWave = _stats.ReachedWave,
-                completedWaves = _stats.CompletedWaves,
                 kills = _stats.Kills,
                 playTime = _clock.ElapsedSeconds,
                 buildLog = _stats.BuildLog,
