@@ -9,6 +9,8 @@ using VContainer;
 
 namespace Game.View
 {
+    /// <summary>스테이지가 끝나고 결과 제출까지 끝나면 결과를 보여준다.
+    /// StageEnded가 아니라 StageResult를 구독한다: 서버가 확정한 보상이 들어 있고, 판정 없이 끝나는 포기(Forfeit)도 StageResult로 이어지기 때문이다</summary>
     public sealed class ResultPopupView : HudView
     {
         [SerializeField] private GameObject _panel;
@@ -17,19 +19,18 @@ namespace Game.View
         [SerializeField] private TMP_Text _killsText;
         [SerializeField] private TMP_Text _waveText;
         [SerializeField] private TMP_Text _timeText;
+        [SerializeField] private TMP_Text _rewardText;
         [SerializeField] private Button _lobbyButton;
 
-        private BattleStats _stats;
         private StageContext _stageContext;
         private ISceneNavigator _navigator;
 
         [Inject]
-        public void Construct(ISubscriber<StageEnded> stageEnded, BattleStats stats, StageContext stageContext, ISceneNavigator navigator)
+        public void Construct(ISubscriber<StageResult> stageResult, StageContext stageContext, ISceneNavigator navigator)
         {
-            _stats = stats;
             _stageContext = stageContext;
             _navigator = navigator;
-            Track(stageEnded.Subscribe(OnStageEnded));
+            Track(stageResult.Subscribe(OnStageResult));
         }
 
         private void Awake()
@@ -38,13 +39,15 @@ namespace Game.View
             _lobbyButton.onClick.AddListener(OnLobbyClicked);
         }
 
-        private void OnStageEnded(StageEnded message)
+        private void OnStageResult(StageResult result)
         {
-            _titleText.text = message.Outcome == StageOutcome.Clear ? "클리어" : "실패";
+            _titleText.text = result.Cleared ? "Clear !" : "Fail !";
             _stageText.text = _stageContext.StageId > 0 ? $"Stage {_stageContext.StageId}" : "-";
-            _killsText.text = $"처치 {_stats.Kills}";
-            _waveText.text = _stats.ReachedWave > 0 ? $"WAVE {_stats.ReachedWave}" : "-";
-            _timeText.text = FormatTime(_stats.PlayTime);
+            _killsText.text = $"처치 {result.Kills}";
+            _waveText.text = result.ReachedWave > 0 ? $"도달 웨이브 {result.ReachedWave}" : "도달 웨이브 -";
+            _timeText.text = $"플레이 시간 {FormatTime(result.PlayTime)}";
+            _rewardText.text = $"획득 골드 {result.RewardGold:N0}";
+            _lobbyButton.interactable = true;
             _panel.SetActive(true);
         }
 
