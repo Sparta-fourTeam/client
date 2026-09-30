@@ -10,44 +10,50 @@ namespace Game.View
 {
     public sealed class StageControlView : HudView
     {
+        // StageManager.SetSpeed가 2배로 제한하므로 1x ↔ 2x만 돈다
+        private static readonly float[] Speeds = { 1f, 2f };
+
         [SerializeField] private Button _speedButton;
         [SerializeField] private TMP_Text _speedLabel;
         [SerializeField] private Button _pauseButton;
 
         private StageManager _stageManager;
+        private int _speedIndex;
 
         [Inject]
         public void Construct(
             StageManager stageManager,
-            IBufferedSubscriber<GameSpeedChanged> speedChangedSubscriber,
-            ISubscriber<StageEnded> stageEndedSubscriber)
+            IBufferedSubscriber<StageStateChanged> stateChangedSubscriber)
         {
             _stageManager = stageManager;
-            Track(speedChangedSubscriber.Subscribe(OnSpeedChanged));
-            Track(stageEndedSubscriber.Subscribe(_ => OnStageEnded()));
+            Track(stateChangedSubscriber.Subscribe(OnStateChanged));
         }
 
         private void Awake()
         {
-            _speedButton.onClick.AddListener(() => _stageManager.CycleSpeed());
+            _speedButton.onClick.AddListener(OnSpeedClicked);
             _pauseButton.onClick.AddListener(() => _stageManager.Pause());
+            UpdateSpeedLabel();
         }
 
-        private void OnSpeedChanged(GameSpeedChanged message)
+        private void OnSpeedClicked()
         {
-            // Speed 0 = StageManager 초기화 전 (Buffered struct는 구독 즉시 기본값이 온다)
-            if (message.Speed <= 0f)
-            {
-                return;
-            }
-
-            _speedLabel.text = $"{message.Speed:0.#}x";
+            _speedIndex = (_speedIndex + 1) % Speeds.Length;
+            _stageManager.SetSpeed(Speeds[_speedIndex]);
+            UpdateSpeedLabel();
         }
 
-        private void OnStageEnded()
+        // Playing에서만 누를 수 있다. 카드 선택·결과 전송 중에는 막는다
+        private void OnStateChanged(StageStateChanged message)
         {
-            _speedButton.interactable = false;
-            _pauseButton.interactable = false;
+            bool playing = message.State == StageState.Playing;
+            _speedButton.interactable = playing;
+            _pauseButton.interactable = playing;
+        }
+
+        private void UpdateSpeedLabel()
+        {
+            _speedLabel.text = $"{Speeds[_speedIndex]:0.#}x";
         }
     }
 }
