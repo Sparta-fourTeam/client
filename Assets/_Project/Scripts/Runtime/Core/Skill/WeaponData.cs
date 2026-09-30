@@ -20,6 +20,7 @@ namespace Game.Core
     {
         public float cooldown;
         public float baseDamage;
+        public float range;
         public float speed;
         public int hitCount;
     }
