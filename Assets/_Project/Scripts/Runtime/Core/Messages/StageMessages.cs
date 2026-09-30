@@ -67,4 +67,17 @@ namespace Game.Core.Messages
             Code = code;
         }
     }
+
+    /// <summary>결과 제출이 거절이 아닌 이유(네트워크, 일시적 오류, 예상 밖 예외)로 실패했을 때 발행(StageManager).
+    /// 이게 없으면 Submitting에서 영영 멈춘다. 자동 재시도와 수동 재시도는 아직 없다 (#89)</summary>
+    public readonly struct SubmitFailed
+    {
+        /// <summary>서버와 공유하는 오류 코드. 예상 밖 예외는 UNEXPECTED</summary>
+        public string Code { get; }
+
+        public SubmitFailed(string code)
+        {
+            Code = code;
+        }
+    }
 }
