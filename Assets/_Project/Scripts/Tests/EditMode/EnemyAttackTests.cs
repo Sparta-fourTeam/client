@@ -22,7 +22,6 @@ namespace Game.Tests
         private const int WallMaxHp = 100;
         private const float Speed = EnemyProjectileSystem.ProjectileSpeed;
 
-
         private GameObject _wallGo;
         private Wall _wall;
         private FakePublisher<WallDestroyed> _wallDestroyed;
@@ -226,6 +225,21 @@ namespace Game.Tests
         }
 
         [Test]
+        public void Ranged_FiresOncePerInterval()
+        {
+            var enemy = CreateEnemy(y: 4f, AttackType.Ranged, damage: 10, interval: 1f, range: 4f);
+            int fired = 0;
+            enemy.ProjectileFired += _ => fired++;
+
+            enemy.Attack(0.5f, _wall, _projectiles); // 간격 전
+            enemy.Attack(0.5f, _wall, _projectiles); // 1발
+            enemy.Attack(1f, _wall, _projectiles);   // 2발
+
+            Assert.AreEqual(2, fired);
+            Assert.AreEqual(2, _projectiles.ActiveCount);
+        }
+
+        [Test]
         public void Ranged_EnemyDiesAfterFiring_InFlightProjectileStillHits()
         {
             var enemy = CreateEnemy(y: 4f, AttackType.Ranged, damage: 10, interval: 1f, range: 4f);
@@ -255,62 +269,76 @@ namespace Game.Tests
         }
 
         [Test]
+        public void Projectile_ReachesAttackLineExactly_Hits()
+        {
+            // 거리 8 = 탄속 8 × 1초 → 공격선에 딱 닿음 (<= 경계값)
+            var projectile = new EnemyProjectileModel(new Vector2(0f, 8f), Speed, 10);
+
+            projectile.Tick(1f, _wall);
+
+            Assert.IsTrue(projectile.IsDone);
+            Assert.AreEqual(WallMaxHp - 10, _wall.CurrentHp);
+        }
+
+        [Test]
         public void Projectile_LargeDeltaTime_OvershootsButHitsOnce()
         {
             var projectile = new EnemyProjectileModel(new Vector2(0f, 4f), Speed, 10);
 
             projectile.Tick(2f, _wall);  // 한 번에 벽을 지나침
+            projectile.Tick(1f, _wall);  // 이미 끝난 투사체
+
+            Assert.AreEqual(WallMaxHp - 10, _wall.CurrentHp);
+        }
+
+        [Test]
+        public void Projectile_UsesOnlyY_ForHit()
+        {
+            var projectile = new EnemyProjectileModel(new Vector2(50f, 4f), Speed, 10); // x가 멀어도
+
             projectile.Tick(1f, _wall);
 
-            Assert.AreEqual(WallMaxHp - 10, _wall.CurrentHp);
+            Assert.AreEqual(WallMaxHp - 10, _wall.CurrentHp); // y만으로 명중 판정
         }
 
         [Test]
-        public void Projectile_NonPositiveLifetime_Throws()
+        public void Projectile_FarFromWall_StaysUntilItReaches()
         {
-            Assert.Throws<ArgumentOutOfRangeException>(() => new EnemyProjectileModel(Vector2.zero, Speed, 10));
-        }
-
-        // ───────── 투사체 수명 (3초) ─────────
-
-        [Test]
-        public void Projectile_LifetimeExpires_WithoutHittingWall_NoDamage()
-        {
-            // 벽까지 100 → 탄속 8로 3초 동안 24만 이동해서 닿지 않음
+            // 수명 없음: 벽에 닿기 전까지는 오래 지나도 남아 있음
             var projectile = new EnemyProjectileModel(new Vector2(0f, 100f), Speed, 10);
 
-            projectile.Tick(2.9f, _wall);
+            projectile.Tick(5f, _wall); // 100 → 60
             Assert.IsFalse(projectile.IsDone);
-
-            projectile.Tick(0.2f, _wall); // 누적 3.1초
-
-            Assert.IsTrue(projectile.IsDone);
             Assert.AreEqual(WallMaxHp, _wall.CurrentHp);
-        }
 
-        [Test]
-        public void Projectile_HitsOnLastFrameOfLifetime_StillDamages()
-        {
-            // 거리 24 = 탄속 8 × 3초 → 수명이 끝나는 프레임에 딱 닿음
-            var projectile = new EnemyProjectileModel(new Vector2(0f, 24f), Speed, 10);
-
-            projectile.Tick(3f, _wall);
-
+            projectile.Tick(10f, _wall); // 60 → -20, 명중
+            Assert.IsTrue(projectile.IsDone);
             Assert.AreEqual(WallMaxHp - 10, _wall.CurrentHp);
         }
 
-        [Test]
-        public void ProjectileSystem_RemovesExpiredProjectile()
-        {
-            _projectiles.Fire(new Vector2(0f, 100f), 10); // 벽에 닿지 않는 거리
+        // ───────── 투사체 시스템 ─────────
 
-            _projectiles.Tick(1f, _wall);
+        [Test]
+        public void ProjectileSystem_Fire_AddsActiveProjectile()
+        {
+            var projectile = _projectiles.Fire(new Vector2(0f, 4f), 10);
+
+            Assert.IsNotNull(projectile);
+            Assert.AreEqual(1, _projectiles.ActiveCount);
+            Assert.AreEqual(4f, projectile.Position.y, 0.0001f);
+        }
+
+        [Test]
+        public void ProjectileSystem_RemovesProjectileAfterHit()
+        {
+            _projectiles.Fire(new Vector2(0f, 4f), 10);
+
+            _projectiles.Tick(0.25f, _wall); // 4 → 2, 아직 비행 중
             Assert.AreEqual(1, _projectiles.ActiveCount);
 
-            _projectiles.Tick(4f, _wall); // 누적 4초
-
+            _projectiles.Tick(1f, _wall);    // 명중 → 제거
             Assert.AreEqual(0, _projectiles.ActiveCount);
-            Assert.AreEqual(WallMaxHp, _wall.CurrentHp);
+            Assert.AreEqual(WallMaxHp - 10, _wall.CurrentHp);
         }
 
         [Test]
@@ -323,6 +351,19 @@ namespace Game.Tests
 
             Assert.AreEqual(WallMaxHp - 15, _wall.CurrentHp);
             Assert.AreEqual(0, _projectiles.ActiveCount);
+        }
+
+        [Test]
+        public void ProjectileSystem_WallDestroyed_ProjectileStillRemoved_NoDamage()
+        {
+            _wall.Initialize(10);
+            _wall.TakeDamage(10); // 벽 파괴
+            _projectiles.Fire(new Vector2(0f, 4f), 10);
+
+            _projectiles.Tick(1f, _wall);
+
+            Assert.AreEqual(0, _wall.CurrentHp);
+            Assert.AreEqual(0, _projectiles.ActiveCount); // 파괴된 벽에 닿아도 정리됨
         }
     }
 }
