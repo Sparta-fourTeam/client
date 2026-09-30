@@ -126,7 +126,16 @@ namespace Game.Core
                 return;
             }
 
-            _choices = _weaponController.GetRandomUpgradeChoices(3);
+            var choices = _weaponController.GetRandomUpgradeChoices(3);
+
+            // 고를 카드가 없으면(무기 만렙, 강화 소진) 카드 선택으로 넘어가지 않는다.
+            // 넘어가면 PickCard가 항상 무시되고 Pause/Resume으로도 CardSelect로 돌아와 영영 멈춘다
+            if (choices.Count == 0)
+            {
+                return;
+            }
+
+            _choices = choices;
             Time.timeScale = 0f;
             ChangeState(StageState.CardSelect);
         }
