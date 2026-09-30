@@ -1,7 +1,6 @@
 using Game.Core;
 using Game.Core.Defense;
 using Game.Core.Stage;
-using Game.View;
 using VContainer;
 using VContainer.Unity;
 
@@ -13,6 +12,9 @@ namespace Game.Boot
         protected override void Configure(IContainerBuilder builder)
         {
             builder.RegisterComponentInHierarchy<Wall>();
+            builder.RegisterComponentInHierarchy<WeaponController>();
+            builder.RegisterEntryPoint<StageClock>().AsSelf();
+            builder.RegisterEntryPoint<StageManager>().AsSelf();
             builder.RegisterEntryPoint<StageJudge>();
             // BattleStats는 WaveProgress보다 먼저 EnemyDied를 구독해야 스테이지를 끝내는 마지막 처치까지 센다 (순서 변경 금지)
             builder.RegisterEntryPoint<BattleStats>().AsSelf();
