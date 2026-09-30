@@ -25,7 +25,7 @@
 | `WallHpChanged` | Buffered | Wall |
 | `WallDestroyed` | 사건 | Wall |
 | `StageEnded` | 사건 | StageJudge |
-| `StartFailed` | 사건 | StageManager |
+| `StartFailed` | 사건 | BattleLauncher |
 | `StageResult` | 사건 | StageManager |
 | `SubmitFailed` | 사건 | StageManager |
 | `SubmitRejected` | 사건 | StageManager |
