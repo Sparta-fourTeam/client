@@ -1281,10 +1281,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 256869779842763672, guid: 6e68198728ace4313b314fddb193ff9b, type: 3}
-      propertyPath: m_AdditionalShaderChannelsFlag
-      value: 25
-      objectReference: {fileID: 0}
     - target: {fileID: 7447173283495688033, guid: 6e68198728ace4313b314fddb193ff9b, type: 3}
       propertyPath: m_Name
       value: HudCanvas
