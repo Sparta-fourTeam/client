@@ -1285,6 +1285,58 @@ PrefabInstance:
       propertyPath: m_AdditionalShaderChannelsFlag
       value: 25
       objectReference: {fileID: 0}
+    - target: {fileID: 2349516566236709879, guid: 6e68198728ace4313b314fddb193ff9b, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2349516566236709879, guid: 6e68198728ace4313b314fddb193ff9b, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2349516566236709879, guid: 6e68198728ace4313b314fddb193ff9b, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2349516566236709879, guid: 6e68198728ace4313b314fddb193ff9b, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2591735422064397888, guid: 6e68198728ace4313b314fddb193ff9b, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2591735422064397888, guid: 6e68198728ace4313b314fddb193ff9b, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2591735422064397888, guid: 6e68198728ace4313b314fddb193ff9b, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2591735422064397888, guid: 6e68198728ace4313b314fddb193ff9b, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3039952430626363011, guid: 6e68198728ace4313b314fddb193ff9b, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3039952430626363011, guid: 6e68198728ace4313b314fddb193ff9b, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3039952430626363011, guid: 6e68198728ace4313b314fddb193ff9b, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3039952430626363011, guid: 6e68198728ace4313b314fddb193ff9b, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4731597680942777315, guid: 6e68198728ace4313b314fddb193ff9b, type: 3}
+      propertyPath: m_BlockingMask.m_Bits
+      value: 823
+      objectReference: {fileID: 0}
     - target: {fileID: 7447173283495688033, guid: 6e68198728ace4313b314fddb193ff9b, type: 3}
       propertyPath: m_Name
       value: HudCanvas
