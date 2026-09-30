@@ -1,4 +1,5 @@
 using System.Linq;
+using Cysharp.Threading.Tasks;
 using Game.Core;
 using Game.Core.Defense;
 using Game.Core.Messages;
@@ -27,8 +28,11 @@ namespace Game.Editor
         private int _energyCurrent = 7;
         private int _energyMax = 100;
 
-        private int _fakeSkillCount = 3;
-        private readonly System.Collections.Generic.List<FakeSkillStatus> _fakeSkills = new System.Collections.Generic.List<FakeSkillStatus>();
+        private int _launchStageId = 1;
+        private int _resultKills = 24;
+        private int _resultWave = 3;
+        private float _resultPlayTime = 125f;
+        private int _resultGold = 350;
 
         [MenuItem("Tools/Project Nova/Message Debugger")]
         private static void Open()
@@ -55,71 +59,13 @@ namespace Game.Editor
 
             _scroll = EditorGUILayout.BeginScrollView(_scroll);
             DrawStatus();
+            DrawBattleLaunch();
             DrawWaveMessages();
             DrawStageMessages();
             DrawWallMessages();
             DrawStageManagerCalls();
-            DrawSkillMessages();
             DrawLobbyMessages();
             EditorGUILayout.EndScrollView();
-        }
-
-        // 가짜 스킬의 쿨타임을 진행시킨다. 창이 그려질 때만 갱신되지 않도록 에디터 업데이트에서 돈다
-        private void OnEnable()
-        {
-            EditorApplication.update += TickFakeSkills;
-        }
-
-        private void OnDisable()
-        {
-            EditorApplication.update -= TickFakeSkills;
-        }
-
-        private void TickFakeSkills()
-        {
-            if (!Application.isPlaying)
-            {
-                _fakeSkills.Clear();
-                return;
-            }
-
-            foreach (var skill in _fakeSkills)
-            {
-                skill.Tick(Time.deltaTime);
-            }
-        }
-
-        // 실제 무기 대신 가짜 스킬로 HUD 스킬 슬롯을 확인한다. 실제 연결 전용 임시 버튼이다
-        private void DrawSkillMessages()
-        {
-            Header("스킬 슬롯 (가짜 데이터, 실제 무기와 무관)");
-            _fakeSkillCount = EditorGUILayout.IntSlider("스킬 수", _fakeSkillCount, 0, 6);
-            using (new EditorGUILayout.HorizontalScope())
-            {
-                if (GUILayout.Button("SkillChanged 발행 (가짜)"))
-                {
-                    _fakeSkills.Clear();
-                    string[] keys = { "fake_arrow", "fake_fireball", "fake_lightning", "fake_ice", "fake_kunai", "fake_extra" };
-                    float[] cooldowns = { 1.0f, 1.8f, 2.5f, 4f, 6f, 3f };
-                    for (int i = 0; i < _fakeSkillCount; i++)
-                    {
-                        // 칸마다 쿨타임 진행이 달라 보이도록 시작 값을 엇갈리게 준다
-                        _fakeSkills.Add(new FakeSkillStatus(i + 1, i + 1, keys[i], cooldowns[i], cooldowns[i] * (i % 3) / 3f));
-                    }
-
-                    PublishBuffered(new SkillChanged(_fakeSkills.ToArray()));
-                }
-
-                if (GUILayout.Button("레벨 +1 후 재발행"))
-                {
-                    foreach (var skill in _fakeSkills)
-                    {
-                        skill.Level++;
-                    }
-
-                    PublishBuffered(new SkillChanged(_fakeSkills.ToArray()));
-                }
-            }
         }
 
         private void DrawStatus()
@@ -191,6 +137,56 @@ namespace Game.Editor
                 if (GUILayout.Button("StageEnded (Fail)"))
                 {
                     Publish(new StageEnded(StageOutcome.Fail));
+                }
+            }
+
+            // 결과 팝업이 구독하는 최종 결과. 서버 제출을 거치지 않고 표시만 확인할 때 쓴다
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                _resultKills = EditorGUILayout.IntField("처치", _resultKills);
+                _resultWave = EditorGUILayout.IntField("웨이브", _resultWave);
+            }
+
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                _resultPlayTime = EditorGUILayout.FloatField("플레이 시간(초)", _resultPlayTime);
+                _resultGold = EditorGUILayout.IntField("보상 골드", _resultGold);
+            }
+
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                if (GUILayout.Button("StageResult (Clear)"))
+                {
+                    Publish(new StageResult(true, _resultKills, _resultWave, _resultPlayTime, _resultGold));
+                }
+
+                if (GUILayout.Button("StageResult (Fail)"))
+                {
+                    Publish(new StageResult(false, _resultKills, _resultWave, _resultPlayTime, _resultGold));
+                }
+            }
+        }
+
+        // 로비 UI가 BattleLauncher에 연결되기 전에도 실제 전투 발급(에너지 소모 포함)으로 Stage에 들어가 결과 흐름까지 확인하는 용도
+        private void DrawBattleLaunch()
+        {
+            Header("전투 시작 (BattleLauncher 경유, 로비에서 사용)");
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                _launchStageId = EditorGUILayout.IntField("스테이지", _launchStageId);
+                if (GUILayout.Button("전투 발급 후 Stage 진입"))
+                {
+                    var api = Resolve<IBattleApi>();
+                    var context = Resolve<StageContext>();
+                    var navigator = Resolve<ISceneNavigator>();
+                    var startFailed = Resolve<IPublisher<StartFailed>>();
+                    if (api == null || context == null || navigator == null || startFailed == null)
+                    {
+                        Debug.LogWarning("[MessageDebugger] BattleLauncher에 필요한 서비스를 찾지 못했습니다 (Boot 씬에서 시작했는지 확인)");
+                        return;
+                    }
+
+                    new BattleLauncher(api, context, navigator, startFailed).Launch(_launchStageId).Forget(Debug.LogException);
                 }
             }
         }

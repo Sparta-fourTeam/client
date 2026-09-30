@@ -18,10 +18,10 @@ namespace Game.Core
         private readonly StageContext _stageContext;
         private readonly BattleStats _stats;
         private readonly StageClock _clock;
-        private readonly ISceneNavigator _nav;
         private readonly ISubscriber<WaveGaugeFilled> _gaugeFilled;
         private readonly WeaponController _weaponController;
         private readonly IPublisher<SubmitRejected> _submitRejected;
+        private readonly IPublisher<SubmitFailed> _submitFailed;
 
         private float _speed = 1f;
         private StageState _beforePause;
@@ -43,10 +43,10 @@ namespace Game.Core
             StageContext stageContext,
             BattleStats stats,
             StageClock clock,
-            ISceneNavigator nav,
             ISubscriber<WaveGaugeFilled> gaugeFilled,
             WeaponController weaponController,
-            IPublisher<SubmitRejected> submitRejected)
+            IPublisher<SubmitRejected> submitRejected,
+            IPublisher<SubmitFailed> submitFailed)
         {
             _stateChanged = stateChanged;
             _stageEnded = stageEnded;
@@ -55,10 +55,10 @@ namespace Game.Core
             _stageContext = stageContext;
             _stats = stats;
             _clock = clock;
-            _nav = nav;
             _gaugeFilled = gaugeFilled;
             _weaponController = weaponController;
             _submitRejected = submitRejected;
+            _submitFailed = submitFailed;
         }
 
         public void Start()
@@ -190,8 +190,23 @@ namespace Game.Core
             }
             catch (ApiException e) when (e.Kind == ApiErrorKind.Rejected)
             {
+                // 여기서 로비로 이동하지 않는다: 이동하면 Stage 씬이 사라져 거절 안내가 보이지 않는다.
+                // 안내를 보여주고 로비로 보내는 것은 SubmitRejected를 구독하는 뷰의 몫이다 (docs/flows.md: 거절 안내 후 Lobby)
                 _submitRejected.Publish(new SubmitRejected(e.Code));
-                await _nav.GoToLobby();
+                return;
+            }
+            catch (ApiException e)
+            {
+                // Transient, Network: 지금은 재시도 없이 실패를 알려 나갈 길을 준다. 이게 없으면 Submitting에서 영영 멈춘다.
+                // 자동 재시도 3회와 수동 재시도는 #89
+                _submitFailed.Publish(new SubmitFailed(e.Code));
+                return;
+            }
+            catch (Exception e)
+            {
+                // 예상 밖 예외도 같은 이유로 잡는다. 원인은 로그로 남긴다
+                Debug.LogException(e);
+                _submitFailed.Publish(new SubmitFailed("UNEXPECTED"));
                 return;
             }
 

@@ -33,35 +33,20 @@ namespace Game.Tests
             }
         }
 
-        private sealed class FakeNavigator : ISceneNavigator
-        {
-            public int LobbyCount;
-
-            public SceneId Current => default;
-            public UniTask GoToLoading() => UniTask.CompletedTask;
-            public UniTask GoToStage(int stageId) => UniTask.CompletedTask;
-            public UniTask RestartStage() => UniTask.CompletedTask;
-
-            public UniTask GoToLobby()
-            {
-                LobbyCount++;
-                return UniTask.CompletedTask;
-            }
-        }
-
         private IPublisher<StageEnded> _stageEnded;
         private IPublisher<WaveGaugeFilled> _gaugeFilled;
         private ISubscriber<StageStateChanged> _stateChanged;
         private ISubscriber<StageResult> _resultSubscriber;
         private ISubscriber<SubmitRejected> _rejectedSubscriber;
+        private ISubscriber<SubmitFailed> _failedSubscriber;
         private FakeBattleApi _api;
-        private FakeNavigator _nav;
         private BattleStats _stats;
         private StageClock _clock;
         private StageManager _manager;
         private readonly List<StageState> _states = new();
         private readonly List<StageResult> _results = new();
         private readonly List<SubmitRejected> _rejected = new();
+        private readonly List<SubmitFailed> _failed = new();
         private readonly List<IDisposable> _subscriptions = new();
 
         [SetUp]
@@ -70,6 +55,7 @@ namespace Game.Tests
             _states.Clear();
             _results.Clear();
             _rejected.Clear();
+            _failed.Clear();
             _subscriptions.Clear();
 
             var builder = new BuiltinContainerBuilder();
@@ -78,6 +64,7 @@ namespace Game.Tests
             builder.AddMessageBroker<StageEnded>();
             builder.AddMessageBroker<StageResult>();
             builder.AddMessageBroker<SubmitRejected>();
+            builder.AddMessageBroker<SubmitFailed>();
             builder.AddMessageBroker<WaveGaugeFilled>();
             builder.AddMessageBroker<EnemyDied>();
             builder.AddMessageBroker<WaveGaugeChanged>();
@@ -92,9 +79,10 @@ namespace Game.Tests
             _subscriptions.Add(_stateChanged.Subscribe(e => _states.Add(e.State)));
             _subscriptions.Add(_resultSubscriber.Subscribe(_results.Add));
             _subscriptions.Add(_rejectedSubscriber.Subscribe(_rejected.Add));
+            _failedSubscriber = provider.GetRequiredService<ISubscriber<SubmitFailed>>();
+            _subscriptions.Add(_failedSubscriber.Subscribe(_failed.Add));
 
             _api = new FakeBattleApi();
-            _nav = new FakeNavigator();
 
             _stats = new BattleStats(
                 provider.GetRequiredService<ISubscriber<EnemyDied>>(),
@@ -114,10 +102,10 @@ namespace Game.Tests
                 context,
                 _stats,
                 _clock,
-                _nav,
                 provider.GetRequiredService<ISubscriber<WaveGaugeFilled>>(),
                 null,
-                provider.GetRequiredService<IPublisher<SubmitRejected>>());
+                provider.GetRequiredService<IPublisher<SubmitRejected>>(),
+                provider.GetRequiredService<IPublisher<SubmitFailed>>());
             _manager.Start();
         }
 
@@ -253,8 +241,8 @@ namespace Game.Tests
                 new[] { StageState.Playing, StageState.Submitting, StageState.Finished }, _states);
         }
 
-        [Test(Description = "결과 제출이 거절되면 SubmitRejected를 발행하고 로비로 돌아간다")]
-        public void StageEnded_Rejected_PublishesAndGoesToLobby()
+        [Test(Description = "결과 제출이 거절되면 SubmitRejected만 발행한다. 안내를 보여주고 로비로 보내는 것은 구독하는 뷰의 몫이다")]
+        public void StageEnded_Rejected_PublishesAndWaitsForNotice()
         {
             _api.ToThrow = new ApiException(ApiErrorKind.Rejected, "DUPLICATE_SUBMIT");
 
@@ -262,9 +250,37 @@ namespace Game.Tests
 
             Assert.AreEqual(1, _rejected.Count);
             Assert.AreEqual("DUPLICATE_SUBMIT", _rejected[0].Code);
-            Assert.AreEqual(1, _nav.LobbyCount);
+            Assert.AreEqual(0, _failed.Count);
             Assert.AreEqual(0, _results.Count);
             Assert.AreEqual(StageState.Submitting, _manager.State);
+        }
+
+        [Test(Description = "네트워크나 일시적 오류로 제출이 실패하면 멈추지 않고 SubmitFailed를 발행한다 (재시도는 #89)")]
+        [TestCase(ApiErrorKind.Transient, "SERVER_BUSY")]
+        [TestCase(ApiErrorKind.Network, "NETWORK")]
+        public void StageEnded_TransientOrNetwork_PublishesSubmitFailed(ApiErrorKind kind, string code)
+        {
+            _api.ToThrow = new ApiException(kind, code);
+
+            _stageEnded.Publish(new StageEnded(StageOutcome.Clear));
+
+            Assert.AreEqual(1, _failed.Count);
+            Assert.AreEqual(code, _failed[0].Code);
+            Assert.AreEqual(0, _rejected.Count);
+            Assert.AreEqual(0, _results.Count);
+            Assert.AreEqual(StageState.Submitting, _manager.State);
+        }
+
+        [Test(Description = "예상 밖 예외로 제출이 실패해도 Submitting에서 멈추지 않도록 UNEXPECTED로 SubmitFailed를 발행한다")]
+        public void StageEnded_UnexpectedException_PublishesSubmitFailedUnexpected()
+        {
+            _api.ToThrow = new InvalidOperationException("boom");
+
+            UnityEngine.TestTools.LogAssert.Expect(UnityEngine.LogType.Exception, new System.Text.RegularExpressions.Regex("boom"));
+            _stageEnded.Publish(new StageEnded(StageOutcome.Fail));
+
+            Assert.AreEqual(1, _failed.Count);
+            Assert.AreEqual("UNEXPECTED", _failed[0].Code);
         }
 
         [Test(Description = "Dispose하면 timeScale이 1로 복구된다")]

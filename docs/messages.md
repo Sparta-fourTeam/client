@@ -63,5 +63,6 @@ Diagnostics 창은 구독만 보여주고 발행은 못 한다. 내 UI나 로직
 
 - 사용법: Boot 씬에서 재생해 Stage 씬까지 들어간 뒤 연다. `EnemyDied x5`를 누르면 웨이브 1이 끝나 카드 선택까지 이어진다
 - 판정(`StageEnded`)은 StageJudge를 거치지 않고 바로 발행된다. 판정 로직 자체를 확인할 때는 `WallDestroyed`나 `WaveGaugeFilled`를 쓴다
+- `StageResult`(결과 팝업이 구독)는 서버 제출을 거치지 않고 표시만 확인할 때 쓴다. 제출까지 실제로 확인하려면 로비에서 **전투 발급 후 Stage 진입** 버튼으로 들어간 뒤 `WaveGaugeFilled (마지막 웨이브)`(클리어)나 `Pause` → `Forfeit`(포기)를 쓴다. 이 버튼은 로비가 `BattleLauncher`에 연결되기 전에도 실제 전투 발급으로 Stage에 들어간다. 에너지 소모와 골드 지급이 로컬 저장에 실제로 기록된다
 - Buffered 메시지(`WallHpChanged`)는 `IBufferedPublisher`로 발행한다. 새 메시지를 추가하면 `Scripts/Editor/MessageDebugWindow.cs`에 버튼을 같이 넣는다
 - 에디터 전용 어셈블리(`Game.Editor`)라 빌드에는 포함되지 않는다
