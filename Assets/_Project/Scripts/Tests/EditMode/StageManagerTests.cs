@@ -33,29 +33,12 @@ namespace Game.Tests
             }
         }
 
-        private sealed class FakeNavigator : ISceneNavigator
-        {
-            public int LobbyCount;
-
-            public SceneId Current => default;
-            public UniTask GoToLoading() => UniTask.CompletedTask;
-            public UniTask GoToStage(int stageId) => UniTask.CompletedTask;
-            public UniTask RestartStage() => UniTask.CompletedTask;
-
-            public UniTask GoToLobby()
-            {
-                LobbyCount++;
-                return UniTask.CompletedTask;
-            }
-        }
-
         private IPublisher<StageEnded> _stageEnded;
         private IPublisher<WaveGaugeFilled> _gaugeFilled;
         private ISubscriber<StageStateChanged> _stateChanged;
         private ISubscriber<StageResult> _resultSubscriber;
         private ISubscriber<SubmitRejected> _rejectedSubscriber;
         private FakeBattleApi _api;
-        private FakeNavigator _nav;
         private BattleStats _stats;
         private StageClock _clock;
         private StageManager _manager;
@@ -94,7 +77,6 @@ namespace Game.Tests
             _subscriptions.Add(_rejectedSubscriber.Subscribe(_rejected.Add));
 
             _api = new FakeBattleApi();
-            _nav = new FakeNavigator();
 
             _stats = new BattleStats(
                 provider.GetRequiredService<ISubscriber<EnemyDied>>(),
@@ -114,7 +96,6 @@ namespace Game.Tests
                 context,
                 _stats,
                 _clock,
-                _nav,
                 provider.GetRequiredService<ISubscriber<WaveGaugeFilled>>(),
                 null,
                 provider.GetRequiredService<IPublisher<SubmitRejected>>());
@@ -253,8 +234,8 @@ namespace Game.Tests
                 new[] { StageState.Playing, StageState.Submitting, StageState.Finished }, _states);
         }
 
-        [Test(Description = "결과 제출이 거절되면 SubmitRejected를 발행하고 로비로 돌아간다")]
-        public void StageEnded_Rejected_PublishesAndGoesToLobby()
+        [Test(Description = "결과 제출이 거절되면 SubmitRejected만 발행한다. 안내를 보여주고 로비로 보내는 것은 구독하는 뷰의 몫이다")]
+        public void StageEnded_Rejected_PublishesAndWaitsForNotice()
         {
             _api.ToThrow = new ApiException(ApiErrorKind.Rejected, "DUPLICATE_SUBMIT");
 
@@ -262,7 +243,6 @@ namespace Game.Tests
 
             Assert.AreEqual(1, _rejected.Count);
             Assert.AreEqual("DUPLICATE_SUBMIT", _rejected[0].Code);
-            Assert.AreEqual(1, _nav.LobbyCount);
             Assert.AreEqual(0, _results.Count);
             Assert.AreEqual(StageState.Submitting, _manager.State);
         }

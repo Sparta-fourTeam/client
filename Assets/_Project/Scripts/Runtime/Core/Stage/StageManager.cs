@@ -18,7 +18,6 @@ namespace Game.Core
         private readonly StageContext _stageContext;
         private readonly BattleStats _stats;
         private readonly StageClock _clock;
-        private readonly ISceneNavigator _nav;
         private readonly ISubscriber<WaveGaugeFilled> _gaugeFilled;
         private readonly WeaponController _weaponController;
         private readonly IPublisher<SubmitRejected> _submitRejected;
@@ -43,7 +42,6 @@ namespace Game.Core
             StageContext stageContext,
             BattleStats stats,
             StageClock clock,
-            ISceneNavigator nav,
             ISubscriber<WaveGaugeFilled> gaugeFilled,
             WeaponController weaponController,
             IPublisher<SubmitRejected> submitRejected)
@@ -55,7 +53,6 @@ namespace Game.Core
             _stageContext = stageContext;
             _stats = stats;
             _clock = clock;
-            _nav = nav;
             _gaugeFilled = gaugeFilled;
             _weaponController = weaponController;
             _submitRejected = submitRejected;
@@ -190,8 +187,9 @@ namespace Game.Core
             }
             catch (ApiException e) when (e.Kind == ApiErrorKind.Rejected)
             {
+                // 여기서 로비로 이동하지 않는다: 이동하면 Stage 씬이 사라져 거절 안내가 보이지 않는다.
+                // 안내를 보여주고 로비로 보내는 것은 SubmitRejected를 구독하는 뷰의 몫이다 (docs/flows.md: 거절 안내 후 Lobby)
                 _submitRejected.Publish(new SubmitRejected(e.Code));
-                await _nav.GoToLobby();
                 return;
             }
 
