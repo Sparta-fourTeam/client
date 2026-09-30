@@ -7,7 +7,7 @@ using VContainer;
 namespace Game.View
 {
     /// <summary>결과를 서버에 제출하는 동안(Submitting) 화면을 덮는 "전송 중" 표시.
-    /// 제출이 거절되면 상태는 Submitting 그대로라서 SubmitRejected도 같이 받아 숨긴다.
+    /// 제출이 거절되거나 실패하면 상태는 Submitting 그대로라서 SubmitRejected, SubmitFailed도 같이 받아 숨긴다.
     /// 응답이 빨라도 잠깐 떴다 사라지는 깜빡임이 생기지 않게, 일정 시간 이상 걸릴 때만 보여준다</summary>
     public sealed class SubmittingView : HudView
     {
@@ -20,10 +20,12 @@ namespace Game.View
         [Inject]
         public void Construct(
             IBufferedSubscriber<StageStateChanged> stateChanged,
-            ISubscriber<SubmitRejected> submitRejected)
+            ISubscriber<SubmitRejected> submitRejected,
+            ISubscriber<SubmitFailed> submitFailed)
         {
             Track(stateChanged.Subscribe(OnStateChanged));
             Track(submitRejected.Subscribe(_ => Hide()));
+            Track(submitFailed.Subscribe(_ => Hide()));
         }
 
         private void Awake()
