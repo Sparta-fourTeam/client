@@ -124,6 +124,7 @@ GameObject:
   - component: {fileID: 7017515536541326421}
   - component: {fileID: 7712040926794665635}
   - component: {fileID: 2741811370757933130}
+  - component: {fileID: 507822535949473017}
   m_Layer: 5
   m_Name: MissionButton
   m_TagString: Untagged
@@ -234,6 +235,21 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &507822535949473017
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5380180275510355596}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9bf1d556b6e6e44ead05ccc9324a8ab, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.MissonButtonView
+  _button: {fileID: 2741811370757933130}
+  _stageText: {fileID: 8397079311915061677}
+  _missionScreen: {fileID: 8106915261588189252, guid: 412c72eb7c9d6d44dbac4ba5448a874b, type: 3}
 --- !u!1 &7286093289443170024
 GameObject:
   m_ObjectHideFlags: 0
@@ -321,7 +337,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
@@ -458,7 +474,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2

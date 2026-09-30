@@ -26,6 +26,7 @@ namespace Game.Editor
         private int _walletGold = 12500;
         private int _energyCurrent = 7;
         private int _energyMax = 100;
+        private int _realEnergy = 2;
 
         [MenuItem("Tools/Project Nova/Message Debugger")]
         private static void Open()
@@ -244,6 +245,43 @@ namespace Game.Editor
             {
                 PublishBuffered(new EnergyChanged(_energyCurrent, _energyMax));
             }
+
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                _realEnergy = EditorGUILayout.IntField("실제 에너지", _realEnergy);
+                if (GUILayout.Button("PlayerProfile 에너지 변경 (저장 파일은 그대로)"))
+                {
+                    SetProfileEnergy(_realEnergy);
+                }
+            }
+
+            if (GUILayout.Button("LobbyRequestFailed (회복 실패)"))
+            {
+                Publish(new LobbyRequestFailed("DEBUG_FAILED"));
+            }
+        }
+
+        // 프로필 값만 바꾼다. EnergyClock이 다시 계산해 EnergyChanged를 발행하고, 입장 시 에너지 확인도 이 값을 쓴다.
+// Game.Editor는 Game.Network를 참조하지 않아서 로컬 저장 파일은 바꾸지 않는다
+        private static void SetProfileEnergy(int energy)
+        {
+            var profile = Resolve<PlayerProfile>();
+            if (profile == null)
+            {
+                Debug.LogWarning("[MessageDebugger] PlayerProfile을 찾지 못했습니다");
+                return;
+            }
+
+            PlayerSnapshot current = profile.Snapshot();
+            profile.Apply(new PlayerSnapshot
+            {
+                gold = current.gold,
+                energyStored = energy,
+                energyUpdatedAt = System.DateTime.UtcNow.ToString("O"),
+                stageProgress = current.stageProgress,
+                upgrades = current.upgrades,
+            });
+            Debug.Log($"[MessageDebugger] PlayerProfile 에너지 = {energy}");
         }
 
         private static void Header(string text)

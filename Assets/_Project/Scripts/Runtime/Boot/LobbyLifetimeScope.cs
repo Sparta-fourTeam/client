@@ -11,6 +11,8 @@ namespace Game.Boot
             builder.Register<IUtcClock, SystemUtcClock>(Lifetime.Singleton);
             builder.RegisterEntryPoint<LobbyModel>();
             builder.RegisterEntryPoint<EnergyClock>();
+            builder.Register<BattleLauncher>(Lifetime.Scoped);
+            builder.Register<EnergyRecovery>(Lifetime.Scoped);
         }
     }
 }

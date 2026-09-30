@@ -7,6 +7,9 @@ namespace Game.Core
         Natural,
 
         /// <summary>광고 시청을 통한 회복</summary>
-        Ad
+        Ad,
+
+        /// <summary>유료 재화 회복 </summary>>
+        Purchase
     }
 }

@@ -18,19 +18,19 @@ namespace Game.Network
 
         public UniTask<PlayerSnapshot> Recover(EnergySource source, string idempotencyKey = null)
         {
-            if (source == EnergySource.Ad)
-            {
-                // TODO(server): 광고 보상 미정 — 예: 보상량 확정 후 save.wallet.energyStored += adRewardAmount;
-                throw new ApiException(ApiErrorKind.Rejected, "AD_ENERGY_NOT_SUPPORTED");
-            }
-
             var save = _store.Load();
-            var (current, _) = EnergyRule.At(save.wallet.energyStored,
-                EnergyRule.ParseUpdatedAt(save.wallet.energyUpdatedAt), DateTime.UtcNow, _data.Energy);
+            var (current, _) = EnergyRule.At(save.wallet.energyStored, EnergyRule.ParseUpdatedAt(save.wallet.energyUpdatedAt), DateTime.UtcNow, _data.Energy);
+
+            current += source switch
+            {
+                EnergySource.Ad => _data.Energy.AdRecoverAmount,
+                EnergySource.Purchase => _data.Energy.PurchaseRecoverAmount,
+                _ => 0,
+            };
+
             save.wallet.energyStored = current;
             save.wallet.energyUpdatedAt = DateTime.UtcNow.ToString("O");
             _store.Flush(save);
-
             return UniTask.FromResult(LocalPlayerApi.ToSnapshot(save));
         }
     }
