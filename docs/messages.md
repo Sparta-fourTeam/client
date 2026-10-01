@@ -21,7 +21,7 @@
 | `WaveGaugeChanged` | Buffered | WaveProgress |
 | `WaveGaugeFilled` | 사건 | WaveProgress |
 | `CardPicked` | 사건 | StageManager |
-| `SkillChanged` | 사건 | SkillInventory |
+| `SkillChanged` | Buffered | WeaponController |
 | `WallHpChanged` | Buffered | Wall |
 | `WallDestroyed` | 사건 | Wall |
 | `StageEnded` | 사건 | StageJudge |
