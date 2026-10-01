@@ -16,16 +16,22 @@ namespace Game.View
 
         private int _index;
         private Action<int> _onPick;
+        [SerializeField] private Image _background;
+        [SerializeField] private Image _iconImage;
+
 
         private void Awake()
         {
             _button.onClick.AddListener(() => _onPick?.Invoke(_index));
         }
 
-        public void Bind(int index, WeaponController.UpgradeChoice choice, Action<int> onPick)
+        public void Bind(int index, WeaponController.UpgradeChoice choice, Sprite icon, Sprite background, Action<int> onPick)
         {
             _index = index;
             _onPick = onPick;
+            _background.sprite = background;
+            _iconImage.sprite = icon;
+
 
             if (choice.IsNewWeapon)
             {

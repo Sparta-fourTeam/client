@@ -15,14 +15,18 @@ namespace Game.Core.Defense
         private IBufferedPublisher<WallHpChanged> _hpChangedPublisher;
         private IPublisher<WallDestroyed> _destroyedPublisher;
 
+
         public int CurrentHp { get; private set; }
         public int MaxHp { get; private set; }
         public bool IsDestroyed { get; private set; }
 
+        [SerializeField] private Sprite[] _sprites;
         [SerializeField]
         private float _attackLineOffset;
 
         public float AttackLineY => transform.position.y + _attackLineOffset;
+
+        private SpriteRenderer sr;
 
         [Inject]
         public void Construct(IBufferedPublisher<WallHpChanged> hpChangedPublisher,
@@ -36,6 +40,8 @@ namespace Game.Core.Defense
         private void Start()
         {
             Initialize(DefaultMaxHp);
+            sr = GetComponent<SpriteRenderer>();
+            sr.sprite = _sprites[0];
         }
 
         public void Initialize(int maxHp)
@@ -61,6 +67,15 @@ namespace Game.Core.Defense
 
             CurrentHp = Math.Max(0, CurrentHp - amount);
             _hpChangedPublisher.Publish(new WallHpChanged(CurrentHp, MaxHp));
+
+            if ((float)CurrentHp / MaxHp <= 0.67f && (float)CurrentHp / MaxHp > 0.33f)
+            {
+                sr.sprite = _sprites[1];
+            }
+            else if ((float)CurrentHp / MaxHp <= 0.33f)
+            {
+                sr.sprite = _sprites[2];
+            }
 
             if (CurrentHp <= 0)
             {
