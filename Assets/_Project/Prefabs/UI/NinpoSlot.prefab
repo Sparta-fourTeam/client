@@ -499,6 +499,7 @@ GameObject:
   - component: {fileID: 6009566599880965722}
   - component: {fileID: 792043132344602071}
   - component: {fileID: 3427478419669443824}
+  - component: {fileID: 1850979676587496557}
   m_Layer: 5
   m_Name: NinpoSlot
   m_TagString: Untagged
@@ -610,6 +611,22 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1850979676587496557
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4458331594636345003}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2009969212dabb845b2b3fd0b572a50f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.NinpoSlotView
+  _button: {fileID: 3427478419669443824}
+  _levelText: {fileID: 6401714693762068519}
+  _lock: {fileID: 7827194379839657624}
+  _lockLabel: {fileID: 5611485256522407610}
 --- !u!1 &7644464170226049417
 GameObject:
   m_ObjectHideFlags: 0

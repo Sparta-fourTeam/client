@@ -4073,10 +4073,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Game.View::Game.View.ShinobiScreenView
   _panel: {fileID: 6224460900012164775}
+  _nameText: {fileID: 1020561747568054459}
+  _rankText: {fileID: 716949788143485454}
+  _powerText: {fileID: 91293657265647959}
   _equipSlots:
-  - {fileID: 1055613400522607477}
-  - {fileID: 5948341742188843331}
-  - {fileID: 8476729762816989904}
+  - {fileID: 2843886345284903656}
+  - {fileID: 8889270137594312926}
+  - {fileID: 3782839123661162266}
+  - {fileID: 6209258512211111835}
+  - {fileID: 682916119012166469}
+  - {fileID: 4856329712379812820}
+  - {fileID: 6661577658585887565}
   _equipPopup: {fileID: 0}
 --- !u!1001 &31623231249282772
 PrefabInstance:
@@ -4531,6 +4538,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 1275143436974133908, guid: ff55ef711127c534dbba79079951049d, type: 3}
   m_PrefabInstance: {fileID: 1816509556360959193}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &682916119012166469 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1175366139214339996, guid: ff55ef711127c534dbba79079951049d, type: 3}
+  m_PrefabInstance: {fileID: 1816509556360959193}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96592a7eb4d87f941b723264a731beab, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.EquipSlotView
 --- !u!1001 &2607836396414736518
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4632,6 +4650,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ff55ef711127c534dbba79079951049d, type: 3}
+--- !u!114 &3782839123661162266 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1175366139214339996, guid: ff55ef711127c534dbba79079951049d, type: 3}
+  m_PrefabInstance: {fileID: 2607836396414736518}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96592a7eb4d87f941b723264a731beab, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.EquipSlotView
 --- !u!224 &3855887573463403026 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1275143436974133908, guid: ff55ef711127c534dbba79079951049d, type: 3}
@@ -5056,22 +5085,22 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ff55ef711127c534dbba79079951049d, type: 3}
---- !u!114 &1055613400522607477 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4151883576648152577, guid: ff55ef711127c534dbba79079951049d, type: 3}
-  m_PrefabInstance: {fileID: 3978999363797974388}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
 --- !u!224 &2777039704437911520 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1275143436974133908, guid: ff55ef711127c534dbba79079951049d, type: 3}
   m_PrefabInstance: {fileID: 3978999363797974388}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &2843886345284903656 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1175366139214339996, guid: ff55ef711127c534dbba79079951049d, type: 3}
+  m_PrefabInstance: {fileID: 3978999363797974388}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96592a7eb4d87f941b723264a731beab, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.EquipSlotView
 --- !u!1001 &4070150162166691039
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5707,6 +5736,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ff55ef711127c534dbba79079951049d, type: 3}
+--- !u!114 &6209258512211111835 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1175366139214339996, guid: ff55ef711127c534dbba79079951049d, type: 3}
+  m_PrefabInstance: {fileID: 5072191169485434887}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96592a7eb4d87f941b723264a731beab, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.EquipSlotView
 --- !u!224 &6329302184857887379 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1275143436974133908, guid: ff55ef711127c534dbba79079951049d, type: 3}
@@ -6021,22 +6061,22 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ff55ef711127c534dbba79079951049d, type: 3}
---- !u!224 &6741652111510453829 stripped
-RectTransform:
-  m_CorrespondingSourceObject: {fileID: 1275143436974133908, guid: ff55ef711127c534dbba79079951049d, type: 3}
-  m_PrefabInstance: {fileID: 5493565620082715857}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &8476729762816989904 stripped
+--- !u!114 &6661577658585887565 stripped
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4151883576648152577, guid: ff55ef711127c534dbba79079951049d, type: 3}
+  m_CorrespondingSourceObject: {fileID: 1175366139214339996, guid: ff55ef711127c534dbba79079951049d, type: 3}
   m_PrefabInstance: {fileID: 5493565620082715857}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Script: {fileID: 11500000, guid: 96592a7eb4d87f941b723264a731beab, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
+  m_EditorClassIdentifier: Game.View::Game.View.EquipSlotView
+--- !u!224 &6741652111510453829 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 1275143436974133908, guid: ff55ef711127c534dbba79079951049d, type: 3}
+  m_PrefabInstance: {fileID: 5493565620082715857}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &5848201072589321258
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6249,6 +6289,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 1275143436974133908, guid: ff55ef711127c534dbba79079951049d, type: 3}
   m_PrefabInstance: {fileID: 5992773099420271688}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &4856329712379812820 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1175366139214339996, guid: ff55ef711127c534dbba79079951049d, type: 3}
+  m_PrefabInstance: {fileID: 5992773099420271688}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96592a7eb4d87f941b723264a731beab, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.EquipSlotView
 --- !u!1001 &7206522842037811597
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6562,22 +6613,22 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ff55ef711127c534dbba79079951049d, type: 3}
---- !u!114 &5948341742188843331 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4151883576648152577, guid: ff55ef711127c534dbba79079951049d, type: 3}
-  m_PrefabInstance: {fileID: 7715428471256606530}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
 --- !u!224 &8836217921646425558 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1275143436974133908, guid: ff55ef711127c534dbba79079951049d, type: 3}
   m_PrefabInstance: {fileID: 7715428471256606530}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &8889270137594312926 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1175366139214339996, guid: ff55ef711127c534dbba79079951049d, type: 3}
+  m_PrefabInstance: {fileID: 7715428471256606530}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96592a7eb4d87f941b723264a731beab, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.EquipSlotView
 --- !u!1001 &8213473334846918812
 PrefabInstance:
   m_ObjectHideFlags: 0

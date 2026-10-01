@@ -1180,12 +1180,27 @@ MonoBehaviour:
   m_EditorClassIdentifier: Game.View::Game.View.NinpoScreenView
   _panel: {fileID: 306895813938292875}
   _slots:
-  - {fileID: 8174039401306889667}
-  - {fileID: 3558446448047603393}
-  - {fileID: 7527095029807231683}
-  - {fileID: 861136892664996761}
-  - {fileID: 3695910272675881263}
-  - {fileID: 3773450780100023972}
+  - {fileID: 5138849913432468830}
+  - {fileID: 523259177542438492}
+  - {fileID: 6797414320029647454}
+  - {fileID: 4455052010211119876}
+  - {fileID: 390224976156938674}
+  - {fileID: 179339409400374841}
+  - {fileID: 3821069075390205496}
+  - {fileID: 5910284164207869770}
+  - {fileID: 5804335733717852928}
+  - {fileID: 6786364431129758241}
+  - {fileID: 6136883522033259061}
+  - {fileID: 2720544734973832225}
+  - {fileID: 406535418767750342}
+  - {fileID: 3366793455605683170}
+  - {fileID: 7882655725205828750}
+  - {fileID: 3036331460285164858}
+  - {fileID: 607741008364726274}
+  - {fileID: 7584274933488653454}
+  _goldText: {fileID: 6845482493978128352}
+  _gemText: {fileID: 691080976536136542}
+  _ticketText: {fileID: 5911390782202392820}
   _upgradePopup: {fileID: 0}
 --- !u!1 &5785791176509139988
 GameObject:
@@ -1963,6 +1978,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
+--- !u!114 &607741008364726274 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1850979676587496557, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
+  m_PrefabInstance: {fileID: 1287784368276995183}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2009969212dabb845b2b3fd0b572a50f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.NinpoSlotView
 --- !u!224 &6122121074498412061 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
@@ -2065,17 +2091,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
---- !u!114 &3773450780100023972 stripped
+--- !u!114 &179339409400374841 stripped
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 3427478419669443824, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
+  m_CorrespondingSourceObject: {fileID: 1850979676587496557, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
   m_PrefabInstance: {fileID: 2003297040573837908}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Script: {fileID: 11500000, guid: 2009969212dabb845b2b3fd0b572a50f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
+  m_EditorClassIdentifier: Game.View::Game.View.NinpoSlotView
 --- !u!224 &6837627150261342246 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
@@ -2186,6 +2212,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
+--- !u!114 &406535418767750342 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1850979676587496557, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
+  m_PrefabInstance: {fileID: 2023327869894336683}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2009969212dabb845b2b3fd0b572a50f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.NinpoSlotView
 --- !u!224 &6430375400012595929 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
@@ -2288,17 +2325,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
---- !u!114 &3695910272675881263 stripped
+--- !u!114 &390224976156938674 stripped
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 3427478419669443824, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
+  m_CorrespondingSourceObject: {fileID: 1850979676587496557, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
   m_PrefabInstance: {fileID: 2079075028701726175}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Script: {fileID: 11500000, guid: 2009969212dabb845b2b3fd0b572a50f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
+  m_EditorClassIdentifier: Game.View::Game.View.NinpoSlotView
 --- !u!224 &6481627746764892077 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
@@ -2401,17 +2438,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
---- !u!114 &3558446448047603393 stripped
+--- !u!114 &523259177542438492 stripped
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 3427478419669443824, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
+  m_CorrespondingSourceObject: {fileID: 1850979676587496557, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
   m_PrefabInstance: {fileID: 2230123244329261617}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Script: {fileID: 11500000, guid: 2009969212dabb845b2b3fd0b572a50f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
+  m_EditorClassIdentifier: Game.View::Game.View.NinpoSlotView
 --- !u!224 &6619157750260447299 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
@@ -2514,17 +2551,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
---- !u!114 &861136892664996761 stripped
+--- !u!114 &4455052010211119876 stripped
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 3427478419669443824, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
+  m_CorrespondingSourceObject: {fileID: 1850979676587496557, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
   m_PrefabInstance: {fileID: 2622086770299307881}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Script: {fileID: 11500000, guid: 2009969212dabb845b2b3fd0b572a50f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
+  m_EditorClassIdentifier: Game.View::Game.View.NinpoSlotView
 --- !u!224 &7010560524965078299 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
@@ -2631,6 +2668,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
+--- !u!114 &3821069075390205496 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1850979676587496557, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
+  m_PrefabInstance: {fileID: 3222090380596615765}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2009969212dabb845b2b3fd0b572a50f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.NinpoSlotView
 --- !u!224 &7610572647888353319 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
@@ -2741,6 +2789,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
+--- !u!114 &3036331460285164858 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1850979676587496557, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
+  m_PrefabInstance: {fileID: 3716374956860569943}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2009969212dabb845b2b3fd0b572a50f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.NinpoSlotView
 --- !u!224 &8555206467119913765 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
@@ -2851,6 +2910,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
+--- !u!114 &3366793455605683170 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1850979676587496557, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
+  m_PrefabInstance: {fileID: 3965772390101387151}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2009969212dabb845b2b3fd0b572a50f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.NinpoSlotView
 --- !u!224 &8223649177713894909 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
@@ -2961,6 +3031,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
+--- !u!114 &2720544734973832225 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1850979676587496557, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
+  m_PrefabInstance: {fileID: 4355351584580548684}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2009969212dabb845b2b3fd0b572a50f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.NinpoSlotView
 --- !u!224 &8743831661805951550 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
@@ -3076,6 +3157,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
   m_PrefabInstance: {fileID: 5160564748129066572}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &6786364431129758241 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1850979676587496557, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
+  m_PrefabInstance: {fileID: 5160564748129066572}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2009969212dabb845b2b3fd0b572a50f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.NinpoSlotView
 --- !u!1001 &5180622237907179059
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3178,17 +3270,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
   m_PrefabInstance: {fileID: 5180622237907179059}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &7527095029807231683 stripped
+--- !u!114 &6797414320029647454 stripped
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 3427478419669443824, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
+  m_CorrespondingSourceObject: {fileID: 1850979676587496557, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
   m_PrefabInstance: {fileID: 5180622237907179059}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Script: {fileID: 11500000, guid: 2009969212dabb845b2b3fd0b572a50f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
+  m_EditorClassIdentifier: Game.View::Game.View.NinpoSlotView
 --- !u!1001 &5277414666483332973
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3299,6 +3391,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
   m_PrefabInstance: {fileID: 5277414666483332973}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &5804335733717852928 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1850979676587496557, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
+  m_PrefabInstance: {fileID: 5277414666483332973}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2009969212dabb845b2b3fd0b572a50f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.NinpoSlotView
 --- !u!1001 &5455420555590036263
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3409,6 +3512,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
   m_PrefabInstance: {fileID: 5455420555590036263}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &5910284164207869770 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1850979676587496557, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
+  m_PrefabInstance: {fileID: 5455420555590036263}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2009969212dabb845b2b3fd0b572a50f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.NinpoSlotView
 --- !u!1001 &5471282040259246593
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3650,6 +3764,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
   m_PrefabInstance: {fileID: 5519890564562716248}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &6136883522033259061 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1850979676587496557, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
+  m_PrefabInstance: {fileID: 5519890564562716248}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2009969212dabb845b2b3fd0b572a50f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.NinpoSlotView
 --- !u!1001 &6836707164162586931
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3756,17 +3881,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
   m_PrefabInstance: {fileID: 6836707164162586931}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &8174039401306889667 stripped
+--- !u!114 &5138849913432468830 stripped
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 3427478419669443824, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
+  m_CorrespondingSourceObject: {fileID: 1850979676587496557, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
   m_PrefabInstance: {fileID: 6836707164162586931}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Script: {fileID: 11500000, guid: 2009969212dabb845b2b3fd0b572a50f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
+  m_EditorClassIdentifier: Game.View::Game.View.NinpoSlotView
 --- !u!1001 &6890652484996668815
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4008,6 +4133,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
   m_PrefabInstance: {fileID: 8138217742056194275}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &7584274933488653454 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1850979676587496557, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
+  m_PrefabInstance: {fileID: 8138217742056194275}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2009969212dabb845b2b3fd0b572a50f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.NinpoSlotView
 --- !u!1001 &8418584137155256547
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4118,6 +4254,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
   m_PrefabInstance: {fileID: 8418584137155256547}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &7882655725205828750 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1850979676587496557, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
+  m_PrefabInstance: {fileID: 8418584137155256547}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2009969212dabb845b2b3fd0b572a50f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.NinpoSlotView
 --- !u!1001 &8950073252976560089
 PrefabInstance:
   m_ObjectHideFlags: 0

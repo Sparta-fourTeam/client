@@ -1454,6 +1454,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6198585786996214344}
+  - component: {fileID: 3616226653086222206}
   m_Layer: 5
   m_Name: LevelRow
   m_TagString: Untagged
@@ -1483,6 +1484,20 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &3616226653086222206
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3030135581262513517}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a9b1975353339d48a6f0df17a2f5669, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.StatRowView
+  _label: {fileID: 701109089525461349}
+  _value: {fileID: 6843633378634127353}
 --- !u!1 &3109850102848053885
 GameObject:
   m_ObjectHideFlags: 0
@@ -1492,6 +1507,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8055328709312298678}
+  - component: {fileID: 6748367159740367771}
   m_Layer: 5
   m_Name: AttackRow
   m_TagString: Untagged
@@ -1521,6 +1537,20 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &6748367159740367771
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3109850102848053885}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a9b1975353339d48a6f0df17a2f5669, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.StatRowView
+  _label: {fileID: 2581804261410697512}
+  _value: {fileID: 4939878036850662213}
 --- !u!1 &3446309981125314917
 GameObject:
   m_ObjectHideFlags: 0
@@ -1667,6 +1697,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 732784498152225791}
+  - component: {fileID: 3755165089620859459}
   m_Layer: 5
   m_Name: CooldownRow
   m_TagString: Untagged
@@ -1696,6 +1727,20 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &3755165089620859459
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4352068679377166145}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a9b1975353339d48a6f0df17a2f5669, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.StatRowView
+  _label: {fileID: 1571450099241775485}
+  _value: {fileID: 161381445056401679}
 --- !u!1 &4562179268058099669
 GameObject:
   m_ObjectHideFlags: 0
@@ -2888,6 +2933,16 @@ MonoBehaviour:
   _panel: {fileID: 6758575503387573463}
   _closeButton: {fileID: 536600456201872183}
   _upgradeButton: {fileID: 5805925555574198149}
+  _maxLevel: {fileID: 7499918104358180990}
+  _nameText: {fileID: 6201798356247135186}
+  _levelText: {fileID: 5282718384444485727}
+  _descText: {fileID: 5185265718396313966}
+  _coinText: {fileID: 7753159285733945433}
+  _bookText: {fileID: 4025009115724687633}
+  _statRows:
+  - {fileID: 6748367159740367771}
+  - {fileID: 3755165089620859459}
+  - {fileID: 3616226653086222206}
   _toast: {fileID: 0}
 --- !u!1 &7377054679610180847
 GameObject:

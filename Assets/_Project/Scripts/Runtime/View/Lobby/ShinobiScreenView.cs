@@ -1,42 +1,61 @@
+using Game.Core;
+using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
+using VContainer;
 
 namespace Game.View
 {
-    /// <summary>닌자(캐릭터) 화면. 지금은 열고 닫기와 장비 칸 → 장비 강화 팝업만 연결한다</summary>
+    /// <summary>닌자(캐릭터) 화면. 열 때 IGrowthCatalog에서 캐릭터·장비 정보를 읽어 채우고, 열린 장비 칸을 누르면 장비 강화 팝업을 연다.
+    /// 아래 닌자 목록(카드)은 아직 데이터가 없어 프리팹 그대로 둔다</summary>
     public sealed class ShinobiScreenView : HudView
     {
         [SerializeField] private GameObject _panel;
-        [SerializeField] private Button[] _equipSlots;          // 열린 장비 칸
+        [SerializeField] private TMP_Text _nameText, _rankText, _powerText;
+        [SerializeField] private EquipSlotView[] _equipSlots;   // IGrowthCatalog.Equips와 같은 순서
         [SerializeField] private EquipUpgradePopupView _equipPopup;
 
-        // TODO(data): 캐릭터·장비 데이터와 API가 생기면 연결 (CharacterChanged는 가칭)
-        // private PlayerProfile _profile;
-        //
-        // [Inject]
-        // public void Construct(PlayerProfile profile, ISubscriber<CharacterChanged> characterChanged)
-        // {
-        //     _profile = profile;
-        //     Track(characterChanged.Subscribe(_ => Refresh()));
-        // }
+        private IGrowthCatalog _catalog;
+
+        // TODO(data): 장비 강화·캐릭터 변경 후 다시 그리려면 관련 메시지(추가 예정) 구독
+        [Inject]
+        public void Construct(IGrowthCatalog catalog)
+        {
+            _catalog = catalog;
+        }
 
         private void Awake()
         {
             _panel.SetActive(false);
-            for (int i = 0; i < _equipSlots.Length; i++)
-            {
-                int slot = i;
-                _equipSlots[i].onClick.AddListener(() => _equipPopup.Open(slot));
-            }
         }
 
         public void SetVisible(bool visible)
         {
             _panel.SetActive(visible);
-            // if (visible) Refresh();
+            if (visible)
+            {
+                Refresh();
+            }
         }
 
-        // TODO(data): 이름·등급·전투력·장비 레벨 표시
-        // private void Refresh() { }
+        private void Refresh()
+        {
+            ShinobiInfo shinobi = _catalog.Shinobi;
+            _nameText.text = shinobi.Name;
+            _rankText.text = shinobi.Rank;
+            _powerText.text = CurrencyFormat.Format(shinobi.Power);
+
+            var equips = _catalog.Equips;
+            for (int i = 0; i < _equipSlots.Length; i++)
+            {
+                if (i >= equips.Count)
+                {
+                    _equipSlots[i].Hide();
+                    continue;
+                }
+
+                int slot = i;
+                _equipSlots[i].Bind(equips[i], () => _equipPopup.Open(slot));
+            }
+        }
     }
 }
