@@ -25,7 +25,7 @@ namespace Game.Boot
             // TODO(server): 호출부 없음 — 예: BootFlow에서 GetVersions() 비교 후 GetTable()로 갱신
             builder.Register<IDataApi, LocalDataApi>(Lifetime.Singleton);
             builder.Register<IPlayerApi, LocalPlayerApi>(Lifetime.Singleton);
-            builder.Register<IBattleApi, LocalBattleApi>(Lifetime.Singleton);
+            builder.Register<IBattleApi, LocalBattleApi>(Lifetime.Singleton).As<ISubmitFaultSwitch>();
             builder.Register<IUpgradeApi, LocalUpgradeApi>(Lifetime.Singleton);
             // TODO(server): Recover(Ad) 항상 거절 중 — 예: 광고 SDK 콜백에서 Recover(EnergySource.Ad, adTxId) 호출
             builder.Register<IEnergyApi, LocalEnergyApi>(Lifetime.Singleton);

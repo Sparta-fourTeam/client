@@ -95,6 +95,44 @@ namespace Game.Tests
             Assert.AreEqual("INVALID_ID", ex.Code);
         }
 
+        [Test(Description = "제출 실패 스위치를 켜면 그 횟수만큼 네트워크 오류로 실패하고 저장소는 그대로이며, 그 뒤 같은 요청은 성공한다")]
+        public void SubmitResult_WithFaultSwitch_FailsThenSucceedsWithSameRequest()
+        {
+            SeedEnergy(10);
+            var start = _api.StartBattle(1, 1).GetAwaiter().GetResult();
+            var request = new SubmitResultRequest { battleId = start.battleId, cleared = true, wallHpPercent = 100 };
+            _api.FailNextSubmits = 2;
+
+            for (int i = 0; i < 2; i++)
+            {
+                var ex = Assert.Throws<ApiException>(() => _api.SubmitResult(request).GetAwaiter().GetResult());
+                Assert.AreEqual(ApiErrorKind.Network, ex.Kind);
+            }
+
+            var beforeSuccess = _store.Load();
+            Assert.AreEqual(0, beforeSuccess.wallet.gold);
+            Assert.AreEqual("Issued", beforeSuccess.battles[0].status);
+            Assert.AreEqual(0, _api.FailNextSubmits);
+
+            var result = _api.SubmitResult(request).GetAwaiter().GetResult();
+
+            Assert.IsTrue(result.cleared);
+            Assert.AreEqual(100, result.rewardGold);
+            Assert.AreEqual(100, _store.Load().wallet.gold);
+        }
+
+        [Test(Description = "제출 실패 스위치가 꺼져 있으면 평소처럼 성공한다")]
+        public void SubmitResult_WithoutFaultSwitch_Succeeds()
+        {
+            SeedEnergy(10);
+            var start = _api.StartBattle(1, 1).GetAwaiter().GetResult();
+
+            var result = _api.SubmitResult(new SubmitResultRequest { battleId = start.battleId, cleared = false })
+                .GetAwaiter().GetResult();
+
+            Assert.IsFalse(result.cleared);
+        }
+
         [Test(Description = "벽 체력 100%로 클리어하면 ClearGold를 지급하고 rating 3, 다음 스테이지 진행도를 만든다")]
         public void SubmitResult_ClearedAtFullWallHp_GrantsGoldAndTopRatingAndUnlocksNextStage()
         {
