@@ -850,7 +850,13 @@ MonoBehaviour:
   _enemyPrefabEntries:
   - Type: 0
     Prefab: {fileID: 4685488075804649445, guid: eedef41ae584e7948b908250bd9a7241, type: 3}
+    ProjectilePrefab: {fileID: 0}
     Speed: 1
+    MaxHp: 0
+    AttackType: 0
+    Damage: 0
+    AttackInterval: 0
+    AttackRange: 0
 --- !u!114 &745127642
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1680,6 +1686,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f0f88d29cda2ae04e86dee3a5ae4a092, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Game.Core::Game.Core.Defense.Wall
+  _attackLineOffset: 0
 --- !u!4 &1598455428
 Transform:
   m_ObjectHideFlags: 0

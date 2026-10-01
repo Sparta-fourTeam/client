@@ -6,31 +6,19 @@ namespace Game.Core
     public class HitscanEffect : MonoBehaviour
     {
         private IObjectPool<HitscanEffect> pool;
-        private float lifetime;
         [SerializeField] private LayerMask targetMask;
         private float damage;
-        private float radius;
+        [SerializeField] private float radius;
 
 
 
 
-        public void Init(IObjectPool<HitscanEffect> pool, Vector3 position, float damage, float lifetime)
+        public void Init(IObjectPool<HitscanEffect> pool, Vector3 position, float damage)
         {
 
             this.pool = pool;
             transform.position = position;
             this.damage = damage;
-            this.lifetime = lifetime;
-            Invoke(nameof(Hit), 0.1f);
-        }
-
-        private void Update()
-        {
-            lifetime -= Time.deltaTime;
-            if (lifetime <= 0)
-            {
-                pool.Release(this);
-            }
         }
 
         private void Hit()
@@ -40,7 +28,7 @@ namespace Game.Core
                 return;
             }
 
-            Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, 3f, targetMask);
+            Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, radius, targetMask);
 
             foreach (Collider2D hit in hits)
             {
@@ -49,6 +37,11 @@ namespace Game.Core
                     enemy.TakeDamage((int)damage);
                 }
             }
+        }
+
+        private void Release()
+        {
+            pool.Release(this);
         }
     }
 }

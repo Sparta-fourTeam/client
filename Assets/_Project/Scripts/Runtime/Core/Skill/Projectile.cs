@@ -26,6 +26,7 @@ namespace Game.Core
             this.speed = speed;
             this.lifetime = lifetime;
             this.targetProvider = targetProvider;
+            ApplyDirectionRoration();
         }
 
         private void Update()
@@ -54,6 +55,12 @@ namespace Game.Core
                 pool.Release(this);
                 break;
             }
+        }
+
+        private void ApplyDirectionRoration()
+        {
+            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+            transform.rotation = Quaternion.Euler(0f, 0f, angle - 90);
         }
     }
 }
