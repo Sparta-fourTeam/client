@@ -9380,6 +9380,7 @@ GameObject:
   - component: {fileID: 4486434359160458713}
   - component: {fileID: 9009162591579238842}
   - component: {fileID: 6671576642017992405}
+  - component: {fileID: 3373914702578332977}
   m_Layer: 0
   m_Name: Lightning_Lv1
   m_TagString: Untagged
@@ -9417,7 +9418,7 @@ ParticleSystem:
   serializedVersion: 8
   lengthInSec: 0.9
   simulationSpeed: 1
-  stopAction: 2
+  stopAction: 0
   cullingMode: 0
   ringBufferMode: 0
   ringBufferLoopRange: {x: 0, y: 1}
@@ -11672,6 +11673,24 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
+--- !u!114 &3373914702578332977
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4528877711005814777}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b54c8491943fa7040ba6c027d842fa04, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.Core::Game.Core.HitscanEffect
+  targetMask:
+    serializedVersion: 2
+    m_Bits: 256
+  radius: 1.5
+  hitDelay: 0.1
+  releaseDelay: 0.9
 --- !u!1 &8450893925038319859
 GameObject:
   m_ObjectHideFlags: 0
