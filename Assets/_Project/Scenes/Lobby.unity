@@ -456,6 +456,22 @@ PrefabInstance:
       propertyPath: _recoverPopup
       value: 
       objectReference: {fileID: 604065907}
+    - target: {fileID: 8283692278311308080, guid: 412c72eb7c9d6d44dbac4ba5448a874b, type: 3}
+      propertyPath: m_Color.a
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8283692278311308080, guid: 412c72eb7c9d6d44dbac4ba5448a874b, type: 3}
+      propertyPath: m_Color.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8283692278311308080, guid: 412c72eb7c9d6d44dbac4ba5448a874b, type: 3}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8283692278311308080, guid: 412c72eb7c9d6d44dbac4ba5448a874b, type: 3}
+      propertyPath: m_Color.r
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
