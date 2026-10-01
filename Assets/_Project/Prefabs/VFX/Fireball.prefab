@@ -31,7 +31,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 5227982422527563709}
+  m_Father: {fileID: 5226166686278136918}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!198 &7754574848226185205
 ParticleSystem:
@@ -2347,7 +2347,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 5227982422527563709}
+  m_Father: {fileID: 5226166686278136918}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 180}
 --- !u!198 &6780601175798428650
 ParticleSystem:
@@ -4676,7 +4676,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 5227982422527563709}
+  m_Father: {fileID: 5226166686278136918}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!198 &4206498033965869451
 ParticleSystem:
@@ -7008,6 +7008,7 @@ GameObject:
   - component: {fileID: 5227982422527563709}
   - component: {fileID: 3124166927553839154}
   - component: {fileID: 4306965852589740645}
+  - component: {fileID: 723556000058617532}
   m_Layer: 0
   m_Name: Fireball
   m_TagString: Untagged
@@ -7028,9 +7029,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 3417902224004183556}
-  - {fileID: 4658012262457190192}
-  - {fileID: 8593097917922626999}
+  - {fileID: 5226166686278136918}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!198 &3124166927553839154
@@ -9298,3 +9297,50 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
+--- !u!114 &723556000058617532
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7451147369274982716}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 438553a826791004d82ecdab344772b7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.Core::Game.Core.Projectile
+  impactPrefab: {fileID: 4551597682568628500, guid: 7a024c4101b0f442a9ce69704986a96e, type: 3}
+--- !u!1 &8356721074555208087
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5226166686278136918}
+  m_Layer: 0
+  m_Name: Visual
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5226166686278136918
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8356721074555208087}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0.7071068, w: 0.7071068}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 3417902224004183556}
+  - {fileID: 4658012262457190192}
+  - {fileID: 8593097917922626999}
+  m_Father: {fileID: 5227982422527563709}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

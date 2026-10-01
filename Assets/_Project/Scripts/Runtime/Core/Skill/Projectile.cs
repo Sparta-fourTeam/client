@@ -7,6 +7,9 @@ namespace Game.Core
 {
     public class Projectile : MonoBehaviour
     {
+        /// <summary>적에게 맞았을 때 맞은 자리에 생성하는 임팩트(선택). 임팩트 프리팹이 스스로 사라지게 만든다 (파티클 Stop Action을 Destroy로)</summary>
+        [SerializeField] private GameObject impactPrefab;
+
         private IObjectPool<Projectile> pool;
         private Vector3 direction;
         private float damage;
@@ -52,8 +55,17 @@ namespace Game.Core
 
                 Debug.Log(candidate);
                 candidate.TakeDamage((int)damage);
+                SpawnImpact();
                 pool.Release(this);
                 break;
+            }
+        }
+
+        private void SpawnImpact()
+        {
+            if (impactPrefab != null)
+            {
+                Instantiate(impactPrefab, transform.position, Quaternion.identity);
             }
         }
 
