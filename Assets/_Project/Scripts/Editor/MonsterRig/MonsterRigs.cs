@@ -603,7 +603,7 @@ namespace Game.Editor.MonsterRig
             return $"{b.Length}c{b.Sum(x => AnimationUtility.GetEditorCurve(c, x).length)}k";
         }
 
-        private sealed class Channel
+        internal sealed class Channel
         {
             public string Path;
             public Type Type;
@@ -612,7 +612,7 @@ namespace Game.Editor.MonsterRig
         }
 
         // 본: 휴식값 + 변화량(이동은 부모의 휴식 회전으로 로컬 변환). 렌더러: 피격 틴트 / 알파.
-        private static List<Channel> Channels(Transform rig, IEnumerable<string> boneNames)
+        internal static List<Channel> Channels(Transform rig, IEnumerable<string> boneNames)
         {
             var list = new List<Channel>();
             var all = rig.GetComponentsInChildren<Transform>(true);
@@ -670,7 +670,7 @@ namespace Game.Editor.MonsterRig
         }
 
         // 클립 안에서 변하는 묶음(위치 xyz / 회전 xyz / 색 rgba)만 남긴다. 일부 성분만 넣으면 나머지가 0으로 샘플링된다.
-        private static IEnumerable<Channel> Animated(List<Channel> channels, Pose[] poses)
+        internal static IEnumerable<Channel> Animated(List<Channel> channels, Pose[] poses)
         {
             bool Varies(Channel c)
             {
@@ -685,7 +685,7 @@ namespace Game.Editor.MonsterRig
                                        (Varies(c) || Mathf.Abs(c.Value(poses[0])) > 1e-5f));
         }
 
-        private static AnimationClip Keyed(string path, List<Channel> channels, (float t, Pose pose)[] keys)
+        internal static AnimationClip Keyed(string path, List<Channel> channels, (float t, Pose pose)[] keys)
         {
             var b = new ClipBuilder(MonsterAnimationBaker.LoadOrCreateClip(path), loop: false);
             foreach (var c in Animated(channels, keys.Select(k => k.pose).ToArray()))
