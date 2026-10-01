@@ -30,6 +30,7 @@ namespace Game.Editor
         private int _realEnergy = 2;
 
         private int _launchStageId = 1;
+        private int _failSubmitCount = 4;
         private int _resultKills = 24;
         private int _resultWave = 3;
         private float _resultPlayTime = 125f;
@@ -61,6 +62,7 @@ namespace Game.Editor
             _scroll = EditorGUILayout.BeginScrollView(_scroll);
             DrawStatus();
             DrawBattleLaunch();
+            DrawSubmitFault();
             DrawWaveMessages();
             DrawStageMessages();
             DrawWallMessages();
@@ -188,6 +190,29 @@ namespace Game.Editor
                     }
 
                     new BattleLauncher(api, context, navigator, startFailed).Launch(_launchStageId).Forget(Debug.LogException);
+                }
+            }
+        }
+
+        // Local 백엔드는 제출 실패를 던지지 않아서, 자동 재시도(3회)와 재시도 버튼 경로를 보려면 이 스위치로 실패를 만든다.
+        // 4번 실패시키면 첫 시도와 자동 재시도 3번이 모두 실패해 재시도 버튼이 뜬다
+        private void DrawSubmitFault()
+        {
+            Header("제출 실패 만들기 (Local 백엔드 전용)");
+            var faultSwitch = Resolve<ISubmitFaultSwitch>();
+            if (faultSwitch == null)
+            {
+                EditorGUILayout.HelpBox("재생 중에 Local 백엔드로 실행해야 쓸 수 있습니다 (Boot 씬에서 시작).", MessageType.Info);
+                return;
+            }
+
+            EditorGUILayout.LabelField("남은 실패 횟수", faultSwitch.FailNextSubmits.ToString());
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                _failSubmitCount = Mathf.Max(0, EditorGUILayout.IntField("실패시킬 횟수", _failSubmitCount));
+                if (GUILayout.Button("다음 제출을 네트워크 오류로 실패시키기"))
+                {
+                    faultSwitch.FailNextSubmits = _failSubmitCount;
                 }
             }
         }

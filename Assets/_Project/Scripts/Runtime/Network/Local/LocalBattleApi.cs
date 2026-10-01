@@ -5,10 +5,12 @@ using Game.Core;
 namespace Game.Network
 {
     /// <summary>전투 발급과 결과 제출을 로컬 저장소에 반영하는 Mock 구현</summary>
-    public sealed class LocalBattleApi : IBattleApi
+    public sealed class LocalBattleApi : IBattleApi, ISubmitFaultSwitch
     {
         private readonly LocalSaveStore _store;
         private readonly GameDataStore _data;
+
+        public int FailNextSubmits { get; set; }
 
         public LocalBattleApi(LocalSaveStore store, GameDataStore data)
         {
@@ -53,6 +55,13 @@ namespace Game.Network
 
         public UniTask<SubmitResultResponse> SubmitResult(SubmitResultRequest req)
         {
+            // 개발용 스위치: 저장소를 건드리기 전에 실패시켜서, 재시도로 같은 요청이 다시 오는 상황을 만든다
+            if (FailNextSubmits > 0)
+            {
+                FailNextSubmits--;
+                throw new ApiException(ApiErrorKind.Network, "NETWORK");
+            }
+
             var save = _store.Load();
             var battle = save.battles.Find(b => b.battleKey == req.battleId);
             if (battle == null)
