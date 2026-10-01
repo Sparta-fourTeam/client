@@ -7,7 +7,11 @@
         "VContainer",
         "Unity.TextMeshPro",
         "UnityEngine.UI",
-        "UniTask"
+        "UniTask",
+        "Unity.2D.Animation.Editor",
+        "Unity.2D.Animation.Runtime",
+        "Unity.2D.Sprite.Editor",
+        "Unity.2D.Psdimporter.Editor"
     ],
     "includePlatforms": [
         "Editor"
