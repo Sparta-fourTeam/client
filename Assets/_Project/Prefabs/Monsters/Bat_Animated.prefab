@@ -404,6 +404,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -8653719598885068355, guid: a796480a998880b47a65e2d806cb20a2, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1692924461476740204}
+    - targetCorrespondingSourceObject: {fileID: -8653719598885068355, guid: a796480a998880b47a65e2d806cb20a2, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 583018746242794700}
   m_SourcePrefab: {fileID: 4843985084834002234, guid: a796480a998880b47a65e2d806cb20a2, type: 3}
 --- !u!4 &7525622412468479870 stripped
 Transform:
@@ -437,3 +440,17 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &583018746242794700
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8698835046400638749}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7aa0b3e708cce3144ba069b28060d6fa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.Monster.MonsterAnimationEvents
+  _impactEffect: {fileID: 0}
+  _impactOffset: {x: 0, y: 0}
