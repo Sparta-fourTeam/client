@@ -113,6 +113,11 @@ namespace Game.Editor
                 }
             }
 
+            if (GUILayout.Button("AllEnemiesCleared (클리어 판정)"))
+            {
+                Publish(new AllEnemiesCleared());
+            }
+
             using (new EditorGUILayout.HorizontalScope())
             {
                 _waveIndex = EditorGUILayout.IntField("웨이브 번호", _waveIndex);

@@ -661,5 +661,23 @@ namespace Game.Tests
             spawner.Advance(0.1f);
             Assert.AreEqual(0, allCleared.Published.Count);
         }
+
+        [Test]
+        public void FinalWave_AllDead_WhilePaused_PublishesAfterResume()
+        {
+            var factory = new FakeEnemyViewFactory(3f);
+            var spawner = CreateSpawner(factory, out var waveStarted, out var allCleared);
+            StartWave(waveStarted, enemyCount: 1, isFinal: true);
+
+            spawner.Advance(1f);
+            factory.Created[0].TakeDamage(999);
+
+            spawner.Advance(0f); // 일시정지 중 (timeScale 0)
+            spawner.Advance(0f);
+            Assert.AreEqual(0, allCleared.Published.Count);
+
+            spawner.Advance(0.1f); // 재개
+            Assert.AreEqual(1, allCleared.Published.Count);
+        }
     }
 }

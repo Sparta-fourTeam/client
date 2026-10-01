@@ -83,7 +83,11 @@ namespace Game.Core
         {
             TickCombat(deltaTime);
 
-            CheckAllEnemiesCleared();
+            if(deltaTime > 0f)
+            {
+                CheckAllEnemiesCleared();
+            }
+
             if (!_isSpawningAllowed)
             {
                 return;
