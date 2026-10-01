@@ -64,15 +64,14 @@ namespace Game.Tests
             _created.Clear();
         }
 
-        [Test(Description = "시작 무기가 생길 때 보유 목록을 한 번 발행한다 (HUD가 처음부터 채워진다)")]
+        [Test(Description = "시작 무기가 생길 때 보유 목록을 한 번 발행한다 (HUD가 처음부터 채워진다). 어떤 무기로 시작하는지는 정하지 않는다")]
         public void Start_PublishesStartingWeapon()
         {
             Assert.AreEqual(1, _publisher.Published.Count);
             var skills = _publisher.Published[0].Skills;
             Assert.AreEqual(1, skills.Count);
-            Assert.AreEqual(1, skills[0].Id);
             Assert.AreEqual(1, skills[0].Level);
-            Assert.AreEqual("weapon_arrow", skills[0].IconKey);
+            Assert.IsNotEmpty(skills[0].IconKey);
         }
 
         [Test(Description = "새 무기를 얻으면 보유 목록 전체를 다시 발행한다")]
@@ -85,7 +84,7 @@ namespace Game.Tests
             Assert.AreEqual(2, _publisher.Published.Count);
             var skills = _publisher.Published[1].Skills;
             Assert.AreEqual(2, skills.Count);
-            Assert.AreEqual(1, skills[0].Id);
+            Assert.AreEqual(_publisher.Published[0].Skills[0].Id, skills[0].Id, "시작 무기는 그대로 앞에 있다");
             Assert.AreEqual(newWeapon.NewWeaponData.id, skills[1].Id);
         }
 
