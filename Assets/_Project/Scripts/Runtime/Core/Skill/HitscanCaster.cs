@@ -25,14 +25,12 @@ namespace Game.Core
 
         protected override void OnFire()
         {
+            var targets = FindTargets(data.baseStats.range, stats.HitCount);
+            if (targets.Count == 0) { return; }
+
             for (int i = 0; i < stats.HitCount; i++)
             {
-                var target = FindTarget(data.baseStats.range);
-                if (target == null)
-                {
-                    Debug.Log("OnFire() [Hitscan] 타겟 없음");
-                    continue;
-                }
+                var target = targets[i % targets.Count];
 
                 var effect = pool.Get();
                 effect.Init(pool, new Vector3(target.Position.x, target.Position.y, 0f), stats.Damage, EffectLifetime);

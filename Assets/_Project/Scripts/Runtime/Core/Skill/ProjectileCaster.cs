@@ -23,20 +23,15 @@ namespace Game.Core
 
         protected override void OnFire()
         {
-
-
-            var target = FindTarget(data.baseStats.range);
-            if (target == null)
-            {
-                Debug.Log("Target not found");
-                return;
-            }
-
-            Vector2 targetDirection2D = (target.Position - (Vector2)caster.position).normalized;
-            var direction = new Vector3(targetDirection2D.x, targetDirection2D.y, 0f);
+            var targets = FindTargets(data.baseStats.range, stats.HitCount);
+            if (targets.Count == 0) { return; }
 
             for (int i = 0; i < stats.HitCount; i++)
             {
+                var target = targets[i % targets.Count];
+                var dir2D = (target.Position - (Vector2)caster.position).normalized;
+                var direction = new Vector3(dir2D.x, dir2D.y, 0f);
+
                 Projectile projectile = pool.Get();
                 projectile.Init(pool, caster.position, direction, stats.Damage, data.baseStats.speed, ProjectileLifetime, targetProvider);
             }
