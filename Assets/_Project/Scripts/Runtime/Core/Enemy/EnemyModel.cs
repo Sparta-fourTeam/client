@@ -30,6 +30,7 @@ namespace Game.Core
         public bool IsDead => Hp <= 0;
 
         public event Action<EnemyProjectileModel> ProjectileFired; // 원거리 투사체 생성 용
+        public event Action Attacked; // 공격이 나간 순간 (근접/원거리 공통, 공격 모션 재생 용)
 
         // 스폰 위치, 이동 속도, 타입 지정해서 몬스터 생성
         public EnemyModel(int id, Vector2 spawnPosition, float speed, EnemyType type, int maxHp,
@@ -38,7 +39,10 @@ namespace Game.Core
             IPublisher<EnemyDied> diedPublisher)
         {
             if (maxHp <= 0)
+            {
                 throw new ArgumentOutOfRangeException(nameof(maxHp), "적 체력은 1 이상이어야 합니다.");
+            }
+
             Id = id;
             Position = spawnPosition;
             _speed = speed;
@@ -54,7 +58,10 @@ namespace Game.Core
         // 매 프레임 speed만큼 이동
         public void Move(float deltaTime)
         {
-            if (IsDead) return;
+            if (IsDead)
+            {
+                return;
+            }
 
             Position += _moveDirection * (_speed * deltaTime);
         }
@@ -67,12 +74,19 @@ namespace Game.Core
 
         public void Attack(float deltaTime, Wall wall, EnemyProjectileSystem projectiles)
         {
-            if (IsDead || wall.IsDestroyed) return;
+            if (IsDead || wall.IsDestroyed)
+            {
+                return;
+            }
 
             _attackTimer += deltaTime;
-            if (_attackTimer < _attack.Interval) return;
+            if (_attackTimer < _attack.Interval)
+            {
+                return;
+            }
 
             _attackTimer -= _attack.Interval;
+            Attacked?.Invoke();
 
             if (_attack.Type == AttackType.Melee)
             {
@@ -87,12 +101,15 @@ namespace Game.Core
 
         public void TakeDamage(int amount)
         {
-            if (IsDead || amount <= 0) return;
+            if (IsDead || amount <= 0)
+            {
+                return;
+            }
 
             Hp = Math.Max(0, Hp - amount);
             _hpChangedPublisher.Publish(new EnemyHpChanged(Id, Hp, MaxHp));
 
-            if(Hp == 0)
+            if (Hp == 0)
             {
                 _diedPublisher.Publish(new EnemyDied(Id));
             }
