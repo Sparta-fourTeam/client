@@ -8,7 +8,7 @@ namespace Game.Core.Stage
     public sealed class StageJudge : IInitializable, IDisposable
     {
         private readonly ISubscriber<WallDestroyed> _wallDestroyedSubscriber;
-        private readonly ISubscriber<WaveGaugeFilled> _waveGaugeFilledSubscriber;
+        private readonly ISubscriber<AllEnemiesCleared> _allEnemiesClearedSubscriber;
         private readonly IPublisher<StageEnded> _stageEndedPublisher;
 
         private IDisposable _subscriptions;
@@ -17,11 +17,11 @@ namespace Game.Core.Stage
 
         public StageJudge(
             ISubscriber<WallDestroyed> wallDestroyedSubscriber,
-            ISubscriber<WaveGaugeFilled> waveGaugeFilledSubscriber,
+            ISubscriber<AllEnemiesCleared> allEnemiesClearedSubscriber,
             IPublisher<StageEnded> stageEndedPublisher)
         {
             _wallDestroyedSubscriber = wallDestroyedSubscriber;
-            _waveGaugeFilledSubscriber = waveGaugeFilledSubscriber;
+            _allEnemiesClearedSubscriber = allEnemiesClearedSubscriber;
             _stageEndedPublisher = stageEndedPublisher;
         }
 
@@ -29,7 +29,7 @@ namespace Game.Core.Stage
         {
             DisposableBagBuilder bag = DisposableBag.CreateBuilder();
             _wallDestroyedSubscriber.Subscribe(_ => Judge(StageOutcome.Fail)).AddTo(bag);
-            _waveGaugeFilledSubscriber.Subscribe(OnWaveGaugeFilled).AddTo(bag);
+            _allEnemiesClearedSubscriber.Subscribe(_ => Judge(StageOutcome.Clear)).AddTo(bag);
             _subscriptions = bag.Build();
         }
 
@@ -38,13 +38,6 @@ namespace Game.Core.Stage
             _subscriptions?.Dispose();
         }
 
-        private void OnWaveGaugeFilled(WaveGaugeFilled message)
-        {
-            if (message.IsFinalWave)
-            {
-                Judge(StageOutcome.Clear);
-            }
-        }
 
         private void Judge(StageOutcome outcome)
         {

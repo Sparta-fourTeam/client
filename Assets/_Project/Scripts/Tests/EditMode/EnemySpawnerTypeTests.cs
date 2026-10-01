@@ -103,7 +103,7 @@ namespace Game.Tests
         private TypeRecordingFactory _factory;
         private ScriptedRandomProvider _random;
         private FakeSubscriber<WaveStarted> _waveStarted;
-        private FakeSubscriber<WaveGaugeFilled> _waveGaugeFilled;
+        private FakePublisher<AllEnemiesCleared> _allCleared;
 
         [TearDown]
         public void TearDown()
@@ -140,19 +140,19 @@ namespace Game.Tests
             _factory = new TypeRecordingFactory();
             _random = new ScriptedRandomProvider();
             _waveStarted = new FakeSubscriber<WaveStarted>();
-            _waveGaugeFilled = new FakeSubscriber<WaveGaugeFilled>();
+            _allCleared = new FakePublisher<AllEnemiesCleared>();
 
             var spawner = new EnemySpawner(
                 _factory, config, spawnArea, _random,
-                _waveStarted, _waveGaugeFilled,
+                _waveStarted, _allCleared,
                 wall, new EnemyProjectileSystem());
             spawner.Initialize();
             return spawner;
         }
 
-        private void StartWave(int enemyCount, int maxElite = 0, int maxBoss = 0)
+        private void StartWave(int enemyCount, int maxElite = 0, int maxBoss = 0, bool isFinal = false)
         {
-            _waveStarted.Publish(new WaveStarted(1, enemyCount, false, maxElite, maxBoss));
+            _waveStarted.Publish(new WaveStarted(1, enemyCount, isFinal, maxElite, maxBoss));
         }
 
         // 스폰 간격 1초, 쿨다운 3초 → 1초씩 진행하며 총 count마리가 될 때까지 (버스트 넘김 포함)
@@ -182,19 +182,27 @@ namespace Game.Tests
         }
 
         [Test]
-        public void Normal_KeepsSpawningAcrossBursts_UntilGaugeFilled()
+        public void Normal_KeepsSpawningAcrossBursts_InNonFinalWave()
         {
             var spawner = CreateSpawner(eliteSpawnChance: 0f);
             StartWave(enemyCount: 2, maxElite: 1, maxBoss: 1);
 
             AdvanceUntilSpawned(spawner, 10);
             Assert.AreEqual(9, _factory.Count(EnemyType.Normal)); // 보스 1 + 노멀 9
+        }
 
-            _waveGaugeFilled.Publish(new WaveGaugeFilled(false));
+        [Test]
+        public void FinalWave_StopsAfterOneBurst()
+        {
+            var spawner = CreateSpawner(eliteSpawnChance: 0f);
+            StartWave(enemyCount: 2, maxBoss: 1, isFinal: true);
+
+            AdvanceUntilSpawned(spawner, 2);
             spawner.Advance(10f);
             spawner.Advance(10f);
 
-            Assert.AreEqual(10, _factory.Types.Count); // 게이지가 차면 멈춤
+            // 마지막 웨이브는 1버스트(보스 1 + 노멀 1)만 스폰하고 멈춤
+            CollectionAssert.AreEqual(new[] { EnemyType.Boss, EnemyType.Normal }, _factory.Types);
         }
 
         // ───────── Boss ─────────
@@ -323,7 +331,6 @@ namespace Game.Tests
             AdvanceUntilSpawned(spawner, 3);
             Assert.AreEqual(0, _factory.Count(EnemyType.Elite));
 
-            _waveGaugeFilled.Publish(new WaveGaugeFilled(false));
             _random.EliteRoll = 0f; // 2웨이브: 판정은 성공하지만
             StartWave(enemyCount: 3, maxElite: 0); // 최대 0 → 1웨이브에서 남은 수가 넘어오면 안 됨
             AdvanceUntilSpawned(spawner, 6);
@@ -339,7 +346,6 @@ namespace Game.Tests
             StartWave(enemyCount: 2, maxBoss: 1);
             AdvanceUntilSpawned(spawner, 2);
 
-            _waveGaugeFilled.Publish(new WaveGaugeFilled(false));
             StartWave(enemyCount: 2, maxBoss: 1);
             AdvanceUntilSpawned(spawner, 4);
 

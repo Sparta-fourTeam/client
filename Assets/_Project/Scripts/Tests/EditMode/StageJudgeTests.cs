@@ -10,7 +10,7 @@ namespace Game.Tests
     public sealed class StageJudgeTests
     {
         private IPublisher<WallDestroyed> _wallDestroyed;
-        private IPublisher<WaveGaugeFilled> _waveGaugeFilled;
+        private IPublisher<AllEnemiesCleared> _allCleared;
         private List<StageEnded> _ended;
         private IDisposable _endedSubscription;
         private StageJudge _judge;
@@ -21,12 +21,12 @@ namespace Game.Tests
             var builder = new BuiltinContainerBuilder();
             builder.AddMessagePipe();
             builder.AddMessageBroker<WallDestroyed>();
-            builder.AddMessageBroker<WaveGaugeFilled>();
+            builder.AddMessageBroker<AllEnemiesCleared>();
             builder.AddMessageBroker<StageEnded>();
             IServiceProvider provider = builder.BuildServiceProvider();
 
             _wallDestroyed = provider.GetRequiredService<IPublisher<WallDestroyed>>();
-            _waveGaugeFilled = provider.GetRequiredService<IPublisher<WaveGaugeFilled>>();
+            _allCleared = provider.GetRequiredService<IPublisher<AllEnemiesCleared>>();
 
             _ended = new List<StageEnded>();
             _endedSubscription = provider.GetRequiredService<ISubscriber<StageEnded>>()
@@ -34,7 +34,7 @@ namespace Game.Tests
 
             _judge = new StageJudge(
                 provider.GetRequiredService<ISubscriber<WallDestroyed>>(),
-                provider.GetRequiredService<ISubscriber<WaveGaugeFilled>>(),
+                provider.GetRequiredService<ISubscriber<AllEnemiesCleared>>(),
                 provider.GetRequiredService<IPublisher<StageEnded>>());
             _judge.Initialize();
         }
@@ -58,7 +58,7 @@ namespace Game.Tests
         [Test(Description = "마지막 웨이브를 완료하면 클리어를 1번 발행한다")]
         public void FinalWaveCleared_PublishesClear()
         {
-            _waveGaugeFilled.Publish(new WaveGaugeFilled(true));
+            _allCleared.Publish(new AllEnemiesCleared());
 
             Assert.AreEqual(1, _ended.Count);
             Assert.AreEqual(StageOutcome.Clear, _ended[0].Outcome);
@@ -69,7 +69,7 @@ namespace Game.Tests
         {
             _wallDestroyed.Publish(new WallDestroyed());
 
-            _waveGaugeFilled.Publish(new WaveGaugeFilled(true));
+            _allCleared.Publish(new AllEnemiesCleared());
 
             Assert.AreEqual(1, _ended.Count);
             Assert.AreEqual(StageOutcome.Fail, _ended[0].Outcome);
@@ -91,18 +91,10 @@ namespace Game.Tests
             Assert.AreEqual(0, _ended.Count);
         }
 
-        [Test(Description = "마지막이 아닌 웨이브의 게이지가 차면 판정하지 않는다")]
-        public void NonFinalWaveFilled_PublishesNothing()
-        {
-            _waveGaugeFilled.Publish(new WaveGaugeFilled(false));
-
-            Assert.AreEqual(0, _ended.Count);
-        }
-
         [Test(Description = "클리어로 판정된 뒤에 벽이 파괴돼도 다시 판정하지 않는다")]
         public void AfterClear_WallDestroyed_DoesNotPublishAgain()
         {
-            _waveGaugeFilled.Publish(new WaveGaugeFilled(true));
+            _allCleared.Publish(new AllEnemiesCleared());
 
             _wallDestroyed.Publish(new WallDestroyed());
 

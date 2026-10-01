@@ -77,7 +77,7 @@ namespace Game.Tests
             }
         }
 
-        // 테스트에서 WaveStarted / WaveGaugeFilled를 직접 발행할 수 있게 해주는 가짜 구독자
+        // 테스트에서 WaveStarted를 직접 발행할 수 있게 해주는 가짜 구독자
         private class FakeSubscriber<T> : ISubscriber<T>
         {
             private readonly List<IMessageHandler<T>> _handlers = new();
@@ -167,35 +167,34 @@ namespace Game.Tests
                 new FakePublisher<EnemyHpChanged>(), new FakePublisher<EnemyDied>());
         }
 
-        // 스포너 생성 (웨이브 시작 전 상태)
         private EnemySpawner CreateSpawner(
             FakeEnemyViewFactory factory,
             out FakeSubscriber<WaveStarted> waveStarted,
-            out FakeSubscriber<WaveGaugeFilled> waveGaugeFilled,
+            out FakePublisher<AllEnemiesCleared> allCleared,
             Wall wall = null,
             EnemyProjectileSystem projectiles = null,
             SpawnArea spawnArea = null,
             FakeRandomProvider random = null)
         {
             waveStarted = new FakeSubscriber<WaveStarted>();
-            waveGaugeFilled = new FakeSubscriber<WaveGaugeFilled>();
+            allCleared = new FakePublisher<AllEnemiesCleared>();
 
             var spawner = new EnemySpawner(
                 factory,
                 CreateTestWaveData(),
                 spawnArea ?? CreateTestSpawnArea(),
-                random ?? new FakeRandomProvider(1f), // 스폰 간격·위치 모두 1 → 스폰 위치 (1, 1)
+                random ?? new FakeRandomProvider(1f),
                 waveStarted,
-                waveGaugeFilled,
+                allCleared,
                 wall ?? CreateTestWall(),
                 projectiles ?? new EnemyProjectileSystem());
             spawner.Initialize();
             return spawner;
         }
 
-        private static void StartWave(FakeSubscriber<WaveStarted> waveStarted, int enemyCount)
+        private static void StartWave(FakeSubscriber<WaveStarted> waveStarted, int enemyCount, bool isFinal = false)
         {
-            waveStarted.Publish(new WaveStarted(waveIndex: 1, enemyCount: enemyCount, isFinalWave: false));
+            waveStarted.Publish(new WaveStarted(waveIndex: 1, enemyCount: enemyCount, isFinalWave: isFinal));
         }
 
         // 지정한 위치에 적을 스폰해 둔 스포너. 속도 0이라 적이 움직이지 않음
@@ -276,22 +275,6 @@ namespace Game.Tests
 
             CollectionAssert.Contains(random.Calls, (spawnArea.Min.x, spawnArea.Max.x));
             CollectionAssert.Contains(random.Calls, (spawnArea.Min.y, spawnArea.Max.y));
-        }
-
-        [Test]
-        public void Advance_AfterWaveGaugeFilled_StopsSpawning()
-        {
-            var factory = new FakeEnemyViewFactory(3f);
-            var spawner = CreateSpawner(factory, out var waveStarted, out var waveGaugeFilled);
-            StartWave(waveStarted, enemyCount: 5);
-
-            spawner.Advance(1f);
-            Assert.AreEqual(1, factory.CreateCallCount);
-
-            waveGaugeFilled.Publish(new WaveGaugeFilled(isFinalWave: false));
-
-            spawner.Advance(10f); // 다음 WaveStarted 전까지 스폰 없음
-            Assert.AreEqual(1, factory.CreateCallCount);
         }
 
         [Test]
@@ -587,15 +570,14 @@ namespace Game.Tests
         }
 
         [Test]
-        public void Advance_AfterWaveGaugeFilled_ExistingEnemiesKeepAttacking()
+        public void Advance_AfterFinalBurst_ExistingEnemiesKeepAttacking()
         {
             var wall = CreateTestWall(-10f);
             var factory = new FakeEnemyViewFactory(11f);
-            var spawner = CreateSpawner(factory, out var waveStarted, out var waveGaugeFilled, wall: wall);
-            StartWave(waveStarted, enemyCount: 5);
+            var spawner = CreateSpawner(factory, out var waveStarted, out _, wall: wall);
+            StartWave(waveStarted, enemyCount: 1, isFinal: true);
 
-            spawner.Advance(1f); // 스폰
-            waveGaugeFilled.Publish(new WaveGaugeFilled(isFinalWave: false)); // 스폰만 멈춤
+            spawner.Advance(1f); // 스폰 → 마지막 웨이브 버스트 완료로 스폰 멈춤
 
             spawner.Advance(1f); // 이동 → 벽 라인
             spawner.Advance(1f); // 공격
@@ -620,6 +602,64 @@ namespace Game.Tests
 
             Assert.AreEqual(0, wall.CurrentHp);
             Assert.IsTrue(wall.IsDestroyed);
+        }
+
+        [Test]
+        public void FinalWave_SpawnsOneBurstOnly()
+        {
+            var factory = new FakeEnemyViewFactory(3f);
+            var spawner = CreateSpawner(factory, out var waveStarted, out _);
+            waveStarted.Publish(new WaveStarted(3, enemyCount: 2, isFinalWave: true));
+
+            spawner.Advance(1f);
+            spawner.Advance(1f);
+            Assert.AreEqual(2, factory.CreateCallCount);
+
+            spawner.Advance(10f); // 쿨다운(3초)이 지나도 재스폰 없음
+            Assert.AreEqual(2, factory.CreateCallCount);
+        }
+
+        [Test]
+        public void FinalWave_EnemiesAlive_DoesNotPublishCleared()
+        {
+            var factory = new FakeEnemyViewFactory(3f);
+            var spawner = CreateSpawner(factory, out var waveStarted, out var allCleared);
+            waveStarted.Publish(new WaveStarted(3, enemyCount: 1, isFinalWave: true));
+
+            spawner.Advance(1f); // 1마리 스폰 → 버스트 완료
+            spawner.Advance(1f);
+
+            Assert.AreEqual(0, allCleared.Published.Count);
+        }
+
+        [Test]
+        public void FinalWave_AllDead_PublishesClearedOnce()
+        {
+            var factory = new FakeEnemyViewFactory(3f);
+            var spawner = CreateSpawner(factory, out var waveStarted, out var allCleared);
+            waveStarted.Publish(new WaveStarted(3, enemyCount: 1, isFinalWave: true));
+
+            spawner.Advance(1f);
+            factory.Created[0].TakeDamage(999); // 스폰된 적 처치
+
+            spawner.Advance(0.1f);
+            spawner.Advance(0.1f);
+
+            Assert.AreEqual(1, allCleared.Published.Count);
+        }
+
+        [Test]
+        public void NonFinalWave_AllDead_DoesNotPublishCleared()
+        {
+            var factory = new FakeEnemyViewFactory(3f);
+            var spawner = CreateSpawner(factory, out var waveStarted, out var allCleared);
+            waveStarted.Publish(new WaveStarted(1, enemyCount: 1, isFinalWave: false));
+
+            spawner.Advance(1f);
+            factory.Created[0].TakeDamage(999); // 스폰된 적 처치
+
+            spawner.Advance(0.1f);
+            Assert.AreEqual(0, allCleared.Published.Count);
         }
     }
 }
