@@ -15,7 +15,7 @@ namespace Game.Core
         private readonly SpawnArea _spawnArea;
         private readonly IRandomProvider _randomProvider;
         private readonly ISubscriber<WaveStarted> _waveStartedSubscriber;
-        private readonly ISubscriber<WaveGaugeFilled> _waveGaugeFilledSubscriber;
+        private readonly IPublisher<AllEnemiesCleared> _allEnemiesClearedPublisher;
 
         // 필드에 있는 적
         // 죽은 적은 다음 Tick에 제거, EnemyDied는 EnemyModel이 발행
@@ -36,13 +36,17 @@ namespace Game.Core
         private int _remainingElite; // 남은 엘리트 몬스터 수
         private int _remainingBoss; // 남은 보스 몬스터 수
 
+        private bool _isFinalWave;
+        private bool _finalSpawnDone;
+        private bool _allClearPublished;
+
         public EnemySpawner(
             IEnemyFactory enemyViewFactory,
             EnemySpawnConfig enemySpawnConfig,
             SpawnArea spawnArea,
             IRandomProvider randomProvider,
             ISubscriber<WaveStarted> waveStartedSubscriber,
-            ISubscriber<WaveGaugeFilled> waveGaugeFilledSubscriber,
+            IPublisher<AllEnemiesCleared> allEnemiesClearedPublisher,
             Wall wall,
             EnemyProjectileSystem projectiles)
         {
@@ -51,7 +55,7 @@ namespace Game.Core
             _spawnArea = spawnArea;
             _randomProvider = randomProvider;
             _waveStartedSubscriber = waveStartedSubscriber;
-            _waveGaugeFilledSubscriber = waveGaugeFilledSubscriber;
+            _allEnemiesClearedPublisher = allEnemiesClearedPublisher;
             _wall = wall;
             _projectiles = projectiles;
             _nextSpawnInterval = RollSpawnInterval();
@@ -61,7 +65,6 @@ namespace Game.Core
         {
             DisposableBagBuilder bag = DisposableBag.CreateBuilder();
             _waveStartedSubscriber.Subscribe(OnWaveStarted).AddTo(bag);
-            _waveGaugeFilledSubscriber.Subscribe(OnWaveGaugeFilled).AddTo(bag);
             _subscriptions = bag.Build();
         }
 
@@ -80,6 +83,7 @@ namespace Game.Core
         {
             TickCombat(deltaTime);
 
+            CheckAllEnemiesCleared();
             if (!_isSpawningAllowed)
             {
                 return;
@@ -113,7 +117,13 @@ namespace Game.Core
             // 스폰 수량 채웠으면 대기 상태 전환
             if (_spawnedCountInOnceSpawn >= _currentBurstSize)
             {
-                _isWaitingForNextSpawn = true;
+                if(_isFinalWave)
+                {
+                    _isSpawningAllowed = false;
+                    _finalSpawnDone = true;
+                }
+                else 
+                    _isWaitingForNextSpawn = true;
             }
         }
 
@@ -126,11 +136,22 @@ namespace Game.Core
             _isWaitingForNextSpawn = false;
             _remainingElite = message.MaxEliteCount;
             _remainingBoss = message.MaxBossCount;
+            _isFinalWave = message.IsFinalWave;
         }
 
-        private void OnWaveGaugeFilled(WaveGaugeFilled message)
+        private void CheckAllEnemiesCleared()
         {
-            _isSpawningAllowed = false;
+            if (!_finalSpawnDone || _allClearPublished)
+                return;
+
+            foreach(var enemy in _activeEnemies)
+            {
+                if (!enemy.IsDead)
+                    return;
+            }
+
+            _allClearPublished = true;
+            _allEnemiesClearedPublisher.Publish(new AllEnemiesCleared());
         }
 
         private EnemyType PickEnemyType()
