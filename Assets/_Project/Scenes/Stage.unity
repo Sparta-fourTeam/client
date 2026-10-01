@@ -433,7 +433,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 1}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -557,9 +557,9 @@ Canvas:
   m_GameObject: {fileID: 1232218254}
   m_Enabled: 1
   serializedVersion: 3
-  m_RenderMode: 0
-  m_Camera: {fileID: 0}
-  m_PlaneDistance: 100
+  m_RenderMode: 1
+  m_Camera: {fileID: 214551851}
+  m_PlaneDistance: 10
   m_PixelPerfect: 0
   m_ReceivesEvents: 1
   m_OverrideSorting: 0
@@ -570,7 +570,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 10
+  m_SortingOrder: 30
   m_TargetDisplay: 0
 --- !u!224 &1232218258
 RectTransform:
@@ -1630,6 +1630,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 256869779842763672, guid: 6e68198728ace4313b314fddb193ff9b, type: 3}
+      propertyPath: m_Camera
+      value: 
+      objectReference: {fileID: 214551851}
+    - target: {fileID: 256869779842763672, guid: 6e68198728ace4313b314fddb193ff9b, type: 3}
+      propertyPath: m_SortingOrder
+      value: 20
+      objectReference: {fileID: 0}
     - target: {fileID: 7447173283495688033, guid: 6e68198728ace4313b314fddb193ff9b, type: 3}
       propertyPath: m_Name
       value: HudCanvas
