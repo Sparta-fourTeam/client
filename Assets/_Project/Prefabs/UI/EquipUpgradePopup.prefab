@@ -4225,6 +4225,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2440305239035622894}
+  - component: {fileID: 6313869278745636878}
   m_Layer: 5
   m_Name: EquipUpgradePopup
   m_TagString: Untagged
@@ -4252,6 +4253,23 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &6313869278745636878
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8636699274896945760}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b62d90b0d4d1848498532c10c7cb5a2b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.EquipUpgradePopupView
+  _panel: {fileID: 3318694645103849633}
+  _closeButton: {fileID: 4819622157644275751}
+  _upgradeButton: {fileID: 1009411020158865390}
+  _unequipAllButton: {fileID: 5519909278746479302}
+  _toast: {fileID: 0}
 --- !u!1 &9044385420108361350
 GameObject:
   m_ObjectHideFlags: 0

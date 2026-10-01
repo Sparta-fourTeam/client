@@ -1235,6 +1235,7 @@ GameObject:
   - component: {fileID: 7607347157289296575}
   - component: {fileID: 939982718850454209}
   - component: {fileID: 628182251095330910}
+  - component: {fileID: 8957605232225321367}
   m_Layer: 5
   m_Name: UpgradeAllButton
   m_TagString: Untagged
@@ -1344,6 +1345,19 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &8957605232225321367
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3017488490171810336}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98d404df5fdfb2448b538f424d54ed06, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.ComingSoonButton
+  _toast: {fileID: 0}
 --- !u!1 &3261306967992530437
 GameObject:
   m_ObjectHideFlags: 0
@@ -2927,6 +2941,7 @@ GameObject:
   - component: {fileID: 5088195413590191084}
   - component: {fileID: 5946583405379464601}
   - component: {fileID: 8208746618834327956}
+  - component: {fileID: 8076246509823934207}
   m_Layer: 5
   m_Name: InfoButton
   m_TagString: Untagged
@@ -3037,6 +3052,19 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &8076246509823934207
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7402934000138369435}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98d404df5fdfb2448b538f424d54ed06, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.ComingSoonButton
+  _toast: {fileID: 0}
 --- !u!1 &7650759750059593174
 GameObject:
   m_ObjectHideFlags: 0
@@ -3125,6 +3153,7 @@ GameObject:
   - component: {fileID: 298225131462053126}
   - component: {fileID: 4147983438533321514}
   - component: {fileID: 4850834822891560451}
+  - component: {fileID: 5742342199972468972}
   m_Layer: 5
   m_Name: CostumeButton
   m_TagString: Untagged
@@ -3235,6 +3264,19 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &5742342199972468972
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7842160250175917307}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98d404df5fdfb2448b538f424d54ed06, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.ComingSoonButton
+  _toast: {fileID: 0}
 --- !u!1 &8116274988720946149
 GameObject:
   m_ObjectHideFlags: 0
@@ -3505,6 +3547,7 @@ GameObject:
   - component: {fileID: 3821105217807212978}
   - component: {fileID: 3931331868590872820}
   - component: {fileID: 7950989577061645677}
+  - component: {fileID: 325362251459875223}
   m_Layer: 5
   m_Name: MergeAllButton
   m_TagString: Untagged
@@ -3614,6 +3657,19 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &325362251459875223
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8422594681764024816}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98d404df5fdfb2448b538f424d54ed06, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.ComingSoonButton
+  _toast: {fileID: 0}
 --- !u!1 &8433882958303470846
 GameObject:
   m_ObjectHideFlags: 0
@@ -3626,6 +3682,7 @@ GameObject:
   - component: {fileID: 5124414085366255292}
   - component: {fileID: 5865852171220172771}
   - component: {fileID: 3577425994649685786}
+  - component: {fileID: 3800764237182307130}
   m_Layer: 5
   m_Name: LimitBreakButton
   m_TagString: Untagged
@@ -3736,6 +3793,19 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &3800764237182307130
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8433882958303470846}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98d404df5fdfb2448b538f424d54ed06, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.ComingSoonButton
+  _toast: {fileID: 0}
 --- !u!1 &8588407570538086458
 GameObject:
   m_ObjectHideFlags: 0
@@ -3962,6 +4032,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6871913177502835472}
+  - component: {fileID: 5710412169927993896}
   m_Layer: 5
   m_Name: ShinobiScreen
   m_TagString: Untagged
@@ -3989,6 +4060,24 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &5710412169927993896
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9200070561298085480}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8719d3b0b0a9c7c4ca976e19ee7ca679, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.ShinobiScreenView
+  _panel: {fileID: 6224460900012164775}
+  _equipSlots:
+  - {fileID: 1055613400522607477}
+  - {fileID: 5948341742188843331}
+  - {fileID: 8476729762816989904}
+  _equipPopup: {fileID: 0}
 --- !u!1001 &31623231249282772
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4092,13 +4181,34 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3603786542160827529, guid: b7f25b34fd05b3549a0afa6b2cb11a79, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8045775758222202423}
   m_SourcePrefab: {fileID: 100100000, guid: b7f25b34fd05b3549a0afa6b2cb11a79, type: 3}
 --- !u!224 &3374528756397335042 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 3361063212624909526, guid: b7f25b34fd05b3549a0afa6b2cb11a79, type: 3}
   m_PrefabInstance: {fileID: 31623231249282772}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &3635356996809990749 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3603786542160827529, guid: b7f25b34fd05b3549a0afa6b2cb11a79, type: 3}
+  m_PrefabInstance: {fileID: 31623231249282772}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &8045775758222202423
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3635356996809990749}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98d404df5fdfb2448b538f424d54ed06, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.ComingSoonButton
+  _toast: {fileID: 0}
 --- !u!1001 &966394855121316013
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4946,6 +5056,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ff55ef711127c534dbba79079951049d, type: 3}
+--- !u!114 &1055613400522607477 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4151883576648152577, guid: ff55ef711127c534dbba79079951049d, type: 3}
+  m_PrefabInstance: {fileID: 3978999363797974388}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
 --- !u!224 &2777039704437911520 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1275143436974133908, guid: ff55ef711127c534dbba79079951049d, type: 3}
@@ -5905,6 +6026,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 1275143436974133908, guid: ff55ef711127c534dbba79079951049d, type: 3}
   m_PrefabInstance: {fileID: 5493565620082715857}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &8476729762816989904 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4151883576648152577, guid: ff55ef711127c534dbba79079951049d, type: 3}
+  m_PrefabInstance: {fileID: 5493565620082715857}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
 --- !u!1001 &5848201072589321258
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6430,6 +6562,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ff55ef711127c534dbba79079951049d, type: 3}
+--- !u!114 &5948341742188843331 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4151883576648152577, guid: ff55ef711127c534dbba79079951049d, type: 3}
+  m_PrefabInstance: {fileID: 7715428471256606530}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
 --- !u!224 &8836217921646425558 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1275143436974133908, guid: ff55ef711127c534dbba79079951049d, type: 3}
