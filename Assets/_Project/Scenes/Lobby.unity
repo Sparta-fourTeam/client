@@ -2670,13 +2670,55 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 5220648784697919460, guid: a64996367a387c644a84a4908a4c0289, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1565356113}
+    - targetCorrespondingSourceObject: {fileID: 4457551982336345977, guid: a64996367a387c644a84a4908a4c0289, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1565356112}
   m_SourcePrefab: {fileID: 100100000, guid: a64996367a387c644a84a4908a4c0289, type: 3}
 --- !u!224 &1565356109 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 7483384148302769998, guid: a64996367a387c644a84a4908a4c0289, type: 3}
   m_PrefabInstance: {fileID: 1565356108}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1565356110 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4457551982336345977, guid: a64996367a387c644a84a4908a4c0289, type: 3}
+  m_PrefabInstance: {fileID: 1565356108}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &1565356111 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5220648784697919460, guid: a64996367a387c644a84a4908a4c0289, type: 3}
+  m_PrefabInstance: {fileID: 1565356108}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1565356112
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1565356110}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98d404df5fdfb2448b538f424d54ed06, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.ComingSoonButton
+  _toast: {fileID: 1921941343}
+--- !u!114 &1565356113
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1565356111}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98d404df5fdfb2448b538f424d54ed06, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.ComingSoonButton
+  _toast: {fileID: 1921941343}
 --- !u!1001 &1599630729
 PrefabInstance:
   m_ObjectHideFlags: 0
