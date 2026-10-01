@@ -18,6 +18,7 @@ namespace Game.Core
         private bool _hasMoving, _hasHit, _hasDie, _hasAttack; // 컨트롤러마다 가진 파라미터가 다르다
         private EnemyProjectile _projectilePrefab;
         private IDisposable _subscriptions;
+        private HitFlash _hitFlash;
 
         private void Awake()
         {
@@ -45,6 +46,13 @@ namespace Game.Core
             _projectilePrefab = projectilePrefab;
             _enemyModel.ProjectileFired += OnProjectileFired;
             _enemyModel.Attacked += OnAttacked;
+
+            // 프리팹에 없으면 붙인다. 프리팹을 고치지 않아도 모든 적(스프라이트가 여러 조각인 리그 포함)이 피격 플래시를 가진다
+            _hitFlash = GetComponent<HitFlash>();
+            if (_hitFlash == null)
+            {
+                _hitFlash = gameObject.AddComponent<HitFlash>();
+            }
 
             var bag = DisposableBag.CreateBuilder();
             hpChanged.Subscribe(OnHpChanged).AddTo(bag);
@@ -94,6 +102,9 @@ namespace Game.Core
             {
                 return;
             }
+
+            // EnemyHpChanged는 데미지를 받을 때만 발행된다
+            _hitFlash.Flash();
 
             if (_hasHit && message.Current > 0)
             {
