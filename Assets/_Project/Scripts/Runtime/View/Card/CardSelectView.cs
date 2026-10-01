@@ -11,6 +11,8 @@ namespace Game.View
     {
         [SerializeField] private GameObject _panel;
         [SerializeField] private CardSlotView[] _slots;
+        [SerializeField] private SkillIconTable _iconTable;
+        [SerializeField] private Sprite _newWeaponBg, _upgradeBg;
 
         private StageManager _stageManager;
 
@@ -50,7 +52,12 @@ namespace Game.View
                 _slots[i].gameObject.SetActive(hasChoice);
                 if (hasChoice)
                 {
-                    _slots[i].Bind(i, choices[i], OnPick);
+                    var choice = choices[i];
+                    string iconKey = choice.IsNewWeapon ? choice.NewWeaponData.iconKey :
+                        choice.Weapon.Data.iconKey;
+                    Sprite icon = _iconTable != null ? _iconTable.Find(iconKey) : null;
+                    Sprite bg = choice.IsNewWeapon ? _newWeaponBg : _upgradeBg;
+                    _slots[i].Bind(i, choice, icon, bg, OnPick);
                 }
             }
 
