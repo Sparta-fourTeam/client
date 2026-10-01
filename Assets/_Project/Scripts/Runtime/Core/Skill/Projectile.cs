@@ -17,7 +17,8 @@ namespace Game.Core
         private float lifetime;
         private IEnemyTargetProvider targetProvider;
         private readonly List<IEnemyTarget> hitBuffer = new List<IEnemyTarget>(HitCandidateCount);
-        private const float HitRadius = 0.7f;
+        // 적 스프라이트가 레퍼런스 크기로 줄어든 것(슬라임 가로 약 0.6, 콜라이더 반지름 약 0.3)에 맞춘 값. 이전에는 1.4짜리 적에 맞춘 0.7이었다
+        private const float HitRadius = 0.3f;
         private const int HitCandidateCount = 4;
 
         public void Init(IObjectPool<Projectile> pool, Vector3 startPos, Vector3 direction, float damage, float speed, float lifetime, IEnemyTargetProvider targetProvider)
