@@ -26,7 +26,11 @@ namespace Game.Core.Defense
 
         public float AttackLineY => transform.position.y + _attackLineOffset;
 
-        private SpriteRenderer sr;
+        // 남은 HP 비율이 이 값 이하면 해당 단계의 스프라이트를 쓴다
+        private const float DamagedRatio = 0.67f;
+        private const float BrokenRatio = 0.33f;
+
+        private SpriteRenderer _renderer;
 
         [Inject]
         public void Construct(IBufferedPublisher<WallHpChanged> hpChangedPublisher,
@@ -40,8 +44,6 @@ namespace Game.Core.Defense
         private void Start()
         {
             Initialize(DefaultMaxHp);
-            sr = GetComponent<SpriteRenderer>();
-            sr.sprite = _sprites[0];
         }
 
         public void Initialize(int maxHp)
@@ -54,6 +56,7 @@ namespace Game.Core.Defense
             MaxHp = maxHp;
             CurrentHp = maxHp;
             IsDestroyed = false;
+            ApplySprite();
 
             _hpChangedPublisher.Publish(new WallHpChanged(CurrentHp, MaxHp));
         }
@@ -68,20 +71,35 @@ namespace Game.Core.Defense
             CurrentHp = Math.Max(0, CurrentHp - amount);
             _hpChangedPublisher.Publish(new WallHpChanged(CurrentHp, MaxHp));
 
-            if ((float)CurrentHp / MaxHp <= 0.67f && (float)CurrentHp / MaxHp > 0.33f)
-            {
-                sr.sprite = _sprites[1];
-            }
-            else if ((float)CurrentHp / MaxHp <= 0.33f)
-            {
-                sr.sprite = _sprites[2];
-            }
+            ApplySprite();
 
             if (CurrentHp <= 0)
             {
                 IsDestroyed = true;
                 _destroyedPublisher.Publish(new WallDestroyed());
             }
+        }
+
+        // 스프라이트가 없는 벽(테스트 등)도 동작하도록 렌더러와 배열을 확인한다
+        private void ApplySprite()
+        {
+            if (_sprites == null || _sprites.Length == 0)
+            {
+                return;
+            }
+
+            if (_renderer == null)
+            {
+                _renderer = GetComponent<SpriteRenderer>();
+                if (_renderer == null)
+                {
+                    return;
+                }
+            }
+
+            float ratio = MaxHp > 0 ? (float)CurrentHp / MaxHp : 1f;
+            int stage = ratio <= BrokenRatio ? 2 : ratio <= DamagedRatio ? 1 : 0;
+            _renderer.sprite = _sprites[Mathf.Min(stage, _sprites.Length - 1)];
         }
     }
 }

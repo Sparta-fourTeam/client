@@ -192,5 +192,68 @@ namespace Game.Tests
             Assert.AreEqual(20, wall.CurrentHp);
             Assert.AreEqual(20, _hp.Published.Last().Current);
         }
+
+        private Sprite[] CreateSprites(int count)
+        {
+            var sprites = new Sprite[count];
+            for (int i = 0; i < count; i++)
+            {
+                var tex = new Texture2D(2, 2);
+                sprites[i] = Sprite.Create(tex, new Rect(0, 0, 2, 2), Vector2.zero);
+                sprites[i].name = "WallStage" + i;
+            }
+
+            return sprites;
+        }
+
+        private (Wall wall, SpriteRenderer renderer, Sprite[] sprites) CreateWallWithSprites()
+        {
+            Wall wall = CreateUninitializedWall();
+            var renderer = _go.AddComponent<SpriteRenderer>();
+            Sprite[] sprites = CreateSprites(3);
+            typeof(Wall).GetField("_sprites", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .SetValue(wall, sprites);
+            return (wall, renderer, sprites);
+        }
+
+        [Test(Description = "HP 비율이 67%, 33% 이하로 내려가면 파손 단계 스프라이트로 바뀐다")]
+        public void TakeDamage_SwapsSpriteByHpRatio()
+        {
+            var (wall, renderer, sprites) = CreateWallWithSprites();
+            wall.Initialize(100);
+            Assert.AreSame(sprites[0], renderer.sprite);
+
+            wall.TakeDamage(32);
+            Assert.AreSame(sprites[0], renderer.sprite, "68%는 아직 온전한 단계");
+
+            wall.TakeDamage(1);
+            Assert.AreSame(sprites[1], renderer.sprite, "67%부터 파손 1단계");
+
+            wall.TakeDamage(34);
+            Assert.AreSame(sprites[2], renderer.sprite, "33%부터 파손 2단계");
+        }
+
+        [Test(Description = "다시 초기화하면 온전한 스프라이트로 돌아온다")]
+        public void Initialize_ResetsSpriteToFullState()
+        {
+            var (wall, renderer, sprites) = CreateWallWithSprites();
+            wall.Initialize(100);
+            wall.TakeDamage(100);
+            Assert.AreSame(sprites[2], renderer.sprite);
+
+            wall.Initialize(100);
+
+            Assert.AreSame(sprites[0], renderer.sprite);
+        }
+
+        [Test(Description = "스프라이트 배열이 없어도 피해를 받을 수 있다")]
+        public void TakeDamage_WithoutSprites_DoesNotThrow()
+        {
+            Wall wall = CreateWall(10);
+            _go.AddComponent<SpriteRenderer>();
+
+            Assert.DoesNotThrow(() => wall.TakeDamage(10));
+            Assert.IsTrue(wall.IsDestroyed);
+        }
     }
 }
