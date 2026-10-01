@@ -53,11 +53,11 @@ namespace Game.View
                 if (hasChoice)
                 {
                     var choice = choices[i];
-                    string iconKey = choice.IsNewWeapon ? choice.NewWeaponData.iconKey :
-                        choice.Weapon.Data.iconKey;
+                    string baseKey = choice.IsNewWeapon ? choice.NewWeaponData.iconKey : choice.Weapon.Data.iconKey;
+                    string iconKey = baseKey + (choice.IsNewWeapon ? "_new" : "_upgrade");
                     Sprite icon = _iconTable != null ? _iconTable.Find(iconKey) : null;
-                    Sprite bg = choice.IsNewWeapon ? _newWeaponBg : _upgradeBg;
-                    _slots[i].Bind(i, choice, icon, bg, OnPick);
+                    Sprite background = choice.IsNewWeapon ? _newWeaponBg : _upgradeBg;
+                    _slots[i].Bind(i, choice, icon, background, OnPick);
                 }
             }
 
