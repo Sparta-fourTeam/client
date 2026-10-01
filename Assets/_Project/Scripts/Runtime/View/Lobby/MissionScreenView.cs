@@ -17,7 +17,8 @@ namespace Game.View
         [SerializeField] private Button _prevButton, _nextButton, _backButton, _enterButton;
         [SerializeField] private TMP_Text _costText;
         [SerializeField] private Image _rewardFill;             // RewardTrack/Bar/Fill
-        [SerializeField] private GameObject[] _claimedMarks;    // RewardNode 3개의 Chest/Claimed
+        [SerializeField] private Image[] _chests;               // RewardNode 3개의 Chest
+        [SerializeField] private Sprite _closedChest, _openedChest;
         [SerializeField] private EnergyRecoverPopupView _recoverPopup;
 
         private PlayerProfile _profile;
@@ -75,10 +76,10 @@ namespace Game.View
             _nextButton.interactable = _data.Stages.Contains(_stageId + 1);
             _costText.text = $"에너지 x{_profile.EnergyConfig.Cost}";
 
-            // 보상 3단계는 표시만: 달성한 단계까지 "완료", 바는 1단계=0, 2단계=0.5, 3단계=1
-            for (int i = 0; i < _claimedMarks.Length; i++)
+            // 보상 3단계는 표시만: 달성한 단계까지 열린 상자, 바는 1단계=0, 2단계=0.5, 3단계=1
+            for (int i = 0; i < _chests.Length; i++)
             {
-                _claimedMarks[i].SetActive(rating > i);
+                _chests[i].sprite = rating > i ? _openedChest : _closedChest;
             }
             _rewardFill.fillAmount = rating <= 1 ? 0f : (rating - 1) / 2f;
         }
