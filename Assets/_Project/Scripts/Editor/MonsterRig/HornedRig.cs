@@ -9,69 +9,60 @@ using Pose = Game.Editor.MonsterRig.MonsterRigs.Pose;
 namespace Game.Editor.MonsterRig
 {
     /// <summary>
-    /// 뿔 달린 녀석(horn.png 174x322): 뿔 / 머리 / 몸통 / 팔 2 / 다리 2 (그림 한 장 + 파츠별 메시) + 얼굴 십자(별도 레이어).
-    /// 모든 본은 루트이고, 따라가는 동작은 FK로 직접 계산한다. 좌표는 PNG 픽셀, 좌하단 원점.
+    /// 뿔 달린 녀석: 사용자가 직접 나눈 파츠 그림(horned_parts.png 1024px, 투명 배경)을 오른쪽 아래 완성본 위치로 조립한다.
+    /// 레이어(아래 → 위): 오른팔 / 몸통(다리 포함, 본 3개) / 왼팔 / 머리 / 뿔 / 얼굴 십자.
+    /// 모든 본은 루트이고, 따라가는 동작은 FK로 직접 계산한다. 좌표는 완성본 기준 원본 픽셀(좌상단 원점)로 적고 V()로 변환한다.
     /// </summary>
     public static class HornedRig
     {
-        private const string Png = "Assets/_Project/Art/Monsters/horn.png";
+        private const string Png = "Assets/_Project/Art/Monsters/horned_parts.png";
         private const float Ppu = 200f;
         private const float Tau = Mathf.PI * 2f;
+
+        // 조립된 캔버스 범위 (완성본 좌표)
+        private static readonly RectInt Canvas = new(570, 460, 190, 340);
 
         private sealed class Piece
         {
             public string Name;
-            public Vector2 A, B;     // 배정용 선분, 본은 A(회전 중심) → B
-            public float Radius;
-            public int Rank;
+            public Vector2 A, B; // 본은 A(회전 중심) → B
         }
 
-        private static Vector2 V(float x, float y) => new(x, y);
+        // 완성본 좌표(좌상단 원점) → 캔버스 픽셀(좌하단 원점)
+        private static Vector2 V(float x, float y) => new(x - Canvas.x, Canvas.yMax - 1 - y);
 
         private static readonly Piece[] Pieces =
         {
-            new() { Name = "LegL", A = V(55, 51), B = V(50, 3), Radius = 0, Rank = 0 },
-            new() { Name = "LegR", A = V(120, 45), B = V(120, 11), Radius = 0, Rank = 0 },
-            new() { Name = "ArmR", A = V(145, 151), B = V(155, 63), Radius = 0, Rank = 0 },
-            new() { Name = "Body", A = V(88, 60), B = V(90, 160), Radius = 38, Rank = 1 },
-            new() { Name = "ArmL", A = V(45, 171), B = V(25, 56), Radius = 0, Rank = 2 },
-            new() { Name = "Head", A = V(97, 165), B = V(105, 235), Radius = 42, Rank = 3 },
-            new() { Name = "Horn", A = V(128, 221), B = V(163, 319), Radius = 4, Rank = 3 },
+            new() { Name = "LegL", A = V(632, 752), B = V(632, 795) },
+            new() { Name = "LegR", A = V(705, 752), B = V(705, 785) },
+            new() { Name = "ArmR", A = V(712, 624), B = V(725, 727) },
+            new() { Name = "Body", A = V(665, 730), B = V(665, 600) },
+            new() { Name = "ArmL", A = V(655, 617), B = V(598, 737) },
+            new() { Name = "Head", A = V(688, 640), B = V(688, 520) },
+            new() { Name = "Horn", A = V(718, 548), B = V(747, 472) },
         };
 
         private static Piece Get(string n) => Pieces.First(p => p.Name == n);
 
-        // 팔다리 영역: 원본에서 팔과 몸통 사이 안쪽 외곽선, 몸통 아랫선을 따라 그린 다각형 (위 기준 y)
-        private static readonly Dictionary<string, Vector2[]> LimbShapes = new()
+        private static readonly Vector2 Feet = V(665, 797); // 쓰러질 때 축
+
+        // 파츠 그림의 각 파츠 범위(원본 좌표)와 완성본으로 옮기는 이동량 (완성본에 외곽선을 맞춰 구한 값)
+        private static readonly (string name, RectInt box, Vector2Int offset)[] Sources =
         {
-            ["ArmL"] = new[] { V(45, 138), V(62, 172), V(58, 190), V(56, 262), V(48, 282), V(10, 282), V(-2, 240), V(-2, 190), V(18, 150) },
-            ["ArmR"] = new[] { V(138, 163), V(152, 166), V(164, 212), V(172, 250), V(168, 268), V(144, 270), V(137, 262), V(135, 200) },
-            ["LegL"] = new[] { V(28, 268), V(82, 266), V(80, 322), V(28, 322) },
-            ["LegR"] = new[] { V(98, 274), V(144, 268), V(144, 314), V(98, 314) },
+            ("head", new RectInt(340, 40, 160, 195), new Vector2Int(271, 420)),
+            ("body", new RectInt(315, 260, 145, 235), new Vector2Int(277, 312)),
+            ("armL", new RectInt(145, 290, 110, 150), new Vector2Int(423, 312)),
+            ("armR", new RectInt(540, 295, 65, 135), new Vector2Int(150, 312)),
         };
 
-        private static bool Inside(Vector2[] poly, Vector2 p)
-        {
-            bool inside = false;
-            for (int i = 0, j = poly.Length - 1; i < poly.Length; j = i++)
-            {
-                if ((poly[i].y > p.y) != (poly[j].y > p.y) &&
-                    p.x < (poly[j].x - poly[i].x) * (p.y - poly[i].y) / (poly[j].y - poly[i].y) + poly[i].x)
-                {
-                    inside = !inside;
-                }
-            }
-
-            return inside;
-        }
-        private static readonly Vector2 Feet = V(92, 4); // 쓰러질 때 축
+        // 머리 원 (파츠 그림 좌표): 원 밖 오른쪽 위로 튀어나온 부분이 뿔
+        private static readonly Vector2 HeadCenter = new(417, 158);
+        private const float HeadRadius = 63f;
 
         private sealed class Art
         {
             public Vector2Int Size;
-            public Color32[] Main, Cross;
-            public int[] Owner;
-            public Dictionary<string, Color32[]> Limbs; // 팔다리는 별도 레이어 (몸 쪽 띠는 Main에서 몸 색으로 메움)
+            public Dictionary<string, Color32[]> Layers;
             public Vector2 CrossCenter;
         }
 
@@ -102,7 +93,8 @@ namespace Game.Editor.MonsterRig
             {
                 Name = "Horned",
                 Size = art.Size,
-                PivotPx = V(87, 0),
+                PivotPx = Feet,
+                GridStep = 8,
                 CustomLayers = () => Layers(art),
                 Bones = bones.ToArray(),
                 MoveLength = walk,
@@ -112,10 +104,10 @@ namespace Game.Editor.MonsterRig
                 Attack = new[]
                 {
                     (0f, P()),
-                    (0.15f, Dash(move: V(-0.015f, -0.015f), lean: 6f, head: 4f, arms: 20f, legs: 4f)),
-                    (0.3f, Dash(move: V(0.1f, -0.02f), lean: -14f, head: -10f, arms: -25f, legs: -12f)),
-                    (0.4f, Dash(move: V(0.12f, -0.02f), lean: -16f, head: -12f, arms: -28f, legs: -14f)),
-                    (0.55f, Dash(move: V(0.03f, 0f), lean: -3f, head: -2f, arms: -5f, legs: -3f)),
+                    (0.15f, Dash(move: new Vector2(-0.015f, -0.015f), lean: 6f, head: 4f, arms: 20f, legs: 4f)),
+                    (0.3f, Dash(move: new Vector2(0.1f, -0.02f), lean: -14f, head: -10f, arms: -25f, legs: -12f)),
+                    (0.4f, Dash(move: new Vector2(0.12f, -0.02f), lean: -16f, head: -12f, arms: -28f, legs: -14f)),
+                    (0.55f, Dash(move: new Vector2(0.03f, 0f), lean: -3f, head: -2f, arms: -5f, legs: -3f)),
                     (0.7f, P()),
                 },
                 // 움찔 → 뿔이 부러져 튕겨 나가 떨어짐 → 십자가 45° 돌아 X → 발끝 축으로 뒤로 쓰러짐 → 사라짐
@@ -193,31 +185,26 @@ namespace Game.Editor.MonsterRig
             // 뿔: 위로 튕겨 오른쪽으로 날아가며 회전하다 바닥에 떨어짐 (horn 0..1 진행도에 포물선)
             var hornRest = Get("Horn").A;
             float k = horn;
-            var flight = V(70f * k, 30f * Mathf.Sin(Mathf.PI * Mathf.Min(1f, k * 1.4f)) - (hornRest.y - 18f) * k * k);
+            var flight = new Vector2(70f * k, 30f * Mathf.Sin(Mathf.PI * Mathf.Min(1f, k * 1.4f)) - (hornRest.y - 18f) * k * k);
             Put(p, "Horn", hornRest + flight, -150f * k, hornRest);
             return p;
         }
 
         // ---------- 그림 준비 ----------
 
-        private static readonly string[] LimbNames = { "LegL", "LegR", "ArmR", "ArmL" };
-
-        // PSD 레이어 순서(아래 → 위): 다리, 오른팔(몸 뒤) → 몸통·머리·뿔 → 왼팔 → 십자
+        // PSD 레이어 순서(아래 → 위): 오른팔(몸 뒤) → 몸통 → 왼팔 → 머리 → 뿔 → 십자
         private static List<LayerSpec> Layers(Art art)
         {
-            var mesh = GolemStones.BuildMesh(art.Owner, art.Size.x, art.Size.y, Pieces.Length, i => Pieces[i].Name, i => Pieces[i].Rank, minCell: 2);
-            LayerSpec Limb(string name) => new() { Name = "horned_" + name.ToLowerInvariant(), Pixels = art.Limbs[name], PixelsSize = art.Size, Bones = new[] { name } };
+            LayerSpec L(string key, params string[] bones) =>
+                new() { Name = "horned_" + key.ToLowerInvariant(), Pixels = art.Layers[key], PixelsSize = art.Size, Bones = bones };
             return new List<LayerSpec>
             {
-                Limb("LegL"), Limb("LegR"), Limb("ArmR"),
-                new()
-                {
-                    Name = "horned", Pixels = art.Main, PixelsSize = art.Size,
-                    Bones = Pieces.Where(p => !LimbNames.Contains(p.Name)).Select(p => p.Name).ToArray(),
-                    MeshVertices = mesh.vertices, MeshIndices = mesh.indices, MeshVertexBone = mesh.vertexBone,
-                },
-                Limb("ArmL"),
-                new() { Name = "horned_cross", Pixels = art.Cross, PixelsSize = art.Size, Bones = new[] { "Cross" } },
+                L("armR", "ArmR"),
+                L("body", "Body", "LegL", "LegR"),
+                L("armL", "ArmL"),
+                L("head", "Head"),
+                L("horn", "Horn"),
+                L("cross", "Cross"),
             };
         }
 
@@ -225,18 +212,68 @@ namespace Game.Editor.MonsterRig
         {
             var tex = new Texture2D(2, 2, TextureFormat.RGBA32, false);
             tex.LoadImage(File.ReadAllBytes(Path.GetFullPath(Png)));
-            var src = tex.GetPixels32();
-            int w = tex.width, h = tex.height;
+            var raw = tex.GetPixels32();
+            int fw = tex.width, fh = tex.height;
             Object.DestroyImmediate(tex);
             float Lum(Color32 c) => (0.299f * c.r + 0.587f * c.g + 0.114f * c.b) / 255f;
+            Color32 At(int x, int y) => raw[(fh - 1 - y) * fw + x]; // 좌상단 원점
 
-            // 1) 얼굴 안의 어두운 획 = 십자 (얼굴 범위: top-down x 105~170, y 95~165)
-            var face = new RectInt(90, h - 1 - 162, 75, 62);
-            bool Dark(int i) => src[i].a > 128 && Lum(src[i]) < 0.5f;
-            var cross = new bool[src.Length];
-            foreach (var comp in Components(src.Length, w, h, Dark))
+            int w = Canvas.width, h = Canvas.height;
+            var layers = new Dictionary<string, Color32[]>();
+            foreach (var key in new[] { "head", "horn", "body", "armL", "armR", "cross" })
             {
-                if (comp.Count >= 10 && comp.All(i => face.Contains(new Vector2Int(i % w, i / w))))
+                layers[key] = new Color32[w * h];
+            }
+
+            // 1) 파츠를 완성본 위치로 옮겨 담는다. 머리에서 원 밖 오른쪽 위 = 뿔.
+            int Index(int x, int y) => (Canvas.yMax - 1 - y) * w + (x - Canvas.x);
+            foreach (var (name, box, offset) in Sources)
+            {
+                for (int y = box.yMin; y < box.yMax; y++)
+                {
+                    for (int x = box.xMin; x < box.xMax; x++)
+                    {
+                        var c = At(x, y);
+                        if (c.a == 0)
+                        {
+                            continue;
+                        }
+
+                        string key = name;
+                        if (name == "head" && x > HeadCenter.x && y < HeadCenter.y - 15f &&
+                            Vector2.Distance(new Vector2(x, y), HeadCenter) > HeadRadius - 1.5f)
+                        {
+                            key = "horn";
+                        }
+
+                        layers[key][Index(x + offset.x, y + offset.y)] = c;
+                    }
+                }
+            }
+
+            // 파츠 범위에 섞여 들어온 잡티 제거
+            foreach (var px in layers.Values)
+            {
+                foreach (var comp in Components(px.Length, w, h, i => px[i].a > 0))
+                {
+                    if (comp.Count < 40)
+                    {
+                        foreach (int i in comp)
+                        {
+                            px[i] = default;
+                        }
+                    }
+                }
+            }
+
+            // 2) 얼굴 십자:머리 원 안쪽(외곽선 제외)의 어두운 획. 떼어낸 자리는 얼굴 바탕색으로 메운다.
+            var head = layers["head"];
+            var hc = V(HeadCenter.x + 271, HeadCenter.y + 420);
+            bool Inner(int i, float r) => Vector2.Distance(new Vector2(i % w, i / w), hc) < r;
+            var cross = new bool[head.Length];
+            foreach (var comp in Components(head.Length, w, h, i => head[i].a > 128 && Lum(head[i]) < 0.5f))
+            {
+                if (comp.Count >= 10 && comp.All(i => Inner(i, HeadRadius - 8f)))
                 {
                     foreach (int i in comp)
                     {
@@ -248,7 +285,7 @@ namespace Game.Editor.MonsterRig
             for (int pass = 0; pass < 2; pass++)
             {
                 var next = (bool[])cross.Clone();
-                for (int i = 0; i < src.Length; i++)
+                for (int i = 0; i < head.Length; i++)
                 {
                     if (!cross[i])
                     {
@@ -257,7 +294,7 @@ namespace Game.Editor.MonsterRig
 
                     foreach (int j in N4(i, w, h))
                     {
-                        if (src[j].a > 128 && Lum(src[j]) < 0.92f)
+                        if (head[j].a > 128 && Lum(head[j]) < 0.92f && Inner(j, HeadRadius - 5f))
                         {
                             next[j] = true;
                         }
@@ -269,149 +306,32 @@ namespace Game.Editor.MonsterRig
 
             var cols = new int[w];
             var rows = new int[h];
-            for (int i = 0; i < src.Length; i++)
+            for (int i = 0; i < head.Length; i++)
             {
                 if (cross[i]) { cols[i % w]++; rows[i / w]++; }
             }
 
-            var center = V(System.Array.IndexOf(cols, cols.Max()), System.Array.IndexOf(rows, rows.Max()));
+            var center = new Vector2(System.Array.IndexOf(cols, cols.Max()), System.Array.IndexOf(rows, rows.Max()));
 
-            // 2) 본 그림에서 십자 자리는 얼굴 바탕색으로 메운다
             float pr = 0, pg = 0, pb = 0;
             int pn = 0;
-            for (int i = 0; i < src.Length; i++)
+            for (int i = 0; i < head.Length; i++)
             {
-                if (cross[i] || src[i].a < 250 || Lum(src[i]) < 0.88f || !face.Contains(new Vector2Int(i % w, i / w)))
+                if (cross[i] || head[i].a < 250 || Lum(head[i]) < 0.88f || !Inner(i, HeadRadius * 0.7f))
                 {
                     continue;
                 }
 
-                pr += src[i].r; pg += src[i].g; pb += src[i].b; pn++;
+                pr += head[i].r; pg += head[i].g; pb += head[i].b; pn++;
             }
 
             var paper = new Color32((byte)(pr / pn), (byte)(pg / pn), (byte)(pb / pn), 255);
-            var main = (Color32[])src.Clone();
-            var crossPx = new Color32[src.Length];
-            for (int i = 0; i < src.Length; i++)
+            for (int i = 0; i < head.Length; i++)
             {
-                if (cross[i]) { crossPx[i] = src[i]; main[i] = paper; }
+                if (cross[i]) { layers["cross"][i] = head[i]; head[i] = paper; }
             }
 
-            // 3) 외곽선 조각 → 파츠: 조각의 80% 이상이 한 파츠면 통째로, 아니면 픽셀마다 가까운 파츠
-            var seg = GolemStones.Segment(main, w, h, new int[main.Length], 1, -1, c => Lum(c) < 0.3f, 20);
-            var nearest = new int[main.Length];
-            for (int i = 0; i < main.Length; i++)
-            {
-                nearest[i] = -1;
-                if (seg.Owner[i] < 0)
-                {
-                    continue;
-                }
-
-                var pt = V(i % w, i / w);
-                float best = float.MaxValue;
-                for (int k = 0; k < Pieces.Length; k++)
-                {
-                    if (LimbShapes.ContainsKey(Pieces[k].Name))
-                    {
-                        continue; // 팔다리는 아래에서 다각형으로 정한다
-                    }
-
-                    float d = GolemRig.Distance(pt, Pieces[k].A, Pieces[k].B) - Pieces[k].Radius;
-                    if (d < best) { best = d; nearest[i] = k; }
-                }
-            }
-
-            var owner = Enumerable.Repeat(-1, main.Length).ToArray();
-            // 팔다리 다각형 안의 픽셀은 해당 팔다리 (위 기준 y로 판정)
-            var limbOf = new int[main.Length];
-            for (int i = 0; i < main.Length; i++)
-            {
-                limbOf[i] = -1;
-                if (seg.Owner[i] < 0)
-                {
-                    continue;
-                }
-
-                var td = V(i % w, h - 1 - i / w);
-                foreach (var (name, poly) in LimbShapes)
-                {
-                    if (Inside(poly, td)) { limbOf[i] = System.Array.FindIndex(Pieces, p => p.Name == name); break; }
-                }
-            }
-
-            foreach (var st in seg.Stones)
-            {
-                var votes = new int[Pieces.Length];
-                int total = 0;
-                for (int i = 0; i < main.Length; i++)
-                {
-                    if (seg.Owner[i] == st.Id) { votes[nearest[i]]++; total++; }
-                }
-
-                int top = System.Array.IndexOf(votes, votes.Max());
-                bool whole = votes[top] >= total * 0.8f;
-                for (int i = 0; i < main.Length; i++)
-                {
-                    if (seg.Owner[i] == st.Id)
-                    {
-                        owner[i] = limbOf[i] >= 0 ? limbOf[i] : whole ? top : nearest[i];
-                    }
-                }
-            }
-
-            // 4) 팔다리를 떼어 별도 레이어로. 몸 쪽으로 붙어 있던 띠(몸에서 6px 이내)는 몸 색으로 메워 틈을 막는다.
-            int bodyIndex = System.Array.FindIndex(Pieces, p => p.Name == "Body");
-            var limbs = new Dictionary<string, Color32[]>();
-            var limbIndex = LimbNames.Select(n => System.Array.FindIndex(Pieces, p => p.Name == n)).ToHashSet();
-            var dist = Enumerable.Repeat(int.MaxValue, main.Length).ToArray();
-            var bfs = new Queue<int>();
-            for (int i = 0; i < main.Length; i++)
-            {
-                if (owner[i] >= 0 && !limbIndex.Contains(owner[i])) { dist[i] = 0; bfs.Enqueue(i); }
-            }
-
-            while (bfs.Count > 0)
-            {
-                int i = bfs.Dequeue();
-                if (dist[i] >= 6)
-                {
-                    continue;
-                }
-
-                foreach (int j in N4(i, w, h))
-                {
-                    if (owner[j] >= 0 && limbIndex.Contains(owner[j]) && dist[j] > dist[i] + 1) { dist[j] = dist[i] + 1; bfs.Enqueue(j); }
-                }
-            }
-
-            foreach (var name in LimbNames)
-            {
-                int k = System.Array.FindIndex(Pieces, p => p.Name == name);
-                var px = new Color32[main.Length];
-                for (int i = 0; i < main.Length; i++)
-                {
-                    if (owner[i] == k)
-                    {
-                        px[i] = main[i];
-                    }
-                }
-
-                limbs[name] = px;
-            }
-
-            for (int i = 0; i < main.Length; i++)
-            {
-                if (owner[i] < 0 || !limbIndex.Contains(owner[i]))
-                {
-                    continue;
-                }
-
-                if (dist[i] <= 6) { main[i] = paper; owner[i] = bodyIndex; }
-                else { main[i] = default; owner[i] = -1; }
-            }
-
-            return new Art { Size = new Vector2Int(w, h), Main = main, Cross = crossPx, Owner = owner, CrossCenter = center, Limbs = limbs };
+            return new Art { Size = new Vector2Int(w, h), Layers = layers, CrossCenter = center };
         }
 
         private static IEnumerable<int> N4(int i, int w, int h)
@@ -469,37 +389,43 @@ namespace Game.Editor.MonsterRig
             return result;
         }
 
-        /// <summary>파츠 분리 디버그: 파츠별 색 + 십자(검정)</summary>
+        /// <summary>파츠 조립 확인: 왼쪽 합친 그림, 오른쪽 레이어별 색 + 본 시작점</summary>
         public static string WritePreview(string path)
         {
             s_art = null;
             var art = s_art = Prepare();
-            var tex = new Texture2D(art.Size.x, art.Size.y, TextureFormat.RGBA32, false);
-            for (int i = 0; i < art.Main.Length; i++)
+            int w = art.Size.x, h = art.Size.y;
+            var tex = new Texture2D(w * 2, h, TextureFormat.RGBA32, false);
+            string[] order = { "armR", "body", "armL", "head", "horn", "cross" };
+            for (int i = 0; i < w * h; i++)
             {
-                Color c = art.Owner[i] < 0 ? Color.clear
-                    : Color.Lerp(art.Main[i], Color.HSVToRGB((art.Owner[i] * 0.618f) % 1f, 0.9f, 1f), 0.55f);
-                int limb = 0;
-                foreach (var name in LimbNames)
+                Color merged = Color.gray, tint = Color.gray;
+                for (int k = 0; k < order.Length; k++)
                 {
-                    limb++;
-                    if (art.Limbs[name][i].a > 0)
+                    var c = art.Layers[order[k]][i];
+                    if (c.a > 0)
                     {
-                        c = Color.Lerp(art.Limbs[name][i], Color.HSVToRGB(limb * 0.23f % 1f, 1f, 0.9f), 0.6f);
+                        merged = Color.Lerp(merged, c, c.a / 255f);
+                        tint = Color.Lerp(c, Color.HSVToRGB(k / 6f, 1f, 1f), 0.6f);
                     }
                 }
 
-                if (art.Cross[i].a > 0)
-                {
-                    c = Color.black;
-                }
+                tex.SetPixel(i % w, i / w, merged);
+                tex.SetPixel(w + i % w, i / w, tint);
+            }
 
-                tex.SetPixel(i % art.Size.x, i / art.Size.x, c);
+            foreach (var p in Pieces)
+            {
+                for (int d = -2; d <= 2; d++)
+                {
+                    tex.SetPixel(w + (int)p.A.x + d, (int)p.A.y, Color.black);
+                    tex.SetPixel(w + (int)p.A.x, (int)p.A.y + d, Color.black);
+                }
             }
 
             File.WriteAllBytes(path, tex.EncodeToPNG());
             Object.DestroyImmediate(tex);
-            return $"crossCenter={art.CrossCenter} pieces={art.Owner.Where(o => o >= 0).Distinct().Count()}/{Pieces.Length}";
+            return $"size={art.Size} crossCenter={art.CrossCenter}";
         }
     }
 }
