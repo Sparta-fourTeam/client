@@ -54,30 +54,22 @@ namespace Game.Core
         protected abstract void OnFire();
 
         // GetNearest로 뽑은 후보 중 사거리 안에서 y값(벽에 가장 가까운 값)이 제일 낮은 적을 고른다
-        protected IEnemyTarget FindTarget(float maxRange)
+        protected List<IEnemyTarget> FindTargets(float maxRange, int count)
         {
             targetProvider.GetNearest(caster.position, TargetCandidateCount, targetBuffer);
 
-            IEnemyTarget best = null;
-            float bestY = float.MaxValue;
+            var inRange = new List<IEnemyTarget>();
             float maxRangeSqr = maxRange * maxRange;
-
-            foreach (var candidate in targetBuffer)
+            foreach (var c in targetBuffer)
             {
-                float distSqr = ((Vector2)caster.position - candidate.Position).sqrMagnitude;
-                if (distSqr > maxRangeSqr)
+                if (((Vector2)caster.position - c.Position).sqrMagnitude <= maxRangeSqr)
                 {
-                    continue;
-                }
-
-                if (candidate.Position.y < bestY)
-                {
-                    bestY = candidate.Position.y;
-                    best = candidate;
+                    inRange.Add(c);
                 }
             }
 
-            return best;
+            inRange.Sort((a, b) => a.Position.y.CompareTo(b.Position.y));  // y 낮은 순 우선순위
+            return inRange;
         }
 
         public void LevelUp(WeaponUpgradeOption option)
