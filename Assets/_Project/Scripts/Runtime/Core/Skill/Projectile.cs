@@ -33,8 +33,22 @@ namespace Game.Core
             ApplyDirectionRoration();
         }
 
+        /// <summary>선분 from→to 위에서 point에 가장 가까운 지점의 위치 비율(0~1)을 돌려준다. 선분이 점이면 0</summary>
+        public static float ClosestPointRatio(Vector2 from, Vector2 to, Vector2 point)
+        {
+            Vector2 segment = to - from;
+            float lengthSqr = segment.sqrMagnitude;
+            if (lengthSqr <= Mathf.Epsilon)
+            {
+                return 0f;
+            }
+
+            return Mathf.Clamp01(Vector2.Dot(point - from, segment) / lengthSqr);
+        }
+
         private void Update()
         {
+            Vector2 previous = transform.position;
             transform.position += direction * speed * Time.deltaTime;
 
             lifetime -= Time.deltaTime;
@@ -44,21 +58,37 @@ namespace Game.Core
                 return;
             }
 
-            targetProvider.GetNearest(transform.position, HitCandidateCount, hitBuffer);
+            // 프레임이 낮으면 한 프레임에 판정 지름보다 멀리 가서 적을 통과하므로, 끝점이 아니라 이번 프레임에 지나온 구간 전체로 맞았는지 본다
+            Vector2 current = transform.position;
+            targetProvider.GetNearest((previous + current) * 0.5f, HitCandidateCount, hitBuffer);
 
             float hitRadiusSqr = HitRadius * HitRadius;
+            IEnemyTarget firstHit = null;
+            float firstHitRatio = float.MaxValue;
             foreach (var candidate in hitBuffer)
             {
-                if (((Vector2)transform.position - candidate.Position).sqrMagnitude > hitRadiusSqr)
+                float ratio = ClosestPointRatio(previous, current, candidate.Position);
+                Vector2 closest = Vector2.Lerp(previous, current, ratio);
+                if ((closest - candidate.Position).sqrMagnitude > hitRadiusSqr)
                 {
                     continue;
                 }
 
-                Debug.Log(candidate);
-                candidate.TakeDamage((int)damage);
+                // 한 프레임에 여러 적이 걸리면 먼저 지나친 적을 맞힌다
+                if (ratio < firstHitRatio)
+                {
+                    firstHit = candidate;
+                    firstHitRatio = ratio;
+                }
+            }
+
+            if (firstHit != null)
+            {
+                Vector2 hitPoint = Vector2.Lerp(previous, current, firstHitRatio);
+                transform.position = new Vector3(hitPoint.x, hitPoint.y, transform.position.z);
+                firstHit.TakeDamage((int)damage);
                 SpawnImpact();
                 pool.Release(this);
-                break;
             }
         }
 

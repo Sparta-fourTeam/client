@@ -32,7 +32,7 @@ namespace Game.Core
         private void Start()
         {
             TestTable();
-            AddWeapon(3);
+            AddWeapon(1);
         }
 
         private void TestTable()
