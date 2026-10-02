@@ -11,8 +11,8 @@ namespace Game.Core
 
         public ShinobiInfo Shinobi { get; } = new ShinobiInfo
         {
-            Name = "료 나카츠카미",
-            Rank = "하급 닌자",
+            Name = "캐릭터",
+            Rank = "신입 직원",
             Level = 3,
             Power = 120,
         };
@@ -34,7 +34,7 @@ namespace Game.Core
         // 원작 장비 6종 + 왼쪽 칸 1개. 칸은 캐릭터 레벨 2~8에서 하나씩 열린다
         private List<EquipInfo> CreateEquips()
         {
-            string[] names = { "두건", "상의", "신발", "쿠나이", "반지", "스카프", "부적" };
+            string[] names = { "모자", "상의", "신발", "단검", "반지", "넥타이", "사원증" };
             int[] levels = { 2, 8, 0, 0, 0, 0, 1 };
             var list = new List<EquipInfo>();
             for (int i = 0; i < names.Length; i++)
@@ -56,13 +56,13 @@ namespace Game.Core
                     Effects = i == 1
                         ? new[]
                         {
-                            new EquipEffect("[비둔주] 쿠나이 대미지 18% ▲"),
-                            new EquipEffect("[화둔주] 화둔술 대미지 10% ▲"),
-                            new EquipEffect("[인법주] 방벽 내구도 30% 미만일 때 대미지 60% ▲"),
-                            new EquipEffect("[뇌둔주] 벼락 대미지 9% ▲", isActive: false),
-                            new EquipEffect("[비둔주] 쿠나이 투척 대미지 6% ▲, 관통력 +1"),
+                            new EquipEffect("[기술력] 단검 대미지 18% ▲"),
+                            new EquipEffect("[화력] 화염탄 대미지 10% ▲"),
+                            new EquipEffect("[집중력] 방벽 내구도 30% 미만일 때 대미지 60% ▲"),
+                            new EquipEffect("[전력] 벼락 대미지 9% ▲", isActive: false),
+                            new EquipEffect("[기술력] 단검 투척 대미지 6% ▲, 관통력 +1"),
                         }
-                        : new[] { new EquipEffect("[비둔주] 쿠나이 대미지 5% ▲") },
+                        : new[] { new EquipEffect("[기술력] 단검 대미지 5% ▲") },
                     CoinCost = 100 + levels[i] * 15,
                     BookCost = 1 + levels[i],
                 });
@@ -75,7 +75,7 @@ namespace Game.Core
         {
             (string id, string name, string desc, int level, int attack, float cooldown)[] open =
             {
-                ("shuriken", "수리검", "가장 가까운 적에게 수리검을 던진다", 3, 10, 1.0f),
+                ("shuriken", "단검", "가장 가까운 적에게 단검을 던진다", 3, 10, 1.0f),
                 ("fireball", "화염탄", "적에게 닿으면 폭발하는 화염탄을 쏜다", 0, 15, 2.0f),
                 ("frost", "빙결", "주변 적을 얼려 느리게 만든다", 0, 8, 3.0f),
                 ("lightning", "낙뢰", "무작위 적에게 벼락을 떨어뜨린다", 0, 20, 2.5f),
@@ -99,7 +99,7 @@ namespace Game.Core
                     {
                         new StatLine("공격력", Attack(n.attack, n.level).ToString(), Attack(n.attack, n.level + 1).ToString()),
                         new StatLine("쿨타임", $"{Cooldown(n.cooldown, n.level):0.##}초", $"{Cooldown(n.cooldown, n.level + 1):0.##}초"),
-                        new StatLine("인술 레벨", n.level.ToString(), (n.level + 1).ToString()),
+                        new StatLine("기술 레벨", n.level.ToString(), (n.level + 1).ToString()),
                     },
                     CoinCost = 100 + n.level * 50,
                     BookCost = 1 + n.level / 3,
