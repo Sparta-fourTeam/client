@@ -255,5 +255,18 @@ namespace Game.Tests
             Assert.DoesNotThrow(() => wall.TakeDamage(10));
             Assert.IsTrue(wall.IsDestroyed);
         }
+
+        [Test(Description = "피해를 받으면 적과 같은 피격 플래시가 붙고, 무시되는 피해에는 붙지 않는다")]
+        public void TakeDamage_AttachesHitFlashOnlyWhenDamaged()
+        {
+            Wall wall = CreateWall(10);
+            _go.AddComponent<SpriteRenderer>();
+
+            wall.TakeDamage(0);
+            Assert.IsNull(_go.GetComponent<Game.Core.HitFlash>());
+
+            wall.TakeDamage(1);
+            Assert.IsNotNull(_go.GetComponent<Game.Core.HitFlash>());
+        }
     }
 }
