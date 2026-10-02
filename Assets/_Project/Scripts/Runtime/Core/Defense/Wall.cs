@@ -31,6 +31,7 @@ namespace Game.Core.Defense
         private const float BrokenRatio = 0.33f;
 
         private SpriteRenderer _renderer;
+        private HitFlash _hitFlash;
 
         [Inject]
         public void Construct(IBufferedPublisher<WallHpChanged> hpChangedPublisher,
@@ -72,12 +73,28 @@ namespace Game.Core.Defense
             _hpChangedPublisher.Publish(new WallHpChanged(CurrentHp, MaxHp));
 
             ApplySprite();
+            FlashHit();
 
             if (CurrentHp <= 0)
             {
                 IsDestroyed = true;
                 _destroyedPublisher.Publish(new WallDestroyed());
             }
+        }
+
+        // 적과 같은 피격 플래시. 프리팹에 없으면 붙인다
+        private void FlashHit()
+        {
+            if (_hitFlash == null)
+            {
+                _hitFlash = GetComponent<HitFlash>();
+                if (_hitFlash == null)
+                {
+                    _hitFlash = gameObject.AddComponent<HitFlash>();
+                }
+            }
+
+            _hitFlash.Flash();
         }
 
         // 스프라이트가 없는 벽(테스트 등)도 동작하도록 렌더러와 배열을 확인한다
