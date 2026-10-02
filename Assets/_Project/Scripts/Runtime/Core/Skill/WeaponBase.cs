@@ -15,6 +15,9 @@ namespace Game.Core
         protected IEnemyTargetProvider targetProvider;
         private readonly Dictionary<string, int> acquiredCardCounts = new Dictionary<string, int>();
         private readonly List<IEnemyTarget> targetBuffer = new List<IEnemyTarget>(TargetCandidateCount);
+        // FindTargets가 돌려주는 목록. 매 발사마다 새로 만들지 않고 재사용하므로 호출한 쪽은 다음 호출 전까지만 쓴다
+        private readonly List<IEnemyTarget> inRange = new List<IEnemyTarget>(TargetCandidateCount);
+        private static readonly System.Comparison<IEnemyTarget> CompareByY = (a, b) => a.Position.y.CompareTo(b.Position.y);
         private const int TargetCandidateCount = 8;
 
         public bool IsMaxLevel => Level >= data.maxLevel;
@@ -58,7 +61,7 @@ namespace Game.Core
         {
             targetProvider.GetNearest(caster.position, TargetCandidateCount, targetBuffer);
 
-            var inRange = new List<IEnemyTarget>();
+            inRange.Clear();
             float maxRangeSqr = maxRange * maxRange;
             foreach (var c in targetBuffer)
             {
@@ -68,7 +71,7 @@ namespace Game.Core
                 }
             }
 
-            inRange.Sort((a, b) => a.Position.y.CompareTo(b.Position.y));  // y 낮은 순 우선순위
+            inRange.Sort(CompareByY);  // y 낮은 순 우선순위
             return inRange;
         }
 

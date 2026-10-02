@@ -83,7 +83,7 @@ namespace Game.Core
         {
             TickCombat(deltaTime);
 
-            if(deltaTime > 0f)
+            if (deltaTime > 0f)
             {
                 CheckAllEnemiesCleared();
             }
@@ -121,13 +121,15 @@ namespace Game.Core
             // 스폰 수량 채웠으면 대기 상태 전환
             if (_spawnedCountInOnceSpawn >= _currentBurstSize)
             {
-                if(_isFinalWave)
+                if (_isFinalWave)
                 {
                     _isSpawningAllowed = false;
                     _finalSpawnDone = true;
                 }
-                else 
+                else
+                {
                     _isWaitingForNextSpawn = true;
+                }
             }
         }
 
@@ -146,12 +148,16 @@ namespace Game.Core
         private void CheckAllEnemiesCleared()
         {
             if (!_finalSpawnDone || _allClearPublished)
+            {
                 return;
+            }
 
-            foreach(var enemy in _activeEnemies)
+            foreach (var enemy in _activeEnemies)
             {
                 if (!enemy.IsDead)
+                {
                     return;
+                }
             }
 
             _allClearPublished = true;
@@ -160,13 +166,13 @@ namespace Game.Core
 
         private EnemyType PickEnemyType()
         {
-            if(_remainingBoss > 0)
+            if (_remainingBoss > 0)
             {
                 _remainingBoss--;
                 return EnemyType.Boss;
             }
 
-            if(_remainingElite > 0 && _randomProvider.Range(0f, 1f) < _enemySpawnConfig.EliteSpawnChance)
+            if (_remainingElite > 0 && _randomProvider.Range(0f, 1f) < _enemySpawnConfig.EliteSpawnChance)
             {
                 _remainingElite--;
                 return EnemyType.Elite;
@@ -231,19 +237,36 @@ namespace Game.Core
                 return 0;
             }
 
-            foreach(var enemy in _activeEnemies)
+            // 투사체가 매 프레임 부르므로 전체 정렬 대신 가까운 count개만 삽입 정렬로 유지한다 (할당 없음)
+            foreach (var enemy in _activeEnemies)
             {
-                if(!enemy.IsDead)
+                if (enemy.IsDead)
+                {
+                    continue;
+                }
+
+                float distance = (enemy.Position - from).sqrMagnitude;
+                int index;
+                if (results.Count < count)
                 {
                     results.Add(enemy);
+                    index = results.Count - 1;
                 }
-            }
+                else if (distance < (results[count - 1].Position - from).sqrMagnitude)
+                {
+                    results[count - 1] = enemy;
+                    index = count - 1;
+                }
+                else
+                {
+                    continue;
+                }
 
-            results.Sort((a, b) => (a.Position - from).sqrMagnitude.CompareTo((b.Position - from).sqrMagnitude));
-
-            if (results.Count > count)
-            {
-                results.RemoveRange(count, results.Count - count);
+                while (index > 0 && (results[index - 1].Position - from).sqrMagnitude > distance)
+                {
+                    (results[index - 1], results[index]) = (results[index], results[index - 1]);
+                    index--;
+                }
             }
 
             return results.Count;
