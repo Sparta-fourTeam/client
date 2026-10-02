@@ -41,6 +41,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2868358806268690223}
+  - component: {fileID: 3102175485869776737}
   m_Layer: 0
   m_Name: Player_Animated
   m_TagString: Untagged
@@ -64,6 +65,29 @@ Transform:
   - {fileID: 7903198853252596118}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3102175485869776737
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2032114599762951052}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aaed6c6bb73dc9243a05ee5625718174, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.Core::Game.Core.WeaponController
+  prefabEntries:
+  - id: 1
+    prefab: {fileID: 5228935304015980034, guid: 158ccb1ab53c447659a53da97583c103, type: 3}
+  - id: 2
+    prefab: {fileID: 7451147369274982716, guid: 0af9f3faa168a4cbcbbcfa788f02b312, type: 3}
+  - id: 3
+    prefab: {fileID: 4528877711005814777, guid: 9514f5ca8a14e4a9e8c9d189f896aeaf, type: 3}
+  - id: 4
+    prefab: {fileID: 898466977149368188, guid: d7935ccce6302b94f8eb4729673ed2bd, type: 3}
+  - id: 5
+    prefab: {fileID: 898466977149368188, guid: 78f27881a2cc7d24d8b4a047ef4294c3, type: 3}
 --- !u!1 &5749592481740122842
 GameObject:
   m_ObjectHideFlags: 0

@@ -12,6 +12,8 @@ namespace Game.View
         [SerializeField] private Image _icon;
         [SerializeField] private Image _cooldownOverlay;
         [SerializeField] private TMP_Text _levelText;
+        [SerializeField] private Image _activeFrame;
+        [SerializeField] private Sprite _activeSprite;
 
         private ISkillStatus _status;
 
@@ -34,6 +36,9 @@ namespace Game.View
             _levelText.gameObject.SetActive(true);
             _cooldownOverlay.gameObject.SetActive(true);
             _cooldownOverlay.fillAmount = Mathf.Clamp01(status.CooldownRatio);
+
+            _activeFrame.sprite = _activeSprite;
+            _activeFrame.enabled = true;
         }
 
         public void Clear()
@@ -42,6 +47,7 @@ namespace Game.View
             _icon.enabled = false;
             _levelText.gameObject.SetActive(false);
             _cooldownOverlay.gameObject.SetActive(false);
+            _activeFrame.enabled = false;
         }
 
         private void Update()
