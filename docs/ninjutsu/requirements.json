@@ -1,0 +1,5905 @@
+{
+  "schemaVersion": 1,
+  "purpose": "requirements-traceability-not-runtime",
+  "countRule": "successful-choice-only; unselected-offers-and-failed-application-do-not-consume",
+  "levelGateMeaning": "permanent-lobby-ninjutsu-level",
+  "plusVariantRule": {
+    "sameCard": true,
+    "gateAndDamageChange": "per-card-levelVariant",
+    "otherPenalties": "unchanged-unless-explicit-source-rule"
+  },
+  "idPolicy": "proposed documentation IDs; preserve existing runtime IDs through mapping",
+  "sourcePolicy": "additional values transcribed; old/new conflicts held explicitly; omitted exclusions preserved",
+  "globalUnresolved": [
+    "additive versus multiplicative percentage stacking",
+    "authoritative permanent growth IDs and balance data",
+    "character initial cards consume count or not",
+    "sand explosion versus earlier sand bomb identity"
+  ],
+  "characterInitialEffects": [
+    {
+      "character": "히노 마도카",
+      "skillId": "sun_beam",
+      "cardId": "sun_beam.02",
+      "countRule": "unconfirmed"
+    },
+    {
+      "character": "쿠로네코 아카네",
+      "skillId": "moon_beam",
+      "sourceEffects": [
+        "진: 월광 쿠나이",
+        "월광 피해 증폭"
+      ],
+      "status": "unresolved-name-and-count-mapping"
+    }
+  ],
+  "skills": [
+    {
+      "id": "kunai",
+      "name": "쿠나이",
+      "reportedMaxLevel": 15,
+      "maxLevelMeaning": "maximum-successful-battle-upgrades-excluding-initial-acquisition"
+    },
+    {
+      "id": "fireball",
+      "name": "화염구",
+      "reportedMaxLevel": 14,
+      "maxLevelMeaning": "maximum-successful-battle-upgrades-excluding-initial-acquisition"
+    },
+    {
+      "id": "ice_spear",
+      "name": "얼음창",
+      "reportedMaxLevel": 15,
+      "maxLevelMeaning": "maximum-successful-battle-upgrades-excluding-initial-acquisition"
+    },
+    {
+      "id": "lightning",
+      "name": "벼락",
+      "reportedMaxLevel": 14,
+      "maxLevelMeaning": "maximum-successful-battle-upgrades-excluding-initial-acquisition"
+    },
+    {
+      "id": "log",
+      "name": "통나무",
+      "reportedMaxLevel": 10,
+      "maxLevelMeaning": "maximum-successful-battle-upgrades-excluding-initial-acquisition"
+    },
+    {
+      "id": "sun_beam",
+      "name": "태양 광선",
+      "reportedMaxLevel": 13,
+      "maxLevelMeaning": "maximum-successful-battle-upgrades-excluding-initial-acquisition"
+    },
+    {
+      "id": "moon_beam",
+      "name": "달빛 광선",
+      "reportedMaxLevel": 9,
+      "maxLevelMeaning": "maximum-successful-battle-upgrades-excluding-initial-acquisition"
+    },
+    {
+      "id": "frost_prison",
+      "name": "서리 감옥",
+      "reportedMaxLevel": 10,
+      "maxLevelMeaning": "maximum-successful-battle-upgrades-excluding-initial-acquisition"
+    },
+    {
+      "id": "chain_lightning",
+      "name": "연쇄 번개",
+      "reportedMaxLevel": 11,
+      "maxLevelMeaning": "maximum-successful-battle-upgrades-excluding-initial-acquisition"
+    },
+    {
+      "id": "meteor",
+      "name": "운석",
+      "reportedMaxLevel": 9,
+      "maxLevelMeaning": "maximum-successful-battle-upgrades-excluding-initial-acquisition"
+    },
+    {
+      "id": "typhoon",
+      "name": "태풍",
+      "reportedMaxLevel": 8,
+      "maxLevelMeaning": "maximum-successful-battle-upgrades-excluding-initial-acquisition"
+    },
+    {
+      "id": "lightning_net",
+      "name": "번개 그물",
+      "reportedMaxLevel": 8,
+      "maxLevelMeaning": "maximum-successful-battle-upgrades-excluding-initial-acquisition"
+    },
+    {
+      "id": "sand_explosion",
+      "name": "모래 폭발",
+      "reportedMaxLevel": 11,
+      "maxLevelMeaning": "maximum-successful-battle-upgrades-excluding-initial-acquisition"
+    },
+    {
+      "id": "spiral",
+      "name": "나선 회오리",
+      "reportedMaxLevel": 8,
+      "maxLevelMeaning": "maximum-successful-battle-upgrades-excluding-initial-acquisition"
+    },
+    {
+      "id": "lightning_cloud",
+      "name": "번개 구름",
+      "reportedMaxLevel": 10,
+      "maxLevelMeaning": "maximum-successful-battle-upgrades-excluding-initial-acquisition"
+    }
+  ],
+  "cards": [
+    {
+      "id": "kunai.01",
+      "skillId": "kunai",
+      "name": "쿠나이 일제 사격+",
+      "effectDescription": "발사 수 +1; 공격력 -20% (영구 9 미만)",
+      "maxAppearanceCount": 2,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "levelVariant": {
+        "minPermanentLevel": 9,
+        "baseName": "쿠나이 일제 사격",
+        "upgradedName": "쿠나이 일제 사격+",
+        "damageModifierBefore": -20,
+        "damageModifierAfter": 0,
+        "sharedSelectionCounter": true,
+        "sourceFootnote": 7
+      },
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "kunai"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          5
+        ]
+      },
+      "runtime": {
+        "weaponId": 1,
+        "cardId": "arrow_multishot",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "kunai.02",
+      "skillId": "kunai",
+      "name": "쿠나이 강화",
+      "effectDescription": "공격력 +60%",
+      "maxAppearanceCount": 3,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "kunai"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          5,
+          6,
+          7,
+          12
+        ]
+      },
+      "runtime": {
+        "weaponId": 1,
+        "cardId": "arrow_sharp",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "kunai.03",
+      "skillId": "kunai",
+      "name": "쿠나이 가속",
+      "effectDescription": "공격력 +25%; 투척 속도 +25%",
+      "maxAppearanceCount": 2,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "kunai"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          5,
+          14
+        ]
+      },
+      "runtime": {
+        "weaponId": 1,
+        "cardId": "arrow_light",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "kunai.04",
+      "skillId": "kunai",
+      "name": "확산 쿠나이",
+      "effectDescription": "명중 시 보조 쿠나이 2개 발사",
+      "maxAppearanceCount": 1,
+      "requirementsText": "쿠나이 강화",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "kunai"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "kunai.02",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          6,
+          7,
+          11,
+          16
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "kunai.06",
+      "skillId": "kunai",
+      "name": "연발 쿠나이",
+      "effectDescription": "시전 수 +1; 공격력 -30%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "쿠나이 강화",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "sourceAliases": [
+        "연발 쿠나이",
+        "연발 쿠나이+"
+      ],
+      "levelVariant": {
+        "minPermanentLevel": 17,
+        "baseName": "연발 쿠나이",
+        "upgradedName": "연발 쿠나이+",
+        "damageModifierBefore": -30,
+        "damageModifierAfter": 10,
+        "sharedSelectionCounter": true,
+        "sourceFootnote": 12
+      },
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "kunai"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "kunai.02",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          6,
+          8
+        ]
+      },
+      "runtime": {
+        "weaponId": 1,
+        "cardId": "arrow_burst",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "kunai.07",
+      "skillId": "kunai",
+      "name": "쿠나이 난사",
+      "effectDescription": "보조 쿠나이 4방향 발사; 확산 쿠나이와 합쳐 보조 쿠나이 총 6개",
+      "maxAppearanceCount": 1,
+      "requirementsText": "확산 쿠나이",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "kunai"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "kunai.04",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          7
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "kunai.08",
+      "skillId": "kunai",
+      "name": "보조 쿠나이 강화",
+      "effectDescription": "보조 쿠나이 공격력 +100%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "확산 쿠나이",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "kunai"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "kunai.04",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          7
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "kunai.09",
+      "skillId": "kunai",
+      "name": "쿠나이 증폭",
+      "effectDescription": "쿠나이와 보조 쿠나이 공격력 +100%",
+      "maxAppearanceCount": null,
+      "requirementsText": "확산 쿠나이",
+      "minPermanentLevel": 13,
+      "unresolvedIssues": [
+        "횟수 미기재"
+      ],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "kunai"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "kunai.04",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          7
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "kunai.10",
+      "skillId": "kunai",
+      "name": "쿠나이 수련",
+      "effectDescription": "쿨타임 -10%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "연발 쿠나이",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "kunai"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "kunai.06",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          8
+        ]
+      },
+      "runtime": {
+        "weaponId": 1,
+        "cardId": "arrow_rapid",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "kunai.11",
+      "skillId": "kunai",
+      "name": "쿠나이 폭풍",
+      "effectDescription": "쿨타임 -30%",
+      "maxAppearanceCount": null,
+      "requirementsText": "연발 쿠나이",
+      "minPermanentLevel": 21,
+      "unresolvedIssues": [
+        "횟수 미기재"
+      ],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "kunai"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "kunai.06",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          8
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "kunai.12",
+      "skillId": "kunai",
+      "name": "폭발 쿠나이",
+      "effectDescription": "폭발 효과 추가",
+      "maxAppearanceCount": 1,
+      "requirementsText": "@화염구",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [
+        {
+          "selectedCardId": "kunai.17",
+          "belowPermanentLevel": 0,
+          "source": "initial-material"
+        }
+      ],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "kunai"
+        },
+        {
+          "kind": "ownedSkill",
+          "skillId": "fireball"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          9,
+          10,
+          11,
+          12
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "kunai.13",
+      "skillId": "kunai",
+      "name": "폭발 강화",
+      "effectDescription": "폭발 공격력 +80%",
+      "maxAppearanceCount": 2,
+      "requirementsText": "폭발 쿠나이",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "kunai"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "kunai.12",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          10
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "kunai.14",
+      "skillId": "kunai",
+      "name": "폭발 확산",
+      "effectDescription": "폭발 범위 +80%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "폭발 강화",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "kunai"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "kunai.13",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          10
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "kunai.15",
+      "skillId": "kunai",
+      "name": "추가 폭발",
+      "effectDescription": "보조 쿠나이에 폭발 효과 추가",
+      "maxAppearanceCount": 1,
+      "requirementsText": "폭발 쿠나이&확산 쿠나이",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "kunai"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "kunai.12",
+          "count": 1
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "kunai.04",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          11
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "kunai.16",
+      "skillId": "kunai",
+      "name": "화염 쿠나이",
+      "effectDescription": "점화 효과 추가; 형태 변화",
+      "maxAppearanceCount": 1,
+      "requirementsText": "폭발 쿠나이&쿠나이 강화",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "kunai"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "kunai.12",
+          "count": 1
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "kunai.02",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          12
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "kunai.17",
+      "skillId": "kunai",
+      "name": "충격 쿠나이",
+      "effectDescription": "밀침 +15%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "@벼락",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [
+        {
+          "selectedCardId": "kunai.12",
+          "belowPermanentLevel": 0,
+          "source": "initial-material"
+        }
+      ],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "kunai"
+        },
+        {
+          "kind": "ownedSkill",
+          "skillId": "lightning"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          13,
+          14
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "kunai.18",
+      "skillId": "kunai",
+      "name": "뇌전 쿠나이",
+      "effectDescription": "마비 추가; 투척 속도 +100%; 형태 변화",
+      "maxAppearanceCount": 1,
+      "requirementsText": "충격 쿠나이&쿠나이 가속",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "kunai"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "kunai.17",
+          "count": 1
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "kunai.03",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          14,
+          15
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "kunai.19",
+      "skillId": "kunai",
+      "name": "쾌속 투척",
+      "effectDescription": "공격력 -10%; 쿨타임 -20%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "뇌전 쿠나이",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "kunai"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "kunai.18",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          15
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "kunai.20",
+      "skillId": "kunai",
+      "name": "피뢰침",
+      "effectDescription": "명중 시 소형 벼락 1회 시전; 다중 발사 시 각 쿠나이마다 발동",
+      "maxAppearanceCount": 1,
+      "requirementsText": "쾌속 투척",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "kunai"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "kunai.19",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          15,
+          16
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "kunai.21",
+      "skillId": "kunai",
+      "name": "보조 피뢰침",
+      "effectDescription": "보조 쿠나이 명중 시 소형 벼락 1회 시전",
+      "maxAppearanceCount": 1,
+      "requirementsText": "확산 쿠나이&피뢰침",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "kunai"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "kunai.04",
+          "count": 1
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "kunai.20",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          16
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "kunai.22",
+      "skillId": "kunai",
+      "name": "관통 강화",
+      "effectDescription": "공격력 +30%; 관통력 +1",
+      "maxAppearanceCount": 2,
+      "requirementsText": "@얼음창",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "kunai"
+        },
+        {
+          "kind": "ownedSkill",
+          "skillId": "ice_spear"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          17
+        ]
+      },
+      "runtime": {
+        "weaponId": 1,
+        "cardId": "kunai_pierce",
+        "enabled": false,
+        "state": "disabled",
+        "conditionMapping": "partial"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "kunai.23",
+      "skillId": "kunai",
+      "name": "비둔술 증폭 · 甲",
+      "effectDescription": "쿠나이와 태양 광선 공격력 +50%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "@태양 광선",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "kunai"
+        },
+        {
+          "kind": "ownedSkill",
+          "skillId": "sun_beam"
+        }
+      ],
+      "sharedUpgrade": {
+        "affectedSkillUpgradeCounts": [
+          "kunai",
+          "sun_beam"
+        ],
+        "sharedSelectionGroup": "kunai+sun_beam:비둔술증폭·甲",
+        "sourceFootnote": "증폭"
+      },
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          18
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "kunai.24",
+      "skillId": "kunai",
+      "name": "비둔술 증폭 · 乙",
+      "effectDescription": "쿠나이와 달빛 광선 공격력 +50%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "@달빛 광선",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "kunai"
+        },
+        {
+          "kind": "ownedSkill",
+          "skillId": "moon_beam"
+        }
+      ],
+      "sharedUpgrade": {
+        "affectedSkillUpgradeCounts": [
+          "kunai",
+          "moon_beam"
+        ],
+        "sharedSelectionGroup": "kunai+moon_beam:비둔술증폭·乙",
+        "sourceFootnote": "증폭"
+      },
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          19
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "fireball.01",
+      "skillId": "fireball",
+      "name": "연속 화염구",
+      "effectDescription": "추가 시전 +1",
+      "maxAppearanceCount": 2,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [
+        {
+          "selectedCardId": "fireball.11",
+          "belowPermanentLevel": 25,
+          "source": "initial-material"
+        }
+      ],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "fireball"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          22,
+          23,
+          24
+        ]
+      },
+      "runtime": {
+        "weaponId": 2,
+        "cardId": "fireball_burst",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "fireball.02",
+      "skillId": "fireball",
+      "name": "폭발 강화",
+      "effectDescription": "폭발 공격력 +80%",
+      "maxAppearanceCount": 3,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "fireball"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          23,
+          25,
+          28
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "fireball.03",
+      "skillId": "fireball",
+      "name": "충격 강화",
+      "effectDescription": "충격 공격력 +80%",
+      "maxAppearanceCount": 3,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "fireball"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          23,
+          27,
+          28,
+          29
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "fireball.04",
+      "skillId": "fireball",
+      "name": "연속 화염구II",
+      "effectDescription": "추가 시전 +2; 공격력 -30%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "연속 화염구:2",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "levelVariant": {
+        "minPermanentLevel": 9,
+        "baseName": "연속 화염구II",
+        "upgradedName": "연속 화염구II+",
+        "damageModifierBefore": -30,
+        "damageModifierAfter": 0,
+        "sharedSelectionCounter": true,
+        "sourceFootnote": 14
+      },
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "fireball"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "fireball.01",
+          "count": 2
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          24
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "fireball.05",
+      "skillId": "fireball",
+      "name": "폭발 화염구",
+      "effectDescription": "폭발 범위 +80%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "폭발 강화",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [
+        "최초 자료 자기 참조를 추가 자료로 해소"
+      ],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "fireball"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "fireball.02",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          25,
+          29
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "fireball.06",
+      "skillId": "fireball",
+      "name": "화염구 점화",
+      "effectDescription": "점화 추가; 지속 6초",
+      "maxAppearanceCount": 1,
+      "requirementsText": "폭발 강화",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "fireball"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "fireball.02",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          25,
+          26
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "fireball.07",
+      "skillId": "fireball",
+      "name": "업화",
+      "effectDescription": "점화에 최대 HP 3% 비례 피해 추가",
+      "maxAppearanceCount": 1,
+      "requirementsText": "화염구 점화",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "fireball"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "fireball.06",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          26
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "fireball.08",
+      "skillId": "fireball",
+      "name": "번지는 화염",
+      "effectDescription": "점화 대상 사망 시 폭발",
+      "maxAppearanceCount": 1,
+      "requirementsText": "화염구 점화",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [
+        "최초 자료 영구 레벨 5; 추가 자료 생략"
+      ],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "fireball"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "fireball.06",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          26
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "fireball.09",
+      "skillId": "fireball",
+      "name": "화염구 수련",
+      "effectDescription": "공격력 +20%; 쿨타임 -10%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "충격 강화",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [
+        "최초 자료 폭발 화염구도 필요"
+      ],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "fireball"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "fireball.03",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          27
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "fireball.10",
+      "skillId": "fireball",
+      "name": "불꽃",
+      "effectDescription": "폭발 후 불꽃 3개 시전",
+      "maxAppearanceCount": 1,
+      "requirementsText": "충격 강화&폭발 강화",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "fireball"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "fireball.03",
+          "count": 1
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "fireball.02",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          28
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "fireball.11",
+      "skillId": "fireball",
+      "name": "염폭술",
+      "effectDescription": "염폭술로 형태 변화; 관통력 +2",
+      "maxAppearanceCount": 1,
+      "requirementsText": "충격 강화&폭발 화염구",
+      "minPermanentLevel": 13,
+      "unresolvedIssues": [
+        "최초 자료 충격 강화 미기재"
+      ],
+      "exclusions": [
+        {
+          "selectedCardId": "fireball.01",
+          "belowPermanentLevel": 25,
+          "source": "initial-material"
+        }
+      ],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "fireball"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "fireball.03",
+          "count": 1
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "fireball.05",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          22,
+          29
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "ice_spear.01",
+      "skillId": "ice_spear",
+      "name": "얼음창 연발+",
+      "effectDescription": "추가 시전 +1; 공격력 -20% (영구 5 미만)",
+      "maxAppearanceCount": 2,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [
+        {
+          "selectedCardId": "ice_spear.09",
+          "belowPermanentLevel": 0,
+          "source": "initial-material"
+        }
+      ],
+      "levelVariant": {
+        "minPermanentLevel": 5,
+        "baseName": "얼음창 연발",
+        "upgradedName": "얼음창 연발+",
+        "damageModifierBefore": -20,
+        "damageModifierAfter": 0,
+        "sharedSelectionCounter": true,
+        "sourceFootnote": 15
+      },
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "ice_spear"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          33
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "ice_spear.02",
+      "skillId": "ice_spear",
+      "name": "얼음창 분열",
+      "effectDescription": "명중 시 소형 얼음창 3개로 분열",
+      "maxAppearanceCount": 1,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "ice_spear"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          32,
+          33,
+          35,
+          39
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "ice_spear.03",
+      "skillId": "ice_spear",
+      "name": "극한의 얼음창",
+      "effectDescription": "공격력 +30%; 빙결 2초",
+      "maxAppearanceCount": 1,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "ice_spear"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          33,
+          37,
+          38,
+          40
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "ice_spear.04",
+      "skillId": "ice_spear",
+      "name": "얼음창 관통",
+      "effectDescription": "공격력 +30%; 관통력 +2",
+      "maxAppearanceCount": 3,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "ice_spear"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          34,
+          36,
+          38,
+          40
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "ice_spear.05",
+      "skillId": "ice_spear",
+      "name": "얼음창 피해 증폭",
+      "effectDescription": "공격력 +60%",
+      "maxAppearanceCount": 3,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "ice_spear"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          34,
+          40
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "ice_spear.06",
+      "skillId": "ice_spear",
+      "name": "얼음창 충격",
+      "effectDescription": "밀침 +200%; 관통력 +2",
+      "maxAppearanceCount": 1,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "ice_spear"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          34
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "ice_spear.07",
+      "skillId": "ice_spear",
+      "name": "얼음 조각 피해 증폭",
+      "effectDescription": "소형 얼음창 공격력 +80%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "얼음창 분열",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "ice_spear"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "ice_spear.02",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          35
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "ice_spear.08",
+      "skillId": "ice_spear",
+      "name": "헤비 얼음창",
+      "effectDescription": "공격력 +50%; 비행 속도 -30%; 관통력 +1",
+      "maxAppearanceCount": 1,
+      "requirementsText": "얼음창 관통",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "ice_spear"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "ice_spear.04",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          36
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "ice_spear.09",
+      "skillId": "ice_spear",
+      "name": "얼음창 일제 사격",
+      "effectDescription": "발사 수 +1; 공격력 -40%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "극한의 얼음창",
+      "minPermanentLevel": 13,
+      "unresolvedIssues": [
+        "최초 자료 영구 레벨 13 미기재"
+      ],
+      "exclusions": [
+        {
+          "selectedCardId": "ice_spear.04",
+          "belowPermanentLevel": 0,
+          "source": "initial-material"
+        }
+      ],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "ice_spear"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "ice_spear.03",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          37
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "ice_spear.10",
+      "skillId": "ice_spear",
+      "name": "사무치는 냉기",
+      "effectDescription": "동상 10초; 최대 5회 중첩",
+      "maxAppearanceCount": 1,
+      "requirementsText": "얼음창 관통&극한의 얼음창",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "ice_spear"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "ice_spear.04",
+          "count": 1
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "ice_spear.03",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          38,
+          39
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "ice_spear.11",
+      "skillId": "ice_spear",
+      "name": "스며드는 냉기",
+      "effectDescription": "소형 얼음창 동상 추가",
+      "maxAppearanceCount": 1,
+      "requirementsText": "얼음창 분열&사무치는 냉기",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "ice_spear"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "ice_spear.02",
+          "count": 1
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "ice_spear.10",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          39
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "ice_spear.12",
+      "skillId": "ice_spear",
+      "name": "삼각얼음창",
+      "effectDescription": "삼각 얼음창으로 강화; 명중 시 일반 얼음창→소형 얼음창 분열; 강화 효과 유지",
+      "maxAppearanceCount": 1,
+      "requirementsText": "얼음창 관통&극한의 얼음창&얼음창 피해 증폭",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [
+        "분열 단계별 개수/피해 미기재"
+      ],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "ice_spear"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "ice_spear.04",
+          "count": 1
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "ice_spear.03",
+          "count": 1
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "ice_spear.05",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          32,
+          40
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "lightning.02",
+      "skillId": "lightning",
+      "name": "연속 벼락",
+      "effectDescription": "추가 시전 +1; 공격력 -20%",
+      "maxAppearanceCount": 3,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "sourceAliases": [
+        "연속 벼락",
+        "연속 벼락+"
+      ],
+      "levelVariant": {
+        "minPermanentLevel": 9,
+        "baseName": "연속 벼락",
+        "upgradedName": "연속 벼락+",
+        "damageModifierBefore": -20,
+        "damageModifierAfter": 0,
+        "sharedSelectionCounter": true,
+        "sourceFootnote": 16
+      },
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "lightning"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          43
+        ]
+      },
+      "runtime": {
+        "weaponId": 3,
+        "cardId": "lightning_burst",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "lightning.03",
+      "skillId": "lightning",
+      "name": "자기폭풍",
+      "effectDescription": "공격 대상 주변 폭발",
+      "maxAppearanceCount": 1,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "lightning"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          43,
+          44,
+          45
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "lightning.04",
+      "skillId": "lightning",
+      "name": "고전압 벼락",
+      "effectDescription": "공격력 +30%; 마비 지속 +1.5초",
+      "maxAppearanceCount": 1,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "lightning"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          43,
+          47,
+          50
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "lightning.05",
+      "skillId": "lightning",
+      "name": "벼락 피해 증폭",
+      "effectDescription": "공격력 +80%",
+      "maxAppearanceCount": 3,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [
+        "최초 자료 최대 4; 추가 자료 3"
+      ],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "lightning"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          43,
+          47,
+          49
+        ]
+      },
+      "runtime": {
+        "weaponId": 3,
+        "cardId": "lightning_damage",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "lightning.06",
+      "skillId": "lightning",
+      "name": "자기 폭풍 피해 증폭",
+      "effectDescription": "자기 폭풍 공격력 +80%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "자기폭풍",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "lightning"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "lightning.03",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          44,
+          45
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "lightning.07",
+      "skillId": "lightning",
+      "name": "전자기장",
+      "effectDescription": "전자기장 생성; 감속 부여",
+      "maxAppearanceCount": 1,
+      "requirementsText": "자기폭풍",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "lightning"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "lightning.03",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          44,
+          46
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "lightning.08",
+      "skillId": "lightning",
+      "name": "자기 폭풍 확장",
+      "effectDescription": "자기 폭풍 범위 +80%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "자기 폭풍 피해 증폭",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "lightning"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "lightning.06",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          45
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "lightning.09",
+      "skillId": "lightning",
+      "name": "안정된 전장",
+      "effectDescription": "전자기장 공격력 +50; 지속 +2초",
+      "maxAppearanceCount": 1,
+      "requirementsText": "전자기장",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "lightning"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "lightning.07",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          46
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "lightning.10",
+      "skillId": "lightning",
+      "name": "고전압 전장",
+      "effectDescription": "전자기장 공격력 +400%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "전자기장",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "lightning"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "lightning.07",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          46
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "lightning.11",
+      "skillId": "lightning",
+      "name": "전자 분열",
+      "effectDescription": "공격 대상 주위 번개 구체 6개 발사",
+      "maxAppearanceCount": 1,
+      "requirementsText": "고전압 벼락&벼락 피해 증폭",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "lightning"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "lightning.04",
+          "count": 1
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "lightning.05",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          47,
+          48
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "lightning.12",
+      "skillId": "lightning",
+      "name": "고전압 입자",
+      "effectDescription": "번개 구체 공격력 +40%; 마비 0.5초",
+      "maxAppearanceCount": 1,
+      "requirementsText": "전자 분열",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "lightning"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "lightning.11",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          48
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "lightning.13",
+      "skillId": "lightning",
+      "name": "뇌전 제재",
+      "effectDescription": "공격력 +150%; 처치 시 소형 벼락 1회 시전",
+      "maxAppearanceCount": 1,
+      "requirementsText": "벼락 피해 증폭",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [
+        "최초 자료 영구 레벨 5; 추가 자료 생략"
+      ],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "lightning"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "lightning.05",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          49,
+          50
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "lightning.14",
+      "skillId": "lightning",
+      "name": "심판의 천둥",
+      "effectDescription": "심판의 천둥으로 형태 변화; 공격력 +200%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "고전압 벼락&뇌전 제재",
+      "minPermanentLevel": 13,
+      "unresolvedIssues": [],
+      "exclusions": [
+        {
+          "selectedCardId": "lightning.03",
+          "belowPermanentLevel": 0,
+          "source": "initial-material"
+        }
+      ],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "lightning"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "lightning.04",
+          "count": 1
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "lightning.13",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          50
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "lightning.15",
+      "skillId": "lightning",
+      "name": "뇌둔술 연마",
+      "effectDescription": "벼락과 연쇄 번개 쿨타임 -20%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "@연쇄 번개",
+      "minPermanentLevel": 21,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "lightning"
+        },
+        {
+          "kind": "ownedSkill",
+          "skillId": "chain_lightning"
+        }
+      ],
+      "sharedUpgrade": {
+        "affectedSkillUpgradeCounts": [
+          "chain_lightning",
+          "lightning"
+        ],
+        "sharedSelectionGroup": "chain_lightning+lightning:뇌둔술연마",
+        "sourceFootnote": "증폭"
+      },
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          51
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "lightning.16",
+      "skillId": "lightning",
+      "name": "뇌둔술 증폭",
+      "effectDescription": "벼락과 연쇄 번개 공격력 +80%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "@연쇄 번개",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "lightning"
+        },
+        {
+          "kind": "ownedSkill",
+          "skillId": "chain_lightning"
+        }
+      ],
+      "sharedUpgrade": {
+        "affectedSkillUpgradeCounts": [
+          "chain_lightning",
+          "lightning"
+        ],
+        "sharedSelectionGroup": "chain_lightning+lightning:뇌둔술증폭",
+        "sourceFootnote": "증폭"
+      },
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          51
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "log.01",
+      "skillId": "log",
+      "name": "크기 증가",
+      "effectDescription": "크기 +60%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [
+        "최초 자료 통나무 피해 증폭 필요; 추가 자료 기본"
+      ],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "log"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          54,
+          57,
+          58
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "log.02",
+      "skillId": "log",
+      "name": "연발 통나무",
+      "effectDescription": "추가 시전 +1; 공격력 -20% (영구 5 미만)",
+      "maxAppearanceCount": 2,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [
+        "최초 자료 피해 증폭 필요; 추가 자료 기본"
+      ],
+      "exclusions": [],
+      "levelVariant": {
+        "minPermanentLevel": 5,
+        "baseName": "연발 통나무",
+        "upgradedName": "연발 통나무+",
+        "damageModifierBefore": -20,
+        "damageModifierAfter": 0,
+        "sharedSelectionCounter": true,
+        "sourceFootnote": 19
+      },
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "log"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          54
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "log.03",
+      "skillId": "log",
+      "name": "충격 통나무",
+      "effectDescription": "밀침 +75%; 10% 확률 기절",
+      "maxAppearanceCount": 1,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "log"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          54,
+          57
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "log.04",
+      "skillId": "log",
+      "name": "중량 증가",
+      "effectDescription": "감속 지속 +4초",
+      "maxAppearanceCount": 1,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "log"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          54,
+          56,
+          57
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "log.05",
+      "skillId": "log",
+      "name": "속도 증가",
+      "effectDescription": "굴러가는 속도 +40%; 쿨타임 -25%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "log"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          55
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "log.06",
+      "skillId": "log",
+      "name": "상처 악화",
+      "effectDescription": "받는 피해 +20%; 지속 6초",
+      "maxAppearanceCount": 1,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "log"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          55
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "log.07",
+      "skillId": "log",
+      "name": "통나무 피해 증폭",
+      "effectDescription": "공격력 +60%",
+      "maxAppearanceCount": 2,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [
+        "최초 자료 최대 4; 추가 자료 2"
+      ],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "log"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          55,
+          58
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "log.08",
+      "skillId": "log",
+      "name": "예비 통나무",
+      "effectDescription": "방벽 접근 시 연속 3회 시전",
+      "maxAppearanceCount": 1,
+      "requirementsText": "중량 증가",
+      "minPermanentLevel": 13,
+      "unresolvedIssues": [
+        "접근 판정 거리 및 재발동 규칙 미기재"
+      ],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "log"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "log.04",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          56
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "log.09",
+      "skillId": "log",
+      "name": "대형 통나무",
+      "effectDescription": "공격력·크기·밀침 +60%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "크기 증가&충격 통나무&중량 증가",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [
+        "최초 자료 중량 증가 미기재"
+      ],
+      "exclusions": [
+        {
+          "selectedCardId": "log.10",
+          "belowPermanentLevel": 0,
+          "source": "initial-material"
+        }
+      ],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "log"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "log.01",
+          "count": 1
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "log.03",
+          "count": 1
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "log.04",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          57
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "log.10",
+      "skillId": "log",
+      "name": "화염 통나무",
+      "effectDescription": "점화하는 통나무로 형태 변화",
+      "maxAppearanceCount": 1,
+      "requirementsText": "@화염구&크기 증가&통나무 피해 증폭",
+      "minPermanentLevel": 9,
+      "unresolvedIssues": [
+        "최초 자료 피해 증폭 미기재"
+      ],
+      "exclusions": [
+        {
+          "selectedCardId": "log.09",
+          "belowPermanentLevel": 0,
+          "source": "initial-material"
+        }
+      ],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "log"
+        },
+        {
+          "kind": "ownedSkill",
+          "skillId": "fireball"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "log.01",
+          "count": 1
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "log.07",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          58
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "sun_beam.01",
+      "skillId": "sun_beam",
+      "name": "광선 과부하",
+      "effectDescription": "공격 횟수 +100%; 쿨타임 +50%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [
+        "공격 횟수의 틱/발사/지속 의미"
+      ],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "sun_beam"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          62,
+          66,
+          67,
+          68
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "sun_beam.02",
+      "skillId": "sun_beam",
+      "name": "태양광 증폭",
+      "effectDescription": "공격력 +60%",
+      "maxAppearanceCount": 3,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "sun_beam"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          61,
+          62,
+          65,
+          66
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "sun_beam.03",
+      "skillId": "sun_beam",
+      "name": "안정된 광선",
+      "effectDescription": "공격 횟수 +5",
+      "maxAppearanceCount": 2,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [
+        "공격 횟수의 틱/발사/지속 의미"
+      ],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "sun_beam"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          62
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "sun_beam.04",
+      "skillId": "sun_beam",
+      "name": "분열 광선",
+      "effectDescription": "받는 피해 +25%; 지속 5초; 중첩 불가",
+      "maxAppearanceCount": 1,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "sun_beam"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          63
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "sun_beam.05",
+      "skillId": "sun_beam",
+      "name": "화려한 광선",
+      "effectDescription": "5% 확률 기절; 지속 1초",
+      "maxAppearanceCount": 1,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "sun_beam"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          63
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "sun_beam.06",
+      "skillId": "sun_beam",
+      "name": "쇠약 광선",
+      "effectDescription": "피격 시 이동 속도 -80%; 지속 1초",
+      "maxAppearanceCount": 1,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "sun_beam"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          63,
+          68
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "sun_beam.07",
+      "skillId": "sun_beam",
+      "name": "비기 · 아마테라스",
+      "effectDescription": "1회용; 태양 광선 영구 레벨 비례 공격력 상승; 최대 20레벨",
+      "maxAppearanceCount": 1,
+      "requirementsText": "#히노 마도카",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [
+        "공격력 계수·1회용 리셋 범위·전용 효과 카운트 규칙"
+      ],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "sun_beam"
+        },
+        {
+          "kind": "character",
+          "sourceName": "히노 마도카",
+          "status": "unmapped"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          64,
+          73
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "sun_beam.08",
+      "skillId": "sun_beam",
+      "name": "태양광 확산",
+      "effectDescription": "범위 +150%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "태양광 증폭",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "sun_beam"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "sun_beam.02",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          65,
+          67,
+          68
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "sun_beam.09",
+      "skillId": "sun_beam",
+      "name": "광선 발사",
+      "effectDescription": "시전 시 보조 광선 시전",
+      "maxAppearanceCount": 1,
+      "requirementsText": "광선 과부하&태양광 증폭",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [
+        {
+          "selectedCardId": "sun_beam.11",
+          "belowPermanentLevel": 0,
+          "source": "additional-material"
+        }
+      ],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "sun_beam"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "sun_beam.01",
+          "count": 1
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "sun_beam.02",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          61,
+          66
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "sun_beam.10",
+      "skillId": "sun_beam",
+      "name": "양전자포",
+      "effectDescription": "양전자포로 형태 변화",
+      "maxAppearanceCount": 1,
+      "requirementsText": "광선 과부하&태양광 확산",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [
+        "변형 후 피해/범위/지속 상세"
+      ],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "sun_beam"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "sun_beam.01",
+          "count": 1
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "sun_beam.08",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          67
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "sun_beam.11",
+      "skillId": "sun_beam",
+      "name": "광선 난사",
+      "effectDescription": "전장에 여러 태양 광선 난사; 개당 공격력 -50%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "광선 과부하&태양광 확산&쇠약 광선",
+      "minPermanentLevel": 17,
+      "unresolvedIssues": [
+        "광선 개수·배치 미기재"
+      ],
+      "exclusions": [
+        {
+          "selectedCardId": "sun_beam.09",
+          "belowPermanentLevel": 0,
+          "source": "additional-material"
+        }
+      ],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "sun_beam"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "sun_beam.01",
+          "count": 1
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "sun_beam.08",
+          "count": 1
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "sun_beam.06",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          61,
+          68
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "sun_beam.12",
+      "skillId": "sun_beam",
+      "name": "비둔술 증폭 · 甲",
+      "effectDescription": "쿠나이와 태양 광선 공격력 +50%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "@쿠나이",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "sun_beam"
+        },
+        {
+          "kind": "ownedSkill",
+          "skillId": "kunai"
+        }
+      ],
+      "sharedUpgrade": {
+        "affectedSkillUpgradeCounts": [
+          "kunai",
+          "sun_beam"
+        ],
+        "sharedSelectionGroup": "kunai+sun_beam:비둔술증폭·甲",
+        "sourceFootnote": "증폭"
+      },
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          69
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "sun_beam.13",
+      "skillId": "sun_beam",
+      "name": "빙결 광선",
+      "effectDescription": "빙결 0.5초 추가",
+      "maxAppearanceCount": 1,
+      "requirementsText": "@얼음창",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "sun_beam"
+        },
+        {
+          "kind": "ownedSkill",
+          "skillId": "ice_spear"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          70
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "sun_beam.14",
+      "skillId": "sun_beam",
+      "name": "비둔술 증폭 · 丙",
+      "effectDescription": "태양 광선과 달빛 광선 공격력 +60%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "@달빛 광선",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "sun_beam"
+        },
+        {
+          "kind": "ownedSkill",
+          "skillId": "moon_beam"
+        }
+      ],
+      "sharedUpgrade": {
+        "affectedSkillUpgradeCounts": [
+          "moon_beam",
+          "sun_beam"
+        ],
+        "sharedSelectionGroup": "moon_beam+sun_beam:비둔술증폭·丙",
+        "sourceFootnote": "증폭"
+      },
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          71
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "moon_beam.01",
+      "skillId": "moon_beam",
+      "name": "초점",
+      "effectDescription": "메인 공격력 +100%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "moon_beam"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          80,
+          82,
+          85
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "moon_beam.02",
+      "skillId": "moon_beam",
+      "name": "연속 광선",
+      "effectDescription": "공격 횟수 +15",
+      "maxAppearanceCount": 2,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [
+        "공격 횟수의 틱/발사/지속 의미"
+      ],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "moon_beam"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          80
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "moon_beam.03",
+      "skillId": "moon_beam",
+      "name": "월광 증폭",
+      "effectDescription": "공격력 +60%",
+      "maxAppearanceCount": 2,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [
+        "월광 피해 증폭과 동일 여부"
+      ],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "moon_beam"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          80
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "moon_beam.04",
+      "skillId": "moon_beam",
+      "name": "비기 · 츠쿠요미",
+      "effectDescription": "1회용; 달빛 광선 영구 레벨 비례 공격력 상승; 최대 20레벨",
+      "maxAppearanceCount": 1,
+      "requirementsText": "#마요네코 아카네",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [
+        "쿠로네코 아카네와 캐릭터명 불일치; 계수·1회용 범위"
+      ],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "moon_beam"
+        },
+        {
+          "kind": "character",
+          "sourceName": "마요네코 아카네",
+          "status": "unmapped"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          81,
+          88
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "moon_beam.05",
+      "skillId": "moon_beam",
+      "name": "월광 폭파",
+      "effectDescription": "메인 대상 주변 폭발 피해",
+      "maxAppearanceCount": 1,
+      "requirementsText": "초점",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "moon_beam"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "moon_beam.01",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          82
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "moon_beam.06",
+      "skillId": "moon_beam",
+      "name": "초점 조정",
+      "effectDescription": "메인 대상 공격 시 공격력 지속 증가; 최대 +150%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "초점",
+      "minPermanentLevel": 13,
+      "unresolvedIssues": [
+        "증가 속도·대상 변경 시 초기화 미기재"
+      ],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "moon_beam"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "moon_beam.01",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          82
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "moon_beam.07",
+      "skillId": "moon_beam",
+      "name": "월광 굴절",
+      "effectDescription": "굴절 +1",
+      "maxAppearanceCount": 2,
+      "requirementsText": "?월광 피해 증폭",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [
+        "선행조건 명칭 월광 증폭과 동일 여부"
+      ],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "moon_beam"
+        },
+        {
+          "kind": "card",
+          "sourceName": "월광 피해 증폭",
+          "status": "unresolved"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          83
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "moon_beam.08",
+      "skillId": "moon_beam",
+      "name": "비둔술 증폭 · 乙",
+      "effectDescription": "쿠나이와 달빛 광선 공격력 +50%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "@쿠나이",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "moon_beam"
+        },
+        {
+          "kind": "ownedSkill",
+          "skillId": "kunai"
+        }
+      ],
+      "sharedUpgrade": {
+        "affectedSkillUpgradeCounts": [
+          "kunai",
+          "moon_beam"
+        ],
+        "sharedSelectionGroup": "kunai+moon_beam:비둔술증폭·乙",
+        "sourceFootnote": "증폭"
+      },
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          84
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "moon_beam.09",
+      "skillId": "moon_beam",
+      "name": "월광쿠나이",
+      "effectDescription": "월광 쿠나이 발사 추가; 쿠나이 일제 사격 적용",
+      "maxAppearanceCount": 1,
+      "requirementsText": "초점&@쿠나이",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [
+        "진: 월광 쿠나이 기본 습득과 관계"
+      ],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "moon_beam"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "moon_beam.01",
+          "count": 1
+        },
+        {
+          "kind": "ownedSkill",
+          "skillId": "kunai"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          79,
+          85
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "moon_beam.10",
+      "skillId": "moon_beam",
+      "name": "비둔술 증폭 · 丙",
+      "effectDescription": "태양 광선과 달빛 광선 공격력 +60%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "@태양 광선",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "moon_beam"
+        },
+        {
+          "kind": "ownedSkill",
+          "skillId": "sun_beam"
+        }
+      ],
+      "sharedUpgrade": {
+        "affectedSkillUpgradeCounts": [
+          "moon_beam",
+          "sun_beam"
+        ],
+        "sharedSelectionGroup": "moon_beam+sun_beam:비둔술증폭·丙",
+        "sourceFootnote": "증폭"
+      },
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          86
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "frost_prison.01",
+      "skillId": "frost_prison",
+      "name": "연쇄 서리 폭발",
+      "effectDescription": "추가 시전 +1",
+      "maxAppearanceCount": 2,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "frost_prison"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          94
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "frost_prison.02",
+      "skillId": "frost_prison",
+      "name": "서리 피해 증폭",
+      "effectDescription": "공격력 +60%",
+      "maxAppearanceCount": 3,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "frost_prison"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          94,
+          96
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "frost_prison.03",
+      "skillId": "frost_prison",
+      "name": "극한 서리",
+      "effectDescription": "공격력 +30%; 빙결 2초",
+      "maxAppearanceCount": 1,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "frost_prison"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          94,
+          95
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "frost_prison.04",
+      "skillId": "frost_prison",
+      "name": "빙결핵",
+      "effectDescription": "중심부 1회 추가 공격",
+      "maxAppearanceCount": 1,
+      "requirementsText": "극한 서리",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "frost_prison"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "frost_prison.03",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          95
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "frost_prison.05",
+      "skillId": "frost_prison",
+      "name": "절대 영도",
+      "effectDescription": "중심부 빙결 지속 2배",
+      "maxAppearanceCount": 1,
+      "requirementsText": "빙결핵",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "frost_prison"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "frost_prison.04",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          95
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "frost_prison.06",
+      "skillId": "frost_prison",
+      "name": "서리 확장",
+      "effectDescription": "범위 +100%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "서리 피해 증폭",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "frost_prison"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "frost_prison.02",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          96
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "frost_prison.07",
+      "skillId": "frost_prison",
+      "name": "얼음 결정 파열",
+      "effectDescription": "종료 시 소형 얼음창 2개로 분열",
+      "maxAppearanceCount": 1,
+      "requirementsText": "@얼음창",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "frost_prison"
+        },
+        {
+          "kind": "ownedSkill",
+          "skillId": "ice_spear"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          97
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "frost_prison.08",
+      "skillId": "frost_prison",
+      "name": "수둔술 연마",
+      "effectDescription": "서리 감옥과 얼음창 쿨타임 -25%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "@얼음창",
+      "minPermanentLevel": 21,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "frost_prison"
+        },
+        {
+          "kind": "ownedSkill",
+          "skillId": "ice_spear"
+        }
+      ],
+      "sharedUpgrade": {
+        "affectedSkillUpgradeCounts": [
+          "frost_prison",
+          "ice_spear"
+        ],
+        "sharedSelectionGroup": "frost_prison+ice_spear:수둔술연마",
+        "sourceFootnote": "증폭"
+      },
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          97
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "frost_prison.09",
+      "skillId": "frost_prison",
+      "name": "매서운 서리",
+      "effectDescription": "빙결 지속 동안 매초 최대 HP 1% 피해",
+      "maxAppearanceCount": 1,
+      "requirementsText": "@얼음창&얼음창/극한의 얼음창",
+      "minPermanentLevel": 13,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "frost_prison"
+        },
+        {
+          "kind": "ownedSkill",
+          "skillId": "ice_spear"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "ice_spear.03",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          98
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "chain_lightning.01",
+      "skillId": "chain_lightning",
+      "name": "교차 번개+",
+      "effectDescription": "추가 시전 +1",
+      "maxAppearanceCount": 2,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [
+        "플러스 전환 레벨·전환 전 피해 감소는 제공 각주에 없음"
+      ],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "chain_lightning"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          101
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "chain_lightning.02",
+      "skillId": "chain_lightning",
+      "name": "번개 연속",
+      "effectDescription": "공격력 +30%; 반사 +2",
+      "maxAppearanceCount": 3,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "chain_lightning"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          101,
+          104
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "chain_lightning.03",
+      "skillId": "chain_lightning",
+      "name": "고전압 전격",
+      "effectDescription": "공격력 +30%; 마비 1초",
+      "maxAppearanceCount": 1,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "chain_lightning"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          101,
+          102,
+          104
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "chain_lightning.04",
+      "skillId": "chain_lightning",
+      "name": "번개 피해 증폭",
+      "effectDescription": "공격력 +60%",
+      "maxAppearanceCount": 2,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "chain_lightning"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          101,
+          104
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "chain_lightning.05",
+      "skillId": "chain_lightning",
+      "name": "이온 폭파",
+      "effectDescription": "반사마다 폭발 피해",
+      "maxAppearanceCount": 1,
+      "requirementsText": "고전압 전격",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "chain_lightning"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "chain_lightning.03",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          102,
+          103
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "chain_lightning.06",
+      "skillId": "chain_lightning",
+      "name": "교감 전격",
+      "effectDescription": "마비 대상 피격 시 좁은 범위의 무작위 대상에 전기 공격",
+      "maxAppearanceCount": 1,
+      "requirementsText": "고전압 전격",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [
+        "원문 피받경 표현 불명확; 범위·피해 수치"
+      ],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "chain_lightning"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "chain_lightning.03",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          102
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "chain_lightning.07",
+      "skillId": "chain_lightning",
+      "name": "이온 확산",
+      "effectDescription": "폭발 범위 +100%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "이온 폭파",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "chain_lightning"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "chain_lightning.05",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          103
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "chain_lightning.08",
+      "skillId": "chain_lightning",
+      "name": "이온 전압",
+      "effectDescription": "폭발 공격력 +40%; 마비 1초 추가",
+      "maxAppearanceCount": 1,
+      "requirementsText": "이온 폭파",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "chain_lightning"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "chain_lightning.05",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          103
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "chain_lightning.09",
+      "skillId": "chain_lightning",
+      "name": "전류전도",
+      "effectDescription": "공격력 -60%; 경로상의 요마에 피해",
+      "maxAppearanceCount": 1,
+      "requirementsText": "번개 연속&고전압 전격&번개 피해 증폭",
+      "minPermanentLevel": 17,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "chain_lightning"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "chain_lightning.02",
+          "count": 1
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "chain_lightning.03",
+          "count": 1
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "chain_lightning.04",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          104
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "chain_lightning.10",
+      "skillId": "chain_lightning",
+      "name": "뇌둔술 증폭",
+      "effectDescription": "벼락과 연쇄 번개 공격력 +80%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "@벼락",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "chain_lightning"
+        },
+        {
+          "kind": "ownedSkill",
+          "skillId": "lightning"
+        }
+      ],
+      "sharedUpgrade": {
+        "affectedSkillUpgradeCounts": [
+          "chain_lightning",
+          "lightning"
+        ],
+        "sharedSelectionGroup": "chain_lightning+lightning:뇌둔술증폭",
+        "sourceFootnote": "증폭"
+      },
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          105
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "meteor.01",
+      "skillId": "meteor",
+      "name": "운석 확장",
+      "effectDescription": "공격 범위 +80%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "meteor"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          108
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "meteor.02",
+      "skillId": "meteor",
+      "name": "운석 연타",
+      "effectDescription": "추가 시전 +1",
+      "maxAppearanceCount": 2,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "meteor"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          108,
+          109
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "meteor.03",
+      "skillId": "meteor",
+      "name": "정밀 타격",
+      "effectDescription": "낙하 중심부 공격력 +150%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "meteor"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          108,
+          110
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "meteor.04",
+      "skillId": "meteor",
+      "name": "운석 피해 증폭",
+      "effectDescription": "공격력 +60%",
+      "maxAppearanceCount": 2,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "meteor"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          108,
+          109,
+          110
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "meteor.05",
+      "skillId": "meteor",
+      "name": "운석 강타",
+      "effectDescription": "공격력 +30%; 기절 지속 +1초",
+      "maxAppearanceCount": 1,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [
+        "기절 신규 부여인지 지속 증가인지"
+      ],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "meteor"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          108
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "meteor.06",
+      "skillId": "meteor",
+      "name": "운석 강하",
+      "effectDescription": "공격력 +30%; 낙하 속도 +50%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "meteor"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          108
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "meteor.07",
+      "skillId": "meteor",
+      "name": "유성비",
+      "effectDescription": "전장에 지속적으로 소형 운석 낙하",
+      "maxAppearanceCount": 1,
+      "requirementsText": "운석 연타&운석 피해 증폭",
+      "minPermanentLevel": 13,
+      "unresolvedIssues": [
+        "낙하 횟수·간격·피해·종료 기준"
+      ],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "meteor"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "meteor.02",
+          "count": 1
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "meteor.04",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          109
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "meteor.08",
+      "skillId": "meteor",
+      "name": "화염 운석",
+      "effectDescription": "점화; 화염 속성 강화; 낙하 시 지속 피해 화염 지대 생성",
+      "maxAppearanceCount": 1,
+      "requirementsText": "@화염구&정밀 타격&운석 피해 증폭",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [
+        "화염 지대 수치·기간 미기재"
+      ],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "meteor"
+        },
+        {
+          "kind": "ownedSkill",
+          "skillId": "fireball"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "meteor.03",
+          "count": 1
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "meteor.04",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          110
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "typhoon.01",
+      "skillId": "typhoon",
+      "name": "태풍 피해 증폭",
+      "effectDescription": "공격력 +60%",
+      "maxAppearanceCount": 2,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "typhoon"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          113,
+          114
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "typhoon.02",
+      "skillId": "typhoon",
+      "name": "연속 태풍",
+      "effectDescription": "지속시간 +100%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "typhoon"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          113,
+          115,
+          116
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "typhoon.03",
+      "skillId": "typhoon",
+      "name": "몰아치는 태풍",
+      "effectDescription": "이동 속도 +40%; 지속시간 +30%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "typhoon"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          113,
+          115,
+          117
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "typhoon.04",
+      "skillId": "typhoon",
+      "name": "흡입력 강화",
+      "effectDescription": "당기는 힘 +50%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "typhoon"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          113
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "typhoon.05",
+      "skillId": "typhoon",
+      "name": "태풍 확장",
+      "effectDescription": "범위 +60%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "태풍 피해 증폭",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "typhoon"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "typhoon.01",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          114,
+          116,
+          117
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "typhoon.06",
+      "skillId": "typhoon",
+      "name": "집중 폭풍",
+      "effectDescription": "종료 지점에 대형 태풍 1개 시전",
+      "maxAppearanceCount": 1,
+      "requirementsText": "연속 태풍&몰아치는 태풍",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [
+        "대형 태풍 수치 미기재"
+      ],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "typhoon"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "typhoon.02",
+          "count": 1
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "typhoon.03",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          115
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "typhoon.07",
+      "skillId": "typhoon",
+      "name": "이중 태풍",
+      "effectDescription": "동시에 태풍 2개 시전",
+      "maxAppearanceCount": 1,
+      "requirementsText": "연속 태풍&태풍 확장",
+      "minPermanentLevel": 13,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "typhoon"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "typhoon.02",
+          "count": 1
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "typhoon.05",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          116
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "typhoon.08",
+      "skillId": "typhoon",
+      "name": "번개 태풍",
+      "effectDescription": "뇌둔 속성 번개 태풍으로 형태 변화",
+      "maxAppearanceCount": 1,
+      "requirementsText": "태풍 확장&몰아치는 태풍&@연쇄 번개",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [
+        "변형 효과 상세 미기재"
+      ],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "typhoon"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "typhoon.05",
+          "count": 1
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "typhoon.03",
+          "count": 1
+        },
+        {
+          "kind": "ownedSkill",
+          "skillId": "chain_lightning"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          117
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "lightning_net.01",
+      "skillId": "lightning_net",
+      "name": "고주파 전력망",
+      "effectDescription": "추가 시전 +1; 공격력 -40%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "lightning_net"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          120,
+          121
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "lightning_net.02",
+      "skillId": "lightning_net",
+      "name": "전력망 저항",
+      "effectDescription": "공격력 +30%; 밀침 추가",
+      "maxAppearanceCount": 1,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [
+        "후속 강화와 동명; 기본 밀침 수치 미기재"
+      ],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "lightning_net"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          120,
+          122
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "lightning_net.03",
+      "skillId": "lightning_net",
+      "name": "고전압 그물",
+      "effectDescription": "공격력 +40%; 마비 지속 +1초",
+      "maxAppearanceCount": 1,
+      "requirementsText": "",
+      "minPermanentLevel": 13,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "lightning_net"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          120
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "lightning_net.04",
+      "skillId": "lightning_net",
+      "name": "번개 그물 확장",
+      "effectDescription": "범위 +70%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "lightning_net"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          120
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "lightning_net.05",
+      "skillId": "lightning_net",
+      "name": "번개 그물 증폭",
+      "effectDescription": "공격력 +60%",
+      "maxAppearanceCount": 2,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "lightning_net"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          120
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "lightning_net.06",
+      "skillId": "lightning_net",
+      "name": "전력망 충전",
+      "effectDescription": "공격력 +30%; 추가 시전 +1; 쿨타임 +30%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "고주파 전력망",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [
+        "원문 쿨30% 부호 생략; 중복 문장은 후속 연결 설명으로 보존"
+      ],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "lightning_net"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "lightning_net.01",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          121
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "lightning_net.07",
+      "skillId": "lightning_net",
+      "name": "과부하",
+      "effectDescription": "추가 시전 +2; 공격력 +80%; 쿨타임 +40%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "전력망 충전",
+      "minPermanentLevel": 21,
+      "unresolvedIssues": [
+        "원문 쿨40% 부호 생략"
+      ],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "lightning_net"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "lightning_net.06",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          121
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "lightning_net.08",
+      "skillId": "lightning_net",
+      "name": "전력망 저항",
+      "effectDescription": "공격력 +40%; 추가 밀침 +100%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "전력망 저항",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [
+        "기본 강화와 동명; 별도 ID 필요"
+      ],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "lightning_net"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "lightning_net.02",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          120,
+          122
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "lightning_net.09",
+      "skillId": "lightning_net",
+      "name": "지속 감전",
+      "effectDescription": "적중 시 연쇄 번개 시전",
+      "maxAppearanceCount": 1,
+      "requirementsText": "@연쇄 번개",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [
+        "발동 빈도·연쇄 발동 제한 미기재"
+      ],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "lightning_net"
+        },
+        {
+          "kind": "ownedSkill",
+          "skillId": "chain_lightning"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          123,
+          124
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "lightning_net.10",
+      "skillId": "lightning_net",
+      "name": "전율의 그물",
+      "effectDescription": "생성된 연쇄 번개 반사 +2",
+      "maxAppearanceCount": 1,
+      "requirementsText": "지속 감전",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "lightning_net"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "lightning_net.09",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          124
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "sand_explosion.01",
+      "skillId": "sand_explosion",
+      "name": "모래 폭발 범위 증폭",
+      "effectDescription": "범위 +100%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "sand_explosion"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          127
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "sand_explosion.02",
+      "skillId": "sand_explosion",
+      "name": "도약 모래 폭발",
+      "effectDescription": "폭발 후 1회 도약; 공격력 -20%",
+      "maxAppearanceCount": 2,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "sand_explosion"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          127
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "sand_explosion.03",
+      "skillId": "sand_explosion",
+      "name": "연속 투척",
+      "effectDescription": "추가 시전 +1",
+      "maxAppearanceCount": 2,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "sand_explosion"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          127
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "sand_explosion.04",
+      "skillId": "sand_explosion",
+      "name": "충격 강화",
+      "effectDescription": "기절 1.5초 부여",
+      "maxAppearanceCount": 1,
+      "requirementsText": "",
+      "minPermanentLevel": 9,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "sand_explosion"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          128
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "sand_explosion.05",
+      "skillId": "sand_explosion",
+      "name": "래피드 파이어",
+      "effectDescription": "쿨타임 -20%",
+      "maxAppearanceCount": 2,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "sand_explosion"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          128
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "sand_explosion.06",
+      "skillId": "sand_explosion",
+      "name": "모래 폭발 피해 증폭",
+      "effectDescription": "공격력 +60%",
+      "maxAppearanceCount": 3,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "sand_explosion"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          128,
+          129
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "sand_explosion.07",
+      "skillId": "sand_explosion",
+      "name": "초폭발",
+      "effectDescription": "공격력 +150%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "모래 폭발 피해 증폭",
+      "minPermanentLevel": 13,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "sand_explosion"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "sand_explosion.06",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          129
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "sand_explosion.08",
+      "skillId": "sand_explosion",
+      "name": "중량 폭탄",
+      "effectDescription": "공격력 +150%; 쿨타임 +30%",
+      "maxAppearanceCount": 2,
+      "requirementsText": "모래 폭발 피해 증폭",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [
+        "원문 쿨30% 부호 생략"
+      ],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "sand_explosion"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "sand_explosion.06",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          129
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "spiral.01",
+      "skillId": "spiral",
+      "name": "다중 나선 회오리",
+      "effectDescription": "추가 시전 +1",
+      "maxAppearanceCount": 2,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "spiral"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          133
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "spiral.02",
+      "skillId": "spiral",
+      "name": "진공",
+      "effectDescription": "적중 대상 주변을 진공 상태로 변경",
+      "maxAppearanceCount": 1,
+      "requirementsText": "",
+      "minPermanentLevel": 9,
+      "unresolvedIssues": [
+        "진공 상태 상세 미기재; 밀침 무의미는 후보 배제 규칙과 다름"
+      ],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "spiral"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          132,
+          133,
+          136
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "spiral.03",
+      "skillId": "spiral",
+      "name": "난기류",
+      "effectDescription": "적중 시 소형 나선 회오리 생성",
+      "maxAppearanceCount": 2,
+      "requirementsText": "",
+      "minPermanentLevel": 13,
+      "unresolvedIssues": [
+        "소형 회오리 개수·피해 미기재"
+      ],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "spiral"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          133
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "spiral.04",
+      "skillId": "spiral",
+      "name": "바람 관통",
+      "effectDescription": "관통력 +6",
+      "maxAppearanceCount": 1,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "spiral"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          134
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "spiral.05",
+      "skillId": "spiral",
+      "name": "강습 회오리",
+      "effectDescription": "공격력 +40%; 밀침 +50%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "spiral"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          134
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "spiral.06",
+      "skillId": "spiral",
+      "name": "바람 저항",
+      "effectDescription": "공격력 +30%; 감속 지속 +3초",
+      "maxAppearanceCount": 1,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "spiral"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          134
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "spiral.07",
+      "skillId": "spiral",
+      "name": "나선 회오리 증폭",
+      "effectDescription": "공격력 +60%",
+      "maxAppearanceCount": 2,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "spiral"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          134
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "spiral.08",
+      "skillId": "spiral",
+      "name": "비기 · 비취 폭풍",
+      "effectDescription": "1회용; 예외적으로 태풍 영구 인술 레벨 비례 공격력 상승",
+      "maxAppearanceCount": 1,
+      "requirementsText": "#나나기 히스이",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [
+        "계수·1회용 범위 미기재; 성장 참조는 각주 22로 태풍 확정"
+      ],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "spiral"
+        },
+        {
+          "kind": "character",
+          "sourceName": "나나기 히스이",
+          "status": "unmapped"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          135,
+          139
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "spiral.09",
+      "skillId": "spiral",
+      "name": "진공 붕괴",
+      "effectDescription": "진공 피해 +50%; 기절 2초 부여",
+      "maxAppearanceCount": 1,
+      "requirementsText": "진공",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "spiral"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "spiral.02",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          136
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "spiral.10",
+      "skillId": "spiral",
+      "name": "폭풍 집결",
+      "effectDescription": "적중 시 소형 태풍 1개 시전",
+      "maxAppearanceCount": 1,
+      "requirementsText": "@태풍",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "spiral"
+        },
+        {
+          "kind": "ownedSkill",
+          "skillId": "typhoon"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          137
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "lightning_cloud.01",
+      "skillId": "lightning_cloud",
+      "name": "번개 구름 확장",
+      "effectDescription": "범위 +50%",
+      "maxAppearanceCount": 1,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "lightning_cloud"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          145,
+          147
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "lightning_cloud.02",
+      "skillId": "lightning_cloud",
+      "name": "번개 구름 지속",
+      "effectDescription": "지속시간 +60%",
+      "maxAppearanceCount": 3,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "lightning_cloud"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          145,
+          147,
+          148
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "lightning_cloud.03",
+      "skillId": "lightning_cloud",
+      "name": "번개 구름 가속",
+      "effectDescription": "공격력 +40%; 이동 속도 +20%",
+      "maxAppearanceCount": 2,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "lightning_cloud"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          145,
+          150
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "lightning_cloud.04",
+      "skillId": "lightning_cloud",
+      "name": "번개 구름 피해 증폭",
+      "effectDescription": "공격력 +60%",
+      "maxAppearanceCount": 3,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "lightning_cloud"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          146,
+          148,
+          149,
+          150
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "lightning_cloud.05",
+      "skillId": "lightning_cloud",
+      "name": "고전압 번개 구름",
+      "effectDescription": "마비 지속 +2초",
+      "maxAppearanceCount": 1,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "lightning_cloud"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          146
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "lightning_cloud.06",
+      "skillId": "lightning_cloud",
+      "name": "전자력 구름",
+      "effectDescription": "공격력 +40%; 끌어당기는 힘 소폭 상승",
+      "maxAppearanceCount": 1,
+      "requirementsText": "",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [
+        "흡입력 증가 수치 미기재"
+      ],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "lightning_cloud"
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          146
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "lightning_cloud.07",
+      "skillId": "lightning_cloud",
+      "name": "특이점",
+      "effectDescription": "종료 시 블랙홀 1개 생성",
+      "maxAppearanceCount": 1,
+      "requirementsText": "번개 구름 확장&번개 구름 지속",
+      "minPermanentLevel": 21,
+      "unresolvedIssues": [
+        "블랙홀 상세 미기재"
+      ],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "lightning_cloud"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "lightning_cloud.01",
+          "count": 1
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "lightning_cloud.02",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          147,
+          150
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "lightning_cloud.08",
+      "skillId": "lightning_cloud",
+      "name": "번개 구름 분열",
+      "effectDescription": "종료 시 2개로 분열",
+      "maxAppearanceCount": 1,
+      "requirementsText": "번개 구름 지속&번개 구름 피해 증폭",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [
+        "분열 구름 지속·재분열·피해 규칙"
+      ],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "lightning_cloud"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "lightning_cloud.02",
+          "count": 1
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "lightning_cloud.04",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          148
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    },
+    {
+      "id": "lightning_cloud.09",
+      "skillId": "lightning_cloud",
+      "name": "번개 유도",
+      "effectDescription": "적중 시 5% 확률 벼락 시전",
+      "maxAppearanceCount": 1,
+      "requirementsText": "@벼락&번개 구름 피해 증폭",
+      "minPermanentLevel": 13,
+      "unresolvedIssues": [],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "lightning_cloud"
+        },
+        {
+          "kind": "ownedSkill",
+          "skillId": "lightning"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "lightning_cloud.04",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          149
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "source-defined",
+      "readyForProduction": false
+    },
+    {
+      "id": "lightning_cloud.10",
+      "skillId": "lightning_cloud",
+      "name": "폭풍 특이점",
+      "effectDescription": "주변 요마 1체에게 추가 전기 공격",
+      "maxAppearanceCount": 1,
+      "requirementsText": "@연쇄 번개&번개 구름 가속&번개 구름 피해 증폭",
+      "minPermanentLevel": 0,
+      "unresolvedIssues": [
+        "추가 공격 발동 시점·피해 미기재"
+      ],
+      "exclusions": [],
+      "requirements": [
+        {
+          "kind": "ownedSkill",
+          "skillId": "lightning_cloud"
+        },
+        {
+          "kind": "ownedSkill",
+          "skillId": "chain_lightning"
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "lightning_cloud.03",
+          "count": 1
+        },
+        {
+          "kind": "selectedCard",
+          "cardId": "lightning_cloud.04",
+          "count": 1
+        }
+      ],
+      "source": {
+        "file": "ninjutsu-source-additional.txt",
+        "lines": [
+          150
+        ]
+      },
+      "runtime": {
+        "state": "not-implemented"
+      },
+      "decisionStatus": "hold",
+      "readyForProduction": false
+    }
+  ]
+}
