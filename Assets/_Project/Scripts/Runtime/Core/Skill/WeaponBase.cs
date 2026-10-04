@@ -111,6 +111,9 @@ namespace Game.Core
                     case UpgradeType.CastCount: nextStats = new CastCountUpgrade(nextStats, (int)effect.value); break;
                     case UpgradeType.PierceCount: nextStats = new PierceCountUpgrade(nextStats, (int)effect.value); break;
                     case UpgradeType.ProjectileSpeed: nextStats = new ProjectileSpeedUpgrade(nextStats, effect.value); break;
+                    case UpgradeType.KillLightning:
+                        if (effect.value <= 0) { return false; }
+                        nextStats = new KillLightningUpgrade(nextStats, effect.value); break;
                     case UpgradeType.AuxiliaryParalysis:
                         if (effect.value <= 0) { return false; }
                         nextStats = new AuxiliaryParalysisUpgrade(nextStats, effect.value); break;
@@ -122,12 +125,12 @@ namespace Game.Core
 
                         nextStats = new ParalysisDurationUpgrade(nextStats, effect.value); break;
                     case UpgradeType.Form:
-                        if (effect.value != (int)WeaponForm.Enbakutsu)
+                        if (effect.value != (int)WeaponForm.Enbakutsu && effect.value != (int)WeaponForm.JudgementThunder)
                         {
                             return false;
                         }
 
-                        nextStats = new FormUpgrade(nextStats, WeaponForm.Enbakutsu); break;
+                        nextStats = new FormUpgrade(nextStats, (WeaponForm)(int)effect.value); break;
                     case UpgradeType.ImpactDamage:
                         nextStats = new ImpactDamageUpgrade(nextStats, effect.value); break;
                     case UpgradeType.BurnMaxHp:

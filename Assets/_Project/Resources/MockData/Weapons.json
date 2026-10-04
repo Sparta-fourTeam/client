@@ -797,6 +797,52 @@
             "value": 0.5
           }
         ]
+      },
+      {
+        "id": "lightning_sanction",
+        "name": "뇌전 제재",
+        "desc": "공격력 +150% / 요마 처치 시 소형 벼락 1회 시전",
+        "maxPickCount": 1,
+        "minPermanentLevel": 5,
+        "requiredCardIds": [
+          "lightning_damage"
+        ],
+        "effects": [
+          {
+            "type": 1,
+            "value": 150
+          },
+          {
+            "type": 28,
+            "value": 50
+          }
+        ]
+      },
+      {
+        "id": "lightning_judgement",
+        "name": "심판의 천둥",
+        "desc": "심판의 천둥으로 강화 / 공격력 +200%",
+        "maxPickCount": 1,
+        "minPermanentLevel": 13,
+        "requiredCardIds": [
+          "lightning_voltage",
+          "lightning_sanction"
+        ],
+        "exclusions": [
+          {
+            "cardId": "lightning_storm"
+          }
+        ],
+        "effects": [
+          {
+            "type": 1,
+            "value": 200
+          },
+          {
+            "type": 25,
+            "value": 2
+          }
+        ]
       }
     ]
   },

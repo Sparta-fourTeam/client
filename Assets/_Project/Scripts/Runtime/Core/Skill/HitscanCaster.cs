@@ -7,9 +7,11 @@ namespace Game.Core
     {
         private ObjectPool<HitscanEffect> pool;
         private ObjectPool<Projectile> orbPool;
+        private readonly Vector3 originalScale;
 
         public HitscanCaster(WeaponData data, GameObject prefab, Transform caster, IEnemyTargetProvider targetProvider) : base(data, caster, targetProvider)
         {
+            originalScale = prefab.transform.localScale;
             var secondary = prefab.GetComponent<HitscanEffect>()?.SecondaryProjectilePrefab;
             if (secondary != null)
             {
@@ -39,6 +41,7 @@ namespace Game.Core
                 var target = targets[i % targets.Count];
 
                 var effect = pool.Get();
+                effect.transform.localScale = stats.Form == WeaponForm.JudgementThunder ? originalScale * 1.5f : originalScale;
                 float explosionRadius = stats.ExplosionRadius;
                 float explosionDamage = stats.ExplosionDamage;
                 System.Action<Vector2> onHit = explosionRadius > 0
@@ -50,8 +53,31 @@ namespace Game.Core
                 System.Action<Enemy> onTargetHit = duration > 0
                     ? enemy => { if (StatusProc.Roll(chance)) { enemy.ApplyParalysis(duration); } }
                 : null;
-                effect.Init(pool, new Vector3(target.Position.x, target.Position.y, 0f), stats.Damage, onHit, onTargetHit);
+                effect.Init(pool, new Vector3(target.Position.x, target.Position.y, 0f), stats.Damage, onHit, onTargetHit, CreateKillLightningCallback());
             }
+        }
+        private System.Action<Vector2> CreateKillLightningCallback()
+        {
+            float damage = stats.Damage * stats.KillLightningRatio;
+            if (damage <= 0) { return null; }
+            float range = data.baseStats.range;
+            return position =>
+            {
+                var candidates = new System.Collections.Generic.List<IEnemyTarget>();
+                targetProvider.GetNearest(position, int.MaxValue, candidates);
+                IEnemyTarget nearest = null;
+                float nearestDistance = range * range;
+                foreach (var candidate in candidates)
+                {
+                    if (candidate == null || candidate is EnemyModel model && model.IsDead) { continue; }
+                    float distance = (candidate.Position - position).sqrMagnitude;
+                    if (distance <= nearestDistance) { nearest = candidate; nearestDistance = distance; }
+                }
+                if (nearest == null) { return; }
+                var secondary = pool.Get();
+                secondary.transform.localScale = originalScale * 0.5f;
+                secondary.Init(pool, nearest.Position, damage, directTarget: nearest);
+            };
         }
         private System.Action<Vector2> CreateOrbCallback(IEnemyTarget sourceTarget)
         {

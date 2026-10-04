@@ -80,6 +80,51 @@ namespace Game.Tests
         }
 
         [Test]
+        public void JudgementCard_ChangesFormAndPooledVisualScaleResets()
+        {
+            var go = new GameObject("JudgementScaleTest"); go.AddComponent<HitscanEffect>();
+            go.transform.position = new Vector3(1000, 1000, 0);
+            try
+            {
+                var data = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == 3);
+                var provider = new Provider(); provider.Targets.Add(new Target { Position = new Vector2(1000, 1000) });
+                var weapon = new HitscanCaster(data, go, go.transform, provider);
+                Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == "lightning_judgement")));
+                Assert.IsFalse(weapon.LevelUp(data.upgrades.Find(c => c.id == "lightning_judgement")));
+                var flags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance;
+                var statsField = typeof(WeaponBase).GetField("stats", flags);
+                Assert.AreEqual(75, ((IWeaponStats)statsField.GetValue(weapon)).Damage);
+                var fire = typeof(HitscanCaster).GetMethod("OnFire", flags);
+                fire.Invoke(weapon, null);
+                HitscanEffect clone = null;
+                foreach (var effect in Object.FindObjectsByType<HitscanEffect>(FindObjectsSortMode.None))
+                { if (effect.name == "JudgementScaleTest(Clone)") { clone = effect; } }
+                Assert.AreEqual(Vector3.one * 1.5f, clone.transform.localScale);
+                typeof(HitscanEffect).GetMethod("Release", flags).Invoke(clone, null);
+                statsField.SetValue(weapon, new BaseWeaponStats(data.baseStats));
+                fire.Invoke(weapon, null);
+                Assert.AreEqual(Vector3.one, clone.transform.localScale);
+            }
+            finally
+            {
+                foreach (var effect in Object.FindObjectsByType<HitscanEffect>(FindObjectsSortMode.None))
+                { if (effect.name == "JudgementScaleTest(Clone)") { Object.DestroyImmediate(effect.gameObject); } }
+                Object.DestroyImmediate(go);
+            }
+        }
+
+        [Test]
+        public void JudgementForm_PreservesOtherStatsAndScalesDamage()
+        {
+            IWeaponStats stats = new BaseWeaponStats(new WeaponBaseStats { baseDamage = 25, paralysisDuration = 1 });
+            stats = new DamageUpgrade(stats, 150);
+            stats = new FormUpgrade(new DamageUpgrade(stats, 200), WeaponForm.JudgementThunder);
+            Assert.AreEqual(187.5f, stats.Damage);
+            Assert.AreEqual(1, stats.ParalysisDuration);
+            Assert.AreEqual(WeaponForm.JudgementThunder, stats.Form);
+        }
+
+        [Test]
         public void ExplosionUpgrades_KeepDirectDamageSeparateAndScaleRadius()
         {
             IWeaponStats stats = new BaseWeaponStats(new WeaponBaseStats { baseDamage = 12, explosionDamageRatio = 1, explosionRadius = 0.8f });

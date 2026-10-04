@@ -2430,7 +2430,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 3,
+        "cardId": "lightning_sanction",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "hold",
       "readyForProduction": false
@@ -2474,7 +2479,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 3,
+        "cardId": "lightning_judgement",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false

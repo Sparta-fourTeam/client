@@ -19,6 +19,7 @@ namespace Game.Core
         float ShardDamageMultiplier { get; }
         float ParalysisDuration { get; }
         float AuxiliaryParalysisDuration { get; }
+        float KillLightningRatio { get; }
         float LightningStrikeRatio { get; }
         float AuxiliaryLightningRatio { get; }
         bool AuxiliaryExplosions { get; }

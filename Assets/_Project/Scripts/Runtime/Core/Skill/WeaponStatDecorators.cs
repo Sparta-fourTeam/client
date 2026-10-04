@@ -2,6 +2,13 @@ using System;
 
 namespace Game.Core
 {
+    public sealed class KillLightningUpgrade : StatDecorator
+    {
+        private readonly float ratio;
+        public KillLightningUpgrade(IWeaponStats inner, float percent) : base(inner) => ratio = percent * 0.01f;
+        public override float KillLightningRatio => ratio;
+    }
+
     public sealed class AuxiliaryParalysisUpgrade : StatDecorator
     {
         private readonly float duration;

@@ -23,6 +23,7 @@ namespace Game.Core
 
         public float ParalysisDuration => data.paralysisDuration;
         public float AuxiliaryParalysisDuration => 0;
+        public float KillLightningRatio => 0;
         public float LightningStrikeRatio => 0;
         public float AuxiliaryLightningRatio => 0;
         public bool AuxiliaryExplosions => false;

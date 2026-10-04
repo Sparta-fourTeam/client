@@ -170,6 +170,8 @@ namespace Game.Core
             _subscriptions?.Dispose();
         }
 
+        public bool IsDead => _enemyModel == null || _enemyModel.IsDead;
+
         public void ApplyParalysis(float duration) => _enemyModel?.ApplyParalysis(duration);
 
         public void TakeDamage(int damage)

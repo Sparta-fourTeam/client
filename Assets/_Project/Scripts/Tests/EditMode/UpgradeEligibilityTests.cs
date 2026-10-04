@@ -16,6 +16,30 @@ namespace Game.Tests
             public int GetAcquiredCount(int id, string card) => Counts.TryGetValue((id, card), out var count) ? count : 0;
         }
 
+        [Test]
+        public void LightningSanctionAndJudgement_UsePermanentGatesAndDirectionalExclusion()
+        {
+            var cards = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == 3).upgrades;
+            var sanction = cards.Find(c => c.id == "lightning_sanction");
+            var judgement = cards.Find(c => c.id == "lightning_judgement");
+            var state = new State(); state.Levels[3] = 1; state.PermanentLevels[3] = 5;
+            Assert.IsFalse(UpgradeEligibility.CanAcquire(sanction, 3, state));
+            state.Counts[(3, "lightning_damage")] = 1;
+            state.PermanentLevels[3] = 4;
+            Assert.IsFalse(UpgradeEligibility.CanAcquire(sanction, 3, state));
+            state.PermanentLevels[3] = 5;
+            Assert.IsTrue(UpgradeEligibility.CanAcquire(sanction, 3, state));
+            state.Counts[(3, "lightning_voltage")] = 1; state.Counts[(3, "lightning_sanction")] = 1;
+            state.PermanentLevels[3] = 12;
+            Assert.IsFalse(UpgradeEligibility.CanAcquire(judgement, 3, state));
+            state.PermanentLevels[3] = 13;
+            Assert.IsTrue(UpgradeEligibility.CanAcquire(judgement, 3, state));
+            state.Counts[(3, "lightning_storm")] = 1;
+            Assert.IsFalse(UpgradeEligibility.CanAcquire(judgement, 3, state));
+            state.Counts.Remove((3, "lightning_storm")); state.Counts[(3, "lightning_judgement")] = 1;
+            Assert.IsTrue(UpgradeEligibility.CanAcquire(cards.Find(c => c.id == "lightning_storm"), 3, state));
+        }
+
         private static State Owned(int level = 1) => new State { Levels = { [1] = level } };
         private static WeaponUpgradeOption Option(string id = "upgrade") => new WeaponUpgradeOption { id = id, maxPickCount = 3 };
 

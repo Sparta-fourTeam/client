@@ -33,6 +33,111 @@ namespace Game.Tests
             return new EnemyModel(id, position, speed, EnemyType.Normal, maxHp, TestAttack, _hpChanged, _died);
         }
 
+        private class LightningProvider : IEnemyTargetProvider
+        {
+            public readonly List<IEnemyTarget> Targets = new();
+            public int GetNearest(Vector2 from, int count, List<IEnemyTarget> results)
+            { results.Clear(); results.AddRange(Targets); return results.Count; }
+        }
+
+        [Test]
+        public void LightningKill_SpawnsOneTargetedSecondaryWithoutInheritedEffectsOrRecursion()
+        {
+            var prefab = new GameObject("KillLightningTest");
+            var targetGo = new GameObject("KillLightningVictim");
+            var flags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance;
+            try
+            {
+                var position = new Vector2(1000, 1000);
+                prefab.transform.position = position;
+                var victim = CreateEnemy(maxHp: 10, position: position);
+                var neighbour = CreateEnemy(2, 30, position: position + Vector2.right * 2);
+                var farther = CreateEnemy(3, 100, position: position + Vector2.right * 3);
+                var dead = CreateEnemy(4, 1, position: position + Vector2.right); dead.TakeDamage(1);
+                targetGo.transform.position = position;
+                targetGo.AddComponent<CircleCollider2D>(); targetGo.AddComponent<BoxCollider2D>();
+                var view = targetGo.AddComponent<Enemy>();
+                typeof(Enemy).GetField("_enemyModel", flags).SetValue(view, victim);
+                var template = prefab.AddComponent<HitscanEffect>();
+                typeof(HitscanEffect).GetField("radius", flags).SetValue(template, .5f);
+                typeof(HitscanEffect).GetField("targetMask", flags).SetValue(template, (LayerMask)(-1));
+                var provider = new LightningProvider(); provider.Targets.AddRange(new IEnemyTarget[] { victim, farther, dead, neighbour });
+                var data = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == 3);
+                var weapon = new HitscanCaster(data, prefab, prefab.transform, provider);
+                Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == "lightning_sanction")));
+                Assert.IsFalse(weapon.LevelUp(data.upgrades.Find(c => c.id == "lightning_sanction")));
+                typeof(HitscanCaster).GetMethod("OnFire", flags).Invoke(weapon, null);
+                HitscanEffect main = null;
+                foreach (var effect in UnityEngine.Object.FindObjectsByType<HitscanEffect>(FindObjectsSortMode.None))
+                { if (effect.name == "KillLightningTest(Clone)") { main = effect; } }
+                // Upgrades after casting must not change this kill callback's damage snapshot.
+                weapon.LevelUp(data.upgrades.Find(c => c.id == "lightning_voltage"));
+                Physics2D.SyncTransforms();
+                var hit = typeof(HitscanEffect).GetMethod("Hit", flags);
+                hit.Invoke(main, null); hit.Invoke(main, null);
+                Assert.IsTrue(victim.IsDead);
+                HitscanEffect secondary = null; int count = 0;
+                foreach (var effect in UnityEngine.Object.FindObjectsByType<HitscanEffect>(FindObjectsSortMode.None))
+                { if (effect.name == "KillLightningTest(Clone)") { count++; if (effect != main) { secondary = effect; } } }
+                Assert.AreEqual(2, count);
+                Assert.AreEqual(31.25f, (float)typeof(HitscanEffect).GetField("damage", flags).GetValue(secondary));
+                Assert.AreEqual(Vector3.one * .5f, secondary.transform.localScale);
+                hit.Invoke(secondary, null); hit.Invoke(secondary, null);
+                Assert.IsTrue(neighbour.IsDead); Assert.AreEqual(100, farther.Hp);
+                Assert.AreEqual(0, neighbour.ParalysisRemaining);
+                Assert.IsNull(typeof(HitscanEffect).GetField("onKilled", flags).GetValue(secondary));
+                Assert.IsNull(typeof(HitscanEffect).GetField("onHit", flags).GetValue(secondary));
+                Assert.IsNull(typeof(HitscanEffect).GetField("onTargetHit", flags).GetValue(secondary));
+            }
+            finally
+            {
+                foreach (var effect in UnityEngine.Object.FindObjectsByType<HitscanEffect>(FindObjectsSortMode.None))
+                { if (effect.name == "KillLightningTest(Clone)") { UnityEngine.Object.DestroyImmediate(effect.gameObject); } }
+                UnityEngine.Object.DestroyImmediate(prefab); UnityEngine.Object.DestroyImmediate(targetGo);
+            }
+        }
+
+        [Test]
+        public void SecondaryLightning_SkipsDeadTargetAndClearsTargetAndKillCallbackOnReuse()
+        {
+            var go = new GameObject("SecondaryReuseTest");
+            try
+            {
+                var target = CreateEnemy(maxHp: 1); target.TakeDamage(1);
+                var effect = go.AddComponent<HitscanEffect>();
+                var pool = new UnityEngine.Pool.ObjectPool<HitscanEffect>(() => effect);
+                var flags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance;
+                var hit = typeof(HitscanEffect).GetMethod("Hit", flags);
+                int kills = 0;
+                pool.Get().Init(pool, Vector3.zero, 10, onKilled: _ => kills++, directTarget: target);
+                hit.Invoke(effect, null);
+                Assert.AreEqual(1, _died.Published.Count); Assert.AreEqual(0, kills);
+                pool.Release(effect); pool.Get().Init(pool, Vector3.zero, 1);
+                Assert.IsNull(typeof(HitscanEffect).GetField("directTarget", flags).GetValue(effect));
+                Assert.IsNull(typeof(HitscanEffect).GetField("onKilled", flags).GetValue(effect));
+            }
+            finally { UnityEngine.Object.DestroyImmediate(go); }
+        }
+
+        [Test]
+        public void KillLightning_NoSurvivingTargetWithinRangeCreatesNoEffect()
+        {
+            var go = new GameObject("NoKillTargetTest"); go.AddComponent<HitscanEffect>();
+            try
+            {
+                var data = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == 3);
+                var provider = new LightningProvider();
+                provider.Targets.Add(CreateEnemy(position: Vector2.right * (data.baseStats.range + 1)));
+                var weapon = new HitscanCaster(data, go, go.transform, provider);
+                weapon.LevelUp(data.upgrades.Find(c => c.id == "lightning_sanction"));
+                var callback = (Action<Vector2>)typeof(HitscanCaster).GetMethod("CreateKillLightningCallback", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Invoke(weapon, null);
+                callback(Vector2.zero);
+                foreach (var effect in UnityEngine.Object.FindObjectsByType<HitscanEffect>(FindObjectsSortMode.None))
+                { Assert.AreNotEqual("NoKillTargetTest(Clone)", effect.name); }
+            }
+            finally { UnityEngine.Object.DestroyImmediate(go); }
+        }
+
         [Test]
         public void Knockback_NormalizesDirectionWorksDuringFreezeAndRejectsInvalidValues()
         {
