@@ -63,3 +63,7 @@ WeaponUpgradeTransaction이 참여 인술의 효과를 모두 준비한 뒤 함�
 Game.Tests.EditMode의 overrideReferences=true 설정에서 테스트가 사용한 Newtonsoft.Json.dll 참조가 빠져 CS0103 5건이 발생했다. 이전 .NET 검사는 모든 DLL을 함께 참조해 이 오류를 검출하지 못했다. 테스트 asmdef의 precompiledReferences에 Newtonsoft.Json.dll을 추가했다.
 
 Unity 6000.6.3f1에 포함된 Roslyn과 Unity가 생성한 어셈블리별 응답 파일/정의/참조를 사용해 Core·Network·View·Boot·Editor·Tests 6개를 순서대로 독립 컴파일했다. 결과는 6개 모두 오류 0건이다. 새 asmdef의 Newtonsoft 참조를 테스트 응답 파일에 반영하고 후속 어셈블리는 이번에 컴파일한 Game DLL을 참조했다. 에디터 실행 및 IL 후처리/Test Runner 검증은 이 검사와 별개이며 UDS 초기화 문제로 남아 있다.
+
+## Unity 실제 EditMode 검증 완료
+
+2026-10-05 검증용 사본에서 승인된 샌드박스 밖 Unity CLI 실행으로 UDS 초기화 문제를 해결했다. 실제 EditMode 326건 모두 통과했고 실패/건너뜀은 0이다. Scripts/Resources의 원본 일치와 최신 통합 테스트 포함을 확인했다. 상세 방법은 [ninjutsu/unity-validation.md](ninjutsu/unity-validation.md)를 본다. 앞의 Unity 실행 미검증 기록은 당시 상태이며 이번 결과로 갱신한다. 플레이/시각 효과 검증은 남아 있다.
