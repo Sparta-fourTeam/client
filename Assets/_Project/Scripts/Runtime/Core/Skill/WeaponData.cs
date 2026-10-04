@@ -36,7 +36,10 @@ namespace Game.Core
         public int pierceCount;
         public float castInterval = 0.1f;
         public float freezeDuration;
-        public float paralysisChance;
+        public float paralysisChance = 1;
+        public float freezeChance = 1;
+        public float frostbiteChance = 1;
+        public float burnChance = 1;
         public float knockbackDistance;
         public float explosionRadius;
         public float explosionDamageRatio;

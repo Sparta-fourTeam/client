@@ -22,6 +22,9 @@ namespace Game.Core
         private System.Action<Vector2> burnOnDeath;
         private float paralysisDuration;
         private float paralysisChance;
+        private float freezeChance;
+        private float frostbiteChance;
+        private float burnChance;
         private System.Func<float> randomValue;
         private float lightningDamage;
         private float knockbackDistance;
@@ -35,7 +38,7 @@ namespace Game.Core
         private const float HitRadius = 0.3f;
         private const int HitCandidateCount = 4;
 
-        public void Init(IObjectPool<Projectile> pool, Vector3 startPos, Vector3 direction, float damage, float speed, float lifetime, IEnemyTargetProvider targetProvider, int pierceCount = 0, float freezeDuration = 0, System.Action<Vector2, Vector3, IEnemyTarget> onHit = null, IEnemyTarget ignoredTarget = null, float knockbackDistance = 0, float frostbiteRatio = 0, float paralysisDuration = 0, float lightningDamage = 0, float paralysisChance = 1, System.Func<float> randomValue = null, float burnDuration = 0, float burnDamage = 0, float burnMaxHpRatio = 0, System.Action<Vector2> burnOnDeath = null)
+        public void Init(IObjectPool<Projectile> pool, Vector3 startPos, Vector3 direction, float damage, float speed, float lifetime, IEnemyTargetProvider targetProvider, int pierceCount = 0, float freezeDuration = 0, System.Action<Vector2, Vector3, IEnemyTarget> onHit = null, IEnemyTarget ignoredTarget = null, float knockbackDistance = 0, float frostbiteRatio = 0, float paralysisDuration = 0, float lightningDamage = 0, float paralysisChance = 1, System.Func<float> randomValue = null, float burnDuration = 0, float burnDamage = 0, float burnMaxHpRatio = 0, System.Action<Vector2> burnOnDeath = null, float freezeChance = 1, float frostbiteChance = 1, float burnChance = 1)
         {
             this.onHit = onHit;
             this.ignoredTarget = ignoredTarget;
@@ -51,7 +54,10 @@ namespace Game.Core
             this.burnMaxHpRatio = burnMaxHpRatio;
             this.burnOnDeath = burnOnDeath;
             this.paralysisDuration = paralysisDuration;
-            this.paralysisChance = Mathf.Clamp01(paralysisChance);
+            this.paralysisChance = paralysisChance;
+            this.freezeChance = freezeChance;
+            this.frostbiteChance = frostbiteChance;
+            this.burnChance = burnChance;
             this.randomValue = randomValue ?? (() => Random.value);
             this.lightningDamage = lightningDamage;
             this.knockbackDistance = knockbackDistance;
@@ -96,12 +102,12 @@ namespace Game.Core
                 if (ReferenceEquals(candidate, ignoredTarget)) { continue; }
                 if (!hitLedger.TryHit(candidate)) { continue; }
                 candidate.TakeDamage((int)damage);
-                if (freezeDuration > 0 && candidate is IFreezableTarget freezable) { freezable.ApplyFreeze(freezeDuration); }
+                if (freezeDuration > 0 && candidate is IFreezableTarget freezable && StatusProc.Roll(freezeChance, randomValue)) { freezable.ApplyFreeze(freezeDuration); }
                 if (knockbackDistance > 0 && candidate is IKnockbackTarget movable) { movable.ApplyKnockback(direction, knockbackDistance); }
-                if (frostbiteRatio > 0 && candidate is IFrostbiteTarget frosted) { frosted.ApplyFrostbite(damage * frostbiteRatio); }
-                if (paralysisDuration > 0 && candidate is IParalyzableTarget paralyzed && this.randomValue() < paralysisChance) { paralyzed.ApplyParalysis(paralysisDuration); }
+                if (frostbiteRatio > 0 && candidate is IFrostbiteTarget frosted && StatusProc.Roll(frostbiteChance, randomValue)) { frosted.ApplyFrostbite(damage * frostbiteRatio); }
+                if (paralysisDuration > 0 && candidate is IParalyzableTarget paralyzed && StatusProc.Roll(paralysisChance, randomValue)) { paralyzed.ApplyParalysis(paralysisDuration); }
                 if (lightningDamage > 0) { candidate.TakeDamage(Mathf.Max(1, (int)lightningDamage)); }
-                if (burnDuration > 0 && burnDamage > 0 && candidate is IBurnableTarget burning) { burning.ApplyBurn(burnDamage, burnDuration, burnMaxHpRatio, burnOnDeath); }
+                if (burnDuration > 0 && burnDamage > 0 && candidate is IBurnableTarget burning && StatusProc.Roll(burnChance, randomValue)) { burning.ApplyBurn(burnDamage, burnDuration, burnMaxHpRatio, burnOnDeath); }
                 SpawnImpact(hitPosition);
                 onHit?.Invoke(hitPosition, direction, candidate);
                 if (hitLedger.Exhausted)

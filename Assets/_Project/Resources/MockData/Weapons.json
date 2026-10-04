@@ -17,7 +17,10 @@
       "castInterval": 0.1,
       "explosionDamageRatio": 1,
       "knockbackDistance": 0.2,
-      "paralysisChance": 0.1
+      "paralysisChance": 1,
+      "freezeChance": 1,
+      "frostbiteChance": 1,
+      "burnChance": 1
     },
     "upgrades": [
       {
@@ -411,7 +414,11 @@
       "castCount": 1,
       "castInterval": 0.1,
       "explosionRadius": 0.8,
-      "explosionDamageRatio": 1
+      "explosionDamageRatio": 1,
+      "freezeChance": 1,
+      "frostbiteChance": 1,
+      "burnChance": 1,
+      "paralysisChance": 1
     },
     "upgrades": [
       {
@@ -558,7 +565,11 @@
       "hitCount": 1,
       "castCount": 1,
       "castInterval": 0.1,
-      "explosionDamageRatio": 1
+      "explosionDamageRatio": 1,
+      "freezeChance": 1,
+      "frostbiteChance": 1,
+      "burnChance": 1,
+      "paralysisChance": 1
     },
     "upgrades": [
       {
@@ -667,7 +678,11 @@
       "castCount": 1,
       "pierceCount": 0,
       "castInterval": 0.1,
-      "knockbackDistance": 0.2
+      "knockbackDistance": 0.2,
+      "freezeChance": 1,
+      "frostbiteChance": 1,
+      "burnChance": 1,
+      "paralysisChance": 1
     },
     "upgrades": [
       {

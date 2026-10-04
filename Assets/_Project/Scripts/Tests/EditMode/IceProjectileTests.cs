@@ -35,11 +35,17 @@ namespace Game.Tests
         private sealed class Provider : IEnemyTargetProvider
         {
             public Target Target = new();
+            public Target Second;
             public int GetNearest(Vector2 from, int count, List<IEnemyTarget> results)
             {
                 results.Clear();
                 results.Add(Target);
-                return 1;
+                if (Second != null)
+                {
+                    results.Add(Second);
+                }
+
+                return results.Count;
             }
         }
 
@@ -283,6 +289,85 @@ namespace Game.Tests
                 }
 
                 Object.DestroyImmediate(prefab);
+            }
+        }
+
+        [TestCase(0f)]
+        [TestCase(1f)]
+        public void StatusChances_ControlAllFourStatuses(float chance)
+        {
+            var go = new GameObject("StatusChanceTest");
+            try
+            {
+                var projectile = go.AddComponent<Projectile>();
+                var provider = new Provider();
+                var pool = new ObjectPool<Projectile>(() => projectile);
+                pool.Get().Init(pool, Vector3.zero, Vector3.up, 10, 0, 3, provider, freezeDuration: 2,
+                    frostbiteRatio: 0.1f, paralysisDuration: 1, paralysisChance: chance, burnDuration: 6, burnDamage: 1,
+                    freezeChance: chance, frostbiteChance: chance, burnChance: chance);
+                typeof(Projectile).GetMethod("Tick", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(projectile, new object[] { 0.1f });
+                int expected = chance == 1 ? 1 : 0;
+                Assert.AreEqual(expected, provider.Target.Freezes);
+                Assert.AreEqual(expected, provider.Target.Frostbites);
+                Assert.AreEqual(expected, provider.Target.Paralyses);
+                Assert.AreEqual(expected, provider.Target.Burns);
+                Assert.AreEqual(10, provider.Target.DamageTaken);
+                Assert.IsFalse(StatusProc.Roll(float.NaN));
+                Assert.IsTrue(StatusProc.Roll(0.2f, () => 0.19f));
+                Assert.IsFalse(StatusProc.Roll(0.2f, () => 0.2f));
+            }
+            finally { Object.DestroyImmediate(go); }
+        }
+
+        [Test]
+        public void FireballExplosion_BurnsDirectAndNearbyTargetOnceEach()
+        {
+            var prefab = new GameObject("ExplosionBurnTest");
+            prefab.AddComponent<Projectile>();
+            try
+            {
+                var provider = new Provider { Second = new Target { Position = Vector2.right * 0.5f } };
+                var data = new WeaponData { baseStats = new WeaponBaseStats { baseDamage = 10, explosionDamageRatio = 1, explosionRadius = 0.8f, range = 10, burnChance = 1 }, maxLevel = 14 };
+                var weapon = new ProjectileCaster(data, prefab, prefab.transform, provider);
+                IWeaponStats stats = new BurnUpgrade(new BurnUpgrade(new BaseWeaponStats(data.baseStats), 6, true), 10, false);
+                typeof(WeaponBase).GetField("stats", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(weapon, stats);
+                typeof(ProjectileCaster).GetMethod("OnFire", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(weapon, null);
+                foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
+                {
+                    if (projectile.name == "ExplosionBurnTest(Clone)")
+                    {
+                        typeof(Projectile).GetMethod("Tick", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(projectile, new object[] { 0.1f });
+                    }
+                }
+
+                Assert.AreEqual(1, provider.Target.Burns);
+                Assert.AreEqual(1, provider.Second.Burns);
+                Assert.AreEqual(20, provider.Target.DamageTaken);
+                Assert.AreEqual(10, provider.Second.DamageTaken);
+            }
+            finally
+            {
+                foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
+                {
+                    if (projectile.name == "ExplosionBurnTest(Clone)")
+                    {
+                        Object.DestroyImmediate(projectile.gameObject);
+                    }
+                }
+
+                Object.DestroyImmediate(prefab);
+            }
+        }
+
+        [Test]
+        public void Catalog_DefaultStatusChancesAreCertain()
+        {
+            foreach (var weapon in new DefaultWeaponDataProvider().LoadAll())
+            {
+                Assert.AreEqual(1, weapon.baseStats.freezeChance);
+                Assert.AreEqual(1, weapon.baseStats.frostbiteChance);
+                Assert.AreEqual(1, weapon.baseStats.burnChance);
+                Assert.AreEqual(1, weapon.baseStats.paralysisChance);
             }
         }
 

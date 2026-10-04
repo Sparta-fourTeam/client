@@ -36,7 +36,7 @@ namespace Game.Core
 
                 Projectile projectile = pool.Get();
                 projectile.transform.localScale = projectileScale;
-                projectile.Init(pool, caster.position, direction, stats.Damage, stats.ProjectileSpeed, ProjectileLifetime, targetProvider, stats.PierceCount, stats.FreezeDuration, CreateHitCallback(), knockbackDistance: stats.KnockbackDistance, frostbiteRatio: stats.FrostbiteRatio, paralysisDuration: stats.ParalysisDuration, lightningDamage: stats.Damage * stats.LightningStrikeRatio, paralysisChance: data.baseStats.paralysisChance, burnDuration: stats.BurnDuration, burnDamage: stats.Damage * stats.BurnRatio, burnMaxHpRatio: stats.BurnMaxHpRatio, burnOnDeath: CreateBurnDeathCallback());
+                projectile.Init(pool, caster.position, direction, stats.Damage, stats.ProjectileSpeed, ProjectileLifetime, targetProvider, stats.PierceCount, stats.FreezeDuration, CreateHitCallback(), knockbackDistance: stats.KnockbackDistance, frostbiteRatio: stats.FrostbiteRatio, paralysisDuration: stats.ParalysisDuration, lightningDamage: stats.Damage * stats.LightningStrikeRatio, paralysisChance: data.baseStats.paralysisChance, burnDuration: stats.BurnDuration, burnDamage: stats.ExplosionRadius > 0 ? 0 : stats.Damage * stats.BurnRatio, burnMaxHpRatio: stats.BurnMaxHpRatio, burnOnDeath: CreateBurnDeathCallback(), freezeChance: data.baseStats.freezeChance, frostbiteChance: data.baseStats.frostbiteChance, burnChance: data.baseStats.burnChance);
             }
         }
         private System.Action<Vector2> CreateBurnDeathCallback()
@@ -51,6 +51,27 @@ namespace Game.Core
             return position => AreaDamage.Apply(targetProvider, position, radius, damage);
         }
 
+        private System.Action<IEnemyTarget> CreateExplosionBurnCallback()
+        {
+            float duration = stats.BurnDuration;
+            float damage = stats.ExplosionDamage * stats.BurnRatio;
+            float ratio = stats.BurnMaxHpRatio;
+            float chance = data.baseStats.burnChance;
+            var death = CreateBurnDeathCallback();
+            if (duration <= 0 || damage <= 0)
+            {
+                return null;
+            }
+
+            return target =>
+            {
+                if (target is IBurnableTarget burning && StatusProc.Roll(chance))
+                {
+                    burning.ApplyBurn(damage, duration, ratio, death);
+                }
+            };
+        }
+
         private System.Action<Vector2, Vector3, IEnemyTarget> CreateHitCallback()
         {
             var split = CreateSplitCallback();
@@ -61,9 +82,10 @@ namespace Game.Core
                 return split;
             }
 
+            var explosionBurn = CreateExplosionBurnCallback();
             return (position, direction, target) =>
             {
-                AreaDamage.Apply(targetProvider, position, radius, damage);
+                AreaDamage.Apply(targetProvider, position, radius, damage, explosionBurn);
                 split?.Invoke(position, direction, target);
             };
         }
@@ -93,7 +115,7 @@ namespace Game.Core
                     var shard = pool.Get();
                     shard.transform.localScale = projectileScale * 0.5f;
                     shard.Init(pool, position, Quaternion.Euler(0, 0, angle) * direction,
-                        shardDamage, shardSpeed, ProjectileLifetime, targetProvider, onHit: auxiliaryHit, ignoredTarget: target, frostbiteRatio: shardFrostbite, lightningDamage: auxiliaryLightningDamage);
+                        shardDamage, shardSpeed, ProjectileLifetime, targetProvider, onHit: auxiliaryHit, ignoredTarget: target, frostbiteRatio: shardFrostbite, lightningDamage: auxiliaryLightningDamage, frostbiteChance: data.baseStats.frostbiteChance);
                 }
             };
         }
