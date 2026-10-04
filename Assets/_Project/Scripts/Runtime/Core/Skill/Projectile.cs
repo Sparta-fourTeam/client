@@ -10,6 +10,45 @@ namespace Game.Core
         /// <summary>적에게 맞았을 때 맞은 자리에 생성하는 임팩트(선택). 임팩트 프리팹이 스스로 사라지게 만든다 (파티클 Stop Action을 Destroy로)</summary>
         [SerializeField] private GameObject impactPrefab;
 
+        private LineRenderer triangleOutline;
+        private Material triangleMaterial;
+        private SpriteRenderer originalSprite;
+        private bool originalSpriteEnabled;
+
+        public void SetVisualForm(WeaponForm form)
+        {
+            if (originalSprite == null)
+            {
+                originalSprite = GetComponent<SpriteRenderer>();
+                if (originalSprite != null) { originalSpriteEnabled = originalSprite.enabled; }
+            }
+            bool triangle = form == WeaponForm.TriangleIce;
+            if (triangle && triangleOutline == null)
+            {
+                triangleOutline = gameObject.AddComponent<LineRenderer>();
+                var shader = Shader.Find("Sprites/Default");
+                if (shader != null) { triangleMaterial = new Material(shader); triangleOutline.sharedMaterial = triangleMaterial; }
+                triangleOutline.useWorldSpace = false; triangleOutline.loop = true; triangleOutline.positionCount = 3;
+                triangleOutline.startWidth = triangleOutline.endWidth = .12f;
+                triangleOutline.startColor = triangleOutline.endColor = new Color(.35f, .85f, 1);
+                triangleOutline.sortingOrder = originalSprite != null ? originalSprite.sortingOrder : 10;
+                triangleOutline.SetPosition(0, new Vector3(0, 1.2f, 0));
+                triangleOutline.SetPosition(1, new Vector3(-.8f, -.7f, 0));
+                triangleOutline.SetPosition(2, new Vector3(.8f, -.7f, 0));
+            }
+            if (originalSprite != null) { originalSprite.enabled = !triangle && originalSpriteEnabled; }
+            if (triangleOutline != null) { triangleOutline.enabled = triangle; }
+        }
+
+        private void OnDestroy()
+        {
+            if (triangleMaterial != null)
+            {
+                if (Application.isPlaying) { Destroy(triangleMaterial); }
+                else { DestroyImmediate(triangleMaterial); }
+            }
+        }
+
         private IObjectPool<Projectile> pool;
         private Vector3 direction;
         private float damage;

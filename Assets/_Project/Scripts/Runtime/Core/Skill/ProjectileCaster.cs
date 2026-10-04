@@ -37,6 +37,7 @@ namespace Game.Core
                 Projectile projectile = pool.Get();
                 projectile.transform.localScale = stats.Form == WeaponForm.Enbakutsu
                     ? Vector3.Scale(projectileScale, new Vector3(1.5f, 0.65f, 1)) : projectileScale;
+                projectile.SetVisualForm(stats.Form);
                 projectile.Init(pool, caster.position, direction, stats.Damage, stats.ProjectileSpeed, ProjectileLifetime, targetProvider, stats.PierceCount, stats.FreezeDuration, CreateHitCallback(), knockbackDistance: stats.KnockbackDistance, frostbiteRatio: stats.FrostbiteRatio, paralysisDuration: stats.ParalysisDuration, lightningDamage: stats.Damage * stats.LightningStrikeRatio, paralysisChance: data.baseStats.paralysisChance, burnDuration: stats.BurnDuration, burnDamage: stats.Damage * stats.BurnRatio, burnMaxHpRatio: stats.BurnMaxHpRatio, burnOnDeath: CreateBurnDeathCallback(), freezeChance: data.baseStats.freezeChance, frostbiteChance: data.baseStats.frostbiteChance, burnChance: data.baseStats.burnChance);
             }
         }
@@ -54,7 +55,7 @@ namespace Game.Core
 
         private System.Action<Vector2, Vector3, IEnemyTarget> CreateHitCallback()
         {
-            var split = CreateSplitCallback();
+            var split = stats.Form == WeaponForm.TriangleIce ? CreateTriangleCallback() : CreateSplitCallback();
             float radius = stats.ExplosionRadius;
             float damage = stats.ExplosionDamage;
             if (radius <= 0)
@@ -69,7 +70,34 @@ namespace Game.Core
             };
         }
 
-        private System.Action<Vector2, Vector3, IEnemyTarget> CreateSplitCallback()
+        private System.Action<Vector2, Vector3, IEnemyTarget> CreateTriangleCallback()
+        {
+            float damage = stats.Damage * 0.5f;
+            float speed = stats.ProjectileSpeed;
+            int pierce = stats.PierceCount;
+            float freeze = stats.FreezeDuration;
+            float knockback = stats.KnockbackDistance;
+            float frostbite = stats.FrostbiteRatio;
+            var normalSplit = CreateSplitCallbackForDamage(damage);
+            float freezeChance = data.baseStats.freezeChance;
+            float frostbiteChance = data.baseStats.frostbiteChance;
+            return (position, direction, source) =>
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    var normal = pool.Get();
+                    normal.transform.localScale = projectileScale;
+                    normal.SetVisualForm(WeaponForm.Default);
+                    normal.Init(pool, position, Quaternion.Euler(0, 0, -30 + i * 30) * direction,
+                        damage, speed, ProjectileLifetime, targetProvider, pierce, freeze, normalSplit, source,
+                        knockbackDistance: knockback, frostbiteRatio: frostbite, freezeChance: freezeChance, frostbiteChance: frostbiteChance);
+                }
+            };
+        }
+
+        private System.Action<Vector2, Vector3, IEnemyTarget> CreateSplitCallback() => CreateSplitCallbackForDamage(stats.Damage);
+
+        private System.Action<Vector2, Vector3, IEnemyTarget> CreateSplitCallbackForDamage(float sourceDamage)
         {
             int count = stats.SplitCount;
             if (count <= 0)
@@ -77,7 +105,7 @@ namespace Game.Core
                 return null;
             }
 
-            float shardDamage = stats.Damage * 0.5f * stats.ShardDamageMultiplier;
+            float shardDamage = sourceDamage * 0.5f * stats.ShardDamageMultiplier;
             float shardSpeed = stats.ProjectileSpeed;
             float shardFrostbite = stats.ShardFrostbiteRatio;
             float auxiliaryLightningDamage = shardDamage * stats.AuxiliaryLightningRatio;
@@ -93,6 +121,7 @@ namespace Game.Core
                     float angle = count == 1 ? 0 : -30f + 60f * i / (count - 1);
                     var shard = pool.Get();
                     shard.transform.localScale = projectileScale * 0.5f;
+                    shard.SetVisualForm(WeaponForm.Default);
                     shard.Init(pool, position, Quaternion.Euler(0, 0, angle) * direction,
                         shardDamage, shardSpeed, ProjectileLifetime, targetProvider, onHit: auxiliaryHit, ignoredTarget: target, frostbiteRatio: shardFrostbite, lightningDamage: auxiliaryLightningDamage, frostbiteChance: data.baseStats.frostbiteChance);
                 }

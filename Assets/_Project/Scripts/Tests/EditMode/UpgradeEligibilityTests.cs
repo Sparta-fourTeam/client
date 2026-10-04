@@ -61,6 +61,27 @@ namespace Game.Tests
             }
         }
 
+        [Test]
+        public void TriangleIce_RequiresAllThreeCardsAndEnablesActualForm()
+        {
+            var data = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == 4);
+            var triangle = data.upgrades.Find(c => c.id == "ice_triangle");
+            var state = new State(); state.Levels[4] = 1;
+            state.Counts[(4, "ice_pierce")] = 1; state.Counts[(4, "ice_extreme")] = 1;
+            Assert.IsFalse(UpgradeEligibility.CanAcquire(triangle, 4, state));
+            state.Counts[(4, "ice_damage")] = 1;
+            Assert.IsTrue(UpgradeEligibility.CanAcquire(triangle, 4, state));
+            var go = new UnityEngine.GameObject("TriangleCardTest");
+            try
+            {
+                var weapon = new ProjectileCaster(data, go, go.transform, new NullEnemyTargetProvider());
+                Assert.IsTrue(weapon.LevelUp(triangle)); Assert.IsFalse(weapon.LevelUp(triangle));
+                var stats = (IWeaponStats)typeof(WeaponBase).GetField("stats", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(weapon);
+                Assert.AreEqual(WeaponForm.TriangleIce, stats.Form);
+            }
+            finally { UnityEngine.Object.DestroyImmediate(go); }
+        }
+
         private static State Owned(int level = 1) => new State { Levels = { [1] = level } };
         private static WeaponUpgradeOption Option(string id = "upgrade") => new WeaponUpgradeOption { id = id, maxPickCount = 3 };
 

@@ -1135,9 +1135,13 @@
         "name": "삼각얼음창",
         "desc": "삼각→일반→소형 얼음창 분열 / 강화 효과 유지",
         "maxPickCount": 1,
-        "effects": [],
-        "enabled": false,
-        "disabledReason": "분열·동상·밀침·형태 변화 중 필요한 전투 효과 구현 대기",
+        "effects": [
+          {
+            "type": 25,
+            "value": 3
+          }
+        ],
+        "enabled": true,
         "requiredCardIds": [
           "ice_pierce",
           "ice_extreme",

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 namespace Game.Core
 {
     public enum CastType { Projectile, Hitscan }
-    public enum WeaponForm { Default, Enbakutsu, JudgementThunder }
+    public enum WeaponForm { Default, Enbakutsu, JudgementThunder, TriangleIce }
 
     public class WeaponData
     {
