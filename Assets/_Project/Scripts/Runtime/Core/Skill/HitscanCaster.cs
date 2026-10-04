@@ -35,7 +35,12 @@ namespace Game.Core
                 System.Action<Vector2> onHit = explosionRadius > 0
                     ? position => AreaDamage.Apply(targetProvider, position, explosionRadius, explosionDamage)
                     : null;
-                effect.Init(pool, new Vector3(target.Position.x, target.Position.y, 0f), stats.Damage, onHit);
+                float duration = stats.ParalysisDuration;
+                float chance = data.baseStats.paralysisChance;
+                System.Action<Enemy> onTargetHit = duration > 0
+                    ? enemy => { if (StatusProc.Roll(chance)) { enemy.ApplyParalysis(duration); } }
+                : null;
+                effect.Init(pool, new Vector3(target.Position.x, target.Position.y, 0f), stats.Damage, onHit, onTargetHit);
             }
         }
     }

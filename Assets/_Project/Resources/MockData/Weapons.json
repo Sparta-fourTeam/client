@@ -656,7 +656,8 @@
       "freezeChance": 1,
       "frostbiteChance": 1,
       "burnChance": 1,
-      "paralysisChance": 1
+      "paralysisChance": 1,
+      "paralysisDuration": 1
     },
     "upgrades": [
       {
@@ -745,6 +746,22 @@
           "lightning_storm_damage"
         ],
         "requiredWeaponIds": []
+      },
+      {
+        "id": "lightning_voltage",
+        "name": "고전압 벼락",
+        "desc": "공격력 +30% / 마비 지속 시간 +1.5초",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "type": 1,
+            "value": 30
+          },
+          {
+            "type": 26,
+            "value": 1.5
+          }
+        ]
       }
     ]
   },

@@ -61,6 +61,25 @@ namespace Game.Tests
         }
 
         [Test]
+        public void HighVoltageLightning_IncreasesDamageAndAddsParalysisDuration()
+        {
+            var data = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == 3);
+            var go = new GameObject("HighVoltageStatsTest");
+            try
+            {
+                var weapon = new HitscanCaster(data, go, go.transform, new Provider());
+                var option = data.upgrades.Find(c => c.id == "lightning_voltage");
+                Assert.IsTrue(weapon.LevelUp(option));
+                Assert.IsFalse(weapon.LevelUp(option));
+                var stats = (IWeaponStats)typeof(WeaponBase).GetField("stats", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(weapon);
+                Assert.AreEqual(32.5f, stats.Damage, 0.001f);
+                Assert.AreEqual(2.5f, stats.ParalysisDuration, 0.001f);
+                Assert.AreEqual(1, data.baseStats.paralysisChance);
+            }
+            finally { Object.DestroyImmediate(go); }
+        }
+
+        [Test]
         public void ExplosionUpgrades_KeepDirectDamageSeparateAndScaleRadius()
         {
             IWeaponStats stats = new BaseWeaponStats(new WeaponBaseStats { baseDamage = 12, explosionDamageRatio = 1, explosionRadius = 0.8f });

@@ -8,6 +8,7 @@ namespace Game.Core
         private IObjectPool<HitscanEffect> pool;
         [SerializeField] private LayerMask targetMask;
         private float damage;
+        private System.Action<Enemy> onTargetHit;
         private System.Action<Vector2> onHit;
         [SerializeField] private float radius;
 
@@ -22,13 +23,14 @@ namespace Game.Core
 
 
 
-        public void Init(IObjectPool<HitscanEffect> pool, Vector3 position, float damage, System.Action<Vector2> onHit = null)
+        public void Init(IObjectPool<HitscanEffect> pool, Vector3 position, float damage, System.Action<Vector2> onHit = null, System.Action<Enemy> onTargetHit = null)
         {
 
             this.pool = pool;
             transform.position = position;
             this.damage = damage;
             this.onHit = onHit;
+            this.onTargetHit = onTargetHit;
             elapsed = 0f;
             hitDone = false;
             released = false;
@@ -70,6 +72,7 @@ namespace Game.Core
                 if (hit.TryGetComponent(out Enemy enemy) && damaged.Add(enemy))
                 {
                     enemy.TakeDamage((int)damage);
+                    onTargetHit?.Invoke(enemy);
                 }
             }
             onHit?.Invoke(transform.position);

@@ -21,7 +21,7 @@ namespace Game.Core
         public int SplitCount => 0;
         public float ShardDamageMultiplier => 1;
 
-        public float ParalysisDuration => 0;
+        public float ParalysisDuration => data.paralysisDuration;
         public float LightningStrikeRatio => 0;
         public float AuxiliaryLightningRatio => 0;
         public bool AuxiliaryExplosions => false;

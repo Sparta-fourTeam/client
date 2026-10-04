@@ -220,6 +220,44 @@ namespace Game.Tests
         }
 
         [Test]
+        public void Hitscan_ParalyzesActualEnemyOnceAndClearsCallbackOnReuse()
+        {
+            var targetGo = new GameObject("HitscanStatusTarget");
+            var effectGo = new GameObject("HitscanStatusEffect");
+            try
+            {
+                var position = new Vector3(1000, 1000, 0);
+                targetGo.transform.position = position;
+                targetGo.AddComponent<CircleCollider2D>();
+                targetGo.AddComponent<BoxCollider2D>();
+                var target = targetGo.AddComponent<Enemy>();
+                var model = CreateEnemy(maxHp: 100, position: position);
+                typeof(Enemy).GetField("_enemyModel", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).SetValue(target, model);
+                var effect = effectGo.AddComponent<HitscanEffect>();
+                var flags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance;
+                typeof(HitscanEffect).GetField("radius", flags).SetValue(effect, 1f);
+                typeof(HitscanEffect).GetField("targetMask", flags).SetValue(effect, (LayerMask)(-1));
+                var hit = typeof(HitscanEffect).GetMethod("Hit", flags);
+                var pool = new UnityEngine.Pool.ObjectPool<HitscanEffect>(() => effect);
+                int procs = 0;
+                pool.Get().Init(pool, position, 1, onTargetHit: enemy => { procs++; enemy.ApplyParalysis(2.5f); });
+                Physics2D.SyncTransforms();
+                hit.Invoke(effect, null); hit.Invoke(effect, null);
+                Assert.AreEqual(99, model.Hp);
+                Assert.AreEqual(1, procs);
+                Assert.AreEqual(2.5f, model.ParalysisRemaining);
+                model.TickStatus(1);
+                pool.Release(effect);
+                pool.Get().Init(pool, position, 1);
+                hit.Invoke(effect, null);
+                Assert.AreEqual(98, model.Hp);
+                Assert.AreEqual(1, procs);
+                Assert.AreEqual(1.5f, model.ParalysisRemaining);
+            }
+            finally { UnityEngine.Object.DestroyImmediate(effectGo); UnityEngine.Object.DestroyImmediate(targetGo); }
+        }
+
+        [Test]
         public void Freeze_StopsMovementRefreshesWithoutStackingAndExpires()
         {
             var enemy = CreateEnemy(speed: 1, position: new Vector2(0, 5));

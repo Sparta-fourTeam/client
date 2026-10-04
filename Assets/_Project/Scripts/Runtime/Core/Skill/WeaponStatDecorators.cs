@@ -2,6 +2,13 @@ using System;
 
 namespace Game.Core
 {
+    public sealed class ParalysisDurationUpgrade : StatDecorator
+    {
+        private readonly float duration;
+        public ParalysisDurationUpgrade(IWeaponStats inner, float duration) : base(inner) => this.duration = duration;
+        public override float ParalysisDuration => inner.ParalysisDuration + duration;
+    }
+
     public sealed class FormUpgrade : StatDecorator
     {
         private readonly WeaponForm form;

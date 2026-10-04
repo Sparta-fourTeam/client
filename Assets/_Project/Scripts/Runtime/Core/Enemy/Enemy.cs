@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Game.Core
 {
-    public class Enemy : MonoBehaviour
+    public class Enemy : MonoBehaviour, IParalyzableTarget
     {
         private static readonly int MovingHash = Animator.StringToHash("Moving");
         private static readonly int HitHash = Animator.StringToHash("Hit");
@@ -169,6 +169,8 @@ namespace Game.Core
 
             _subscriptions?.Dispose();
         }
+
+        public void ApplyParalysis(float duration) => _enemyModel?.ApplyParalysis(duration);
 
         public void TakeDamage(int damage)
         {
