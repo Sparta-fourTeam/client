@@ -264,6 +264,22 @@
           "kunai_spread"
         ],
         "minPermanentLevel": 0
+      },
+      {
+        "id": "kunai_amplify",
+        "name": "쿠나이 증폭",
+        "desc": "쿠나이/보조 쿠나이 공격력 +100%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "type": 1,
+            "value": 100
+          }
+        ],
+        "requiredCardIds": [
+          "kunai_spread"
+        ],
+        "minPermanentLevel": 13
       }
     ]
   },

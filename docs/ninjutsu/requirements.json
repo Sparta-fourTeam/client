@@ -412,13 +412,12 @@
       "skillId": "kunai",
       "name": "쿠나이 증폭",
       "effectDescription": "쿠나이와 보조 쿠나이 공격력 +100%",
-      "maxAppearanceCount": null,
+      "maxAppearanceCount": 1,
       "requirementsText": "확산 쿠나이",
       "minPermanentLevel": 13,
-      "unresolvedIssues": [
-        "횟수 미기재"
-      ],
+      "unresolvedIssues": [],
       "exclusions": [],
+      "userClarification": "최대 선택 1회로 사용자 확정",
       "requirements": [
         {
           "kind": "ownedSkill",
@@ -437,9 +436,14 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 1,
+        "cardId": "kunai_amplify",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
-      "decisionStatus": "hold",
+      "decisionStatus": "source-defined",
       "readyForProduction": false
     },
     {

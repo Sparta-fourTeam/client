@@ -20,6 +20,20 @@ namespace Game.Tests
         private static WeaponUpgradeOption Option(string id = "upgrade") => new WeaponUpgradeOption { id = id, maxPickCount = 3 };
 
         [Test]
+        public void KunaiAmplification_RequiresPermanent13AndAllowsOneSelection()
+        {
+            var option = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == 1).upgrades.Find(c => c.id == "kunai_amplify");
+            var state = Owned();
+            state.Counts[(1, "kunai_spread")] = 1;
+            state.PermanentLevels[1] = 12;
+            Assert.IsFalse(UpgradeEligibility.CanAcquire(option, 1, state));
+            state.PermanentLevels[1] = 13;
+            Assert.IsTrue(UpgradeEligibility.CanAcquire(option, 1, state));
+            state.Counts[(1, option.id)] = 1;
+            Assert.IsFalse(UpgradeEligibility.CanAcquire(option, 1, state));
+        }
+
+        [Test]
         public void RequiredWeapons_AllMustBeOwned()
         {
             var s = Owned(); var o = Option(); o.requiredWeaponIds = new[] { 2, 3 };

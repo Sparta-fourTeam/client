@@ -168,6 +168,12 @@ namespace Game.Tests
                 Assert.AreEqual(6, stats.SplitCount);
                 Assert.AreEqual(16, stats.Damage, 0.001f);
                 Assert.AreEqual(16, stats.Damage * 0.5f * stats.ShardDamageMultiplier, 0.001f);
+                var amplify = data.upgrades.Find(c => c.id == "kunai_amplify");
+                Assert.IsTrue(weapon.LevelUp(amplify, 13));
+                Assert.IsFalse(weapon.LevelUp(amplify, 13));
+                stats = (IWeaponStats)typeof(WeaponBase).GetField("stats", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(weapon);
+                Assert.AreEqual(32, stats.Damage, 0.001f);
+                Assert.AreEqual(32, stats.Damage * 0.5f * stats.ShardDamageMultiplier, 0.001f);
 
             }
             finally { Object.DestroyImmediate(go); }
