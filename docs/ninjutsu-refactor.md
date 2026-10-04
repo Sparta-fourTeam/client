@@ -57,3 +57,9 @@ WeaponUpgradeTransaction이 참여 인술의 효과를 모두 준비한 뒤 함�
 연속 화염구Ⅱ를 실행 데이터에 추가했다. 연속 화염구 두 번 선택을 선행조건으로 하고 최대 등장 횟수는 1이다. 영구 9레벨 전환은 같은 카드의 피해 감소 제거로 연결했다. 카탈로그 로딩 시 활성 카드의 인술/강화 참조·최소 레벨·선행 선택 횟수의 실현 가능성·조건 순환을 검사한다. 미지원 카드의 배타 조건을 가짜 수치 효과로 활성화하지 않았다. 조건·배타 기반은 실제 해당 효과 카드를 추가할 때 연결한다.
 
 별도 .NET 순수 로직 38건 통과. Unity CLI 검증은 열린 작업 에디터와 충돌하지 않도록 work/unity-cli-check 사본에서 실행한다. 최종 결과는 별도 작업 결과 문서에 기록한다.
+
+## Unity 어셈블리 컴파일 오류 수정
+
+Game.Tests.EditMode의 overrideReferences=true 설정에서 테스트가 사용한 Newtonsoft.Json.dll 참조가 빠져 CS0103 5건이 발생했다. 이전 .NET 검사는 모든 DLL을 함께 참조해 이 오류를 검출하지 못했다. 테스트 asmdef의 precompiledReferences에 Newtonsoft.Json.dll을 추가했다.
+
+Unity 6000.6.3f1에 포함된 Roslyn과 Unity가 생성한 어셈블리별 응답 파일/정의/참조를 사용해 Core·Network·View·Boot·Editor·Tests 6개를 순서대로 독립 컴파일했다. 결과는 6개 모두 오류 0건이다. 새 asmdef의 Newtonsoft 참조를 테스트 응답 파일에 반영하고 후속 어셈블리는 이번에 컴파일한 Game DLL을 참조했다. 에디터 실행 및 IL 후처리/Test Runner 검증은 이 검사와 별개이며 UDS 초기화 문제로 남아 있다.
