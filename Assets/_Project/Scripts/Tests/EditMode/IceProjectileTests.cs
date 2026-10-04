@@ -320,7 +320,7 @@ namespace Game.Tests
         }
 
         [Test]
-        public void FireballExplosion_BurnsDirectAndNearbyTargetOnceEach()
+        public void FireballExplosion_BurnsOnlyDirectTarget()
         {
             var prefab = new GameObject("ExplosionBurnTest");
             prefab.AddComponent<Projectile>();
@@ -341,7 +341,8 @@ namespace Game.Tests
                 }
 
                 Assert.AreEqual(1, provider.Target.Burns);
-                Assert.AreEqual(1, provider.Second.Burns);
+                Assert.AreEqual(1f, provider.Target.BurnDamage, 0.001f);
+                Assert.AreEqual(0, provider.Second.Burns);
                 Assert.AreEqual(20, provider.Target.DamageTaken);
                 Assert.AreEqual(10, provider.Second.DamageTaken);
             }
