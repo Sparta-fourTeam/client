@@ -65,6 +65,110 @@ namespace Game.Tests
             baseStats = new WeaponBaseStats { baseDamage = 10, speed = 20, hitCount = 1 }
         });
 
+        private static TestWeapon SharedWeapon(int id, UpgradeType type = UpgradeType.Damage)
+        {
+            var option = new WeaponUpgradeOption
+            {
+                id = "shared_" + id,
+                sharedId = "pair",
+                affectedWeaponIds = new[] { 1, 2 },
+                maxPickCount = 1,
+                effects = new System.Collections.Generic.List<StatEffect>
+                {
+                    new StatEffect { type = type, value = type == UpgradeType.Damage ? 80 : 20 }
+                }
+            };
+            return new TestWeapon(new WeaponData
+            {
+                id = id,
+                maxLevel = 15,
+                baseStats = new WeaponBaseStats { baseDamage = 10, cooldown = 2, hitCount = 1 },
+                upgrades = new System.Collections.Generic.List<WeaponUpgradeOption> { option }
+            });
+        }
+
+        [TestCase(UpgradeType.Damage)]
+        [TestCase(UpgradeType.AttackSpeed)]
+        public void SharedUpgrade_AppliesBothAndSharesCounterAcrossOppositeChoice(UpgradeType type)
+        {
+            var a = SharedWeapon(1, type);
+            var b = SharedWeapon(2, type);
+            var weapons = new WeaponBase[] { a, b };
+            Assert.IsTrue(WeaponUpgradeTransaction.CanApply(a, a.Data.upgrades[0], weapons, 0));
+            Assert.AreEqual(0, a.UpgradeCount, "후보 판정은 상태를 변경하지 않는다");
+            Assert.IsTrue(WeaponUpgradeTransaction.TryApply(a, a.Data.upgrades[0], weapons, 0));
+            Assert.AreEqual(1, a.UpgradeCount);
+            Assert.AreEqual(1, b.UpgradeCount);
+            Assert.AreEqual(1, a.GetAcquiredCount("shared_1"));
+            Assert.AreEqual(1, b.GetAcquiredCount("shared_2"));
+            Assert.IsFalse(WeaponUpgradeTransaction.TryApply(b, b.Data.upgrades[0], weapons, 0));
+            if (type == UpgradeType.Damage)
+            {
+                Assert.AreEqual(18, a.CurrentStats.Damage, 0.0001f);
+                Assert.AreEqual(18, b.CurrentStats.Damage, 0.0001f);
+            }
+            else
+            {
+                Assert.AreEqual(1.6f, a.CurrentStats.Cooldown, 0.0001f);
+                Assert.AreEqual(1.6f, b.CurrentStats.Cooldown, 0.0001f);
+            }
+        }
+
+        [Test]
+        public void OrdinaryTransaction_UsesPermanentVariantWithoutSharing()
+        {
+            var weapon = NewWeapon();
+            var option = VariantOption(9, -20, 0);
+            weapon.Data.upgrades = new System.Collections.Generic.List<WeaponUpgradeOption> { option };
+            Assert.IsTrue(WeaponUpgradeTransaction.TryApply(weapon, option, new WeaponBase[] { weapon }, 9));
+            Assert.AreEqual(10, weapon.CurrentStats.Damage);
+            Assert.AreEqual(2, weapon.CurrentStats.CastCount);
+            Assert.AreEqual(1, weapon.GetAcquiredCount(option.id));
+        }
+
+        [Test]
+        public void SharedUpgrade_MissingOrCappedPartnerLeavesOwnerUnchanged()
+        {
+            var a = SharedWeapon(1);
+            var b = SharedWeapon(2);
+            Assert.IsFalse(WeaponUpgradeTransaction.TryApply(a, a.Data.upgrades[0], new WeaponBase[] { a }, 0));
+            b.Data.maxLevel = 1;
+            Assert.IsTrue(b.LevelUp(new WeaponUpgradeOption
+            {
+                id = "basic",
+                effects = new System.Collections.Generic.List<StatEffect>()
+            }));
+            Assert.IsFalse(WeaponUpgradeTransaction.TryApply(a, a.Data.upgrades[0], new WeaponBase[] { a, b }, 0));
+            Assert.AreEqual(0, a.UpgradeCount);
+            Assert.AreEqual(0, a.GetAcquiredCount("shared_1"));
+            Assert.AreEqual(10, a.CurrentStats.Damage);
+            Assert.AreEqual(1, b.UpgradeCount);
+        }
+
+        [Test]
+        public void SharedUpgrade_InconsistentEffectsAndDirectApplicationAreRejected()
+        {
+            var a = SharedWeapon(1);
+            var b = SharedWeapon(2);
+            Assert.IsFalse(a.LevelUp(a.Data.upgrades[0]));
+            b.Data.upgrades[0].effects[0].value = 60;
+            Assert.IsFalse(WeaponUpgradeTransaction.TryApply(a, a.Data.upgrades[0], new WeaponBase[] { a, b }, 0));
+            Assert.AreEqual(0, a.UpgradeCount);
+            Assert.AreEqual(0, b.UpgradeCount);
+            Assert.AreEqual(10, a.CurrentStats.Damage);
+        }
+
+        [Test]
+        public void Catalog_SharedDefinitionRequiresMatchingParticipantsAndCounters()
+        {
+            var a = SharedWeapon(1);
+            var b = SharedWeapon(2);
+            var definitions = new System.Collections.Generic.List<WeaponData> { a.Data, b.Data };
+            Assert.AreEqual(2, DefaultWeaponDataProvider.Parse(Newtonsoft.Json.JsonConvert.SerializeObject(definitions)).Count);
+            b.Data.upgrades[0].maxPickCount = 2;
+            Assert.Throws<InvalidOperationException>(() => DefaultWeaponDataProvider.Parse(Newtonsoft.Json.JsonConvert.SerializeObject(definitions)));
+        }
+
         private static WeaponUpgradeOption VariantOption(int gate, float before, float after) => new WeaponUpgradeOption
         {
             id = "repeat",

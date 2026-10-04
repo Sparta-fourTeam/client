@@ -94,6 +94,7 @@ namespace Game.Core
         public List<UpgradeChoice> GetRandomUpgradeChoices(int count)
         {
             var pool = new List<UpgradeChoice>();
+            var sharedGroups = new HashSet<string>();
             if (count <= 0) { return pool; }
 
             foreach (var weapon in weapons)
@@ -106,10 +107,13 @@ namespace Game.Core
                 foreach (var option in weapon.Data.upgrades)
                 {
                     if (!UpgradeEligibility.CanAcquire(option, weapon.Data.id, this)
-                        || !WeaponUpgradeResolver.TryResolve(option, GetPermanentWeaponLevel(weapon.Data.id), out var resolved))
+                        || !WeaponUpgradeResolver.TryResolve(option, GetPermanentWeaponLevel(weapon.Data.id), out var resolved)
+                        || !WeaponUpgradeTransaction.CanApply(weapon, option, weapons, GetPermanentWeaponLevel(weapon.Data.id)))
                     {
                         continue;
                     }
+
+                    if (!string.IsNullOrEmpty(option.sharedId) && !sharedGroups.Add(option.sharedId)) { continue; }
 
                     pool.Add(new UpgradeChoice
                     {
@@ -154,7 +158,7 @@ namespace Game.Core
                 return false;
             }
 
-            if (!choice.Weapon.LevelUp(choice.Option, GetPermanentWeaponLevel(choice.Weapon.Data.id))) { return false; }
+            if (!WeaponUpgradeTransaction.TryApply(choice.Weapon, choice.Option, weapons, GetPermanentWeaponLevel(choice.Weapon.Data.id))) { return false; }
             PublishSkills();
             return true;
         }

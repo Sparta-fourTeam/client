@@ -44,6 +44,8 @@ namespace Game.Core
 
         public int GetAcquiredCount(string cardId)
         {
+            var option = data.upgrades?.Find(o => o.id == cardId);
+            if (!string.IsNullOrEmpty(option?.sharedId)) { cardId = option.sharedId; }
             return acquiredCardCounts.TryGetValue(cardId, out var count) ? count : 0;
         }
 
@@ -77,17 +79,27 @@ namespace Game.Core
 
         public bool LevelUp(WeaponUpgradeOption option, int permanentLevel = 0)
         {
+            // 공유 강화는 전체 참여 인술을 준비하는 트랜잭션을 통해서만 적용한다.
+            if (!string.IsNullOrEmpty(option?.sharedId)
+                || !WeaponUpgradeResolver.TryResolve(option, permanentLevel, out var resolved)
+                || !TryPrepareUpgrade(option, resolved.Effects, out var nextStats)) { return false; }
+            CommitUpgrade(option, nextStats);
+            return true;
+        }
+
+        internal bool TryPrepareUpgrade(WeaponUpgradeOption option, List<StatEffect> effects, out IWeaponStats nextStats)
+        {
+            nextStats = stats;
             if (IsMaxLevel || option == null || !option.enabled
                 || string.IsNullOrEmpty(option.id) || option.maxPickCount <= 0
-                || GetAcquiredCount(option.id) >= option.maxPickCount
-                || !WeaponUpgradeResolver.TryResolve(option, permanentLevel, out var resolved))
+                || GetAcquiredCount(string.IsNullOrEmpty(option.sharedId) ? option.id : option.sharedId) >= option.maxPickCount
+                || effects == null)
             {
                 return false;
             }
 
             // 효과 전체가 유효한 경우에만 횟수, 레벨과 능력치를 함께 반영한다.
-            var nextStats = stats;
-            foreach (var effect in resolved.Effects)
+            foreach (var effect in effects)
             {
                 if (effect == null || float.IsNaN(effect.value) || float.IsInfinity(effect.value)) { return false; }
                 switch (effect.type)
@@ -103,10 +115,15 @@ namespace Game.Core
                 }
             }
 
+            return true;
+        }
+
+        internal void CommitUpgrade(WeaponUpgradeOption option, IWeaponStats nextStats)
+        {
+            string key = string.IsNullOrEmpty(option.sharedId) ? option.id : option.sharedId;
             stats = nextStats;
             Level++;
-            acquiredCardCounts[option.id] = GetAcquiredCount(option.id) + 1;
-            return true;
+            acquiredCardCounts[key] = GetAcquiredCount(key) + 1;
         }
     }
 }

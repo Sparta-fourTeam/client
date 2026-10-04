@@ -154,6 +154,36 @@ namespace Game.Tests
         }
 
         [Test]
+        public void SharedChoices_AreOfferedOnceAndPublishBothUpdatedWeapons()
+        {
+            Assert.IsTrue(_controller.AddWeapon(1));
+            const BindingFlags Private = BindingFlags.NonPublic | BindingFlags.Instance;
+            var weapons = (List<WeaponBase>)typeof(WeaponController).GetField("weapons", Private).GetValue(_controller);
+            foreach (var weapon in weapons)
+            {
+                weapon.Data.upgrades.Add(new WeaponUpgradeOption
+                {
+                    id = "synthetic_pair_" + weapon.Data.id,
+                    name = "테스트 공유 강화",
+                    sharedId = "synthetic_pair",
+                    affectedWeaponIds = new[] { 1, 3 },
+                    maxPickCount = 1,
+                    effects = new List<StatEffect> { new StatEffect { type = UpgradeType.Damage, value = 80 } }
+                });
+            }
+            var choices = _controller.GetRandomUpgradeChoices(100).FindAll(c => c.Option?.sharedId == "synthetic_pair");
+            Assert.AreEqual(1, choices.Count);
+            int published = _publisher.Published.Count;
+            Assert.IsTrue(_controller.ApplyUpgradeChoice(choices[0]));
+            Assert.AreEqual(published + 1, _publisher.Published.Count);
+            Assert.AreEqual(2, _controller.GetWeaponLevel(1));
+            Assert.AreEqual(2, _controller.GetWeaponLevel(3));
+            Assert.AreEqual(1, _controller.GetAcquiredCount(1, "synthetic_pair_1"));
+            Assert.AreEqual(1, _controller.GetAcquiredCount(3, "synthetic_pair_3"));
+            Assert.IsEmpty(_controller.GetRandomUpgradeChoices(100).FindAll(c => c.Option?.sharedId == "synthetic_pair"));
+        }
+
+        [Test]
         public void NonPositiveChoiceCount_ReturnsEmpty()
         {
             Assert.IsEmpty(_controller.GetRandomUpgradeChoices(-1));

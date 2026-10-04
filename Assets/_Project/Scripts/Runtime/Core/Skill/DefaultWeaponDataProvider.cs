@@ -46,6 +46,17 @@ namespace Game.Core
                     }
                 }
             }
+            foreach (var weapon in weapons)
+            {
+                foreach (var option in weapon.upgrades)
+                {
+                    if (!string.IsNullOrEmpty(option.sharedId) && cards.Contains(option.sharedId))
+                    {
+                        throw new InvalidOperationException("공유 강화 키가 카드 ID와 충돌합니다.");
+                    }
+                }
+            }
+            WeaponUpgradeTransaction.ValidateCatalog(weapons);
             return weapons;
         }
     }
