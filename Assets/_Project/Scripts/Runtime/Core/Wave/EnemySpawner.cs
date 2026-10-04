@@ -83,7 +83,7 @@ namespace Game.Core
         {
             TickCombat(deltaTime);
 
-            if(deltaTime > 0f)
+            if (deltaTime > 0f)
             {
                 CheckAllEnemiesCleared();
             }
@@ -121,13 +121,15 @@ namespace Game.Core
             // 스폰 수량 채웠으면 대기 상태 전환
             if (_spawnedCountInOnceSpawn >= _currentBurstSize)
             {
-                if(_isFinalWave)
+                if (_isFinalWave)
                 {
                     _isSpawningAllowed = false;
                     _finalSpawnDone = true;
                 }
-                else 
+                else
+                {
                     _isWaitingForNextSpawn = true;
+                }
             }
         }
 
@@ -146,12 +148,16 @@ namespace Game.Core
         private void CheckAllEnemiesCleared()
         {
             if (!_finalSpawnDone || _allClearPublished)
+            {
                 return;
+            }
 
-            foreach(var enemy in _activeEnemies)
+            foreach (var enemy in _activeEnemies)
             {
                 if (!enemy.IsDead)
+                {
                     return;
+                }
             }
 
             _allClearPublished = true;
@@ -160,13 +166,13 @@ namespace Game.Core
 
         private EnemyType PickEnemyType()
         {
-            if(_remainingBoss > 0)
+            if (_remainingBoss > 0)
             {
                 _remainingBoss--;
                 return EnemyType.Boss;
             }
 
-            if(_remainingElite > 0 && _randomProvider.Range(0f, 1f) < _enemySpawnConfig.EliteSpawnChance)
+            if (_remainingElite > 0 && _randomProvider.Range(0f, 1f) < _enemySpawnConfig.EliteSpawnChance)
             {
                 _remainingElite--;
                 return EnemyType.Elite;
@@ -217,6 +223,7 @@ namespace Game.Core
                 {
                     enemy.Move(deltaTime);
                 }
+                enemy.TickStatus(deltaTime);
             }
 
             // 투사체 처리
@@ -231,9 +238,9 @@ namespace Game.Core
                 return 0;
             }
 
-            foreach(var enemy in _activeEnemies)
+            foreach (var enemy in _activeEnemies)
             {
-                if(!enemy.IsDead)
+                if (!enemy.IsDead)
                 {
                     results.Add(enemy);
                 }

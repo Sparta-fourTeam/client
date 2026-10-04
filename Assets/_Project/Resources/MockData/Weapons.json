@@ -140,8 +140,10 @@
             "value": 1
           }
         ],
-        "enabled": false,
-        "disabledReason": "선행 인술 얼음창의 실행 카탈로그 연결 대기"
+        "enabled": true,
+        "requiredWeaponIds": [
+          4
+        ]
       }
     ]
   },
@@ -268,6 +270,225 @@
               }
             ]
           }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "name": "얼음창",
+    "iconKey": "weapon_ice",
+    "castType": 0,
+    "maxLevel": 15,
+    "progressionId": null,
+    "prototypeBalanceSourceId": 1,
+    "baseStats": {
+      "cooldown": 1,
+      "baseDamage": 10,
+      "range": 22,
+      "speed": 20,
+      "hitCount": 1,
+      "castCount": 1,
+      "pierceCount": 0,
+      "castInterval": 0.1
+    },
+    "upgrades": [
+      {
+        "id": "ice_repeat",
+        "name": "얼음창 연발",
+        "desc": "추가 시전 +1 / 공격력 -20%",
+        "maxPickCount": 2,
+        "effects": [
+          {
+            "type": 4,
+            "value": 1
+          },
+          {
+            "type": 1,
+            "value": -20
+          }
+        ],
+        "exclusions": [
+          {
+            "cardId": "ice_volley"
+          }
+        ],
+        "variants": [
+          {
+            "minPermanentLevel": 5,
+            "name": "얼음창 연발(+)",
+            "desc": "추가 시전 +1",
+            "effects": [
+              {
+                "type": 4,
+                "value": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ice_damage",
+        "name": "얼음창 피해 증폭",
+        "desc": "공격력 +60%",
+        "maxPickCount": 3,
+        "effects": [
+          {
+            "type": 1,
+            "value": 60
+          }
+        ]
+      },
+      {
+        "id": "ice_extreme",
+        "name": "극한의 얼음창",
+        "desc": "공격력 +30% / 빙결 2초",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "type": 1,
+            "value": 30
+          },
+          {
+            "type": 7,
+            "value": 2
+          }
+        ]
+      },
+      {
+        "id": "ice_pierce",
+        "name": "얼음창 관통",
+        "desc": "공격력 +30% / 관통력 +2",
+        "maxPickCount": 3,
+        "effects": [
+          {
+            "type": 1,
+            "value": 30
+          },
+          {
+            "type": 5,
+            "value": 2
+          }
+        ]
+      },
+      {
+        "id": "ice_heavy",
+        "name": "헤비 얼음창",
+        "desc": "공격력 +50% / 비행 속도 -30% / 관통력 +1",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "type": 1,
+            "value": 50
+          },
+          {
+            "type": 6,
+            "value": -30
+          },
+          {
+            "type": 5,
+            "value": 1
+          }
+        ],
+        "requiredCardIds": [
+          "ice_pierce"
+        ]
+      },
+      {
+        "id": "ice_volley",
+        "name": "얼음창 일제 사격",
+        "desc": "발사 수 +1 / 공격력 -40%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "type": 2,
+            "value": 1
+          },
+          {
+            "type": 1,
+            "value": -40
+          }
+        ],
+        "requiredCardIds": [
+          "ice_extreme"
+        ],
+        "minPermanentLevel": 13,
+        "exclusions": [
+          {
+            "cardId": "ice_pierce"
+          }
+        ]
+      },
+      {
+        "id": "ice_split",
+        "name": "얼음창 분열",
+        "desc": "명중 시 소형 얼음창 3개로 분열",
+        "maxPickCount": 1,
+        "effects": [],
+        "enabled": false,
+        "disabledReason": "분열·동상·밀침·형태 변화 중 필요한 전투 효과 구현 대기",
+        "requiredCardIds": []
+      },
+      {
+        "id": "ice_shard_damage",
+        "name": "얼음 조각 피해 증폭",
+        "desc": "소형 얼음창 공격력 +80%",
+        "maxPickCount": 1,
+        "effects": [],
+        "enabled": false,
+        "disabledReason": "분열·동상·밀침·형태 변화 중 필요한 전투 효과 구현 대기",
+        "requiredCardIds": [
+          "ice_split"
+        ]
+      },
+      {
+        "id": "ice_impact",
+        "name": "얼음창 충격",
+        "desc": "밀침 +200% / 관통력 +2",
+        "maxPickCount": 1,
+        "effects": [],
+        "enabled": false,
+        "disabledReason": "분열·동상·밀침·형태 변화 중 필요한 전투 효과 구현 대기",
+        "requiredCardIds": []
+      },
+      {
+        "id": "ice_frostbite",
+        "name": "사무치는 냉기",
+        "desc": "동상 10초 / 최대 5회 중첩",
+        "maxPickCount": 1,
+        "effects": [],
+        "enabled": false,
+        "disabledReason": "분열·동상·밀침·형태 변화 중 필요한 전투 효과 구현 대기",
+        "requiredCardIds": [
+          "ice_pierce",
+          "ice_extreme"
+        ]
+      },
+      {
+        "id": "ice_shard_frostbite",
+        "name": "스며드는 냉기",
+        "desc": "소형 얼음창 동상 추가",
+        "maxPickCount": 1,
+        "effects": [],
+        "enabled": false,
+        "disabledReason": "분열·동상·밀침·형태 변화 중 필요한 전투 효과 구현 대기",
+        "requiredCardIds": [
+          "ice_split",
+          "ice_frostbite"
+        ]
+      },
+      {
+        "id": "ice_triangle",
+        "name": "삼각얼음창",
+        "desc": "삼각→일반→소형 얼음창 분열 / 강화 효과 유지",
+        "maxPickCount": 1,
+        "effects": [],
+        "enabled": false,
+        "disabledReason": "분열·동상·밀침·형태 변화 중 필요한 전투 효과 구현 대기",
+        "requiredCardIds": [
+          "ice_pierce",
+          "ice_extreme",
+          "ice_damage"
         ]
       }
     ]

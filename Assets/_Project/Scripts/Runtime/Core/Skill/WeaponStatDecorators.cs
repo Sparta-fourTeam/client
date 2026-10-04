@@ -2,6 +2,13 @@ using System;
 
 namespace Game.Core
 {
+    public sealed class FreezeDurationUpgrade : StatDecorator
+    {
+        private readonly float duration;
+        public FreezeDurationUpgrade(IWeaponStats inner, float duration) : base(inner) => this.duration = duration;
+        public override float FreezeDuration => Math.Max(inner.FreezeDuration, duration);
+    }
+
     public class AttackSpeedUpgrade : StatDecorator
     {
         private readonly float value;

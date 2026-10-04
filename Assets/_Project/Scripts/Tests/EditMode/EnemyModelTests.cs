@@ -35,6 +35,44 @@ namespace Game.Tests
 
         // ───────── 생성 ─────────
 
+        [Test]
+        public void Freeze_StopsMovementRefreshesWithoutStackingAndExpires()
+        {
+            var enemy = CreateEnemy(speed: 1, position: new Vector2(0, 5));
+            enemy.ApplyFreeze(2);
+            enemy.Move(1);
+            Assert.AreEqual(5, enemy.Position.y);
+            enemy.TickStatus(1);
+            enemy.ApplyFreeze(0.5f);
+            Assert.AreEqual(1, enemy.FreezeRemaining);
+            enemy.TickStatus(0);
+            Assert.IsTrue(enemy.IsFrozen);
+            enemy.TickStatus(1);
+            Assert.IsFalse(enemy.IsFrozen);
+            enemy.Move(0.5f);
+            Assert.AreEqual(4.5f, enemy.Position.y);
+        }
+
+        [Test]
+        public void Freeze_StopsAttackAndRejectsInvalidOrDeadTarget()
+        {
+            var enemy = CreateEnemy();
+            int attacks = 0;
+            enemy.Attacked += () => attacks++;
+            enemy.ApplyFreeze(2);
+            // 빙결 중에는 벽/투사체를 접근하거나 공격 타이머를 진행하지 않는다.
+            enemy.Attack(1, null, null);
+            Assert.AreEqual(0, attacks);
+            enemy.ApplyFreeze(float.NaN);
+            enemy.ApplyFreeze(float.PositiveInfinity);
+            enemy.ApplyFreeze(-1);
+            Assert.AreEqual(2, enemy.FreezeRemaining);
+            enemy.TickStatus(2);
+            enemy.TakeDamage(10);
+            enemy.ApplyFreeze(2);
+            Assert.IsFalse(enemy.IsFrozen);
+        }
+
         [TestCase(0)]
         [TestCase(-5)]
         public void Constructor_NonPositiveMaxHp_Throws(int maxHp)

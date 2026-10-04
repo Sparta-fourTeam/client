@@ -9,5 +9,6 @@ namespace Game.Core
         int CastCount { get; }
         int PierceCount { get; }
         float ProjectileSpeed { get; }
+        float FreezeDuration { get; }
     }
 }

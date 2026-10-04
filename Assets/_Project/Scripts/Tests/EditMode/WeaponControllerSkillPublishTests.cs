@@ -36,7 +36,7 @@ namespace Game.Tests
             _controller = player.AddComponent<WeaponController>();
 
             var entries = new List<WeaponPrefabEntry>();
-            for (int id = 1; id <= 3; id++)
+            for (int id = 1; id <= 4; id++)
             {
                 var prefab = new GameObject($"WeaponPrefab{id}");
                 _created.Add(prefab);
@@ -196,6 +196,46 @@ namespace Game.Tests
             Assert.IsTrue(_controller.ApplyUpgradeChoice(second));
             Assert.IsFalse(_controller.ApplyUpgradeChoice(second));
             Assert.AreEqual(1, _controller.GetAcquiredCount(2, "fireball_burst_ii"));
+        }
+
+        [Test]
+        public void IceOwnershipUnlocksKunaiPierceAndOrderAllowsAllThreeCards()
+        {
+            Assert.IsTrue(_controller.AddWeapon(1));
+            Assert.IsFalse(_controller.GetRandomUpgradeChoices(100).Exists(c => c.Option?.id == "kunai_pierce"));
+            Assert.IsTrue(_controller.AddWeapon(4));
+            Assert.IsTrue(_controller.GetRandomUpgradeChoices(100).Exists(c => c.Option?.id == "kunai_pierce"));
+            const BindingFlags Private = BindingFlags.NonPublic | BindingFlags.Instance;
+            var levels = (Dictionary<int, int>)typeof(WeaponController).GetField("permanentLevels", Private).GetValue(_controller);
+            levels[4] = 13;
+            var repeat = _controller.GetRandomUpgradeChoices(100).Find(c => c.Option?.id == "ice_repeat");
+            Assert.AreEqual("얼음창 연발(+)", repeat.DisplayName);
+            Assert.IsTrue(_controller.ApplyUpgradeChoice(repeat));
+            var extreme = _controller.GetRandomUpgradeChoices(100).Find(c => c.Option?.id == "ice_extreme");
+            Assert.IsTrue(_controller.ApplyUpgradeChoice(extreme));
+            var volley = _controller.GetRandomUpgradeChoices(100).Find(c => c.Option?.id == "ice_volley");
+            Assert.IsTrue(_controller.ApplyUpgradeChoice(volley));
+            Assert.IsFalse(_controller.GetRandomUpgradeChoices(100).Exists(c => c.Option?.id == "ice_repeat"));
+            var pierce = _controller.GetRandomUpgradeChoices(100).Find(c => c.Option?.id == "ice_pierce");
+            Assert.IsTrue(_controller.ApplyUpgradeChoice(pierce));
+            Assert.AreEqual(1, _controller.GetAcquiredCount(4, "ice_repeat"));
+            Assert.AreEqual(1, _controller.GetAcquiredCount(4, "ice_volley"));
+            Assert.AreEqual(1, _controller.GetAcquiredCount(4, "ice_pierce"));
+        }
+
+        [Test]
+        public void IcePierceFirstBlocksVolleyButKeepsRepeatAvailable()
+        {
+            Assert.IsTrue(_controller.AddWeapon(4));
+            var pierce = _controller.GetRandomUpgradeChoices(100).Find(c => c.Option?.id == "ice_pierce");
+            Assert.IsTrue(_controller.ApplyUpgradeChoice(pierce));
+            var extreme = _controller.GetRandomUpgradeChoices(100).Find(c => c.Option?.id == "ice_extreme");
+            Assert.IsTrue(_controller.ApplyUpgradeChoice(extreme));
+            const BindingFlags Private = BindingFlags.NonPublic | BindingFlags.Instance;
+            var levels = (Dictionary<int, int>)typeof(WeaponController).GetField("permanentLevels", Private).GetValue(_controller);
+            levels[4] = 13;
+            Assert.IsFalse(_controller.GetRandomUpgradeChoices(100).Exists(c => c.Option?.id == "ice_volley"));
+            Assert.IsTrue(_controller.GetRandomUpgradeChoices(100).Exists(c => c.Option?.id == "ice_repeat"));
         }
 
         [Test]

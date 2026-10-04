@@ -19,6 +19,8 @@ namespace Game.Core
         public int maxLevel;
         // PlayerProfile의 영구 성장 ID. 미매핑 인술은 null이며 영구 레벨 0으로 처리.
         public string progressionId;
+        // 새 인술의 기본 수치 자료가 없을 때 사용한 기존 프로토타입 ID.
+        public int prototypeBalanceSourceId;
 
     }
 
@@ -33,10 +35,11 @@ namespace Game.Core
         public int castCount = 1;
         public int pierceCount;
         public float castInterval = 0.1f;
+        public float freezeDuration;
     }
 
     // 기존 0..3 값은 Cards.json과의 호환성을 위해 순서를 유지한다.
-    public enum UpgradeType { AttackSpeed, Damage, ProjectileCount, HitCount, CastCount, PierceCount, ProjectileSpeed }
+    public enum UpgradeType { AttackSpeed, Damage, ProjectileCount, HitCount, CastCount, PierceCount, ProjectileSpeed, FreezeDuration }
 
     public class StatEffect
     {

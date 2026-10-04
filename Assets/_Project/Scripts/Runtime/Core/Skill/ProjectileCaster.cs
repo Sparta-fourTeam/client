@@ -33,7 +33,7 @@ namespace Game.Core
                 var direction = new Vector3(dir2D.x, dir2D.y, 0f);
 
                 Projectile projectile = pool.Get();
-                projectile.Init(pool, caster.position, direction, stats.Damage, stats.ProjectileSpeed, ProjectileLifetime, targetProvider, stats.PierceCount);
+                projectile.Init(pool, caster.position, direction, stats.Damage, stats.ProjectileSpeed, ProjectileLifetime, targetProvider, stats.PierceCount, stats.FreezeDuration);
             }
         }
     }

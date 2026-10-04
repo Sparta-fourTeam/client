@@ -15,6 +15,7 @@ namespace Game.Core
         private float damage;
         private float speed;
         private float lifetime;
+        private float freezeDuration;
         private IEnemyTargetProvider targetProvider;
         private readonly ProjectileHitLedger hitLedger = new();
         private readonly List<IEnemyTarget> hitBuffer = new List<IEnemyTarget>(HitCandidateCount);
@@ -22,7 +23,7 @@ namespace Game.Core
         private const float HitRadius = 0.3f;
         private const int HitCandidateCount = 4;
 
-        public void Init(IObjectPool<Projectile> pool, Vector3 startPos, Vector3 direction, float damage, float speed, float lifetime, IEnemyTargetProvider targetProvider, int pierceCount = 0)
+        public void Init(IObjectPool<Projectile> pool, Vector3 startPos, Vector3 direction, float damage, float speed, float lifetime, IEnemyTargetProvider targetProvider, int pierceCount = 0, float freezeDuration = 0)
         {
             this.pool = pool;
             transform.position = startPos;
@@ -30,6 +31,7 @@ namespace Game.Core
             this.damage = damage;
             this.speed = speed;
             this.lifetime = lifetime;
+            this.freezeDuration = freezeDuration;
             this.targetProvider = targetProvider;
             hitLedger.Reset(pierceCount);
             ApplyDirectionRoration();
@@ -58,6 +60,7 @@ namespace Game.Core
 
                 if (!hitLedger.TryHit(candidate)) { continue; }
                 candidate.TakeDamage((int)damage);
+                if (freezeDuration > 0 && candidate is IFreezableTarget freezable) { freezable.ApplyFreeze(freezeDuration); }
                 SpawnImpact();
                 if (hitLedger.Exhausted)
                 {

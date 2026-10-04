@@ -895,8 +895,8 @@
       "runtime": {
         "weaponId": 1,
         "cardId": "kunai_pierce",
-        "enabled": false,
-        "state": "disabled",
+        "enabled": true,
+        "state": "prototype-active",
         "conditionMapping": "partial",
         "variantConnected": false
       },
@@ -1428,7 +1428,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 4,
+        "cardId": "ice_repeat",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": true
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -1459,7 +1464,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 4,
+        "cardId": "ice_split",
+        "enabled": false,
+        "state": "disabled",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -1490,7 +1500,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 4,
+        "cardId": "ice_extreme",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -1521,7 +1536,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 4,
+        "cardId": "ice_pierce",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -1550,7 +1570,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 4,
+        "cardId": "ice_damage",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -1578,7 +1603,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 4,
+        "cardId": "ice_impact",
+        "enabled": false,
+        "state": "disabled",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -1611,7 +1641,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 4,
+        "cardId": "ice_shard_damage",
+        "enabled": false,
+        "state": "disabled",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -1644,7 +1679,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 4,
+        "cardId": "ice_heavy",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -1685,7 +1725,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 4,
+        "cardId": "ice_volley",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "hold",
       "readyForProduction": false
@@ -1724,7 +1769,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 4,
+        "cardId": "ice_frostbite",
+        "enabled": false,
+        "state": "disabled",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -1762,7 +1812,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 4,
+        "cardId": "ice_shard_frostbite",
+        "enabled": false,
+        "state": "disabled",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -1808,7 +1863,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 4,
+        "cardId": "ice_triangle",
+        "enabled": false,
+        "state": "disabled",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "hold",
       "readyForProduction": false

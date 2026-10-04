@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Game.Core
 {
-    public class EnemyModel : IEnemyTarget
+    public class EnemyModel : IEnemyTarget, IFreezableTarget
     {
         // 아래쪽 방향으로 이동.
         private static readonly Vector2 _moveDirection = Vector2.down;
@@ -28,6 +28,20 @@ namespace Game.Core
         public int MaxHp { get; }
         public int Hp { get; private set; }
         public bool IsDead => Hp <= 0;
+        public float FreezeRemaining { get; private set; }
+        public bool IsFrozen => FreezeRemaining > 0;
+
+        public void ApplyFreeze(float duration)
+        {
+            if (IsDead || duration <= 0 || float.IsNaN(duration) || float.IsInfinity(duration)) { return; }
+            FreezeRemaining = Math.Max(FreezeRemaining, duration);
+        }
+
+        public void TickStatus(float deltaTime)
+        {
+            if (deltaTime <= 0 || float.IsNaN(deltaTime) || float.IsInfinity(deltaTime)) { return; }
+            FreezeRemaining = Math.Max(0, FreezeRemaining - deltaTime);
+        }
 
         public event Action<EnemyProjectileModel> ProjectileFired; // 원거리 투사체 생성 용
         public event Action Attacked; // 공격이 나간 순간 (근접/원거리 공통, 공격 모션 재생 용)
@@ -58,7 +72,7 @@ namespace Game.Core
         // 매 프레임 speed만큼 이동
         public void Move(float deltaTime)
         {
-            if (IsDead)
+            if (IsDead || IsFrozen)
             {
                 return;
             }
@@ -74,7 +88,7 @@ namespace Game.Core
 
         public void Attack(float deltaTime, Wall wall, EnemyProjectileSystem projectiles)
         {
-            if (IsDead || wall.IsDestroyed)
+            if (IsDead || IsFrozen || wall.IsDestroyed)
             {
                 return;
             }
