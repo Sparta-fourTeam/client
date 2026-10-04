@@ -23,17 +23,17 @@ namespace Game.Core
 
         protected override void OnFire()
         {
-            var targets = FindTargets(data.baseStats.range, stats.HitCount);
+            var targets = FindTargets(data.baseStats.range, stats.ProjectileCount);
             if (targets.Count == 0) { return; }
 
-            for (int i = 0; i < stats.HitCount; i++)
+            for (int i = 0; i < stats.ProjectileCount; i++)
             {
                 var target = targets[i % targets.Count];
                 var dir2D = (target.Position - (Vector2)caster.position).normalized;
                 var direction = new Vector3(dir2D.x, dir2D.y, 0f);
 
                 Projectile projectile = pool.Get();
-                projectile.Init(pool, caster.position, direction, stats.Damage, data.baseStats.speed, ProjectileLifetime, targetProvider);
+                projectile.Init(pool, caster.position, direction, stats.Damage, stats.ProjectileSpeed, ProjectileLifetime, targetProvider, stats.PierceCount);
             }
         }
     }

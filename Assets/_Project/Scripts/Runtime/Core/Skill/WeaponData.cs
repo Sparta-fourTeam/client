@@ -16,6 +16,8 @@ namespace Game.Core
         public WeaponBaseStats baseStats;
         public List<WeaponUpgradeOption> upgrades;
         public int maxLevel;
+        // PlayerProfile의 영구 성장 ID. 미매핑 인술은 null이며 영구 레벨 0으로 처리.
+        public string progressionId;
 
     }
 
@@ -25,10 +27,15 @@ namespace Game.Core
         public float baseDamage;
         public float range;
         public float speed;
+        // Legacy hitCount is the number of projectiles/targets per cast, not penetration.
         public int hitCount;
+        public int castCount = 1;
+        public int pierceCount;
+        public float castInterval = 0.1f;
     }
 
-    public enum UpgradeType { AttackSpeed, Damage, ProjectileCount, HitCount }
+    // 기존 0..3 값은 Cards.json과의 호환성을 위해 순서를 유지한다.
+    public enum UpgradeType { AttackSpeed, Damage, ProjectileCount, HitCount, CastCount, PierceCount, ProjectileSpeed }
 
     public class StatEffect
     {
@@ -42,8 +49,33 @@ namespace Game.Core
         public string name;
         public string desc;
         public List<StatEffect> effects;
-        public int maxPickCount;
+        /// <summary>최대 등장 횟수. 선택 성공 시에만 사용하며, 미선택 제시는 차감하지 않는다.</summary>
+        public int maxPickCount = 1;
         public string[] requiredCardIds;
         public int[] requiredWeaponIds;
+
+        // 전투 중 레벨만 의미한다. 로비의 영구 인술 레벨과 구분한다.
+        public int minBattleLevel = 1;
+        public int minPermanentLevel;
+        public CardCountRequirement[] requiredCardCounts;
+        public CardExclusion[] exclusions;
+        public bool enabled = true;
+        public string disabledReason;
+    }
+
+    public class CardCountRequirement
+    {
+        // 0이면 이 강화가 속한 무기. 다른 무기의 강화도 참조할 수 있다.
+        public int weaponId;
+        public string cardId;
+        public int count = 1;
+    }
+
+    public class CardExclusion
+    {
+        public int weaponId;
+        public string cardId;
+        // 0이면 항상 적용. 양수이면 소속 인술의 영구 성장 레벨이 이 값 미만일 때만 적용.
+        public int belowPermanentLevel;
     }
 }

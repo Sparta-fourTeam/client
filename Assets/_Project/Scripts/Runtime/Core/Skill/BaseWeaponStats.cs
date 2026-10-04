@@ -7,7 +7,11 @@ namespace Game.Core
 
         public float Cooldown => data.cooldown;
         public float Damage => data.baseDamage;
-        public int HitCount => data.hitCount;
+        public int HitCount => ProjectileCount;
+        public int ProjectileCount => System.Math.Max(1, data.hitCount);
+        public int CastCount => System.Math.Max(1, data.castCount);
+        public int PierceCount => System.Math.Max(0, data.pierceCount);
+        public float ProjectileSpeed => data.speed;
 
     }
 }

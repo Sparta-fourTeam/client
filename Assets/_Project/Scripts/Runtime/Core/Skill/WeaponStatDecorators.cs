@@ -1,4 +1,4 @@
-using UnityEngine;
+using System;
 
 namespace Game.Core
 {
@@ -6,7 +6,7 @@ namespace Game.Core
     {
         private readonly float value;
         public AttackSpeedUpgrade(IWeaponStats inner, float value) : base(inner) => this.value = value;
-        public override float Cooldown => Mathf.Max(0.1f, inner.Cooldown * (1f - value * 0.01f));
+        public override float Cooldown => Math.Max(0.1f, inner.Cooldown * (1f - value * 0.01f));
     }
 
     public class DamageUpgrade : StatDecorator
@@ -20,13 +20,34 @@ namespace Game.Core
     {
         private readonly float value;
         public ProjectileCountUpgrade(IWeaponStats inner, float value) : base(inner) => this.value = value;
-        public override int HitCount => inner.HitCount + Mathf.RoundToInt(value);
+        public override int ProjectileCount => Math.Max(1, inner.ProjectileCount + (int)Math.Round(value));
     }
 
     public class HitCountUpgrade : StatDecorator
     {
         private readonly int value;
         public HitCountUpgrade(IWeaponStats inner, int value) : base(inner) => this.value = value;
-        public override int HitCount => inner.HitCount + Mathf.RoundToInt(value);
+        public override int ProjectileCount => Math.Max(1, inner.ProjectileCount + value);
+    }
+
+    public sealed class CastCountUpgrade : StatDecorator
+    {
+        private readonly int value;
+        public CastCountUpgrade(IWeaponStats inner, int value) : base(inner) => this.value = value;
+        public override int CastCount => Math.Max(1, inner.CastCount + value);
+    }
+
+    public sealed class PierceCountUpgrade : StatDecorator
+    {
+        private readonly int value;
+        public PierceCountUpgrade(IWeaponStats inner, int value) : base(inner) => this.value = value;
+        public override int PierceCount => Math.Max(0, inner.PierceCount + value);
+    }
+
+    public sealed class ProjectileSpeedUpgrade : StatDecorator
+    {
+        private readonly float value;
+        public ProjectileSpeedUpgrade(IWeaponStats inner, float value) : base(inner) => this.value = value;
+        public override float ProjectileSpeed => Math.Max(0f, inner.ProjectileSpeed * (1f + value * 0.01f));
     }
 }

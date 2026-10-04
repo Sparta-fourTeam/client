@@ -158,7 +158,20 @@ namespace Game.Core
             }
 
             var choice = _choices[index];
-            _weaponController.ApplyUpgradeChoice(choice);
+            if (!_weaponController.ApplyUpgradeChoice(choice))
+            {
+                // Refresh stale choices; if none remain, resume without recording a card.
+                _choices = _weaponController.GetRandomUpgradeChoices(3);
+                if (_choices.Count > 0)
+                {
+                    ChangeState(StageState.CardSelect);
+                    return;
+                }
+
+                Time.timeScale = _speed;
+                ChangeState(StageState.Playing);
+                return;
+            }
             _stats.RecordCard(choice.IsNewWeapon ? $"weapon_{choice.NewWeaponData.id}" : choice.Option.id);
             _choices = new List<WeaponController.UpgradeChoice>();
 

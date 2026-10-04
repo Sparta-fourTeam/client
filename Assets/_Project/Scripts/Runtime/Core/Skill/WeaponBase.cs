@@ -9,7 +9,12 @@ namespace Game.Core
         public WeaponData Data => data;
         protected Transform caster;
         public int Level { get; private set; } = 1;
-        protected float cooldownTimer = 0;
+        private readonly CastClock castClock = new();
+        protected float cooldownTimer
+        {
+            get => castClock.RemainingCooldown;
+            set => castClock.RemainingCooldown = value;
+        }
 
         protected IWeaponStats stats;
         protected IEnemyTargetProvider targetProvider;
@@ -40,15 +45,11 @@ namespace Game.Core
             return acquiredCardCounts.TryGetValue(cardId, out var count) ? count : 0;
         }
 
-        public void Tick()
-        {
-            cooldownTimer -= Time.deltaTime;
+        public void Tick() => Tick(Time.deltaTime);
 
-            if (cooldownTimer <= 0)
-            {
-                OnFire();
-                cooldownTimer = stats.Cooldown;
-            }
+        public void Tick(float deltaTime)
+        {
+            castClock.Tick(deltaTime, stats.Cooldown, stats.CastCount, data.baseStats.castInterval, OnFire);
         }
 
         protected abstract void OnFire();
@@ -72,28 +73,37 @@ namespace Game.Core
             return inRange;
         }
 
-        public void LevelUp(WeaponUpgradeOption option)
+        public bool LevelUp(WeaponUpgradeOption option)
         {
-            if (Level >= data.maxLevel)
+            if (Level >= data.maxLevel || option == null || !option.enabled
+                || string.IsNullOrEmpty(option.id) || option.maxPickCount <= 0
+                || GetAcquiredCount(option.id) >= option.maxPickCount || option.effects == null)
             {
-                return;
+                return false;
             }
 
-            Level++;
-
-            acquiredCardCounts[option.id] = GetAcquiredCount(option.id) + 1;
-
+            // 효과 전체가 유효한 경우에만 횟수, 레벨과 능력치를 함께 반영한다.
+            var nextStats = stats;
             foreach (var effect in option.effects)
             {
-                stats = effect.type switch
+                if (effect == null || float.IsNaN(effect.value) || float.IsInfinity(effect.value)) { return false; }
+                switch (effect.type)
                 {
-                    UpgradeType.AttackSpeed => new AttackSpeedUpgrade(stats, effect.value),
-                    UpgradeType.Damage => new DamageUpgrade(stats, effect.value),
-                    UpgradeType.ProjectileCount => new ProjectileCountUpgrade(stats, effect.value),
-                    UpgradeType.HitCount => new HitCountUpgrade(stats, (int)effect.value),
-                    _ => throw new System.NotImplementedException()
-                };
+                    case UpgradeType.AttackSpeed: nextStats = new AttackSpeedUpgrade(nextStats, effect.value); break;
+                    case UpgradeType.Damage: nextStats = new DamageUpgrade(nextStats, effect.value); break;
+                    case UpgradeType.ProjectileCount: nextStats = new ProjectileCountUpgrade(nextStats, effect.value); break;
+                    case UpgradeType.HitCount: nextStats = new HitCountUpgrade(nextStats, (int)effect.value); break;
+                    case UpgradeType.CastCount: nextStats = new CastCountUpgrade(nextStats, (int)effect.value); break;
+                    case UpgradeType.PierceCount: nextStats = new PierceCountUpgrade(nextStats, (int)effect.value); break;
+                    case UpgradeType.ProjectileSpeed: nextStats = new ProjectileSpeedUpgrade(nextStats, effect.value); break;
+                    default: return false;
+                }
             }
+
+            stats = nextStats;
+            Level++;
+            acquiredCardCounts[option.id] = GetAcquiredCount(option.id) + 1;
+            return true;
         }
     }
 }

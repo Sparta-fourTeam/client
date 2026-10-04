@@ -9,6 +9,7 @@ namespace Game.Tests
         private sealed class TestWeapon : WeaponBase
         {
             public int Fired;
+            public float Damage => stats.Damage;
 
             public TestWeapon(WeaponData data) : base(data, null, null)
             {
@@ -115,6 +116,25 @@ namespace Game.Tests
             weapon.LevelUp(AttackSpeed(50f));
 
             Assert.AreEqual(1f, weapon.CooldownRatio);
+        }
+
+        [Test]
+        public void InvalidEffect_DoesNotPartiallyApplyUpgrade()
+        {
+            var weapon = new TestWeapon(Data());
+            var option = new WeaponUpgradeOption
+            {
+                id = "invalid",
+                effects = new List<StatEffect>
+                {
+                    new StatEffect { type = UpgradeType.Damage, value = 80f },
+                    new StatEffect { type = (UpgradeType)999, value = 1f }
+                }
+            };
+            Assert.IsFalse(weapon.LevelUp(option));
+            Assert.AreEqual(1, weapon.Level);
+            Assert.AreEqual(0, weapon.GetAcquiredCount(option.id));
+            Assert.AreEqual(10f, weapon.Damage);
         }
     }
 }

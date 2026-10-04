@@ -46,7 +46,7 @@ namespace Game.Tests
             const BindingFlags Private = BindingFlags.NonPublic | BindingFlags.Instance;
             typeof(WeaponController).GetField("prefabEntries", Private).SetValue(_controller, entries);
 
-            _controller.Construct(new NullEnemyTargetProvider(), _publisher);
+            _controller.Construct(new NullEnemyTargetProvider(), _publisher, new DefaultWeaponDataProvider());
             typeof(WeaponController).GetMethod("Start", Private).Invoke(_controller, null);
         }
 
@@ -110,6 +110,38 @@ namespace Game.Tests
             _controller.ApplyUpgradeChoice(newWeapon);
 
             Assert.AreEqual(1, first.Count);
+        }
+
+        [Test]
+        public void StaleChoice_DoesNotPublishOrIncreaseLevelAgain()
+        {
+            var choice = _controller.GetRandomUpgradeChoices(50).Find(c => !c.IsNewWeapon);
+            for (int i = 0; i < choice.Option.maxPickCount; i++)
+            {
+                Assert.IsTrue(_controller.ApplyUpgradeChoice(choice));
+            }
+            int level = choice.Weapon.Level;
+            int published = _publisher.Published.Count;
+            Assert.IsFalse(_controller.ApplyUpgradeChoice(choice));
+            Assert.AreEqual(level, choice.Weapon.Level);
+            Assert.AreEqual(published, _publisher.Published.Count);
+        }
+
+        [Test]
+        public void ForgedChoice_IsRejected()
+        {
+            var choice = _controller.GetRandomUpgradeChoices(50).Find(c => !c.IsNewWeapon);
+            choice.Option = new WeaponUpgradeOption { id = "forged", effects = new List<StatEffect>() };
+            Assert.IsFalse(_controller.ApplyUpgradeChoice(choice));
+            Assert.AreEqual(1, choice.Weapon.Level);
+            Assert.AreEqual(1, _publisher.Published.Count);
+        }
+
+        [Test]
+        public void NonPositiveChoiceCount_ReturnsEmpty()
+        {
+            Assert.IsEmpty(_controller.GetRandomUpgradeChoices(-1));
+            Assert.IsEmpty(_controller.GetRandomUpgradeChoices(0));
         }
     }
 }

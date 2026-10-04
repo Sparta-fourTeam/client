@@ -22,10 +22,10 @@ namespace Game.Core
 
         protected override void OnFire()
         {
-            var targets = FindTargets(data.baseStats.range, stats.HitCount);
+            var targets = FindTargets(data.baseStats.range, stats.ProjectileCount);
             if (targets.Count == 0) { return; }
 
-            for (int i = 0; i < stats.HitCount; i++)
+            for (int i = 0; i < stats.ProjectileCount; i++)
             {
                 var target = targets[i % targets.Count];
 

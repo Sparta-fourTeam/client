@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Cysharp.Threading.Tasks;
 using Game.Core;
 using Game.Core.Messages;
@@ -50,6 +51,8 @@ namespace Game.Tests
         private BattleStats _stats;
         private StageClock _clock;
         private StageManager _manager;
+        private WeaponController _weapons;
+        private readonly List<GameObject> _objects = new();
         private readonly List<StageState> _states = new();
         private readonly List<StageResult> _results = new();
         private readonly List<SubmitRejected> _rejected = new();
@@ -68,6 +71,7 @@ namespace Game.Tests
             var builder = new BuiltinContainerBuilder();
             builder.AddMessagePipe();
             builder.AddMessageBroker<StageStateChanged>();
+            builder.AddMessageBroker<SkillChanged>();
             builder.AddMessageBroker<StageEnded>();
             builder.AddMessageBroker<StageResult>();
             builder.AddMessageBroker<SubmitRejected>();
@@ -101,6 +105,22 @@ namespace Game.Tests
             var context = new StageContext();
             context.SetBattle("battle-1", 1);
 
+            var player = new GameObject("TestPlayer");
+            _objects.Add(player);
+            _weapons = player.AddComponent<WeaponController>();
+            var entries = new List<WeaponPrefabEntry>();
+            for (int id = 1; id <= 3; id++)
+            {
+                var prefab = new GameObject("Weapon" + id);
+                _objects.Add(prefab);
+                entries.Add(new WeaponPrefabEntry { id = id, prefab = prefab });
+            }
+            const BindingFlags Private = BindingFlags.NonPublic | BindingFlags.Instance;
+            typeof(WeaponController).GetField("prefabEntries", Private).SetValue(_weapons, entries);
+            _weapons.Construct(new NullEnemyTargetProvider(),
+                provider.GetRequiredService<IBufferedPublisher<SkillChanged>>(), new DefaultWeaponDataProvider());
+            typeof(WeaponController).GetMethod("Start", Private).Invoke(_weapons, null);
+
             _manager = new StageManager(
                 provider.GetRequiredService<IBufferedPublisher<StageStateChanged>>(),
                 provider.GetRequiredService<ISubscriber<StageEnded>>(),
@@ -110,7 +130,7 @@ namespace Game.Tests
                 _stats,
                 _clock,
                 provider.GetRequiredService<ISubscriber<WaveGaugeFilled>>(),
-                null,
+                _weapons,
                 provider.GetRequiredService<IPublisher<SubmitRejected>>(),
                 provider.GetRequiredService<IPublisher<SubmitFailed>>());
             _manager.RetryDelay = TimeSpan.Zero;
@@ -121,6 +141,8 @@ namespace Game.Tests
         public void TearDown()
         {
             _manager.Dispose();
+            foreach (var obj in _objects) { UnityEngine.Object.DestroyImmediate(obj); }
+            _objects.Clear();
             foreach (var subscription in _subscriptions)
             {
                 subscription.Dispose();
@@ -398,6 +420,40 @@ namespace Game.Tests
             _manager.Dispose();
 
             Assert.AreEqual(1f, Time.timeScale);
+        }
+
+        [Test]
+        public void PickCard_SuccessRecordsAndResumes()
+        {
+            FillGauge(false);
+            Assert.AreEqual(StageState.CardSelect, _manager.State);
+            _manager.PickCard(0);
+            Assert.AreEqual(StageState.Playing, _manager.State);
+            Assert.AreEqual(1, _stats.BuildLog.Count);
+            Assert.AreEqual(1f, Time.timeScale);
+        }
+
+        [Test]
+        public void PickCard_StaleChoiceRefreshesWithoutRecording()
+        {
+            FillGauge(false);
+            var choice = _manager.Choices[0];
+            if (choice.IsNewWeapon)
+            {
+                Assert.IsTrue(_weapons.ApplyUpgradeChoice(choice));
+            }
+            else
+            {
+                for (int i = 0; i < choice.Option.maxPickCount; i++)
+                {
+                    Assert.IsTrue(_weapons.ApplyUpgradeChoice(choice));
+                }
+            }
+            _manager.PickCard(0);
+            Assert.AreEqual(0, _stats.BuildLog.Count);
+            Assert.AreEqual(StageState.CardSelect, _manager.State);
+            Assert.AreEqual(0f, Time.timeScale);
+            Assert.IsNotEmpty(_manager.Choices);
         }
     }
 }

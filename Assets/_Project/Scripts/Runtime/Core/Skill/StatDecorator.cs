@@ -7,6 +7,10 @@ namespace Game.Core
 
         public virtual float Cooldown => inner.Cooldown;
         public virtual float Damage => inner.Damage;
-        public virtual int HitCount => inner.HitCount;
+        public virtual int HitCount => ProjectileCount;
+        public virtual int ProjectileCount => inner.ProjectileCount;
+        public virtual int CastCount => inner.CastCount;
+        public virtual int PierceCount => inner.PierceCount;
+        public virtual float ProjectileSpeed => inner.ProjectileSpeed;
     }
 }

@@ -4,6 +4,10 @@ namespace Game.Core
     {
         float Cooldown { get; }
         float Damage { get; }
-        int HitCount { get; }
+        int HitCount { get; } // Legacy alias for ProjectileCount.
+        int ProjectileCount { get; }
+        int CastCount { get; }
+        int PierceCount { get; }
+        float ProjectileSpeed { get; }
     }
 }

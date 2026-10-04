@@ -16,12 +16,13 @@ namespace Game.Core
         private float speed;
         private float lifetime;
         private IEnemyTargetProvider targetProvider;
+        private readonly ProjectileHitLedger hitLedger = new();
         private readonly List<IEnemyTarget> hitBuffer = new List<IEnemyTarget>(HitCandidateCount);
         // 적 스프라이트가 레퍼런스 크기로 줄어든 것(슬라임 가로 약 0.6, 콜라이더 반지름 약 0.3)에 맞춘 값. 이전에는 1.4짜리 적에 맞춘 0.7이었다
         private const float HitRadius = 0.3f;
         private const int HitCandidateCount = 4;
 
-        public void Init(IObjectPool<Projectile> pool, Vector3 startPos, Vector3 direction, float damage, float speed, float lifetime, IEnemyTargetProvider targetProvider)
+        public void Init(IObjectPool<Projectile> pool, Vector3 startPos, Vector3 direction, float damage, float speed, float lifetime, IEnemyTargetProvider targetProvider, int pierceCount = 0)
         {
             this.pool = pool;
             transform.position = startPos;
@@ -30,6 +31,7 @@ namespace Game.Core
             this.speed = speed;
             this.lifetime = lifetime;
             this.targetProvider = targetProvider;
+            hitLedger.Reset(pierceCount);
             ApplyDirectionRoration();
         }
 
@@ -54,11 +56,14 @@ namespace Game.Core
                     continue;
                 }
 
-                Debug.Log(candidate);
+                if (!hitLedger.TryHit(candidate)) { continue; }
                 candidate.TakeDamage((int)damage);
                 SpawnImpact();
-                pool.Release(this);
-                break;
+                if (hitLedger.Exhausted)
+                {
+                    pool.Release(this);
+                    break;
+                }
             }
         }
 

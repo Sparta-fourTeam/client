@@ -31,8 +31,14 @@ namespace Game.Core
                     choiceButtons[i].onClick.RemoveAllListeners();
                     choiceButtons[i].onClick.AddListener(() =>
                     {
-                        weaponController.ApplyUpgradeChoice(choice);
-                        HideAllChoices();
+                        if (weaponController.ApplyUpgradeChoice(choice))
+                        {
+                            HideAllChoices();
+                        }
+                        else
+                        {
+                            OnClickLevelUpButton();
+                        }
                     });
                 }
                 else
