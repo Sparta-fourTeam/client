@@ -37,6 +37,11 @@ namespace Game.Core
         public virtual float FieldDamageMultiplier => inner.FieldDamageMultiplier;
         public virtual float FieldRadius => inner.FieldRadius;
         public virtual float FieldSlowRatio => inner.FieldSlowRatio;
+        public virtual float StunDuration => inner.StunDuration;
+        public virtual float SlowDuration => inner.SlowDuration;
+        public virtual float SlowRatio => inner.SlowRatio;
+        public virtual float VulnerabilityRatio => inner.VulnerabilityRatio;
+        public virtual float VulnerabilityDuration => inner.VulnerabilityDuration;
         public virtual WeaponForm Form => inner.Form;
     }
 }

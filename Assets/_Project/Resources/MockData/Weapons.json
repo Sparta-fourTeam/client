@@ -1172,7 +1172,10 @@
       "paralysisChance": 1,
       "freezeChance": 1,
       "frostbiteChance": 1,
-      "burnChance": 1
+      "burnChance": 1,
+      "stunChance": 0.1,
+      "slowRatio": 0.3,
+      "slowDuration": 2
     },
     "upgrades": [
       {
@@ -1247,6 +1250,50 @@
           {
             "type": 0,
             "value": 25
+          }
+        ]
+      },
+      {
+        "id": "log_impact",
+        "name": "충격 통나무",
+        "desc": "밀침 +75% / 10% 확률로 기절 1초",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "type": 10,
+            "value": 75
+          },
+          {
+            "type": 33,
+            "value": 1
+          }
+        ]
+      },
+      {
+        "id": "log_weight",
+        "name": "중량 증가",
+        "desc": "감속 지속 시간 +4초",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "type": 34,
+            "value": 4
+          }
+        ]
+      },
+      {
+        "id": "log_wound",
+        "name": "상처 악화",
+        "desc": "피격된 요마가 받는 피해 +20% (6초)",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "type": 35,
+            "value": 20
+          },
+          {
+            "type": 36,
+            "value": 6
           }
         ]
       }

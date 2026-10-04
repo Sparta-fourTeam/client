@@ -55,6 +55,7 @@ namespace Game.Core
         private float speed;
         private float lifetime;
         private float freezeDuration;
+        private float stunDuration, stunChance, slowDuration, slowRatio, vulnerabilityRatio, vulnerabilityDuration;
         private float burnDuration;
         private float burnDamage;
         private float burnMaxHpRatio;
@@ -77,7 +78,7 @@ namespace Game.Core
         private float hitRadius = 0.3f;
         private const int HitCandidateCount = 4;
 
-        public void Init(IObjectPool<Projectile> pool, Vector3 startPos, Vector3 direction, float damage, float speed, float lifetime, IEnemyTargetProvider targetProvider, int pierceCount = 0, float freezeDuration = 0, System.Action<Vector2, Vector3, IEnemyTarget> onHit = null, IEnemyTarget ignoredTarget = null, float knockbackDistance = 0, float frostbiteRatio = 0, float paralysisDuration = 0, float lightningDamage = 0, float paralysisChance = 1, System.Func<float> randomValue = null, float burnDuration = 0, float burnDamage = 0, float burnMaxHpRatio = 0, System.Action<Vector2> burnOnDeath = null, float freezeChance = 1, float frostbiteChance = 1, float burnChance = 1, float collisionRadius = .3f)
+        public void Init(IObjectPool<Projectile> pool, Vector3 startPos, Vector3 direction, float damage, float speed, float lifetime, IEnemyTargetProvider targetProvider, int pierceCount = 0, float freezeDuration = 0, System.Action<Vector2, Vector3, IEnemyTarget> onHit = null, IEnemyTarget ignoredTarget = null, float knockbackDistance = 0, float frostbiteRatio = 0, float paralysisDuration = 0, float lightningDamage = 0, float paralysisChance = 1, System.Func<float> randomValue = null, float burnDuration = 0, float burnDamage = 0, float burnMaxHpRatio = 0, System.Action<Vector2> burnOnDeath = null, float freezeChance = 1, float frostbiteChance = 1, float burnChance = 1, float collisionRadius = .3f, float stunDuration = 0, float stunChance = 1, float slowDuration = 0, float slowRatio = 0, float vulnerabilityRatio = 0, float vulnerabilityDuration = 0)
         {
             hitRadius = Mathf.Max(0, collisionRadius);
             this.onHit = onHit;
@@ -89,6 +90,9 @@ namespace Game.Core
             this.speed = speed;
             this.lifetime = lifetime;
             this.freezeDuration = freezeDuration;
+            this.stunDuration = stunDuration; this.stunChance = stunChance;
+            this.slowDuration = slowDuration; this.slowRatio = slowRatio;
+            this.vulnerabilityRatio = vulnerabilityRatio; this.vulnerabilityDuration = vulnerabilityDuration;
             this.burnDuration = burnDuration;
             this.burnDamage = burnDamage;
             this.burnMaxHpRatio = burnMaxHpRatio;
@@ -149,6 +153,9 @@ namespace Game.Core
                 if (paralysisDuration > 0 && candidate is IParalyzableTarget paralyzed && StatusProc.Roll(paralysisChance, randomValue)) { paralyzed.ApplyParalysis(paralysisDuration); }
                 if (lightningDamage > 0) { candidate.TakeDamage(Mathf.Max(1, (int)lightningDamage)); }
                 if (burnDuration > 0 && burnDamage > 0 && candidate is IBurnableTarget burning && StatusProc.Roll(burnChance, randomValue)) { burning.ApplyBurn(burnDamage, burnDuration, burnMaxHpRatio, burnOnDeath); }
+                if (stunDuration > 0 && candidate is IStunnableTarget stunned && StatusProc.Roll(stunChance, randomValue)) { stunned.ApplyStun(stunDuration); }
+                if (slowDuration > 0 && slowRatio > 0 && candidate is ISlowableTarget slowed) { slowed.ApplySlow(slowRatio, slowDuration); }
+                if (vulnerabilityDuration > 0 && vulnerabilityRatio > 0 && candidate is IVulnerableTarget vulnerable) { vulnerable.ApplyVulnerability(vulnerabilityRatio, vulnerabilityDuration); }
                 SpawnImpact(hitPosition);
                 onHit?.Invoke(hitPosition, direction, candidate);
                 if (hitLedger.Exhausted)

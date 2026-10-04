@@ -38,6 +38,11 @@ namespace Game.Core
         public float FieldDamageMultiplier => 1;
         public float FieldRadius => data.fieldRadius;
         public float FieldSlowRatio => data.fieldSlowRatio;
+        public float StunDuration => data.stunDuration;
+        public float SlowDuration => data.slowDuration;
+        public float SlowRatio => data.slowRatio;
+        public float VulnerabilityRatio => 0;
+        public float VulnerabilityDuration => 0;
         public WeaponForm Form => WeaponForm.Default;
     }
 }

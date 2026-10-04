@@ -2,6 +2,17 @@ using System;
 
 namespace Game.Core
 {
+    public sealed class TargetStatusUpgrade : StatDecorator
+    {
+        private readonly UpgradeType type;
+        private readonly float value;
+        public TargetStatusUpgrade(IWeaponStats inner, UpgradeType type, float value) : base(inner) { this.type = type; this.value = value; }
+        public override float StunDuration => type == UpgradeType.StunDuration ? Math.Max(inner.StunDuration, value) : inner.StunDuration;
+        public override float SlowDuration => inner.SlowDuration + (type == UpgradeType.SlowDuration ? value : 0);
+        public override float VulnerabilityRatio => type == UpgradeType.VulnerabilityRatio ? Math.Max(inner.VulnerabilityRatio, value * .01f) : inner.VulnerabilityRatio;
+        public override float VulnerabilityDuration => type == UpgradeType.VulnerabilityDuration ? Math.Max(inner.VulnerabilityDuration, value) : inner.VulnerabilityDuration;
+    }
+
     public sealed class ProjectileSizeUpgrade : StatDecorator
     {
         private readonly float factor;

@@ -2689,7 +2689,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 5,
+        "cardId": "log_impact",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -2719,7 +2724,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 5,
+        "cardId": "log_weight",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -2780,7 +2790,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 5,
+        "cardId": "log_wound",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false

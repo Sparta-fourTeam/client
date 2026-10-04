@@ -111,6 +111,12 @@ namespace Game.Core
                     case UpgradeType.CastCount: nextStats = new CastCountUpgrade(nextStats, (int)effect.value); break;
                     case UpgradeType.PierceCount: nextStats = new PierceCountUpgrade(nextStats, (int)effect.value); break;
                     case UpgradeType.ProjectileSpeed: nextStats = new ProjectileSpeedUpgrade(nextStats, effect.value); break;
+                    case UpgradeType.StunDuration:
+                    case UpgradeType.SlowDuration:
+                    case UpgradeType.VulnerabilityRatio:
+                    case UpgradeType.VulnerabilityDuration:
+                        if (effect.value <= 0) { return false; }
+                        nextStats = new TargetStatusUpgrade(nextStats, effect.type, effect.value); break;
                     case UpgradeType.ProjectileSize:
                         if (effect.value <= 0) { return false; }
                         nextStats = new ProjectileSizeUpgrade(nextStats, effect.value); break;

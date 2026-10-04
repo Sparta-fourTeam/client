@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Game.Core
 {
-    public class EnemyModel : IEnemyTarget, IFreezableTarget, IKnockbackTarget, IFrostbiteTarget, IParalyzableTarget, IBurnableTarget, IAreaSlowTarget
+    public class EnemyModel : IEnemyTarget, IFreezableTarget, IKnockbackTarget, IFrostbiteTarget, IParalyzableTarget, IBurnableTarget, IAreaSlowTarget, IStunnableTarget, ISlowableTarget, IVulnerableTarget
     {
         // 아래쪽 방향으로 이동.
         private static readonly Vector2 _moveDirection = Vector2.down;
@@ -47,7 +47,7 @@ namespace Game.Core
         {
             get
             {
-                float strongest = 0;
+                float strongest = SlowRemaining > 0 ? slowRatio : 0;
                 foreach (var ratio in areaSlows.Values) { strongest = Math.Max(strongest, ratio); }
                 return 1 - strongest;
             }
@@ -60,6 +60,29 @@ namespace Game.Core
         public void RemoveAreaSlow(object source)
         {
             if (source != null) { areaSlows.Remove(source); }
+        }
+
+        public float StunRemaining { get; private set; }
+        public bool IsStunned => StunRemaining > 0;
+        public float SlowRemaining { get; private set; }
+        private float slowRatio;
+        public float VulnerabilityRemaining { get; private set; }
+        public float VulnerabilityRatio { get; private set; }
+        private static bool PositiveFinite(float value) => value > 0 && !float.IsNaN(value) && !float.IsInfinity(value);
+        public void ApplyStun(float duration)
+        {
+            if (!IsDead && PositiveFinite(duration)) { StunRemaining = Math.Max(StunRemaining, duration); }
+        }
+        public void ApplySlow(float ratio, float duration)
+        {
+            if (IsDead || !PositiveFinite(ratio) || ratio >= 1 || !PositiveFinite(duration)) { return; }
+            slowRatio = Math.Max(slowRatio, ratio); SlowRemaining = Math.Max(SlowRemaining, duration);
+        }
+        public void ApplyVulnerability(float ratio, float duration)
+        {
+            if (IsDead || !PositiveFinite(ratio) || !PositiveFinite(duration)) { return; }
+            VulnerabilityRatio = Math.Max(VulnerabilityRatio, ratio);
+            VulnerabilityRemaining = Math.Max(VulnerabilityRemaining, duration);
         }
 
         public float BurnRemaining { get; private set; }
@@ -164,6 +187,19 @@ namespace Game.Core
         public void TickStatus(float deltaTime)
         {
             if (deltaTime <= 0 || float.IsNaN(deltaTime) || float.IsInfinity(deltaTime)) { return; }
+            if (VulnerabilityRemaining > 0 && deltaTime > VulnerabilityRemaining)
+            {
+                float active = VulnerabilityRemaining;
+                TickStatusSlice(active); TickStatusSlice(deltaTime - active);
+            }
+            else { TickStatusSlice(deltaTime); }
+        }
+
+        private void TickStatusSlice(float deltaTime)
+        {
+            StunRemaining = Math.Max(0, StunRemaining - deltaTime);
+            SlowRemaining = Math.Max(0, SlowRemaining - deltaTime);
+            if (SlowRemaining <= 0) { slowRatio = 0; }
             FreezeRemaining = Math.Max(0, FreezeRemaining - deltaTime);
             ParalysisRemaining = Math.Max(0, ParalysisRemaining - deltaTime);
             TickBurn(deltaTime);
@@ -180,6 +216,8 @@ namespace Game.Core
                 }
             }
             frostbite.RemoveAll(stack => stack.Remaining <= 0);
+            VulnerabilityRemaining = Math.Max(0, VulnerabilityRemaining - deltaTime);
+            if (VulnerabilityRemaining <= 0) { VulnerabilityRatio = 0; }
             if (IsDead)
             {
                 frostbite.Clear();
@@ -215,7 +253,7 @@ namespace Game.Core
         // 매 프레임 speed만큼 이동
         public void Move(float deltaTime)
         {
-            if (IsDead || IsFrozen || IsParalyzed)
+            if (IsDead || IsFrozen || IsParalyzed || IsStunned)
             {
                 return;
             }
@@ -231,7 +269,7 @@ namespace Game.Core
 
         public void Attack(float deltaTime, Wall wall, EnemyProjectileSystem projectiles)
         {
-            if (IsDead || IsFrozen || IsParalyzed || wall.IsDestroyed)
+            if (IsDead || IsFrozen || IsParalyzed || IsStunned || wall.IsDestroyed)
             {
                 return;
             }
@@ -263,7 +301,13 @@ namespace Game.Core
                 return;
             }
 
-            Hp = Math.Max(0, Hp - amount);
+            int appliedDamage = amount;
+            if (VulnerabilityRemaining > 0)
+            {
+                double amplified = Math.Floor(Math.Round(amount * (1d + VulnerabilityRatio), 4));
+                appliedDamage = (int)Math.Min(int.MaxValue, amplified);
+            }
+            Hp = Math.Max(0, Hp - appliedDamage);
             _hpChangedPublisher.Publish(new EnemyHpChanged(Id, Hp, MaxHp));
 
             if (Hp == 0)
@@ -271,6 +315,8 @@ namespace Game.Core
                 var deathExplosion = BurnRemaining > 0 ? burnOnDeath : null;
                 ClearBurn();
                 areaSlows.Clear();
+                StunRemaining = SlowRemaining = VulnerabilityRemaining = 0;
+                slowRatio = VulnerabilityRatio = 0;
                 _diedPublisher.Publish(new EnemyDied(Id));
                 deathExplosion?.Invoke(Position);
             }

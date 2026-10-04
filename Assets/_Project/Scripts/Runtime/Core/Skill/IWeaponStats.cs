@@ -34,6 +34,11 @@ namespace Game.Core
         float FieldDamageMultiplier { get; }
         float FieldRadius { get; }
         float FieldSlowRatio { get; }
+        float StunDuration { get; }
+        float SlowDuration { get; }
+        float SlowRatio { get; }
+        float VulnerabilityRatio { get; }
+        float VulnerabilityDuration { get; }
         WeaponForm Form { get; }
     }
 }

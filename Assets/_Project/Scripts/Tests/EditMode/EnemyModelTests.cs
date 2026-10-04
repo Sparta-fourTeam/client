@@ -50,6 +50,60 @@ namespace Game.Tests
             Assert.AreEqual(1, enemy.MovementMultiplier);
         }
 
+        [Test]
+        public void Stun_StopsMovementAndAttackIndependentlyOfParalysisAndExpires()
+        {
+            var enemy = CreateEnemy(speed: 1, position: Vector2.up * 100);
+            enemy.ApplyStun(1);
+            Assert.DoesNotThrow(() => enemy.Attack(1, null, null));
+            enemy.ApplyParalysis(2);
+            enemy.Move(1); Assert.AreEqual(100, enemy.Position.y);
+            enemy.ApplyStun(.5f); Assert.AreEqual(1, enemy.StunRemaining);
+            enemy.TickStatus(1); Assert.IsFalse(enemy.IsStunned); Assert.IsTrue(enemy.IsParalyzed);
+            enemy.TickStatus(1); enemy.Move(1); Assert.AreEqual(99, enemy.Position.y);
+            enemy.ApplyStun(float.NaN); enemy.ApplyStun(-1); Assert.AreEqual(0, enemy.StunRemaining);
+        }
+
+        [Test]
+        public void TimedSlow_DoesNotStackWithAreaSlowAndRestoresStrongestRemainingSource()
+        {
+            var enemy = CreateEnemy(speed: 10, position: Vector2.up * 100);
+            var source = new object(); enemy.SetAreaSlow(source, .6f); enemy.ApplySlow(.3f, 2);
+            Assert.AreEqual(.4f, enemy.MovementMultiplier, .001f);
+            enemy.RemoveAreaSlow(source); Assert.AreEqual(.7f, enemy.MovementMultiplier, .001f);
+            enemy.ApplySlow(.2f, 1); Assert.AreEqual(2, enemy.SlowRemaining);
+            enemy.Move(1); Assert.AreEqual(93, enemy.Position.y, .001f);
+            enemy.TickStatus(2); Assert.AreEqual(1, enemy.MovementMultiplier);
+            enemy.ApplySlow(float.NaN, 1); enemy.ApplySlow(1, 2); Assert.AreEqual(0, enemy.SlowRemaining);
+        }
+
+        [Test]
+        public void Vulnerability_AmplifiesAllReceivedDamageWithoutStackingAndExpires()
+        {
+            var enemy = CreateEnemy(maxHp: 1000);
+            enemy.TakeDamage(10); Assert.AreEqual(990, enemy.Hp);
+            enemy.ApplyVulnerability(.2f, 6); enemy.ApplyVulnerability(.2f, 6);
+            enemy.TakeDamage(10); Assert.AreEqual(978, enemy.Hp);
+            enemy.ApplyBurn(10, 1); enemy.ApplyFrostbite(10);
+            enemy.TickStatus(1); Assert.AreEqual(954, enemy.Hp);
+            Assert.AreEqual(5, enemy.VulnerabilityRemaining);
+            enemy.TickStatus(5);
+            enemy.TakeDamage(10); Assert.AreEqual(884, enemy.Hp);
+            Assert.AreEqual(0, enemy.VulnerabilityRatio);
+            enemy.ApplyVulnerability(float.NaN, 1); Assert.AreEqual(0, enemy.VulnerabilityRemaining);
+            enemy.ApplyVulnerability(.2f, 1); enemy.TakeDamage(1000);
+            Assert.IsTrue(enemy.IsDead); Assert.AreEqual(0, enemy.VulnerabilityRemaining);
+        }
+
+        [Test]
+        public void Vulnerability_LargeStatusTickOnlyAmplifiesDamageBeforeExpiry()
+        {
+            var enemy = CreateEnemy(maxHp: 100);
+            enemy.ApplyBurn(10, 3); enemy.ApplyVulnerability(.2f, 1);
+            enemy.TickStatus(3);
+            Assert.AreEqual(68, enemy.Hp); Assert.AreEqual(0, enemy.VulnerabilityRemaining);
+        }
+
         private class LightningProvider : IEnemyTargetProvider
         {
             public readonly List<IEnemyTarget> Targets = new();
