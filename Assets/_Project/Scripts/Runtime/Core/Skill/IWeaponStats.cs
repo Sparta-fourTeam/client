@@ -21,5 +21,7 @@ namespace Game.Core
         float LightningStrikeRatio { get; }
         float AuxiliaryLightningRatio { get; }
         bool AuxiliaryExplosions { get; }
+        float BurnDuration { get; }
+        float BurnRatio { get; }
     }
 }

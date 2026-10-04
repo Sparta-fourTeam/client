@@ -372,6 +372,26 @@
           "kunai_explosion",
           "kunai_spread"
         ]
+      },
+      {
+        "id": "kunai_flame",
+        "name": "화염 쿠나이",
+        "desc": "점화 추가 (6초 지속)",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "type": 20,
+            "value": 6
+          },
+          {
+            "type": 21,
+            "value": 10
+          }
+        ],
+        "requiredCardIds": [
+          "kunai_explosion",
+          "arrow_sharp"
+        ]
       }
     ]
   },
@@ -464,6 +484,25 @@
           {
             "type": 14,
             "value": 80
+          }
+        ],
+        "requiredCardIds": [
+          "fireball_explosion_damage"
+        ]
+      },
+      {
+        "id": "fireball_burn",
+        "name": "화염구 점화",
+        "desc": "점화 추가 (6초 지속)",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "type": 20,
+            "value": 6
+          },
+          {
+            "type": 21,
+            "value": 10
           }
         ],
         "requiredCardIds": [

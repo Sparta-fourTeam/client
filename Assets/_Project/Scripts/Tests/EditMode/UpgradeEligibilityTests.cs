@@ -62,6 +62,23 @@ namespace Game.Tests
         }
 
         [Test]
+        public void BurnCards_RequireTheirPredecessors()
+        {
+            var catalog = new DefaultWeaponDataProvider().LoadAll();
+            var state = Owned();
+            var flame = catalog.Find(w => w.id == 1).upgrades.Find(c => c.id == "kunai_flame");
+            state.Counts[(1, "kunai_explosion")] = 1;
+            Assert.IsFalse(UpgradeEligibility.CanAcquire(flame, 1, state));
+            state.Counts[(1, "arrow_sharp")] = 1;
+            Assert.IsTrue(UpgradeEligibility.CanAcquire(flame, 1, state));
+            var burn = catalog.Find(w => w.id == 2).upgrades.Find(c => c.id == "fireball_burn");
+            state.Levels[2] = 1;
+            Assert.IsFalse(UpgradeEligibility.CanAcquire(burn, 2, state));
+            state.Counts[(2, "fireball_explosion_damage")] = 1;
+            Assert.IsTrue(UpgradeEligibility.CanAcquire(burn, 2, state));
+        }
+
+        [Test]
         public void RequiredWeapons_AllMustBeOwned()
         {
             var s = Owned(); var o = Option(); o.requiredWeaponIds = new[] { 2, 3 };

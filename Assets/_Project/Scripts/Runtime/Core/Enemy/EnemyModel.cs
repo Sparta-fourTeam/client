@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Game.Core
 {
-    public class EnemyModel : IEnemyTarget, IFreezableTarget, IKnockbackTarget, IFrostbiteTarget, IParalyzableTarget
+    public class EnemyModel : IEnemyTarget, IFreezableTarget, IKnockbackTarget, IFrostbiteTarget, IParalyzableTarget, IBurnableTarget
     {
         // 아래쪽 방향으로 이동.
         private static readonly Vector2 _moveDirection = Vector2.down;
@@ -40,6 +40,41 @@ namespace Game.Core
             }
 
             ParalysisRemaining = Math.Max(ParalysisRemaining, duration);
+        }
+
+        public float BurnRemaining { get; private set; }
+        private float burnDamage;
+        private float burnElapsed;
+        public void ApplyBurn(float damagePerSecond, float duration)
+        {
+            if (IsDead || damagePerSecond <= 0 || duration <= 0
+                || float.IsNaN(damagePerSecond) || float.IsInfinity(damagePerSecond)
+                || float.IsNaN(duration) || float.IsInfinity(duration))
+            {
+                return;
+            }
+
+            if (BurnRemaining <= 0) { burnElapsed = 0; burnDamage = 0; }
+            BurnRemaining = Math.Max(BurnRemaining, duration);
+            burnDamage = Math.Max(burnDamage, damagePerSecond);
+        }
+
+        private void TickBurn(float deltaTime)
+        {
+            if (IsDead) { BurnRemaining = 0; burnElapsed = 0; burnDamage = 0; return; }
+            if (BurnRemaining <= 0)
+            {
+                return;
+            }
+
+            burnElapsed += Math.Min(deltaTime, BurnRemaining);
+            BurnRemaining = Math.Max(0, BurnRemaining - deltaTime);
+            while (burnElapsed >= 1 && !IsDead)
+            {
+                burnElapsed -= 1;
+                TakeDamage(Math.Max(1, (int)burnDamage));
+            }
+            if (BurnRemaining <= 0 || IsDead) { BurnRemaining = 0; burnElapsed = 0; burnDamage = 0; }
         }
 
         private sealed class FrostbiteStack
@@ -89,6 +124,7 @@ namespace Game.Core
             if (deltaTime <= 0 || float.IsNaN(deltaTime) || float.IsInfinity(deltaTime)) { return; }
             FreezeRemaining = Math.Max(0, FreezeRemaining - deltaTime);
             ParalysisRemaining = Math.Max(0, ParalysisRemaining - deltaTime);
+            TickBurn(deltaTime);
             if (IsDead) { frostbite.Clear(); return; }
             foreach (var stack in frostbite)
             {

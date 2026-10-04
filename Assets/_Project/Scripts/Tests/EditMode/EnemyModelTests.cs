@@ -107,6 +107,40 @@ namespace Game.Tests
         }
 
         [Test]
+        public void Burn_RefreshDoesNotResetTickProgressOrStackAndExpires()
+        {
+            var enemy = CreateEnemy(maxHp: 100);
+            enemy.ApplyBurn(2, 6);
+            enemy.TickStatus(0.5f);
+            enemy.ApplyBurn(1, 6);
+            enemy.TickStatus(0);
+            Assert.AreEqual(100, enemy.Hp);
+            enemy.TickStatus(0.5f);
+            Assert.AreEqual(98, enemy.Hp);
+            enemy.TickStatus(20);
+            Assert.AreEqual(88, enemy.Hp);
+            Assert.AreEqual(0, enemy.BurnRemaining);
+        }
+
+        [Test]
+        public void Burn_CoexistsWithFreezeAndFrostbiteAndPublishesDeathOnce()
+        {
+            var enemy = CreateEnemy(maxHp: 10);
+            enemy.ApplyBurn(float.NaN, 6);
+            Assert.AreEqual(0, enemy.BurnRemaining);
+            enemy.ApplyBurn(3, 6);
+            enemy.ApplyFreeze(2);
+            enemy.ApplyFrostbite(2);
+            enemy.TickStatus(1);
+            Assert.AreEqual(5, enemy.Hp);
+            Assert.IsTrue(enemy.IsFrozen);
+            enemy.TickStatus(20);
+            enemy.TickStatus(20);
+            Assert.AreEqual(1, _died.Published.Count);
+            Assert.AreEqual(0, enemy.BurnRemaining);
+        }
+
+        [Test]
         public void Freeze_StopsMovementRefreshesWithoutStackingAndExpires()
         {
             var enemy = CreateEnemy(speed: 1, position: new Vector2(0, 5));

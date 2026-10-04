@@ -24,5 +24,7 @@ namespace Game.Core
         public virtual float LightningStrikeRatio => inner.LightningStrikeRatio;
         public virtual float AuxiliaryLightningRatio => inner.AuxiliaryLightningRatio;
         public virtual bool AuxiliaryExplosions => inner.AuxiliaryExplosions;
+        public virtual float BurnDuration => inner.BurnDuration;
+        public virtual float BurnRatio => inner.BurnRatio;
     }
 }

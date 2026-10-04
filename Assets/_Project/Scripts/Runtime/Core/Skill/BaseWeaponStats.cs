@@ -25,5 +25,7 @@ namespace Game.Core
         public float LightningStrikeRatio => 0;
         public float AuxiliaryLightningRatio => 0;
         public bool AuxiliaryExplosions => false;
+        public float BurnDuration => 0;
+        public float BurnRatio => 0;
     }
 }

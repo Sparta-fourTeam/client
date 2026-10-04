@@ -2,6 +2,15 @@ using System;
 
 namespace Game.Core
 {
+    public sealed class BurnUpgrade : StatDecorator
+    {
+        private readonly float value;
+        private readonly bool duration;
+        public BurnUpgrade(IWeaponStats inner, float value, bool duration) : base(inner) { this.value = value; this.duration = duration; }
+        public override float BurnDuration => duration ? value : inner.BurnDuration;
+        public override float BurnRatio => duration ? inner.BurnRatio : value * 0.01f;
+    }
+
     public sealed class AuxiliaryExplosionUpgrade : StatDecorator
     {
         public AuxiliaryExplosionUpgrade(IWeaponStats inner) : base(inner) { }
