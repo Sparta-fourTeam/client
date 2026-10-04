@@ -1122,7 +1122,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 2,
+        "cardId": "fireball_burst_ii",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": true
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false

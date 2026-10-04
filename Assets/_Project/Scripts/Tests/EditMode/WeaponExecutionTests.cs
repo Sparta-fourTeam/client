@@ -293,6 +293,27 @@ namespace Game.Tests
         }
 
         [Test]
+        public void Catalog_RejectsDanglingImpossibleAndCyclicPrerequisites()
+        {
+            var a = new WeaponUpgradeOption { id = "a", maxPickCount = 1, effects = new System.Collections.Generic.List<StatEffect>() };
+            var b = new WeaponUpgradeOption { id = "b", maxPickCount = 1, effects = new System.Collections.Generic.List<StatEffect>() };
+            var data = new[] { new WeaponData
+            {
+                id = 1, maxLevel = 15, baseStats = new WeaponBaseStats(),
+                upgrades = new System.Collections.Generic.List<WeaponUpgradeOption> { a, b }
+            } };
+            a.requiredCardIds = new[] { "missing" };
+            Assert.Throws<InvalidOperationException>(() => DefaultWeaponDataProvider.Parse(Newtonsoft.Json.JsonConvert.SerializeObject(data)));
+            a.requiredCardIds = null;
+            a.requiredCardCounts = new[] { new CardCountRequirement { cardId = "b", count = 2 } };
+            Assert.Throws<InvalidOperationException>(() => DefaultWeaponDataProvider.Parse(Newtonsoft.Json.JsonConvert.SerializeObject(data)));
+            a.requiredCardCounts = null;
+            a.requiredCardIds = new[] { "b" };
+            b.requiredCardIds = new[] { "a" };
+            Assert.Throws<InvalidOperationException>(() => DefaultWeaponDataProvider.Parse(Newtonsoft.Json.JsonConvert.SerializeObject(data)));
+        }
+
+        [Test]
         public void Catalog_RejectsDuplicateWeaponIds()
         {
             const string json = "[{\"id\":1,\"maxLevel\":1,\"baseStats\":{},\"upgrades\":[]},{\"id\":1,\"maxLevel\":1,\"baseStats\":{},\"upgrades\":[]}]";

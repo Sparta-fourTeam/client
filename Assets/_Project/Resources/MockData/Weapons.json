@@ -173,6 +173,42 @@
             "value": 1
           }
         ]
+      },
+      {
+        "id": "fireball_burst_ii",
+        "name": "연속 화염구Ⅱ",
+        "desc": "추가 시전 +2 / 공격력 -30%",
+        "maxPickCount": 1,
+        "requiredCardCounts": [
+          {
+            "weaponId": 0,
+            "cardId": "fireball_burst",
+            "count": 2
+          }
+        ],
+        "effects": [
+          {
+            "type": 4,
+            "value": 2
+          },
+          {
+            "type": 1,
+            "value": -30
+          }
+        ],
+        "variants": [
+          {
+            "minPermanentLevel": 9,
+            "name": "연속 화염구(+)Ⅱ",
+            "desc": "추가 시전 +2",
+            "effects": [
+              {
+                "type": 4,
+                "value": 2
+              }
+            ]
+          }
+        ]
       }
     ]
   },

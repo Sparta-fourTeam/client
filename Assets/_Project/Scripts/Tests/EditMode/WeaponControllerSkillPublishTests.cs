@@ -184,6 +184,21 @@ namespace Game.Tests
         }
 
         [Test]
+        public void FireballSecondRepeat_RequiresTwoPicksAndConsumesOnce()
+        {
+            Assert.IsTrue(_controller.AddWeapon(2));
+            Assert.IsFalse(_controller.GetRandomUpgradeChoices(100).Exists(c => c.Option?.id == "fireball_burst_ii"));
+            var first = _controller.GetRandomUpgradeChoices(100).Find(c => c.Option?.id == "fireball_burst");
+            Assert.IsTrue(_controller.ApplyUpgradeChoice(first));
+            Assert.IsFalse(_controller.GetRandomUpgradeChoices(100).Exists(c => c.Option?.id == "fireball_burst_ii"));
+            Assert.IsTrue(_controller.ApplyUpgradeChoice(first));
+            var second = _controller.GetRandomUpgradeChoices(100).Find(c => c.Option?.id == "fireball_burst_ii");
+            Assert.IsTrue(_controller.ApplyUpgradeChoice(second));
+            Assert.IsFalse(_controller.ApplyUpgradeChoice(second));
+            Assert.AreEqual(1, _controller.GetAcquiredCount(2, "fireball_burst_ii"));
+        }
+
+        [Test]
         public void NonPositiveChoiceCount_ReturnsEmpty()
         {
             Assert.IsEmpty(_controller.GetRandomUpgradeChoices(-1));
