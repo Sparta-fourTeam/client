@@ -15,7 +15,9 @@
       "castCount": 1,
       "pierceCount": 0,
       "castInterval": 0.1,
-      "explosionDamageRatio": 1
+      "explosionDamageRatio": 1,
+      "knockbackDistance": 0.2,
+      "paralysisChance": 0.1
     },
     "upgrades": [
       {
@@ -202,15 +204,19 @@
       {
         "id": "kunai_shock",
         "name": "충격 쿠나이",
-        "desc": "충격 쿠나이",
+        "desc": "밀침 +15%",
         "maxPickCount": 1,
-        "effects": [],
+        "effects": [
+          {
+            "type": 10,
+            "value": 15
+          }
+        ],
         "requiredCardIds": [],
         "requiredWeaponIds": [
           3
         ],
-        "enabled": false,
-        "disabledReason": "쿠나이 기본 밀침 수치 연결 대기",
+        "enabled": true,
         "exclusions": [
           {
             "cardId": "kunai_explosion"
@@ -280,6 +286,76 @@
           "kunai_spread"
         ],
         "minPermanentLevel": 13
+      },
+      {
+        "id": "kunai_thunder",
+        "name": "뇌전 쿠나이",
+        "desc": "마비 추가 / 투척 속도 +100%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "type": 16,
+            "value": 1
+          },
+          {
+            "type": 6,
+            "value": 100
+          }
+        ],
+        "requiredCardIds": [
+          "arrow_light",
+          "kunai_shock"
+        ]
+      },
+      {
+        "id": "kunai_quick",
+        "name": "쾌속 투척",
+        "desc": "공격력 -10% / 쿨타임 -20%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "type": 1,
+            "value": -10
+          },
+          {
+            "type": 0,
+            "value": 20
+          }
+        ],
+        "requiredCardIds": [
+          "kunai_thunder"
+        ]
+      },
+      {
+        "id": "kunai_rod",
+        "name": "피뢰침",
+        "desc": "본체 적중 시 소형 벼락 1회",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "type": 17,
+            "value": 50
+          }
+        ],
+        "requiredCardIds": [
+          "kunai_quick"
+        ]
+      },
+      {
+        "id": "kunai_aux_rod",
+        "name": "보조 피뢰침",
+        "desc": "보조 적중 시 소형 벼락 1회",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "type": 18,
+            "value": 50
+          }
+        ],
+        "requiredCardIds": [
+          "kunai_spread",
+          "kunai_rod"
+        ]
       }
     ]
   },

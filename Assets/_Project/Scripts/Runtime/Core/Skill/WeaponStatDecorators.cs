@@ -2,6 +2,16 @@ using System;
 
 namespace Game.Core
 {
+    public sealed class LightningHitUpgrade : StatDecorator
+    {
+        private readonly float value;
+        private readonly UpgradeType type;
+        public LightningHitUpgrade(IWeaponStats inner, float value, UpgradeType type) : base(inner) { this.value = value; this.type = type; }
+        public override float ParalysisDuration => type == UpgradeType.Paralysis ? Math.Max(inner.ParalysisDuration, value) : inner.ParalysisDuration;
+        public override float LightningStrikeRatio => type == UpgradeType.LightningStrike ? value * 0.01f : inner.LightningStrikeRatio;
+        public override float AuxiliaryLightningRatio => type == UpgradeType.AuxiliaryLightning ? value * 0.01f : inner.AuxiliaryLightningRatio;
+    }
+
     public sealed class EnableExplosionUpgrade : StatDecorator
     {
         private readonly float radius;

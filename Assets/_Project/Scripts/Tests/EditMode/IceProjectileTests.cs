@@ -10,10 +10,13 @@ namespace Game.Tests
 {
     public sealed class IceProjectileTests
     {
-        private sealed class Target : IEnemyTarget, IFreezableTarget, IKnockbackTarget, IFrostbiteTarget
+        private sealed class Target : IEnemyTarget, IFreezableTarget, IKnockbackTarget, IFrostbiteTarget, IParalyzableTarget
         {
             public Vector2 Position { get; set; }
+            public int Paralyses;
+            public void ApplyParalysis(float duration) { Paralyses++; }
             public int Hits;
+            public int DamageTaken;
             public int Freezes;
             public int Frostbites;
             public float FrostDamage;
@@ -22,7 +25,7 @@ namespace Game.Tests
             public float PushDistance;
             public void ApplyKnockback(Vector2 direction, float distance) { Pushes++; PushDistance = distance; }
             public float Duration;
-            public void TakeDamage(int damage) { Hits++; }
+            public void TakeDamage(int damage) { Hits++; DamageTaken += damage; }
             public void ApplyFreeze(float duration) { Freezes++; Duration = duration; }
         }
 
@@ -175,6 +178,51 @@ namespace Game.Tests
                 Assert.AreEqual(32, stats.Damage, 0.001f);
                 Assert.AreEqual(32, stats.Damage * 0.5f * stats.ShardDamageMultiplier, 0.001f);
 
+            }
+            finally { Object.DestroyImmediate(go); }
+        }
+
+        [Test]
+        public void LightningRod_TriggersPerMainProjectileAndClearsOnReuse()
+        {
+            var go = new GameObject("LightningRodTest");
+            try
+            {
+                var projectile = go.AddComponent<Projectile>();
+                var provider = new Provider();
+                var pool = new ObjectPool<Projectile>(() => projectile);
+                var tick = typeof(Projectile).GetMethod("Tick", BindingFlags.NonPublic | BindingFlags.Instance);
+                for (int i = 0; i < 3; i++)
+                {
+                    pool.Get().Init(pool, Vector3.zero, Vector3.up, 10, 0, 3, provider, lightningDamage: 5);
+                    tick.Invoke(projectile, new object[] { 0.1f });
+                }
+                Assert.AreEqual(45, provider.Target.DamageTaken);
+                pool.Get().Init(pool, Vector3.zero, Vector3.up, 10, 0, 3, provider);
+                tick.Invoke(projectile, new object[] { 0.1f });
+                Assert.AreEqual(55, provider.Target.DamageTaken);
+            }
+            finally { Object.DestroyImmediate(go); }
+        }
+
+        [Test]
+        public void ParalysisChance_ChecksEachHitAndClearsOnReuse()
+        {
+            var go = new GameObject("ParalysisChanceTest");
+            try
+            {
+                var projectile = go.AddComponent<Projectile>();
+                var provider = new Provider();
+                var pool = new ObjectPool<Projectile>(() => projectile);
+                var tick = typeof(Projectile).GetMethod("Tick", BindingFlags.NonPublic | BindingFlags.Instance);
+                pool.Get().Init(pool, Vector3.zero, Vector3.up, 10, 0, 3, provider, paralysisDuration: 1, paralysisChance: 0.2f, randomValue: () => 0.19f);
+                tick.Invoke(projectile, new object[] { 0.1f });
+                Assert.AreEqual(1, provider.Target.Paralyses);
+                pool.Get().Init(pool, Vector3.zero, Vector3.up, 10, 0, 3, provider, paralysisDuration: 1, paralysisChance: 0.2f, randomValue: () => 0.2f);
+                tick.Invoke(projectile, new object[] { 0.1f });
+                pool.Get().Init(pool, Vector3.zero, Vector3.up, 10, 0, 3, provider);
+                tick.Invoke(projectile, new object[] { 0.1f });
+                Assert.AreEqual(1, provider.Target.Paralyses);
             }
             finally { Object.DestroyImmediate(go); }
         }

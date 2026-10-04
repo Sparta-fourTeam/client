@@ -17,5 +17,8 @@ namespace Game.Core
         float ShardFrostbiteRatio { get; }
         int SplitCount { get; }
         float ShardDamageMultiplier { get; }
+        float ParalysisDuration { get; }
+        float LightningStrikeRatio { get; }
+        float AuxiliaryLightningRatio { get; }
     }
 }

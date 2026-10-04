@@ -87,6 +87,26 @@ namespace Game.Tests
         // ───────── 생성 ─────────
 
         [Test]
+        public void Paralysis_StopsMovementAndAttackExpiresAndRemainsIndependentOfFreeze()
+        {
+            var enemy = CreateEnemy(speed: 1, position: Vector2.up * 5);
+            enemy.ApplyParalysis(1);
+            enemy.ApplyParalysis(0.1f);
+            enemy.Move(1);
+            enemy.Attack(1, null, null);
+            Assert.AreEqual(5, enemy.Position.y);
+            enemy.TickStatus(0);
+            Assert.AreEqual(1, enemy.ParalysisRemaining);
+            enemy.ApplyFreeze(2);
+            enemy.TickStatus(1);
+            Assert.IsFalse(enemy.IsParalyzed);
+            Assert.IsTrue(enemy.IsFrozen);
+            enemy.TickStatus(1);
+            enemy.Move(1);
+            Assert.AreEqual(4, enemy.Position.y);
+        }
+
+        [Test]
         public void Freeze_StopsMovementRefreshesWithoutStackingAndExpires()
         {
             var enemy = CreateEnemy(speed: 1, position: new Vector2(0, 5));

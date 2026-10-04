@@ -20,5 +20,8 @@ namespace Game.Core
         public virtual float ShardFrostbiteRatio => inner.ShardFrostbiteRatio;
         public virtual int SplitCount => inner.SplitCount;
         public virtual float ShardDamageMultiplier => inner.ShardDamageMultiplier;
+        public virtual float ParalysisDuration => inner.ParalysisDuration;
+        public virtual float LightningStrikeRatio => inner.LightningStrikeRatio;
+        public virtual float AuxiliaryLightningRatio => inner.AuxiliaryLightningRatio;
     }
 }

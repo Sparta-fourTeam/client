@@ -34,6 +34,34 @@ namespace Game.Tests
         }
 
         [Test]
+        public void KunaiLightningRoute_RequiresPredecessorsAndExcludesExplosion()
+        {
+            var cards = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == 1).upgrades;
+            var state = Owned();
+            var shock = cards.Find(c => c.id == "kunai_shock");
+            Assert.IsFalse(UpgradeEligibility.CanAcquire(shock, 1, state));
+            state.Levels[3] = 1;
+            Assert.IsTrue(UpgradeEligibility.CanAcquire(shock, 1, state));
+            state.Counts[(1, "kunai_explosion")] = 1;
+            Assert.IsFalse(UpgradeEligibility.CanAcquire(shock, 1, state));
+            state.Counts.Remove((1, "kunai_explosion"));
+            state.Counts[(1, "kunai_shock")] = 1;
+            var thunder = cards.Find(c => c.id == "kunai_thunder");
+            Assert.IsFalse(UpgradeEligibility.CanAcquire(thunder, 1, state));
+            state.Counts[(1, "arrow_light")] = 1;
+            Assert.IsTrue(UpgradeEligibility.CanAcquire(thunder, 1, state));
+            var rod = cards.Find(c => c.id == "kunai_rod");
+            Assert.IsFalse(UpgradeEligibility.CanAcquire(rod, 1, state));
+            state.Counts[(1, "kunai_quick")] = 1;
+            Assert.IsTrue(UpgradeEligibility.CanAcquire(rod, 1, state));
+            var auxiliary = cards.Find(c => c.id == "kunai_aux_rod");
+            state.Counts[(1, "kunai_rod")] = 1;
+            Assert.IsFalse(UpgradeEligibility.CanAcquire(auxiliary, 1, state));
+            state.Counts[(1, "kunai_spread")] = 1;
+            Assert.IsTrue(UpgradeEligibility.CanAcquire(auxiliary, 1, state));
+        }
+
+        [Test]
         public void RequiredWeapons_AllMustBeOwned()
         {
             var s = Owned(); var o = Option(); o.requiredWeaponIds = new[] { 2, 3 };

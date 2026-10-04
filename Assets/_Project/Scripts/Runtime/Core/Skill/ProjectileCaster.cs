@@ -36,7 +36,7 @@ namespace Game.Core
 
                 Projectile projectile = pool.Get();
                 projectile.transform.localScale = projectileScale;
-                projectile.Init(pool, caster.position, direction, stats.Damage, stats.ProjectileSpeed, ProjectileLifetime, targetProvider, stats.PierceCount, stats.FreezeDuration, CreateHitCallback(), knockbackDistance: stats.KnockbackDistance, frostbiteRatio: stats.FrostbiteRatio);
+                projectile.Init(pool, caster.position, direction, stats.Damage, stats.ProjectileSpeed, ProjectileLifetime, targetProvider, stats.PierceCount, stats.FreezeDuration, CreateHitCallback(), knockbackDistance: stats.KnockbackDistance, frostbiteRatio: stats.FrostbiteRatio, paralysisDuration: stats.ParalysisDuration, lightningDamage: stats.Damage * stats.LightningStrikeRatio, paralysisChance: data.baseStats.paralysisChance);
             }
         }
         private System.Action<Vector2, Vector3, IEnemyTarget> CreateHitCallback()
@@ -67,6 +67,7 @@ namespace Game.Core
             float shardDamage = stats.Damage * 0.5f * stats.ShardDamageMultiplier;
             float shardSpeed = stats.ProjectileSpeed;
             float shardFrostbite = stats.ShardFrostbiteRatio;
+            float auxiliaryLightningDamage = shardDamage * stats.AuxiliaryLightningRatio;
             return (position, direction, target) =>
             {
                 for (int i = 0; i < count; i++)
@@ -75,7 +76,7 @@ namespace Game.Core
                     var shard = pool.Get();
                     shard.transform.localScale = projectileScale * 0.5f;
                     shard.Init(pool, position, Quaternion.Euler(0, 0, angle) * direction,
-                        shardDamage, shardSpeed, ProjectileLifetime, targetProvider, ignoredTarget: target, frostbiteRatio: shardFrostbite);
+                        shardDamage, shardSpeed, ProjectileLifetime, targetProvider, ignoredTarget: target, frostbiteRatio: shardFrostbite, lightningDamage: auxiliaryLightningDamage);
                 }
             };
         }

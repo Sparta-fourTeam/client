@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Game.Core
 {
-    public class EnemyModel : IEnemyTarget, IFreezableTarget, IKnockbackTarget, IFrostbiteTarget
+    public class EnemyModel : IEnemyTarget, IFreezableTarget, IKnockbackTarget, IFrostbiteTarget, IParalyzableTarget
     {
         // 아래쪽 방향으로 이동.
         private static readonly Vector2 _moveDirection = Vector2.down;
@@ -30,6 +30,17 @@ namespace Game.Core
         public bool IsDead => Hp <= 0;
         public float FreezeRemaining { get; private set; }
         public bool IsFrozen => FreezeRemaining > 0;
+        public float ParalysisRemaining { get; private set; }
+        public bool IsParalyzed => ParalysisRemaining > 0;
+        public void ApplyParalysis(float duration)
+        {
+            if (IsDead || duration <= 0 || float.IsNaN(duration) || float.IsInfinity(duration))
+            {
+                return;
+            }
+
+            ParalysisRemaining = Math.Max(ParalysisRemaining, duration);
+        }
 
         private sealed class FrostbiteStack
         {
@@ -77,6 +88,7 @@ namespace Game.Core
         {
             if (deltaTime <= 0 || float.IsNaN(deltaTime) || float.IsInfinity(deltaTime)) { return; }
             FreezeRemaining = Math.Max(0, FreezeRemaining - deltaTime);
+            ParalysisRemaining = Math.Max(0, ParalysisRemaining - deltaTime);
             if (IsDead) { frostbite.Clear(); return; }
             foreach (var stack in frostbite)
             {
@@ -125,7 +137,7 @@ namespace Game.Core
         // 매 프레임 speed만큼 이동
         public void Move(float deltaTime)
         {
-            if (IsDead || IsFrozen)
+            if (IsDead || IsFrozen || IsParalyzed)
             {
                 return;
             }
@@ -141,7 +153,7 @@ namespace Game.Core
 
         public void Attack(float deltaTime, Wall wall, EnemyProjectileSystem projectiles)
         {
-            if (IsDead || IsFrozen || wall.IsDestroyed)
+            if (IsDead || IsFrozen || IsParalyzed || wall.IsDestroyed)
             {
                 return;
             }
