@@ -111,6 +111,16 @@ namespace Game.Core
                     case UpgradeType.CastCount: nextStats = new CastCountUpgrade(nextStats, (int)effect.value); break;
                     case UpgradeType.PierceCount: nextStats = new PierceCountUpgrade(nextStats, (int)effect.value); break;
                     case UpgradeType.ProjectileSpeed: nextStats = new ProjectileSpeedUpgrade(nextStats, effect.value); break;
+                    case UpgradeType.Frostbite:
+                    case UpgradeType.ShardFrostbite:
+                        if (effect.value <= 0)
+                        {
+                            return false;
+                        }
+
+                        nextStats = new FrostbiteUpgrade(nextStats, effect.value, effect.type == UpgradeType.ShardFrostbite); break;
+                    case UpgradeType.Knockback:
+                        nextStats = new KnockbackUpgrade(nextStats, effect.value); break;
                     case UpgradeType.SplitCount:
                         if (effect.value <= 0 || effect.value != System.Math.Round(effect.value))
                         {

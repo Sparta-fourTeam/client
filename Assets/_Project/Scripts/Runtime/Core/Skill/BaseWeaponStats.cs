@@ -13,6 +13,9 @@ namespace Game.Core
         public int PierceCount => System.Math.Max(0, data.pierceCount);
         public float ProjectileSpeed => data.speed;
         public float FreezeDuration => data.freezeDuration;
+        public float KnockbackDistance => data.knockbackDistance;
+        public float FrostbiteRatio => 0;
+        public float ShardFrostbiteRatio => 0;
         public int SplitCount => 0;
         public float ShardDamageMultiplier => 1;
 

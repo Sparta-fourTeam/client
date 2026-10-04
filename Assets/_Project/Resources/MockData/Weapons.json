@@ -290,7 +290,8 @@
       "hitCount": 1,
       "castCount": 1,
       "pierceCount": 0,
-      "castInterval": 0.1
+      "castInterval": 0.1,
+      "knockbackDistance": 0.2
     },
     "upgrades": [
       {
@@ -454,9 +455,17 @@
         "name": "얼음창 충격",
         "desc": "밀침 +200% / 관통력 +2",
         "maxPickCount": 1,
-        "effects": [],
-        "enabled": false,
-        "disabledReason": "분열·동상·밀침·형태 변화 중 필요한 전투 효과 구현 대기",
+        "effects": [
+          {
+            "type": 10,
+            "value": 200
+          },
+          {
+            "type": 5,
+            "value": 2
+          }
+        ],
+        "enabled": true,
         "requiredCardIds": []
       },
       {
@@ -464,9 +473,13 @@
         "name": "사무치는 냉기",
         "desc": "동상 10초 / 최대 5회 중첩",
         "maxPickCount": 1,
-        "effects": [],
-        "enabled": false,
-        "disabledReason": "분열·동상·밀침·형태 변화 중 필요한 전투 효과 구현 대기",
+        "effects": [
+          {
+            "type": 11,
+            "value": 10
+          }
+        ],
+        "enabled": true,
         "requiredCardIds": [
           "ice_pierce",
           "ice_extreme"
@@ -477,9 +490,13 @@
         "name": "스며드는 냉기",
         "desc": "소형 얼음창 동상 추가",
         "maxPickCount": 1,
-        "effects": [],
-        "enabled": false,
-        "disabledReason": "분열·동상·밀침·형태 변화 중 필요한 전투 효과 구현 대기",
+        "effects": [
+          {
+            "type": 12,
+            "value": 10
+          }
+        ],
+        "enabled": true,
         "requiredCardIds": [
           "ice_split",
           "ice_frostbite"

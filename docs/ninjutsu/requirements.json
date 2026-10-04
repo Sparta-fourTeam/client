@@ -1605,8 +1605,8 @@
       "runtime": {
         "weaponId": 4,
         "cardId": "ice_impact",
-        "enabled": false,
-        "state": "disabled",
+        "enabled": true,
+        "state": "prototype-active",
         "conditionMapping": "partial",
         "variantConnected": false
       },
@@ -1771,8 +1771,8 @@
       "runtime": {
         "weaponId": 4,
         "cardId": "ice_frostbite",
-        "enabled": false,
-        "state": "disabled",
+        "enabled": true,
+        "state": "prototype-active",
         "conditionMapping": "partial",
         "variantConnected": false
       },
@@ -1814,8 +1814,8 @@
       "runtime": {
         "weaponId": 4,
         "cardId": "ice_shard_frostbite",
-        "enabled": false,
-        "state": "disabled",
+        "enabled": true,
+        "state": "prototype-active",
         "conditionMapping": "partial",
         "variantConnected": false
       },

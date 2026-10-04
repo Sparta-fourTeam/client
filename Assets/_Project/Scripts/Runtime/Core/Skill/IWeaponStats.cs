@@ -10,6 +10,9 @@ namespace Game.Core
         int PierceCount { get; }
         float ProjectileSpeed { get; }
         float FreezeDuration { get; }
+        float KnockbackDistance { get; }
+        float FrostbiteRatio { get; }
+        float ShardFrostbiteRatio { get; }
         int SplitCount { get; }
         float ShardDamageMultiplier { get; }
     }

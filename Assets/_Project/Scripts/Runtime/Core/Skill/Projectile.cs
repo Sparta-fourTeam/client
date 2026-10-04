@@ -16,6 +16,8 @@ namespace Game.Core
         private float speed;
         private float lifetime;
         private float freezeDuration;
+        private float knockbackDistance;
+        private float frostbiteRatio;
         private System.Action<Vector2, Vector3, IEnemyTarget> onHit;
         private IEnemyTarget ignoredTarget;
         private IEnemyTargetProvider targetProvider;
@@ -25,7 +27,7 @@ namespace Game.Core
         private const float HitRadius = 0.3f;
         private const int HitCandidateCount = 4;
 
-        public void Init(IObjectPool<Projectile> pool, Vector3 startPos, Vector3 direction, float damage, float speed, float lifetime, IEnemyTargetProvider targetProvider, int pierceCount = 0, float freezeDuration = 0, System.Action<Vector2, Vector3, IEnemyTarget> onHit = null, IEnemyTarget ignoredTarget = null)
+        public void Init(IObjectPool<Projectile> pool, Vector3 startPos, Vector3 direction, float damage, float speed, float lifetime, IEnemyTargetProvider targetProvider, int pierceCount = 0, float freezeDuration = 0, System.Action<Vector2, Vector3, IEnemyTarget> onHit = null, IEnemyTarget ignoredTarget = null, float knockbackDistance = 0, float frostbiteRatio = 0)
         {
             this.onHit = onHit;
             this.ignoredTarget = ignoredTarget;
@@ -36,6 +38,8 @@ namespace Game.Core
             this.speed = speed;
             this.lifetime = lifetime;
             this.freezeDuration = freezeDuration;
+            this.knockbackDistance = knockbackDistance;
+            this.frostbiteRatio = frostbiteRatio;
             this.targetProvider = targetProvider;
             hitLedger.Reset(pierceCount);
             ApplyDirectionRoration();
@@ -77,6 +81,8 @@ namespace Game.Core
                 if (!hitLedger.TryHit(candidate)) { continue; }
                 candidate.TakeDamage((int)damage);
                 if (freezeDuration > 0 && candidate is IFreezableTarget freezable) { freezable.ApplyFreeze(freezeDuration); }
+                if (knockbackDistance > 0 && candidate is IKnockbackTarget movable) { movable.ApplyKnockback(direction, knockbackDistance); }
+                if (frostbiteRatio > 0 && candidate is IFrostbiteTarget frosted) { frosted.ApplyFrostbite(damage * frostbiteRatio); }
                 SpawnImpact(hitPosition);
                 onHit?.Invoke(hitPosition, direction, candidate);
                 if (hitLedger.Exhausted)

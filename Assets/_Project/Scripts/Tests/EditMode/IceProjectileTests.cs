@@ -10,11 +10,17 @@ namespace Game.Tests
 {
     public sealed class IceProjectileTests
     {
-        private sealed class Target : IEnemyTarget, IFreezableTarget
+        private sealed class Target : IEnemyTarget, IFreezableTarget, IKnockbackTarget, IFrostbiteTarget
         {
             public Vector2 Position { get; set; }
             public int Hits;
             public int Freezes;
+            public int Frostbites;
+            public float FrostDamage;
+            public void ApplyFrostbite(float damage) { Frostbites++; FrostDamage = damage; }
+            public int Pushes;
+            public float PushDistance;
+            public void ApplyKnockback(Vector2 direction, float distance) { Pushes++; PushDistance = distance; }
             public float Duration;
             public void TakeDamage(int damage) { Hits++; }
             public void ApplyFreeze(float duration) { Freezes++; Duration = duration; }
@@ -41,14 +47,20 @@ namespace Game.Tests
                 var targets = new Provider();
                 var pool = new ObjectPool<Projectile>(() => projectile);
                 var update = typeof(Projectile).GetMethod("Update", BindingFlags.NonPublic | BindingFlags.Instance);
-                pool.Get().Init(pool, Vector3.zero, Vector3.up, 10, 0, 3, targets, freezeDuration: 2);
+                pool.Get().Init(pool, Vector3.zero, Vector3.up, 10, 0, 3, targets, freezeDuration: 2, knockbackDistance: 0.6f, frostbiteRatio: 0.1f);
                 update.Invoke(projectile, null);
                 Assert.AreEqual(1, targets.Target.Hits);
                 Assert.AreEqual(1, targets.Target.Freezes);
                 Assert.AreEqual(2, targets.Target.Duration);
+                Assert.AreEqual(1, targets.Target.Pushes);
+                Assert.AreEqual(0.6f, targets.Target.PushDistance);
+                Assert.AreEqual(1, targets.Target.Frostbites);
+                Assert.AreEqual(1, targets.Target.FrostDamage);
                 pool.Get().Init(pool, Vector3.zero, Vector3.up, 10, 0, 3, targets);
                 update.Invoke(projectile, null);
                 Assert.AreEqual(2, targets.Target.Hits);
+                Assert.AreEqual(1, targets.Target.Frostbites, "재사용 시 동상이 남으면 안 된다");
+                Assert.AreEqual(1, targets.Target.Pushes, "재사용 시 밀침이 남으면 안 된다");
                 Assert.AreEqual(1, targets.Target.Freezes, "재사용한 일반 투사체에 빙결이 남으면 안 된다");
             }
             finally { Object.DestroyImmediate(go); }

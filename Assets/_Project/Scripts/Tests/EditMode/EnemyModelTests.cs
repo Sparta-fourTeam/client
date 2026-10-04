@@ -33,6 +33,57 @@ namespace Game.Tests
             return new EnemyModel(id, position, speed, EnemyType.Normal, maxHp, TestAttack, _hpChanged, _died);
         }
 
+        [Test]
+        public void Knockback_NormalizesDirectionWorksDuringFreezeAndRejectsInvalidValues()
+        {
+            var enemy = CreateEnemy(position: new Vector2(0, 5));
+            enemy.ApplyFreeze(2);
+            enemy.ApplyKnockback(new Vector2(0, 10), 0.6f);
+            Assert.AreEqual(5.6f, enemy.Position.y, 0.001f);
+            enemy.ApplyKnockback(Vector2.up, float.NaN);
+            enemy.ApplyKnockback(Vector2.up, -1);
+            enemy.ApplyKnockback(new Vector2(float.PositiveInfinity, 0), 1);
+            Assert.AreEqual(5.6f, enemy.Position.y, 0.001f);
+            enemy.TakeDamage(10);
+            enemy.ApplyKnockback(Vector2.up, 1);
+            Assert.AreEqual(5.6f, enemy.Position.y, 0.001f);
+        }
+
+        [Test]
+        public void Frostbite_StacksToFiveTicksEachSecondAndExpiresAtTenSeconds()
+        {
+            var enemy = CreateEnemy(maxHp: 1000);
+            for (int i = 0; i < 6; i++)
+            {
+                enemy.ApplyFrostbite(2);
+            }
+
+            Assert.AreEqual(5, enemy.FrostbiteStacks);
+            enemy.TickStatus(0);
+            Assert.AreEqual(1000, enemy.Hp);
+            enemy.TickStatus(0.5f);
+            Assert.AreEqual(1000, enemy.Hp);
+            enemy.TickStatus(0.5f);
+            Assert.AreEqual(990, enemy.Hp);
+            enemy.TickStatus(20);
+            Assert.AreEqual(900, enemy.Hp);
+            Assert.AreEqual(0, enemy.FrostbiteStacks);
+        }
+
+        [Test]
+        public void Frostbite_DeathPublishesOnceAndRejectsInvalidDamage()
+        {
+            var enemy = CreateEnemy();
+            enemy.ApplyFrostbite(float.NaN);
+            enemy.ApplyFrostbite(-1);
+            Assert.AreEqual(0, enemy.FrostbiteStacks);
+            enemy.ApplyFrostbite(20);
+            enemy.TickStatus(10);
+            enemy.TickStatus(10);
+            Assert.AreEqual(1, _died.Published.Count);
+            Assert.AreEqual(0, enemy.FrostbiteStacks);
+        }
+
         // ───────── 생성 ─────────
 
         [Test]

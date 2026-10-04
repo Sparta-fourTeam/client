@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Game.Core
 {
-    public class EnemyModel : IEnemyTarget, IFreezableTarget
+    public class EnemyModel : IEnemyTarget, IFreezableTarget, IKnockbackTarget, IFrostbiteTarget
     {
         // 아래쪽 방향으로 이동.
         private static readonly Vector2 _moveDirection = Vector2.down;
@@ -31,6 +31,42 @@ namespace Game.Core
         public float FreezeRemaining { get; private set; }
         public bool IsFrozen => FreezeRemaining > 0;
 
+        private sealed class FrostbiteStack
+        {
+            public float Damage;
+            public float Remaining = 10;
+            public float Elapsed;
+        }
+        private readonly System.Collections.Generic.List<FrostbiteStack> frostbite = new();
+        public int FrostbiteStacks => frostbite.Count;
+
+        public void ApplyFrostbite(float damagePerSecond)
+        {
+            if (IsDead || damagePerSecond <= 0 || float.IsNaN(damagePerSecond) || float.IsInfinity(damagePerSecond))
+            {
+                return;
+            }
+
+            if (frostbite.Count >= 5)
+            {
+                frostbite.RemoveAt(0);
+            }
+
+            frostbite.Add(new FrostbiteStack { Damage = damagePerSecond });
+        }
+
+        public void ApplyKnockback(Vector2 direction, float distance)
+        {
+            if (IsDead || distance <= 0 || float.IsNaN(distance) || float.IsInfinity(distance)
+                || float.IsNaN(direction.x) || float.IsNaN(direction.y)
+                || float.IsInfinity(direction.x) || float.IsInfinity(direction.y))
+            {
+                return;
+            }
+
+            Position += direction.normalized * distance;
+        }
+
         public void ApplyFreeze(float duration)
         {
             if (IsDead || duration <= 0 || float.IsNaN(duration) || float.IsInfinity(duration)) { return; }
@@ -41,6 +77,23 @@ namespace Game.Core
         {
             if (deltaTime <= 0 || float.IsNaN(deltaTime) || float.IsInfinity(deltaTime)) { return; }
             FreezeRemaining = Math.Max(0, FreezeRemaining - deltaTime);
+            if (IsDead) { frostbite.Clear(); return; }
+            foreach (var stack in frostbite)
+            {
+                float activeTime = Math.Min(deltaTime, stack.Remaining);
+                stack.Elapsed += activeTime;
+                stack.Remaining -= activeTime;
+                while (stack.Elapsed >= 1 && !IsDead)
+                {
+                    stack.Elapsed -= 1;
+                    TakeDamage(Math.Max(1, (int)stack.Damage));
+                }
+            }
+            frostbite.RemoveAll(stack => stack.Remaining <= 0);
+            if (IsDead)
+            {
+                frostbite.Clear();
+            }
         }
 
         public event Action<EnemyProjectileModel> ProjectileFired; // 원거리 투사체 생성 용

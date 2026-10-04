@@ -2,6 +2,22 @@ using System;
 
 namespace Game.Core
 {
+    public sealed class FrostbiteUpgrade : StatDecorator
+    {
+        private readonly float ratio;
+        private readonly bool shard;
+        public FrostbiteUpgrade(IWeaponStats inner, float percent, bool shard) : base(inner) { ratio = percent * 0.01f; this.shard = shard; }
+        public override float FrostbiteRatio => shard ? inner.FrostbiteRatio : ratio;
+        public override float ShardFrostbiteRatio => shard ? ratio : inner.ShardFrostbiteRatio;
+    }
+
+    public sealed class KnockbackUpgrade : StatDecorator
+    {
+        private readonly float value;
+        public KnockbackUpgrade(IWeaponStats inner, float value) : base(inner) => this.value = value;
+        public override float KnockbackDistance => Math.Max(0, inner.KnockbackDistance * (1 + value * 0.01f));
+    }
+
     public sealed class SplitCountUpgrade : StatDecorator
     {
         private readonly int count;

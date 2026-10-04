@@ -36,7 +36,7 @@ namespace Game.Core
 
                 Projectile projectile = pool.Get();
                 projectile.transform.localScale = projectileScale;
-                projectile.Init(pool, caster.position, direction, stats.Damage, stats.ProjectileSpeed, ProjectileLifetime, targetProvider, stats.PierceCount, stats.FreezeDuration, CreateSplitCallback());
+                projectile.Init(pool, caster.position, direction, stats.Damage, stats.ProjectileSpeed, ProjectileLifetime, targetProvider, stats.PierceCount, stats.FreezeDuration, CreateSplitCallback(), knockbackDistance: stats.KnockbackDistance, frostbiteRatio: stats.FrostbiteRatio);
             }
         }
         private System.Action<Vector2, Vector3, IEnemyTarget> CreateSplitCallback()
@@ -49,6 +49,7 @@ namespace Game.Core
 
             float shardDamage = stats.Damage * 0.5f * stats.ShardDamageMultiplier;
             float shardSpeed = stats.ProjectileSpeed;
+            float shardFrostbite = stats.ShardFrostbiteRatio;
             return (position, direction, target) =>
             {
                 for (int i = 0; i < count; i++)
@@ -57,7 +58,7 @@ namespace Game.Core
                     var shard = pool.Get();
                     shard.transform.localScale = projectileScale * 0.5f;
                     shard.Init(pool, position, Quaternion.Euler(0, 0, angle) * direction,
-                        shardDamage, shardSpeed, ProjectileLifetime, targetProvider, ignoredTarget: target);
+                        shardDamage, shardSpeed, ProjectileLifetime, targetProvider, ignoredTarget: target, frostbiteRatio: shardFrostbite);
                 }
             };
         }
