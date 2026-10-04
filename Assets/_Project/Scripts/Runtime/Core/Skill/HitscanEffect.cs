@@ -8,6 +8,7 @@ namespace Game.Core
         private IObjectPool<HitscanEffect> pool;
         [SerializeField] private LayerMask targetMask;
         private float damage;
+        private System.Action<Vector2> onHit;
         [SerializeField] private float radius;
 
         // 애니메이션 이벤트(Hit, Release) 대신 시간으로 진행하는 이펙트(파티클 프리팹)용. 0보다 작으면 쓰지 않는다 (기존 프리팹은 그대로)
@@ -21,12 +22,13 @@ namespace Game.Core
 
 
 
-        public void Init(IObjectPool<HitscanEffect> pool, Vector3 position, float damage)
+        public void Init(IObjectPool<HitscanEffect> pool, Vector3 position, float damage, System.Action<Vector2> onHit = null)
         {
 
             this.pool = pool;
             transform.position = position;
             this.damage = damage;
+            this.onHit = onHit;
             elapsed = 0f;
             hitDone = false;
             released = false;
@@ -43,7 +45,6 @@ namespace Game.Core
 
             if (hitDelay >= 0f && !hitDone && elapsed >= hitDelay)
             {
-                hitDone = true;
                 Hit();
             }
 
@@ -55,20 +56,23 @@ namespace Game.Core
 
         private void Hit()
         {
-            if (!gameObject.activeSelf)
+            if (!gameObject.activeSelf || hitDone || released)
             {
                 return;
             }
 
+            hitDone = true;
             Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, radius, targetMask);
 
+            var damaged = new System.Collections.Generic.HashSet<Enemy>();
             foreach (Collider2D hit in hits)
             {
-                if (hit.TryGetComponent(out Enemy enemy))
+                if (hit.TryGetComponent(out Enemy enemy) && damaged.Add(enemy))
                 {
                     enemy.TakeDamage((int)damage);
                 }
             }
+            onHit?.Invoke(transform.position);
         }
 
         private void Release()

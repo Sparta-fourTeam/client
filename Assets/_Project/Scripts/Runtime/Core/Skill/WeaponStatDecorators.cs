@@ -2,6 +2,13 @@ using System;
 
 namespace Game.Core
 {
+    public sealed class EnableExplosionUpgrade : StatDecorator
+    {
+        private readonly float radius;
+        public EnableExplosionUpgrade(IWeaponStats inner, float radius) : base(inner) => this.radius = radius;
+        public override float ExplosionRadius => radius;
+    }
+
     public sealed class ExplosionUpgrade : StatDecorator
     {
         private readonly float factor;

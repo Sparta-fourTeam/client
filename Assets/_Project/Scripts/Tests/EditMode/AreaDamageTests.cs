@@ -20,6 +20,28 @@ namespace Game.Tests
             { results.Clear(); results.AddRange(Targets); return results.Count; }
         }
         [Test]
+        public void HitscanExplosion_FiresOnceAndClearsOnPoolReuse()
+        {
+            var go = new GameObject("HitscanExplosionTest");
+            try
+            {
+                var effect = go.AddComponent<HitscanEffect>();
+                var pool = new UnityEngine.Pool.ObjectPool<HitscanEffect>(() => effect);
+                var hit = typeof(HitscanEffect).GetMethod("Hit", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                int count = 0;
+                pool.Get().Init(pool, Vector3.zero, 10, position => count++);
+                hit.Invoke(effect, null);
+                hit.Invoke(effect, null);
+                Assert.AreEqual(1, count);
+                pool.Release(effect);
+                pool.Get().Init(pool, Vector3.zero, 10);
+                hit.Invoke(effect, null);
+                Assert.AreEqual(1, count);
+            }
+            finally { Object.DestroyImmediate(go); }
+        }
+
+        [Test]
         public void ExplosionUpgrades_KeepDirectDamageSeparateAndScaleRadius()
         {
             IWeaponStats stats = new BaseWeaponStats(new WeaponBaseStats { baseDamage = 12, explosionDamageRatio = 1, explosionRadius = 0.8f });

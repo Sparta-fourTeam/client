@@ -30,7 +30,12 @@ namespace Game.Core
                 var target = targets[i % targets.Count];
 
                 var effect = pool.Get();
-                effect.Init(pool, new Vector3(target.Position.x, target.Position.y, 0f), stats.Damage);
+                float explosionRadius = stats.ExplosionRadius;
+                float explosionDamage = stats.ExplosionDamage;
+                System.Action<Vector2> onHit = explosionRadius > 0
+                    ? position => AreaDamage.Apply(targetProvider, position, explosionRadius, explosionDamage)
+                    : null;
+                effect.Init(pool, new Vector3(target.Position.x, target.Position.y, 0f), stats.Damage, onHit);
             }
         }
     }
