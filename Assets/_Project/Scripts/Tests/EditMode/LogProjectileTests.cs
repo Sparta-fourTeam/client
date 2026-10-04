@@ -70,7 +70,7 @@ namespace Game.Tests
                 Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == "log_speed")));
                 var stats = Stats(weapon);
                 Assert.AreEqual(25.6f, stats.Damage, .001f); Assert.AreEqual(1.6f, stats.ProjectileSizeMultiplier, .001f);
-                Assert.AreEqual(28, stats.ProjectileSpeed, .001f); Assert.AreEqual(.75f, stats.Cooldown);
+                Assert.AreEqual(5.6f, stats.ProjectileSpeed, .001f); Assert.AreEqual(.75f, stats.Cooldown);
                 Assert.AreEqual(1, stats.CastCount); Assert.AreEqual(0, stats.ParalysisDuration);
             }
             finally { Object.DestroyImmediate(go); }
@@ -92,10 +92,11 @@ namespace Game.Tests
                 { if (projectile.name == "LogSizeTest(Clone)") { clone = projectile; } }
                 Assert.AreEqual(Vector3.one * 1.6f, clone.transform.localScale);
                 Assert.AreEqual(.48f, (float)typeof(Projectile).GetField("hitRadius", Flags).GetValue(clone), .001f);
-                provider.Target.Position = new Vector2(.4f, .5f);
+                provider.Target.Position = new Vector2(.4f, .2f);
                 typeof(Projectile).GetMethod("Tick", Flags).Invoke(clone, new object[] { .1f });
                 Assert.AreEqual(1, provider.Target.Hits);
                 var pool = (UnityEngine.Pool.IObjectPool<Projectile>)typeof(Projectile).GetField("pool", Flags).GetValue(clone);
+                pool.Release(clone);
                 var reused = pool.Get(); Assert.AreSame(clone, reused);
                 reused.Init(pool, Vector3.zero, Vector3.up, 10, 20, 3, provider);
                 Assert.AreEqual(.3f, (float)typeof(Projectile).GetField("hitRadius", Flags).GetValue(reused));
@@ -178,7 +179,7 @@ namespace Game.Tests
                 Assert.AreEqual(25.6f, stats.Damage, .001f); Assert.AreEqual(2.56f, stats.ProjectileSizeMultiplier, .001f);
                 Assert.AreEqual(.56f, stats.KnockbackDistance, .001f); Assert.AreEqual(6, stats.SlowDuration);
                 Assert.AreEqual(1, stats.StunDuration); Assert.AreEqual(2, stats.CastCount);
-                Assert.AreEqual(28, stats.ProjectileSpeed, .001f); Assert.AreEqual(.75f, stats.Cooldown);
+                Assert.AreEqual(5.6f, stats.ProjectileSpeed, .001f); Assert.AreEqual(.75f, stats.Cooldown);
                 Assert.AreEqual(.2f, stats.VulnerabilityRatio, .001f); Assert.AreEqual(0, stats.BurnRatio);
                 Assert.AreEqual(WeaponForm.LargeLog, stats.Form);
                 typeof(ProjectileCaster).GetMethod("OnFire", Flags).Invoke(weapon, null);
@@ -223,6 +224,8 @@ namespace Game.Tests
                 Assert.AreEqual(1, provider.Target.Burns); Assert.AreEqual(6, provider.Target.BurnDuration);
                 Assert.AreEqual(1.6f, provider.Target.BurnDamage, .001f);
                 Assert.AreEqual(1, provider.Target.Stuns); Assert.AreEqual(6, provider.Target.SlowDuration); Assert.AreEqual(1, provider.Target.Wounds);
+                var reusePool = (UnityEngine.Pool.IObjectPool<Projectile>)typeof(Projectile).GetField("pool", Flags).GetValue(clone);
+                reusePool.Release(clone);
                 typeof(WeaponBase).GetField("stats", Flags).SetValue(weapon, new BaseWeaponStats(data.baseStats));
                 typeof(ProjectileCaster).GetMethod("OnFire", Flags).Invoke(weapon, null);
                 Assert.AreEqual(brown, clone.GetComponent<SpriteRenderer>().color); Assert.AreEqual(Vector3.one, clone.transform.localScale);
@@ -235,6 +238,50 @@ namespace Game.Tests
                 { if (projectile.name == "FireLogTest(Clone)") { Object.DestroyImmediate(projectile.gameObject); } }
                 Object.DestroyImmediate(go);
             }
+        }
+
+        [Test]
+        public void RollingLog_SpawnsInTargetsLaneMovesVerticallyAndPiercesMultipleEnemies()
+        {
+            var go = new GameObject("RollingLaneTest"); go.AddComponent<Projectile>();
+            go.transform.position = new Vector3(-5, -2, 0);
+            try
+            {
+                var data = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == 5);
+                var provider = new LaneProvider();
+                var first = new Target { Position = new Vector2(3, 0) };
+                var second = new Target { Position = new Vector2(3, 1) };
+                var offLane = new Target { Position = new Vector2(2, .5f) };
+                provider.Targets.AddRange(new IEnemyTarget[] { first, second, offLane });
+                var weapon = new ProjectileCaster(data, go, go.transform, provider);
+                typeof(ProjectileCaster).GetMethod("OnFire", Flags).Invoke(weapon, null);
+                Projectile clone = null;
+                foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
+                { if (projectile.name == "RollingLaneTest(Clone)") { clone = projectile; } }
+                Assert.AreEqual(new Vector3(3, -2, 0), clone.transform.position);
+                Assert.AreEqual(Vector3.up, (Vector3)typeof(Projectile).GetField("direction", Flags).GetValue(clone));
+                Assert.AreEqual(4, (float)typeof(Projectile).GetField("speed", Flags).GetValue(clone));
+                Assert.Greater((float)typeof(Projectile).GetField("lifetime", Flags).GetValue(clone), 5.5f);
+                typeof(Projectile).GetMethod("Tick", Flags).Invoke(clone, new object[] { 1f });
+                Assert.AreEqual(new Vector3(3, 2, 0), clone.transform.position);
+                Assert.AreEqual(1, first.Hits); Assert.AreEqual(1, second.Hits); Assert.AreEqual(0, offLane.Hits);
+                Assert.IsTrue(clone.gameObject.activeSelf);
+                typeof(Projectile).GetMethod("Tick", Flags).Invoke(clone, new object[] { 1f });
+                Assert.AreEqual(1, first.Hits); Assert.AreEqual(1, second.Hits);
+            }
+            finally
+            {
+                foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
+                { if (projectile.name == "RollingLaneTest(Clone)") { Object.DestroyImmediate(projectile.gameObject); } }
+                Object.DestroyImmediate(go);
+            }
+        }
+
+        private class LaneProvider : IEnemyTargetProvider
+        {
+            public readonly List<IEnemyTarget> Targets = new();
+            public int GetNearest(Vector2 from, int count, List<IEnemyTarget> results)
+            { results.Clear(); results.AddRange(Targets); return results.Count; }
         }
 
         [Test]

@@ -1162,7 +1162,7 @@
       "cooldown": 1,
       "baseDamage": 10,
       "range": 22,
-      "speed": 20,
+      "speed": 4,
       "hitCount": 1,
       "castCount": 1,
       "pierceCount": 0,
@@ -1364,6 +1364,7 @@
           }
         ]
       }
-    ]
+    ],
+    "projectilePath": 1
   }
 ]

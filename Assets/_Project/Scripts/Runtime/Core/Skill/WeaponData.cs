@@ -2,6 +2,8 @@ using System.Collections.Generic;
 
 namespace Game.Core
 {
+    public enum ProjectilePath { Aimed, RollingLane }
+
     public enum CastType { Projectile, Hitscan }
     public enum WeaponForm { Default, Enbakutsu, JudgementThunder, TriangleIce, LargeLog, FireLog }
 
@@ -14,6 +16,7 @@ namespace Game.Core
         /// <summary>HUD가 아이콘을 찾는 키 (SkillIconTable). 컨벤션상 아이콘은 테이블의 IconKey로 찾는다</summary>
         public string iconKey;
         public CastType castType;
+        public ProjectilePath projectilePath;
         public WeaponBaseStats baseStats;
         public List<WeaponUpgradeOption> upgrades;
         // 최초 습득을 제외한 전투 중 성공한 강화 횟수 상한.

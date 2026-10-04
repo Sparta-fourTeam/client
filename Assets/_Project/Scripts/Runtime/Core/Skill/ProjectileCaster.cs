@@ -31,15 +31,19 @@ namespace Game.Core
             for (int i = 0; i < stats.ProjectileCount; i++)
             {
                 var target = targets[i % targets.Count];
-                var dir2D = (target.Position - (Vector2)caster.position).normalized;
+                bool rolling = data.projectilePath == ProjectilePath.RollingLane;
+                var start = rolling ? new Vector3(target.Position.x, caster.position.y, caster.position.z) : caster.position;
+                var dir2D = rolling ? Vector2.up : (target.Position - (Vector2)caster.position).normalized;
                 var direction = new Vector3(dir2D.x, dir2D.y, 0f);
+                float lifetime = rolling ? data.baseStats.range / Mathf.Max(.01f, stats.ProjectileSpeed) + .1f : ProjectileLifetime;
+                int pierce = rolling ? int.MaxValue - 1 : stats.PierceCount;
 
                 Projectile projectile = pool.Get();
                 projectile.transform.localScale = stats.Form == WeaponForm.Enbakutsu
                     ? Vector3.Scale(projectileScale, new Vector3(1.5f, 0.65f, 1)) : projectileScale;
                 projectile.transform.localScale *= stats.ProjectileSizeMultiplier;
                 projectile.SetVisualForm(stats.Form);
-                projectile.Init(pool, caster.position, direction, stats.Damage, stats.ProjectileSpeed, ProjectileLifetime, targetProvider, stats.PierceCount, stats.FreezeDuration, CreateHitCallback(), knockbackDistance: stats.KnockbackDistance, frostbiteRatio: stats.FrostbiteRatio, paralysisDuration: stats.ParalysisDuration, lightningDamage: stats.Damage * stats.LightningStrikeRatio, paralysisChance: data.baseStats.paralysisChance, burnDuration: stats.BurnDuration, burnDamage: stats.Damage * stats.BurnRatio, burnMaxHpRatio: stats.BurnMaxHpRatio, burnOnDeath: CreateBurnDeathCallback(), freezeChance: data.baseStats.freezeChance, frostbiteChance: data.baseStats.frostbiteChance, burnChance: data.baseStats.burnChance, collisionRadius: .3f * stats.ProjectileSizeMultiplier, stunDuration: stats.StunDuration, stunChance: data.baseStats.stunChance, slowDuration: stats.SlowDuration, slowRatio: stats.SlowRatio, vulnerabilityRatio: stats.VulnerabilityRatio, vulnerabilityDuration: stats.VulnerabilityDuration);
+                projectile.Init(pool, start, direction, stats.Damage, stats.ProjectileSpeed, lifetime, targetProvider, pierce, stats.FreezeDuration, CreateHitCallback(), knockbackDistance: stats.KnockbackDistance, frostbiteRatio: stats.FrostbiteRatio, paralysisDuration: stats.ParalysisDuration, lightningDamage: stats.Damage * stats.LightningStrikeRatio, paralysisChance: data.baseStats.paralysisChance, burnDuration: stats.BurnDuration, burnDamage: stats.Damage * stats.BurnRatio, burnMaxHpRatio: stats.BurnMaxHpRatio, burnOnDeath: CreateBurnDeathCallback(), freezeChance: data.baseStats.freezeChance, frostbiteChance: data.baseStats.frostbiteChance, burnChance: data.baseStats.burnChance, collisionRadius: .3f * stats.ProjectileSizeMultiplier, stunDuration: stats.StunDuration, stunChance: data.baseStats.stunChance, slowDuration: stats.SlowDuration, slowRatio: stats.SlowRatio, vulnerabilityRatio: stats.VulnerabilityRatio, vulnerabilityDuration: stats.VulnerabilityDuration);
             }
         }
         private System.Action<Vector2> CreateBurnDeathCallback()
