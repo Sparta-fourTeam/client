@@ -11,11 +11,15 @@ namespace Game.Tests
     public class LogProjectileTests
     {
         private const BindingFlags Flags = BindingFlags.NonPublic | BindingFlags.Instance;
-        private class Target : IEnemyTarget, IStunnableTarget, ISlowableTarget, IVulnerableTarget
+        private class Target : IEnemyTarget, IStunnableTarget, ISlowableTarget, IVulnerableTarget, IBurnableTarget
         {
             public Vector2 Position { get; set; }
             public int Hits, Stuns, Slows, Wounds;
             public float SlowDuration;
+            public int Burns;
+            public float BurnDuration, BurnDamage;
+            public void ApplyBurn(float damage, float duration, float maxHpRatio = 0, System.Action<Vector2> onDeath = null)
+            { Burns++; BurnDuration = duration; BurnDamage = damage; }
             public void ApplyStun(float duration) => Stuns++;
             public void ApplySlow(float ratio, float duration) { Slows++; SlowDuration = duration; }
             public void ApplyVulnerability(float ratio, float duration) => Wounds++;
@@ -155,6 +159,80 @@ namespace Game.Tests
             {
                 foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
                 { if (projectile.name == "LogStatusCasterTest(Clone)") { Object.DestroyImmediate(projectile.gameObject); } }
+                Object.DestroyImmediate(go);
+            }
+        }
+
+        [Test]
+        public void LargeLog_ScalesDamageSizeKnockbackAndPreservesOtherUpgrades()
+        {
+            var go = new GameObject("LargeLogTest"); go.AddComponent<Projectile>();
+            try
+            {
+                var data = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == 5);
+                var weapon = new ProjectileCaster(data, go, go.transform, new Provider());
+                foreach (var id in new[] { "log_damage", "log_size", "log_impact", "log_weight", "log_repeat", "log_speed", "log_wound", "log_large" })
+                { Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == id), 5)); }
+                Assert.IsFalse(weapon.LevelUp(data.upgrades.Find(c => c.id == "log_large")));
+                var stats = Stats(weapon);
+                Assert.AreEqual(25.6f, stats.Damage, .001f); Assert.AreEqual(2.56f, stats.ProjectileSizeMultiplier, .001f);
+                Assert.AreEqual(.56f, stats.KnockbackDistance, .001f); Assert.AreEqual(6, stats.SlowDuration);
+                Assert.AreEqual(1, stats.StunDuration); Assert.AreEqual(2, stats.CastCount);
+                Assert.AreEqual(28, stats.ProjectileSpeed, .001f); Assert.AreEqual(.75f, stats.Cooldown);
+                Assert.AreEqual(.2f, stats.VulnerabilityRatio, .001f); Assert.AreEqual(0, stats.BurnRatio);
+                Assert.AreEqual(WeaponForm.LargeLog, stats.Form);
+                typeof(ProjectileCaster).GetMethod("OnFire", Flags).Invoke(weapon, null);
+                foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
+                {
+                    if (projectile.name != "LargeLogTest(Clone)") { continue; }
+                    Assert.AreEqual(2.56f, projectile.transform.localScale.x, .001f);
+                    Assert.AreEqual(.768f, (float)typeof(Projectile).GetField("hitRadius", Flags).GetValue(projectile), .001f);
+                }
+            }
+            finally
+            {
+                foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
+                { if (projectile.name == "LargeLogTest(Clone)") { Object.DestroyImmediate(projectile.gameObject); } }
+                Object.DestroyImmediate(go);
+            }
+        }
+
+        [Test]
+        public void FireLog_AppliesDirectBurnKeepsStatusesAndPooledVisualRestores()
+        {
+            var go = new GameObject("FireLogTest"); go.AddComponent<Projectile>();
+            var sprite = go.AddComponent<SpriteRenderer>(); var brown = new Color(.55f, .3f, .12f); sprite.color = brown;
+            try
+            {
+                var data = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == 5);
+                var provider = new Provider(); provider.Target.Position = Vector2.up * .1f;
+                var weapon = new ProjectileCaster(data, go, go.transform, provider);
+                foreach (var id in new[] { "log_damage", "log_size", "log_impact", "log_weight", "log_wound", "log_fire" })
+                { Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == id))); }
+                Assert.IsFalse(weapon.LevelUp(data.upgrades.Find(c => c.id == "log_fire")));
+                Assert.AreEqual(WeaponForm.FireLog, Stats(weapon).Form);
+                Assert.AreEqual(16, Stats(weapon).Damage, .001f);
+                typeof(ProjectileCaster).GetMethod("OnFire", Flags).Invoke(weapon, null);
+                Projectile clone = null;
+                foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
+                { if (projectile.name == "FireLogTest(Clone)") { clone = projectile; } }
+                Assert.AreEqual(new Color(1, .35f, .05f), clone.GetComponent<SpriteRenderer>().color);
+                Assert.AreEqual(1.6f, clone.transform.localScale.x, .001f);
+                typeof(Projectile).GetField("randomValue", Flags).SetValue(clone, (System.Func<float>)(() => 0));
+                typeof(Projectile).GetMethod("Tick", Flags).Invoke(clone, new object[] { .01f });
+                Assert.AreEqual(1, provider.Target.Burns); Assert.AreEqual(6, provider.Target.BurnDuration);
+                Assert.AreEqual(1.6f, provider.Target.BurnDamage, .001f);
+                Assert.AreEqual(1, provider.Target.Stuns); Assert.AreEqual(6, provider.Target.SlowDuration); Assert.AreEqual(1, provider.Target.Wounds);
+                typeof(WeaponBase).GetField("stats", Flags).SetValue(weapon, new BaseWeaponStats(data.baseStats));
+                typeof(ProjectileCaster).GetMethod("OnFire", Flags).Invoke(weapon, null);
+                Assert.AreEqual(brown, clone.GetComponent<SpriteRenderer>().color); Assert.AreEqual(Vector3.one, clone.transform.localScale);
+                typeof(Projectile).GetMethod("Tick", Flags).Invoke(clone, new object[] { .01f });
+                Assert.AreEqual(1, provider.Target.Burns); Assert.AreEqual(1, provider.Target.Stuns); Assert.AreEqual(1, provider.Target.Wounds);
+            }
+            finally
+            {
+                foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
+                { if (projectile.name == "FireLogTest(Clone)") { Object.DestroyImmediate(projectile.gameObject); } }
                 Object.DestroyImmediate(go);
             }
         }

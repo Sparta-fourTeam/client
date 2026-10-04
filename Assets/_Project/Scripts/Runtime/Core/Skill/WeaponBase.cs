@@ -139,7 +139,7 @@ namespace Game.Core
 
                         nextStats = new ParalysisDurationUpgrade(nextStats, effect.value); break;
                     case UpgradeType.Form:
-                        if (effect.value != (int)WeaponForm.Enbakutsu && effect.value != (int)WeaponForm.JudgementThunder && effect.value != (int)WeaponForm.TriangleIce)
+                        if (effect.value != (int)WeaponForm.Enbakutsu && effect.value != (int)WeaponForm.JudgementThunder && effect.value != (int)WeaponForm.TriangleIce && effect.value != (int)WeaponForm.LargeLog && effect.value != (int)WeaponForm.FireLog)
                         {
                             return false;
                         }

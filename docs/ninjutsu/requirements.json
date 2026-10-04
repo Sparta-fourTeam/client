@@ -2917,7 +2917,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 5,
+        "cardId": "log_large",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "hold",
       "readyForProduction": false
@@ -2967,7 +2972,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 5,
+        "cardId": "log_fire",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "hold",
       "readyForProduction": false

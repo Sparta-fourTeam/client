@@ -97,6 +97,25 @@ namespace Game.Tests
             }
         }
 
+        [Test]
+        public void LogForms_RequirePredecessorsPermanentNineAndMutualExclusion()
+        {
+            var data = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == 5);
+            var large = data.upgrades.Find(c => c.id == "log_large"); var fire = data.upgrades.Find(c => c.id == "log_fire");
+            var state = new State(); state.Levels[5] = 1; state.PermanentLevels[5] = 9;
+            state.Counts[(5, "log_size")] = 1; state.Counts[(5, "log_impact")] = 1;
+            Assert.IsFalse(UpgradeEligibility.CanAcquire(large, 5, state));
+            state.Counts[(5, "log_weight")] = 1; Assert.IsTrue(UpgradeEligibility.CanAcquire(large, 5, state));
+            state.Counts[(5, "log_damage")] = 1;
+            Assert.IsFalse(UpgradeEligibility.CanAcquire(fire, 5, state));
+            state.Levels[2] = 1; state.PermanentLevels[5] = 8;
+            Assert.IsFalse(UpgradeEligibility.CanAcquire(fire, 5, state));
+            state.PermanentLevels[5] = 9; Assert.IsTrue(UpgradeEligibility.CanAcquire(fire, 5, state));
+            state.Counts[(5, "log_large")] = 1; Assert.IsFalse(UpgradeEligibility.CanAcquire(fire, 5, state));
+            state.Counts.Remove((5, "log_large")); state.Counts[(5, "log_fire")] = 1;
+            Assert.IsFalse(UpgradeEligibility.CanAcquire(large, 5, state));
+        }
+
         private static State Owned(int level = 1) => new State { Levels = { [1] = level } };
         private static WeaponUpgradeOption Option(string id = "upgrade") => new WeaponUpgradeOption { id = id, maxPickCount = 3 };
 

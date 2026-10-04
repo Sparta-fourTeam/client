@@ -14,13 +14,14 @@ namespace Game.Core
         private Material triangleMaterial;
         private SpriteRenderer originalSprite;
         private bool originalSpriteEnabled;
+        private Color originalSpriteColor;
 
         public void SetVisualForm(WeaponForm form)
         {
             if (originalSprite == null)
             {
                 originalSprite = GetComponent<SpriteRenderer>();
-                if (originalSprite != null) { originalSpriteEnabled = originalSprite.enabled; }
+                if (originalSprite != null) { originalSpriteEnabled = originalSprite.enabled; originalSpriteColor = originalSprite.color; }
             }
             bool triangle = form == WeaponForm.TriangleIce;
             if (triangle && triangleOutline == null)
@@ -36,7 +37,11 @@ namespace Game.Core
                 triangleOutline.SetPosition(1, new Vector3(-.8f, -.7f, 0));
                 triangleOutline.SetPosition(2, new Vector3(.8f, -.7f, 0));
             }
-            if (originalSprite != null) { originalSprite.enabled = !triangle && originalSpriteEnabled; }
+            if (originalSprite != null)
+            {
+                originalSprite.enabled = !triangle && originalSpriteEnabled;
+                originalSprite.color = form == WeaponForm.FireLog ? new Color(1, .35f, .05f) : originalSpriteColor;
+            }
             if (triangleOutline != null) { triangleOutline.enabled = triangle; }
         }
 
