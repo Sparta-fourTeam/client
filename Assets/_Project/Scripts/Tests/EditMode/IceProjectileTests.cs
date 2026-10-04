@@ -12,7 +12,7 @@ namespace Game.Tests
     {
         private sealed class Target : IEnemyTarget, IFreezableTarget
         {
-            public Vector2 Position => Vector2.zero;
+            public Vector2 Position { get; set; }
             public int Hits;
             public int Freezes;
             public float Duration;
@@ -52,6 +52,91 @@ namespace Game.Tests
                 Assert.AreEqual(1, targets.Target.Freezes, "재사용한 일반 투사체에 빙결이 남으면 안 된다");
             }
             finally { Object.DestroyImmediate(go); }
+        }
+
+        [Test]
+        public void FastProjectile_HitsTargetBetweenFrames()
+        {
+            var go = new GameObject("FastIceProjectileTest");
+            try
+            {
+                var projectile = go.AddComponent<Projectile>();
+                var targets = new Provider();
+                targets.Target.Position = new Vector2(5, 0);
+                var pool = new ObjectPool<Projectile>(() => projectile);
+                pool.Get().Init(pool, Vector3.zero, Vector3.right, 10, 100, 3, targets, freezeDuration: 2);
+                typeof(Projectile).GetMethod("Tick", BindingFlags.NonPublic | BindingFlags.Instance)
+                    .Invoke(projectile, new object[] { 0.1f });
+                Assert.AreEqual(1, targets.Target.Hits);
+                Assert.AreEqual(1, targets.Target.Freezes);
+            }
+            finally { Object.DestroyImmediate(go); }
+        }
+
+        [Test]
+        public void FastProjectile_DoesNotHitTargetOutsideTravelRadius()
+        {
+            var go = new GameObject("FastIceProjectileMissTest");
+            try
+            {
+                var projectile = go.AddComponent<Projectile>();
+                var targets = new Provider();
+                targets.Target.Position = new Vector2(5, 1);
+                var pool = new ObjectPool<Projectile>(() => projectile);
+                pool.Get().Init(pool, Vector3.zero, Vector3.right, 10, 100, 3, targets);
+                typeof(Projectile).GetMethod("Tick", BindingFlags.NonPublic | BindingFlags.Instance)
+                    .Invoke(projectile, new object[] { 0.1f });
+                Assert.AreEqual(0, targets.Target.Hits);
+            }
+            finally { Object.DestroyImmediate(go); }
+        }
+
+        [Test]
+        public void SplitCallback_CreatesThreeNonRecursiveShardsWithIndependentDamageBonus()
+        {
+            var prefab = new GameObject("ShardTest");
+            prefab.AddComponent<Projectile>();
+            var caster = new GameObject("ShardCasterTest");
+            try
+            {
+                var data = new WeaponData { baseStats = new WeaponBaseStats { baseDamage = 100, speed = 10 }, maxLevel = 15 };
+                var weapon = new ProjectileCaster(data, prefab, caster.transform, new Provider());
+                IWeaponStats stats = new ShardDamageUpgrade(new SplitCountUpgrade(new BaseWeaponStats(data.baseStats), 3), 80);
+                typeof(WeaponBase).GetField("stats", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(weapon, stats);
+                var callback = (System.Action<Vector2, Vector3, IEnemyTarget>)typeof(ProjectileCaster)
+                    .GetMethod("CreateSplitCallback", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(weapon, null);
+                var originTarget = new Target();
+                callback(Vector2.zero, Vector3.up, originTarget);
+                int count = 0;
+                foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
+                {
+                    if (projectile.gameObject == prefab || projectile.name != "ShardTest(Clone)")
+                    {
+                        continue;
+                    }
+
+                    count++;
+                    Assert.AreEqual(90f, typeof(Projectile).GetField("damage", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(projectile));
+                    Assert.IsNull(typeof(Projectile).GetField("onHit", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(projectile));
+                    Assert.AreSame(originTarget, typeof(Projectile).GetField("ignoredTarget", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(projectile));
+                    Assert.AreEqual(0.5f, projectile.transform.localScale.x);
+                }
+                Assert.AreEqual(3, count);
+                Assert.AreEqual(100, stats.Damage, "소형 피해 강화는 본체에 적용하지 않는다");
+            }
+            finally
+            {
+                foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
+                {
+                    if (projectile.name == "ShardTest(Clone)")
+                    {
+                        Object.DestroyImmediate(projectile.gameObject);
+                    }
+                }
+
+                Object.DestroyImmediate(prefab);
+                Object.DestroyImmediate(caster);
+            }
         }
 
         [Test]

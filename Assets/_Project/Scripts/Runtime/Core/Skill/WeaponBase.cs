@@ -111,6 +111,15 @@ namespace Game.Core
                     case UpgradeType.CastCount: nextStats = new CastCountUpgrade(nextStats, (int)effect.value); break;
                     case UpgradeType.PierceCount: nextStats = new PierceCountUpgrade(nextStats, (int)effect.value); break;
                     case UpgradeType.ProjectileSpeed: nextStats = new ProjectileSpeedUpgrade(nextStats, effect.value); break;
+                    case UpgradeType.SplitCount:
+                        if (effect.value <= 0 || effect.value != System.Math.Round(effect.value))
+                        {
+                            return false;
+                        }
+
+                        nextStats = new SplitCountUpgrade(nextStats, (int)effect.value); break;
+                    case UpgradeType.ShardDamage:
+                        nextStats = new ShardDamageUpgrade(nextStats, effect.value); break;
                     case UpgradeType.FreezeDuration:
                         if (effect.value <= 0) { return false; }
                         nextStats = new FreezeDurationUpgrade(nextStats, effect.value); break;

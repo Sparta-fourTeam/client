@@ -16,6 +16,8 @@ namespace Game.Core
         private float speed;
         private float lifetime;
         private float freezeDuration;
+        private System.Action<Vector2, Vector3, IEnemyTarget> onHit;
+        private IEnemyTarget ignoredTarget;
         private IEnemyTargetProvider targetProvider;
         private readonly ProjectileHitLedger hitLedger = new();
         private readonly List<IEnemyTarget> hitBuffer = new List<IEnemyTarget>(HitCandidateCount);
@@ -23,8 +25,10 @@ namespace Game.Core
         private const float HitRadius = 0.3f;
         private const int HitCandidateCount = 4;
 
-        public void Init(IObjectPool<Projectile> pool, Vector3 startPos, Vector3 direction, float damage, float speed, float lifetime, IEnemyTargetProvider targetProvider, int pierceCount = 0, float freezeDuration = 0)
+        public void Init(IObjectPool<Projectile> pool, Vector3 startPos, Vector3 direction, float damage, float speed, float lifetime, IEnemyTargetProvider targetProvider, int pierceCount = 0, float freezeDuration = 0, System.Action<Vector2, Vector3, IEnemyTarget> onHit = null, IEnemyTarget ignoredTarget = null)
         {
+            this.onHit = onHit;
+            this.ignoredTarget = ignoredTarget;
             this.pool = pool;
             transform.position = startPos;
             this.direction = direction.normalized;
@@ -39,29 +43,42 @@ namespace Game.Core
 
         private void Update()
         {
-            transform.position += direction * speed * Time.deltaTime;
+            Tick(Time.deltaTime);
+        }
 
-            lifetime -= Time.deltaTime;
+        internal void Tick(float deltaTime)
+        {
+            Vector2 start = transform.position;
+            transform.position += direction * speed * deltaTime;
+            Vector2 end = transform.position;
+
+            lifetime -= deltaTime;
             if (lifetime <= 0)
             {
                 pool.Release(this);
                 return;
             }
 
-            targetProvider.GetNearest(transform.position, HitCandidateCount, hitBuffer);
+            // 전체 이동 구간을 검사하므로 끝점에서 가까운 4체로 제한하지 않는다.
+            targetProvider.GetNearest(start, int.MaxValue, hitBuffer);
+            hitBuffer.Sort((a, b) => SegmentFraction(start, end, a.Position).CompareTo(SegmentFraction(start, end, b.Position)));
 
             float hitRadiusSqr = HitRadius * HitRadius;
             foreach (var candidate in hitBuffer)
             {
-                if (((Vector2)transform.position - candidate.Position).sqrMagnitude > hitRadiusSqr)
+                float fraction = SegmentFraction(start, end, candidate.Position);
+                Vector2 hitPosition = Vector2.Lerp(start, end, fraction);
+                if ((hitPosition - candidate.Position).sqrMagnitude > hitRadiusSqr)
                 {
                     continue;
                 }
 
+                if (ReferenceEquals(candidate, ignoredTarget)) { continue; }
                 if (!hitLedger.TryHit(candidate)) { continue; }
                 candidate.TakeDamage((int)damage);
                 if (freezeDuration > 0 && candidate is IFreezableTarget freezable) { freezable.ApplyFreeze(freezeDuration); }
-                SpawnImpact();
+                SpawnImpact(hitPosition);
+                onHit?.Invoke(hitPosition, direction, candidate);
                 if (hitLedger.Exhausted)
                 {
                     pool.Release(this);
@@ -70,11 +87,18 @@ namespace Game.Core
             }
         }
 
-        private void SpawnImpact()
+        private static float SegmentFraction(Vector2 start, Vector2 end, Vector2 point)
+        {
+            Vector2 segment = end - start;
+            float lengthSquared = segment.sqrMagnitude;
+            return lengthSquared > 0 ? Mathf.Clamp01(Vector2.Dot(point - start, segment) / lengthSquared) : 0;
+        }
+
+        private void SpawnImpact(Vector2 position)
         {
             if (impactPrefab != null)
             {
-                Instantiate(impactPrefab, transform.position, Quaternion.identity);
+                Instantiate(impactPrefab, position, Quaternion.identity);
             }
         }
 

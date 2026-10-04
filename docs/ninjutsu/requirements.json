@@ -1466,8 +1466,8 @@
       "runtime": {
         "weaponId": 4,
         "cardId": "ice_split",
-        "enabled": false,
-        "state": "disabled",
+        "enabled": true,
+        "state": "prototype-active",
         "conditionMapping": "partial",
         "variantConnected": false
       },
@@ -1643,8 +1643,8 @@
       "runtime": {
         "weaponId": 4,
         "cardId": "ice_shard_damage",
-        "enabled": false,
-        "state": "disabled",
+        "enabled": true,
+        "state": "prototype-active",
         "conditionMapping": "partial",
         "variantConnected": false
       },

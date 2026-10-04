@@ -2,6 +2,20 @@ using System;
 
 namespace Game.Core
 {
+    public sealed class SplitCountUpgrade : StatDecorator
+    {
+        private readonly int count;
+        public SplitCountUpgrade(IWeaponStats inner, int count) : base(inner) => this.count = count;
+        public override int SplitCount => inner.SplitCount + count;
+    }
+
+    public sealed class ShardDamageUpgrade : StatDecorator
+    {
+        private readonly float value;
+        public ShardDamageUpgrade(IWeaponStats inner, float value) : base(inner) => this.value = value;
+        public override float ShardDamageMultiplier => inner.ShardDamageMultiplier * (1 + value * 0.01f);
+    }
+
     public sealed class FreezeDurationUpgrade : StatDecorator
     {
         private readonly float duration;

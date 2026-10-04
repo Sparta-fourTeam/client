@@ -13,6 +13,8 @@ namespace Game.Core
         public int PierceCount => System.Math.Max(0, data.pierceCount);
         public float ProjectileSpeed => data.speed;
         public float FreezeDuration => data.freezeDuration;
+        public int SplitCount => 0;
+        public float ShardDamageMultiplier => 1;
 
     }
 }

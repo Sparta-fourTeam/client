@@ -424,9 +424,13 @@
         "name": "얼음창 분열",
         "desc": "명중 시 소형 얼음창 3개로 분열",
         "maxPickCount": 1,
-        "effects": [],
-        "enabled": false,
-        "disabledReason": "분열·동상·밀침·형태 변화 중 필요한 전투 효과 구현 대기",
+        "effects": [
+          {
+            "type": 8,
+            "value": 3
+          }
+        ],
+        "enabled": true,
         "requiredCardIds": []
       },
       {
@@ -434,9 +438,13 @@
         "name": "얼음 조각 피해 증폭",
         "desc": "소형 얼음창 공격력 +80%",
         "maxPickCount": 1,
-        "effects": [],
-        "enabled": false,
-        "disabledReason": "분열·동상·밀침·형태 변화 중 필요한 전투 효과 구현 대기",
+        "effects": [
+          {
+            "type": 9,
+            "value": 80
+          }
+        ],
+        "enabled": true,
         "requiredCardIds": [
           "ice_split"
         ]
