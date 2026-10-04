@@ -547,6 +547,38 @@
           "fireball_burn"
         ],
         "minPermanentLevel": 5
+      },
+      {
+        "id": "fireball_impact_damage",
+        "name": "충격 강화",
+        "desc": "충격 공격력 +80%",
+        "maxPickCount": 3,
+        "effects": [
+          {
+            "type": 24,
+            "value": 80
+          }
+        ]
+      },
+      {
+        "id": "fireball_training",
+        "name": "화염구 수련",
+        "desc": "공격력 +20% / 쿨타임 -10%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "type": 1,
+            "value": 20
+          },
+          {
+            "type": 0,
+            "value": 10
+          }
+        ],
+        "requiredCardIds": [
+          "fireball_impact_damage",
+          "fireball_explosion_radius"
+        ]
       }
     ]
   },

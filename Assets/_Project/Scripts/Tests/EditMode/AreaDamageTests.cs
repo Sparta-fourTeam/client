@@ -42,6 +42,25 @@ namespace Game.Tests
         }
 
         [Test]
+        public void ImpactUpgrade_ChangesOnlyDirectDamageAndTrainingScalesBoth()
+        {
+            var data = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == 2);
+            IWeaponStats stats = new BaseWeaponStats(data.baseStats);
+            var impact = data.upgrades.Find(c => c.id == "fireball_impact_damage");
+            Assert.AreEqual(3, impact.maxPickCount);
+            stats = new ImpactDamageUpgrade(stats, impact.effects[0].value);
+            Assert.AreEqual(21.6f, stats.Damage, 0.001f);
+            Assert.AreEqual(12, stats.ExplosionDamage, 0.001f);
+            stats = new ExplosionUpgrade(stats, 80, false);
+            Assert.AreEqual(21.6f, stats.Damage, 0.001f);
+            Assert.AreEqual(21.6f, stats.ExplosionDamage, 0.001f);
+            stats = new AttackSpeedUpgrade(new DamageUpgrade(stats, 20), 10);
+            Assert.AreEqual(25.92f, stats.Damage, 0.001f);
+            Assert.AreEqual(25.92f, stats.ExplosionDamage, 0.001f);
+            Assert.AreEqual(1.62f, stats.Cooldown, 0.001f);
+        }
+
+        [Test]
         public void ExplosionUpgrades_KeepDirectDamageSeparateAndScaleRadius()
         {
             IWeaponStats stats = new BaseWeaponStats(new WeaponBaseStats { baseDamage = 12, explosionDamageRatio = 1, explosionRadius = 0.8f });

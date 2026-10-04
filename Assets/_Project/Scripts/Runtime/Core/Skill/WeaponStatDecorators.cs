@@ -2,6 +2,13 @@ using System;
 
 namespace Game.Core
 {
+    public sealed class ImpactDamageUpgrade : StatDecorator
+    {
+        private readonly float factor;
+        public ImpactDamageUpgrade(IWeaponStats inner, float percent) : base(inner) => factor = 1 + percent * 0.01f;
+        public override float Damage => inner.Damage * factor;
+    }
+
     public sealed class BurnSpecialUpgrade : StatDecorator
     {
         private readonly float ratio;

@@ -1154,7 +1154,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 2,
+        "cardId": "fireball_impact_damage",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -1394,7 +1399,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 2,
+        "cardId": "fireball_training",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "hold",
       "readyForProduction": false

@@ -79,6 +79,20 @@ namespace Game.Tests
         }
 
         [Test]
+        public void FireballTraining_RequiresImpactAndExpandedExplosion()
+        {
+            var option = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == 2).upgrades.Find(c => c.id == "fireball_training");
+            var state = Owned();
+            state.Levels[2] = 1;
+            state.Counts[(2, "fireball_impact_damage")] = 1;
+            Assert.IsFalse(UpgradeEligibility.CanAcquire(option, 2, state));
+            state.Counts[(2, "fireball_explosion_radius")] = 1;
+            Assert.IsTrue(UpgradeEligibility.CanAcquire(option, 2, state));
+            state.Counts[(2, option.id)] = 1;
+            Assert.IsFalse(UpgradeEligibility.CanAcquire(option, 2, state));
+        }
+
+        [Test]
         public void RequiredWeapons_AllMustBeOwned()
         {
             var s = Owned(); var o = Option(); o.requiredWeaponIds = new[] { 2, 3 };
