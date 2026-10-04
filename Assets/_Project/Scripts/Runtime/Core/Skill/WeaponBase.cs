@@ -9,6 +9,8 @@ namespace Game.Core
         public WeaponData Data => data;
         protected Transform caster;
         public int Level { get; private set; } = 1;
+        // 최초 습득은 강화 상한에 포함하지 않는다. 기존 표시 레벨은 유지한다.
+        public int UpgradeCount => Level - 1;
         private readonly CastClock castClock = new();
         protected float cooldownTimer
         {
@@ -22,7 +24,7 @@ namespace Game.Core
         private readonly List<IEnemyTarget> targetBuffer = new List<IEnemyTarget>(TargetCandidateCount);
         private const int TargetCandidateCount = 8;
 
-        public bool IsMaxLevel => Level >= data.maxLevel;
+        public bool IsMaxLevel => UpgradeCount >= data.maxLevel;
 
         int ISkillStatus.Id => data.id;
 
@@ -75,7 +77,7 @@ namespace Game.Core
 
         public bool LevelUp(WeaponUpgradeOption option)
         {
-            if (Level >= data.maxLevel || option == null || !option.enabled
+            if (IsMaxLevel || option == null || !option.enabled
                 || string.IsNullOrEmpty(option.id) || option.maxPickCount <= 0
                 || GetAcquiredCount(option.id) >= option.maxPickCount || option.effects == null)
             {

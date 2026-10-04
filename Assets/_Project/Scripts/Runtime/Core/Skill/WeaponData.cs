@@ -15,6 +15,7 @@ namespace Game.Core
         public CastType castType;
         public WeaponBaseStats baseStats;
         public List<WeaponUpgradeOption> upgrades;
+        // 최초 습득을 제외한 전투 중 성공한 강화 횟수 상한.
         public int maxLevel;
         // PlayerProfile의 영구 성장 ID. 미매핑 인술은 null이며 영구 레벨 0으로 처리.
         public string progressionId;

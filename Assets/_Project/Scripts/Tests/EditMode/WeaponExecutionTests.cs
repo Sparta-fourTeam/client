@@ -6,9 +6,44 @@ namespace Game.Tests
 {
     public sealed class WeaponExecutionTests
     {
+        private sealed class TestWeapon : WeaponBase
+        {
+            public TestWeapon(WeaponData data) : base(data, null, null) { }
+            protected override void OnFire() { }
+        }
+
+        [TestCase(1)]
+        [TestCase(14)]
+        [TestCase(15)]
+        public void BattleUpgradeCap_ExcludesInitialAcquisition(int cap)
+        {
+            var weapon = new TestWeapon(new WeaponData { maxLevel = cap, baseStats = new WeaponBaseStats() });
+            var option = new WeaponUpgradeOption
+            {
+                id = "repeat",
+                maxPickCount = cap + 1,
+                effects = new System.Collections.Generic.List<StatEffect>()
+            };
+            Assert.AreEqual(1, weapon.Level);
+            Assert.AreEqual(0, weapon.UpgradeCount);
+            Assert.IsFalse(weapon.IsMaxLevel);
+            for (int i = 0; i < cap; i++)
+            {
+                Assert.IsTrue(weapon.LevelUp(option));
+            }
+            Assert.AreEqual(cap, weapon.UpgradeCount);
+            Assert.AreEqual(cap + 1, weapon.Level);
+            Assert.IsTrue(weapon.IsMaxLevel);
+            Assert.IsFalse(weapon.LevelUp(option));
+            Assert.AreEqual(cap, weapon.GetAcquiredCount(option.id));
+        }
+
         private static IWeaponStats Stats() => new BaseWeaponStats(new WeaponBaseStats
         {
-            cooldown = 2f, baseDamage = 10f, hitCount = 1, speed = 20f
+            cooldown = 2f,
+            baseDamage = 10f,
+            hitCount = 1,
+            speed = 20f
         });
 
         [Test]
