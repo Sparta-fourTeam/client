@@ -111,6 +111,13 @@ namespace Game.Core
                     case UpgradeType.CastCount: nextStats = new CastCountUpgrade(nextStats, (int)effect.value); break;
                     case UpgradeType.PierceCount: nextStats = new PierceCountUpgrade(nextStats, (int)effect.value); break;
                     case UpgradeType.ProjectileSpeed: nextStats = new ProjectileSpeedUpgrade(nextStats, effect.value); break;
+                    case UpgradeType.Form:
+                        if (effect.value != (int)WeaponForm.Enbakutsu)
+                        {
+                            return false;
+                        }
+
+                        nextStats = new FormUpgrade(nextStats, WeaponForm.Enbakutsu); break;
                     case UpgradeType.ImpactDamage:
                         nextStats = new ImpactDamageUpgrade(nextStats, effect.value); break;
                     case UpgradeType.BurnMaxHp:

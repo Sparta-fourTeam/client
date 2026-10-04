@@ -2,6 +2,13 @@ using System;
 
 namespace Game.Core
 {
+    public sealed class FormUpgrade : StatDecorator
+    {
+        private readonly WeaponForm form;
+        public FormUpgrade(IWeaponStats inner, WeaponForm form) : base(inner) => this.form = form;
+        public override WeaponForm Form => form;
+    }
+
     public sealed class ImpactDamageUpgrade : StatDecorator
     {
         private readonly float factor;

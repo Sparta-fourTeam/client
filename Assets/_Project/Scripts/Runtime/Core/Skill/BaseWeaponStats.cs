@@ -29,5 +29,6 @@ namespace Game.Core
         public float BurnRatio => 0;
         public float BurnMaxHpRatio => 0;
         public bool BurnDeathExplosion => false;
+        public WeaponForm Form => WeaponForm.Default;
     }
 }

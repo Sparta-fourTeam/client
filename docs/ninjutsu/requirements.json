@@ -1442,7 +1442,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 2,
+        "cardId": "fireball_flames",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -1489,7 +1494,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 2,
+        "cardId": "fireball_enbakutsu",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "hold",
       "readyForProduction": false

@@ -35,7 +35,8 @@ namespace Game.Core
                 var direction = new Vector3(dir2D.x, dir2D.y, 0f);
 
                 Projectile projectile = pool.Get();
-                projectile.transform.localScale = projectileScale;
+                projectile.transform.localScale = stats.Form == WeaponForm.Enbakutsu
+                    ? Vector3.Scale(projectileScale, new Vector3(1.5f, 0.65f, 1)) : projectileScale;
                 projectile.Init(pool, caster.position, direction, stats.Damage, stats.ProjectileSpeed, ProjectileLifetime, targetProvider, stats.PierceCount, stats.FreezeDuration, CreateHitCallback(), knockbackDistance: stats.KnockbackDistance, frostbiteRatio: stats.FrostbiteRatio, paralysisDuration: stats.ParalysisDuration, lightningDamage: stats.Damage * stats.LightningStrikeRatio, paralysisChance: data.baseStats.paralysisChance, burnDuration: stats.BurnDuration, burnDamage: stats.Damage * stats.BurnRatio, burnMaxHpRatio: stats.BurnMaxHpRatio, burnOnDeath: CreateBurnDeathCallback(), freezeChance: data.baseStats.freezeChance, frostbiteChance: data.baseStats.frostbiteChance, burnChance: data.baseStats.burnChance);
             }
         }

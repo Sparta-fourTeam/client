@@ -431,6 +431,12 @@
             "type": 4,
             "value": 1
           }
+        ],
+        "exclusions": [
+          {
+            "cardId": "fireball_enbakutsu",
+            "belowPermanentLevel": 25
+          }
         ]
       },
       {
@@ -466,6 +472,12 @@
                 "value": 2
               }
             ]
+          }
+        ],
+        "exclusions": [
+          {
+            "cardId": "fireball_enbakutsu",
+            "belowPermanentLevel": 25
           }
         ]
       },
@@ -578,6 +590,49 @@
         "requiredCardIds": [
           "fireball_impact_damage",
           "fireball_explosion_radius"
+        ]
+      },
+      {
+        "id": "fireball_flames",
+        "name": "불꽃",
+        "desc": "폭발 후 불꽃 3개 시전",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "type": 8,
+            "value": 3
+          }
+        ],
+        "requiredCardIds": [
+          "fireball_impact_damage",
+          "fireball_explosion_damage"
+        ]
+      },
+      {
+        "id": "fireball_enbakutsu",
+        "name": "염폭술",
+        "desc": "염폭술로 형태 변화 / 관통력 +2",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "type": 25,
+            "value": 1
+          },
+          {
+            "type": 5,
+            "value": 2
+          }
+        ],
+        "requiredCardIds": [
+          "fireball_impact_damage",
+          "fireball_explosion_radius"
+        ],
+        "minPermanentLevel": 13,
+        "exclusions": [
+          {
+            "cardId": "fireball_burst",
+            "belowPermanentLevel": 25
+          }
         ]
       }
     ]

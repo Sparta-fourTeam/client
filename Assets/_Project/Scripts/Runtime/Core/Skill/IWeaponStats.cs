@@ -25,5 +25,6 @@ namespace Game.Core
         float BurnRatio { get; }
         float BurnMaxHpRatio { get; }
         bool BurnDeathExplosion { get; }
+        WeaponForm Form { get; }
     }
 }

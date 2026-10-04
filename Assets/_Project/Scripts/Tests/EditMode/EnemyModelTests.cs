@@ -196,6 +196,30 @@ namespace Game.Tests
         }
 
         [Test]
+        public void PiercingProjectile_SkipsEnemyKilledByEarlierExplosion()
+        {
+            var go = new GameObject("PiercingExplosionTest");
+            try
+            {
+                var provider = new BurnTargets();
+                var first = CreateEnemy(1, position: Vector2.right * 0.5f);
+                var second = CreateEnemy(2, position: Vector2.right * 0.7f);
+                provider.Targets.Add(first); provider.Targets.Add(second);
+                var projectile = go.AddComponent<Projectile>();
+                var pool = new UnityEngine.Pool.ObjectPool<Projectile>(() => projectile);
+                int impacts = 0;
+                pool.Get().Init(pool, Vector3.zero, Vector3.right, 10, 10, 3, provider, pierceCount: 2,
+                    onHit: (position, direction, target) => { impacts++; AreaDamage.Apply(provider, position, 1, 10); });
+                typeof(Projectile).GetMethod("Tick", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                    .Invoke(projectile, new object[] { 0.1f });
+                Assert.AreEqual(1, impacts);
+                Assert.IsTrue(second.IsDead);
+                Assert.AreEqual(2, _died.Published.Count);
+            }
+            finally { UnityEngine.Object.DestroyImmediate(go); }
+        }
+
+        [Test]
         public void Freeze_StopsMovementRefreshesWithoutStackingAndExpires()
         {
             var enemy = CreateEnemy(speed: 1, position: new Vector2(0, 5));

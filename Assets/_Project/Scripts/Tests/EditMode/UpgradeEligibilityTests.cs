@@ -93,6 +93,31 @@ namespace Game.Tests
         }
 
         [Test]
+        public void Enbakutsu_UnlocksAt13AndRepeatRestrictionEndsAt25()
+        {
+            var cards = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == 2).upgrades;
+            var enbakutsu = cards.Find(c => c.id == "fireball_enbakutsu");
+            var repeat = cards.Find(c => c.id == "fireball_burst");
+            var state = Owned(); state.Levels[2] = 1;
+            state.Counts[(2, "fireball_impact_damage")] = 1;
+            state.Counts[(2, "fireball_explosion_radius")] = 1;
+            state.PermanentLevels[2] = 12;
+            Assert.IsFalse(UpgradeEligibility.CanAcquire(enbakutsu, 2, state));
+            state.PermanentLevels[2] = 13;
+            Assert.IsTrue(UpgradeEligibility.CanAcquire(enbakutsu, 2, state));
+            state.Counts[(2, "fireball_burst")] = 1;
+            state.PermanentLevels[2] = 24;
+            Assert.IsFalse(UpgradeEligibility.CanAcquire(enbakutsu, 2, state));
+            state.PermanentLevels[2] = 25;
+            Assert.IsTrue(UpgradeEligibility.CanAcquire(enbakutsu, 2, state));
+            state.Counts[(2, "fireball_enbakutsu")] = 1;
+            state.PermanentLevels[2] = 24;
+            Assert.IsFalse(UpgradeEligibility.CanAcquire(repeat, 2, state));
+            state.PermanentLevels[2] = 25;
+            Assert.IsTrue(UpgradeEligibility.CanAcquire(repeat, 2, state));
+        }
+
+        [Test]
         public void RequiredWeapons_AllMustBeOwned()
         {
             var s = Owned(); var o = Option(); o.requiredWeaponIds = new[] { 2, 3 };

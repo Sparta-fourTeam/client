@@ -99,6 +99,7 @@ namespace Game.Core
                     continue;
                 }
 
+                if (candidate is EnemyModel enemy && enemy.IsDead) { continue; }
                 if (ReferenceEquals(candidate, ignoredTarget)) { continue; }
                 if (!hitLedger.TryHit(candidate)) { continue; }
                 candidate.TakeDamage((int)damage);

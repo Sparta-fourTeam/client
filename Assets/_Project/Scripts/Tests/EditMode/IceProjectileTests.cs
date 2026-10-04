@@ -373,6 +373,48 @@ namespace Game.Tests
         }
 
         [Test]
+        public void FireballFormsAndFlames_ApplyThreeChildrenAndTwoPierces()
+        {
+            var prefab = new GameObject("EnbakutsuTest");
+            prefab.AddComponent<Projectile>();
+            try
+            {
+                var data = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == 2);
+                var weapon = new ProjectileCaster(data, prefab, prefab.transform, new Provider());
+                foreach (var id in new[] { "fireball_impact_damage", "fireball_explosion_damage", "fireball_explosion_radius", "fireball_flames", "fireball_enbakutsu" })
+                {
+                    Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == id), 13));
+                }
+
+                var stats = (IWeaponStats)typeof(WeaponBase).GetField("stats", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(weapon);
+                Assert.AreEqual(3, stats.SplitCount);
+                Assert.AreEqual(2, stats.PierceCount);
+                Assert.AreEqual(WeaponForm.Enbakutsu, stats.Form);
+                typeof(ProjectileCaster).GetMethod("OnFire", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(weapon, null);
+                foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
+                {
+                    if (projectile.name == "EnbakutsuTest(Clone)")
+                    {
+                        Assert.AreEqual(1.5f, projectile.transform.localScale.x);
+                        Assert.AreEqual(0.65f, projectile.transform.localScale.y);
+                    }
+                }
+            }
+            finally
+            {
+                foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
+                {
+                    if (projectile.name == "EnbakutsuTest(Clone)")
+                    {
+                        Object.DestroyImmediate(projectile.gameObject);
+                    }
+                }
+
+                Object.DestroyImmediate(prefab);
+            }
+        }
+
+        [Test]
         public void IcePrefab_IsConnectedToPlayerSlotAndHasProjectileComponent()
         {
             var projectile = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Projectile/Projectile4.prefab");
