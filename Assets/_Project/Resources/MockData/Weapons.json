@@ -19,7 +19,7 @@
     "upgrades": [
       {
         "id": "arrow_multishot",
-        "name": "쿠나이 일제 사격(+)",
+        "name": "쿠나이 일제 사격",
         "desc": "발사 수 +1 / 공격력 -20%",
         "maxPickCount": 2,
         "effects": [
@@ -30,6 +30,19 @@
           {
             "type": 1,
             "value": -20
+          }
+        ],
+        "variants": [
+          {
+            "minPermanentLevel": 9,
+            "name": "쿠나이 일제 사격(+)",
+            "desc": "발사 수 +1",
+            "effects": [
+              {
+                "type": 2,
+                "value": 1
+              }
+            ]
           }
         ]
       },
@@ -78,6 +91,23 @@
         ],
         "requiredCardIds": [
           "arrow_sharp"
+        ],
+        "variants": [
+          {
+            "minPermanentLevel": 17,
+            "name": "연발 쿠나이(+)",
+            "desc": "시전 수 +1 / 공격력 +10%",
+            "effects": [
+              {
+                "type": 4,
+                "value": 1
+              },
+              {
+                "type": 1,
+                "value": 10
+              }
+            ]
+          }
         ]
       },
       {
@@ -188,6 +218,19 @@
           {
             "type": 1,
             "value": -20
+          }
+        ],
+        "variants": [
+          {
+            "minPermanentLevel": 9,
+            "name": "연속 벼락(+)",
+            "desc": "시전 수 +1",
+            "effects": [
+              {
+                "type": 4,
+                "value": 1
+              }
+            ]
           }
         ]
       }

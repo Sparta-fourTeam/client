@@ -41,9 +41,9 @@ namespace Game.View
             }
             else
             {
-                _titleText.text = choice.Option.name;
+                _titleText.text = choice.DisplayName ?? choice.Option.name;
                 _levelText.text = $"{choice.Weapon.Level} » {choice.Weapon.Level + 1}";
-                _descText.text = choice.Option.desc ?? string.Empty;
+                _descText.text = choice.DisplayDescription ?? choice.Option.desc ?? string.Empty;
             }
         }
     }

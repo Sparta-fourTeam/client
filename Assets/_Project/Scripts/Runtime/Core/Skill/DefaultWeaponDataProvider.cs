@@ -40,7 +40,7 @@ namespace Game.Core
                 foreach (var option in weapon.upgrades)
                 {
                     if (option == null || string.IsNullOrEmpty(option.id) || !cards.Add(option.id)
-                        || option.maxPickCount <= 0 || option.effects == null)
+                        || option.maxPickCount <= 0 || !WeaponUpgradeResolver.TryResolve(option, 0, out _))
                     {
                         throw new InvalidOperationException("강화 정의 또는 ID가 잘못되었습니다.");
                     }

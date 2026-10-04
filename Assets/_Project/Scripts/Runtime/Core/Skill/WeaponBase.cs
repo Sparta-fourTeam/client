@@ -75,18 +75,19 @@ namespace Game.Core
             return inRange;
         }
 
-        public bool LevelUp(WeaponUpgradeOption option)
+        public bool LevelUp(WeaponUpgradeOption option, int permanentLevel = 0)
         {
             if (IsMaxLevel || option == null || !option.enabled
                 || string.IsNullOrEmpty(option.id) || option.maxPickCount <= 0
-                || GetAcquiredCount(option.id) >= option.maxPickCount || option.effects == null)
+                || GetAcquiredCount(option.id) >= option.maxPickCount
+                || !WeaponUpgradeResolver.TryResolve(option, permanentLevel, out var resolved))
             {
                 return false;
             }
 
             // 효과 전체가 유효한 경우에만 횟수, 레벨과 능력치를 함께 반영한다.
             var nextStats = stats;
-            foreach (var effect in option.effects)
+            foreach (var effect in resolved.Effects)
             {
                 if (effect == null || float.IsNaN(effect.value) || float.IsInfinity(effect.value)) { return false; }
                 switch (effect.type)

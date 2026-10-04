@@ -162,7 +162,8 @@
         "cardId": "arrow_multishot",
         "enabled": true,
         "state": "prototype-active",
-        "conditionMapping": "partial"
+        "conditionMapping": "partial",
+        "variantConnected": true
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -197,7 +198,8 @@
         "cardId": "arrow_sharp",
         "enabled": true,
         "state": "prototype-active",
-        "conditionMapping": "partial"
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -230,7 +232,8 @@
         "cardId": "arrow_light",
         "enabled": true,
         "state": "prototype-active",
-        "conditionMapping": "partial"
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -317,7 +320,8 @@
         "cardId": "arrow_burst",
         "enabled": true,
         "state": "prototype-active",
-        "conditionMapping": "partial"
+        "conditionMapping": "partial",
+        "variantConnected": true
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -455,7 +459,8 @@
         "cardId": "arrow_rapid",
         "enabled": true,
         "state": "prototype-active",
-        "conditionMapping": "partial"
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -892,7 +897,8 @@
         "cardId": "kunai_pierce",
         "enabled": false,
         "state": "disabled",
-        "conditionMapping": "partial"
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -1012,7 +1018,8 @@
         "cardId": "fireball_burst",
         "enabled": true,
         "state": "prototype-active",
-        "conditionMapping": "partial"
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -1841,7 +1848,8 @@
         "cardId": "lightning_burst",
         "enabled": true,
         "state": "prototype-active",
-        "conditionMapping": "partial"
+        "conditionMapping": "partial",
+        "variantConnected": true
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -1937,7 +1945,8 @@
         "cardId": "lightning_damage",
         "enabled": true,
         "state": "prototype-active",
-        "conditionMapping": "partial"
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "hold",
       "readyForProduction": false

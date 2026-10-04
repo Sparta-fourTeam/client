@@ -138,6 +138,22 @@ namespace Game.Tests
         }
 
         [Test]
+        public void PermanentVariant_ChoiceUsesSnapshotForPresentationAndApplication()
+        {
+            const BindingFlags Private = BindingFlags.NonPublic | BindingFlags.Instance;
+            var levels = (Dictionary<int, int>)typeof(WeaponController).GetField("permanentLevels", Private).GetValue(_controller);
+            levels[3] = 9;
+            var choice = _controller.GetRandomUpgradeChoices(50).Find(c => c.Option?.id == "lightning_burst");
+            Assert.AreEqual("연속 벼락(+)", choice.DisplayName);
+            Assert.AreEqual("시전 수 +1", choice.DisplayDescription);
+            Assert.IsTrue(_controller.ApplyUpgradeChoice(choice));
+            var stats = (IWeaponStats)typeof(WeaponBase).GetField("stats", Private).GetValue(choice.Weapon);
+            Assert.AreEqual(choice.Weapon.Data.baseStats.baseDamage, stats.Damage);
+            Assert.AreEqual(2, stats.CastCount);
+            Assert.AreEqual(1, choice.Weapon.GetAcquiredCount("lightning_burst"));
+        }
+
+        [Test]
         public void NonPositiveChoiceCount_ReturnsEmpty()
         {
             Assert.IsEmpty(_controller.GetRandomUpgradeChoices(-1));

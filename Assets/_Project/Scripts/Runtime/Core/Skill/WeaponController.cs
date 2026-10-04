@@ -87,6 +87,8 @@ namespace Game.Core
             public WeaponData NewWeaponData;
             public WeaponBase Weapon;
             public WeaponUpgradeOption Option;
+            public string DisplayName;
+            public string DisplayDescription;
         }
 
         public List<UpgradeChoice> GetRandomUpgradeChoices(int count)
@@ -103,12 +105,20 @@ namespace Game.Core
 
                 foreach (var option in weapon.Data.upgrades)
                 {
-                    if (!UpgradeEligibility.CanAcquire(option, weapon.Data.id, this))
+                    if (!UpgradeEligibility.CanAcquire(option, weapon.Data.id, this)
+                        || !WeaponUpgradeResolver.TryResolve(option, GetPermanentWeaponLevel(weapon.Data.id), out var resolved))
                     {
                         continue;
                     }
 
-                    pool.Add(new UpgradeChoice { IsNewWeapon = false, Weapon = weapon, Option = option });
+                    pool.Add(new UpgradeChoice
+                    {
+                        IsNewWeapon = false,
+                        Weapon = weapon,
+                        Option = option,
+                        DisplayName = resolved.Name,
+                        DisplayDescription = resolved.Description
+                    });
                 }
             }
 
@@ -144,7 +154,7 @@ namespace Game.Core
                 return false;
             }
 
-            if (!choice.Weapon.LevelUp(choice.Option)) { return false; }
+            if (!choice.Weapon.LevelUp(choice.Option, GetPermanentWeaponLevel(choice.Weapon.Data.id))) { return false; }
             PublishSkills();
             return true;
         }

@@ -22,10 +22,10 @@ namespace Game.Core
                     var choice = choices[i];
                     choiceNames[i].text = choice.IsNewWeapon
                         ? $"신규 획득: {choice.NewWeaponData.name}"
-                        : $"{choice.Weapon.Data.name} - {choice.Option.name}";
+                        : $"{choice.Weapon.Data.name} - {choice.DisplayName ?? choice.Option.name}";
                     choiceDescs[i].text = choice.IsNewWeapon
                         ? $"{choice.NewWeaponData.desc}"
-                        : $"{choice.Option.desc}";
+                        : $"{choice.DisplayDescription ?? choice.Option.desc}";
                     choiceButtons[i].gameObject.SetActive(true);
 
                     choiceButtons[i].onClick.RemoveAllListeners();

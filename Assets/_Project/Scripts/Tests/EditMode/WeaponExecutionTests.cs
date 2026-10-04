@@ -10,7 +10,81 @@ namespace Game.Tests
         {
             public TestWeapon(WeaponData data) : base(data, null, null) { }
             protected override void OnFire() { }
+            public IWeaponStats CurrentStats => stats;
         }
+
+        [TestCase(5, -20, 0)]
+        [TestCase(9, -20, 0)]
+        [TestCase(17, -30, 10)]
+        public void PermanentVariant_ChangesPresentationAndDamageAtBoundary(int gate, float before, float after)
+        {
+            var option = VariantOption(gate, before, after);
+            Assert.IsTrue(WeaponUpgradeResolver.TryResolve(option, gate - 1, out var low));
+            Assert.AreEqual("연발", low.Name);
+            Assert.IsTrue(WeaponUpgradeResolver.TryResolve(option, gate, out var high));
+            Assert.AreEqual("연발(+)", high.Name);
+            var lowWeapon = NewWeapon();
+            var highWeapon = NewWeapon();
+            Assert.IsTrue(lowWeapon.LevelUp(option, gate - 1));
+            Assert.IsTrue(highWeapon.LevelUp(option, gate));
+            Assert.AreEqual(10 * (1 + before / 100), lowWeapon.CurrentStats.Damage, 0.0001f);
+            Assert.AreEqual(10 * (1 + after / 100), highWeapon.CurrentStats.Damage, 0.0001f);
+            Assert.AreEqual(2, lowWeapon.CurrentStats.CastCount);
+            Assert.AreEqual(2, highWeapon.CurrentStats.CastCount);
+            Assert.AreEqual(before, option.effects[1].value, "변형 해석은 원본 효과를 수정하지 않는다");
+            Assert.AreEqual(1, highWeapon.GetAcquiredCount(option.id));
+        }
+
+        [Test]
+        public void Variant_DoesNotResetChoiceCounterOrRemoveOtherPenalties()
+        {
+            var option = VariantOption(9, -20, 0);
+            option.maxPickCount = 1;
+            option.variants[0].effects.Add(new StatEffect { type = UpgradeType.ProjectileSpeed, value = -30 });
+            var weapon = NewWeapon();
+            Assert.IsTrue(weapon.LevelUp(option, 9));
+            Assert.AreEqual(14, weapon.CurrentStats.ProjectileSpeed, 0.0001f);
+            Assert.IsFalse(weapon.LevelUp(option, 8));
+            Assert.AreEqual(1, weapon.UpgradeCount);
+        }
+
+        [Test]
+        public void InvalidVariant_RejectsWithoutApplyingBaseEffects()
+        {
+            var option = VariantOption(9, -20, 0);
+            option.variants[0].effects = null;
+            var weapon = NewWeapon();
+            Assert.IsFalse(weapon.LevelUp(option, 9));
+            Assert.AreEqual(10, weapon.CurrentStats.Damage);
+            Assert.AreEqual(0, weapon.UpgradeCount);
+        }
+
+        private static TestWeapon NewWeapon() => new TestWeapon(new WeaponData
+        {
+            maxLevel = 15,
+            baseStats = new WeaponBaseStats { baseDamage = 10, speed = 20, hitCount = 1 }
+        });
+
+        private static WeaponUpgradeOption VariantOption(int gate, float before, float after) => new WeaponUpgradeOption
+        {
+            id = "repeat",
+            name = "연발",
+            maxPickCount = 2,
+            effects = new System.Collections.Generic.List<StatEffect>
+            {
+                new StatEffect { type = UpgradeType.CastCount, value = 1 },
+                new StatEffect { type = UpgradeType.Damage, value = before }
+            },
+            variants = new[] { new WeaponUpgradeVariant
+            {
+                minPermanentLevel = gate, name = "연발(+)",
+                effects = new System.Collections.Generic.List<StatEffect>
+                {
+                    new StatEffect { type = UpgradeType.CastCount, value = 1 },
+                    new StatEffect { type = UpgradeType.Damage, value = after }
+                }
+            } }
+        };
 
         [TestCase(1)]
         [TestCase(14)]
