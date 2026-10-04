@@ -111,6 +111,13 @@ namespace Game.Core
                     case UpgradeType.CastCount: nextStats = new CastCountUpgrade(nextStats, (int)effect.value); break;
                     case UpgradeType.PierceCount: nextStats = new PierceCountUpgrade(nextStats, (int)effect.value); break;
                     case UpgradeType.ProjectileSpeed: nextStats = new ProjectileSpeedUpgrade(nextStats, effect.value); break;
+                    case UpgradeType.AuxiliaryExplosion:
+                        if (effect.value != 1)
+                        {
+                            return false;
+                        }
+
+                        nextStats = new AuxiliaryExplosionUpgrade(nextStats); break;
                     case UpgradeType.Paralysis:
                     case UpgradeType.LightningStrike:
                     case UpgradeType.AuxiliaryLightning:

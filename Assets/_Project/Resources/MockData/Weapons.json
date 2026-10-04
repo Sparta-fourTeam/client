@@ -356,6 +356,22 @@
           "kunai_spread",
           "kunai_rod"
         ]
+      },
+      {
+        "id": "kunai_aux_explosion",
+        "name": "추가 폭발",
+        "desc": "보조 쿠나이 폭발 효과 추가",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "type": 19,
+            "value": 1
+          }
+        ],
+        "requiredCardIds": [
+          "kunai_explosion",
+          "kunai_spread"
+        ]
       }
     ]
   },

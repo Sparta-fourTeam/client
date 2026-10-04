@@ -68,6 +68,11 @@ namespace Game.Core
             float shardSpeed = stats.ProjectileSpeed;
             float shardFrostbite = stats.ShardFrostbiteRatio;
             float auxiliaryLightningDamage = shardDamage * stats.AuxiliaryLightningRatio;
+            float auxiliaryExplosionRadius = stats.AuxiliaryExplosions ? stats.ExplosionRadius : 0;
+            float auxiliaryExplosionDamage = stats.ExplosionDamage * 0.5f * stats.ShardDamageMultiplier;
+            System.Action<Vector2, Vector3, IEnemyTarget> auxiliaryHit = auxiliaryExplosionRadius > 0
+                ? (position, direction, target) => AreaDamage.Apply(targetProvider, position, auxiliaryExplosionRadius, auxiliaryExplosionDamage)
+                : null;
             return (position, direction, target) =>
             {
                 for (int i = 0; i < count; i++)
@@ -76,7 +81,7 @@ namespace Game.Core
                     var shard = pool.Get();
                     shard.transform.localScale = projectileScale * 0.5f;
                     shard.Init(pool, position, Quaternion.Euler(0, 0, angle) * direction,
-                        shardDamage, shardSpeed, ProjectileLifetime, targetProvider, ignoredTarget: target, frostbiteRatio: shardFrostbite, lightningDamage: auxiliaryLightningDamage);
+                        shardDamage, shardSpeed, ProjectileLifetime, targetProvider, onHit: auxiliaryHit, ignoredTarget: target, frostbiteRatio: shardFrostbite, lightningDamage: auxiliaryLightningDamage);
                 }
             };
         }

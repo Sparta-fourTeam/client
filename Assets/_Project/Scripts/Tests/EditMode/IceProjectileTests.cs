@@ -227,6 +227,59 @@ namespace Game.Tests
             finally { Object.DestroyImmediate(go); }
         }
 
+        [TestCase(false)]
+        [TestCase(true)]
+        public void AuxiliaryExplosion_RequiresExplicitUpgradeAndDoesNotSplitAgain(bool enabled)
+        {
+            var prefab = new GameObject("AuxExplosionTest");
+            prefab.AddComponent<Projectile>();
+            try
+            {
+                var provider = new Provider();
+                var data = new WeaponData { baseStats = new WeaponBaseStats { baseDamage = 100, explosionDamageRatio = 1, explosionRadius = 0.8f }, maxLevel = 15 };
+                var weapon = new ProjectileCaster(data, prefab, prefab.transform, provider);
+                IWeaponStats stats = new SplitCountUpgrade(new BaseWeaponStats(data.baseStats), 2);
+                if (enabled)
+                {
+                    stats = new AuxiliaryExplosionUpgrade(stats);
+                }
+
+                typeof(WeaponBase).GetField("stats", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(weapon, stats);
+                var split = (System.Action<Vector2, Vector3, IEnemyTarget>)typeof(ProjectileCaster)
+                    .GetMethod("CreateSplitCallback", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(weapon, null);
+                split(Vector2.zero, Vector3.up, provider.Target);
+                int shards = 0;
+                foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
+                {
+                    if (projectile.name != "AuxExplosionTest(Clone)")
+                    {
+                        continue;
+                    }
+
+                    shards++;
+                    var callback = (System.Action<Vector2, Vector3, IEnemyTarget>)typeof(Projectile)
+                        .GetField("onHit", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(projectile);
+                    Assert.AreEqual(enabled, callback != null);
+                    callback?.Invoke(Vector2.zero, Vector3.up, provider.Target);
+                }
+                Assert.AreEqual(2, shards);
+                Assert.AreEqual(enabled ? 100 : 0, provider.Target.DamageTaken);
+                // 폭발 콜백은 보조 투사체를 다시 생성하지 않는다.
+            }
+            finally
+            {
+                foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
+                {
+                    if (projectile.name == "AuxExplosionTest(Clone)")
+                    {
+                        Object.DestroyImmediate(projectile.gameObject);
+                    }
+                }
+
+                Object.DestroyImmediate(prefab);
+            }
+        }
+
         [Test]
         public void IcePrefab_IsConnectedToPlayerSlotAndHasProjectileComponent()
         {

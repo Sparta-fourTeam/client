@@ -2,6 +2,12 @@ using System;
 
 namespace Game.Core
 {
+    public sealed class AuxiliaryExplosionUpgrade : StatDecorator
+    {
+        public AuxiliaryExplosionUpgrade(IWeaponStats inner) : base(inner) { }
+        public override bool AuxiliaryExplosions => true;
+    }
+
     public sealed class LightningHitUpgrade : StatDecorator
     {
         private readonly float value;

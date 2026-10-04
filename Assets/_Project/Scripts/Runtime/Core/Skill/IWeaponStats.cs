@@ -20,5 +20,6 @@ namespace Game.Core
         float ParalysisDuration { get; }
         float LightningStrikeRatio { get; }
         float AuxiliaryLightningRatio { get; }
+        bool AuxiliaryExplosions { get; }
     }
 }

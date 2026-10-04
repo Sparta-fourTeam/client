@@ -23,5 +23,6 @@ namespace Game.Core
         public virtual float ParalysisDuration => inner.ParalysisDuration;
         public virtual float LightningStrikeRatio => inner.LightningStrikeRatio;
         public virtual float AuxiliaryLightningRatio => inner.AuxiliaryLightningRatio;
+        public virtual bool AuxiliaryExplosions => inner.AuxiliaryExplosions;
     }
 }

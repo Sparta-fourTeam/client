@@ -24,5 +24,6 @@ namespace Game.Core
         public float ParalysisDuration => 0;
         public float LightningStrikeRatio => 0;
         public float AuxiliaryLightningRatio => 0;
+        public bool AuxiliaryExplosions => false;
     }
 }
