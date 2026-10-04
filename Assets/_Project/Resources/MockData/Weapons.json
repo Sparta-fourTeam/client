@@ -161,7 +161,9 @@
       "speed": 16,
       "hitCount": 1,
       "castCount": 1,
-      "castInterval": 0.1
+      "castInterval": 0.1,
+      "explosionRadius": 0.8,
+      "explosionDamageRatio": 1
     },
     "upgrades": [
       {
@@ -210,6 +212,34 @@
               }
             ]
           }
+        ]
+      },
+      {
+        "id": "fireball_explosion_damage",
+        "name": "폭발 강화",
+        "desc": "폭발 공격력 +80%",
+        "maxPickCount": 3,
+        "effects": [
+          {
+            "type": 13,
+            "value": 80
+          }
+        ],
+        "requiredCardIds": []
+      },
+      {
+        "id": "fireball_explosion_radius",
+        "name": "폭발 화염구",
+        "desc": "폭발 범위 +80%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "type": 14,
+            "value": 80
+          }
+        ],
+        "requiredCardIds": [
+          "fireball_explosion_damage"
         ]
       }
     ]

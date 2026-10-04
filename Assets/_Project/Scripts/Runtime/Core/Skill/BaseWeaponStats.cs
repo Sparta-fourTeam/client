@@ -14,6 +14,8 @@ namespace Game.Core
         public float ProjectileSpeed => data.speed;
         public float FreezeDuration => data.freezeDuration;
         public float KnockbackDistance => data.knockbackDistance;
+        public float ExplosionRadius => data.explosionRadius;
+        public float ExplosionDamage => data.baseDamage * data.explosionDamageRatio;
         public float FrostbiteRatio => 0;
         public float ShardFrostbiteRatio => 0;
         public int SplitCount => 0;

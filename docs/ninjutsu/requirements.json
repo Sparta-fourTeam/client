@@ -1049,7 +1049,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 2,
+        "cardId": "fireball_explosion_damage",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -1163,7 +1168,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 2,
+        "cardId": "fireball_explosion_radius",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "hold",
       "readyForProduction": false

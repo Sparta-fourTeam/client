@@ -36,9 +36,26 @@ namespace Game.Core
 
                 Projectile projectile = pool.Get();
                 projectile.transform.localScale = projectileScale;
-                projectile.Init(pool, caster.position, direction, stats.Damage, stats.ProjectileSpeed, ProjectileLifetime, targetProvider, stats.PierceCount, stats.FreezeDuration, CreateSplitCallback(), knockbackDistance: stats.KnockbackDistance, frostbiteRatio: stats.FrostbiteRatio);
+                projectile.Init(pool, caster.position, direction, stats.Damage, stats.ProjectileSpeed, ProjectileLifetime, targetProvider, stats.PierceCount, stats.FreezeDuration, CreateHitCallback(), knockbackDistance: stats.KnockbackDistance, frostbiteRatio: stats.FrostbiteRatio);
             }
         }
+        private System.Action<Vector2, Vector3, IEnemyTarget> CreateHitCallback()
+        {
+            var split = CreateSplitCallback();
+            float radius = stats.ExplosionRadius;
+            float damage = stats.ExplosionDamage;
+            if (radius <= 0)
+            {
+                return split;
+            }
+
+            return (position, direction, target) =>
+            {
+                AreaDamage.Apply(targetProvider, position, radius, damage);
+                split?.Invoke(position, direction, target);
+            };
+        }
+
         private System.Action<Vector2, Vector3, IEnemyTarget> CreateSplitCallback()
         {
             int count = stats.SplitCount;

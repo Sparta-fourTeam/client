@@ -2,6 +2,15 @@ using System;
 
 namespace Game.Core
 {
+    public sealed class ExplosionUpgrade : StatDecorator
+    {
+        private readonly float factor;
+        private readonly bool radius;
+        public ExplosionUpgrade(IWeaponStats inner, float value, bool radius) : base(inner) { factor = 1 + value * 0.01f; this.radius = radius; }
+        public override float ExplosionDamage => radius ? inner.ExplosionDamage : inner.ExplosionDamage * factor;
+        public override float ExplosionRadius => radius ? inner.ExplosionRadius * factor : inner.ExplosionRadius;
+    }
+
     public sealed class FrostbiteUpgrade : StatDecorator
     {
         private readonly float ratio;
@@ -51,6 +60,7 @@ namespace Game.Core
         private readonly float value;
         public DamageUpgrade(IWeaponStats inner, float value) : base(inner) => this.value = value;
         public override float Damage => inner.Damage * (1f + value * 0.01f);
+        public override float ExplosionDamage => inner.ExplosionDamage * (1f + value * 0.01f);
     }
 
     public class ProjectileCountUpgrade : StatDecorator

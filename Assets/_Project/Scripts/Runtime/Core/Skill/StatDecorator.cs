@@ -14,6 +14,8 @@ namespace Game.Core
         public virtual float ProjectileSpeed => inner.ProjectileSpeed;
         public virtual float FreezeDuration => inner.FreezeDuration;
         public virtual float KnockbackDistance => inner.KnockbackDistance;
+        public virtual float ExplosionRadius => inner.ExplosionRadius;
+        public virtual float ExplosionDamage => inner.ExplosionDamage;
         public virtual float FrostbiteRatio => inner.FrostbiteRatio;
         public virtual float ShardFrostbiteRatio => inner.ShardFrostbiteRatio;
         public virtual int SplitCount => inner.SplitCount;

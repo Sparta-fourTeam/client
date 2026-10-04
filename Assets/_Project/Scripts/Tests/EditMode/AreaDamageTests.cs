@@ -1,0 +1,51 @@
+using System.Collections.Generic;
+using Game.Core;
+using NUnit.Framework;
+using UnityEngine;
+
+namespace Game.Tests
+{
+    public class AreaDamageTests
+    {
+        private class Target : IEnemyTarget
+        {
+            public Vector2 Position { get; set; }
+            public int Damage;
+            public void TakeDamage(int value) => Damage += value;
+        }
+        private class Provider : IEnemyTargetProvider
+        {
+            public readonly List<IEnemyTarget> Targets = new();
+            public int GetNearest(Vector2 from, int count, List<IEnemyTarget> results)
+            { results.Clear(); results.AddRange(Targets); return results.Count; }
+        }
+        [Test]
+        public void ExplosionUpgrades_KeepDirectDamageSeparateAndScaleRadius()
+        {
+            IWeaponStats stats = new BaseWeaponStats(new WeaponBaseStats { baseDamage = 12, explosionDamageRatio = 1, explosionRadius = 0.8f });
+            stats = new ExplosionUpgrade(stats, 80, false);
+            stats = new ExplosionUpgrade(stats, 80, true);
+            Assert.AreEqual(12, stats.Damage);
+            Assert.AreEqual(21.6f, stats.ExplosionDamage, 0.001f);
+            Assert.AreEqual(1.44f, stats.ExplosionRadius, 0.001f);
+            stats = new DamageUpgrade(stats, -30);
+            Assert.AreEqual(8.4f, stats.Damage, 0.001f);
+            Assert.AreEqual(15.12f, stats.ExplosionDamage, 0.001f);
+        }
+
+        [Test]
+        public void Explosion_HitsBoundaryAndDeduplicatesTargets()
+        {
+            var provider = new Provider();
+            var inside = new Target();
+            var boundary = new Target { Position = Vector2.right };
+            var outside = new Target { Position = Vector2.right * 1.01f };
+            provider.Targets.AddRange(new IEnemyTarget[] { inside, inside, boundary, outside });
+            Assert.AreEqual(2, AreaDamage.Apply(provider, Vector2.zero, 1, 10));
+            Assert.AreEqual(10, inside.Damage);
+            Assert.AreEqual(10, boundary.Damage);
+            Assert.AreEqual(0, outside.Damage);
+            Assert.AreEqual(0, AreaDamage.Apply(provider, Vector2.zero, float.NaN, 10));
+        }
+    }
+}

@@ -111,6 +111,9 @@ namespace Game.Core
                     case UpgradeType.CastCount: nextStats = new CastCountUpgrade(nextStats, (int)effect.value); break;
                     case UpgradeType.PierceCount: nextStats = new PierceCountUpgrade(nextStats, (int)effect.value); break;
                     case UpgradeType.ProjectileSpeed: nextStats = new ProjectileSpeedUpgrade(nextStats, effect.value); break;
+                    case UpgradeType.ExplosionDamage:
+                    case UpgradeType.ExplosionRadius:
+                        nextStats = new ExplosionUpgrade(nextStats, effect.value, effect.type == UpgradeType.ExplosionRadius); break;
                     case UpgradeType.Frostbite:
                     case UpgradeType.ShardFrostbite:
                         if (effect.value <= 0)
