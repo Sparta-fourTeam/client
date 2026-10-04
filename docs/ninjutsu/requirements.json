@@ -269,7 +269,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 1,
+        "cardId": "kunai_spread",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -354,7 +359,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 1,
+        "cardId": "kunai_barrage",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -387,7 +397,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 1,
+        "cardId": "kunai_aux_damage",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false

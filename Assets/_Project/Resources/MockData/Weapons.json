@@ -216,6 +216,54 @@
             "cardId": "kunai_explosion"
           }
         ]
+      },
+      {
+        "id": "kunai_spread",
+        "name": "확산 쿠나이",
+        "desc": "명중 시 보조 쿠나이 2개 발사",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "type": 8,
+            "value": 2
+          }
+        ],
+        "requiredCardIds": [
+          "arrow_sharp"
+        ],
+        "minPermanentLevel": 0
+      },
+      {
+        "id": "kunai_barrage",
+        "name": "쿠나이 난사",
+        "desc": "명중 시 보조 쿠나이 4개 추가 발사",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "type": 8,
+            "value": 4
+          }
+        ],
+        "requiredCardIds": [
+          "kunai_spread"
+        ],
+        "minPermanentLevel": 0
+      },
+      {
+        "id": "kunai_aux_damage",
+        "name": "보조 쿠나이 강화",
+        "desc": "보조 쿠나이 공격력 +100%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "type": 9,
+            "value": 100
+          }
+        ],
+        "requiredCardIds": [
+          "kunai_spread"
+        ],
+        "minPermanentLevel": 0
       }
     ]
   },
