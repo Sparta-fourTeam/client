@@ -7,10 +7,15 @@ namespace Game.Core
     {
         private ObjectPool<HitscanEffect> pool;
         private ObjectPool<Projectile> orbPool;
+        private readonly ObjectPool<ElectromagneticField> fieldPool;
         private readonly Vector3 originalScale;
 
         public HitscanCaster(WeaponData data, GameObject prefab, Transform caster, IEnemyTargetProvider targetProvider) : base(data, caster, targetProvider)
         {
+            fieldPool = new ObjectPool<ElectromagneticField>(
+                () => new GameObject("ElectromagneticField_Prototype").AddComponent<ElectromagneticField>(),
+                field => field.gameObject.SetActive(true), field => field.gameObject.SetActive(false),
+                field => { if (field != null) { Object.Destroy(field.gameObject); } }, true, 8, 120);
             originalScale = prefab.transform.localScale;
             var secondary = prefab.GetComponent<HitscanEffect>()?.SecondaryProjectilePrefab;
             if (secondary != null)
@@ -40,6 +45,11 @@ namespace Game.Core
             {
                 var target = targets[i % targets.Count];
 
+                if (stats.FieldDuration > 0)
+                {
+                    float fieldDamage = (stats.Damage * stats.FieldDamageRatio + stats.FieldFlatDamage) * stats.FieldDamageMultiplier;
+                    fieldPool.Get().Init(fieldPool, targetProvider, target.Position, stats.FieldRadius, fieldDamage, stats.FieldDuration, stats.FieldSlowRatio);
+                }
                 var effect = pool.Get();
                 effect.transform.localScale = stats.Form == WeaponForm.JudgementThunder ? originalScale * 1.5f : originalScale;
                 float explosionRadius = stats.ExplosionRadius;

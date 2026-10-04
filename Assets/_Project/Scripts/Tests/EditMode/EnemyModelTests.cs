@@ -33,6 +33,23 @@ namespace Game.Tests
             return new EnemyModel(id, position, speed, EnemyType.Normal, maxHp, TestAttack, _hpChanged, _died);
         }
 
+        [Test]
+        public void AreaSlow_StrongestSourceWinsAndRemovalRestoresMovement()
+        {
+            var enemy = CreateEnemy(speed: 10, position: Vector2.up * 100);
+            var weak = new object(); var strong = new object();
+            enemy.SetAreaSlow(weak, .3f); enemy.SetAreaSlow(strong, .6f);
+            Assert.AreEqual(.4f, enemy.MovementMultiplier, .001f);
+            enemy.Move(1); Assert.AreEqual(96, enemy.Position.y, .001f);
+            enemy.RemoveAreaSlow(strong); enemy.Move(1);
+            Assert.AreEqual(89, enemy.Position.y, .001f);
+            enemy.RemoveAreaSlow(weak); Assert.AreEqual(1, enemy.MovementMultiplier);
+            enemy.SetAreaSlow(weak, float.NaN); enemy.SetAreaSlow(weak, 1); enemy.SetAreaSlow(null, .3f);
+            Assert.AreEqual(1, enemy.MovementMultiplier);
+            enemy.SetAreaSlow(weak, .3f); enemy.TakeDamage(100);
+            Assert.AreEqual(1, enemy.MovementMultiplier);
+        }
+
         private class LightningProvider : IEnemyTargetProvider
         {
             public readonly List<IEnemyTarget> Targets = new();

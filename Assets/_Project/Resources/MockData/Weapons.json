@@ -657,7 +657,10 @@
       "frostbiteChance": 1,
       "burnChance": 1,
       "paralysisChance": 1,
-      "paralysisDuration": 1
+      "paralysisDuration": 1,
+      "fieldDamageRatio": 0.1,
+      "fieldRadius": 0.8,
+      "fieldSlowRatio": 0.3
     },
     "upgrades": [
       {
@@ -841,6 +844,55 @@
           {
             "type": 25,
             "value": 2
+          }
+        ]
+      },
+      {
+        "id": "lightning_field",
+        "name": "전자기장",
+        "desc": "전자기장 생성 / 범위 내 이동속도 30% 감소",
+        "maxPickCount": 1,
+        "requiredCardIds": [
+          "lightning_storm"
+        ],
+        "effects": [
+          {
+            "type": 29,
+            "value": 3
+          }
+        ]
+      },
+      {
+        "id": "lightning_field_stable",
+        "name": "안정된 전장",
+        "desc": "전자기장 공격력 +50 / 지속 시간 +2초",
+        "maxPickCount": 1,
+        "requiredCardIds": [
+          "lightning_field"
+        ],
+        "effects": [
+          {
+            "type": 30,
+            "value": 50
+          },
+          {
+            "type": 29,
+            "value": 2
+          }
+        ]
+      },
+      {
+        "id": "lightning_field_voltage",
+        "name": "고전압 전장",
+        "desc": "전자기장 공격력 +400%",
+        "maxPickCount": 1,
+        "requiredCardIds": [
+          "lightning_field"
+        ],
+        "effects": [
+          {
+            "type": 31,
+            "value": 400
           }
         ]
       }

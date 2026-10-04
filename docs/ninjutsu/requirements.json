@@ -2208,7 +2208,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 3,
+        "cardId": "lightning_field",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -2279,7 +2284,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 3,
+        "cardId": "lightning_field_stable",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -2312,7 +2322,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 3,
+        "cardId": "lightning_field_voltage",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false

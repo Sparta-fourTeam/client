@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Game.Core
 {
-    public class EnemyModel : IEnemyTarget, IFreezableTarget, IKnockbackTarget, IFrostbiteTarget, IParalyzableTarget, IBurnableTarget
+    public class EnemyModel : IEnemyTarget, IFreezableTarget, IKnockbackTarget, IFrostbiteTarget, IParalyzableTarget, IBurnableTarget, IAreaSlowTarget
     {
         // 아래쪽 방향으로 이동.
         private static readonly Vector2 _moveDirection = Vector2.down;
@@ -40,6 +40,26 @@ namespace Game.Core
             }
 
             ParalysisRemaining = Math.Max(ParalysisRemaining, duration);
+        }
+
+        private readonly System.Collections.Generic.Dictionary<object, float> areaSlows = new();
+        public float MovementMultiplier
+        {
+            get
+            {
+                float strongest = 0;
+                foreach (var ratio in areaSlows.Values) { strongest = Math.Max(strongest, ratio); }
+                return 1 - strongest;
+            }
+        }
+        public void SetAreaSlow(object source, float ratio)
+        {
+            if (source == null || IsDead || ratio <= 0 || ratio >= 1 || float.IsNaN(ratio) || float.IsInfinity(ratio)) { return; }
+            areaSlows[source] = ratio;
+        }
+        public void RemoveAreaSlow(object source)
+        {
+            if (source != null) { areaSlows.Remove(source); }
         }
 
         public float BurnRemaining { get; private set; }
@@ -200,7 +220,7 @@ namespace Game.Core
                 return;
             }
 
-            Position += _moveDirection * (_speed * deltaTime);
+            Position += _moveDirection * (_speed * MovementMultiplier * deltaTime);
         }
 
         public bool IsInAttackRange(Wall wall)
@@ -250,6 +270,7 @@ namespace Game.Core
             {
                 var deathExplosion = BurnRemaining > 0 ? burnOnDeath : null;
                 ClearBurn();
+                areaSlows.Clear();
                 _diedPublisher.Publish(new EnemyDied(Id));
                 deathExplosion?.Invoke(Position);
             }

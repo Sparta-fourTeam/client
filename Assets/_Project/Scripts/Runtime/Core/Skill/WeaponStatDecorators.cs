@@ -2,6 +2,16 @@ using System;
 
 namespace Game.Core
 {
+    public sealed class FieldUpgrade : StatDecorator
+    {
+        private readonly UpgradeType type;
+        private readonly float value;
+        public FieldUpgrade(IWeaponStats inner, UpgradeType type, float value) : base(inner) { this.type = type; this.value = value; }
+        public override float FieldDuration => inner.FieldDuration + (type == UpgradeType.FieldDuration ? value : 0);
+        public override float FieldFlatDamage => inner.FieldFlatDamage + (type == UpgradeType.FieldDamageFlat ? value : 0);
+        public override float FieldDamageMultiplier => inner.FieldDamageMultiplier * (type == UpgradeType.FieldDamageMultiplier ? 1 + value * .01f : 1);
+    }
+
     public sealed class KillLightningUpgrade : StatDecorator
     {
         private readonly float ratio;

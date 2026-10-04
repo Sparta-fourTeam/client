@@ -40,6 +40,27 @@ namespace Game.Tests
             Assert.IsTrue(UpgradeEligibility.CanAcquire(cards.Find(c => c.id == "lightning_storm"), 3, state));
         }
 
+        [Test]
+        public void FieldCards_RequireStormThenFieldAndRespectOneSuccessfulPick()
+        {
+            var cards = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == 3).upgrades;
+            var state = new State(); state.Levels[3] = 1;
+            var field = cards.Find(c => c.id == "lightning_field");
+            Assert.IsFalse(UpgradeEligibility.CanAcquire(field, 3, state));
+            state.Counts[(3, "lightning_storm")] = 1;
+            Assert.IsTrue(UpgradeEligibility.CanAcquire(field, 3, state));
+            foreach (string id in new[] { "lightning_field_stable", "lightning_field_voltage" })
+            {
+                var option = cards.Find(c => c.id == id);
+                Assert.IsFalse(UpgradeEligibility.CanAcquire(option, 3, state));
+                state.Counts[(3, "lightning_field")] = 1;
+                Assert.IsTrue(UpgradeEligibility.CanAcquire(option, 3, state));
+                state.Counts[(3, id)] = 1;
+                Assert.IsFalse(UpgradeEligibility.CanAcquire(option, 3, state));
+                state.Counts.Remove((3, "lightning_field"));
+            }
+        }
+
         private static State Owned(int level = 1) => new State { Levels = { [1] = level } };
         private static WeaponUpgradeOption Option(string id = "upgrade") => new WeaponUpgradeOption { id = id, maxPickCount = 3 };
 

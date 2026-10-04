@@ -31,6 +31,12 @@ namespace Game.Core
         public float BurnRatio => 0;
         public float BurnMaxHpRatio => 0;
         public bool BurnDeathExplosion => false;
+        public float FieldDuration => 0;
+        public float FieldDamageRatio => data.fieldDamageRatio;
+        public float FieldFlatDamage => 0;
+        public float FieldDamageMultiplier => 1;
+        public float FieldRadius => data.fieldRadius;
+        public float FieldSlowRatio => data.fieldSlowRatio;
         public WeaponForm Form => WeaponForm.Default;
     }
 }

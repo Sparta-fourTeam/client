@@ -30,6 +30,12 @@ namespace Game.Core
         public virtual float BurnRatio => inner.BurnRatio;
         public virtual float BurnMaxHpRatio => inner.BurnMaxHpRatio;
         public virtual bool BurnDeathExplosion => inner.BurnDeathExplosion;
+        public virtual float FieldDuration => inner.FieldDuration;
+        public virtual float FieldDamageRatio => inner.FieldDamageRatio;
+        public virtual float FieldFlatDamage => inner.FieldFlatDamage;
+        public virtual float FieldDamageMultiplier => inner.FieldDamageMultiplier;
+        public virtual float FieldRadius => inner.FieldRadius;
+        public virtual float FieldSlowRatio => inner.FieldSlowRatio;
         public virtual WeaponForm Form => inner.Form;
     }
 }
