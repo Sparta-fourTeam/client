@@ -37,8 +37,9 @@ namespace Game.Core
                 Projectile projectile = pool.Get();
                 projectile.transform.localScale = stats.Form == WeaponForm.Enbakutsu
                     ? Vector3.Scale(projectileScale, new Vector3(1.5f, 0.65f, 1)) : projectileScale;
+                projectile.transform.localScale *= stats.ProjectileSizeMultiplier;
                 projectile.SetVisualForm(stats.Form);
-                projectile.Init(pool, caster.position, direction, stats.Damage, stats.ProjectileSpeed, ProjectileLifetime, targetProvider, stats.PierceCount, stats.FreezeDuration, CreateHitCallback(), knockbackDistance: stats.KnockbackDistance, frostbiteRatio: stats.FrostbiteRatio, paralysisDuration: stats.ParalysisDuration, lightningDamage: stats.Damage * stats.LightningStrikeRatio, paralysisChance: data.baseStats.paralysisChance, burnDuration: stats.BurnDuration, burnDamage: stats.Damage * stats.BurnRatio, burnMaxHpRatio: stats.BurnMaxHpRatio, burnOnDeath: CreateBurnDeathCallback(), freezeChance: data.baseStats.freezeChance, frostbiteChance: data.baseStats.frostbiteChance, burnChance: data.baseStats.burnChance);
+                projectile.Init(pool, caster.position, direction, stats.Damage, stats.ProjectileSpeed, ProjectileLifetime, targetProvider, stats.PierceCount, stats.FreezeDuration, CreateHitCallback(), knockbackDistance: stats.KnockbackDistance, frostbiteRatio: stats.FrostbiteRatio, paralysisDuration: stats.ParalysisDuration, lightningDamage: stats.Damage * stats.LightningStrikeRatio, paralysisChance: data.baseStats.paralysisChance, burnDuration: stats.BurnDuration, burnDamage: stats.Damage * stats.BurnRatio, burnMaxHpRatio: stats.BurnMaxHpRatio, burnOnDeath: CreateBurnDeathCallback(), freezeChance: data.baseStats.freezeChance, frostbiteChance: data.baseStats.frostbiteChance, burnChance: data.baseStats.burnChance, collisionRadius: .3f * stats.ProjectileSizeMultiplier);
             }
         }
         private System.Action<Vector2> CreateBurnDeathCallback()

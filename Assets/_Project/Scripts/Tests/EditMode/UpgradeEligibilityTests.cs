@@ -82,6 +82,21 @@ namespace Game.Tests
             finally { UnityEngine.Object.DestroyImmediate(go); }
         }
 
+        [Test]
+        public void LogRepeatAndSize_KeepConservativeDamagePrerequisite()
+        {
+            var data = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == 5);
+            var state = new State(); state.Levels[5] = 1;
+            foreach (string id in new[] { "log_repeat", "log_size" })
+            {
+                var card = data.upgrades.Find(c => c.id == id);
+                Assert.IsFalse(UpgradeEligibility.CanAcquire(card, 5, state));
+                state.Counts[(5, "log_damage")] = 1;
+                Assert.IsTrue(UpgradeEligibility.CanAcquire(card, 5, state));
+                state.Counts.Remove((5, "log_damage"));
+            }
+        }
+
         private static State Owned(int level = 1) => new State { Levels = { [1] = level } };
         private static WeaponUpgradeOption Option(string id = "upgrade") => new WeaponUpgradeOption { id = id, maxPickCount = 3 };
 

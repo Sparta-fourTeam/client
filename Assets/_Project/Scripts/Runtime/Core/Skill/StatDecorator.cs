@@ -12,6 +12,7 @@ namespace Game.Core
         public virtual int CastCount => inner.CastCount;
         public virtual int PierceCount => inner.PierceCount;
         public virtual float ProjectileSpeed => inner.ProjectileSpeed;
+        public virtual float ProjectileSizeMultiplier => inner.ProjectileSizeMultiplier;
         public virtual float FreezeDuration => inner.FreezeDuration;
         public virtual float KnockbackDistance => inner.KnockbackDistance;
         public virtual float ExplosionRadius => inner.ExplosionRadius;

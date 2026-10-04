@@ -2611,7 +2611,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 5,
+        "cardId": "log_size",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "hold",
       "readyForProduction": false
@@ -2650,7 +2655,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 5,
+        "cardId": "log_repeat",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": true
       },
       "decisionStatus": "hold",
       "readyForProduction": false
@@ -2737,7 +2747,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 5,
+        "cardId": "log_speed",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -2796,7 +2811,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 5,
+        "cardId": "log_damage",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "hold",
       "readyForProduction": false

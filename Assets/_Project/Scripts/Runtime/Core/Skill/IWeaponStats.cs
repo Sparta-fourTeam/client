@@ -9,6 +9,7 @@ namespace Game.Core
         int CastCount { get; }
         int PierceCount { get; }
         float ProjectileSpeed { get; }
+        float ProjectileSizeMultiplier { get; }
         float FreezeDuration { get; }
         float KnockbackDistance { get; }
         float ExplosionRadius { get; }

@@ -74,11 +74,12 @@ namespace Game.Core
         private readonly ProjectileHitLedger hitLedger = new();
         private readonly List<IEnemyTarget> hitBuffer = new List<IEnemyTarget>(HitCandidateCount);
         // 적 스프라이트가 레퍼런스 크기로 줄어든 것(슬라임 가로 약 0.6, 콜라이더 반지름 약 0.3)에 맞춘 값. 이전에는 1.4짜리 적에 맞춘 0.7이었다
-        private const float HitRadius = 0.3f;
+        private float hitRadius = 0.3f;
         private const int HitCandidateCount = 4;
 
-        public void Init(IObjectPool<Projectile> pool, Vector3 startPos, Vector3 direction, float damage, float speed, float lifetime, IEnemyTargetProvider targetProvider, int pierceCount = 0, float freezeDuration = 0, System.Action<Vector2, Vector3, IEnemyTarget> onHit = null, IEnemyTarget ignoredTarget = null, float knockbackDistance = 0, float frostbiteRatio = 0, float paralysisDuration = 0, float lightningDamage = 0, float paralysisChance = 1, System.Func<float> randomValue = null, float burnDuration = 0, float burnDamage = 0, float burnMaxHpRatio = 0, System.Action<Vector2> burnOnDeath = null, float freezeChance = 1, float frostbiteChance = 1, float burnChance = 1)
+        public void Init(IObjectPool<Projectile> pool, Vector3 startPos, Vector3 direction, float damage, float speed, float lifetime, IEnemyTargetProvider targetProvider, int pierceCount = 0, float freezeDuration = 0, System.Action<Vector2, Vector3, IEnemyTarget> onHit = null, IEnemyTarget ignoredTarget = null, float knockbackDistance = 0, float frostbiteRatio = 0, float paralysisDuration = 0, float lightningDamage = 0, float paralysisChance = 1, System.Func<float> randomValue = null, float burnDuration = 0, float burnDamage = 0, float burnMaxHpRatio = 0, System.Action<Vector2> burnOnDeath = null, float freezeChance = 1, float frostbiteChance = 1, float burnChance = 1, float collisionRadius = .3f)
         {
+            hitRadius = Mathf.Max(0, collisionRadius);
             this.onHit = onHit;
             this.ignoredTarget = ignoredTarget;
             this.pool = pool;
@@ -128,7 +129,7 @@ namespace Game.Core
             targetProvider.GetNearest(start, int.MaxValue, hitBuffer);
             hitBuffer.Sort((a, b) => SegmentFraction(start, end, a.Position).CompareTo(SegmentFraction(start, end, b.Position)));
 
-            float hitRadiusSqr = HitRadius * HitRadius;
+            float hitRadiusSqr = hitRadius * hitRadius;
             foreach (var candidate in hitBuffer)
             {
                 float fraction = SegmentFraction(start, end, candidate.Position);

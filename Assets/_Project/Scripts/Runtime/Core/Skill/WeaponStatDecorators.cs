@@ -2,6 +2,13 @@ using System;
 
 namespace Game.Core
 {
+    public sealed class ProjectileSizeUpgrade : StatDecorator
+    {
+        private readonly float factor;
+        public ProjectileSizeUpgrade(IWeaponStats inner, float percent) : base(inner) => factor = 1 + percent * .01f;
+        public override float ProjectileSizeMultiplier => inner.ProjectileSizeMultiplier * factor;
+    }
+
     public sealed class FieldUpgrade : StatDecorator
     {
         private readonly UpgradeType type;

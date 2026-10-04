@@ -12,6 +12,7 @@ namespace Game.Core
         public int CastCount => System.Math.Max(1, data.castCount);
         public int PierceCount => System.Math.Max(0, data.pierceCount);
         public float ProjectileSpeed => data.speed;
+        public float ProjectileSizeMultiplier => 1;
         public float FreezeDuration => data.freezeDuration;
         public float KnockbackDistance => data.knockbackDistance;
         public float ExplosionRadius => data.explosionRadius;

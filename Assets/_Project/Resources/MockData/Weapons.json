@@ -1149,5 +1149,107 @@
         ]
       }
     ]
+  },
+  {
+    "id": 5,
+    "name": "통나무",
+    "iconKey": "weapon_log",
+    "castType": 0,
+    "maxLevel": 10,
+    "progressionId": null,
+    "prototypeBalanceSourceId": 1,
+    "baseStats": {
+      "cooldown": 1,
+      "baseDamage": 10,
+      "range": 22,
+      "speed": 20,
+      "hitCount": 1,
+      "castCount": 1,
+      "pierceCount": 0,
+      "castInterval": 0.1,
+      "explosionDamageRatio": 1,
+      "knockbackDistance": 0.2,
+      "paralysisChance": 1,
+      "freezeChance": 1,
+      "frostbiteChance": 1,
+      "burnChance": 1
+    },
+    "upgrades": [
+      {
+        "id": "log_damage",
+        "name": "통나무 피해 증폭",
+        "desc": "공격력 +60%",
+        "maxPickCount": 2,
+        "effects": [
+          {
+            "type": 1,
+            "value": 60
+          }
+        ]
+      },
+      {
+        "id": "log_repeat",
+        "name": "연발 통나무",
+        "desc": "추가 시전 +1 / 공격력 -20%",
+        "maxPickCount": 2,
+        "requiredCardIds": [
+          "log_damage"
+        ],
+        "effects": [
+          {
+            "type": 4,
+            "value": 1
+          },
+          {
+            "type": 1,
+            "value": -20
+          }
+        ],
+        "variants": [
+          {
+            "minPermanentLevel": 5,
+            "name": "연발 통나무+",
+            "desc": "추가 시전 +1",
+            "effects": [
+              {
+                "type": 4,
+                "value": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "log_size",
+        "name": "크기 증가",
+        "desc": "크기 +60%",
+        "maxPickCount": 1,
+        "requiredCardIds": [
+          "log_damage"
+        ],
+        "effects": [
+          {
+            "type": 32,
+            "value": 60
+          }
+        ]
+      },
+      {
+        "id": "log_speed",
+        "name": "속도 증가",
+        "desc": "굴러가는 속도 +40% / 쿨타임 -25%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "type": 6,
+            "value": 40
+          },
+          {
+            "type": 0,
+            "value": 25
+          }
+        ]
+      }
+    ]
   }
 ]
