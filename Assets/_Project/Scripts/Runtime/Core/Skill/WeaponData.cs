@@ -48,7 +48,7 @@ namespace Game.Core
     }
 
     // 기존 0..3 값은 Cards.json과의 호환성을 위해 순서를 유지한다.
-    public enum UpgradeType { AttackSpeed, Damage, ProjectileCount, HitCount, CastCount, PierceCount, ProjectileSpeed, FreezeDuration, SplitCount, ShardDamage, Knockback, Frostbite, ShardFrostbite, ExplosionDamage, ExplosionRadius, EnableExplosion, Paralysis, LightningStrike, AuxiliaryLightning, AuxiliaryExplosion, BurnDuration, BurnRatio, BurnMaxHp, BurnDeathExplosion, ImpactDamage, Form, ParalysisDuration }
+    public enum UpgradeType { AttackSpeed, Damage, ProjectileCount, HitCount, CastCount, PierceCount, ProjectileSpeed, FreezeDuration, SplitCount, ShardDamage, Knockback, Frostbite, ShardFrostbite, ExplosionDamage, ExplosionRadius, EnableExplosion, Paralysis, LightningStrike, AuxiliaryLightning, AuxiliaryExplosion, BurnDuration, BurnRatio, BurnMaxHp, BurnDeathExplosion, ImpactDamage, Form, ParalysisDuration, AuxiliaryParalysis }
 
     public class StatEffect
     {

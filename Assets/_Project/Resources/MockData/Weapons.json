@@ -762,6 +762,41 @@
             "value": 1.5
           }
         ]
+      },
+      {
+        "id": "lightning_split",
+        "name": "전자 분열",
+        "desc": "공격 대상 주위로 번개 구체 6개 발사",
+        "maxPickCount": 1,
+        "requiredCardIds": [
+          "lightning_voltage",
+          "lightning_damage"
+        ],
+        "effects": [
+          {
+            "type": 8,
+            "value": 6
+          }
+        ]
+      },
+      {
+        "id": "lightning_particle_voltage",
+        "name": "고전압 입자",
+        "desc": "번개 구체 공격력 +40% / 마비 0.5초",
+        "maxPickCount": 1,
+        "requiredCardIds": [
+          "lightning_split"
+        ],
+        "effects": [
+          {
+            "type": 9,
+            "value": 40
+          },
+          {
+            "type": 27,
+            "value": 0.5
+          }
+        ]
       }
     ]
   },

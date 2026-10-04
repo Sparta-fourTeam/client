@@ -11685,6 +11685,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b54c8491943fa7040ba6c027d842fa04, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Game.Core::Game.Core.HitscanEffect
+  secondaryProjectilePrefab: {fileID: 898466977149368188, guid: 41ee052e8b8a46c088ee6d5c79804be9, type: 3}
   targetMask:
     serializedVersion: 2
     m_Bits: 256

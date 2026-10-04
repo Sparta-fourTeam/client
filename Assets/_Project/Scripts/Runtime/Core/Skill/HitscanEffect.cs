@@ -6,6 +6,8 @@ namespace Game.Core
     public class HitscanEffect : MonoBehaviour
     {
         private IObjectPool<HitscanEffect> pool;
+        [SerializeField] private GameObject secondaryProjectilePrefab;
+        public GameObject SecondaryProjectilePrefab => secondaryProjectilePrefab;
         [SerializeField] private LayerMask targetMask;
         private float damage;
         private System.Action<Enemy> onTargetHit;
