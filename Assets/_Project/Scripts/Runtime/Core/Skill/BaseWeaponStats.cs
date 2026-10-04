@@ -27,5 +27,7 @@ namespace Game.Core
         public bool AuxiliaryExplosions => false;
         public float BurnDuration => 0;
         public float BurnRatio => 0;
+        public float BurnMaxHpRatio => 0;
+        public bool BurnDeathExplosion => false;
     }
 }

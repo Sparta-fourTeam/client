@@ -508,6 +508,38 @@
         "requiredCardIds": [
           "fireball_explosion_damage"
         ]
+      },
+      {
+        "id": "fireball_inferno",
+        "name": "업화",
+        "desc": "점화 주기마다 최대 HP 3% 피해 추가",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "type": 22,
+            "value": 3
+          }
+        ],
+        "requiredCardIds": [
+          "fireball_burn"
+        ],
+        "minPermanentLevel": 0
+      },
+      {
+        "id": "fireball_spreading_burn",
+        "name": "번지는 화염",
+        "desc": "점화 대상 사망 시 폭발",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "type": 23,
+            "value": 1
+          }
+        ],
+        "requiredCardIds": [
+          "fireball_burn"
+        ],
+        "minPermanentLevel": 5
       }
     ]
   },

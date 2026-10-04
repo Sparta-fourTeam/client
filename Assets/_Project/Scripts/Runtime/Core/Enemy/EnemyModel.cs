@@ -45,36 +45,58 @@ namespace Game.Core
         public float BurnRemaining { get; private set; }
         private float burnDamage;
         private float burnElapsed;
-        public void ApplyBurn(float damagePerSecond, float duration)
+        private float burnMaxHpRatio;
+        private Action<Vector2> burnOnDeath;
+        public void ApplyBurn(float damagePerSecond, float duration, float maxHpRatio = 0, Action<Vector2> onDeath = null)
         {
             if (IsDead || damagePerSecond <= 0 || duration <= 0
                 || float.IsNaN(damagePerSecond) || float.IsInfinity(damagePerSecond)
-                || float.IsNaN(duration) || float.IsInfinity(duration))
+                || float.IsNaN(duration) || float.IsInfinity(duration)
+                || maxHpRatio < 0 || float.IsNaN(maxHpRatio) || float.IsInfinity(maxHpRatio))
             {
                 return;
             }
 
-            if (BurnRemaining <= 0) { burnElapsed = 0; burnDamage = 0; }
+            if (BurnRemaining <= 0)
+            {
+                ClearBurn();
+            }
+
             BurnRemaining = Math.Max(BurnRemaining, duration);
             burnDamage = Math.Max(burnDamage, damagePerSecond);
+            burnMaxHpRatio = Math.Max(burnMaxHpRatio, maxHpRatio);
+            if (onDeath != null)
+            {
+                burnOnDeath = onDeath;
+            }
+        }
+
+        private void ClearBurn()
+        {
+            BurnRemaining = 0; burnElapsed = 0; burnDamage = 0;
+            burnMaxHpRatio = 0; burnOnDeath = null;
         }
 
         private void TickBurn(float deltaTime)
         {
-            if (IsDead) { BurnRemaining = 0; burnElapsed = 0; burnDamage = 0; return; }
+            if (IsDead) { ClearBurn(); return; }
             if (BurnRemaining <= 0)
             {
                 return;
             }
 
             burnElapsed += Math.Min(deltaTime, BurnRemaining);
-            BurnRemaining = Math.Max(0, BurnRemaining - deltaTime);
+            float remaining = Math.Max(0, BurnRemaining - deltaTime);
             while (burnElapsed >= 1 && !IsDead)
             {
                 burnElapsed -= 1;
-                TakeDamage(Math.Max(1, (int)burnDamage));
+                TakeDamage(Math.Max(1, (int)(burnDamage + Math.Round(MaxHp * (double)burnMaxHpRatio, 4))));
             }
-            if (BurnRemaining <= 0 || IsDead) { BurnRemaining = 0; burnElapsed = 0; burnDamage = 0; }
+            BurnRemaining = remaining;
+            if (BurnRemaining <= 0 || IsDead)
+            {
+                ClearBurn();
+            }
         }
 
         private sealed class FrostbiteStack
@@ -226,7 +248,10 @@ namespace Game.Core
 
             if (Hp == 0)
             {
+                var deathExplosion = BurnRemaining > 0 ? burnOnDeath : null;
+                ClearBurn();
                 _diedPublisher.Publish(new EnemyDied(Id));
+                deathExplosion?.Invoke(Position);
             }
         }
     }

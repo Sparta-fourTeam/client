@@ -26,5 +26,7 @@ namespace Game.Core
         public virtual bool AuxiliaryExplosions => inner.AuxiliaryExplosions;
         public virtual float BurnDuration => inner.BurnDuration;
         public virtual float BurnRatio => inner.BurnRatio;
+        public virtual float BurnMaxHpRatio => inner.BurnMaxHpRatio;
+        public virtual bool BurnDeathExplosion => inner.BurnDeathExplosion;
     }
 }

@@ -1314,7 +1314,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 2,
+        "cardId": "fireball_inferno",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -1349,7 +1354,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 2,
+        "cardId": "fireball_spreading_burn",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "hold",
       "readyForProduction": false

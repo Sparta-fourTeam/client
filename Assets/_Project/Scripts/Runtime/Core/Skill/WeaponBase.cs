@@ -111,6 +111,14 @@ namespace Game.Core
                     case UpgradeType.CastCount: nextStats = new CastCountUpgrade(nextStats, (int)effect.value); break;
                     case UpgradeType.PierceCount: nextStats = new PierceCountUpgrade(nextStats, (int)effect.value); break;
                     case UpgradeType.ProjectileSpeed: nextStats = new ProjectileSpeedUpgrade(nextStats, effect.value); break;
+                    case UpgradeType.BurnMaxHp:
+                    case UpgradeType.BurnDeathExplosion:
+                        if (effect.value <= 0 || (effect.type == UpgradeType.BurnDeathExplosion && effect.value != 1))
+                        {
+                            return false;
+                        }
+
+                        nextStats = new BurnSpecialUpgrade(nextStats, effect.value, effect.type == UpgradeType.BurnDeathExplosion); break;
                     case UpgradeType.BurnDuration:
                     case UpgradeType.BurnRatio:
                         if (effect.value <= 0)

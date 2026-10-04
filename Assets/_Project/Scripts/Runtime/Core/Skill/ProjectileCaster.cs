@@ -36,9 +36,21 @@ namespace Game.Core
 
                 Projectile projectile = pool.Get();
                 projectile.transform.localScale = projectileScale;
-                projectile.Init(pool, caster.position, direction, stats.Damage, stats.ProjectileSpeed, ProjectileLifetime, targetProvider, stats.PierceCount, stats.FreezeDuration, CreateHitCallback(), knockbackDistance: stats.KnockbackDistance, frostbiteRatio: stats.FrostbiteRatio, paralysisDuration: stats.ParalysisDuration, lightningDamage: stats.Damage * stats.LightningStrikeRatio, paralysisChance: data.baseStats.paralysisChance, burnDuration: stats.BurnDuration, burnDamage: stats.Damage * stats.BurnRatio);
+                projectile.Init(pool, caster.position, direction, stats.Damage, stats.ProjectileSpeed, ProjectileLifetime, targetProvider, stats.PierceCount, stats.FreezeDuration, CreateHitCallback(), knockbackDistance: stats.KnockbackDistance, frostbiteRatio: stats.FrostbiteRatio, paralysisDuration: stats.ParalysisDuration, lightningDamage: stats.Damage * stats.LightningStrikeRatio, paralysisChance: data.baseStats.paralysisChance, burnDuration: stats.BurnDuration, burnDamage: stats.Damage * stats.BurnRatio, burnMaxHpRatio: stats.BurnMaxHpRatio, burnOnDeath: CreateBurnDeathCallback());
             }
         }
+        private System.Action<Vector2> CreateBurnDeathCallback()
+        {
+            if (!stats.BurnDeathExplosion)
+            {
+                return null;
+            }
+
+            float radius = stats.ExplosionRadius;
+            float damage = stats.ExplosionDamage;
+            return position => AreaDamage.Apply(targetProvider, position, radius, damage);
+        }
+
         private System.Action<Vector2, Vector3, IEnemyTarget> CreateHitCallback()
         {
             var split = CreateSplitCallback();

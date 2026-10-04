@@ -23,5 +23,7 @@ namespace Game.Core
         bool AuxiliaryExplosions { get; }
         float BurnDuration { get; }
         float BurnRatio { get; }
+        float BurnMaxHpRatio { get; }
+        bool BurnDeathExplosion { get; }
     }
 }

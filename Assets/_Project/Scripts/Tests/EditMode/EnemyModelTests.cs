@@ -141,6 +141,61 @@ namespace Game.Tests
         }
 
         [Test]
+        public void Inferno_AddsMaxHpDamagePerBurnTick()
+        {
+            var enemy = CreateEnemy(maxHp: 100);
+            enemy.ApplyBurn(2, 6, 0.03f);
+            enemy.TickStatus(1);
+            Assert.AreEqual(95, enemy.Hp);
+            enemy.TickStatus(5);
+            Assert.AreEqual(70, enemy.Hp);
+        }
+
+        [Test]
+        public void BurnDeathExplosion_TriggersOnceIncludingLastTickAndNotAfterExpiry()
+        {
+            var enemy = CreateEnemy(maxHp: 6);
+            int explosions = 0;
+            enemy.ApplyBurn(1, 6, onDeath: position => { explosions++; enemy.TakeDamage(10); });
+            enemy.TickStatus(6);
+            enemy.TakeDamage(10);
+            Assert.AreEqual(1, explosions);
+            Assert.AreEqual(1, _died.Published.Count);
+            var expired = CreateEnemy(id: 2, maxHp: 100);
+            expired.ApplyBurn(1, 6, onDeath: position => explosions++);
+            expired.TickStatus(6);
+            expired.TakeDamage(100);
+            Assert.AreEqual(1, explosions);
+        }
+
+        private sealed class BurnTargets : IEnemyTargetProvider
+        {
+            public readonly List<IEnemyTarget> Targets = new();
+            public int GetNearest(Vector2 from, int count, List<IEnemyTarget> results)
+            { results.Clear(); results.AddRange(Targets); return results.Count; }
+        }
+
+        [Test]
+        public void BurnDeathExplosion_ChainKillsEachEnemyOnce()
+        {
+            var provider = new BurnTargets();
+            var enemies = new[] { CreateEnemy(1), CreateEnemy(2), CreateEnemy(3) };
+            int explosions = 0;
+            foreach (var enemy in enemies)
+            {
+                provider.Targets.Add(enemy);
+                enemy.ApplyBurn(1, 6, onDeath: position => { explosions++; AreaDamage.Apply(provider, position, 1, 10); });
+            }
+            enemies[0].TakeDamage(10);
+            Assert.AreEqual(3, explosions);
+            Assert.AreEqual(3, _died.Published.Count);
+            foreach (var enemy in enemies)
+            {
+                Assert.IsTrue(enemy.IsDead);
+            }
+        }
+
+        [Test]
         public void Freeze_StopsMovementRefreshesWithoutStackingAndExpires()
         {
             var enemy = CreateEnemy(speed: 1, position: new Vector2(0, 5));

@@ -2,6 +2,15 @@ using System;
 
 namespace Game.Core
 {
+    public sealed class BurnSpecialUpgrade : StatDecorator
+    {
+        private readonly float ratio;
+        private readonly bool death;
+        public BurnSpecialUpgrade(IWeaponStats inner, float value, bool death) : base(inner) { ratio = value * 0.01f; this.death = death; }
+        public override float BurnMaxHpRatio => death ? inner.BurnMaxHpRatio : ratio;
+        public override bool BurnDeathExplosion => death || inner.BurnDeathExplosion;
+    }
+
     public sealed class BurnUpgrade : StatDecorator
     {
         private readonly float value;

@@ -17,7 +17,7 @@ namespace Game.Tests
             public void ApplyParalysis(float duration) { Paralyses++; }
             public int Burns;
             public float BurnDamage;
-            public void ApplyBurn(float damage, float duration) { Burns++; BurnDamage = damage; }
+            public void ApplyBurn(float damage, float duration, float maxHpRatio = 0, System.Action<Vector2> onDeath = null) { Burns++; BurnDamage = damage; }
             public int Hits;
             public int DamageTaken;
             public int Freezes;

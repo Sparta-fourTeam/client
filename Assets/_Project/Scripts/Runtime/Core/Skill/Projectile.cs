@@ -18,6 +18,8 @@ namespace Game.Core
         private float freezeDuration;
         private float burnDuration;
         private float burnDamage;
+        private float burnMaxHpRatio;
+        private System.Action<Vector2> burnOnDeath;
         private float paralysisDuration;
         private float paralysisChance;
         private System.Func<float> randomValue;
@@ -33,7 +35,7 @@ namespace Game.Core
         private const float HitRadius = 0.3f;
         private const int HitCandidateCount = 4;
 
-        public void Init(IObjectPool<Projectile> pool, Vector3 startPos, Vector3 direction, float damage, float speed, float lifetime, IEnemyTargetProvider targetProvider, int pierceCount = 0, float freezeDuration = 0, System.Action<Vector2, Vector3, IEnemyTarget> onHit = null, IEnemyTarget ignoredTarget = null, float knockbackDistance = 0, float frostbiteRatio = 0, float paralysisDuration = 0, float lightningDamage = 0, float paralysisChance = 1, System.Func<float> randomValue = null, float burnDuration = 0, float burnDamage = 0)
+        public void Init(IObjectPool<Projectile> pool, Vector3 startPos, Vector3 direction, float damage, float speed, float lifetime, IEnemyTargetProvider targetProvider, int pierceCount = 0, float freezeDuration = 0, System.Action<Vector2, Vector3, IEnemyTarget> onHit = null, IEnemyTarget ignoredTarget = null, float knockbackDistance = 0, float frostbiteRatio = 0, float paralysisDuration = 0, float lightningDamage = 0, float paralysisChance = 1, System.Func<float> randomValue = null, float burnDuration = 0, float burnDamage = 0, float burnMaxHpRatio = 0, System.Action<Vector2> burnOnDeath = null)
         {
             this.onHit = onHit;
             this.ignoredTarget = ignoredTarget;
@@ -46,6 +48,8 @@ namespace Game.Core
             this.freezeDuration = freezeDuration;
             this.burnDuration = burnDuration;
             this.burnDamage = burnDamage;
+            this.burnMaxHpRatio = burnMaxHpRatio;
+            this.burnOnDeath = burnOnDeath;
             this.paralysisDuration = paralysisDuration;
             this.paralysisChance = Mathf.Clamp01(paralysisChance);
             this.randomValue = randomValue ?? (() => Random.value);
@@ -97,7 +101,7 @@ namespace Game.Core
                 if (frostbiteRatio > 0 && candidate is IFrostbiteTarget frosted) { frosted.ApplyFrostbite(damage * frostbiteRatio); }
                 if (paralysisDuration > 0 && candidate is IParalyzableTarget paralyzed && this.randomValue() < paralysisChance) { paralyzed.ApplyParalysis(paralysisDuration); }
                 if (lightningDamage > 0) { candidate.TakeDamage(Mathf.Max(1, (int)lightningDamage)); }
-                if (burnDuration > 0 && burnDamage > 0 && candidate is IBurnableTarget burning) { burning.ApplyBurn(burnDamage, burnDuration); }
+                if (burnDuration > 0 && burnDamage > 0 && candidate is IBurnableTarget burning) { burning.ApplyBurn(burnDamage, burnDuration, burnMaxHpRatio, burnOnDeath); }
                 SpawnImpact(hitPosition);
                 onHit?.Invoke(hitPosition, direction, candidate);
                 if (hitLedger.Exhausted)
