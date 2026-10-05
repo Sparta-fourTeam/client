@@ -12,6 +12,7 @@ namespace Game.Core
         public FieldBase field = new FieldBase();
         public AreaBase area = new AreaBase();
         public BeamBase beam = new BeamBase();
+        public ChainBase chain = new ChainBase();
 
         public class CastBase
         {
@@ -66,6 +67,18 @@ namespace Game.Core
             public float moveSpeed;
             /// <summary>펄스마다 범위 안의 적을 중심으로 끌어당기는 거리 (0이면 끌어당기지 않는다)</summary>
             public float pull;
+        }
+
+        public class ChainBase
+        {
+            /// <summary>첫 대상 뒤에 튕기는 횟수(반사)</summary>
+            public float bounces;
+            /// <summary>다음 대상을 찾는 거리 (현재 대상 기준)</summary>
+            public float jumpRange = 4;
+            /// <summary>대상 사이를 건너는 시간(초)</summary>
+            public float hopInterval = 0.08f;
+            /// <summary>0보다 크면 튕기는 경로 위(이 폭 이내)의 적도 함께 공격한다</summary>
+            public float pathWidth;
         }
 
         public class BeamBase

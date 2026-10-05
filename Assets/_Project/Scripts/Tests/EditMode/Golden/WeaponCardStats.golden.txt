@@ -117,3 +117,14 @@
 16/sun_beam_neutral_3@0: (변화 없음)
 16/ALL@0: Beam.Pulses=18; Beam.Width=2; Cast.Cooldown=9; Cast.Damage=20.4800014; Status.FreezeDuration=0.5; Status.SlowDuration=1; Status.StunChance=0.049999997; Status.StunDuration=1; Status.VulnerabilityDuration=5; Status.VulnerabilityRatio=0.25
 17/ALL@0: (변화 없음)
+18/chain_lightning_cross@0: Cast.Count=2
+18/chain_lightning_continuous@0: Cast.Damage=15.5999994; Chain.Bounces=5; Explosion.Damage=7.79999971
+18/chain_lightning_voltage@0: Cast.Damage=15.5999994; Explosion.Damage=7.79999971; Status.ParalysisDuration=1
+18/chain_lightning_amplify@0: Cast.Damage=19.2; Explosion.Damage=9.6
+18/chain_lightning_ion_burst@0: Explosion.Radius=0.8
+18/chain_lightning_resonance@0: (변화 없음)
+18/chain_lightning_ion_spread@0: (변화 없음)
+18/chain_lightning_ion_voltage@0: (변화 없음)
+18/chain_lightning_conduction@0: Cast.Damage=4.8; Chain.PathWidth=0.6; Explosion.Damage=2.4
+18/chain_lightning_neutral@0: (변화 없음)
+18/ALL@0: Cast.Count=3; Cast.Damage=35.09575; Chain.Bounces=9; Chain.PathWidth=0.6; Explosion.Damage=17.5478745; Explosion.Radius=1.6; Status.ParalysisDuration=1

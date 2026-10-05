@@ -16,6 +16,7 @@ namespace Game.Core
         FieldDuration, FieldDamageRatio, FieldFlatDamage, FieldDamageMultiplier, FieldRadius, FieldSlowRatio,
         AreaRadius, AreaDuration, AreaPulseInterval, AreaMoveSpeed, AreaPull,
         BeamLength, BeamWidth, BeamDuration, BeamPulses,
+        ChainBounces, ChainJumpRange, ChainHopInterval, ChainPathWidth,
         Count
     }
 
@@ -89,6 +90,10 @@ namespace Game.Core
             Def(Stat.BeamWidth, d => d.beam.width);
             Def(Stat.BeamDuration, d => d.beam.duration);
             Def(Stat.BeamPulses, d => d.beam.pulses);
+            Def(Stat.ChainBounces, d => d.chain.bounces);
+            Def(Stat.ChainJumpRange, d => d.chain.jumpRange);
+            Def(Stat.ChainHopInterval, d => d.chain.hopInterval);
+            Def(Stat.ChainPathWidth, d => d.chain.pathWidth);
             for (int i = 0; i < t.Length; i++)
             {
                 if (t[i] == null) { throw new InvalidOperationException($"스탯 {(Stat)i}의 기본값 선언이 없습니다."); }
@@ -110,6 +115,7 @@ namespace Game.Core
         public FieldStats Field { get; }
         public AreaStats Area { get; }
         public BeamStats Beam { get; }
+        public ChainStats Chain { get; }
 
         public static WeaponStats FromDefinition(WeaponBaseStats data) => new WeaponStats(new WeaponStatsBuilder(data));
 
@@ -126,6 +132,7 @@ namespace Game.Core
             Field = new FieldStats(values);
             Area = new AreaStats(values);
             Beam = new BeamStats(values);
+            Chain = new ChainStats(values);
         }
 
         internal float[] CopyValues() => (float[])values.Clone();
@@ -247,6 +254,17 @@ namespace Game.Core
         public float Duration => v[(int)Stat.BeamDuration];
         /// <summary>지속 시간 동안의 공격 횟수</summary>
         public float Pulses => v[(int)Stat.BeamPulses];
+    }
+
+    public readonly struct ChainStats
+    {
+        private readonly float[] v;
+        internal ChainStats(float[] values) => v = values;
+
+        public int Bounces => (int)v[(int)Stat.ChainBounces];
+        public float JumpRange => v[(int)Stat.ChainJumpRange];
+        public float HopInterval => v[(int)Stat.ChainHopInterval];
+        public float PathWidth => v[(int)Stat.ChainPathWidth];
     }
 
     // Only upgrade preparation can mutate values; committed snapshots are read-only.

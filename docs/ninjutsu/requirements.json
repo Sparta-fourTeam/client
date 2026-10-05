@@ -4269,7 +4269,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 18,
+        "cardId": "chain_lightning_cross",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "hold",
       "readyForProduction": false
@@ -4298,7 +4303,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 18,
+        "cardId": "chain_lightning_continuous",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -4328,7 +4338,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 18,
+        "cardId": "chain_lightning_voltage",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -4357,7 +4372,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 18,
+        "cardId": "chain_lightning_amplify",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -4391,7 +4411,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 18,
+        "cardId": "chain_lightning_ion_burst",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -4426,7 +4451,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 18,
+        "cardId": "chain_lightning_resonance",
+        "enabled": false,
+        "state": "disabled",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "hold",
       "readyForProduction": false
@@ -4459,7 +4489,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 18,
+        "cardId": "chain_lightning_ion_spread",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -4492,7 +4527,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 18,
+        "cardId": "chain_lightning_ion_voltage",
+        "enabled": false,
+        "state": "disabled",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -4535,7 +4575,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 18,
+        "cardId": "chain_lightning_conduction",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -4575,7 +4620,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 18,
+        "cardId": "chain_lightning_neutral",
+        "enabled": false,
+        "state": "disabled",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false

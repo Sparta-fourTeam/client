@@ -2198,5 +2198,178 @@
       }
     },
     "upgrades": []
+  },
+  {
+    "id": 18,
+    "name": "연쇄 번개",
+    "iconKey": "weapon_chain_lightning",
+    "castType": 4,
+    "maxLevel": 11,
+    "progressionId": null,
+    "prototypeBalanceSourceId": 3,
+    "baseStats": {
+      "cast": {
+        "cooldown": 3,
+        "baseDamage": 12,
+        "range": 14,
+        "projectileCount": 1,
+        "castCount": 1,
+        "castInterval": 0.1
+      },
+      "explosion": {
+        "damageRatio": 0.5
+      },
+      "chain": {
+        "bounces": 3,
+        "jumpRange": 4,
+        "hopInterval": 0.08
+      }
+    },
+    "upgrades": [
+      {
+        "id": "chain_lightning_cross",
+        "name": "교차 번개+",
+        "desc": "추가 시전 +1",
+        "maxPickCount": 2,
+        "effects": [
+          {
+            "kind": "castCount",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "id": "chain_lightning_continuous",
+        "name": "번개 연속",
+        "desc": "공격력 +30% / 반사 +2",
+        "maxPickCount": 3,
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 30
+          },
+          {
+            "kind": "chainBounces",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "id": "chain_lightning_voltage",
+        "name": "고전압 전격",
+        "desc": "공격력 +30% / 마비 1초",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 30
+          },
+          {
+            "kind": "paralysis",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "id": "chain_lightning_amplify",
+        "name": "번개 피해 증폭",
+        "desc": "공격력 +60%",
+        "maxPickCount": 2,
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 60
+          }
+        ]
+      },
+      {
+        "id": "chain_lightning_ion_burst",
+        "name": "이온 폭파",
+        "desc": "반사마다 폭발 피해",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "enableExplosion",
+            "value": 0.8
+          }
+        ],
+        "requiredCardIds": [
+          "chain_lightning_voltage"
+        ]
+      },
+      {
+        "id": "chain_lightning_resonance",
+        "name": "교감 전격",
+        "desc": "마비 대상 피격 시 좁은 범위의 무작위 대상에 전기 공격",
+        "maxPickCount": 1,
+        "effects": [],
+        "enabled": false,
+        "disabledReason": "원문 표현이 불명확하고 범위·피해 수치가 없다",
+        "requiredCardIds": [
+          "chain_lightning_voltage"
+        ]
+      },
+      {
+        "id": "chain_lightning_ion_spread",
+        "name": "이온 확산",
+        "desc": "폭발 범위 +100%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "explosionRadius",
+            "value": 100
+          }
+        ],
+        "requiredCardIds": [
+          "chain_lightning_ion_burst"
+        ]
+      },
+      {
+        "id": "chain_lightning_ion_voltage",
+        "name": "이온 전압",
+        "desc": "폭발 공격력 +40% / 마비 1초 추가",
+        "maxPickCount": 1,
+        "effects": [],
+        "enabled": false,
+        "disabledReason": "폭발에 마비를 거는 규칙이 원문에 없다",
+        "requiredCardIds": [
+          "chain_lightning_ion_burst"
+        ]
+      },
+      {
+        "id": "chain_lightning_conduction",
+        "name": "전류전도",
+        "desc": "공격력 -60% / 경로상의 마물에 피해",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "damage",
+            "value": -60
+          },
+          {
+            "kind": "chainPath",
+            "value": 0.6
+          }
+        ],
+        "requiredCardIds": [
+          "chain_lightning_continuous",
+          "chain_lightning_voltage",
+          "chain_lightning_amplify"
+        ],
+        "minPermanentLevel": 17
+      },
+      {
+        "id": "chain_lightning_neutral",
+        "name": "뇌속성 증폭",
+        "desc": "벼락과 연쇄 번개 공격력 +80%",
+        "maxPickCount": 1,
+        "effects": [],
+        "enabled": false,
+        "disabledReason": "두 스킬의 습득 수가 함께 늘고 증폭 횟수를 공유하는 공유 카드가 연결되지 않았다",
+        "requiredWeaponIds": [
+          3
+        ]
+      }
+    ]
   }
 ]

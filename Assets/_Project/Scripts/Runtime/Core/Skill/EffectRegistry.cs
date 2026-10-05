@@ -19,8 +19,9 @@ namespace Game.Core
             Hitscan = 2,
             Area = 4,
             Beam = 8,
+            Chain = 16,
             Both = Projectile | Hitscan,
-            All = Projectile | Hitscan | Area | Beam
+            All = Projectile | Hitscan | Area | Beam | Chain
         }
 
         internal sealed class Kind
@@ -61,7 +62,7 @@ namespace Game.Core
         public static bool Supports(CastType castType, string key)
         {
             if (key == null || !Kinds.TryGetValue(key, out var kind)) { return false; }
-            var user = castType switch { CastType.Hitscan => Users.Hitscan, CastType.Area => Users.Area, CastType.Beam => Users.Beam, _ => Users.Projectile };
+            var user = castType switch { CastType.Hitscan => Users.Hitscan, CastType.Area => Users.Area, CastType.Beam => Users.Beam, CastType.Chain => Users.Chain, _ => Users.Projectile };
             return (kind.Users & user) != 0;
         }
 
@@ -83,7 +84,8 @@ namespace Game.Core
             const UpgradeEffectCategory Plain = UpgradeEffectCategory.Stat, Cast = UpgradeEffectCategory.Cast,
                 Reaction = UpgradeEffectCategory.Reaction, Transform = UpgradeEffectCategory.Transform;
             const Users Both = Users.Both, All = Users.All, Projectile = Users.Projectile, Hitscan = Users.Hitscan,
-                Area = Users.Area, Beam = Users.Beam, ProjectileArea = Users.Projectile | Users.Area | Users.Beam;
+                Area = Users.Area, Beam = Users.Beam, Chain = Users.Chain, ProjectileArea = Users.Projectile | Users.Area | Users.Beam | Users.Chain,
+                BothChain = Users.Projectile | Users.Hitscan | Users.Chain;
 
             // 시전: 두 공격 모두 쿨타임, 피해, 시전 수, 형태를 쓴다.
             Add("attackSpeed", Plain, All, (s, v) => s[Stat.Cooldown] = Math.Max(.1f, s[Stat.Cooldown] * (1 - v * .01f)));
@@ -103,9 +105,9 @@ namespace Game.Core
             Add("knockback", Plain, Projectile, (s, v) => s[Stat.KnockbackDistance] = Math.Max(0, s[Stat.KnockbackDistance] * Factor(v)));
 
             // 폭발은 두 공격 모두 명중 위치에서 터뜨린다.
-            Add("enableExplosion", Reaction, Both, (s, v) => s[Stat.ExplosionRadius] = v, Positive);
-            Add("explosionDamage", Plain, Both, (s, v) => s[Stat.ExplosionDamage] *= Factor(v));
-            Add("explosionRadius", Plain, Both, (s, v) => s[Stat.ExplosionRadius] *= Factor(v));
+            Add("enableExplosion", Reaction, BothChain, (s, v) => s[Stat.ExplosionRadius] = v, Positive);
+            Add("explosionDamage", Plain, BothChain, (s, v) => s[Stat.ExplosionDamage] *= Factor(v));
+            Add("explosionRadius", Plain, BothChain, (s, v) => s[Stat.ExplosionRadius] *= Factor(v));
 
             // 상태 이상: 마비만 Hitscan도 쓴다.
             Add("freezeDuration", Reaction, ProjectileArea, (s, v) => s[Stat.FreezeDuration] = Math.Max(s[Stat.FreezeDuration], v), Positive);
@@ -145,6 +147,11 @@ namespace Game.Core
             Add("beamDuration", Plain, Beam, (s, v) => s[Stat.BeamDuration] *= Factor(v), Positive);
             Add("beamPulses", Plain, Beam, (s, v) => s[Stat.BeamPulses] = Math.Max(1, s[Stat.BeamPulses] * Factor(v)), Positive);
             Add("beamPulsesFlat", Plain, Beam, (s, v) => s[Stat.BeamPulses] += v, PositiveInteger);
+
+            // 연쇄: 첫 대상 뒤에 튕기는 횟수(반사), 튕기는 거리, 경로 위 적 공격
+            Add("chainBounces", Plain, Chain, (s, v) => s[Stat.ChainBounces] += (int)v, PositiveInteger);
+            Add("chainJumpRange", Plain, Chain, (s, v) => s[Stat.ChainJumpRange] *= Factor(v), Positive);
+            Add("chainPath", Plain, Chain, (s, v) => s[Stat.ChainPathWidth] = v, Positive);
 
             // 자식 스킬 시전: 지정한 시점(onEvent) 또는 주기(periodic)에 다른 스킬을 그 위치에서 시전한다.
             k.Add("onEvent", new Kind(Reaction, All, null, null, ChildCastUpgradeEffect.FromEvent));

@@ -36,6 +36,7 @@ namespace Game.Tests
             explosion = { radius = 2, damageRatio = .5f },
             area = { radius = 2, duration = 3, pulseInterval = 1, moveSpeed = 1, pull = 1 },
             beam = { length = 10, width = 1, duration = 2, pulses = 4 },
+            chain = { bounces = 3, jumpRange = 4, hopInterval = .1f, pathWidth = 1 },
             field = { damageRatio = .5f, radius = 2, slowRatio = .3f }
         });
 
@@ -77,7 +78,7 @@ namespace Game.Tests
         public void StatsDump_CoversEveryStatGroup()
         {
             var keys = WeaponStatsDump.Flatten(Baseline()).Keys.ToList();
-            foreach (var group in new[] { "Cast.", "Projectile.", "Status.", "Burn.", "Explosion.", "Lightning.", "Field.", "Area.", "Beam." })
+            foreach (var group in new[] { "Cast.", "Projectile.", "Status.", "Burn.", "Explosion.", "Lightning.", "Field.", "Area.", "Beam.", "Chain." })
             {
                 Assert.IsTrue(keys.Any(k => k.StartsWith(group, StringComparison.Ordinal)), group);
             }
@@ -253,6 +254,7 @@ namespace Game.Tests
                 {
                     CastType.Hitscan => prefab.GetComponent<HitscanEffect>() != null,
                     CastType.Area or CastType.Beam => prefab.GetComponent<AreaZone>() != null,
+                    CastType.Chain => prefab.GetComponent<ChainBolt>() != null,
                     _ => prefab.GetComponent<Projectile>() != null
                 };
                 if (!ok) { problems.Add($"{weapon.id}({weapon.name}): {prefab.name}에 {weapon.castType}용 컴포넌트가 없습니다."); }

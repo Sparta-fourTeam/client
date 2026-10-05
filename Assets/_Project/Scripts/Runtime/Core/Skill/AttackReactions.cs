@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Game.Core
 {
-    /// <summary>Impact는 범위형 공격이 목표 지점에 한 번 닿았을 때(적 수와 무관하게 1회)다. Hit는 적중한 적마다 발생한다.</summary>
+    /// <summary>Bounce는 연쇄 공격이 튕겨 새 대상에 도착할 때마다(첫 대상 제외) 난다. Impact는 범위형 공격이 목표 지점에 한 번 닿았을 때(적 수와 무관하게 1회)다. Hit는 적중한 적마다 발생한다.</summary>
     public enum AttackEvent { Start, Hit, Kill, Expired, Tick, Bounce, Impact }
 
     public readonly struct AttackContext
