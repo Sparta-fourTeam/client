@@ -61,6 +61,10 @@ namespace Game.Core
             public float radius;
             public float duration;
             public float pulseInterval = 1;
+            /// <summary>초당 이동 거리. 가장 가까운 적을 향해 천천히 움직인다 (0이면 제자리)</summary>
+            public float moveSpeed;
+            /// <summary>펄스마다 범위 안의 적을 중심으로 끌어당기는 거리 (0이면 끌어당기지 않는다)</summary>
+            public float pull;
         }
 
         public class FieldBase

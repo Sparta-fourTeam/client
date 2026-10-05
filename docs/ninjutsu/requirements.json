@@ -5924,7 +5924,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 7,
+        "cardId": "lightning_cloud_expand",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -5954,7 +5959,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 7,
+        "cardId": "lightning_cloud_duration",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -5983,7 +5993,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 7,
+        "cardId": "lightning_cloud_speed",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -6014,7 +6029,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 7,
+        "cardId": "lightning_cloud_damage",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -6042,7 +6062,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 7,
+        "cardId": "lightning_cloud_voltage",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -6072,7 +6097,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 7,
+        "cardId": "lightning_cloud_magnet",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "hold",
       "readyForProduction": false
@@ -6113,7 +6143,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 7,
+        "cardId": "lightning_cloud_singularity",
+        "enabled": false,
+        "state": "disabled",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "hold",
       "readyForProduction": false
@@ -6153,7 +6188,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 7,
+        "cardId": "lightning_cloud_split",
+        "enabled": false,
+        "state": "disabled",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "hold",
       "readyForProduction": false
@@ -6190,7 +6230,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 7,
+        "cardId": "lightning_cloud_guide",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -6234,7 +6279,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 7,
+        "cardId": "lightning_cloud_storm",
+        "enabled": false,
+        "state": "disabled",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "hold",
       "readyForProduction": false

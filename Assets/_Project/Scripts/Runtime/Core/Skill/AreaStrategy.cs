@@ -29,8 +29,7 @@ namespace Game.Core
             for (int i = 0; i < stats.Cast.ProjectileCount; i++)
             {
                 var target = targets[i % targets.Count];
-                Pool.Get().Init(Pool, environment.Targets, target.Position, stats.Area.Radius, stats.Area.Duration,
-                    stats.Area.PulseInterval, hitReactions, config.Reactions);
+                Pool.Get().Init(Pool, environment.Targets, target.Position, AreaSettings.From(stats.Area), hitReactions, config.Reactions);
             }
         }
     }

@@ -62,7 +62,7 @@ namespace Game.Tests
             provider.Targets.Add(inside); provider.Targets.Add(outside);
             var pool = ZonePool();
             var zone = pool.Get();
-            zone.Init(pool, provider, Vector2.zero, 2, 3, 1, Damage(10), AttackReactions.Empty);
+            zone.Init(pool, provider, Vector2.zero, new AreaSettings(2, 3, 1), Damage(10), AttackReactions.Empty);
 
             Tick(zone, .1f);
             Assert.AreEqual(10, inside.Damage, "첫 틱에 바로 첫 펄스가 난다");
@@ -87,7 +87,7 @@ namespace Game.Tests
                 .Build();
             var pool = ZonePool();
             var zone = pool.Get();
-            zone.Init(pool, provider, Vector2.zero, 2, 1, 2, AttackReactions.Empty, reactions);
+            zone.Init(pool, provider, Vector2.zero, new AreaSettings(2, 1, 2), AttackReactions.Empty, reactions);
 
             Tick(zone, .5f);
             Tick(zone, .5f);
@@ -106,7 +106,7 @@ namespace Game.Tests
                 .On(AttackEvent.Tick, new PeriodicReaction(1, new CastSkillReaction(_ => pulses++))).Build();
             var pool = ZonePool();
             var zone = pool.Get();
-            zone.Init(pool, provider, Vector2.zero, 2, 3, 1, AttackReactions.Empty, reactions);
+            zone.Init(pool, provider, Vector2.zero, new AreaSettings(2, 3, 1), AttackReactions.Empty, reactions);
             for (int i = 0; i < 10; i++) { Tick(zone, .25f); }
             Assert.AreEqual(2, pulses, "2.5초 동안 1초 주기 반응은 두 번 난다");
         }
@@ -277,6 +277,155 @@ namespace Game.Tests
             Assert.AreEqual(5, scaled.Stats.Explosion.Damage, .001f);
             Assert.AreEqual(2, scaled.Stats.Cast.Cooldown);
             Assert.AreEqual(10, config.Stats.Cast.Damage, "원본 설정은 바뀌지 않는다");
+        }
+
+        // ── 번개 구름: 이동, 끌어당김, 적중 시 확률 자식 시전 ─────────────
+
+        private const int LightningCloudId = 7;
+        private const int LightningId = 3;
+        private const string LightningPrefab = "Assets/_Project/Prefabs/Skills/Lightning_Lv1.prefab";
+
+        private static WeaponData Cloud() => new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == LightningCloudId);
+
+        [Test]
+        public void Zone_PullsEnemiesInsideTowardCenterWithoutOvershootAndIgnoresOutside()
+        {
+            var near = new HitRecorder { Position = new Vector2(.3f, 0) };
+            var inside = new HitRecorder { Position = new Vector2(1.5f, 0) };
+            var outside = new HitRecorder { Position = new Vector2(6, 0) };
+            var provider = new Provider();
+            provider.Targets.AddRange(new[] { near, inside, outside });
+            var pool = ZonePool();
+            var zone = pool.Get();
+            zone.Init(pool, provider, Vector2.zero, new AreaSettings(2, 5, 1, pull: .5f), AttackReactions.Empty, AttackReactions.Empty);
+
+            Tick(zone, .1f);
+            Assert.AreEqual(0f, near.Position.x, .001f, "중심까지 거리보다 더 끌어당기지 않는다");
+            Assert.AreEqual(1f, inside.Position.x, .001f);
+            Assert.AreEqual(6f, outside.Position.x, .001f);
+            Assert.Less(inside.KnockbackDirection.x, 0, "중심 쪽으로 향한다");
+        }
+
+        [Test]
+        public void Zone_DriftsTowardNearestEnemyAtMoveSpeed()
+        {
+            var enemy = new HitRecorder { Position = new Vector2(5, 0) };
+            var provider = new Provider(); provider.Targets.Add(enemy);
+            var pool = ZonePool();
+            var zone = pool.Get();
+            zone.Init(pool, provider, Vector2.zero, new AreaSettings(1, 10, 1, moveSpeed: 1), AttackReactions.Empty, AttackReactions.Empty);
+
+            Tick(zone, .1f); // 첫 펄스가 가장 가까운 적을 찾는다
+            Tick(zone, 1f);
+            Assert.AreEqual(1f, zone.transform.position.x, .01f, "초당 1 거리만큼 이동한다");
+            Tick(zone, 10f);
+            Assert.AreEqual(5f, zone.transform.position.x, .01f, "목표를 지나치지 않는다");
+        }
+
+        [Test]
+        public void Zone_StaysPutWithoutMoveSpeed()
+        {
+            var provider = new Provider(); provider.Targets.Add(new HitRecorder { Position = new Vector2(5, 0) });
+            var pool = ZonePool();
+            var zone = pool.Get();
+            zone.Init(pool, provider, Vector2.zero, new AreaSettings(1, 10, 1), AttackReactions.Empty, AttackReactions.Empty);
+            Tick(zone, 1f);
+            Assert.AreEqual(Vector3.zero, zone.transform.position);
+        }
+
+        [Test]
+        public void CloudCards_ScaleMoveSpeedPullDamageAndAddParalysis()
+        {
+            var data = Cloud();
+            var start = SkillConfig.FromDefinition(data);
+            SkillConfig Apply(string id)
+            {
+                var b = new SkillConfigBuilder(start);
+                Assert.IsTrue(b.TryApplyCatalog(data.upgrades.Find(c => c.id == id).effects), id);
+                return b.Build();
+            }
+            var speed = Apply("lightning_cloud_speed").Stats;
+            Assert.AreEqual(start.Stats.Area.MoveSpeed * 1.2f, speed.Area.MoveSpeed, .001f);
+            Assert.AreEqual(start.Stats.Cast.Damage * 1.4f, speed.Cast.Damage, .001f);
+            var magnet = Apply("lightning_cloud_magnet").Stats;
+            Assert.AreEqual(start.Stats.Area.Pull * 1.25f, magnet.Area.Pull, .001f);
+            Assert.AreEqual(2f, Apply("lightning_cloud_voltage").Stats.Status.ParalysisDuration);
+            Assert.AreEqual(start.Stats.Area.Duration * 1.6f, Apply("lightning_cloud_duration").Stats.Area.Duration, .001f);
+            Assert.AreEqual(start.Stats.Area.Radius * 1.5f, Apply("lightning_cloud_expand").Stats.Area.Radius, .001f);
+        }
+
+        [Test]
+        public void GuideCard_CastsLightningOnHitWithFivePercentChance()
+        {
+            var data = Cloud();
+            var fake = new FakeCaster();
+            var builder = new SkillConfigBuilder(SkillConfig.FromDefinition(data).WithChildCaster(fake));
+            Assert.IsTrue(builder.TryApplyCatalog(data.upgrades.Find(c => c.id == "lightning_cloud_guide").effects));
+            var reactions = builder.Build().Reactions;
+
+            var target = new HitRecorder { Position = new Vector2(1, 1) };
+            var provider = new Provider(); provider.Targets.Add(target);
+            var pool = ZonePool();
+            var zone = pool.Get();
+            zone.Init(pool, provider, Vector2.zero, new AreaSettings(3, 10, 1), AttackReactions.Empty, reactions, () => .04f);
+            Tick(zone, .1f);
+            Assert.AreEqual(1, fake.Casts.Count, "5% 미만이면 시전한다");
+            Assert.AreEqual(LightningId, fake.Casts[0].id);
+
+            var zone2 = pool.Get();
+            zone2.Init(pool, provider, Vector2.zero, new AreaSettings(3, 10, 1), AttackReactions.Empty, reactions, () => .05f);
+            Tick(zone2, .1f);
+            Assert.AreEqual(1, fake.Casts.Count, "5% 이상이면 시전하지 않는다");
+        }
+
+        [Test]
+        public void GuideCard_EndToEnd_SpawnsRealLightningStrikeFromAreaHit()
+        {
+            var data = Cloud();
+            var lightningData = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == LightningId);
+            var lightningPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(LightningPrefab);
+            Assert.IsNotNull(lightningPrefab, LightningPrefab);
+            var target = new HitRecorder { Position = new Vector2(1, 1) };
+            var provider = new Provider(); provider.Targets.Add(target);
+            var children = new ChildSkillCaster(id =>
+            {
+                Assert.AreEqual(LightningId, id);
+                var owner = new GameObject("LightningChildOwner"); created.Add(owner);
+                return WeaponFactory.Create(lightningData, lightningPrefab, owner.transform, provider);
+            });
+            try
+            {
+                var builder = new SkillConfigBuilder(SkillConfig.FromDefinition(data).WithChildCaster(children));
+                Assert.IsTrue(builder.TryApplyCatalog(data.upgrades.Find(c => c.id == "lightning_cloud_guide").effects));
+                var pool = ZonePool();
+                var zone = pool.Get();
+                zone.Init(pool, provider, Vector2.zero, new AreaSettings(3, 10, 1), AttackReactions.Empty, builder.Build().Reactions, () => 0f);
+                Assert.AreEqual(0, ActiveStrikes().Count);
+                Tick(zone, .1f);
+                Assert.AreEqual(1, ActiveStrikes().Count, "벼락이 실제로 하나 떨어진다");
+                Assert.AreEqual(new Vector3(1, 1, 0), ActiveStrikes()[0].transform.position, "맞은 적의 위치에 떨어진다");
+            }
+            finally
+            {
+                children.Dispose();
+                foreach (var strike in Object.FindObjectsByType<HitscanEffect>(FindObjectsSortMode.None)) { Object.DestroyImmediate(strike.gameObject); }
+            }
+        }
+
+        private static List<HitscanEffect> ActiveStrikes() => Object.FindObjectsByType<HitscanEffect>(FindObjectsSortMode.None)
+            .Where(e => e.gameObject.scene.IsValid() && e.gameObject.activeInHierarchy).ToList();
+
+        [Test]
+        public void ShippedCatalog_CloudDisablesCardsWithUnknownEffectsAndRequiresLightningForGuide()
+        {
+            var data = Cloud();
+            Assert.AreEqual(CastType.Area, data.castType);
+            var disabled = data.upgrades.Where(c => !c.enabled).ToList();
+            Assert.AreEqual(3, disabled.Count);
+            foreach (var card in disabled) { Assert.IsNotEmpty(card.disabledReason, card.id); }
+            var guide = data.upgrades.Find(c => c.id == "lightning_cloud_guide");
+            CollectionAssert.AreEqual(new[] { LightningId }, guide.requiredWeaponIds);
+            Assert.AreEqual(13, guide.minPermanentLevel);
         }
     }
 }

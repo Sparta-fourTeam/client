@@ -15,7 +15,7 @@ namespace Game.Core
         SplitCount, SplitDamageMultiplier, SplitFrostbiteRatio, SplitParalysisDuration, SplitLightningRatio,
         SplitExplosions, KillLightningRatio, LightningStrikeRatio,
         FieldDuration, FieldDamageRatio, FieldFlatDamage, FieldDamageMultiplier, FieldRadius, FieldSlowRatio,
-        AreaRadius, AreaDuration, AreaPulseInterval,
+        AreaRadius, AreaDuration, AreaPulseInterval, AreaMoveSpeed, AreaPull,
         Count
     }
 
@@ -85,6 +85,8 @@ namespace Game.Core
             Def(Stat.AreaRadius, d => d.area.radius);
             Def(Stat.AreaDuration, d => d.area.duration);
             Def(Stat.AreaPulseInterval, d => d.area.pulseInterval);
+            Def(Stat.AreaMoveSpeed, d => d.area.moveSpeed);
+            Def(Stat.AreaPull, d => d.area.pull);
             for (int i = 0; i < t.Length; i++)
             {
                 if (t[i] == null) { throw new InvalidOperationException($"스탯 {(Stat)i}의 기본값 선언이 없습니다."); }
@@ -229,6 +231,8 @@ namespace Game.Core
         public float Radius => v[(int)Stat.AreaRadius];
         public float Duration => v[(int)Stat.AreaDuration];
         public float PulseInterval => v[(int)Stat.AreaPulseInterval];
+        public float MoveSpeed => v[(int)Stat.AreaMoveSpeed];
+        public float Pull => v[(int)Stat.AreaPull];
     }
 
     // Only upgrade preparation can mutate values; committed snapshots are read-only.

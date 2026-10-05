@@ -11,12 +11,13 @@ namespace Game.Tests
     {
         public Vector2 Position { get; set; }
         public int Damage;
+        public Vector2 KnockbackDirection;
         public float Freeze, KnockbackDistance, Frostbite, Paralysis, BurnDamage, BurnDuration, BurnMaxHpRatio, Stun,
             SlowRatio, SlowDuration, VulnerabilityRatio, VulnerabilityDuration;
 
         public void TakeDamage(int amount) => Damage += amount;
         public void ApplyFreeze(float duration) => Freeze = duration;
-        public void ApplyKnockback(Vector2 direction, float distance) => KnockbackDistance = distance;
+        public void ApplyKnockback(Vector2 direction, float distance) { KnockbackDirection = direction; KnockbackDistance = distance; Position += direction.normalized * distance; }
         public void ApplyFrostbite(float damagePerSecond) => Frostbite = damagePerSecond;
         public void ApplyParalysis(float duration) => Paralysis = duration;
         public void ApplyBurn(float damagePerSecond, float duration, float maxHpRatio = 0, Action<Vector2> onDeath = null)

@@ -139,6 +139,8 @@ namespace Game.Core
             // 영역: 서리 감옥처럼 자리에 머무는 공격만 쓴다.
             Add("areaRadius", Plain, Area, (s, v) => s[Stat.AreaRadius] *= Factor(v), Positive);
             Add("areaDuration", Plain, Area, (s, v) => s[Stat.AreaDuration] *= Factor(v), Positive);
+            Add("areaMoveSpeed", Plain, Area, (s, v) => s[Stat.AreaMoveSpeed] *= Factor(v), Positive);
+            Add("areaPull", Plain, Area, (s, v) => s[Stat.AreaPull] *= Factor(v), Positive);
 
             // 자식 스킬 시전: 지정한 시점(onEvent) 또는 주기(periodic)에 다른 스킬을 그 위치에서 시전한다.
             k.Add("onEvent", new Kind(Reaction, All, null, null, ChildCastUpgradeEffect.FromEvent));

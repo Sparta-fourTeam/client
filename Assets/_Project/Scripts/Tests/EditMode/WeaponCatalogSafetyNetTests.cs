@@ -34,7 +34,7 @@ namespace Game.Tests
             projectile = { speed = 10, pierceCount = 1, knockbackDistance = 1 },
             status = { freezeDuration = 1, paralysisDuration = 1, stunDuration = 1, slowDuration = 1 },
             explosion = { radius = 2, damageRatio = .5f },
-            area = { radius = 2, duration = 3, pulseInterval = 1 },
+            area = { radius = 2, duration = 3, pulseInterval = 1, moveSpeed = 1, pull = 1 },
             field = { damageRatio = .5f, radius = 2, slowRatio = .3f }
         });
 

@@ -85,3 +85,14 @@
 6/frost_prison_polish@0: (변화 없음)
 6/frost_prison_bitter@0: (변화 없음)
 6/ALL@0: Area.Radius=3; Cast.Count=3; Cast.Damage=42.5984; Status.FreezeDuration=2
+7/lightning_cloud_expand@0: Area.Radius=1.80000007
+7/lightning_cloud_duration@0: Area.Duration=6.4
+7/lightning_cloud_speed@0: Area.MoveSpeed=0.960000038; Cast.Damage=8.4
+7/lightning_cloud_damage@0: Cast.Damage=9.6
+7/lightning_cloud_voltage@0: Status.ParalysisDuration=2
+7/lightning_cloud_magnet@0: Area.Pull=0.3125; Cast.Damage=8.4
+7/lightning_cloud_singularity@0: (변화 없음)
+7/lightning_cloud_split@0: (변화 없음)
+7/lightning_cloud_guide@0: (변화 없음)
+7/lightning_cloud_storm@0: (변화 없음)
+7/ALL@0: Area.Duration=16.384; Area.MoveSpeed=1.15200007; Area.Pull=0.3125; Area.Radius=1.80000007; Cast.Damage=67.43655; Status.ParalysisDuration=2
