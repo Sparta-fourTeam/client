@@ -102,8 +102,18 @@ namespace Game.Core
                 {
                     float angle = i * Mathf.PI * 2 / count;
                     var direction = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0);
-                    orbPool.Get().Init(orbPool, position, direction, damage, 10, 3, targetProvider,
-                        ignoredTarget: sourceTarget, paralysisDuration: paralysis, paralysisChance: chance);
+                    orbPool.Get().Init(orbPool, new ProjectileSpawnSettings
+                    {
+                        StartPos = position,
+                        Direction = direction,
+                        Damage = damage,
+                        Speed = 10,
+                        Lifetime = 3,
+                        TargetProvider = targetProvider,
+                        IgnoredTarget = sourceTarget,
+                        ParalysisDuration = paralysis,
+                        ParalysisChance = chance
+                    });
                 }
             };
         }

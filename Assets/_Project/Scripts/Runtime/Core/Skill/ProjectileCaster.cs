@@ -64,7 +64,37 @@ namespace Game.Core
                     ? Vector3.Scale(projectileScale, new Vector3(1.5f, 0.65f, 1)) : projectileScale;
                 projectile.transform.localScale *= stats.ProjectileSizeMultiplier;
                 projectile.SetVisualForm(stats.Form);
-                projectile.Init(pool, start, direction, stats.Damage, stats.ProjectileSpeed, lifetime, targetProvider, pierce, stats.FreezeDuration, CreateHitCallback(), knockbackDistance: stats.KnockbackDistance, frostbiteRatio: stats.FrostbiteRatio, paralysisDuration: stats.ParalysisDuration, lightningDamage: stats.Damage * stats.LightningStrikeRatio, paralysisChance: data.baseStats.paralysisChance, burnDuration: stats.BurnDuration, burnDamage: stats.Damage * stats.BurnRatio, burnMaxHpRatio: stats.BurnMaxHpRatio, burnOnDeath: CreateBurnDeathCallback(), freezeChance: data.baseStats.freezeChance, frostbiteChance: data.baseStats.frostbiteChance, burnChance: data.baseStats.burnChance, collisionRadius: .3f * stats.ProjectileSizeMultiplier, stunDuration: stats.StunDuration, stunChance: data.baseStats.stunChance, slowDuration: stats.SlowDuration, slowRatio: stats.SlowRatio, vulnerabilityRatio: stats.VulnerabilityRatio, vulnerabilityDuration: stats.VulnerabilityDuration);
+                projectile.Init(pool, new ProjectileSpawnSettings
+                {
+                    StartPos = start,
+                    Direction = direction,
+                    Damage = stats.Damage,
+                    Speed = stats.ProjectileSpeed,
+                    Lifetime = lifetime,
+                    TargetProvider = targetProvider,
+                    PierceCount = pierce,
+                    FreezeDuration = stats.FreezeDuration,
+                    OnHit = CreateHitCallback(),
+                    KnockbackDistance = stats.KnockbackDistance,
+                    FrostbiteRatio = stats.FrostbiteRatio,
+                    ParalysisDuration = stats.ParalysisDuration,
+                    LightningDamage = stats.Damage * stats.LightningStrikeRatio,
+                    ParalysisChance = data.baseStats.paralysisChance,
+                    BurnDuration = stats.BurnDuration,
+                    BurnDamage = stats.Damage * stats.BurnRatio,
+                    BurnMaxHpRatio = stats.BurnMaxHpRatio,
+                    BurnOnDeath = CreateBurnDeathCallback(),
+                    FreezeChance = data.baseStats.freezeChance,
+                    FrostbiteChance = data.baseStats.frostbiteChance,
+                    BurnChance = data.baseStats.burnChance,
+                    CollisionRadius = .3f * stats.ProjectileSizeMultiplier,
+                    StunDuration = stats.StunDuration,
+                    StunChance = data.baseStats.stunChance,
+                    SlowDuration = stats.SlowDuration,
+                    SlowRatio = stats.SlowRatio,
+                    VulnerabilityRatio = stats.VulnerabilityRatio,
+                    VulnerabilityDuration = stats.VulnerabilityDuration
+                });
             }
         }
         private System.Action<Vector2> CreateBurnDeathCallback()
@@ -114,9 +144,23 @@ namespace Game.Core
                     var normal = pool.Get();
                     normal.transform.localScale = projectileScale;
                     normal.SetVisualForm(WeaponForm.Default);
-                    normal.Init(pool, position, Quaternion.Euler(0, 0, -30 + i * 30) * direction,
-                        damage, speed, ProjectileLifetime, targetProvider, pierce, freeze, normalSplit, source,
-                        knockbackDistance: knockback, frostbiteRatio: frostbite, freezeChance: freezeChance, frostbiteChance: frostbiteChance);
+                    normal.Init(pool, new ProjectileSpawnSettings
+                    {
+                        StartPos = position,
+                        Direction = Quaternion.Euler(0, 0, -30 + i * 30) * direction,
+                        Damage = damage,
+                        Speed = speed,
+                        Lifetime = ProjectileLifetime,
+                        TargetProvider = targetProvider,
+                        PierceCount = pierce,
+                        FreezeDuration = freeze,
+                        OnHit = normalSplit,
+                        IgnoredTarget = source,
+                        KnockbackDistance = knockback,
+                        FrostbiteRatio = frostbite,
+                        FreezeChance = freezeChance,
+                        FrostbiteChance = frostbiteChance
+                    });
                 }
             };
         }
@@ -148,8 +192,20 @@ namespace Game.Core
                     var shard = pool.Get();
                     shard.transform.localScale = projectileScale * 0.5f;
                     shard.SetVisualForm(WeaponForm.Default);
-                    shard.Init(pool, position, Quaternion.Euler(0, 0, angle) * direction,
-                        shardDamage, shardSpeed, ProjectileLifetime, targetProvider, onHit: auxiliaryHit, ignoredTarget: target, frostbiteRatio: shardFrostbite, lightningDamage: auxiliaryLightningDamage, frostbiteChance: data.baseStats.frostbiteChance);
+                    shard.Init(pool, new ProjectileSpawnSettings
+                    {
+                        StartPos = position,
+                        Direction = Quaternion.Euler(0, 0, angle) * direction,
+                        Damage = shardDamage,
+                        Speed = shardSpeed,
+                        Lifetime = ProjectileLifetime,
+                        TargetProvider = targetProvider,
+                        OnHit = auxiliaryHit,
+                        IgnoredTarget = target,
+                        FrostbiteRatio = shardFrostbite,
+                        LightningDamage = auxiliaryLightningDamage,
+                        FrostbiteChance = data.baseStats.frostbiteChance
+                    });
                 }
             };
         }

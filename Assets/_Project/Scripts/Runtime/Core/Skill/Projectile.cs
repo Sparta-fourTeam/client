@@ -85,6 +85,73 @@ namespace Game.Core
 
         public void Init(IObjectPool<Projectile> pool, Vector3 startPos, Vector3 direction, float damage, float speed, float lifetime, IEnemyTargetProvider targetProvider, int pierceCount = 0, float freezeDuration = 0, System.Action<Vector2, Vector3, IEnemyTarget> onHit = null, IEnemyTarget ignoredTarget = null, float knockbackDistance = 0, float frostbiteRatio = 0, float paralysisDuration = 0, float lightningDamage = 0, float paralysisChance = 1, System.Func<float> randomValue = null, float burnDuration = 0, float burnDamage = 0, float burnMaxHpRatio = 0, System.Action<Vector2> burnOnDeath = null, float freezeChance = 1, float frostbiteChance = 1, float burnChance = 1, float collisionRadius = .3f, float stunDuration = 0, float stunChance = 1, float slowDuration = 0, float slowRatio = 0, float vulnerabilityRatio = 0, float vulnerabilityDuration = 0)
         {
+            Init(pool, new ProjectileSpawnSettings
+            {
+                StartPos = startPos,
+                Direction = direction,
+                Damage = damage,
+                Speed = speed,
+                Lifetime = lifetime,
+                TargetProvider = targetProvider,
+                PierceCount = pierceCount,
+                FreezeDuration = freezeDuration,
+                OnHit = onHit,
+                IgnoredTarget = ignoredTarget,
+                KnockbackDistance = knockbackDistance,
+                FrostbiteRatio = frostbiteRatio,
+                ParalysisDuration = paralysisDuration,
+                LightningDamage = lightningDamage,
+                ParalysisChance = paralysisChance,
+                RandomValue = randomValue,
+                BurnDuration = burnDuration,
+                BurnDamage = burnDamage,
+                BurnMaxHpRatio = burnMaxHpRatio,
+                BurnOnDeath = burnOnDeath,
+                FreezeChance = freezeChance,
+                FrostbiteChance = frostbiteChance,
+                BurnChance = burnChance,
+                CollisionRadius = collisionRadius,
+                StunDuration = stunDuration,
+                StunChance = stunChance,
+                SlowDuration = slowDuration,
+                SlowRatio = slowRatio,
+                VulnerabilityRatio = vulnerabilityRatio,
+                VulnerabilityDuration = vulnerabilityDuration
+            });
+        }
+
+        public void Init(IObjectPool<Projectile> pool, ProjectileSpawnSettings settings)
+        {
+            var startPos = settings.StartPos;
+            var direction = settings.Direction;
+            var damage = settings.Damage;
+            var speed = settings.Speed;
+            var lifetime = settings.Lifetime;
+            var targetProvider = settings.TargetProvider;
+            var pierceCount = settings.PierceCount;
+            var freezeDuration = settings.FreezeDuration;
+            var onHit = settings.OnHit;
+            var ignoredTarget = settings.IgnoredTarget;
+            var knockbackDistance = settings.KnockbackDistance;
+            var frostbiteRatio = settings.FrostbiteRatio;
+            var paralysisDuration = settings.ParalysisDuration;
+            var lightningDamage = settings.LightningDamage;
+            var paralysisChance = settings.ParalysisChance;
+            var randomValue = settings.RandomValue;
+            var burnDuration = settings.BurnDuration;
+            var burnDamage = settings.BurnDamage;
+            var burnMaxHpRatio = settings.BurnMaxHpRatio;
+            var burnOnDeath = settings.BurnOnDeath;
+            var freezeChance = settings.FreezeChance;
+            var frostbiteChance = settings.FrostbiteChance;
+            var burnChance = settings.BurnChance;
+            var collisionRadius = settings.CollisionRadius;
+            var stunDuration = settings.StunDuration;
+            var stunChance = settings.StunChance;
+            var slowDuration = settings.SlowDuration;
+            var slowRatio = settings.SlowRatio;
+            var vulnerabilityRatio = settings.VulnerabilityRatio;
+            var vulnerabilityDuration = settings.VulnerabilityDuration;
             hitRadius = Mathf.Max(0, collisionRadius);
             this.onHit = onHit;
             this.ignoredTarget = ignoredTarget;
