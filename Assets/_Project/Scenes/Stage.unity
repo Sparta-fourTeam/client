@@ -900,7 +900,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7536173752497993407, guid: 448cd638b25c17845850c678fc547da5, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 899.5194
+      value: 984.84485
       objectReference: {fileID: 0}
     - target: {fileID: 7536173752497993407, guid: 448cd638b25c17845850c678fc547da5, type: 3}
       propertyPath: m_SizeDelta.y
@@ -908,7 +908,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7536173752497993407, guid: 448cd638b25c17845850c678fc547da5, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 449.7597
+      value: 492.42242
       objectReference: {fileID: 0}
     - target: {fileID: 7536173752497993407, guid: 448cd638b25c17845850c678fc547da5, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -1055,10 +1055,6 @@ PrefabInstance:
     - target: {fileID: 2032114599762951052, guid: 1025d2cfa37708e44bc9381fbc866346, type: 3}
       propertyPath: m_Name
       value: Player_Animated
-      objectReference: {fileID: 0}
-    - target: {fileID: 2032114599762951052, guid: 1025d2cfa37708e44bc9381fbc866346, type: 3}
-      propertyPath: m_IsActive
-      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2868358806268690223, guid: 1025d2cfa37708e44bc9381fbc866346, type: 3}
       propertyPath: m_LocalPosition.x
@@ -2060,6 +2056,10 @@ PrefabInstance:
     - target: {fileID: 1452086735297441397, guid: 6e68198728ace4313b314fddb193ff9b, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1672440838887796704, guid: 6e68198728ace4313b314fddb193ff9b, type: 3}
+      propertyPath: m_fontColor32.rgba
+      value: 4281545523
       objectReference: {fileID: 0}
     - target: {fileID: 5068699427622817576, guid: 6e68198728ace4313b314fddb193ff9b, type: 3}
       propertyPath: m_AnchorMax.y
