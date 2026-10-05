@@ -15,8 +15,14 @@ namespace Game.Core
         { Start = start; Direction = direction; Lifetime = lifetime; PierceCount = pierceCount; }
 
         public static ProjectileLaunchPath Calculate(ProjectilePath path, Vector3 caster, Vector2 target,
-            float? wallAttackLineY, float range, float speed, int pierceCount)
+            float? wallAttackLineY, float range, float speed, int pierceCount, int index = 0, int count = 1)
         {
+            if (path == ProjectilePath.Radial)
+            {
+                float angle = index * Mathf.PI * 2 / Mathf.Max(1, count);
+                return new ProjectileLaunchPath(caster, new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0), 3f, pierceCount);
+            }
+
             if (path == ProjectilePath.RollingLane)
             {
                 float startY = wallAttackLineY.HasValue ? wallAttackLineY.Value + RollingWallFrontOffset : caster.y;

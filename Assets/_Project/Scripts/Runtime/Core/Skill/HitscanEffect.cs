@@ -22,6 +22,8 @@ namespace Game.Core
         [SerializeField] private LayerMask targetMask;
         private float damage;
         private IEnemyTarget directTarget;
+        // 이 타격이 겨냥한 적. Impact 반응이 "방금 맞은 적"으로 쓴다
+        private IEnemyTarget sourceTarget;
         private AttackReactions reactions;
         [SerializeField] private float radius;
 
@@ -36,13 +38,14 @@ namespace Game.Core
 
 
 
-        public void Init(IObjectPool<HitscanEffect> pool, Vector3 position, float damage, IEnemyTarget directTarget = null, AttackReactions reactions = null)
+        public void Init(IObjectPool<HitscanEffect> pool, Vector3 position, float damage, IEnemyTarget directTarget = null, AttackReactions reactions = null, IEnemyTarget sourceTarget = null)
         {
 
             this.pool = pool;
             transform.position = position;
             this.damage = damage;
             this.directTarget = directTarget;
+            this.sourceTarget = sourceTarget;
             this.reactions = reactions ?? AttackReactions.Empty;
             elapsed = 0f;
             hitDone = false;
@@ -105,7 +108,7 @@ namespace Game.Core
                     if (enemy.IsDead) { reactions.Raise(AttackEvent.Kill, context); }
                 }
             }
-            reactions.Raise(AttackEvent.Impact, new AttackContext(transform.position, Vector3.zero));
+            reactions.Raise(AttackEvent.Impact, new AttackContext(transform.position, Vector3.zero, sourceTarget));
         }
 
         private void Release()

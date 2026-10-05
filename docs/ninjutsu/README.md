@@ -326,7 +326,7 @@ python3 docs/ninjutsu/validate_requirements.py
 
 **옮기는 계획 (진행 중)**: 기존 보조 공격(분열 조각, 삼각 분열, 전기 구체, 폭발)을 위 구조로 옮기고 옛 코드를 없앤다.
 1. 기반(위 구조) — 완료.
-2. 사방 발사 경로(전기 구체는 원문대로 사방 6발), 폭발을 반응으로 통일.
+2. 사방 발사 경로(`ProjectilePath.Radial`: 시전 위치에서 발 수만큼 고르게 퍼지고, 적이 없어도 쏜다), 폭발을 반응으로 통일(`HitReactionBuilder.Explosion`: 투사체는 적중, Hitscan은 타격 지점에 건다. 타격 지점 반응의 `Target`은 그 타격이 겨냥한 적이다) — 완료.
 3. 얼음창 분열과 삼각 얼음창: 삼각 얼음창은 "일반 얼음창 자식 → 소형 얼음창 손자"로, 분열 카드는 보관 효과로 일반 얼음창에도 소형 분열을 붙인다.
 4. 벼락(전기 구체), 화살(보조 화살), 화염구(불꽃)를 같은 방식으로 옮기고 `ProjectileBranchSpawner`, `LightningOrbSpawner`, `Secondary` 스탯 묶음을 없앤다. 소형 조각은 작은 프리팹을 가진 `childOnly` 스킬로 만든다.
 

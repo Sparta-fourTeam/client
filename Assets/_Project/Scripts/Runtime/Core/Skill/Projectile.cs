@@ -100,7 +100,7 @@ namespace Game.Core
                 if (candidate is EnemyModel enemy && enemy.IsDead) { continue; }
                 if (ReferenceEquals(candidate, ignoredTarget)) { continue; }
                 if (!hitLedger.TryHit(candidate)) { continue; }
-                hitReactions.Raise(AttackEvent.Hit, new AttackContext(candidate.Position, direction, candidate, randomValue));
+                hitReactions.Raise(AttackEvent.Hit, new AttackContext(hitPosition, direction, candidate, randomValue));
                 SpawnImpact(hitPosition);
                 onHit?.Invoke(hitPosition, direction, candidate);
                 var context = new AttackContext(hitPosition, direction, candidate);

@@ -2,7 +2,8 @@ using System.Collections.Generic;
 
 namespace Game.Core
 {
-    public enum ProjectilePath { Aimed, RollingLane }
+    /// <summary>Aimed: 가장 가까운 적을 향해, RollingLane: 대상 줄을 따라 굴러감, Radial: 시전 위치에서 발 수만큼 사방으로 고르게 퍼짐(조준 없음)</summary>
+    public enum ProjectilePath { Aimed, RollingLane, Radial }
 
     public enum CastType { Projectile, Hitscan, Area }
     public enum WeaponForm { Default, Enbakutsu, JudgementThunder, TriangleIce, LargeLog, FireLog }

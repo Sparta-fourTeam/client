@@ -39,7 +39,7 @@ namespace Game.Core
                 Reactions = reactions,
                 PierceCount = pierce,
                 IgnoredTarget = ignoredTarget,
-                HitReactions = ReactionCompiler.ForProjectile(stats, CreateBurnDeathCallback()),
+                HitReactions = ReactionCompiler.ForProjectile(stats, CreateBurnDeathCallback(), targetProvider),
                 OnHit = CreateHitCallback(),
                 CollisionRadius = .3f * stats.Projectile.SizeMultiplier
             });
@@ -59,14 +59,7 @@ namespace Game.Core
         private System.Action<Vector2, Vector3, IEnemyTarget> CreateHitCallback()
         {
             var split = stats.Cast.Form == WeaponForm.TriangleIce ? branches.CreateTriangleCallback() : branches.CreateSplitCallback();
-            float radius = stats.Explosion.Radius;
-            float damage = stats.Explosion.Damage;
             var bindings = new System.Collections.Generic.List<ReactionBinding>();
-            if (radius > 0)
-            {
-                bindings.Add(new ReactionBinding(AttackEvent.Hit,
-                new CastSkillReaction(c => SkillReactionEffects.Explode(targetProvider, c.Position, radius, damage))));
-            }
             if (split != null)
             {
                 bindings.Add(new ReactionBinding(AttackEvent.Hit,

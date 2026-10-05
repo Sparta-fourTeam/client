@@ -43,19 +43,14 @@ namespace Game.Core
             strike.SetVisualForm(stats.Cast.Form);
             strike.transform.localScale = stats.Cast.Form == WeaponForm.JudgementThunder ? scale * 1.5f : scale;
             strike.Init(strikes, new Vector3(target.Position.x, target.Position.y, 0), stats.Cast.Damage,
-                reactions: CompileReactions(target).Then(reactions));
+                reactions: CompileReactions(target).Then(reactions), sourceTarget: target);
         }
 
         // 맞은 적마다 마비(Hit), 목표 지점에 한 번 폭발과 번개 구체(Impact), 처치마다 처치 번개(Kill)
         private AttackReactions CompileReactions(IEnemyTarget target)
         {
             var builder = new HitReactionBuilder().Paralysis(stats.Status.ParalysisDuration, stats.Status.ParalysisChance);
-            float radius = stats.Explosion.Radius;
-            float explosionDamage = stats.Explosion.Damage;
-            if (radius > 0)
-            {
-                builder.On(AttackEvent.Impact, new CastSkillReaction(c => SkillReactionEffects.Explode(targets, c.Position, radius, explosionDamage)));
-            }
+            builder.Explosion(AttackEvent.Impact, targets, stats.Explosion.Radius, stats.Explosion.Damage);
             var orbs = LightningOrbSpawner.CreateCallback(stats, targets, this.orbs, target);
             if (orbs != null) { builder.On(AttackEvent.Impact, new CastSkillReaction(c => orbs(c.Position))); }
             var killLightning = CreateKillLightningCallback();

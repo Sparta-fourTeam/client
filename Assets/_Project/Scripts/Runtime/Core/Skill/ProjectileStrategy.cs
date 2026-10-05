@@ -51,15 +51,18 @@ namespace Game.Core
         public void Fire(SkillConfig config, AttackEnvironment environment)
         {
             var current = config.Stats;
-            var targets = environment.FindTargets(config.Attack.Range);
-            if (targets.Count == 0) { return; }
+            // 사방 발사는 조준하지 않으므로 대상이 없어도 쏜다. 그 밖에는 가까운 적부터 서로 다른 적에게 나눠 쏜다.
+            bool radial = config.Attack.Path == ProjectilePath.Radial;
+            var targets = radial ? null : environment.FindTargets(config.Attack.Range);
+            if (!radial && targets.Count == 0) { return; }
 
             var spawnRules = new ProjectileSpawnRules(current, environment.Targets, Pool, Scale, config.Reactions);
-            for (int i = 0; i < current.Cast.ProjectileCount; i++)
+            int count = current.Cast.ProjectileCount;
+            for (int i = 0; i < count; i++)
             {
-                var target = targets[i % targets.Count];
-                var path = ProjectileLaunchPath.Calculate(config.Attack.Path, environment.Origin, target.Position,
-                    wall != null ? wall.AttackLineY : (float?)null, config.Attack.Range, current.Projectile.Speed, current.Projectile.PierceCount);
+                Vector2 aim = radial ? default : targets[i % targets.Count].Position;
+                var path = ProjectileLaunchPath.Calculate(config.Attack.Path, environment.Origin, aim,
+                    wall != null ? wall.AttackLineY : (float?)null, config.Attack.Range, current.Projectile.Speed, current.Projectile.PierceCount, i, count);
                 spawnRules.SpawnMain(path.Start, path.Direction, path.Lifetime, path.PierceCount, environment.Exclude);
             }
         }
