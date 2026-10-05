@@ -1177,7 +1177,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d8eee8173c4e8eb40b0ce6ba648d1f97, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Game.View::Game.View.NinpoScreenView
+  m_EditorClassIdentifier: Game.View::Game.View.SkillScreenView
   _panel: {fileID: 306895813938292875}
   _slots:
   - {fileID: 5138849913432468830}
@@ -2008,7 +2008,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2009969212dabb845b2b3fd0b572a50f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Game.View::Game.View.NinpoSlotView
+  m_EditorClassIdentifier: Game.View::Game.View.SkillListSlotView
 --- !u!224 &6122121074498412061 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
@@ -2125,7 +2125,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2009969212dabb845b2b3fd0b572a50f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Game.View::Game.View.NinpoSlotView
+  m_EditorClassIdentifier: Game.View::Game.View.SkillListSlotView
 --- !u!224 &6837627150261342246 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
@@ -2266,7 +2266,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2009969212dabb845b2b3fd0b572a50f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Game.View::Game.View.NinpoSlotView
+  m_EditorClassIdentifier: Game.View::Game.View.SkillListSlotView
 --- !u!224 &6430375400012595929 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
@@ -2383,7 +2383,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2009969212dabb845b2b3fd0b572a50f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Game.View::Game.View.NinpoSlotView
+  m_EditorClassIdentifier: Game.View::Game.View.SkillListSlotView
 --- !u!224 &6481627746764892077 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
@@ -2500,7 +2500,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2009969212dabb845b2b3fd0b572a50f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Game.View::Game.View.NinpoSlotView
+  m_EditorClassIdentifier: Game.View::Game.View.SkillListSlotView
 --- !u!224 &6619157750260447299 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
@@ -2617,7 +2617,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2009969212dabb845b2b3fd0b572a50f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Game.View::Game.View.NinpoSlotView
+  m_EditorClassIdentifier: Game.View::Game.View.SkillListSlotView
 --- !u!224 &7010560524965078299 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
@@ -2754,7 +2754,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2009969212dabb845b2b3fd0b572a50f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Game.View::Game.View.NinpoSlotView
+  m_EditorClassIdentifier: Game.View::Game.View.SkillListSlotView
 --- !u!224 &7610572647888353319 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
@@ -2895,7 +2895,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2009969212dabb845b2b3fd0b572a50f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Game.View::Game.View.NinpoSlotView
+  m_EditorClassIdentifier: Game.View::Game.View.SkillListSlotView
 --- !u!224 &8555206467119913765 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
@@ -3036,7 +3036,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2009969212dabb845b2b3fd0b572a50f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Game.View::Game.View.NinpoSlotView
+  m_EditorClassIdentifier: Game.View::Game.View.SkillListSlotView
 --- !u!224 &8223649177713894909 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
@@ -3177,7 +3177,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2009969212dabb845b2b3fd0b572a50f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Game.View::Game.View.NinpoSlotView
+  m_EditorClassIdentifier: Game.View::Game.View.SkillListSlotView
 --- !u!224 &8743831661805951550 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
@@ -3323,7 +3323,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2009969212dabb845b2b3fd0b572a50f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Game.View::Game.View.NinpoSlotView
+  m_EditorClassIdentifier: Game.View::Game.View.SkillListSlotView
 --- !u!1001 &5180622237907179059
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3440,7 +3440,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2009969212dabb845b2b3fd0b572a50f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Game.View::Game.View.NinpoSlotView
+  m_EditorClassIdentifier: Game.View::Game.View.SkillListSlotView
 --- !u!1001 &5277414666483332973
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3581,7 +3581,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2009969212dabb845b2b3fd0b572a50f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Game.View::Game.View.NinpoSlotView
+  m_EditorClassIdentifier: Game.View::Game.View.SkillListSlotView
 --- !u!1001 &5455420555590036263
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3722,7 +3722,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2009969212dabb845b2b3fd0b572a50f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Game.View::Game.View.NinpoSlotView
+  m_EditorClassIdentifier: Game.View::Game.View.SkillListSlotView
 --- !u!1001 &5471282040259246593
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3998,7 +3998,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2009969212dabb845b2b3fd0b572a50f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Game.View::Game.View.NinpoSlotView
+  m_EditorClassIdentifier: Game.View::Game.View.SkillListSlotView
 --- !u!1001 &6836707164162586931
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4119,7 +4119,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2009969212dabb845b2b3fd0b572a50f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Game.View::Game.View.NinpoSlotView
+  m_EditorClassIdentifier: Game.View::Game.View.SkillListSlotView
 --- !u!1001 &6890652484996668815
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4395,7 +4395,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2009969212dabb845b2b3fd0b572a50f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Game.View::Game.View.NinpoSlotView
+  m_EditorClassIdentifier: Game.View::Game.View.SkillListSlotView
 --- !u!1001 &8418584137155256547
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4536,7 +4536,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2009969212dabb845b2b3fd0b572a50f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Game.View::Game.View.NinpoSlotView
+  m_EditorClassIdentifier: Game.View::Game.View.SkillListSlotView
 --- !u!1001 &8950073252976560089
 PrefabInstance:
   m_ObjectHideFlags: 0

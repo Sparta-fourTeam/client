@@ -84,17 +84,17 @@ namespace Game.Core
                 {
                     if (string.IsNullOrEmpty(option.sharedId))
                     {
-                        if (option.affectedWeaponIds != null) { throw new InvalidOperationException("공유 키 없는 대상 인술 목록입니다."); }
+                        if (option.affectedWeaponIds != null) { throw new InvalidOperationException("공유 키 없는 대상 스킬 목록입니다."); }
                         continue;
                     }
                     if (!localGroups.Add(option.sharedId) || option.affectedWeaponIds == null
                         || option.affectedWeaponIds.Length < 2 || Array.IndexOf(option.affectedWeaponIds, weapon.id) < 0)
                     {
-                        throw new InvalidOperationException("공유 강화 참여 인술 정의가 잘못되었습니다.");
+                        throw new InvalidOperationException("공유 강화 참여 스킬 정의가 잘못되었습니다.");
                     }
                     foreach (int id in option.affectedWeaponIds)
                     {
-                        if (!ids.TryGetValue(id, out var target)) { throw new InvalidOperationException("공유 강화 인술 참조가 없습니다."); }
+                        if (!ids.TryGetValue(id, out var target)) { throw new InvalidOperationException("공유 강화 스킬 참조가 없습니다."); }
                         var member = target.upgrades.Find(o => o.sharedId == option.sharedId);
                         if (member == null || !SameSharedDefinition(option, member))
                         {

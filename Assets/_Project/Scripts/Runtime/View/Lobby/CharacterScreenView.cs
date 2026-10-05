@@ -2,12 +2,13 @@ using Game.Core;
 using TMPro;
 using UnityEngine;
 using VContainer;
+using CharacterInfo = Game.Core.CharacterInfo;
 
 namespace Game.View
 {
-    /// <summary>닌자(캐릭터) 화면. 열 때 IGrowthCatalog에서 캐릭터·장비 정보를 읽어 채우고, 열린 장비 칸을 누르면 장비 강화 팝업을 연다.
-    /// 아래 닌자 목록(카드)은 아직 데이터가 없어 프리팹 그대로 둔다</summary>
-    public sealed class ShinobiScreenView : HudView
+    /// <summary>캐릭터 화면. 열 때 IGrowthCatalog에서 캐릭터·장비 정보를 읽어 채우고, 열린 장비 칸을 누르면 장비 강화 팝업을 연다.
+    /// 아래 캐릭터 목록(카드)은 아직 데이터가 없어 프리팹 그대로 둔다</summary>
+    public sealed class CharacterScreenView : HudView
     {
         [SerializeField] private GameObject _panel;
         [SerializeField] private TMP_Text _nameText, _rankText, _powerText;
@@ -39,10 +40,10 @@ namespace Game.View
 
         private void Refresh()
         {
-            ShinobiInfo shinobi = _catalog.Shinobi;
-            _nameText.text = shinobi.Name;
-            _rankText.text = shinobi.Rank;
-            _powerText.text = CurrencyFormat.Format(shinobi.Power);
+            CharacterInfo character = _catalog.Character;
+            _nameText.text = character.Name;
+            _rankText.text = character.Rank;
+            _powerText.text = CurrencyFormat.Format(character.Power);
 
             var equips = _catalog.Equips;
             for (int i = 0; i < _equipSlots.Length; i++)

@@ -6,8 +6,8 @@ using UnityEngine.UI;
 
 namespace Game.View
 {
-    /// <summary>인술 화면의 칸 하나. 열려 있으면 레벨을, 잠겨 있으면 "레벨 N에 해금"을 표시한다</summary>
-    public sealed class NinpoSlotView : MonoBehaviour
+    /// <summary>스킬 화면의 칸 하나. 열려 있으면 레벨을, 잠겨 있으면 "레벨 N에 해금"을 표시한다</summary>
+    public sealed class SkillListSlotView : MonoBehaviour
     {
         [SerializeField] private Button _button;
         [SerializeField] private TMP_Text _levelText;
@@ -22,7 +22,7 @@ namespace Game.View
         }
 
         /// <summary>잠긴 칸은 눌러도 아무것도 하지 않는다</summary>
-        public void Bind(NinpoInfo info, Action onClick)
+        public void Bind(SkillInfo info, Action onClick)
         {
             gameObject.SetActive(true);
             _levelText.text = $"Lv.{info.Level}";

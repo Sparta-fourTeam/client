@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Game.Core
 {
-    /// <summary>인술 정의는 JSON 한 곳에서 읽는다. 프리팹과 아이콘 키는 기존 연결을 유지한다.</summary>
+    /// <summary>스킬 정의는 JSON 한 곳에서 읽는다. 프리팹과 아이콘 키는 기존 연결을 유지한다.</summary>
     public sealed class DefaultWeaponDataProvider : IWeaponDataProvider
     {
         public List<WeaponData> LoadAll()

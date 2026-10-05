@@ -944,7 +944,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dc92f6cde97374c46a50646791ad51ee, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Game.View::Game.View.NinpoUpgradePopupView
+  m_EditorClassIdentifier: Game.View::Game.View.SkillUpgradePopupView
 --- !u!114 &284506217
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2799,7 +2799,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d8eee8173c4e8eb40b0ce6ba648d1f97, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Game.View::Game.View.NinpoScreenView
+  m_EditorClassIdentifier: Game.View::Game.View.SkillScreenView
 --- !u!1001 &1499834495
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3955,7 +3955,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8719d3b0b0a9c7c4ca976e19ee7ca679, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Game.View::Game.View.ShinobiScreenView
+  m_EditorClassIdentifier: Game.View::Game.View.CharacterScreenView
 --- !u!1 &1499834498 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 5635858056036266613, guid: e79f4c84097498b48ac78d2a3d2ce3a9, type: 3}
@@ -5981,13 +5981,13 @@ MonoBehaviour:
   _shopTab: {fileID: 1604036921}
   _characterTab: {fileID: 1604036920}
   _homeTab: {fileID: 1604036918}
-  _ninjutsuTab: {fileID: 1604036916}
+  _skillTab: {fileID: 1604036916}
   _gachaTab: {fileID: 1604036914}
   _characterSelected: {fileID: 1604036919}
   _homeSelected: {fileID: 1604036917}
-  _ninjutsuSelected: {fileID: 1604036915}
-  _shinobiScreen: {fileID: 1499834497}
-  _ninpoScreen: {fileID: 1485848745}
+  _skillSelected: {fileID: 1604036915}
+  _characterScreen: {fileID: 1499834497}
+  _skillScreen: {fileID: 1485848745}
   _toast: {fileID: 1921941343}
 --- !u!1 &1616164960
 GameObject:

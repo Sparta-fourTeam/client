@@ -18,7 +18,7 @@ namespace Game.Core
         public string[] requiredCardIds;
         public int[] requiredWeaponIds;
 
-        // 전투 중 레벨만 의미한다. 로비의 영구 인술 레벨과 구분한다.
+        // 전투 중 레벨만 의미한다. 로비의 영구 스킬 레벨과 구분한다.
         public int minBattleLevel = 1;
         public int minPermanentLevel;
         public CardCountRequirement[] requiredCardCounts;

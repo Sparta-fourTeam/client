@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 namespace Game.View
 {
-    /// <summary>닌자 화면의 장비 칸 하나. 잠긴 칸은 가리고 눌러도 반응하지 않는다</summary>
+    /// <summary>캐릭터 화면의 장비 칸 하나. 잠긴 칸은 가리고 눌러도 반응하지 않는다</summary>
     public sealed class EquipSlotView : MonoBehaviour
     {
         [SerializeField] private Button _button;

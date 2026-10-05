@@ -30,8 +30,8 @@ namespace Game.Core
         }
     }
 
-    /// <summary>인술 하나의 표시용 정보 (인술 화면 칸, 인술 강화 팝업)</summary>
-    public sealed class NinpoInfo
+    /// <summary>스킬 하나의 표시용 정보 (스킬 화면 칸, 스킬 강화 팝업)</summary>
+    public sealed class SkillInfo
     {
         public string Id;
         public string Name;
@@ -53,7 +53,7 @@ namespace Game.Core
         public bool IsMaxLevel => Level >= MaxLevel;
     }
 
-    /// <summary>장비 칸 하나의 표시용 정보 (닌자 화면 장비 칸, 장비 강화 팝업)</summary>
+    /// <summary>장비 칸 하나의 표시용 정보 (캐릭터 화면 장비 칸, 장비 강화 팝업)</summary>
     public sealed class EquipInfo
     {
         public int Slot;
@@ -72,8 +72,8 @@ namespace Game.Core
         public int BookCost;
     }
 
-    /// <summary>닌자 화면 위쪽에 표시하는 캐릭터 정보</summary>
-    public sealed class ShinobiInfo
+    /// <summary>캐릭터 화면 위쪽에 표시하는 캐릭터 정보</summary>
+    public sealed class CharacterInfo
     {
         public string Name;
         public string Rank;

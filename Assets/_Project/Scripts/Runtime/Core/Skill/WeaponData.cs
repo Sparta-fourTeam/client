@@ -21,9 +21,9 @@ namespace Game.Core
         public List<WeaponUpgradeOption> upgrades;
         // 최초 습득을 제외한 전투 중 성공한 강화 횟수 상한.
         public int maxLevel;
-        // PlayerProfile의 영구 성장 ID. 미매핑 인술은 null이며 영구 레벨 0으로 처리.
+        // PlayerProfile의 영구 성장 ID. 미매핑 스킬은 null이며 영구 레벨 0으로 처리.
         public string progressionId;
-        // 새 인술의 기본 수치 자료가 없을 때 사용한 기존 프로토타입 ID.
+        // 새 스킬의 기본 수치 자료가 없을 때 사용한 기존 프로토타입 ID.
         public int prototypeBalanceSourceId;
 
     }

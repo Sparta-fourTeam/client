@@ -78,7 +78,7 @@ namespace Game.Core
 
         public bool LevelUp(WeaponUpgradeOption option, int permanentLevel = 0)
         {
-            // 공유 강화는 전체 참여 인술을 준비하는 트랜잭션을 통해서만 적용한다.
+            // 공유 강화는 전체 참여 스킬을 준비하는 트랜잭션을 통해서만 적용한다.
             if (!string.IsNullOrEmpty(option?.sharedId)
                 || !WeaponUpgradeResolver.TryResolve(option, permanentLevel, out var resolved)
                 || !TryPrepareUpgrade(option, resolved.Effects, out var nextStats)) { return false; }

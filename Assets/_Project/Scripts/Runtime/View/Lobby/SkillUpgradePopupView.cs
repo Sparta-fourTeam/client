@@ -6,8 +6,8 @@ using VContainer;
 
 namespace Game.View
 {
-    /// <summary>인술 강화 팝업. IGrowthCatalog의 인술 정보로 능력치·비용을 채운다. 강화 버튼은 아직 미완성 안내</summary>
-    public sealed class NinpoUpgradePopupView : HudView
+    /// <summary>스킬 강화 팝업. IGrowthCatalog의 스킬 정보로 능력치·비용을 채운다. 강화 버튼은 아직 미완성 안내</summary>
+    public sealed class SkillUpgradePopupView : HudView
     {
         [SerializeField] private GameObject _panel;
         [SerializeField] private Button _closeButton;
@@ -31,14 +31,14 @@ namespace Game.View
         {
             _panel.SetActive(false);
             _closeButton.onClick.AddListener(() => _panel.SetActive(false));
-            // TODO(data): IUpgradeApi.Purchase(인술 id)를 감싸는 로직으로 교체
+            // TODO(data): IUpgradeApi.Purchase(스킬 id)를 감싸는 로직으로 교체
             _upgradeButton.onClick.AddListener(_toast.Show);
         }
 
         public void Open(int index)
         {
             _panel.SetActive(true);
-            NinpoInfo info = _catalog.Ninpos[index];
+            SkillInfo info = _catalog.Skills[index];
 
             _nameText.text = info.Name;
             _levelText.text = $"Lv.{info.Level}";
@@ -56,7 +56,7 @@ namespace Game.View
             }
 
             _coinText.text = CostFormat.HaveNeed(_profile.Gold, info.CoinCost);
-            _bookText.text = CostFormat.HaveNeed(_catalog.NinpoBooks, info.BookCost);
+            _bookText.text = CostFormat.HaveNeed(_catalog.SkillBooks, info.BookCost);
             _upgradeButton.gameObject.SetActive(!info.IsMaxLevel);
             _maxLevel.SetActive(info.IsMaxLevel);
         }
