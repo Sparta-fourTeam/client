@@ -10,6 +10,7 @@ namespace Game.Core
         private readonly ReactiveCastClock reserveClock = new();
         private readonly Vector3 projectileScale;
         private const float ProjectileLifetime = 3f;
+        private const float RollingWallFrontOffset = .2f;
 
         public ProjectileCaster(WeaponData data, GameObject prefab, Transform caster, IEnemyTargetProvider targetProvider, Game.Core.Defense.Wall wall = null) : base(data, caster, targetProvider)
         {
@@ -51,7 +52,8 @@ namespace Game.Core
             {
                 var target = targets[i % targets.Count];
                 bool rolling = data.projectilePath == ProjectilePath.RollingLane;
-                var start = rolling ? new Vector3(target.Position.x, caster.position.y, caster.position.z) : caster.position;
+                float startY = wall != null ? wall.AttackLineY + RollingWallFrontOffset : caster.position.y;
+                var start = rolling ? new Vector3(target.Position.x, startY, caster.position.z) : caster.position;
                 var dir2D = rolling ? Vector2.up : (target.Position - (Vector2)caster.position).normalized;
                 var direction = new Vector3(dir2D.x, dir2D.y, 0f);
                 float lifetime = rolling ? data.baseStats.range / Mathf.Max(.01f, stats.ProjectileSpeed) + .1f : ProjectileLifetime;

@@ -50,6 +50,9 @@ namespace Game.Tests
             try
             {
                 var wall = wallGo.AddComponent<Wall>();
+                wallGo.transform.position = new Vector3(0, -2, 0);
+                typeof(Wall).GetField("_attackLineOffset", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(wall, 2f);
+                prefab.transform.position = new Vector3(-5, -4, 0);
                 var provider = new Provider();
                 var data = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == 5);
                 var weapon = WeaponFactory.Create(data, prefab, prefab.transform, provider, wall);
@@ -64,7 +67,7 @@ namespace Game.Tests
                 foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
                 {
                     if (projectile.name != "ReserveLogTest(Clone)") { continue; }
-                    Assert.AreEqual(new Vector3(3, 0, 0), projectile.transform.position);
+                    Assert.AreEqual(new Vector3(3, .2f, 0), projectile.transform.position);
                     Assert.AreEqual(Vector3.up, (Vector3)typeof(Projectile).GetField("direction", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(projectile));
                 }
                 weapon.Tick(.5f); Assert.AreEqual(4, CountLogs());
