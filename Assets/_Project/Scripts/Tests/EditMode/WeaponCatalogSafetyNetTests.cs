@@ -23,7 +23,7 @@ namespace Game.Tests
         private const string CardIconTable = "Assets/_Project/Data/SkillIconTable_Card.asset";
         private const string GoldenRelativePath = "_Project/Scripts/Tests/EditMode/Golden/WeaponCardStats.golden.txt";
 
-        private static IEnumerable<string> AllEffectKinds() => EffectRegistry.Keys.ToList();
+        private static IEnumerable<string> AllEffectKinds() => EffectRegistry.Keys.Where(EffectRegistry.IsStatKind).ToList();
 
         private static List<WeaponData> LoadUnvalidated() =>
             JsonConvert.DeserializeObject<List<WeaponData>>(Resources.Load<TextAsset>("MockData/Weapons").text);

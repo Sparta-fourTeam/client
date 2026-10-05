@@ -258,12 +258,13 @@ python3 docs/ninjutsu/validate_requirements.py
    - `HitscanEffect`의 `onHit`·`onTargetHit`·`onKilled` 콜백도 반응으로 옮겼다. 마비는 `Hit`, 폭발·번개 구체는 새 `Impact`(범위형 공격이 목표 지점에 한 번 닿을 때), 처치 번개는 `Kill`에 걸린다.
    - `NumericReactionUpgradeEffect`는 반응이 아니라 스탯을 켜는 효과이므로 `ReactionStatUpgradeEffect`로 이름을 바꿨다. 반응 자체를 정의하는 효과는 `ReactionUpgradeEffect`다.
    - 남은 것: 투사체의 `OnHit` 콜백(폭발·분열·삼각 분열)은 아직 `Action`으로 남아 있다. 4단계의 `onEvent` 핸들러 도입 때 함께 반응으로 옮긴다.
-4. **효과 스키마 교체** (약 2일, C·D) — 4-1 완료, 핸들러·자식 스킬 진행 중
+4. **효과 스키마 교체** (약 2일, C·D) — 시전기 연결만 5단계로 남김
    - **완료(4-1)**: `UpgradeType` enum과 `UpgradeCompatibility` 표, `WeaponStatEffects`의 규칙 사전, `Category()` switch를 `EffectRegistry` 하나로 합쳤다. 효과는 `EffectDef{kind(문자열 키), value}`가 되었고 `Weapons.json`의 효과 106곳(`type` 숫자 → `kind` 키)은 스크립트로 변환했다. 새 효과 종류는 `EffectRegistry`에 한 줄만 더하면 된다. 골든 테스트가 변환 전후 카드 66장의 결과가 같음을 보장한다. 옛 `Cards.json`의 `UpgradeOption`도 키 문자열로 바꿨다.
-   - `EffectRegistry`에 `onEvent`(이벤트·확률·자식 스킬), `periodic`, `transform` 핸들러를 등록한다.
-   - 자식 스킬은 ID로 참조하고 검증기가 참조와 순환(자식이 부모를 다시 시전)을 검사한다.
-   - `WeaponForm`을 enum으로 둘지 데이터화할지 이 단계에서 결정한다. 15종이 모두 들어오면 형태가 늘어나므로 데이터화를 권한다.
-   - 끝나면 서리 감옥·번개 구름 같은 `Expired`/`Hit` 자식 시전 카드를 코드 없이 추가할 수 있다.
+   - **완료(4-2)**: `EffectRegistry`에 `onEvent`(시점·확률·횟수·자식 스킬 ID)와 `periodic`(주기·자식 스킬 ID) 효과를 등록했다. `EffectDef`의 선택 필드(`trigger`, `skillId`, `chance`, `count`, `interval`)로 표현하고, 컴파일하면 `CastSkillReaction`(주기형은 `PeriodicReaction`으로 감싼다)이 해당 시점의 반응으로 붙는다. 예: `{"kind":"onEvent","trigger":"Expired","skillId":12}`.
+   - **완료(4-2)**: 자식 스킬은 무기 ID로 참조하고 `WeaponCatalogValidator`가 존재와 순환(자기 자신 포함, 변형 효과 포함)을 카드 ID·경로(`1 → 3 → 1`)와 함께 거부한다.
+   - **미완(5단계에서 연결)**: 자식을 실제로 시전하는 `IChildSkillCaster` 구현이 없다. 연결 전에 자식 시전 효과를 적용하면 조용히 사라지지 않고 강화가 실패한다(`WeaponBase.UseChildCaster`로 연결). "이벤트 위치에서 다른 스킬을 시전"하는 일은 공격 전략 추상화(`IAttackStrategy`)가 있어야 구현할 수 있기 때문이다. 현재 카드 66장은 자식 시전을 쓰지 않는다.
+   - **결정**: `WeaponForm`은 이번에 데이터화하지 않고 enum으로 둔다. 형태는 스프라이트(`ProjectileVisual`), 발사 규칙(`SpawnRules`), `HitscanCastEffects`의 분기와 묶여 있어서, 공격 전략 추상화(5단계)에서 "형태 = 전략 구성" 구조가 정해진 뒤 데이터화하는 편이 한 번에 끝난다. 새 형태를 더할 때는 enum, `form` 효과 허용 값(`EffectRegistry`), 해당 분기를 고친다.
+   - 끝나면 서리 감옥·번개 구름 같은 `Expired`/`Hit` 자식 시전 카드를 코드 없이 추가할 수 있다(5단계의 시전기 연결 후).
 5. **공격 전략 추상화** (약 3일, E)
    - `IAttackStrategy`(`Fire(context)`)를 도입하고 풀링·Dispose를 가진 공통 Caster 껍데기 하나가 전략에 위임한다.
    - `ProjectileCaster`와 `HitscanCaster`를 동작 변경 없이 전략으로 바꾼다. `WeaponFactory`는 `castType` → 전략 등록 테이블로 바꾼다.

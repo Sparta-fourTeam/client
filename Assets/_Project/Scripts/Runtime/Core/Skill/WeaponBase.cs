@@ -27,7 +27,7 @@ namespace Game.Core
             get
             {
                 // Protected stats is retained for existing test subclasses.
-                if (!ReferenceEquals(config.Stats, stats)) { config = new SkillConfig(stats, config.Attack, config.Bindings); }
+                if (!ReferenceEquals(config.Stats, stats)) { config = new SkillConfig(stats, config.Attack, config.Bindings, config.ChildCaster); }
                 return config;
             }
         }
@@ -54,6 +54,9 @@ namespace Game.Core
             upgrades = new WeaponUpgradeState(data);
             targets = new WeaponTargetSelector(targetProvider);
         }
+
+        /// <summary>자식 스킬 시전 효과가 쓸 시전기를 연결한다</summary>
+        public void UseChildCaster(IChildSkillCaster childCaster) => config = Config.WithChildCaster(childCaster);
 
         public int GetAcquiredCount(string cardId) => upgrades.GetAcquiredCount(cardId);
 

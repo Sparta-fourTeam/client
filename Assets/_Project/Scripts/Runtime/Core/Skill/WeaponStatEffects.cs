@@ -19,7 +19,13 @@ namespace Game.Core
         {
             compiled = null;
             if (effect == null || float.IsNaN(effect.value) || float.IsInfinity(effect.value)
-                || !EffectRegistry.TryGet(effect.kind, out var kind) || !kind.Accept(effect.value)) { return false; }
+                || !EffectRegistry.TryGet(effect.kind, out var kind)) { return false; }
+            if (kind.Compile != null)
+            {
+                compiled = kind.Compile(effect);
+                return compiled != null;
+            }
+            if (!kind.Accept(effect.value)) { return false; }
             compiled = kind.Category switch
             {
                 UpgradeEffectCategory.Cast => new CastUpgradeEffect(effect.kind, effect.value),

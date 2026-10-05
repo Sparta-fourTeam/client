@@ -26,13 +26,17 @@ namespace Game.Core
             public readonly Users Users;
             public readonly Action<WeaponStatsBuilder, float> Apply;
             public readonly Func<float, bool> Accept;
+            /// <summary>숫자 하나로 표현되지 않는 효과(자식 스킬 시전 등)의 컴파일. null이면 value를 스탯에 적용하는 효과다</summary>
+            public readonly Func<EffectDef, IUpgradeEffect> Compile;
 
-            public Kind(UpgradeEffectCategory category, Users users, Action<WeaponStatsBuilder, float> apply, Func<float, bool> accept)
+            public Kind(UpgradeEffectCategory category, Users users, Action<WeaponStatsBuilder, float> apply, Func<float, bool> accept,
+                Func<EffectDef, IUpgradeEffect> compile = null)
             {
                 Category = category;
                 Users = users;
                 Apply = apply;
                 Accept = accept;
+                Compile = compile;
             }
         }
 
@@ -41,6 +45,12 @@ namespace Game.Core
         public static IReadOnlyCollection<string> Keys => Kinds.Keys;
 
         public static bool IsRegistered(string key) => key != null && Kinds.ContainsKey(key);
+
+        /// <summary>value를 스탯에 적용하는 효과인지(true), 자식 스킬 시전처럼 별도 필드를 쓰는 효과인지(false)</summary>
+        public static bool IsStatKind(string key) => key != null && Kinds.TryGetValue(key, out var kind) && kind.Compile == null;
+
+        /// <summary>자식 스킬을 시전하는 효과 종류인지</summary>
+        public static bool IsChildCast(string key) => key == "onEvent" || key == "periodic";
 
         public static bool Supports(CastType castType, string key)
         {
@@ -122,6 +132,10 @@ namespace Game.Core
             Add("fieldDuration", Plain, Hitscan, (s, v) => s[Stat.FieldDuration] += v, Positive);
             Add("fieldDamageFlat", Plain, Hitscan, (s, v) => s[Stat.FieldFlatDamage] += v, Positive);
             Add("fieldDamageMultiplier", Plain, Hitscan, (s, v) => s[Stat.FieldDamageMultiplier] *= Factor(v), Positive);
+
+            // 자식 스킬 시전: 지정한 시점(onEvent) 또는 주기(periodic)에 다른 스킬을 그 위치에서 시전한다.
+            k.Add("onEvent", new Kind(Reaction, Both, null, null, ChildCastUpgradeEffect.FromEvent));
+            k.Add("periodic", new Kind(Reaction, Both, null, null, ChildCastUpgradeEffect.FromPeriodic));
             return k;
         }
     }

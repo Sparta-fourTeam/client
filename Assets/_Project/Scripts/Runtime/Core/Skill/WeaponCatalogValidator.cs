@@ -45,6 +45,59 @@ namespace Game.Core
             }
             WeaponUpgradeTransaction.ValidateCatalog(weapons);
             ValidateConditions(weapons);
+            ValidateChildSkills(weapons);
+        }
+
+        // 자식 스킬 시전 효과는 존재하는 스킬만 가리켜야 하고, 자식이 부모를 다시 시전하는 순환이 없어야 한다.
+        private static void ValidateChildSkills(List<WeaponData> weapons)
+        {
+            var ids = new HashSet<int>();
+            foreach (var weapon in weapons) { ids.Add(weapon.id); }
+            var children = new Dictionary<int, List<int>>();
+            foreach (var weapon in weapons)
+            {
+                var list = new List<int>();
+                children[weapon.id] = list;
+                foreach (var option in weapon.upgrades)
+                {
+                    CollectChildren(weapon, option, option.effects, ids, list);
+                    if (option.variants == null) { continue; }
+                    foreach (var variant in option.variants) { CollectChildren(weapon, option, variant.effects, ids, list); }
+                }
+            }
+            var visiting = new List<int>();
+            var done = new HashSet<int>();
+            foreach (var id in children.Keys) { Visit(id); }
+            void Visit(int id)
+            {
+                if (done.Contains(id)) { return; }
+                if (visiting.Contains(id))
+                {
+                    int start = visiting.IndexOf(id);
+                    var path = visiting.GetRange(start, visiting.Count - start);
+                    path.Add(id);
+                    throw new InvalidOperationException($"자식 스킬 시전이 순환합니다: {string.Join(" → ", path)}");
+                }
+                visiting.Add(id);
+                foreach (int child in children[id]) { Visit(child); }
+                visiting.RemoveAt(visiting.Count - 1);
+                done.Add(id);
+            }
+        }
+
+        private static void CollectChildren(WeaponData weapon, WeaponUpgradeOption option, List<EffectDef> effects,
+            HashSet<int> ids, List<int> children)
+        {
+            foreach (var effect in effects)
+            {
+                if (!EffectRegistry.IsChildCast(effect.kind)) { continue; }
+                if (!ids.Contains(effect.skillId))
+                {
+                    throw new InvalidOperationException(
+                        $"카드 '{option.id}'({weapon.name})의 효과 {effect.kind}: 자식 스킬 {effect.skillId}가 카탈로그에 없습니다.");
+                }
+                children.Add(effect.skillId);
+            }
         }
 
         // 공격이 소비하지 않는 효과는 적용돼도 아무 일이 없으므로, 어느 카드가 문제인지 알려 주며 막는다.

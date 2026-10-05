@@ -21,15 +21,21 @@ namespace Game.Core
         public WeaponStats Stats { get; }
         public AttackDefinition Attack { get; }
         public AttackReactions Reactions { get; }
+        /// <summary>자식 스킬 시전 효과가 쓰는 시전기. 연결되지 않았으면 null</summary>
+        public IChildSkillCaster ChildCaster { get; }
         internal readonly ReactionBinding[] Bindings;
 
-        internal SkillConfig(WeaponStats stats, AttackDefinition attack, IEnumerable<ReactionBinding> bindings)
+        internal SkillConfig(WeaponStats stats, AttackDefinition attack, IEnumerable<ReactionBinding> bindings,
+            IChildSkillCaster childCaster = null)
         {
             Stats = stats;
             Attack = attack;
+            ChildCaster = childCaster;
             Bindings = new List<ReactionBinding>(bindings).ToArray();
             Reactions = new AttackReactions(Bindings);
         }
+
+        public SkillConfig WithChildCaster(IChildSkillCaster childCaster) => new SkillConfig(Stats, Attack, Bindings, childCaster);
 
         public static SkillConfig FromDefinition(WeaponData data) => new SkillConfig(
             WeaponStats.FromDefinition(data.baseStats), new AttackDefinition(data.castType, data.projectilePath, data.baseStats.cast.range),
@@ -41,12 +47,14 @@ namespace Game.Core
     {
         internal WeaponStatsBuilder Values { get; private set; }
         private readonly AttackDefinition attack;
+        internal IChildSkillCaster ChildCaster { get; }
         private List<ReactionBinding> bindings;
 
         public SkillConfigBuilder(SkillConfig config)
         {
             Values = new WeaponStatsBuilder(config.Stats);
             attack = config.Attack;
+            ChildCaster = config.ChildCaster;
             bindings = new List<ReactionBinding>(config.Bindings);
         }
 
@@ -79,7 +87,7 @@ namespace Game.Core
             return true;
         }
 
-        public SkillConfig Build() => new SkillConfig(new WeaponStats(Values), attack, bindings);
+        public SkillConfig Build() => new SkillConfig(new WeaponStats(Values), attack, bindings, ChildCaster);
     }
 
     public interface IUpgradeEffect
