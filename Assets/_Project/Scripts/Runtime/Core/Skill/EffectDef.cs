@@ -20,8 +20,11 @@ namespace Game.Core
         public System.Collections.Generic.Dictionary<string, float> inherit;
         /// <summary>0이 아니면 이 효과(스탯 효과)는 부모가 아니라 해당 ID의 자식 스킬에만 적용된다. 자식을 시전하는 선행 카드가 필요하다</summary>
         public int target;
-        /// <summary>한 번에 시전하는 횟수</summary>
+        /// <summary>자식 스킬이 한 번의 시전에서 쏘는 수. 1보다 크면 자식의 발사 수(projectileCount)가 이 값이 되고,
+        /// 발은 가장 가까운 적부터 서로 다른 적에게 나뉜다. 1이면 자식의 기본 발사 수를 쓴다</summary>
         public int count = 1;
+        /// <summary>true면 자식이 방금 맞은 적을 노리지 않고 지나친다 (분열 조각처럼 맞은 적 주변의 다른 적을 노릴 때)</summary>
+        public bool excludeHit;
         /// <summary>periodic: 시전 주기(초)</summary>
         public float interval;
     }

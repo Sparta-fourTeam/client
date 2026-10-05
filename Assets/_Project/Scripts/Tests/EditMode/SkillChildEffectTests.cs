@@ -15,7 +15,8 @@ namespace Game.Tests
             public readonly List<int> Casts = new List<int>();
             public readonly List<Vector2> Positions = new List<Vector2>();
             public readonly List<float> Scales = new List<float>();
-            public void Cast(ChildCast cast, AttackContext context) { Casts.Add(cast.SkillId); Positions.Add(context.Position); Scales.Add(cast.DamageScale); }
+            public readonly List<int> Counts = new List<int>();
+            public void Cast(ChildCast cast, AttackContext context) { Casts.Add(cast.SkillId); Positions.Add(context.Position); Scales.Add(cast.DamageScale); Counts.Add(cast.Count); }
         }
 
         private static SkillConfigBuilder Builder(IChildSkillCaster caster) => new SkillConfigBuilder(
@@ -35,7 +36,8 @@ namespace Game.Tests
             reactions.Raise(AttackEvent.Hit, new AttackContext(Vector2.zero, Vector3.up));
             Assert.AreEqual(0, caster.Casts.Count, "다른 시점에는 시전하지 않는다");
             reactions.Raise(AttackEvent.Expired, new AttackContext(new Vector2(3, 4), Vector3.up));
-            Assert.AreEqual(new[] { 7, 7 }, caster.Casts);
+            Assert.AreEqual(new[] { 7 }, caster.Casts, "count는 시전 횟수가 아니라 한 번에 쏘는 수다");
+            Assert.AreEqual(new[] { 2 }, caster.Counts);
             Assert.AreEqual(new Vector2(3, 4), caster.Positions[0]);
         }
 

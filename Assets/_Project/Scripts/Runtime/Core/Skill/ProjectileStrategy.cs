@@ -60,7 +60,7 @@ namespace Game.Core
                 var target = targets[i % targets.Count];
                 var path = ProjectileLaunchPath.Calculate(config.Attack.Path, environment.Origin, target.Position,
                     wall != null ? wall.AttackLineY : (float?)null, config.Attack.Range, current.Projectile.Speed, current.Projectile.PierceCount);
-                spawnRules.SpawnMain(path.Start, path.Direction, path.Lifetime, path.PierceCount);
+                spawnRules.SpawnMain(path.Start, path.Direction, path.Lifetime, path.PierceCount, environment.Exclude);
             }
         }
     }

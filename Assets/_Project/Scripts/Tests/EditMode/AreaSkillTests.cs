@@ -28,8 +28,8 @@ namespace Game.Tests
 
         private sealed class FakeCaster : IChildSkillCaster
         {
-            public readonly List<(int id, Vector2 position, float scale)> Casts = new List<(int, Vector2, float)>();
-            public void Cast(ChildCast cast, AttackContext context) => Casts.Add((cast.SkillId, context.Position, cast.DamageScale));
+            public readonly List<(int id, Vector2 position, float scale, int count)> Casts = new List<(int, Vector2, float, int)>();
+            public void Cast(ChildCast cast, AttackContext context) => Casts.Add((cast.SkillId, context.Position, cast.DamageScale, cast.Count));
         }
 
         private readonly List<GameObject> created = new List<GameObject>();
@@ -181,13 +181,12 @@ namespace Game.Tests
             Assert.AreEqual(0, fake.Casts.Count, "지속 시간 중에는 시전하지 않는다");
             Tick(zone, 5f);
 
-            Assert.AreEqual(2, fake.Casts.Count);
-            foreach (var cast in fake.Casts)
-            {
-                Assert.AreEqual(4, cast.id, "서리 결정(얼음창)을 자식으로 시전한다");
-                Assert.AreEqual(new Vector2(1, 1), cast.position, "영역이 사라진 자리에서 시전한다");
-                Assert.AreEqual(.5f, cast.scale);
-            }
+            Assert.AreEqual(1, fake.Casts.Count, "한 번 시전하고 그 안에서 2발을 쏜다");
+            var cast = fake.Casts[0];
+            Assert.AreEqual(4, cast.id, "서리 결정(얼음창)을 자식으로 시전한다");
+            Assert.AreEqual(new Vector2(1, 1), cast.position, "영역이 사라진 자리에서 시전한다");
+            Assert.AreEqual(.5f, cast.scale);
+            Assert.AreEqual(2, cast.count);
         }
 
         [Test]

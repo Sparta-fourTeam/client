@@ -15,22 +15,35 @@ namespace Game.Core
     {
         public int SkillId { get; }
         public float DamageScale { get; }
+        /// <summary>자식이 한 번의 시전에서 쏘는 수. 1이면 자식의 기본 발사 수를 쓴다</summary>
+        public int Count { get; }
+        /// <summary>자식이 방금 맞은 적을 노리지 않고 지나친다</summary>
+        public bool ExcludeHit { get; }
         public ChildLink Link { get; }
         /// <summary>이 시전을 만든 부모 공격의 스탯. 발사 때의 설정이므로 이후 강화는 반영되지 않는다</summary>
         public WeaponStats ParentStats { get; }
 
-        public ChildCast(int skillId, float damageScale, ChildLink link, WeaponStats parentStats)
+        public ChildCast(int skillId, float damageScale, ChildLink link, WeaponStats parentStats, int count = 1, bool excludeHit = false)
         {
             SkillId = skillId;
             DamageScale = damageScale;
+            Count = count;
+            ExcludeHit = excludeHit;
             Link = link;
             ParentStats = parentStats;
         }
 
         /// <summary>자식의 기본 설정에 상속, 자식 전용 강화, 피해 배율을 이 순서로 적용한 설정</summary>
-        public SkillConfig Resolve(SkillConfig childBase) => Link != null
-            ? Link.Resolve(childBase, ParentStats, DamageScale)
-            : UnityEngine.Mathf.Approximately(DamageScale, 1) ? childBase : childBase.WithDamageScale(DamageScale);
+        public SkillConfig Resolve(SkillConfig childBase)
+        {
+            var resolved = Link != null
+                ? Link.Resolve(childBase, ParentStats, DamageScale)
+                : UnityEngine.Mathf.Approximately(DamageScale, 1) ? childBase : childBase.WithDamageScale(DamageScale);
+            if (Count <= 1) { return resolved; }
+            var values = new WeaponStatsBuilder(resolved.Stats);
+            values[Stat.ProjectileCount] = Count;
+            return resolved.WithStats(new WeaponStats(values));
+        }
     }
 
     /// <summary>
@@ -117,11 +130,13 @@ namespace Game.Core
         private readonly float chance;
         private readonly float interval;
         private readonly float damageScale;
+        private readonly bool excludeHit;
         private readonly List<ChildLink.Inheritance> inherit;
 
         public ChildCastUpgradeEffect(AttackEvent trigger, int skillId, int count, float chance, float damageScale,
-            List<ChildLink.Inheritance> inherit, float interval = 0)
+            List<ChildLink.Inheritance> inherit, bool excludeHit, float interval = 0)
         {
+            this.excludeHit = excludeHit;
             this.damageScale = damageScale;
             this.trigger = trigger;
             this.skillId = skillId;
@@ -140,7 +155,7 @@ namespace Game.Core
             {
                 var link = config.Children[skillId];
                 var stats = config.Stats;
-                IAttackReaction cast = new CastSkillReaction(c => caster.Cast(new ChildCast(skillId, damageScale, link, stats), c), count, chance);
+                IAttackReaction cast = new CastSkillReaction(c => caster.Cast(new ChildCast(skillId, damageScale, link, stats, count, excludeHit), c), 1, chance);
                 return interval > 0 ? new PeriodicReaction(interval, cast) : cast;
             });
             return true;
@@ -156,12 +171,12 @@ namespace Game.Core
 
         public static IUpgradeEffect FromEvent(EffectDef e) =>
             Valid(e, out var inherit) && e.trigger != AttackEvent.Tick
-                ? new ChildCastUpgradeEffect(e.trigger, e.skillId, e.count, e.chance, e.damageScale, inherit)
+                ? new ChildCastUpgradeEffect(e.trigger, e.skillId, e.count, e.chance, e.damageScale, inherit, e.excludeHit)
                 : null;
 
         public static IUpgradeEffect FromPeriodic(EffectDef e) =>
             Valid(e, out var inherit) && e.interval > 0 && !float.IsInfinity(e.interval)
-                ? new ChildCastUpgradeEffect(AttackEvent.Tick, e.skillId, e.count, e.chance, e.damageScale, inherit, e.interval)
+                ? new ChildCastUpgradeEffect(AttackEvent.Tick, e.skillId, e.count, e.chance, e.damageScale, inherit, e.excludeHit, e.interval)
                 : null;
     }
 
@@ -196,7 +211,7 @@ namespace Game.Core
                 child = create(cast.SkillId);
                 children[cast.SkillId] = child;
             }
-            child?.FireAt(context.Position, cast.Resolve);
+            child?.FireAt(context.Position, cast.Resolve, cast.ExcludeHit ? context.Target : null);
         }
 
         public void Dispose()

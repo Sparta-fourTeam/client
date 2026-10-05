@@ -21,25 +21,42 @@ namespace Game.Core
         private readonly Transform caster;
         private readonly Func<Vector2, float, IReadOnlyList<IEnemyTarget>> select;
         private readonly Vector3? origin;
+        private List<IEnemyTarget> filtered;
 
         public IEnemyTargetProvider Targets { get; }
 
+        /// <summary>조준 대상에서 빼고 공격이 지나치게 할 적 (자식 스킬이 방금 맞은 적을 피할 때). 없으면 null</summary>
+        public IEnemyTarget Exclude { get; }
+
         public AttackEnvironment(Transform caster, IEnemyTargetProvider targets,
-            Func<Vector2, float, IReadOnlyList<IEnemyTarget>> select, Vector3? origin = null)
+            Func<Vector2, float, IReadOnlyList<IEnemyTarget>> select, Vector3? origin = null, IEnemyTarget exclude = null)
         {
             this.caster = caster;
             Targets = targets;
             this.select = select;
             this.origin = origin;
+            Exclude = exclude;
         }
 
         /// <summary>시전 위치. 지정하지 않으면 시전자의 현재 위치</summary>
         public Vector3 Origin => origin ?? caster.position;
 
         /// <summary>시전 위치 기준으로 사거리 안의 대상을 고른다 (반환 목록은 다음 호출 전까지만 유효)</summary>
-        public IReadOnlyList<IEnemyTarget> FindTargets(float range) => select(Origin, range);
+        public IReadOnlyList<IEnemyTarget> FindTargets(float range)
+        {
+            var found = select(Origin, range);
+            if (Exclude == null) { return found; }
+            filtered ??= new List<IEnemyTarget>();
+            filtered.Clear();
+            foreach (var target in found)
+            {
+                if (!ReferenceEquals(target, Exclude)) { filtered.Add(target); }
+            }
+            return filtered;
+        }
 
-        /// <summary>같은 시전자와 대상 선택을 쓰되 다른 위치에서 시전하는 환경</summary>
-        public AttackEnvironment At(Vector3 position) => new AttackEnvironment(caster, Targets, select, position);
+        /// <summary>같은 시전자와 대상 선택을 쓰되 다른 위치에서 시전하는 환경 (exclude를 주면 그 적은 조준하지 않는다)</summary>
+        public AttackEnvironment At(Vector3 position, IEnemyTarget exclude = null) =>
+            new AttackEnvironment(caster, Targets, select, position, exclude);
     }
 }

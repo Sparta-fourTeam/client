@@ -24,7 +24,7 @@ namespace Game.Core
             branches = new ProjectileBranchSpawner(this.stats, targetProvider, pool, projectileScale);
         }
 
-        public void SpawnMain(Vector3 start, Vector3 direction, float lifetime, int pierce)
+        public void SpawnMain(Vector3 start, Vector3 direction, float lifetime, int pierce, IEnemyTarget ignoredTarget = null)
         {
             Projectile projectile = pool.Get();
             projectile.transform.localScale = ProjectileVisual.MainScale(projectileScale, stats.Cast.Form, stats.Projectile.SizeMultiplier);
@@ -38,6 +38,7 @@ namespace Game.Core
                 TargetProvider = targetProvider,
                 Reactions = reactions,
                 PierceCount = pierce,
+                IgnoredTarget = ignoredTarget,
                 HitReactions = ReactionCompiler.ForProjectile(stats, CreateBurnDeathCallback()),
                 OnHit = CreateHitCallback(),
                 CollisionRadius = .3f * stats.Projectile.SizeMultiplier
