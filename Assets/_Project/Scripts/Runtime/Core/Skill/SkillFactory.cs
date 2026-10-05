@@ -24,7 +24,7 @@ namespace Game.Core
             config ??= SkillConfig.FromDefinition(data);
             if (!Strategies.TryGetValue(config.Attack.Type, out var create))
             {
-                throw new NotSupportedException($"{config.Attack.Type} 공격 전략이 등록되지 않았습니다. WeaponFactory에 등록하세요.");
+                throw new NotSupportedException($"{config.Attack.Type} 공격 전략이 등록되지 않았습니다. SkillFactory에 등록하세요.");
             }
             return new SkillCaster(data, caster, targetProvider, create(prefab, wall), config);
         }

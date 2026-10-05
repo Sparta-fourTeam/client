@@ -28,7 +28,7 @@ namespace Game.Core
         /// <summary>자식 스킬이 한 번의 시전에서 쏘는 수. 1보다 크면 자식의 발사 수(projectileCount)가 이 값이 되고,
         /// 발은 가장 가까운 적부터 서로 다른 적에게 나뉜다. 1이면 자식의 기본 발사 수를 쓴다</summary>
         public int count = 1;
-        /// <summary>onEvent/periodic: 지정한 형태(WeaponForm 이름, 예: "Default")일 때만 이 반응이 붙는다. 형태가 바뀌면 이 반응은 빠진다.
+        /// <summary>onEvent/periodic: 지정한 형태(SkillForm 이름, 예: "Default")일 때만 이 반응이 붙는다. 형태가 바뀌면 이 반응은 빠진다.
         /// 삼각 얼음창처럼 형태가 바뀌면 기존 분열 대신 다른 분열을 쓸 때 쓴다</summary>
         public string onlyForm;
         /// <summary>true면 자식이 방금 맞은 적을 노리지 않고 지나친다 (분열 조각처럼 맞은 적 주변의 다른 적을 노릴 때)</summary>
