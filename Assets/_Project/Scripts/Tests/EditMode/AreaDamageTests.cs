@@ -29,7 +29,8 @@ namespace Game.Tests
                 var pool = new UnityEngine.Pool.ObjectPool<HitscanEffect>(() => effect);
                 var hit = typeof(HitscanEffect).GetMethod("Hit", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
                 int count = 0;
-                pool.Get().Init(pool, Vector3.zero, 10, position => count++);
+                pool.Get().Init(pool, Vector3.zero, 10,
+                    reactions: new HitReactionBuilder().On(AttackEvent.Impact, new CastSkillReaction(_ => count++)).Build());
                 hit.Invoke(effect, null);
                 hit.Invoke(effect, null);
                 Assert.AreEqual(1, count);

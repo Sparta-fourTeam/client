@@ -42,19 +42,25 @@ namespace Game.Core
             var strike = strikes.Get();
             strike.SetVisualForm(stats.Cast.Form);
             strike.transform.localScale = stats.Cast.Form == WeaponForm.JudgementThunder ? scale * 1.5f : scale;
+            strike.Init(strikes, new Vector3(target.Position.x, target.Position.y, 0), stats.Cast.Damage,
+                reactions: CompileReactions(target).Then(reactions));
+        }
+
+        // 맞은 적마다 마비(Hit), 목표 지점에 한 번 폭발과 번개 구체(Impact), 처치마다 처치 번개(Kill)
+        private AttackReactions CompileReactions(IEnemyTarget target)
+        {
+            var builder = new HitReactionBuilder().Paralysis(stats.Status.ParalysisDuration, stats.Status.ParalysisChance);
             float radius = stats.Explosion.Radius;
             float explosionDamage = stats.Explosion.Damage;
-            Action<Vector2> onHit = radius > 0
-                ? position => SkillReactionEffects.Explode(targets, position, radius, explosionDamage)
-                : null;
-            onHit += LightningOrbSpawner.CreateCallback(stats, targets, orbs, target);
-            float duration = stats.Status.ParalysisDuration;
-            float chance = stats.Status.ParalysisChance;
-            Action<Enemy> onTargetHit = duration > 0
-                ? enemy => { if (StatusProc.Roll(chance)) { enemy.ApplyParalysis(duration); } }
-            : null;
-            strike.Init(strikes, new Vector3(target.Position.x, target.Position.y, 0), stats.Cast.Damage,
-                onHit, onTargetHit, CreateKillLightningCallback(), reactions: reactions);
+            if (radius > 0)
+            {
+                builder.On(AttackEvent.Impact, new CastSkillReaction(c => SkillReactionEffects.Explode(targets, c.Position, radius, explosionDamage)));
+            }
+            var orbs = LightningOrbSpawner.CreateCallback(stats, targets, this.orbs, target);
+            if (orbs != null) { builder.On(AttackEvent.Impact, new CastSkillReaction(c => orbs(c.Position))); }
+            var killLightning = CreateKillLightningCallback();
+            if (killLightning != null) { builder.On(AttackEvent.Kill, new CastSkillReaction(c => killLightning(c.Position))); }
+            return builder.Build();
         }
 
         public Action<Vector2> CreateKillLightningCallback()

@@ -4,7 +4,8 @@ using UnityEngine;
 
 namespace Game.Core
 {
-    public enum AttackEvent { Start, Hit, Kill, Expired, Tick, Bounce }
+    /// <summary>Impact는 범위형 공격이 목표 지점에 한 번 닿았을 때(적 수와 무관하게 1회)다. Hit는 적중한 적마다 발생한다.</summary>
+    public enum AttackEvent { Start, Hit, Kill, Expired, Tick, Bounce, Impact }
 
     public readonly struct AttackContext
     {
@@ -49,6 +50,16 @@ namespace Game.Core
         private readonly ReactionBinding[] bindings;
         public static readonly AttackReactions Empty = new AttackReactions(Array.Empty<ReactionBinding>());
         public AttackReactions(IEnumerable<ReactionBinding> bindings) => this.bindings = new List<ReactionBinding>(bindings).ToArray();
+
+        /// <summary>이 반응들 뒤에 other를 이어 붙인 새 반응 묶음 (두 묶음은 바뀌지 않는다)</summary>
+        public AttackReactions Then(AttackReactions other)
+        {
+            if (other == null || other.bindings.Length == 0) { return this; }
+            if (bindings.Length == 0) { return other; }
+            var combined = new List<ReactionBinding>(bindings);
+            combined.AddRange(other.bindings);
+            return new AttackReactions(combined);
+        }
 
         public void Raise(AttackEvent trigger, AttackContext context)
         {

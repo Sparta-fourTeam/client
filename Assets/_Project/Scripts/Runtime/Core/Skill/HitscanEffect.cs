@@ -21,9 +21,6 @@ namespace Game.Core
         public GameObject SecondaryProjectilePrefab => secondaryProjectilePrefab;
         [SerializeField] private LayerMask targetMask;
         private float damage;
-        private System.Action<Enemy> onTargetHit;
-        private System.Action<Vector2> onHit;
-        private System.Action<Vector2> onKilled;
         private IEnemyTarget directTarget;
         private AttackReactions reactions;
         [SerializeField] private float radius;
@@ -39,16 +36,13 @@ namespace Game.Core
 
 
 
-        public void Init(IObjectPool<HitscanEffect> pool, Vector3 position, float damage, System.Action<Vector2> onHit = null, System.Action<Enemy> onTargetHit = null, System.Action<Vector2> onKilled = null, IEnemyTarget directTarget = null, AttackReactions reactions = null)
+        public void Init(IObjectPool<HitscanEffect> pool, Vector3 position, float damage, IEnemyTarget directTarget = null, AttackReactions reactions = null)
         {
 
             this.pool = pool;
             transform.position = position;
             this.damage = damage;
-            this.onHit = onHit;
-            this.onKilled = onKilled;
             this.directTarget = directTarget;
-            this.onTargetHit = onTargetHit;
             this.reactions = reactions ?? AttackReactions.Empty;
             elapsed = 0f;
             hitDone = false;
@@ -97,7 +91,6 @@ namespace Game.Core
                 }
                 return;
             }
-            var killedPositions = new System.Collections.Generic.List<Vector2>();
             Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, radius, targetMask);
 
             var damaged = new System.Collections.Generic.HashSet<Enemy>();
@@ -107,15 +100,12 @@ namespace Game.Core
                 {
                     Vector2 position = enemy.transform.position;
                     enemy.TakeDamage((int)damage);
-                    if (enemy.IsDead) { killedPositions.Add(position); }
-                    onTargetHit?.Invoke(enemy);
                     var context = new AttackContext(position, Vector3.zero, enemy.Target);
                     reactions.Raise(AttackEvent.Hit, context);
                     if (enemy.IsDead) { reactions.Raise(AttackEvent.Kill, context); }
                 }
             }
-            foreach (var position in killedPositions) { onKilled?.Invoke(position); }
-            onHit?.Invoke(transform.position);
+            reactions.Raise(AttackEvent.Impact, new AttackContext(transform.position, Vector3.zero));
         }
 
         private void Release()

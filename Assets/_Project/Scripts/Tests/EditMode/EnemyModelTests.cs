@@ -156,9 +156,7 @@ namespace Game.Tests
                 hit.Invoke(secondary, null); hit.Invoke(secondary, null);
                 Assert.IsTrue(neighbour.IsDead); Assert.AreEqual(100, farther.Hp);
                 Assert.AreEqual(0, neighbour.ParalysisRemaining);
-                Assert.IsNull(typeof(HitscanEffect).GetField("onKilled", flags).GetValue(secondary));
-                Assert.IsNull(typeof(HitscanEffect).GetField("onHit", flags).GetValue(secondary));
-                Assert.IsNull(typeof(HitscanEffect).GetField("onTargetHit", flags).GetValue(secondary));
+                Assert.AreSame(AttackReactions.Empty, typeof(HitscanEffect).GetField("reactions", flags).GetValue(secondary));
             }
             finally
             {
@@ -180,12 +178,13 @@ namespace Game.Tests
                 var flags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance;
                 var hit = typeof(HitscanEffect).GetMethod("Hit", flags);
                 int kills = 0;
-                pool.Get().Init(pool, Vector3.zero, 10, onKilled: _ => kills++, directTarget: target);
+                pool.Get().Init(pool, Vector3.zero, 10, directTarget: target,
+                    reactions: new HitReactionBuilder().On(AttackEvent.Kill, new CastSkillReaction(_ => kills++)).Build());
                 hit.Invoke(effect, null);
                 Assert.AreEqual(1, _died.Published.Count); Assert.AreEqual(0, kills);
                 pool.Release(effect); pool.Get().Init(pool, Vector3.zero, 1);
                 Assert.IsNull(typeof(HitscanEffect).GetField("directTarget", flags).GetValue(effect));
-                Assert.IsNull(typeof(HitscanEffect).GetField("onKilled", flags).GetValue(effect));
+                Assert.AreSame(AttackReactions.Empty, typeof(HitscanEffect).GetField("reactions", flags).GetValue(effect));
             }
             finally { UnityEngine.Object.DestroyImmediate(go); }
         }
@@ -419,7 +418,8 @@ namespace Game.Tests
                 var hit = typeof(HitscanEffect).GetMethod("Hit", flags);
                 var pool = new UnityEngine.Pool.ObjectPool<HitscanEffect>(() => effect);
                 int procs = 0;
-                pool.Get().Init(pool, position, 1, onTargetHit: enemy => { procs++; enemy.ApplyParalysis(2.5f); });
+                pool.Get().Init(pool, position, 1, reactions: new HitReactionBuilder()
+                    .On(AttackEvent.Hit, new StatusReaction<IParalyzableTarget>(1, (t, _) => { procs++; t.ApplyParalysis(2.5f); })).Build());
                 Physics2D.SyncTransforms();
                 hit.Invoke(effect, null); hit.Invoke(effect, null);
                 Assert.AreEqual(99, model.Hp);
