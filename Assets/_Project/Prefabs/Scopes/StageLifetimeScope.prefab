@@ -47,4 +47,6 @@ MonoBehaviour:
   parentReference:
     TypeName: Game.Boot.RootLifetimeScope
   autoRun: 1
-  autoInjectGameObjects: []
+  autoInjectGameObjects:
+  - {fileID: 0}
+  - {fileID: 0}
