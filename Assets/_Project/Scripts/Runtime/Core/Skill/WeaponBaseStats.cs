@@ -11,6 +11,7 @@ namespace Game.Core
         public ExplosionBase explosion = new ExplosionBase();
         public FieldBase field = new FieldBase();
         public AreaBase area = new AreaBase();
+        public BeamBase beam = new BeamBase();
 
         public class CastBase
         {
@@ -65,6 +66,16 @@ namespace Game.Core
             public float moveSpeed;
             /// <summary>펄스마다 범위 안의 적을 중심으로 끌어당기는 거리 (0이면 끌어당기지 않는다)</summary>
             public float pull;
+        }
+
+        public class BeamBase
+        {
+            /// <summary>광선 길이</summary>
+            public float length;
+            public float width;
+            public float duration;
+            /// <summary>지속 시간 동안의 공격 횟수(펄스 수). 간격은 지속 시간 / 공격 횟수다</summary>
+            public float pulses = 1;
         }
 
         public class FieldBase

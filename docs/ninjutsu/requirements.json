@@ -3015,7 +3015,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 16,
+        "cardId": "sun_beam_overload",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "hold",
       "readyForProduction": false
@@ -3046,7 +3051,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 16,
+        "cardId": "sun_beam_amplify",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -3076,7 +3086,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 16,
+        "cardId": "sun_beam_stable",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "hold",
       "readyForProduction": false
@@ -3104,7 +3119,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 16,
+        "cardId": "sun_beam_split",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -3132,7 +3152,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 16,
+        "cardId": "sun_beam_dazzle",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -3161,7 +3186,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 16,
+        "cardId": "sun_beam_weaken",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -3197,7 +3227,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 16,
+        "cardId": "sun_beam_judgement",
+        "enabled": false,
+        "state": "disabled",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "hold",
       "readyForProduction": false
@@ -3232,7 +3267,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 16,
+        "cardId": "sun_beam_spread",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -3277,7 +3317,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 16,
+        "cardId": "sun_beam_fire",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -3317,7 +3362,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 16,
+        "cardId": "sun_beam_positron",
+        "enabled": false,
+        "state": "disabled",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "hold",
       "readyForProduction": false
@@ -3369,7 +3419,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 16,
+        "cardId": "sun_beam_barrage",
+        "enabled": false,
+        "state": "disabled",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "hold",
       "readyForProduction": false
@@ -3409,7 +3464,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 16,
+        "cardId": "sun_beam_neutral_1",
+        "enabled": false,
+        "state": "disabled",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -3441,7 +3501,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 16,
+        "cardId": "sun_beam_freeze",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -3481,7 +3546,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 16,
+        "cardId": "sun_beam_neutral_3",
+        "enabled": false,
+        "state": "disabled",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false

@@ -15,6 +15,7 @@ namespace Game.Core
         KillLightningRatio, LightningStrikeRatio,
         FieldDuration, FieldDamageRatio, FieldFlatDamage, FieldDamageMultiplier, FieldRadius, FieldSlowRatio,
         AreaRadius, AreaDuration, AreaPulseInterval, AreaMoveSpeed, AreaPull,
+        BeamLength, BeamWidth, BeamDuration, BeamPulses,
         Count
     }
 
@@ -84,6 +85,10 @@ namespace Game.Core
             Def(Stat.AreaPulseInterval, d => d.area.pulseInterval);
             Def(Stat.AreaMoveSpeed, d => d.area.moveSpeed);
             Def(Stat.AreaPull, d => d.area.pull);
+            Def(Stat.BeamLength, d => d.beam.length);
+            Def(Stat.BeamWidth, d => d.beam.width);
+            Def(Stat.BeamDuration, d => d.beam.duration);
+            Def(Stat.BeamPulses, d => d.beam.pulses);
             for (int i = 0; i < t.Length; i++)
             {
                 if (t[i] == null) { throw new InvalidOperationException($"스탯 {(Stat)i}의 기본값 선언이 없습니다."); }
@@ -104,6 +109,7 @@ namespace Game.Core
         public LightningStats Lightning { get; }
         public FieldStats Field { get; }
         public AreaStats Area { get; }
+        public BeamStats Beam { get; }
 
         public static WeaponStats FromDefinition(WeaponBaseStats data) => new WeaponStats(new WeaponStatsBuilder(data));
 
@@ -119,6 +125,7 @@ namespace Game.Core
             Lightning = new LightningStats(values);
             Field = new FieldStats(values);
             Area = new AreaStats(values);
+            Beam = new BeamStats(values);
         }
 
         internal float[] CopyValues() => (float[])values.Clone();
@@ -228,6 +235,18 @@ namespace Game.Core
         public float PulseInterval => v[(int)Stat.AreaPulseInterval];
         public float MoveSpeed => v[(int)Stat.AreaMoveSpeed];
         public float Pull => v[(int)Stat.AreaPull];
+    }
+
+    public readonly struct BeamStats
+    {
+        private readonly float[] v;
+        internal BeamStats(float[] values) => v = values;
+
+        public float Length => v[(int)Stat.BeamLength];
+        public float Width => v[(int)Stat.BeamWidth];
+        public float Duration => v[(int)Stat.BeamDuration];
+        /// <summary>지속 시간 동안의 공격 횟수</summary>
+        public float Pulses => v[(int)Stat.BeamPulses];
     }
 
     // Only upgrade preparation can mutate values; committed snapshots are read-only.

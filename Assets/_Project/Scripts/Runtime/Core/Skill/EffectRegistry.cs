@@ -18,8 +18,9 @@ namespace Game.Core
             Projectile = 1,
             Hitscan = 2,
             Area = 4,
+            Beam = 8,
             Both = Projectile | Hitscan,
-            All = Projectile | Hitscan | Area
+            All = Projectile | Hitscan | Area | Beam
         }
 
         internal sealed class Kind
@@ -60,7 +61,7 @@ namespace Game.Core
         public static bool Supports(CastType castType, string key)
         {
             if (key == null || !Kinds.TryGetValue(key, out var kind)) { return false; }
-            var user = castType switch { CastType.Hitscan => Users.Hitscan, CastType.Area => Users.Area, _ => Users.Projectile };
+            var user = castType switch { CastType.Hitscan => Users.Hitscan, CastType.Area => Users.Area, CastType.Beam => Users.Beam, _ => Users.Projectile };
             return (kind.Users & user) != 0;
         }
 
@@ -82,7 +83,7 @@ namespace Game.Core
             const UpgradeEffectCategory Plain = UpgradeEffectCategory.Stat, Cast = UpgradeEffectCategory.Cast,
                 Reaction = UpgradeEffectCategory.Reaction, Transform = UpgradeEffectCategory.Transform;
             const Users Both = Users.Both, All = Users.All, Projectile = Users.Projectile, Hitscan = Users.Hitscan,
-                Area = Users.Area, ProjectileArea = Users.Projectile | Users.Area;
+                Area = Users.Area, Beam = Users.Beam, ProjectileArea = Users.Projectile | Users.Area | Users.Beam;
 
             // 시전: 두 공격 모두 쿨타임, 피해, 시전 수, 형태를 쓴다.
             Add("attackSpeed", Plain, All, (s, v) => s[Stat.Cooldown] = Math.Max(.1f, s[Stat.Cooldown] * (1 - v * .01f)));
@@ -111,6 +112,7 @@ namespace Game.Core
             Add("frostbite", Reaction, ProjectileArea, (s, v) => s[Stat.FrostbiteRatio] = v * .01f, Positive);
             Add("paralysis", Reaction, All, (s, v) => s[Stat.ParalysisDuration] = Math.Max(s[Stat.ParalysisDuration], v), Positive);
             Add("paralysisDuration", Plain, All, (s, v) => s[Stat.ParalysisDuration] += v, Positive);
+            Add("stunChance", Plain, ProjectileArea, (s, v) => s[Stat.StunChance] = v * .01f, v => v > 0 && v <= 100);
             Add("stunDuration", Reaction, ProjectileArea, (s, v) => s[Stat.StunDuration] = Math.Max(s[Stat.StunDuration], v), Positive);
             Add("slowDuration", Reaction, ProjectileArea, (s, v) => s[Stat.SlowDuration] += v, Positive);
             Add("vulnerabilityRatio", Reaction, ProjectileArea, (s, v) => s[Stat.VulnerabilityRatio] = Math.Max(s[Stat.VulnerabilityRatio], v * .01f), Positive);
@@ -136,6 +138,13 @@ namespace Game.Core
             Add("areaDuration", Plain, Area, (s, v) => s[Stat.AreaDuration] *= Factor(v), Positive);
             Add("areaMoveSpeed", Plain, Area, (s, v) => s[Stat.AreaMoveSpeed] *= Factor(v), Positive);
             Add("areaPull", Plain, Area, (s, v) => s[Stat.AreaPull] *= Factor(v), Positive);
+
+            // 광선: 지속 시간 동안 닿는 모든 적을 공격하는 공격만 쓴다. 공격 횟수는 지속 시간 안의 펄스 수다.
+            Add("beamLength", Plain, Beam, (s, v) => s[Stat.BeamLength] *= Factor(v), Positive);
+            Add("beamWidth", Plain, Beam, (s, v) => s[Stat.BeamWidth] *= Factor(v), Positive);
+            Add("beamDuration", Plain, Beam, (s, v) => s[Stat.BeamDuration] *= Factor(v), Positive);
+            Add("beamPulses", Plain, Beam, (s, v) => s[Stat.BeamPulses] = Math.Max(1, s[Stat.BeamPulses] * Factor(v)), Positive);
+            Add("beamPulsesFlat", Plain, Beam, (s, v) => s[Stat.BeamPulses] += v, PositiveInteger);
 
             // 자식 스킬 시전: 지정한 시점(onEvent) 또는 주기(periodic)에 다른 스킬을 그 위치에서 시전한다.
             k.Add("onEvent", new Kind(Reaction, All, null, null, ChildCastUpgradeEffect.FromEvent));

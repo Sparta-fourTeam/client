@@ -1949,5 +1949,254 @@
     },
     "upgrades": [],
     "projectilePath": 2
+  },
+  {
+    "id": 16,
+    "name": "태양 광선",
+    "iconKey": "weapon_sun_beam",
+    "castType": 3,
+    "maxLevel": 13,
+    "progressionId": null,
+    "prototypeBalanceSourceId": 3,
+    "baseStats": {
+      "cast": {
+        "cooldown": 6,
+        "baseDamage": 5,
+        "range": 16,
+        "projectileCount": 1,
+        "castCount": 1,
+        "castInterval": 0.1
+      },
+      "status": {
+        "slowRatio": 0.8
+      },
+      "beam": {
+        "length": 16,
+        "width": 0.8,
+        "duration": 2,
+        "pulses": 4
+      }
+    },
+    "upgrades": [
+      {
+        "id": "sun_beam_overload",
+        "name": "광선 과부하",
+        "desc": "공격 횟수 +100% / 쿨타임 +50%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "beamPulses",
+            "value": 100
+          },
+          {
+            "kind": "attackSpeed",
+            "value": -50
+          }
+        ]
+      },
+      {
+        "id": "sun_beam_amplify",
+        "name": "태양광 증폭",
+        "desc": "공격력 +60%",
+        "maxPickCount": 3,
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 60
+          }
+        ]
+      },
+      {
+        "id": "sun_beam_stable",
+        "name": "안정된 광선",
+        "desc": "공격 횟수 +5",
+        "maxPickCount": 2,
+        "effects": [
+          {
+            "kind": "beamPulsesFlat",
+            "value": 5
+          }
+        ]
+      },
+      {
+        "id": "sun_beam_split",
+        "name": "분열 광선",
+        "desc": "받는 피해 +25% / 5초(중첩 불가)",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "vulnerabilityRatio",
+            "value": 25
+          },
+          {
+            "kind": "vulnerabilityDuration",
+            "value": 5
+          }
+        ]
+      },
+      {
+        "id": "sun_beam_dazzle",
+        "name": "화려한 광선",
+        "desc": "5% 확률 기절 1초",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "stunChance",
+            "value": 5
+          },
+          {
+            "kind": "stunDuration",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "id": "sun_beam_weaken",
+        "name": "쇠약 광선",
+        "desc": "피격 시 이동 속도 -80% 1초",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "slowDuration",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "id": "sun_beam_judgement",
+        "name": "필살기 · 태양의 심판",
+        "desc": "1회용 / 태양 광선 영구 레벨 비례 공격력",
+        "maxPickCount": 1,
+        "effects": [],
+        "enabled": false,
+        "disabledReason": "필살기의 공격력 계수, 1회용 초기화 범위, 영구 레벨 연결 규칙이 원문에 없다"
+      },
+      {
+        "id": "sun_beam_spread",
+        "name": "태양광 확산",
+        "desc": "범위 +150%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "beamWidth",
+            "value": 150
+          }
+        ],
+        "requiredCardIds": [
+          "sun_beam_amplify"
+        ]
+      },
+      {
+        "id": "sun_beam_fire",
+        "name": "광선 발사",
+        "desc": "시전 시 보조 광선 시전",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "onEvent",
+            "trigger": "Start",
+            "skillId": 17,
+            "inherit": {
+              "damage": 0.5
+            }
+          }
+        ],
+        "requiredCardIds": [
+          "sun_beam_overload",
+          "sun_beam_amplify"
+        ]
+      },
+      {
+        "id": "sun_beam_positron",
+        "name": "양전자포",
+        "desc": "태양 광선을 양전자포로 변환",
+        "maxPickCount": 1,
+        "effects": [],
+        "enabled": false,
+        "disabledReason": "변환 후 피해·범위·지속 상세가 원문에 없다",
+        "requiredCardIds": [
+          "sun_beam_overload",
+          "sun_beam_spread"
+        ]
+      },
+      {
+        "id": "sun_beam_barrage",
+        "name": "광선 난사",
+        "desc": "전장에 태양 광선 여러 개 난사(개당 공격력 -50%)",
+        "maxPickCount": 1,
+        "effects": [],
+        "enabled": false,
+        "disabledReason": "광선 개수와 배치가 원문에 없다",
+        "requiredCardIds": [
+          "sun_beam_overload",
+          "sun_beam_spread",
+          "sun_beam_weaken"
+        ],
+        "minPermanentLevel": 17
+      },
+      {
+        "id": "sun_beam_neutral_1",
+        "name": "무속성 증폭 · Ⅰ",
+        "desc": "화살과 태양 광선 공격력 +50%",
+        "maxPickCount": 1,
+        "effects": [],
+        "enabled": false,
+        "disabledReason": "두 스킬의 습득 수가 함께 늘고 증폭 횟수를 공유하는 공유 카드가 연결되지 않았다",
+        "requiredWeaponIds": [
+          1
+        ]
+      },
+      {
+        "id": "sun_beam_freeze",
+        "name": "빙결 광선",
+        "desc": "빙결 0.5초 추가",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "freezeDuration",
+            "value": 0.5
+          }
+        ],
+        "requiredWeaponIds": [
+          4
+        ]
+      },
+      {
+        "id": "sun_beam_neutral_3",
+        "name": "무속성 증폭 · Ⅲ",
+        "desc": "태양 광선과 달빛 광선 공격력 +60%",
+        "maxPickCount": 1,
+        "effects": [],
+        "enabled": false,
+        "disabledReason": "달빛 광선이 구현되지 않았고 공유 카드가 연결되지 않았다"
+      }
+    ]
+  },
+  {
+    "id": 17,
+    "name": "보조 태양 광선",
+    "iconKey": "weapon_sun_beam",
+    "castType": 3,
+    "maxLevel": 1,
+    "progressionId": null,
+    "prototypeBalanceSourceId": 3,
+    "childOnly": true,
+    "baseStats": {
+      "cast": {
+        "cooldown": 1,
+        "baseDamage": 1,
+        "range": 16,
+        "projectileCount": 1,
+        "castCount": 1,
+        "castInterval": 0.1
+      },
+      "beam": {
+        "length": 16,
+        "width": 0.5,
+        "duration": 1,
+        "pulses": 2
+      }
+    },
+    "upgrades": []
   }
 ]
