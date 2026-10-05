@@ -54,34 +54,17 @@ namespace Game.Core
             reactions.Raise(AttackEvent.Hit, new AttackContext(candidate.Position, direction, candidate, randomValue));
         }
 
-        private static AttackReactions Compile(ProjectileSpawnSettings s)
-        {
-            var bindings = new System.Collections.Generic.List<ReactionBinding>();
-            void Add(IAttackReaction reaction) => bindings.Add(new ReactionBinding(AttackEvent.Hit, reaction));
-            Add(new DamageReaction(s.Damage));
-            float freeze = s.FreezeDuration;
-            if (freeze > 0) { Add(new StatusReaction<IFreezableTarget>(s.FreezeChance, (t, _) => t.ApplyFreeze(freeze))); }
-            float knockback = s.KnockbackDistance;
-            if (knockback > 0) { Add(new StatusReaction<IKnockbackTarget>(1, (t, c) => t.ApplyKnockback(c.Direction, knockback))); }
-            float frostbite = s.Damage * s.FrostbiteRatio;
-            if (s.FrostbiteRatio > 0) { Add(new StatusReaction<IFrostbiteTarget>(s.FrostbiteChance, (t, _) => t.ApplyFrostbite(frostbite))); }
-            float paralysis = s.ParalysisDuration;
-            if (paralysis > 0) { Add(new StatusReaction<IParalyzableTarget>(s.ParalysisChance, (t, _) => t.ApplyParalysis(paralysis))); }
-            if (s.LightningDamage > 0)
-            {
-                Add(new DamageReaction(s.LightningDamage, minimumOne: true));
-                Add(new CastSkillReaction(c => SkillReactionEffects.Lightning(c.Position)));
-            }
-            float burn = s.BurnDamage, burnTime = s.BurnDuration, maxHp = s.BurnMaxHpRatio;
-            var onDeath = s.BurnOnDeath;
-            if (burn > 0 && burnTime > 0) { Add(new StatusReaction<IBurnableTarget>(s.BurnChance, (t, _) => t.ApplyBurn(burn, burnTime, maxHp, onDeath))); }
-            float stun = s.StunDuration;
-            if (stun > 0) { Add(new StatusReaction<IStunnableTarget>(s.StunChance, (t, _) => t.ApplyStun(stun))); }
-            float slowTime = s.SlowDuration, slow = s.SlowRatio;
-            if (slowTime > 0 && slow > 0) { Add(new StatusReaction<ISlowableTarget>(1, (t, _) => t.ApplySlow(slow, slowTime))); }
-            float vulnerable = s.VulnerabilityRatio, vulnerableTime = s.VulnerabilityDuration;
-            if (vulnerable > 0 && vulnerableTime > 0) { Add(new StatusReaction<IVulnerableTarget>(1, (t, _) => t.ApplyVulnerability(vulnerable, vulnerableTime))); }
-            return new AttackReactions(bindings);
-        }
+        private static AttackReactions Compile(ProjectileSpawnSettings s) => new HitReactionBuilder()
+            .Damage(s.Damage)
+            .Freeze(s.FreezeDuration, s.FreezeChance)
+            .Knockback(s.KnockbackDistance)
+            .Frostbite(s.Damage * s.FrostbiteRatio, s.FrostbiteChance)
+            .Paralysis(s.ParalysisDuration, s.ParalysisChance)
+            .LightningStrike(s.LightningDamage)
+            .Burn(s.BurnDamage, s.BurnDuration, s.BurnMaxHpRatio, s.BurnChance, s.BurnOnDeath)
+            .Stun(s.StunDuration, s.StunChance)
+            .Slow(s.SlowRatio, s.SlowDuration)
+            .Vulnerability(s.VulnerabilityRatio, s.VulnerabilityDuration)
+            .Build();
     }
 }
