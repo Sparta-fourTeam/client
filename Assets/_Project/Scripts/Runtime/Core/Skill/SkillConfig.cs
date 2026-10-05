@@ -32,7 +32,7 @@ namespace Game.Core
         }
 
         public static SkillConfig FromDefinition(WeaponData data) => new SkillConfig(
-            WeaponStats.FromDefinition(data.baseStats), new AttackDefinition(data.castType, data.projectilePath, data.baseStats.range),
+            WeaponStats.FromDefinition(data.baseStats), new AttackDefinition(data.castType, data.projectilePath, data.baseStats.cast.range),
             Array.Empty<ReactionBinding>());
     }
 

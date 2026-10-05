@@ -146,7 +146,7 @@ namespace Game.Tests
             var flags = BindingFlags.NonPublic | BindingFlags.Instance;
             try
             {
-                var data = new WeaponData { baseStats = new WeaponBaseStats { baseDamage = 100, speed = 10, freezeDuration = 2, pierceCount = 2, knockbackDistance = .6f }, maxLevel = 15 };
+                var data = new WeaponData { baseStats = new WeaponBaseStats { cast = { baseDamage = 100 }, projectile = { speed = 10, pierceCount = 2, knockbackDistance = .6f }, status = { freezeDuration = 2 } }, maxLevel = 15 };
                 var weapon = new ProjectileCaster(data, prefab, caster.transform, new Provider());
                 WeaponStats stats = WeaponStatsTestFactory.Apply(WeaponStats.FromDefinition(data.baseStats), UpgradeType.Form, (int)WeaponForm.TriangleIce);
                 stats = WeaponStatsTestFactory.Apply(WeaponStatsTestFactory.Apply(stats, UpgradeType.Frostbite, 10), UpgradeType.SplitFrostbite, 10);
@@ -230,7 +230,7 @@ namespace Game.Tests
             var caster = new GameObject("ShardCasterTest");
             try
             {
-                var data = new WeaponData { baseStats = new WeaponBaseStats { baseDamage = 100, speed = 10 }, maxLevel = 15 };
+                var data = new WeaponData { baseStats = new WeaponBaseStats { cast = { baseDamage = 100 }, projectile = { speed = 10 } }, maxLevel = 15 };
                 var weapon = new ProjectileCaster(data, prefab, caster.transform, new Provider());
                 WeaponStats stats = WeaponStatsTestFactory.Apply(WeaponStatsTestFactory.Apply(WeaponStats.FromDefinition(data.baseStats), UpgradeType.SplitCount, expectedCount), UpgradeType.SplitDamage, 80);
                 typeof(WeaponBase).GetField("stats", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(weapon, stats);
@@ -350,7 +350,7 @@ namespace Game.Tests
             try
             {
                 var provider = new Provider();
-                var data = new WeaponData { baseStats = new WeaponBaseStats { baseDamage = 100, explosionDamageRatio = 1, explosionRadius = 0.8f }, maxLevel = 15 };
+                var data = new WeaponData { baseStats = new WeaponBaseStats { cast = { baseDamage = 100 }, explosion = { damageRatio = 1, radius = 0.8f } }, maxLevel = 15 };
                 var weapon = new ProjectileCaster(data, prefab, prefab.transform, provider);
                 WeaponStats stats = WeaponStatsTestFactory.Apply(WeaponStats.FromDefinition(data.baseStats), UpgradeType.SplitCount, 2);
                 if (enabled)
@@ -428,7 +428,7 @@ namespace Game.Tests
             try
             {
                 var provider = new Provider { Second = new Target { Position = Vector2.right * 0.5f } };
-                var data = new WeaponData { baseStats = new WeaponBaseStats { baseDamage = 10, explosionDamageRatio = 1, explosionRadius = 0.8f, range = 10, burnChance = 1 }, maxLevel = 14 };
+                var data = new WeaponData { baseStats = new WeaponBaseStats { cast = { baseDamage = 10, range = 10 }, status = { burnChance = 1 }, explosion = { damageRatio = 1, radius = 0.8f } }, maxLevel = 14 };
                 var weapon = new ProjectileCaster(data, prefab, prefab.transform, provider);
                 WeaponStats stats = WeaponStatsTestFactory.Apply(WeaponStatsTestFactory.Apply(WeaponStats.FromDefinition(data.baseStats), UpgradeType.BurnDuration, 6), UpgradeType.BurnRatio, 10);
                 typeof(WeaponBase).GetField("stats", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(weapon, stats);
@@ -466,10 +466,10 @@ namespace Game.Tests
         {
             foreach (var weapon in new DefaultWeaponDataProvider().LoadAll())
             {
-                Assert.AreEqual(1, weapon.baseStats.freezeChance);
-                Assert.AreEqual(1, weapon.baseStats.frostbiteChance);
-                Assert.AreEqual(1, weapon.baseStats.burnChance);
-                Assert.AreEqual(1, weapon.baseStats.paralysisChance);
+                Assert.AreEqual(1, weapon.baseStats.status.freezeChance);
+                Assert.AreEqual(1, weapon.baseStats.status.frostbiteChance);
+                Assert.AreEqual(1, weapon.baseStats.status.burnChance);
+                Assert.AreEqual(1, weapon.baseStats.status.paralysisChance);
             }
         }
 

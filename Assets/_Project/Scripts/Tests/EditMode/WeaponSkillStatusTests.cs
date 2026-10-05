@@ -35,7 +35,7 @@ namespace Game.Tests
                 name = "테스트",
                 iconKey = "weapon_test",
                 castType = CastType.Projectile,
-                baseStats = new WeaponBaseStats { cooldown = cooldown, baseDamage = 10f, range = 10f, speed = 10f, hitCount = 1 },
+                baseStats = new WeaponBaseStats { cast = { cooldown = cooldown, baseDamage = 10f, range = 10f, projectileCount = 1 }, projectile = { speed = 10f } },
                 maxLevel = 5,
                 upgrades = new List<WeaponUpgradeOption>()
             };

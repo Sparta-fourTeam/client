@@ -198,12 +198,12 @@ namespace Game.Tests
             {
                 var data = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == 3);
                 var provider = new LightningProvider();
-                provider.Targets.Add(CreateEnemy(position: Vector2.right * (data.baseStats.range + 1)));
+                provider.Targets.Add(CreateEnemy(position: Vector2.right * (data.baseStats.cast.range + 1)));
                 var weapon = new HitscanCaster(data, go, go.transform, provider);
                 weapon.LevelUp(data.upgrades.Find(c => c.id == "lightning_sanction"));
                 var pool = (UnityEngine.Pool.ObjectPool<HitscanEffect>)typeof(HitscanCaster)
                     .GetField("pool", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(weapon);
-                var callback = new HitscanCastEffects(weapon.Stats, data.baseStats.range, provider, pool, null, null, Vector3.one)
+                var callback = new HitscanCastEffects(weapon.Stats, data.baseStats.cast.range, provider, pool, null, null, Vector3.one)
                     .CreateKillLightningCallback();
                 callback(Vector2.zero);
                 foreach (var effect in UnityEngine.Object.FindObjectsByType<HitscanEffect>(FindObjectsSortMode.None))

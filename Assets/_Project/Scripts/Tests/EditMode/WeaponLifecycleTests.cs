@@ -22,7 +22,7 @@ namespace Game.Tests
             GameObject active = null, inactive = null;
             try
             {
-                var data = new WeaponData { baseStats = new WeaponBaseStats { cooldown = 1, baseDamage = 10, hitCount = 1 }, maxLevel = 10 };
+                var data = new WeaponData { baseStats = new WeaponBaseStats { cast = { cooldown = 1, baseDamage = 10, projectileCount = 1 } }, maxLevel = 10 };
                 if (hitscan)
                 {
                     prefab.AddComponent<HitscanEffect>();

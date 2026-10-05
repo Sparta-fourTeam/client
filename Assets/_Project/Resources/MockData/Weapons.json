@@ -7,20 +7,28 @@
     "maxLevel": 15,
     "progressionId": "shuriken",
     "baseStats": {
-      "cooldown": 1,
-      "baseDamage": 10,
-      "range": 22,
-      "speed": 20,
-      "hitCount": 1,
-      "castCount": 1,
-      "pierceCount": 0,
-      "castInterval": 0.1,
-      "explosionDamageRatio": 1,
-      "knockbackDistance": 0.2,
-      "paralysisChance": 1,
-      "freezeChance": 1,
-      "frostbiteChance": 1,
-      "burnChance": 1
+      "cast": {
+        "cooldown": 1,
+        "baseDamage": 10,
+        "range": 22,
+        "projectileCount": 1,
+        "castCount": 1,
+        "castInterval": 0.1
+      },
+      "projectile": {
+        "speed": 20,
+        "pierceCount": 0,
+        "knockbackDistance": 0.2
+      },
+      "status": {
+        "paralysisChance": 1,
+        "freezeChance": 1,
+        "frostbiteChance": 1,
+        "burnChance": 1
+      },
+      "explosion": {
+        "damageRatio": 1
+      }
     },
     "upgrades": [
       {
@@ -406,19 +414,27 @@
     "maxLevel": 14,
     "progressionId": "fireball",
     "baseStats": {
-      "cooldown": 1.8,
-      "baseDamage": 12,
-      "range": 20,
-      "speed": 16,
-      "hitCount": 1,
-      "castCount": 1,
-      "castInterval": 0.1,
-      "explosionRadius": 0.8,
-      "explosionDamageRatio": 1,
-      "freezeChance": 1,
-      "frostbiteChance": 1,
-      "burnChance": 1,
-      "paralysisChance": 1
+      "cast": {
+        "cooldown": 1.8,
+        "baseDamage": 12,
+        "range": 20,
+        "projectileCount": 1,
+        "castCount": 1,
+        "castInterval": 0.1
+      },
+      "projectile": {
+        "speed": 16
+      },
+      "status": {
+        "freezeChance": 1,
+        "frostbiteChance": 1,
+        "burnChance": 1,
+        "paralysisChance": 1
+      },
+      "explosion": {
+        "radius": 0.8,
+        "damageRatio": 1
+      }
     },
     "upgrades": [
       {
@@ -645,22 +661,32 @@
     "maxLevel": 14,
     "progressionId": "lightning",
     "baseStats": {
-      "cooldown": 2.5,
-      "baseDamage": 25,
-      "range": 20,
-      "speed": 14,
-      "hitCount": 1,
-      "castCount": 1,
-      "castInterval": 0.1,
-      "explosionDamageRatio": 1,
-      "freezeChance": 1,
-      "frostbiteChance": 1,
-      "burnChance": 1,
-      "paralysisChance": 1,
-      "paralysisDuration": 1,
-      "fieldDamageRatio": 0.1,
-      "fieldRadius": 0.8,
-      "fieldSlowRatio": 0.3
+      "cast": {
+        "cooldown": 2.5,
+        "baseDamage": 25,
+        "range": 20,
+        "projectileCount": 1,
+        "castCount": 1,
+        "castInterval": 0.1
+      },
+      "projectile": {
+        "speed": 14
+      },
+      "status": {
+        "freezeChance": 1,
+        "frostbiteChance": 1,
+        "burnChance": 1,
+        "paralysisChance": 1,
+        "paralysisDuration": 1
+      },
+      "explosion": {
+        "damageRatio": 1
+      },
+      "field": {
+        "damageRatio": 0.1,
+        "radius": 0.8,
+        "slowRatio": 0.3
+      }
     },
     "upgrades": [
       {
@@ -907,19 +933,25 @@
     "progressionId": null,
     "prototypeBalanceSourceId": 1,
     "baseStats": {
-      "cooldown": 1,
-      "baseDamage": 10,
-      "range": 22,
-      "speed": 20,
-      "hitCount": 1,
-      "castCount": 1,
-      "pierceCount": 0,
-      "castInterval": 0.1,
-      "knockbackDistance": 0.2,
-      "freezeChance": 1,
-      "frostbiteChance": 1,
-      "burnChance": 1,
-      "paralysisChance": 1
+      "cast": {
+        "cooldown": 1,
+        "baseDamage": 10,
+        "range": 22,
+        "projectileCount": 1,
+        "castCount": 1,
+        "castInterval": 0.1
+      },
+      "projectile": {
+        "speed": 20,
+        "pierceCount": 0,
+        "knockbackDistance": 0.2
+      },
+      "status": {
+        "freezeChance": 1,
+        "frostbiteChance": 1,
+        "burnChance": 1,
+        "paralysisChance": 1
+      }
     },
     "upgrades": [
       {
@@ -1159,26 +1191,36 @@
     "progressionId": null,
     "prototypeBalanceSourceId": 1,
     "baseStats": {
-      "cooldown": 1,
-      "baseDamage": 10,
-      "range": 22,
-      "speed": 4,
-      "hitCount": 1,
-      "castCount": 1,
-      "pierceCount": 0,
-      "castInterval": 0.1,
-      "explosionDamageRatio": 1,
-      "knockbackDistance": 0.2,
-      "paralysisChance": 1,
-      "freezeChance": 1,
-      "frostbiteChance": 1,
-      "burnChance": 1,
-      "stunChance": 0.1,
-      "slowRatio": 0.3,
-      "slowDuration": 2,
-      "reserveDistance": 1,
-      "reserveCooldown": 10,
-      "reserveInterval": 0.1
+      "cast": {
+        "cooldown": 1,
+        "baseDamage": 10,
+        "range": 22,
+        "projectileCount": 1,
+        "castCount": 1,
+        "castInterval": 0.1
+      },
+      "projectile": {
+        "speed": 4,
+        "pierceCount": 0,
+        "knockbackDistance": 0.2
+      },
+      "reserve": {
+        "distance": 1,
+        "cooldown": 10,
+        "interval": 0.1
+      },
+      "status": {
+        "paralysisChance": 1,
+        "freezeChance": 1,
+        "frostbiteChance": 1,
+        "burnChance": 1,
+        "stunChance": 0.1,
+        "slowRatio": 0.3,
+        "slowDuration": 2
+      },
+      "explosion": {
+        "damageRatio": 1
+      }
     },
     "upgrades": [
       {

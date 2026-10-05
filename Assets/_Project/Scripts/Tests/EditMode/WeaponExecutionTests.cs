@@ -62,7 +62,7 @@ namespace Game.Tests
         private static TestWeapon NewWeapon() => new TestWeapon(new WeaponData
         {
             maxLevel = 15,
-            baseStats = new WeaponBaseStats { baseDamage = 10, speed = 20, hitCount = 1 }
+            baseStats = new WeaponBaseStats { cast = { baseDamage = 10, projectileCount = 1 }, projectile = { speed = 20 } }
         });
 
         private static TestWeapon SharedWeapon(int id, UpgradeType type = UpgradeType.Damage)
@@ -82,7 +82,7 @@ namespace Game.Tests
             {
                 id = id,
                 maxLevel = 15,
-                baseStats = new WeaponBaseStats { baseDamage = 10, cooldown = 2, hitCount = 1 },
+                baseStats = new WeaponBaseStats { cast = { baseDamage = 10, cooldown = 2, projectileCount = 1 } },
                 upgrades = new System.Collections.Generic.List<WeaponUpgradeOption> { option }
             });
         }
@@ -218,10 +218,8 @@ namespace Game.Tests
 
         private static WeaponStats Stats() => WeaponStats.FromDefinition(new WeaponBaseStats
         {
-            cooldown = 2f,
-            baseDamage = 10f,
-            hitCount = 1,
-            speed = 20f
+            cast = { cooldown = 2f, baseDamage = 10f, projectileCount = 1 },
+            projectile = { speed = 20f }
         });
 
         [Test]

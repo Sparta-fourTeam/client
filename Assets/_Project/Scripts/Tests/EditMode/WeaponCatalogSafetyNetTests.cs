@@ -30,22 +30,11 @@ namespace Game.Tests
 
         private static WeaponStats Baseline() => WeaponStats.FromDefinition(new WeaponBaseStats
         {
-            baseDamage = 100,
-            cooldown = 2,
-            speed = 10,
-            hitCount = 2,
-            castCount = 1,
-            pierceCount = 1,
-            freezeDuration = 1,
-            paralysisDuration = 1,
-            stunDuration = 1,
-            slowDuration = 1,
-            knockbackDistance = 1,
-            explosionRadius = 2,
-            explosionDamageRatio = .5f,
-            fieldDamageRatio = .5f,
-            fieldRadius = 2,
-            fieldSlowRatio = .3f
+            cast = { baseDamage = 100, cooldown = 2, projectileCount = 2, castCount = 1 },
+            projectile = { speed = 10, pierceCount = 1, knockbackDistance = 1 },
+            status = { freezeDuration = 1, paralysisDuration = 1, stunDuration = 1, slowDuration = 1 },
+            explosion = { radius = 2, damageRatio = .5f },
+            field = { damageRatio = .5f, radius = 2, slowRatio = .3f }
         });
 
         // 기준값과 겹치지 않으면서 규칙이 받아들이는 값. 폭발 계열 두 개는 1만, 형태는 정의된 값만 받는다.

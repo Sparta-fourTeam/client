@@ -12,7 +12,7 @@ namespace Game.Tests
         private static SkillConfig Config() => SkillConfig.FromDefinition(new WeaponData
         {
             castType = CastType.Projectile,
-            baseStats = new WeaponBaseStats { baseDamage = 100, range = 8, speed = 10 }
+            baseStats = new WeaponBaseStats { cast = { baseDamage = 100, range = 8 }, projectile = { speed = 10 } }
         });
 
         private sealed class Target : IEnemyTarget, IFreezableTarget
@@ -212,7 +212,7 @@ namespace Game.Tests
             var data = new WeaponData
             {
                 maxLevel = 15,
-                baseStats = new WeaponBaseStats { baseDamage = 100, range = 8 }
+                baseStats = new WeaponBaseStats { cast = { baseDamage = 100, range = 8 } }
             };
             var builder = new SkillConfigBuilder(SkillConfig.FromDefinition(data));
             Assert.IsTrue(builder.TryApply(new IUpgradeEffect[]

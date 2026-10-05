@@ -74,7 +74,7 @@ namespace Game.Tests
                 var stats = (WeaponStats)typeof(WeaponBase).GetField("stats", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(weapon);
                 Assert.AreEqual(32.5f, stats.Cast.Damage, 0.001f);
                 Assert.AreEqual(2.5f, stats.Status.ParalysisDuration, 0.001f);
-                Assert.AreEqual(1, data.baseStats.paralysisChance);
+                Assert.AreEqual(1, data.baseStats.status.paralysisChance);
             }
             finally { Object.DestroyImmediate(go); }
         }
@@ -116,7 +116,7 @@ namespace Game.Tests
         [Test]
         public void JudgementForm_PreservesOtherStatsAndScalesDamage()
         {
-            WeaponStats stats = WeaponStats.FromDefinition(new WeaponBaseStats { baseDamage = 25, paralysisDuration = 1 });
+            WeaponStats stats = WeaponStats.FromDefinition(new WeaponBaseStats { cast = { baseDamage = 25 }, status = { paralysisDuration = 1 } });
             stats = WeaponStatsTestFactory.Apply(stats, UpgradeType.Damage, 150);
             stats = WeaponStatsTestFactory.Apply(WeaponStatsTestFactory.Apply(stats, UpgradeType.Damage, 200), UpgradeType.Form, (int)WeaponForm.JudgementThunder);
             Assert.AreEqual(187.5f, stats.Cast.Damage);
@@ -127,7 +127,7 @@ namespace Game.Tests
         [Test]
         public void ExplosionUpgrades_KeepDirectDamageSeparateAndScaleRadius()
         {
-            WeaponStats stats = WeaponStats.FromDefinition(new WeaponBaseStats { baseDamage = 12, explosionDamageRatio = 1, explosionRadius = 0.8f });
+            WeaponStats stats = WeaponStats.FromDefinition(new WeaponBaseStats { cast = { baseDamage = 12 }, explosion = { damageRatio = 1, radius = 0.8f } });
             stats = WeaponStatsTestFactory.Apply(stats, UpgradeType.ExplosionDamage, 80);
             stats = WeaponStatsTestFactory.Apply(stats, UpgradeType.ExplosionRadius, 80);
             Assert.AreEqual(12, stats.Cast.Damage);
