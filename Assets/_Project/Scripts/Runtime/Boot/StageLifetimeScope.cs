@@ -15,6 +15,7 @@ namespace Game.Boot
             builder.RegisterComponentInHierarchy<WeaponController>();
             builder.Register<IWeaponDataProvider, DefaultWeaponDataProvider>(Lifetime.Scoped);
             builder.Register<IWeaponProgression, ProfileWeaponProgression>(Lifetime.Scoped);
+            builder.Register<IStartingSkills, DefaultStartingSkills>(Lifetime.Scoped);
             builder.RegisterEntryPoint<StageClock>().AsSelf();
             builder.RegisterEntryPoint<StageManager>().AsSelf();
             builder.RegisterEntryPoint<StageJudge>();

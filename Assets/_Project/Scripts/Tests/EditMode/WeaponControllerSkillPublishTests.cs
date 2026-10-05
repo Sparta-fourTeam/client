@@ -74,6 +74,37 @@ namespace Game.Tests
             Assert.IsNotEmpty(skills[0].IconKey);
         }
 
+        private sealed class FixedStartingSkills : IStartingSkills
+        {
+            private readonly int[] ids;
+            public FixedStartingSkills(params int[] ids) => this.ids = ids;
+            public IReadOnlyList<int> GetSkillIds() => ids;
+        }
+
+        [Test(Description = "시작 스킬은 외부에서 주입한 목록을 따른다 (캐릭터별 초기 스킬 대비)")]
+        public void Start_UsesInjectedStartingSkills()
+        {
+            var player = new GameObject("PlayerWithStartingSkills");
+            _created.Add(player);
+            var controller = player.AddComponent<WeaponController>();
+            var entries = new List<WeaponPrefabEntry>();
+            for (int id = 1; id <= 4; id++)
+            {
+                var prefab = new GameObject($"StartingPrefab{id}");
+                _created.Add(prefab);
+                entries.Add(new WeaponPrefabEntry { id = id, prefab = prefab });
+            }
+            const BindingFlags Private = BindingFlags.NonPublic | BindingFlags.Instance;
+            typeof(WeaponController).GetField("prefabEntries", Private).SetValue(controller, entries);
+            var publisher = new FakeSkillPublisher();
+            controller.Construct(new NullEnemyTargetProvider(), publisher, new DefaultWeaponDataProvider(), startingSkills: new FixedStartingSkills(1, 2));
+            typeof(WeaponController).GetMethod("Start", Private).Invoke(controller, null);
+
+            Assert.AreEqual(1, controller.GetWeaponLevel(1));
+            Assert.AreEqual(1, controller.GetWeaponLevel(2));
+            Assert.AreEqual(0, controller.GetWeaponLevel(3), "기본 시작 스킬이 섞이면 안 된다");
+        }
+
         [Test(Description = "새 무기를 얻으면 보유 목록 전체를 다시 발행한다")]
         public void AcquireWeapon_PublishesFullSnapshot()
         {

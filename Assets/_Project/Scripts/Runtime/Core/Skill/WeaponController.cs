@@ -20,6 +20,7 @@ namespace Game.Core
         private Dictionary<int, WeaponData> dataTable;
         private IWeaponDataProvider dataProvider;
         private IWeaponProgression progression;
+        private IStartingSkills startingSkills;
         private Game.Core.Defense.Wall wall;
         private readonly Dictionary<int, int> permanentLevels = new();
         private List<WeaponBase> weapons = new List<WeaponBase>();
@@ -28,8 +29,9 @@ namespace Game.Core
         private ChildSkillCaster childCaster;
 
         [Inject]
-        public void Construct(IEnemyTargetProvider targetProvider, IBufferedPublisher<SkillChanged> skillChanged, IWeaponDataProvider dataProvider, IWeaponProgression progression = null, Game.Core.Defense.Wall wall = null)
+        public void Construct(IEnemyTargetProvider targetProvider, IBufferedPublisher<SkillChanged> skillChanged, IWeaponDataProvider dataProvider, IWeaponProgression progression = null, Game.Core.Defense.Wall wall = null, IStartingSkills startingSkills = null)
         {
+            this.startingSkills = startingSkills ?? new DefaultStartingSkills();
             this.targetProvider = targetProvider;
             this.skillChanged = skillChanged;
             this.dataProvider = dataProvider;
@@ -46,7 +48,7 @@ namespace Game.Core
                 permanentLevels[data.id] = progression?.GetLevel(data.progressionId) ?? 0;
             }
             childCaster = new ChildSkillCaster(CreateChild);
-            AddWeapon(3);
+            foreach (int id in startingSkills.GetSkillIds()) { AddWeapon(id); }
         }
 
         // 자식 스킬은 보유 목록에 넣지 않고(틱하지 않는다) 효과가 요청할 때만 시전한다.

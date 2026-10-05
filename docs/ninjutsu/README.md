@@ -213,9 +213,9 @@ python3 docs/ninjutsu/validate_requirements.py
 
 ## 6. 리팩 계획
 
-목적은 새 카드와 새 스킬을 추가하기 쉽게 만드는 것이다. 원칙은 **새 카드는 데이터만, 새 스킬은 공격 구현 하나와 데이터만** 고치는 것이다. 이 계획은 코드를 읽고 세운 것이며 아직 착수하지 않았다.
+목적은 새 카드와 새 스킬을 추가하기 쉽게 만드는 것이다. 원칙은 **새 카드는 데이터만, 새 스킬은 공격 구현 하나와 데이터만** 고치는 것이다. 1~6단계를 모두 마쳤다. 6.1은 착수 전에 막히던 지점의 기록이고, 새 스킬·카드·효과를 추가하는 방법은 6.5에 정리했다.
 
-### 6.1 현재 막히는 지점
+### 6.1 착수 전에 막히던 지점
 
 | 구분 | 문제 | 위치 |
 |---|---|---|
@@ -270,10 +270,22 @@ python3 docs/ninjutsu/validate_requirements.py
    - `ProjectileCaster`와 `HitscanCaster`를 `ProjectileStrategy`와 `HitscanStrategy`로 바꿨다(예비 시전은 `ProjectileStrategy`가 가진다). `WeaponFactory`는 `castType` → 전략 등록 테이블이고, `WeaponCatalogValidator`가 전략이 등록되지 않은 `castType`을 시작 때 막는다.
    - 새 공격 종류(빔·연쇄·범위 등)는 `CastType`에 값을 더하고, 전략 클래스 하나를 만들어 `WeaponFactory`에 한 줄 등록한다. 효과 종류는 `EffectRegistry`에 허용 공격을 선언한다.
    - 이후 Beam·Chain·Area 등 미구현 10종 작업에 들어간다.
-6. **스킬 등록 흐름 정리** (약 1일)
-   - `AddWeapon(3)` 하드코딩을 제거하고 시작 스킬을 외부에서 주입한다(캐릭터 초기 습득 대비).
-   - 새 스킬 추가 체크리스트를 이 문서에 추가한다.
-   - 선택 사항: `WeaponUpgradeChoices`의 후보 필터링과 가중치를 정리한다.
+6. **스킬 등록 흐름 정리** (약 1일) — **완료**
+   - `AddWeapon(3)` 하드코딩을 없애고 `IStartingSkills`로 시작 스킬을 주입한다(`StageLifetimeScope`에 `DefaultStartingSkills`가 등록돼 있다. 캐릭터별 초기 스킬이 생기면 이 인터페이스를 캐릭터 데이터로 구현한다).
+   - 새 스킬·카드·효과 추가 체크리스트를 6.5에 추가했다.
+   - 선택 사항이던 `WeaponUpgradeChoices`의 후보 필터링과 가중치 정리는 하지 않았다. 현재는 `childOnly` 제외만 있다.
+
+### 6.5 추가 체크리스트
+
+**새 카드(기존 효과만 쓰는 경우)**: `Weapons.json`의 해당 스킬 `upgrades`에 카드를 적는다. `effects`의 `kind`는 `EffectRegistry`에 등록된 키다. 카드 아이콘은 `SkillIconTable_Card`에 `카드ID_new`, `카드ID_upgrade` 키로 연결한다. 이후 `RegenerateGolden`(Explicit 테스트)으로 골든을 갱신하고 diff를 리뷰한다. 검증기가 등록되지 않은 키, 스킬이 소비하지 않는 효과, 조건 그래프 오류를 카드 ID와 함께 알려 준다.
+
+**새 효과 종류**: `EffectRegistry`에 한 줄(키, 분류, 허용 공격, 값 규칙, 적용)을 더한다. 새 스탯이 필요하면 `Stat` enum, `WeaponStatRegistry`의 기본값, 묶음 구조체 속성(`CastStats` 등)에 한 줄씩 더한다. 스탯을 읽는 쪽은 반응이면 `ReactionCompiler`/`HitReactionBuilder`, 그 밖이면 해당 전략이다. 안전망 테스트(등록·적용·스냅샷 복사 누락)가 빠뜨린 곳을 알려 준다.
+
+**새 스킬(기존 공격 종류)**: `Weapons.json`에 스킬을 추가한다(`castType`, `baseStats` 묶음, `upgrades`). 다른 스킬의 효과로만 쓰면 `childOnly: true`로 표시한다. `Player_Animated` 프리팹의 `WeaponController.prefabEntries`에 id와 프리팹을, `SkillIconTable_Side`에 HUD 아이콘 키(`iconKey`)를 연결한다. 프리팹·아이콘 연결 테스트가 누락을 잡는다. 영구 성장을 쓰면 `progressionId`를 맞춘다.
+
+**새 공격 종류**: `CastType`에 값을 더하고, `IAttackStrategy` 구현을 만들어 `WeaponFactory`에 등록한다. 효과 종류의 허용 공격(`EffectRegistry`)에 새 종류를 반영한다.
+
+**자식 스킬 시전 카드**: 자식이 될 스킬을 `childOnly: true`로 추가하고, 부모 카드에 `{"kind":"onEvent","trigger":"Expired","skillId":자식ID}` 또는 `periodic`을 적는다. 순환은 검증기가 막는다.
 
 ### 6.4 위험과 주의
 
