@@ -55,15 +55,15 @@ namespace Game.Core
             foreach (var variant in option.variants) { Check(weapon, option, variant.effects); }
         }
 
-        private static void Check(WeaponData weapon, WeaponUpgradeOption option, List<StatEffect> effects)
+        private static void Check(WeaponData weapon, WeaponUpgradeOption option, List<EffectDef> effects)
         {
             foreach (var effect in effects)
             {
-                if (UpgradeCompatibility.Supports(weapon.castType, effect.type)) { continue; }
-                string reason = UpgradeCompatibility.IsRegistered(effect.type)
+                if (EffectRegistry.Supports(weapon.castType, effect.kind)) { continue; }
+                string reason = EffectRegistry.IsRegistered(effect.kind)
                     ? $"{weapon.castType} 공격이 쓰지 않는 효과입니다."
-                    : "호환 표(UpgradeCompatibility)에 등록되지 않았습니다.";
-                throw new InvalidOperationException($"카드 '{option.id}'({weapon.name})의 효과 {effect.type}: {reason}");
+                    : "EffectRegistry에 등록되지 않은 효과 종류입니다.";
+                throw new InvalidOperationException($"카드 '{option.id}'({weapon.name})의 효과 {effect.kind}: {reason}");
             }
         }
 

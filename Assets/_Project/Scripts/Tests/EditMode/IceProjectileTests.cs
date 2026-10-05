@@ -148,10 +148,10 @@ namespace Game.Tests
             {
                 var data = new WeaponData { baseStats = new WeaponBaseStats { cast = { baseDamage = 100 }, projectile = { speed = 10, pierceCount = 2, knockbackDistance = .6f }, status = { freezeDuration = 2 } }, maxLevel = 15 };
                 var weapon = new ProjectileCaster(data, prefab, caster.transform, new Provider());
-                WeaponStats stats = WeaponStatsTestFactory.Apply(WeaponStats.FromDefinition(data.baseStats), UpgradeType.Form, (int)WeaponForm.TriangleIce);
-                stats = WeaponStatsTestFactory.Apply(WeaponStatsTestFactory.Apply(stats, UpgradeType.Frostbite, 10), UpgradeType.SplitFrostbite, 10);
-                stats = WeaponStatsTestFactory.Apply(stats, UpgradeType.SplitDamage, 80);
-                if (split) { stats = WeaponStatsTestFactory.Apply(stats, UpgradeType.SplitCount, 3); }
+                WeaponStats stats = WeaponStatsTestFactory.Apply(WeaponStats.FromDefinition(data.baseStats), "form", (int)WeaponForm.TriangleIce);
+                stats = WeaponStatsTestFactory.Apply(WeaponStatsTestFactory.Apply(stats, "frostbite", 10), "splitFrostbite", 10);
+                stats = WeaponStatsTestFactory.Apply(stats, "splitDamage", 80);
+                if (split) { stats = WeaponStatsTestFactory.Apply(stats, "splitCount", 3); }
                 typeof(WeaponBase).GetField("stats", flags).SetValue(weapon, stats);
                 var callback = (System.Action<Vector2, Vector3, IEnemyTarget>)typeof(ProjectileSpawnRules).GetMethod("CreateHitCallback", flags).Invoke(SpawnRules(weapon), null);
                 var source = new Target(); callback(Vector2.zero, Vector3.up, source);
@@ -232,7 +232,7 @@ namespace Game.Tests
             {
                 var data = new WeaponData { baseStats = new WeaponBaseStats { cast = { baseDamage = 100 }, projectile = { speed = 10 } }, maxLevel = 15 };
                 var weapon = new ProjectileCaster(data, prefab, caster.transform, new Provider());
-                WeaponStats stats = WeaponStatsTestFactory.Apply(WeaponStatsTestFactory.Apply(WeaponStats.FromDefinition(data.baseStats), UpgradeType.SplitCount, expectedCount), UpgradeType.SplitDamage, 80);
+                WeaponStats stats = WeaponStatsTestFactory.Apply(WeaponStatsTestFactory.Apply(WeaponStats.FromDefinition(data.baseStats), "splitCount", expectedCount), "splitDamage", 80);
                 typeof(WeaponBase).GetField("stats", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(weapon, stats);
                 var callback = BranchSpawner(weapon).CreateSplitCallback();
                 var originTarget = new Target();
@@ -352,10 +352,10 @@ namespace Game.Tests
                 var provider = new Provider();
                 var data = new WeaponData { baseStats = new WeaponBaseStats { cast = { baseDamage = 100 }, explosion = { damageRatio = 1, radius = 0.8f } }, maxLevel = 15 };
                 var weapon = new ProjectileCaster(data, prefab, prefab.transform, provider);
-                WeaponStats stats = WeaponStatsTestFactory.Apply(WeaponStats.FromDefinition(data.baseStats), UpgradeType.SplitCount, 2);
+                WeaponStats stats = WeaponStatsTestFactory.Apply(WeaponStats.FromDefinition(data.baseStats), "splitCount", 2);
                 if (enabled)
                 {
-                    stats = WeaponStatsTestFactory.Apply(stats, UpgradeType.SplitExplosion, 1);
+                    stats = WeaponStatsTestFactory.Apply(stats, "splitExplosion", 1);
                 }
 
                 typeof(WeaponBase).GetField("stats", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(weapon, stats);
@@ -430,7 +430,7 @@ namespace Game.Tests
                 var provider = new Provider { Second = new Target { Position = Vector2.right * 0.5f } };
                 var data = new WeaponData { baseStats = new WeaponBaseStats { cast = { baseDamage = 10, range = 10 }, status = { burnChance = 1 }, explosion = { damageRatio = 1, radius = 0.8f } }, maxLevel = 14 };
                 var weapon = new ProjectileCaster(data, prefab, prefab.transform, provider);
-                WeaponStats stats = WeaponStatsTestFactory.Apply(WeaponStatsTestFactory.Apply(WeaponStats.FromDefinition(data.baseStats), UpgradeType.BurnDuration, 6), UpgradeType.BurnRatio, 10);
+                WeaponStats stats = WeaponStatsTestFactory.Apply(WeaponStatsTestFactory.Apply(WeaponStats.FromDefinition(data.baseStats), "burnDuration", 6), "burnRatio", 10);
                 typeof(WeaponBase).GetField("stats", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(weapon, stats);
                 typeof(ProjectileCaster).GetMethod("OnFire", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(weapon, null);
                 foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))

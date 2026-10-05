@@ -40,7 +40,7 @@ namespace Game.Tests
         {
             var option = VariantOption(9, -20, 0);
             option.maxPickCount = 1;
-            option.variants[0].effects.Add(new StatEffect { type = UpgradeType.ProjectileSpeed, value = -30 });
+            option.variants[0].effects.Add(new EffectDef { kind = "projectileSpeed", value = -30 });
             var weapon = NewWeapon();
             Assert.IsTrue(weapon.LevelUp(option, 9));
             Assert.AreEqual(14, weapon.CurrentStats.Projectile.Speed, 0.0001f);
@@ -65,7 +65,7 @@ namespace Game.Tests
             baseStats = new WeaponBaseStats { cast = { baseDamage = 10, projectileCount = 1 }, projectile = { speed = 20 } }
         });
 
-        private static TestWeapon SharedWeapon(int id, UpgradeType type = UpgradeType.Damage)
+        private static TestWeapon SharedWeapon(int id, string type = "damage")
         {
             var option = new WeaponUpgradeOption
             {
@@ -73,9 +73,9 @@ namespace Game.Tests
                 sharedId = "pair",
                 affectedWeaponIds = new[] { 1, 2 },
                 maxPickCount = 1,
-                effects = new System.Collections.Generic.List<StatEffect>
+                effects = new System.Collections.Generic.List<EffectDef>
                 {
-                    new StatEffect { type = type, value = type == UpgradeType.Damage ? 80 : 20 }
+                    new EffectDef { kind = type, value = type == "damage" ? 80 : 20 }
                 }
             };
             return new TestWeapon(new WeaponData
@@ -87,9 +87,9 @@ namespace Game.Tests
             });
         }
 
-        [TestCase(UpgradeType.Damage)]
-        [TestCase(UpgradeType.AttackSpeed)]
-        public void SharedUpgrade_AppliesBothAndSharesCounterAcrossOppositeChoice(UpgradeType type)
+        [TestCase("damage")]
+        [TestCase("attackSpeed")]
+        public void SharedUpgrade_AppliesBothAndSharesCounterAcrossOppositeChoice(string type)
         {
             var a = SharedWeapon(1, type);
             var b = SharedWeapon(2, type);
@@ -102,7 +102,7 @@ namespace Game.Tests
             Assert.AreEqual(1, a.GetAcquiredCount("shared_1"));
             Assert.AreEqual(1, b.GetAcquiredCount("shared_2"));
             Assert.IsFalse(WeaponUpgradeTransaction.TryApply(b, b.Data.upgrades[0], weapons, 0));
-            if (type == UpgradeType.Damage)
+            if (type == "damage")
             {
                 Assert.AreEqual(18, a.CurrentStats.Cast.Damage, 0.0001f);
                 Assert.AreEqual(18, b.CurrentStats.Cast.Damage, 0.0001f);
@@ -136,7 +136,7 @@ namespace Game.Tests
             Assert.IsTrue(b.LevelUp(new WeaponUpgradeOption
             {
                 id = "basic",
-                effects = new System.Collections.Generic.List<StatEffect>()
+                effects = new System.Collections.Generic.List<EffectDef>()
             }));
             Assert.IsFalse(WeaponUpgradeTransaction.TryApply(a, a.Data.upgrades[0], new WeaponBase[] { a, b }, 0));
             Assert.AreEqual(0, a.UpgradeCount);
@@ -174,18 +174,18 @@ namespace Game.Tests
             id = "repeat",
             name = "연발",
             maxPickCount = 2,
-            effects = new System.Collections.Generic.List<StatEffect>
+            effects = new System.Collections.Generic.List<EffectDef>
             {
-                new StatEffect { type = UpgradeType.CastCount, value = 1 },
-                new StatEffect { type = UpgradeType.Damage, value = before }
+                new EffectDef { kind = "castCount", value = 1 },
+                new EffectDef { kind = "damage", value = before }
             },
             variants = new[] { new WeaponUpgradeVariant
             {
                 minPermanentLevel = gate, name = "연발(+)",
-                effects = new System.Collections.Generic.List<StatEffect>
+                effects = new System.Collections.Generic.List<EffectDef>
                 {
-                    new StatEffect { type = UpgradeType.CastCount, value = 1 },
-                    new StatEffect { type = UpgradeType.Damage, value = after }
+                    new EffectDef { kind = "castCount", value = 1 },
+                    new EffectDef { kind = "damage", value = after }
                 }
             } }
         };
@@ -200,7 +200,7 @@ namespace Game.Tests
             {
                 id = "repeat",
                 maxPickCount = cap + 1,
-                effects = new System.Collections.Generic.List<StatEffect>()
+                effects = new System.Collections.Generic.List<EffectDef>()
             };
             Assert.AreEqual(1, weapon.Level);
             Assert.AreEqual(0, weapon.UpgradeCount);
@@ -225,9 +225,9 @@ namespace Game.Tests
         [Test]
         public void CountUpgrades_AreIndependent()
         {
-            WeaponStats stats = WeaponStatsTestFactory.Apply(Stats(), UpgradeType.ProjectileCount, 1);
-            stats = WeaponStatsTestFactory.Apply(stats, UpgradeType.CastCount, 2);
-            stats = WeaponStatsTestFactory.Apply(stats, UpgradeType.PierceCount, 3);
+            WeaponStats stats = WeaponStatsTestFactory.Apply(Stats(), "projectileCount", 1);
+            stats = WeaponStatsTestFactory.Apply(stats, "castCount", 2);
+            stats = WeaponStatsTestFactory.Apply(stats, "pierceCount", 3);
             Assert.AreEqual(2, stats.Cast.ProjectileCount);
             Assert.AreEqual(3, stats.Cast.Count);
             Assert.AreEqual(3, stats.Projectile.PierceCount);
@@ -237,7 +237,7 @@ namespace Game.Tests
         [Test]
         public void SpeedUpgrade_DoesNotChangeCooldown()
         {
-            var stats = WeaponStatsTestFactory.Apply(Stats(), UpgradeType.ProjectileSpeed, 25);
+            var stats = WeaponStatsTestFactory.Apply(Stats(), "projectileSpeed", 25);
             Assert.AreEqual(25f, stats.Projectile.Speed);
             Assert.AreEqual(2f, stats.Cast.Cooldown);
         }
@@ -245,7 +245,7 @@ namespace Game.Tests
         [Test]
         public void ProjectileCount_AddsProjectilesNotPierce()
         {
-            var stats = WeaponStatsTestFactory.Apply(Stats(), UpgradeType.ProjectileCount, 2);
+            var stats = WeaponStatsTestFactory.Apply(Stats(), "projectileCount", 2);
             Assert.AreEqual(3, stats.Cast.ProjectileCount);
             Assert.AreEqual(3, stats.Cast.ProjectileCount);
             Assert.AreEqual(0, stats.Projectile.PierceCount);
@@ -293,8 +293,8 @@ namespace Game.Tests
         [Test]
         public void Catalog_RejectsDanglingImpossibleAndCyclicPrerequisites()
         {
-            var a = new WeaponUpgradeOption { id = "a", maxPickCount = 1, effects = new System.Collections.Generic.List<StatEffect>() };
-            var b = new WeaponUpgradeOption { id = "b", maxPickCount = 1, effects = new System.Collections.Generic.List<StatEffect>() };
+            var a = new WeaponUpgradeOption { id = "a", maxPickCount = 1, effects = new System.Collections.Generic.List<EffectDef>() };
+            var b = new WeaponUpgradeOption { id = "b", maxPickCount = 1, effects = new System.Collections.Generic.List<EffectDef>() };
             var data = new[] { new WeaponData
             {
                 id = 1, maxLevel = 15, baseStats = new WeaponBaseStats(),

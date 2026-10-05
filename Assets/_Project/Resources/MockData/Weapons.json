@@ -38,11 +38,11 @@
         "maxPickCount": 2,
         "effects": [
           {
-            "type": 3,
+            "kind": "projectileCount",
             "value": 1
           },
           {
-            "type": 1,
+            "kind": "damage",
             "value": -20
           }
         ],
@@ -53,7 +53,7 @@
             "desc": "발사 수 +1",
             "effects": [
               {
-                "type": 3,
+                "kind": "projectileCount",
                 "value": 1
               }
             ]
@@ -67,7 +67,7 @@
         "maxPickCount": 3,
         "effects": [
           {
-            "type": 1,
+            "kind": "damage",
             "value": 60
           }
         ]
@@ -79,11 +79,11 @@
         "maxPickCount": 2,
         "effects": [
           {
-            "type": 1,
+            "kind": "damage",
             "value": 25
           },
           {
-            "type": 11,
+            "kind": "projectileSpeed",
             "value": 25
           }
         ]
@@ -95,11 +95,11 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "type": 4,
+            "kind": "castCount",
             "value": 1
           },
           {
-            "type": 1,
+            "kind": "damage",
             "value": -30
           }
         ],
@@ -113,11 +113,11 @@
             "desc": "시전 수 +1 / 공격력 +10%",
             "effects": [
               {
-                "type": 4,
+                "kind": "castCount",
                 "value": 1
               },
               {
-                "type": 1,
+                "kind": "damage",
                 "value": 10
               }
             ]
@@ -131,7 +131,7 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "type": 0,
+            "kind": "attackSpeed",
             "value": 10
           }
         ],
@@ -146,11 +146,11 @@
         "maxPickCount": 2,
         "effects": [
           {
-            "type": 1,
+            "kind": "damage",
             "value": 30
           },
           {
-            "type": 10,
+            "kind": "pierceCount",
             "value": 1
           }
         ],
@@ -166,7 +166,7 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "type": 20,
+            "kind": "enableExplosion",
             "value": 0.8
           }
         ],
@@ -187,7 +187,7 @@
         "maxPickCount": 2,
         "effects": [
           {
-            "type": 21,
+            "kind": "explosionDamage",
             "value": 80
           }
         ],
@@ -203,7 +203,7 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "type": 22,
+            "kind": "explosionRadius",
             "value": 80
           }
         ],
@@ -219,7 +219,7 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "type": 13,
+            "kind": "knockback",
             "value": 15
           }
         ],
@@ -241,7 +241,7 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "type": 50,
+            "kind": "splitCount",
             "value": 2
           }
         ],
@@ -257,7 +257,7 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "type": 50,
+            "kind": "splitCount",
             "value": 4
           }
         ],
@@ -273,7 +273,7 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "type": 51,
+            "kind": "splitDamage",
             "value": 100
           }
         ],
@@ -289,7 +289,7 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "type": 1,
+            "kind": "damage",
             "value": 100
           }
         ],
@@ -305,11 +305,11 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "type": 32,
+            "kind": "paralysis",
             "value": 1
           },
           {
-            "type": 11,
+            "kind": "projectileSpeed",
             "value": 100
           }
         ],
@@ -325,11 +325,11 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "type": 1,
+            "kind": "damage",
             "value": -10
           },
           {
-            "type": 0,
+            "kind": "attackSpeed",
             "value": 20
           }
         ],
@@ -344,7 +344,7 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "type": 60,
+            "kind": "lightningStrike",
             "value": 50
           }
         ],
@@ -359,7 +359,7 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "type": 54,
+            "kind": "splitLightning",
             "value": 50
           }
         ],
@@ -375,7 +375,7 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "type": 55,
+            "kind": "splitExplosion",
             "value": 1
           }
         ],
@@ -391,11 +391,11 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "type": 40,
+            "kind": "burnDuration",
             "value": 6
           },
           {
-            "type": 41,
+            "kind": "burnRatio",
             "value": 10
           }
         ],
@@ -444,7 +444,7 @@
         "maxPickCount": 2,
         "effects": [
           {
-            "type": 4,
+            "kind": "castCount",
             "value": 1
           }
         ],
@@ -469,11 +469,11 @@
         ],
         "effects": [
           {
-            "type": 4,
+            "kind": "castCount",
             "value": 2
           },
           {
-            "type": 1,
+            "kind": "damage",
             "value": -30
           }
         ],
@@ -484,7 +484,7 @@
             "desc": "추가 시전 +2",
             "effects": [
               {
-                "type": 4,
+                "kind": "castCount",
                 "value": 2
               }
             ]
@@ -504,7 +504,7 @@
         "maxPickCount": 3,
         "effects": [
           {
-            "type": 21,
+            "kind": "explosionDamage",
             "value": 80
           }
         ],
@@ -517,7 +517,7 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "type": 22,
+            "kind": "explosionRadius",
             "value": 80
           }
         ],
@@ -532,11 +532,11 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "type": 40,
+            "kind": "burnDuration",
             "value": 6
           },
           {
-            "type": 41,
+            "kind": "burnRatio",
             "value": 10
           }
         ],
@@ -551,7 +551,7 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "type": 42,
+            "kind": "burnMaxHp",
             "value": 3
           }
         ],
@@ -567,7 +567,7 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "type": 43,
+            "kind": "burnDeathExplosion",
             "value": 1
           }
         ],
@@ -583,7 +583,7 @@
         "maxPickCount": 3,
         "effects": [
           {
-            "type": 2,
+            "kind": "impactDamage",
             "value": 80
           }
         ]
@@ -595,11 +595,11 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "type": 1,
+            "kind": "damage",
             "value": 20
           },
           {
-            "type": 0,
+            "kind": "attackSpeed",
             "value": 10
           }
         ],
@@ -615,7 +615,7 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "type": 50,
+            "kind": "splitCount",
             "value": 3
           }
         ],
@@ -631,11 +631,11 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "type": 6,
+            "kind": "form",
             "value": 1
           },
           {
-            "type": 10,
+            "kind": "pierceCount",
             "value": 2
           }
         ],
@@ -696,7 +696,7 @@
         "maxPickCount": 3,
         "effects": [
           {
-            "type": 1,
+            "kind": "damage",
             "value": 80
           }
         ]
@@ -708,11 +708,11 @@
         "maxPickCount": 3,
         "effects": [
           {
-            "type": 4,
+            "kind": "castCount",
             "value": 1
           },
           {
-            "type": 1,
+            "kind": "damage",
             "value": -20
           }
         ],
@@ -723,7 +723,7 @@
             "desc": "시전 수 +1",
             "effects": [
               {
-                "type": 4,
+                "kind": "castCount",
                 "value": 1
               }
             ]
@@ -737,7 +737,7 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "type": 20,
+            "kind": "enableExplosion",
             "value": 0.8
           }
         ],
@@ -751,7 +751,7 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "type": 21,
+            "kind": "explosionDamage",
             "value": 80
           }
         ],
@@ -767,7 +767,7 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "type": 22,
+            "kind": "explosionRadius",
             "value": 80
           }
         ],
@@ -783,11 +783,11 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "type": 1,
+            "kind": "damage",
             "value": 30
           },
           {
-            "type": 33,
+            "kind": "paralysisDuration",
             "value": 1.5
           }
         ]
@@ -803,7 +803,7 @@
         ],
         "effects": [
           {
-            "type": 50,
+            "kind": "splitCount",
             "value": 6
           }
         ]
@@ -818,11 +818,11 @@
         ],
         "effects": [
           {
-            "type": 51,
+            "kind": "splitDamage",
             "value": 40
           },
           {
-            "type": 53,
+            "kind": "splitParalysis",
             "value": 0.5
           }
         ]
@@ -838,11 +838,11 @@
         ],
         "effects": [
           {
-            "type": 1,
+            "kind": "damage",
             "value": 150
           },
           {
-            "type": 61,
+            "kind": "killLightning",
             "value": 50
           }
         ]
@@ -864,11 +864,11 @@
         ],
         "effects": [
           {
-            "type": 1,
+            "kind": "damage",
             "value": 200
           },
           {
-            "type": 6,
+            "kind": "form",
             "value": 2
           }
         ]
@@ -883,7 +883,7 @@
         ],
         "effects": [
           {
-            "type": 70,
+            "kind": "fieldDuration",
             "value": 3
           }
         ]
@@ -898,11 +898,11 @@
         ],
         "effects": [
           {
-            "type": 71,
+            "kind": "fieldDamageFlat",
             "value": 50
           },
           {
-            "type": 70,
+            "kind": "fieldDuration",
             "value": 2
           }
         ]
@@ -917,7 +917,7 @@
         ],
         "effects": [
           {
-            "type": 72,
+            "kind": "fieldDamageMultiplier",
             "value": 400
           }
         ]
@@ -961,11 +961,11 @@
         "maxPickCount": 2,
         "effects": [
           {
-            "type": 4,
+            "kind": "castCount",
             "value": 1
           },
           {
-            "type": 1,
+            "kind": "damage",
             "value": -20
           }
         ],
@@ -981,7 +981,7 @@
             "desc": "추가 시전 +1",
             "effects": [
               {
-                "type": 4,
+                "kind": "castCount",
                 "value": 1
               }
             ]
@@ -995,7 +995,7 @@
         "maxPickCount": 3,
         "effects": [
           {
-            "type": 1,
+            "kind": "damage",
             "value": 60
           }
         ]
@@ -1007,11 +1007,11 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "type": 1,
+            "kind": "damage",
             "value": 30
           },
           {
-            "type": 30,
+            "kind": "freezeDuration",
             "value": 2
           }
         ]
@@ -1023,11 +1023,11 @@
         "maxPickCount": 3,
         "effects": [
           {
-            "type": 1,
+            "kind": "damage",
             "value": 30
           },
           {
-            "type": 10,
+            "kind": "pierceCount",
             "value": 2
           }
         ]
@@ -1039,15 +1039,15 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "type": 1,
+            "kind": "damage",
             "value": 50
           },
           {
-            "type": 11,
+            "kind": "projectileSpeed",
             "value": -30
           },
           {
-            "type": 10,
+            "kind": "pierceCount",
             "value": 1
           }
         ],
@@ -1062,11 +1062,11 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "type": 3,
+            "kind": "projectileCount",
             "value": 1
           },
           {
-            "type": 1,
+            "kind": "damage",
             "value": -40
           }
         ],
@@ -1087,7 +1087,7 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "type": 50,
+            "kind": "splitCount",
             "value": 3
           }
         ],
@@ -1101,7 +1101,7 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "type": 51,
+            "kind": "splitDamage",
             "value": 80
           }
         ],
@@ -1117,11 +1117,11 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "type": 13,
+            "kind": "knockback",
             "value": 200
           },
           {
-            "type": 10,
+            "kind": "pierceCount",
             "value": 2
           }
         ],
@@ -1135,7 +1135,7 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "type": 31,
+            "kind": "frostbite",
             "value": 10
           }
         ],
@@ -1152,7 +1152,7 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "type": 52,
+            "kind": "splitFrostbite",
             "value": 10
           }
         ],
@@ -1169,7 +1169,7 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "type": 6,
+            "kind": "form",
             "value": 3
           }
         ],
@@ -1230,7 +1230,7 @@
         "maxPickCount": 2,
         "effects": [
           {
-            "type": 1,
+            "kind": "damage",
             "value": 60
           }
         ]
@@ -1245,11 +1245,11 @@
         ],
         "effects": [
           {
-            "type": 4,
+            "kind": "castCount",
             "value": 1
           },
           {
-            "type": 1,
+            "kind": "damage",
             "value": -20
           }
         ],
@@ -1260,7 +1260,7 @@
             "desc": "추가 시전 +1",
             "effects": [
               {
-                "type": 4,
+                "kind": "castCount",
                 "value": 1
               }
             ]
@@ -1277,7 +1277,7 @@
         ],
         "effects": [
           {
-            "type": 12,
+            "kind": "projectileSize",
             "value": 60
           }
         ]
@@ -1289,11 +1289,11 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "type": 11,
+            "kind": "projectileSpeed",
             "value": 40
           },
           {
-            "type": 0,
+            "kind": "attackSpeed",
             "value": 25
           }
         ]
@@ -1305,11 +1305,11 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "type": 13,
+            "kind": "knockback",
             "value": 75
           },
           {
-            "type": 34,
+            "kind": "stunDuration",
             "value": 1
           }
         ]
@@ -1321,7 +1321,7 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "type": 35,
+            "kind": "slowDuration",
             "value": 4
           }
         ]
@@ -1333,11 +1333,11 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "type": 36,
+            "kind": "vulnerabilityRatio",
             "value": 20
           },
           {
-            "type": 37,
+            "kind": "vulnerabilityDuration",
             "value": 6
           }
         ]
@@ -1359,19 +1359,19 @@
         ],
         "effects": [
           {
-            "type": 1,
+            "kind": "damage",
             "value": 60
           },
           {
-            "type": 12,
+            "kind": "projectileSize",
             "value": 60
           },
           {
-            "type": 13,
+            "kind": "knockback",
             "value": 60
           },
           {
-            "type": 6,
+            "kind": "form",
             "value": 4
           }
         ]
@@ -1396,15 +1396,15 @@
         ],
         "effects": [
           {
-            "type": 40,
+            "kind": "burnDuration",
             "value": 6
           },
           {
-            "type": 41,
+            "kind": "burnRatio",
             "value": 10
           },
           {
-            "type": 6,
+            "kind": "form",
             "value": 5
           }
         ]
@@ -1420,7 +1420,7 @@
         ],
         "effects": [
           {
-            "type": 5,
+            "kind": "reserveCasts",
             "value": 3
           }
         ]

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 
 namespace Game.Core
@@ -7,9 +6,9 @@ namespace Game.Core
     {
         public string Name { get; }
         public string Description { get; }
-        public List<StatEffect> Effects { get; }
+        public List<EffectDef> Effects { get; }
 
-        public ResolvedWeaponUpgrade(string name, string description, List<StatEffect> effects)
+        public ResolvedWeaponUpgrade(string name, string description, List<EffectDef> effects)
         {
             Name = name;
             Description = description;
@@ -49,12 +48,12 @@ namespace Game.Core
             return true;
         }
 
-        private static bool ValidEffects(List<StatEffect> effects)
+        private static bool ValidEffects(List<EffectDef> effects)
         {
             if (effects == null) { return false; }
             foreach (var effect in effects)
             {
-                if (effect == null || !Enum.IsDefined(typeof(UpgradeType), effect.type)
+                if (effect == null || !EffectRegistry.IsRegistered(effect.kind)
                     || float.IsNaN(effect.value) || float.IsInfinity(effect.value)) { return false; }
             }
             return true;

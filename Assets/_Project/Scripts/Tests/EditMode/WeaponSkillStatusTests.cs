@@ -46,7 +46,7 @@ namespace Game.Tests
             return new WeaponUpgradeOption
             {
                 id = "speed",
-                effects = new List<StatEffect> { new StatEffect { type = UpgradeType.AttackSpeed, value = percent } }
+                effects = new List<EffectDef> { new EffectDef { kind = "attackSpeed", value = percent } }
             };
         }
 
@@ -125,10 +125,10 @@ namespace Game.Tests
             var option = new WeaponUpgradeOption
             {
                 id = "invalid",
-                effects = new List<StatEffect>
+                effects = new List<EffectDef>
                 {
-                    new StatEffect { type = UpgradeType.Damage, value = 80f },
-                    new StatEffect { type = (UpgradeType)999, value = 1f }
+                    new EffectDef { kind = "damage", value = 80f },
+                    new EffectDef { kind = "unknownKind", value = 1f }
                 }
             };
             Assert.IsFalse(weapon.LevelUp(option));

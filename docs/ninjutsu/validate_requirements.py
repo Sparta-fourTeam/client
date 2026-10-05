@@ -47,12 +47,12 @@ for c in cards.values():
             rule = c['levelVariant']
             variants = [v for v in definition['variants'] if v['minPermanentLevel'] == rule['minPermanentLevel']]
             assert len(variants) == 1, key
-            base_damage = [e['value'] for e in definition['effects'] if e['type'] == 1]
-            upgraded_damage = [e['value'] for e in variants[0]['effects'] if e['type'] == 1]
+            base_damage = [e['value'] for e in definition['effects'] if e['kind'] == 'damage']
+            upgraded_damage = [e['value'] for e in variants[0]['effects'] if e['kind'] == 'damage']
             assert base_damage == [rule['damageModifierBefore']], key
             expected_after = [] if rule['damageModifierAfter'] == 0 else [rule['damageModifierAfter']]
             assert upgraded_damage == expected_after, key
-            assert [e for e in definition['effects'] if e['type'] != 1] == [e for e in variants[0]['effects'] if e['type'] != 1], key
+            assert [e for e in definition['effects'] if e['kind'] != 'damage'] == [e for e in variants[0]['effects'] if e['kind'] != 'damage'], key
         mapped.add(key)
 assert mapped == set(runtime_cards), 'Every current runtime card needs exactly one documentation mapping'
 

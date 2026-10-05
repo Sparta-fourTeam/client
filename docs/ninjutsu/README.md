@@ -37,7 +37,7 @@
 - 화살 난사와 확산은 합쳐 보조 화살 총 6개다. 히스이 필살기는 예외로 태풍 레벨을 참조한다.
 - 단방향 제한을 보존한다. 얼음창 연발→일제 사격→관통, 벼락 심판의 천둥→자기 폭풍은 허용 순서다. 제외 조건을 양방향으로 바꾸지 않는다.
 - 기본 상태이상 확률은 100%이고, 자료의 별도 확률이 우선한다(충격 통나무 기절 10%). 점화는 본체 직접 명중에만 적용하고 폭발에 전파하지 않는다.
-- 저장 데이터 호환은 고려하지 않는다. 아직 출시 전이라 `UpgradeType` 값, JSON 스키마, 카드 ID를 바꿔도 된다. 다만 `Weapons.json`, 테스트, `requirements.json`, `validate_requirements.py`는 함께 갱신해야 한다.
+- 저장 데이터 호환은 고려하지 않는다. 아직 출시 전이라 효과 종류 키, JSON 스키마, 카드 ID를 바꿔도 된다. 다만 `Weapons.json`, 테스트, `requirements.json`, `validate_requirements.py`는 함께 갱신해야 한다.
 
 ### 보류
 
@@ -73,7 +73,7 @@ flowchart TD
 
 - `SkillConfig`는 공격 종류·경로·사거리, 효과별 스탯, 추가 이벤트 반응을 보존한다. 강화는 현재 설정의 복사본에 순서대로 적용하고 전부 성공하면 한 번에 교체한다. 공유 강화도 모든 참여 스킬의 준비가 성공한 뒤 함께 반영한다. 이미 발사한 공격은 이후 강화로 변하지 않는다.
 - 실행 스탯은 `Cast`, `Projectile`, `Status`, `Burn`, `Explosion`, `Secondary`, `Field`의 불변 값이다. 타깃 선택, 전투 강화 횟수, 후보 생성, 카탈로그 검증은 각각 독립 클래스다.
-- JSON의 `StatEffect{type,value}`는 `WeaponStatEffects.TryCompile`이 `IUpgradeEffect`로 변환한다. JSON DTO(`StatEffect`)와 실행 객체(`StatUpgradeEffect`)는 역할이 다르다.
+- JSON의 `EffectDef{kind,value}`는 `WeaponStatEffects.TryCompile`이 `IUpgradeEffect`로 변환한다. JSON DTO(`EffectDef`)와 실행 객체(`StatUpgradeEffect`)는 역할이 다르다. 효과 종류는 `EffectRegistry`가 키(`"damage"` 등), 분류, 소비하는 공격, 값 규칙, 적용 방식을 한 줄로 선언한다.
 
 | 실행 효과 | 책임 |
 |---|---|
@@ -242,8 +242,8 @@ python3 docs/ninjutsu/validate_requirements.py
 각 단계는 독립된 PR이다. 단계가 끝날 때마다 EditMode 테스트와 `validate_requirements.py`가 통과해야 한다.
 
 1. **안전망** — **완료**. 테스트 126개(`WeaponCatalogSafetyNetTests`)가 지킨다.
-   - 카탈로그 의미 검증: `UpgradeCompatibility`가 강화 효과를 소비하는 공격 종류를 표로 갖고, `WeaponCatalogValidator`가 소비하지 않는 효과나 표에 없는 효과를 카드 ID와 함께 거부한다(변형 효과 포함). 새 `UpgradeType`은 이 표에 등록해야 한다. 표는 `ProjectileSpawnRules`, `ProjectileBranchSpawner`, `HitscanCastEffects`, `LightningOrbSpawner`가 실제로 읽는 값을 기준으로 만들었고, 현재 카탈로그가 모두 통과한다.
-   - 스냅샷 복사 테스트: 모든 `UpgradeType`을 적용한 스탯을 빈 강화로 한 번 더 복사해 값이 같은지 본다. 리플렉션으로 펼치므로 새 스탯이 자동으로 포함된다. `UpgradeType` 하나하나가 규칙을 갖고 스탯을 바꾸는지도 검사한다.
+   - 카탈로그 의미 검증: `EffectRegistry`가 효과를 소비하는 공격 종류를 선언에 갖고, `WeaponCatalogValidator`가 소비하지 않는 효과나 등록되지 않은 키를 카드 ID와 함께 거부한다(변형 효과 포함). 허용 공격은 `ProjectileSpawnRules`, `ProjectileBranchSpawner`, `HitscanCastEffects`, `LightningOrbSpawner`가 실제로 읽는 값을 기준으로 만들었고, 현재 카탈로그가 모두 통과한다.
+   - 스냅샷 복사 테스트: 등록된 모든 효과 종류를 적용한 스탯을 빈 강화로 한 번 더 복사해 값이 같은지 본다. 리플렉션으로 펼치므로 새 스탯이 자동으로 포함된다. 효과 종류 하나하나가 규칙을 갖고 스탯을 바꾸는지도 검사한다.
    - 골든 테스트: 카드 66장(변형 포함)의 단독 적용 결과와 무기별 전체 적용 결과를 `Tests/EditMode/Golden/WeaponCardStats.golden.txt`에 고정했다. 의도한 변경이면 `RegenerateGolden`(Explicit)을 실행해 파일을 갱신하고 diff를 리뷰한다. 폭발 반경 배율 카드처럼 선행 카드 없이 단독으로는 값이 안 바뀌는 카드는 `(변화 없음)`으로 기록된다.
    - 프리팹·아이콘 연결 테스트: `Weapons.json`의 id와 `iconKey`를 `prefabEntries`(공격 종류에 맞는 컴포넌트 포함), `SkillIconTable_Side`, `SkillIconTable_Card`(`_new`, `_upgrade`)와 대조하고, 기본 아이콘과 빈 스프라이트도 검사한다. 시작 시 예외가 아니라 테스트로 구현했다.
 2. **스탯 일원화와 기본 수치 분할** (약 2일, A·B·F) — **완료**
@@ -251,16 +251,16 @@ python3 docs/ninjutsu/validate_requirements.py
    - **완료**: `data.baseStats` 직접 접근을 없앴다. 확률(마비·빙결·동상·화상·기절), 시전 간격, 예비 시전 값은 스냅샷(`Status`·`Burn`·`Cast`)으로, 사거리는 `AttackDefinition.Range`로 옮겼다.
    - **완료**: `Category()` switch를 없애고 분류를 규칙 선언(`AddStat`/`AddCast`/`AddReaction`)에 함께 적는다.
    - **완료**: `WeaponBaseStats`를 `cast`·`projectile`·`reserve`·`status`·`explosion`·`field` 묶음으로 나눴다. `Weapons.json`의 `baseStats`는 필요한 묶음만 적으면 되고, 적지 않은 값은 묶음 클래스의 기본값(`castCount` 1, 확률 1 등)을 쓴다. `hitCount`는 `projectileCount`로 이름을 바꿨다.
-   - **완료**: `UpgradeType`을 정리했다. `HitCount`를 `ProjectileCount`로 통합했고, `Shard*`/`Auxiliary*`는 `Split*`로 바꿨고, 값은 묶음별 10단위 대역(시전 0, 투사체 10, 폭발 20, 상태이상 30, 화상 40, 분열 50, 번개 60, 장판 70)으로 재배열했다. 새 종류는 대역의 다음 빈 번호를 쓰므로 기존 값이 밀리지 않는다. `Weapons.json`의 type 숫자 106곳은 스크립트로 일괄 변환했다.
+   - **완료**: `UpgradeType`을 정리했다(이후 4단계에서 enum 자체를 `EffectRegistry`로 대체했다). `HitCount`를 `ProjectileCount`로 통합했고, `Shard*`/`Auxiliary*`는 `Split*`로 바꿨고, 값은 묶음별 10단위 대역(시전 0, 투사체 10, 폭발 20, 상태이상 30, 화상 40, 분열 50, 번개 60, 장판 70)으로 재배열했다. 새 종류는 대역의 다음 빈 번호를 쓰므로 기존 값이 밀리지 않는다. `Weapons.json`의 type 숫자 106곳은 스크립트로 일괄 변환했다.
 3. **반응 컴파일 통합** (약 2일, B·C) — **완료**
    - `HitReactionBuilder`(피해·빙결·밀치기·동상·마비·추가 번개·화상·기절·감속·취약을 정해진 순서로 쌓는다)와 `ReactionCompiler.ForProjectile`(스탯 스냅샷 → 적중 반응)로 변환 로직을 한 곳에 모았다. 보조 투사체(분기·분열 조각·번개 구체)도 같은 빌더를 쓴다.
    - `ProjectileSpawnSettings`의 피해·상태이상 필드 약 20개를 `HitReactions`(`AttackReactions`) 하나로 대체했다. `ProjectileHitEffects`와 30개 인자 `Projectile.Init` 오버로드는 없앴다(오버로드는 테스트 확장으로 옮겼다).
    - `HitscanEffect`의 `onHit`·`onTargetHit`·`onKilled` 콜백도 반응으로 옮겼다. 마비는 `Hit`, 폭발·번개 구체는 새 `Impact`(범위형 공격이 목표 지점에 한 번 닿을 때), 처치 번개는 `Kill`에 걸린다.
    - `NumericReactionUpgradeEffect`는 반응이 아니라 스탯을 켜는 효과이므로 `ReactionStatUpgradeEffect`로 이름을 바꿨다. 반응 자체를 정의하는 효과는 `ReactionUpgradeEffect`다.
    - 남은 것: 투사체의 `OnHit` 콜백(폭발·분열·삼각 분열)은 아직 `Action`으로 남아 있다. 4단계의 `onEvent` 핸들러 도입 때 함께 반응으로 옮긴다.
-4. **효과 스키마 교체** (약 2일, C·D)
-   - `StatEffect{type,value}`를 `{kind, params}` 단일 스키마로 교체한다. 병행 도입이나 호환 어댑터 없이 `Weapons.json` 66장을 스크립트로 일괄 변환한다.
-   - `EffectCompiler`에 `onEvent`(이벤트·확률·자식 스킬), `periodic`, `transform` 핸들러를 등록한다.
+4. **효과 스키마 교체** (약 2일, C·D) — 4-1 완료, 핸들러·자식 스킬 진행 중
+   - **완료(4-1)**: `UpgradeType` enum과 `UpgradeCompatibility` 표, `WeaponStatEffects`의 규칙 사전, `Category()` switch를 `EffectRegistry` 하나로 합쳤다. 효과는 `EffectDef{kind(문자열 키), value}`가 되었고 `Weapons.json`의 효과 106곳(`type` 숫자 → `kind` 키)은 스크립트로 변환했다. 새 효과 종류는 `EffectRegistry`에 한 줄만 더하면 된다. 골든 테스트가 변환 전후 카드 66장의 결과가 같음을 보장한다. 옛 `Cards.json`의 `UpgradeOption`도 키 문자열로 바꿨다.
+   - `EffectRegistry`에 `onEvent`(이벤트·확률·자식 스킬), `periodic`, `transform` 핸들러를 등록한다.
    - 자식 스킬은 ID로 참조하고 검증기가 참조와 순환(자식이 부모를 다시 시전)을 검사한다.
    - `WeaponForm`을 enum으로 둘지 데이터화할지 이 단계에서 결정한다. 15종이 모두 들어오면 형태가 늘어나므로 데이터화를 권한다.
    - 끝나면 서리 감옥·번개 구름 같은 `Expired`/`Hit` 자식 시전 카드를 코드 없이 추가할 수 있다.

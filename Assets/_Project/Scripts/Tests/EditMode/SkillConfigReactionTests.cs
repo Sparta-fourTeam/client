@@ -34,8 +34,8 @@ namespace Game.Tests
             int childCasts = 0;
             Assert.IsTrue(builder.TryApply(new IUpgradeEffect[]
             {
-                new StatUpgradeEffect(UpgradeType.Damage, 60),
-                new CastUpgradeEffect(UpgradeType.CastCount, 1),
+                new StatUpgradeEffect("damage", 60),
+                new CastUpgradeEffect("castCount", 1),
                 new ReactionUpgradeEffect(AttackEvent.Hit, new CastSkillReaction(_ => childCasts += 2)),
                 new TransformUpgradeEffect(WeaponForm.FireLog)
             }));
@@ -57,9 +57,9 @@ namespace Game.Tests
             int children = 0;
             Assert.IsFalse(builder.TryApply(new IUpgradeEffect[]
             {
-                new StatUpgradeEffect(UpgradeType.Damage, 60),
+                new StatUpgradeEffect("damage", 60),
                 new ReactionUpgradeEffect(AttackEvent.Hit, new CastSkillReaction(_ => children++)),
-                new CastUpgradeEffect(UpgradeType.Damage, 60)
+                new CastUpgradeEffect("damage", 60)
             }));
             var result = builder.Build();
             Assert.AreEqual(100, result.Stats.Cast.Damage);
@@ -72,7 +72,7 @@ namespace Game.Tests
         {
             var builder = new SkillConfigBuilder(Config());
             var previous = builder.Build();
-            Assert.IsTrue(builder.TryApply(new[] { new StatUpgradeEffect(UpgradeType.Damage, 60) }));
+            Assert.IsTrue(builder.TryApply(new[] { new StatUpgradeEffect("damage", 60) }));
             Assert.AreEqual(100, previous.Stats.Cast.Damage);
             Assert.AreEqual(160, builder.Build().Stats.Cast.Damage, .001f);
         }
@@ -229,7 +229,7 @@ namespace Game.Tests
                 Assert.IsTrue(weapon.LevelUp(new WeaponUpgradeOption
                 {
                     id = "damage",
-                    effects = new List<StatEffect> { new StatEffect { type = UpgradeType.Damage, value = 20 } }
+                    effects = new List<EffectDef> { new EffectDef { kind = "damage", value = 20 } }
                 }));
                 Assert.AreEqual(120, weapon.Stats.Cast.Damage, .001f);
                 weapon.Config.Reactions.Raise(AttackEvent.Expired, new AttackContext(Vector2.zero, Vector3.up));

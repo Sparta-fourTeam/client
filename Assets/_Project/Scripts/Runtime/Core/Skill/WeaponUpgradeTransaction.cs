@@ -68,7 +68,7 @@ namespace Game.Core
             for (int i = 0; i < a.effects.Count; i++)
             {
                 if (a.effects[i] == null || b.effects[i] == null
-                    || a.effects[i].type != b.effects[i].type || a.effects[i].value != b.effects[i].value) { return false; }
+                    || a.effects[i].kind != b.effects[i].kind || a.effects[i].value != b.effects[i].value) { return false; }
             }
             return true;
         }

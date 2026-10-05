@@ -7,6 +7,6 @@ namespace Game.Core
         public int minPermanentLevel;
         public string name;
         public string desc;
-        public List<StatEffect> effects;
+        public List<EffectDef> effects;
     }
 }

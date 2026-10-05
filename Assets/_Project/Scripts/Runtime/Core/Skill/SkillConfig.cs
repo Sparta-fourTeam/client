@@ -54,7 +54,7 @@ namespace Game.Core
 
         public void AddReaction(AttackEvent trigger, IAttackReaction reaction) => bindings.Add(new ReactionBinding(trigger, reaction));
 
-        public bool TryApplyCatalog(IEnumerable<StatEffect> effects)
+        public bool TryApplyCatalog(IEnumerable<EffectDef> effects)
         {
             if (effects == null) { return false; }
             var compiled = new List<IUpgradeEffect>();
@@ -87,35 +87,33 @@ namespace Game.Core
         bool TryApply(SkillConfigBuilder builder);
     }
 
-    public enum UpgradeEffectCategory { Stat, Cast, Reaction, Transform }
-
     public abstract class NumericUpgradeEffect : IUpgradeEffect
     {
-        private readonly UpgradeType type;
+        private readonly string kind;
         private readonly float value;
         private readonly UpgradeEffectCategory category;
-        protected NumericUpgradeEffect(UpgradeType type, float value, UpgradeEffectCategory category)
+        protected NumericUpgradeEffect(string kind, float value, UpgradeEffectCategory category)
         {
-            this.type = type;
+            this.kind = kind;
             this.value = value;
             this.category = category;
         }
-        public bool TryApply(SkillConfigBuilder builder) => WeaponStatEffects.TryApplyValue(builder.Values, type, value, category);
+        public bool TryApply(SkillConfigBuilder builder) => WeaponStatEffects.TryApplyValue(builder.Values, kind, value, category);
     }
 
     public sealed class StatUpgradeEffect : NumericUpgradeEffect
     {
-        public StatUpgradeEffect(UpgradeType type, float value) : base(type, value, UpgradeEffectCategory.Stat) { }
+        public StatUpgradeEffect(string kind, float value) : base(kind, value, UpgradeEffectCategory.Stat) { }
     }
 
     public sealed class CastUpgradeEffect : NumericUpgradeEffect
     {
-        public CastUpgradeEffect(UpgradeType type, float value) : base(type, value, UpgradeEffectCategory.Cast) { }
+        public CastUpgradeEffect(string kind, float value) : base(kind, value, UpgradeEffectCategory.Cast) { }
     }
 
     public sealed class TransformUpgradeEffect : NumericUpgradeEffect
     {
-        public TransformUpgradeEffect(WeaponForm form) : base(UpgradeType.Form, (int)form, UpgradeEffectCategory.Transform) { }
+        public TransformUpgradeEffect(WeaponForm form) : base("form", (int)form, UpgradeEffectCategory.Transform) { }
     }
 
     public sealed class ReactionUpgradeEffect : IUpgradeEffect
@@ -133,6 +131,6 @@ namespace Game.Core
     // 반응을 직접 정의하려면 ReactionUpgradeEffect를 쓴다.
     internal sealed class ReactionStatUpgradeEffect : NumericUpgradeEffect
     {
-        public ReactionStatUpgradeEffect(UpgradeType type, float value) : base(type, value, UpgradeEffectCategory.Reaction) { }
+        public ReactionStatUpgradeEffect(string kind, float value) : base(kind, value, UpgradeEffectCategory.Reaction) { }
     }
 }

@@ -23,7 +23,7 @@ namespace Game.Tests
         private const string CardIconTable = "Assets/_Project/Data/SkillIconTable_Card.asset";
         private const string GoldenRelativePath = "_Project/Scripts/Tests/EditMode/Golden/WeaponCardStats.golden.txt";
 
-        private static IEnumerable<UpgradeType> AllUpgradeTypes() => (UpgradeType[])Enum.GetValues(typeof(UpgradeType));
+        private static IEnumerable<string> AllEffectKinds() => EffectRegistry.Keys.ToList();
 
         private static List<WeaponData> LoadUnvalidated() =>
             JsonConvert.DeserializeObject<List<WeaponData>>(Resources.Load<TextAsset>("MockData/Weapons").text);
@@ -38,30 +38,31 @@ namespace Game.Tests
         });
 
         // 기준값과 겹치지 않으면서 규칙이 받아들이는 값. 폭발 계열 두 개는 1만, 형태는 정의된 값만 받는다.
-        private static float ProbeValue(UpgradeType type) => type switch
+        private static float ProbeValue(string type) => type switch
         {
-            UpgradeType.BurnDeathExplosion or UpgradeType.SplitExplosion => 1,
-            UpgradeType.Form => 3,
+            "burnDeathExplosion" or "splitExplosion" => 1,
+            "form" => 3,
             _ => 5
         };
 
-        // ── 새 UpgradeType 등록 누락 ──────────────────────────────────
+        // ── 새 효과 종류 등록 누락 ──────────────────────────────────
 
-        [TestCaseSource(nameof(AllUpgradeTypes))]
-        public void EveryUpgradeType_IsRegisteredInCompatibilityTable(UpgradeType type)
+        [TestCaseSource(nameof(AllEffectKinds))]
+        public void EveryEffectKind_IsConsumedByAtLeastOneAttack(string type)
         {
-            Assert.IsTrue(UpgradeCompatibility.IsRegistered(type), $"{type}을 UpgradeCompatibility에 등록하세요.");
+            Assert.IsTrue(EffectRegistry.Supports(CastType.Projectile, type) || EffectRegistry.Supports(CastType.Hitscan, type),
+                $"{type}을 소비하는 공격이 없습니다. EffectRegistry의 허용 공격을 확인하세요.");
         }
 
-        [TestCaseSource(nameof(AllUpgradeTypes))]
-        public void EveryUpgradeType_HasAcceptingRule(UpgradeType type)
+        [TestCaseSource(nameof(AllEffectKinds))]
+        public void EveryEffectKind_HasAcceptingRule(string type)
         {
-            Assert.IsTrue(WeaponStatEffects.TryCompile(new StatEffect { type = type, value = ProbeValue(type) }, out _),
+            Assert.IsTrue(WeaponStatEffects.TryCompile(new EffectDef { kind = type, value = ProbeValue(type) }, out _),
                 $"{type}의 적용 규칙이 없거나 값을 받아들이지 않습니다.");
         }
 
-        [TestCaseSource(nameof(AllUpgradeTypes))]
-        public void EveryUpgradeType_ChangesSomeStat(UpgradeType type)
+        [TestCaseSource(nameof(AllEffectKinds))]
+        public void EveryEffectKind_ChangesSomeStat(string type)
         {
             var before = WeaponStatsDump.Flatten(Baseline());
             var after = WeaponStatsDump.Flatten(WeaponStatsTestFactory.Apply(Baseline(), type, ProbeValue(type)));
@@ -84,9 +85,9 @@ namespace Game.Tests
         [Test]
         public void SnapshotCopy_PreservesEveryField()
         {
-            var effects = AllUpgradeTypes().Select(t => new StatEffect { type = t, value = ProbeValue(t) }).ToList();
+            var effects = AllEffectKinds().Select(t => new EffectDef { kind = t, value = ProbeValue(t) }).ToList();
             Assert.IsTrue(WeaponStatEffects.TryApply(Baseline(), effects, out var full));
-            Assert.IsTrue(WeaponStatEffects.TryApply(full, new List<StatEffect>(), out var copy), "빈 강화 적용이 실패했습니다.");
+            Assert.IsTrue(WeaponStatEffects.TryApply(full, new List<EffectDef>(), out var copy), "빈 강화 적용이 실패했습니다.");
 
             var expected = WeaponStatsDump.Flatten(full);
             var actual = WeaponStatsDump.Flatten(copy);
@@ -108,11 +109,11 @@ namespace Game.Tests
             var catalog = LoadUnvalidated();
             var weapon = catalog.Find(w => w.castType == CastType.Hitscan);
             var card = weapon.upgrades[0];
-            card.effects.Add(new StatEffect { type = UpgradeType.PierceCount, value = 1 });
+            card.effects.Add(new EffectDef { kind = "pierceCount", value = 1 });
 
             var error = Assert.Throws<InvalidOperationException>(() => WeaponCatalogValidator.Validate(catalog));
             StringAssert.Contains(card.id, error.Message);
-            StringAssert.Contains("PierceCount", error.Message);
+            StringAssert.Contains("pierceCount", error.Message);
         }
 
         [Test]
@@ -121,11 +122,11 @@ namespace Game.Tests
             var catalog = LoadUnvalidated();
             var weapon = catalog.Find(w => w.castType == CastType.Projectile);
             var card = weapon.upgrades[0];
-            card.effects.Add(new StatEffect { type = UpgradeType.FieldDuration, value = 1 });
+            card.effects.Add(new EffectDef { kind = "fieldDuration", value = 1 });
 
             var error = Assert.Throws<InvalidOperationException>(() => WeaponCatalogValidator.Validate(catalog));
             StringAssert.Contains(card.id, error.Message);
-            StringAssert.Contains("FieldDuration", error.Message);
+            StringAssert.Contains("fieldDuration", error.Message);
         }
 
         [Test]
@@ -134,7 +135,7 @@ namespace Game.Tests
             var catalog = LoadUnvalidated();
             var weapon = catalog.Find(w => w.castType == CastType.Hitscan && w.upgrades.Any(u => u.variants != null && u.variants.Length > 0));
             var card = weapon.upgrades.First(u => u.variants != null && u.variants.Length > 0);
-            card.variants[0].effects.Add(new StatEffect { type = UpgradeType.ProjectileSpeed, value = 1 });
+            card.variants[0].effects.Add(new EffectDef { kind = "projectileSpeed", value = 1 });
 
             var error = Assert.Throws<InvalidOperationException>(() => WeaponCatalogValidator.Validate(catalog));
             StringAssert.Contains(card.id, error.Message);

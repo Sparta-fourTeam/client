@@ -21,7 +21,7 @@ namespace Game.Core
         public int WeaponId;
 
         /// <summary>Type이 Skill이고 이미 보유 중인 무기를 강화하는 카드일 때만 쓰인다</summary>
-        public UpgradeType UpgradeOption;
+        public string UpgradeOption;
 
         /// <summary>Type이 WallRepair일 때만 쓰인다</summary>
         public int WallRepairAmount;

@@ -86,7 +86,7 @@ namespace Game.Core
             return true;
         }
 
-        internal bool TryPrepareUpgrade(WeaponUpgradeOption option, List<StatEffect> effects, out SkillConfig nextConfig)
+        internal bool TryPrepareUpgrade(WeaponUpgradeOption option, List<EffectDef> effects, out SkillConfig nextConfig)
         {
             nextConfig = Config;
             if (!upgrades.CanPrepare(option)) { return false; }

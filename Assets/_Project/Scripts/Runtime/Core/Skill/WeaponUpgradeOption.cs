@@ -7,7 +7,7 @@ namespace Game.Core
         public string id;
         public string name;
         public string desc;
-        public List<StatEffect> effects;
+        public List<EffectDef> effects;
         // 같은 카드 ID/횟수를 유지하고 영구 레벨에 따라 표시와 효과 전체를 교체한다.
         public WeaponUpgradeVariant[] variants;
         // 양쪽 카탈로그에서 같은 선택 횟수를 참조하는 공유 강화 키.

@@ -131,7 +131,7 @@ namespace Game.Tests
         public void ForgedChoice_IsRejected()
         {
             var choice = _controller.GetRandomUpgradeChoices(50).Find(c => !c.IsNewWeapon);
-            choice.Option = new WeaponUpgradeOption { id = "forged", effects = new List<StatEffect>() };
+            choice.Option = new WeaponUpgradeOption { id = "forged", effects = new List<EffectDef>() };
             Assert.IsFalse(_controller.ApplyUpgradeChoice(choice));
             Assert.AreEqual(1, choice.Weapon.Level);
             Assert.AreEqual(1, _publisher.Published.Count);
@@ -168,7 +168,7 @@ namespace Game.Tests
                     sharedId = "synthetic_pair",
                     affectedWeaponIds = new[] { 1, 3 },
                     maxPickCount = 1,
-                    effects = new List<StatEffect> { new StatEffect { type = UpgradeType.Damage, value = 80 } }
+                    effects = new List<EffectDef> { new EffectDef { kind = "damage", value = 80 } }
                 });
             }
             var choices = _controller.GetRandomUpgradeChoices(100).FindAll(c => c.Option?.sharedId == "synthetic_pair");
