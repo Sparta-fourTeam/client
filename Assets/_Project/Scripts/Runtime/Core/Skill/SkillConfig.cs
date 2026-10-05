@@ -23,20 +23,28 @@ namespace Game.Core
         public AttackReactions Reactions { get; }
         /// <summary>자식 스킬 시전 효과가 쓰는 시전기. 연결되지 않았으면 null</summary>
         public IChildSkillCaster ChildCaster { get; }
-        /// <summary>시전하는 자식 스킬별 연결(상속 규칙과 자식 전용 강화). 자식 ID로 찾는다</summary>
+        /// <summary>시전하는 자식 스킬별 연결(부모 스탯 상속 규칙). 자식 ID로 찾는다</summary>
         public IReadOnlyDictionary<int, ChildLink> Children { get; }
+        /// <summary>스킬 ID별로 보관한 효과. 이 부모 아래 어느 단계에서든 그 스킬이 시전될 때 그 스킬의 설정에 적용된다.
+        /// 자식에게서 시전되는 손자에게도 같은 표가 전달된다.</summary>
+        public IReadOnlyDictionary<int, IReadOnlyList<EffectDef>> Overlays { get; }
         internal readonly ReactionBinding[] Bindings;
 
         internal SkillConfig(WeaponStats stats, AttackDefinition attack, IEnumerable<ReactionBinding> bindings,
-            IChildSkillCaster childCaster = null, IReadOnlyDictionary<int, ChildLink> children = null)
+            IChildSkillCaster childCaster = null, IReadOnlyDictionary<int, ChildLink> children = null,
+            IReadOnlyDictionary<int, IReadOnlyList<EffectDef>> overlays = null)
         {
             Stats = stats;
             Attack = attack;
             ChildCaster = childCaster;
             Children = children ?? new Dictionary<int, ChildLink>();
+            Overlays = overlays ?? new Dictionary<int, IReadOnlyList<EffectDef>>();
             Bindings = new List<ReactionBinding>(bindings).ToArray();
             var resolved = new List<ReactionBinding>(Bindings.Length);
-            foreach (var binding in Bindings) { resolved.Add(binding.Resolve(this)); }
+            foreach (var binding in Bindings)
+            {
+                if (binding.TryResolve(this, out var bound)) { resolved.Add(bound); }
+            }
             Reactions = new AttackReactions(resolved);
         }
 
@@ -49,9 +57,11 @@ namespace Game.Core
             return WithStats(new WeaponStats(builder));
         }
 
-        public SkillConfig WithChildCaster(IChildSkillCaster childCaster) => new SkillConfig(Stats, Attack, Bindings, childCaster, Children);
+        public SkillConfig WithChildCaster(IChildSkillCaster childCaster) => new SkillConfig(Stats, Attack, Bindings, childCaster, Children, Overlays);
 
-        internal SkillConfig WithStats(WeaponStats stats) => new SkillConfig(stats, Attack, Bindings, ChildCaster, Children);
+        internal SkillConfig WithOverlays(IReadOnlyDictionary<int, IReadOnlyList<EffectDef>> overlays) => new SkillConfig(Stats, Attack, Bindings, ChildCaster, Children, overlays);
+
+        internal SkillConfig WithStats(WeaponStats stats) => new SkillConfig(stats, Attack, Bindings, ChildCaster, Children, Overlays);
 
         public static SkillConfig FromDefinition(WeaponData data) => new SkillConfig(
             WeaponStats.FromDefinition(data.baseStats), new AttackDefinition(data.castType, data.projectilePath, data.baseStats.cast.range),
@@ -66,6 +76,7 @@ namespace Game.Core
         internal IChildSkillCaster ChildCaster { get; }
         private List<ReactionBinding> bindings;
         private Dictionary<int, ChildLink> children;
+        private Dictionary<int, IReadOnlyList<EffectDef>> overlays;
 
         public SkillConfigBuilder(SkillConfig config)
         {
@@ -74,6 +85,7 @@ namespace Game.Core
             ChildCaster = config.ChildCaster;
             bindings = new List<ReactionBinding>(config.Bindings);
             children = new Dictionary<int, ChildLink>(config.Children);
+            overlays = new Dictionary<int, IReadOnlyList<EffectDef>>(config.Overlays);
         }
 
         internal SkillConfigBuilder(WeaponStats stats) : this(new SkillConfig(stats, default, Array.Empty<ReactionBinding>())) { }
@@ -84,23 +96,19 @@ namespace Game.Core
         internal void AddLateReaction(AttackEvent trigger, Func<SkillConfig, IAttackReaction> factory) =>
             bindings.Add(ReactionBinding.Late(trigger, factory));
 
-        /// <summary>자식 연결을 만든다. 이미 있으면 상속 규칙이 같거나 비어 있을 때만 받아들인다.</summary>
-        internal bool TryLinkChild(int skillId, IReadOnlyList<ChildLink.Inheritance> inherit)
+        /// <summary>자식 연결을 만들거나 상속 규칙을 더한다. 같은 스탯을 다시 적으면 나중 값이 이긴다.</summary>
+        internal void LinkChild(int skillId, IReadOnlyList<ChildLink.Inheritance> inherit)
         {
-            if (!children.TryGetValue(skillId, out var link))
-            {
-                children[skillId] = new ChildLink(skillId, inherit ?? Array.Empty<ChildLink.Inheritance>(), Array.Empty<EffectDef>());
-                return true;
-            }
-            return inherit == null || inherit.Count == 0 || link.SameInheritance(inherit);
+            children.TryGetValue(skillId, out var link);
+            children[skillId] = (link ?? new ChildLink(skillId, Array.Empty<ChildLink.Inheritance>())).WithInheritance(inherit);
         }
 
-        /// <summary>이미 연결된 자식에게만 적용되는 강화 효과를 덧붙인다. 연결이 없으면 실패한다.</summary>
-        internal bool TryAddChildOverlay(int skillId, EffectDef effect)
+        /// <summary>해당 ID의 스킬에 적용할 효과를 보관한다. 그 스킬이 아직 시전되지 않아도 받아 두었다가 시전될 때 적용한다.</summary>
+        internal void AddOverlay(int skillId, EffectDef effect)
         {
-            if (!children.TryGetValue(skillId, out var link)) { return false; }
-            children[skillId] = link.WithOverlay(effect);
-            return true;
+            var list = overlays.TryGetValue(skillId, out var existing) ? new List<EffectDef>(existing) : new List<EffectDef>();
+            list.Add(effect);
+            overlays[skillId] = list;
         }
 
         public bool TryApplyCatalog(IEnumerable<EffectDef> effects)
@@ -126,10 +134,11 @@ namespace Game.Core
             Values = prepared.Values;
             bindings = prepared.bindings;
             children = prepared.children;
+            overlays = prepared.overlays;
             return true;
         }
 
-        public SkillConfig Build() => new SkillConfig(new WeaponStats(Values), attack, bindings, ChildCaster, children);
+        public SkillConfig Build() => new SkillConfig(new WeaponStats(Values), attack, bindings, ChildCaster, children, overlays);
     }
 
     public interface IUpgradeEffect

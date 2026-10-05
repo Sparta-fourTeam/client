@@ -54,6 +54,9 @@ namespace Game.Core
         /// <summary>자식 스킬을 시전하는 효과 종류인지</summary>
         public static bool IsChildCast(string key) => key == "onEvent" || key == "periodic";
 
+        /// <summary>숫자 스탯이 아니라 별도 필드로 표현하는 효과 종류인지 (onEvent, periodic, inherit)</summary>
+        public static bool IsHandler(string key) => key != null && Kinds.TryGetValue(key, out var kind) && kind.Compile != null;
+
         public static bool Supports(CastType castType, string key)
         {
             if (key == null || !Kinds.TryGetValue(key, out var kind)) { return false; }
@@ -145,6 +148,7 @@ namespace Game.Core
             // 자식 스킬 시전: 지정한 시점(onEvent) 또는 주기(periodic)에 다른 스킬을 그 위치에서 시전한다.
             k.Add("onEvent", new Kind(Reaction, All, null, null, ChildCastUpgradeEffect.FromEvent));
             k.Add("periodic", new Kind(Reaction, All, null, null, ChildCastUpgradeEffect.FromPeriodic));
+            k.Add("inherit", new Kind(Reaction, All, null, null, ChildInheritUpgradeEffect.From));
             return k;
         }
     }

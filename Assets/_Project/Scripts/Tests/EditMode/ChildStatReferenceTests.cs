@@ -132,12 +132,13 @@ namespace Game.Tests
         }
 
         [Test]
-        public void ChildOnlyUpgrade_FailsUntilTheChildIsLinked()
+        public void ChildOnlyUpgrade_TakenBeforeTheLinkIsKeptAndAppliedOnceChildIsCast()
         {
             var recorder = new Recorder();
             var builder = NewBuilder(recorder);
-            Assert.IsFalse(builder.TryApplyCatalog(new[] { ForChild("damage", 80) }), "자식 연결이 없으면 실패한다");
-            Assert.IsTrue(builder.TryApplyCatalog(new[] { Link(), ForChild("damage", 80) }), "같은 묶음 안에서는 순서대로 적용된다");
+            Assert.IsTrue(builder.TryApplyCatalog(new[] { ForChild("damage", 100) }), "연결이 아직 없어도 보관한다");
+            Assert.IsTrue(builder.TryApplyCatalog(new[] { Link() }));
+            Assert.AreEqual(6, RaiseOnce(builder.Build(), recorder).Resolve(ChildBase()).Stats.Cast.Damage, .001f, "자식 기본 3 × 2");
         }
 
         [Test]
@@ -165,15 +166,112 @@ namespace Game.Tests
         // ── 연결 규칙 ─────────────────────────────────────────────────
 
         [Test]
-        public void SecondCastSiteForSameChild_MustNotChangeInheritance()
+        public void InheritRules_MergeAcrossCastSitesAndLaterValueWinsPerStat()
         {
             var recorder = new Recorder();
             var builder = NewBuilder(recorder);
             Assert.IsTrue(builder.TryApplyCatalog(new[] { Link(new Dictionary<string, float> { ["damage"] = .5f }) }));
-            Assert.IsTrue(builder.TryApplyCatalog(new[] { Link(null, AttackEvent.Kill) }), "상속 규칙을 다시 적지 않으면 같은 연결을 쓴다");
-            Assert.IsTrue(builder.TryApplyCatalog(new[] { Link(new Dictionary<string, float> { ["damage"] = .5f }, AttackEvent.Expired) }), "같은 규칙은 허용한다");
-            Assert.IsFalse(builder.TryApplyCatalog(new[] { Link(new Dictionary<string, float> { ["damage"] = .7f }, AttackEvent.Start) }),
-                "같은 자식에 다른 상속 규칙은 실패한다");
+            Assert.IsTrue(builder.TryApplyCatalog(new[] { Link(new Dictionary<string, float> { ["projectileSpeed"] = 1 }, AttackEvent.Kill) }), "규칙이 합쳐진다");
+            var both = RaiseOnce(builder.Build(), recorder).Resolve(ChildBase());
+            Assert.AreEqual(50, both.Stats.Cast.Damage, .001f);
+            Assert.AreEqual(20, both.Stats.Projectile.Speed, "다른 시전 지점에서 더한 규칙도 같은 연결에 쌓인다");
+
+            Assert.IsTrue(builder.TryApplyCatalog(new[] { Link(new Dictionary<string, float> { ["damage"] = .7f }, AttackEvent.Start) }));
+            Assert.AreEqual(70, RaiseOnce(builder.Build(), recorder).Resolve(ChildBase()).Stats.Cast.Damage, .001f, "같은 스탯은 나중 값이 이긴다");
+        }
+
+        [Test]
+        public void InheritEffect_AddsRulesWithoutCasting()
+        {
+            var recorder = new Recorder();
+            var builder = NewBuilder(recorder);
+            Assert.IsTrue(builder.TryApplyCatalog(new[]
+            {
+                Link(),
+                new EffectDef { kind = "inherit", skillId = ChildId, inherit = new Dictionary<string, float> { ["damage"] = .25f } }
+            }));
+            Assert.AreEqual(25, RaiseOnce(builder.Build(), recorder).Resolve(ChildBase()).Stats.Cast.Damage, .001f);
+        }
+
+        // ── 손자: 보관 효과로 자식에게 반응을 붙이고, 보관 효과는 후손 전체에 적용된다 ──
+
+        private const int GrandchildId = 3;
+
+        private static SkillConfig GrandchildBase() => SkillConfig.FromDefinition(new WeaponData
+        {
+            id = GrandchildId,
+            name = "손자",
+            maxLevel = 5,
+            upgrades = new List<WeaponUpgradeOption>(),
+            baseStats = new WeaponBaseStats { cast = { baseDamage = 1, cooldown = 1, range = 10, projectileCount = 1 } }
+        });
+
+        [Test]
+        public void AttachedReaction_MakesChildCastGrandchildThatInheritsFromChildNotRoot()
+        {
+            var recorder = new Recorder();
+            var builder = NewBuilder(recorder);
+            Assert.IsTrue(builder.TryApplyCatalog(new[]
+            {
+                Link(new Dictionary<string, float> { ["damage"] = .5f }),
+                // 자식에게 "맞으면 손자를 시전한다"를 붙인다. 손자는 자식 피해의 절반을 가져온다.
+                new EffectDef { kind = "onEvent", trigger = AttackEvent.Hit, skillId = GrandchildId, target = ChildId,
+                    inherit = new Dictionary<string, float> { ["damage"] = .5f } },
+                // 손자 피해 +100%는 어느 단계에서 시전되든 손자에게 적용된다.
+                new EffectDef { kind = "damage", value = 100, target = GrandchildId }
+            }));
+
+            var childCast = RaiseOnce(builder.Build(), recorder);
+            var child = childCast.Resolve(ChildBase(), recorder);
+            Assert.AreEqual(50, child.Stats.Cast.Damage, .001f);
+
+            var grandchildCast = RaiseOnce(child, recorder);
+            Assert.AreEqual(GrandchildId, grandchildCast.SkillId);
+            var grandchild = grandchildCast.Resolve(GrandchildBase(), recorder);
+            Assert.AreEqual(50, grandchild.Stats.Cast.Damage, .001f, "자식 피해 50 × 0.5 × 2(보관 효과)");
+        }
+
+        [Test]
+        public void AttachedReaction_TakenBeforeParentLinksTheChild_StillAttachesWhenChildIsCast()
+        {
+            var recorder = new Recorder();
+            var builder = NewBuilder(recorder);
+            Assert.IsTrue(builder.TryApplyCatalog(new[]
+            {
+                new EffectDef { kind = "onEvent", trigger = AttackEvent.Hit, skillId = GrandchildId, target = ChildId }
+            }));
+            Assert.IsTrue(builder.TryApplyCatalog(new[] { Link() }), "자식은 나중에 연결돼도 된다");
+            var child = RaiseOnce(builder.Build(), recorder).Resolve(ChildBase(), recorder);
+            Assert.AreEqual(GrandchildId, RaiseOnce(child, recorder).SkillId);
+        }
+
+        [Test]
+        public void OnlyForm_AttachesReactionOnlyWhileTheFormMatches()
+        {
+            var recorder = new Recorder();
+            var builder = NewBuilder(recorder);
+            var guarded = Link();
+            guarded.onlyForm = "Default";
+            Assert.IsTrue(builder.TryApplyCatalog(new[] { guarded }));
+            Assert.AreEqual(1, RaiseCount(builder.Build(), recorder), "기본 형태에서는 시전한다");
+
+            Assert.IsTrue(builder.TryApplyCatalog(new[] { new EffectDef { kind = "form", value = (int)WeaponForm.TriangleIce } }));
+            Assert.AreEqual(0, RaiseCount(builder.Build(), recorder), "형태가 바뀌면 이 반응은 빠진다");
+        }
+
+        private static int RaiseCount(SkillConfig config, Recorder recorder)
+        {
+            recorder.Casts.Clear();
+            config.Reactions.Raise(AttackEvent.Hit, new AttackContext(Vector2.zero, Vector3.up));
+            return recorder.Casts.Count;
+        }
+
+        [Test]
+        public void InvalidOnlyForm_IsRejected()
+        {
+            var effect = Link();
+            effect.onlyForm = "NoSuchForm";
+            Assert.IsFalse(NewBuilder(new Recorder()).TryApplyCatalog(new[] { effect }));
         }
 
         [Test]
@@ -183,14 +281,6 @@ namespace Game.Tests
             Assert.IsFalse(NewBuilder(recorder).TryApplyCatalog(new[] { Link(new Dictionary<string, float> { ["noSuchStat"] = 1 }) }));
             Assert.IsFalse(NewBuilder(recorder).TryApplyCatalog(new[] { Link(new Dictionary<string, float> { ["damage"] = 0 }) }));
             Assert.IsFalse(NewBuilder(recorder).TryApplyCatalog(new[] { Link(new Dictionary<string, float> { ["damage"] = -1 }) }));
-        }
-
-        [Test]
-        public void TargetOnHandlerEffect_IsRejected()
-        {
-            var effect = Link();
-            effect.target = 3;
-            Assert.IsFalse(NewBuilder(new Recorder()).TryApplyCatalog(new[] { effect }));
         }
 
         [Test]
@@ -248,14 +338,12 @@ namespace Game.Tests
             new WeaponUpgradeOption { id = id, name = id, desc = id, maxPickCount = 1, effects = new List<EffectDef>(effects) };
 
         [Test]
-        public void Validator_AcceptsOverlayOnCardThatRequiresTheLinkingCard()
+        public void Validator_AcceptsOverlayWhenSomeCardCastsTheChildEvenWithoutPrerequisite()
         {
             var catalog = Catalog((p, c) =>
             {
-                p.upgrades.Add(Card("link", Link(new Dictionary<string, float> { ["damage"] = .5f })));
-                var boost = Card("boost", ForChild("damage", 80));
-                boost.requiredCardIds = new[] { "link" };
-                p.upgrades.Add(boost);
+                p.upgrades.Add(Card("link", Link()));
+                p.upgrades.Add(Card("boost", ForChild("damage", 80)));   // 선행 조건이 없어도 된다. 보관했다가 자식이 시전될 때 적용한다
             });
             Assert.DoesNotThrow(() => WeaponCatalogValidator.Validate(catalog));
         }
@@ -268,31 +356,41 @@ namespace Game.Tests
         }
 
         [Test]
-        public void Validator_RejectsOverlayWithoutLinkingPrerequisite()
+        public void Validator_RejectsOverlayOnSkillThatNoCardEverCasts()
         {
-            var catalog = Catalog((p, c) =>
-            {
-                p.upgrades.Add(Card("link", Link()));
-                p.upgrades.Add(Card("boost", ForChild("damage", 80)));   // link 카드를 선행 조건으로 요구하지 않는다
-            });
+            var catalog = Catalog((p, c) => p.upgrades.Add(Card("boost", ForChild("damage", 80))));
             var error = Assert.Throws<InvalidOperationException>(() => WeaponCatalogValidator.Validate(catalog));
             StringAssert.Contains("boost", error.Message);
-            StringAssert.Contains("선행 카드", error.Message);
+            StringAssert.Contains("시전되는 카드가 없어", error.Message);
         }
 
         [Test]
-        public void Validator_FindsLinkThroughTransitivePrerequisites()
+        public void Validator_FollowsAttachedReactionsToReachGrandchildren()
+        {
+            var catalog = Catalog((p, c) =>
+            {
+                var grand = Child(); grand.id = GrandchildId; grand.name = "손자"; grand.castType = CastType.Projectile; grand.iconKey = "g";
+                p.upgrades.Add(Card("link", Link()));
+                p.upgrades.Add(Card("attach", new EffectDef { kind = "onEvent", trigger = AttackEvent.Hit, skillId = GrandchildId, target = ChildId }));
+                p.upgrades.Add(Card("boost", new EffectDef { kind = "damage", value = 10, target = GrandchildId }));
+                catalogExtra = grand;
+            });
+            catalog.Add(catalogExtra);
+            Assert.DoesNotThrow(() => WeaponCatalogValidator.Validate(catalog));
+        }
+
+        private static WeaponData catalogExtra;
+
+        [Test]
+        public void Validator_RejectsCycleCreatedByAttachedReaction()
         {
             var catalog = Catalog((p, c) =>
             {
                 p.upgrades.Add(Card("link", Link()));
-                var middle = Card("middle", new EffectDef { kind = "damage", value = 10 });
-                middle.requiredCardIds = new[] { "link" };
-                var boost = Card("boost", ForChild("damage", 80));
-                boost.requiredCardIds = new[] { "middle" };
-                p.upgrades.Add(middle); p.upgrades.Add(boost);
+                // 부모 → 자식, 자식 → 부모는 자기 순환이다.
+                p.upgrades.Add(Card("loop", new EffectDef { kind = "onEvent", trigger = AttackEvent.Hit, skillId = ChildId, target = ChildId }));
             });
-            Assert.DoesNotThrow(() => WeaponCatalogValidator.Validate(catalog));
+            Assert.Throws<InvalidOperationException>(() => WeaponCatalogValidator.Validate(catalog));
         }
 
         [Test]

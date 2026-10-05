@@ -58,8 +58,14 @@ namespace Game.Core
         internal static ReactionBinding Late(AttackEvent trigger, Func<SkillConfig, IAttackReaction> factory) =>
             new ReactionBinding(trigger, factory);
 
-        internal ReactionBinding Resolve(SkillConfig config) =>
-            factory == null ? this : new ReactionBinding(Event, factory(config));
+        /// <summary>팩토리 바인딩이면 설정으로 반응을 만든다. 팩토리가 null을 돌려주면 이 설정에서는 반응을 붙이지 않는다.</summary>
+        internal bool TryResolve(SkillConfig config, out ReactionBinding resolved)
+        {
+            if (factory == null) { resolved = this; return true; }
+            var reaction = factory(config);
+            resolved = reaction == null ? default : new ReactionBinding(Event, reaction);
+            return reaction != null;
+        }
     }
 
     /// <summary>Fixed reaction order. Events run locally on an attack, independently of the scene message bus.</summary>

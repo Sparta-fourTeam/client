@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Game.Core
 {
@@ -22,8 +23,11 @@ namespace Game.Core
         public ChildLink Link { get; }
         /// <summary>이 시전을 만든 부모 공격의 스탯. 발사 때의 설정이므로 이후 강화는 반영되지 않는다</summary>
         public WeaponStats ParentStats { get; }
+        /// <summary>스킬 ID별 보관 효과. 자식과 그 후손이 시전될 때 적용한다</summary>
+        public IReadOnlyDictionary<int, IReadOnlyList<EffectDef>> Overlays { get; }
 
-        public ChildCast(int skillId, float damageScale, ChildLink link, WeaponStats parentStats, int count = 1, bool excludeHit = false)
+        public ChildCast(int skillId, float damageScale, ChildLink link, WeaponStats parentStats, int count = 1, bool excludeHit = false,
+            IReadOnlyDictionary<int, IReadOnlyList<EffectDef>> overlays = null)
         {
             SkillId = skillId;
             DamageScale = damageScale;
@@ -31,25 +35,35 @@ namespace Game.Core
             ExcludeHit = excludeHit;
             Link = link;
             ParentStats = parentStats;
+            Overlays = overlays;
         }
 
-        /// <summary>자식의 기본 설정에 상속, 자식 전용 강화, 피해 배율을 이 순서로 적용한 설정</summary>
-        public SkillConfig Resolve(SkillConfig childBase)
+        /// <summary>
+        /// 자식의 기본 설정에서 이번 시전의 설정을 만든다. 순서는 상속 → 발사 수 → 피해 배율 → 보관 효과(카드를 얻은 순서)다.
+        /// 보관 효과가 자식에게 반응을 붙이면 그 반응은 이 설정의 스탯을 부모로 삼는다.
+        /// </summary>
+        public SkillConfig Resolve(SkillConfig childBase, IChildSkillCaster caster = null)
         {
-            var resolved = Link != null
-                ? Link.Resolve(childBase, ParentStats, DamageScale)
-                : UnityEngine.Mathf.Approximately(DamageScale, 1) ? childBase : childBase.WithDamageScale(DamageScale);
-            if (Count <= 1) { return resolved; }
-            var values = new WeaponStatsBuilder(resolved.Stats);
-            values[Stat.ProjectileCount] = Count;
-            return resolved.WithStats(new WeaponStats(values));
+            var values = new WeaponStatsBuilder(childBase.Stats);
+            if (Link != null)
+            {
+                foreach (var rule in Link.Inherit) { values[rule.Stat] = ParentStats.Get(rule.Stat) * rule.Scale; }
+            }
+            if (Count > 1) { values[Stat.ProjectileCount] = Count; }
+            var config = childBase.WithStats(new WeaponStats(values)).WithChildCaster(caster ?? childBase.ChildCaster)
+                .WithOverlays(Overlays ?? new Dictionary<int, IReadOnlyList<EffectDef>>());
+            if (!Mathf.Approximately(DamageScale, 1)) { config = config.WithDamageScale(DamageScale); }
+            if (Overlays != null && Overlays.TryGetValue(SkillId, out var effects) && effects.Count > 0)
+            {
+                var builder = new SkillConfigBuilder(config);
+                if (builder.TryApplyCatalog(effects)) { config = builder.Build(); }
+                else { Debug.LogWarning($"[ChildCast] 스킬 {SkillId}에 보관된 효과를 적용하지 못했습니다. 시전기 연결을 확인하세요."); }
+            }
+            return config;
         }
     }
 
-    /// <summary>
-    /// 부모 스킬과 자식 스킬 하나의 연결. 자식 설정은 이렇게 정해진다.
-    /// 1) 자식의 기본 설정, 2) 상속: 부모 스탯 × 배율로 덮어쓴다, 3) 자식 전용 강화(target 효과)를 카드를 얻은 순서대로, 4) 시전 지점의 피해 배율.
-    /// </summary>
+    /// <summary>부모 스킬과 자식 스킬 하나의 연결: 부모 스탯을 어떻게 가져올지(상속 규칙).</summary>
     public sealed class ChildLink
     {
         public readonly struct Inheritance
@@ -61,47 +75,25 @@ namespace Game.Core
 
         public int SkillId { get; }
         internal IReadOnlyList<Inheritance> Inherit { get; }
-        internal IReadOnlyList<EffectDef> Overlay { get; }
 
-        internal ChildLink(int skillId, IReadOnlyList<Inheritance> inherit, IReadOnlyList<EffectDef> overlay)
+        internal ChildLink(int skillId, IReadOnlyList<Inheritance> inherit)
         {
             SkillId = skillId;
             Inherit = inherit;
-            Overlay = overlay;
         }
 
-        internal ChildLink WithOverlay(EffectDef effect)
+        /// <summary>규칙을 더한 새 연결. 같은 스탯이 이미 있으면 새 값으로 바꾼다.</summary>
+        internal ChildLink WithInheritance(IReadOnlyList<Inheritance> rules)
         {
-            var next = new List<EffectDef>(Overlay) { effect };
-            return new ChildLink(SkillId, Inherit, next);
-        }
-
-        internal bool SameInheritance(IReadOnlyList<Inheritance> other)
-        {
-            if (other.Count != Inherit.Count) { return false; }
-            for (int i = 0; i < other.Count; i++)
+            if (rules == null || rules.Count == 0) { return this; }
+            var merged = new List<Inheritance>(Inherit);
+            foreach (var rule in rules)
             {
-                if (other[i].Stat != Inherit[i].Stat || other[i].Scale != Inherit[i].Scale) { return false; }
+                int index = merged.FindIndex(r => r.Stat == rule.Stat);
+                if (index >= 0) { merged[index] = rule; } else { merged.Add(rule); }
             }
-            return true;
-        }
-
-        /// <summary>자식의 기본 설정에 연결 규칙을 적용한다. 원본 설정은 바뀌지 않는다.</summary>
-        public SkillConfig Resolve(SkillConfig childBase, WeaponStats parent, float damageScale)
-        {
-            var values = new WeaponStatsBuilder(childBase.Stats);
-            foreach (var rule in Inherit) { values[rule.Stat] = parent.Get(rule.Stat) * rule.Scale; }
-            foreach (var effect in Overlay)
-            {
-                // 연결할 때 이미 검증한 효과라 실패하지 않는다.
-                if (EffectRegistry.TryGet(effect.kind, out var kind)) { WeaponStatEffects.TryApplyValue(values, effect.kind, effect.value, kind.Category); }
-            }
-            if (!UnityEngine.Mathf.Approximately(damageScale, 1))
-            {
-                values[Stat.Damage] *= damageScale;
-                values[Stat.ExplosionDamage] *= damageScale;
-            }
-            return childBase.WithStats(new WeaponStats(values));
+            merged.Sort((a, b) => a.Stat.CompareTo(b.Stat));
+            return new ChildLink(SkillId, merged);
         }
 
         internal static bool TryParseInherit(Dictionary<string, float> source, out List<Inheritance> inherit)
@@ -131,12 +123,14 @@ namespace Game.Core
         private readonly float interval;
         private readonly float damageScale;
         private readonly bool excludeHit;
+        private readonly WeaponForm? onlyForm;
         private readonly List<ChildLink.Inheritance> inherit;
 
         public ChildCastUpgradeEffect(AttackEvent trigger, int skillId, int count, float chance, float damageScale,
-            List<ChildLink.Inheritance> inherit, bool excludeHit, float interval = 0)
+            List<ChildLink.Inheritance> inherit, bool excludeHit, WeaponForm? onlyForm, float interval = 0)
         {
             this.excludeHit = excludeHit;
+            this.onlyForm = onlyForm;
             this.damageScale = damageScale;
             this.trigger = trigger;
             this.skillId = skillId;
@@ -149,49 +143,102 @@ namespace Game.Core
         public bool TryApply(SkillConfigBuilder builder)
         {
             var caster = builder.ChildCaster;
-            if (caster == null || !builder.TryLinkChild(skillId, inherit)) { return false; }
+            if (caster == null) { return false; }
+            builder.LinkChild(skillId, inherit);
             // 부모의 스탯 스냅샷은 설정이 만들어질 때 정해진다. 이미 발사된 공격은 발사 때의 값을 쓴다.
             builder.AddLateReaction(trigger, config =>
             {
+                if (onlyForm.HasValue && config.Stats.Cast.Form != onlyForm.Value) { return null; }
                 var link = config.Children[skillId];
                 var stats = config.Stats;
-                IAttackReaction cast = new CastSkillReaction(c => caster.Cast(new ChildCast(skillId, damageScale, link, stats, count, excludeHit), c), 1, chance);
+                var overlays = config.Overlays;
+                IAttackReaction cast = new CastSkillReaction(
+                    c => caster.Cast(new ChildCast(skillId, damageScale, link, stats, count, excludeHit, overlays), c), 1, chance);
                 return interval > 0 ? new PeriodicReaction(interval, cast) : cast;
             });
             return true;
         }
 
-        public static bool Valid(EffectDef e, out List<ChildLink.Inheritance> inherit)
+        public static bool Valid(EffectDef e, out List<ChildLink.Inheritance> inherit, out WeaponForm? onlyForm)
         {
             inherit = null;
+            onlyForm = null;
+            if (!string.IsNullOrEmpty(e.onlyForm))
+            {
+                if (!Enum.TryParse<WeaponForm>(e.onlyForm, true, out var form)) { return false; }
+                onlyForm = form;
+            }
             return e.skillId > 0 && e.count >= 1 && e.chance > 0 && e.chance <= 1 && !float.IsNaN(e.chance)
                 && e.damageScale > 0 && !float.IsNaN(e.damageScale) && !float.IsInfinity(e.damageScale)
                 && e.target == 0 && ChildLink.TryParseInherit(e.inherit, out inherit);
         }
 
         public static IUpgradeEffect FromEvent(EffectDef e) =>
-            Valid(e, out var inherit) && e.trigger != AttackEvent.Tick
-                ? new ChildCastUpgradeEffect(e.trigger, e.skillId, e.count, e.chance, e.damageScale, inherit, e.excludeHit)
+            Valid(e, out var inherit, out var form) && e.trigger != AttackEvent.Tick
+                ? new ChildCastUpgradeEffect(e.trigger, e.skillId, e.count, e.chance, e.damageScale, inherit, e.excludeHit, form)
                 : null;
 
         public static IUpgradeEffect FromPeriodic(EffectDef e) =>
-            Valid(e, out var inherit) && e.interval > 0 && !float.IsInfinity(e.interval)
-                ? new ChildCastUpgradeEffect(AttackEvent.Tick, e.skillId, e.count, e.chance, e.damageScale, inherit, e.excludeHit, e.interval)
+            Valid(e, out var inherit, out var form) && e.interval > 0 && !float.IsInfinity(e.interval)
+                ? new ChildCastUpgradeEffect(AttackEvent.Tick, e.skillId, e.count, e.chance, e.damageScale, inherit, e.excludeHit, form, e.interval)
                 : null;
     }
 
-    /// <summary>target이 있는 스탯 효과: 부모가 아니라 연결된 자식에게만 적용되는 강화 (예: 분열 조각 피해 증폭).</summary>
-    internal sealed class ChildOverlayUpgradeEffect : IUpgradeEffect
+    /// <summary>inherit 효과: skillId 자식이 부모에게서 가져오는 스탯 규칙을 더한다. 자식 연결이 아직 없어도 연결을 만들어 둔다.</summary>
+    internal sealed class ChildInheritUpgradeEffect : IUpgradeEffect
     {
-        private readonly EffectDef effect;
-        public ChildOverlayUpgradeEffect(EffectDef effect) => this.effect = effect;
+        private readonly int skillId;
+        private readonly List<ChildLink.Inheritance> rules;
+        private ChildInheritUpgradeEffect(int skillId, List<ChildLink.Inheritance> rules) { this.skillId = skillId; this.rules = rules; }
 
-        public bool TryApply(SkillConfigBuilder builder) => builder.TryAddChildOverlay(effect.target, effect);
+        public bool TryApply(SkillConfigBuilder builder)
+        {
+            builder.LinkChild(skillId, rules);
+            return true;
+        }
 
         public static IUpgradeEffect From(EffectDef e) =>
-            e.target > 0 && EffectRegistry.IsStatKind(e.kind) && EffectRegistry.TryGet(e.kind, out var kind) && kind.Accept(e.value)
-                ? new ChildOverlayUpgradeEffect(e)
+            e.skillId > 0 && e.target == 0 && e.inherit != null && e.inherit.Count > 0 && ChildLink.TryParseInherit(e.inherit, out var rules)
+                ? new ChildInheritUpgradeEffect(e.skillId, rules)
                 : null;
+    }
+
+    /// <summary>target이 있는 효과: 부모가 아니라 해당 ID의 스킬에 적용할 효과로 보관한다.
+    /// 그 스킬이 시전될 때(어느 단계든, 연결 순서와 무관하게) 그 스킬의 설정에 적용된다.</summary>
+    internal sealed class ChildOverlayUpgradeEffect : IUpgradeEffect
+    {
+        private readonly int target;
+        private readonly EffectDef inner;
+        private ChildOverlayUpgradeEffect(int target, EffectDef inner) { this.target = target; this.inner = inner; }
+
+        public bool TryApply(SkillConfigBuilder builder)
+        {
+            builder.AddOverlay(target, inner);
+            return true;
+        }
+
+        public static IUpgradeEffect From(EffectDef e)
+        {
+            if (e.target <= 0 || !EffectRegistry.TryGet(e.kind, out var kind)) { return null; }
+            // 보관할 때는 target을 뗀 사본으로 만들어, 대상 스킬의 설정에 적용될 때 그 스킬 자신의 효과로 동작하게 한다.
+            var inner = new EffectDef
+            {
+                kind = e.kind,
+                value = e.value,
+                trigger = e.trigger,
+                skillId = e.skillId,
+                inherit = e.inherit,
+                chance = e.chance,
+                count = e.count,
+                interval = e.interval,
+                damageScale = e.damageScale,
+                excludeHit = e.excludeHit,
+                onlyForm = e.onlyForm,
+                target = 0
+            };
+            if (kind.Compile != null) { return kind.Compile(inner) != null ? new ChildOverlayUpgradeEffect(e.target, inner) : null; }
+            return EffectRegistry.IsStatKind(e.kind) && kind.Accept(e.value) ? new ChildOverlayUpgradeEffect(e.target, inner) : null;
+        }
     }
 
     /// <summary>자식 스킬을 이벤트가 난 위치에서 시전한다. 자식은 처음 필요할 때 한 번 만들어 재사용하며,
@@ -211,7 +258,7 @@ namespace Game.Core
                 child = create(cast.SkillId);
                 children[cast.SkillId] = child;
             }
-            child?.FireAt(context.Position, cast.Resolve, cast.ExcludeHit ? context.Target : null);
+            child?.FireAt(context.Position, config => cast.Resolve(config, this), cast.ExcludeHit ? context.Target : null);
         }
 
         public void Dispose()
