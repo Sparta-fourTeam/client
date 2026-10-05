@@ -17,7 +17,9 @@ namespace Game.Core
         {
             Projectile = 1,
             Hitscan = 2,
-            Both = Projectile | Hitscan
+            Area = 4,
+            Both = Projectile | Hitscan,
+            All = Projectile | Hitscan | Area
         }
 
         internal sealed class Kind
@@ -55,7 +57,7 @@ namespace Game.Core
         public static bool Supports(CastType castType, string key)
         {
             if (key == null || !Kinds.TryGetValue(key, out var kind)) { return false; }
-            var user = castType == CastType.Hitscan ? Users.Hitscan : Users.Projectile;
+            var user = castType switch { CastType.Hitscan => Users.Hitscan, CastType.Area => Users.Area, _ => Users.Projectile };
             return (kind.Users & user) != 0;
         }
 
@@ -76,14 +78,15 @@ namespace Game.Core
                 k.Add(key, new Kind(category, users, apply, accept ?? (_ => true)));
             const UpgradeEffectCategory Plain = UpgradeEffectCategory.Stat, Cast = UpgradeEffectCategory.Cast,
                 Reaction = UpgradeEffectCategory.Reaction, Transform = UpgradeEffectCategory.Transform;
-            const Users Both = Users.Both, Projectile = Users.Projectile, Hitscan = Users.Hitscan;
+            const Users Both = Users.Both, All = Users.All, Projectile = Users.Projectile, Hitscan = Users.Hitscan,
+                Area = Users.Area, ProjectileArea = Users.Projectile | Users.Area;
 
             // 시전: 두 공격 모두 쿨타임, 피해, 시전 수, 형태를 쓴다.
-            Add("attackSpeed", Plain, Both, (s, v) => s[Stat.Cooldown] = Math.Max(.1f, s[Stat.Cooldown] * (1 - v * .01f)));
-            Add("damage", Plain, Both, (s, v) => { s[Stat.Damage] *= Factor(v); s[Stat.ExplosionDamage] *= Factor(v); });
+            Add("attackSpeed", Plain, All, (s, v) => s[Stat.Cooldown] = Math.Max(.1f, s[Stat.Cooldown] * (1 - v * .01f)));
+            Add("damage", Plain, All, (s, v) => { s[Stat.Damage] *= Factor(v); s[Stat.ExplosionDamage] *= Factor(v); });
             Add("impactDamage", Plain, Both, (s, v) => s[Stat.Damage] *= Factor(v));
-            Add("projectileCount", Cast, Both, (s, v) => s[Stat.ProjectileCount] = Math.Max(1, s[Stat.ProjectileCount] + (int)Math.Round(v)));
-            Add("castCount", Cast, Both, (s, v) => s[Stat.CastCount] = Math.Max(1, s[Stat.CastCount] + (int)v));
+            Add("projectileCount", Cast, All, (s, v) => s[Stat.ProjectileCount] = Math.Max(1, s[Stat.ProjectileCount] + (int)Math.Round(v)));
+            Add("castCount", Cast, All, (s, v) => s[Stat.CastCount] = Math.Max(1, s[Stat.CastCount] + (int)v));
             Add("reserveCasts", Cast, Projectile, (s, v) => s[Stat.ReserveCastCount] = (int)v, PositiveInteger);
             Add("form", Transform, Both, (s, v) => s[Stat.Form] = (int)v,
                 v => v == (int)WeaponForm.Enbakutsu || v == (int)WeaponForm.JudgementThunder
@@ -101,14 +104,14 @@ namespace Game.Core
             Add("explosionRadius", Plain, Both, (s, v) => s[Stat.ExplosionRadius] *= Factor(v));
 
             // 상태 이상: 마비만 Hitscan도 쓴다.
-            Add("freezeDuration", Reaction, Projectile, (s, v) => s[Stat.FreezeDuration] = Math.Max(s[Stat.FreezeDuration], v), Positive);
-            Add("frostbite", Reaction, Projectile, (s, v) => s[Stat.FrostbiteRatio] = v * .01f, Positive);
-            Add("paralysis", Reaction, Both, (s, v) => s[Stat.ParalysisDuration] = Math.Max(s[Stat.ParalysisDuration], v), Positive);
-            Add("paralysisDuration", Plain, Both, (s, v) => s[Stat.ParalysisDuration] += v, Positive);
-            Add("stunDuration", Reaction, Projectile, (s, v) => s[Stat.StunDuration] = Math.Max(s[Stat.StunDuration], v), Positive);
-            Add("slowDuration", Reaction, Projectile, (s, v) => s[Stat.SlowDuration] += v, Positive);
-            Add("vulnerabilityRatio", Reaction, Projectile, (s, v) => s[Stat.VulnerabilityRatio] = Math.Max(s[Stat.VulnerabilityRatio], v * .01f), Positive);
-            Add("vulnerabilityDuration", Reaction, Projectile, (s, v) => s[Stat.VulnerabilityDuration] = Math.Max(s[Stat.VulnerabilityDuration], v), Positive);
+            Add("freezeDuration", Reaction, ProjectileArea, (s, v) => s[Stat.FreezeDuration] = Math.Max(s[Stat.FreezeDuration], v), Positive);
+            Add("frostbite", Reaction, ProjectileArea, (s, v) => s[Stat.FrostbiteRatio] = v * .01f, Positive);
+            Add("paralysis", Reaction, All, (s, v) => s[Stat.ParalysisDuration] = Math.Max(s[Stat.ParalysisDuration], v), Positive);
+            Add("paralysisDuration", Plain, All, (s, v) => s[Stat.ParalysisDuration] += v, Positive);
+            Add("stunDuration", Reaction, ProjectileArea, (s, v) => s[Stat.StunDuration] = Math.Max(s[Stat.StunDuration], v), Positive);
+            Add("slowDuration", Reaction, ProjectileArea, (s, v) => s[Stat.SlowDuration] += v, Positive);
+            Add("vulnerabilityRatio", Reaction, ProjectileArea, (s, v) => s[Stat.VulnerabilityRatio] = Math.Max(s[Stat.VulnerabilityRatio], v * .01f), Positive);
+            Add("vulnerabilityDuration", Reaction, ProjectileArea, (s, v) => s[Stat.VulnerabilityDuration] = Math.Max(s[Stat.VulnerabilityDuration], v), Positive);
 
             // 점화
             Add("burnDuration", Reaction, Projectile, (s, v) => s[Stat.BurnDuration] = v, Positive);
@@ -133,9 +136,13 @@ namespace Game.Core
             Add("fieldDamageFlat", Plain, Hitscan, (s, v) => s[Stat.FieldFlatDamage] += v, Positive);
             Add("fieldDamageMultiplier", Plain, Hitscan, (s, v) => s[Stat.FieldDamageMultiplier] *= Factor(v), Positive);
 
+            // 영역: 서리 감옥처럼 자리에 머무는 공격만 쓴다.
+            Add("areaRadius", Plain, Area, (s, v) => s[Stat.AreaRadius] *= Factor(v), Positive);
+            Add("areaDuration", Plain, Area, (s, v) => s[Stat.AreaDuration] *= Factor(v), Positive);
+
             // 자식 스킬 시전: 지정한 시점(onEvent) 또는 주기(periodic)에 다른 스킬을 그 위치에서 시전한다.
-            k.Add("onEvent", new Kind(Reaction, Both, null, null, ChildCastUpgradeEffect.FromEvent));
-            k.Add("periodic", new Kind(Reaction, Both, null, null, ChildCastUpgradeEffect.FromPeriodic));
+            k.Add("onEvent", new Kind(Reaction, All, null, null, ChildCastUpgradeEffect.FromEvent));
+            k.Add("periodic", new Kind(Reaction, All, null, null, ChildCastUpgradeEffect.FromPeriodic));
             return k;
         }
     }

@@ -3858,7 +3858,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 6,
+        "cardId": "frost_prison_cast",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -3887,7 +3892,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 6,
+        "cardId": "frost_prison_damage",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -3916,7 +3926,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 6,
+        "cardId": "frost_prison_extreme",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -3949,7 +3964,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 6,
+        "cardId": "frost_prison_core",
+        "enabled": false,
+        "state": "disabled",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -3982,7 +4002,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 6,
+        "cardId": "frost_prison_zero",
+        "enabled": false,
+        "state": "disabled",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -4015,7 +4040,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 6,
+        "cardId": "frost_prison_expand",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -4047,7 +4077,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 6,
+        "cardId": "frost_prison_shatter",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -4087,7 +4122,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 6,
+        "cardId": "frost_prison_polish",
+        "enabled": false,
+        "state": "disabled",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -4124,7 +4164,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 6,
+        "cardId": "frost_prison_bitter",
+        "enabled": false,
+        "state": "disabled",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false

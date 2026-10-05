@@ -4,7 +4,7 @@ namespace Game.Core
 {
     public enum ProjectilePath { Aimed, RollingLane }
 
-    public enum CastType { Projectile, Hitscan }
+    public enum CastType { Projectile, Hitscan, Area }
     public enum WeaponForm { Default, Enbakutsu, JudgementThunder, TriangleIce, LargeLog, FireLog }
 
     public class WeaponData

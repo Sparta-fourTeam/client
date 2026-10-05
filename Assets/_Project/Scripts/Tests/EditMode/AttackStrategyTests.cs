@@ -14,7 +14,8 @@ namespace Game.Tests
         {
             public int Fires, Ticks, Disposed;
             public readonly List<Vector3> Origins = new List<Vector3>();
-            public void Fire(SkillConfig config, AttackEnvironment environment) { Fires++; Origins.Add(environment.Origin); }
+            public readonly List<float> Damages = new List<float>();
+            public void Fire(SkillConfig config, AttackEnvironment environment) { Fires++; Origins.Add(environment.Origin); Damages.Add(config.Stats.Cast.Damage); }
             public void Tick(SkillConfig config, AttackEnvironment environment, float deltaTime) => Ticks++;
             public void Dispose() => Disposed++;
         }
@@ -75,10 +76,27 @@ namespace Game.Tests
         }
 
         [Test]
-        public void Factory_RegistersProjectileAndHitscanOnly()
+        public void FireAt_AppliesDamageScaleForThisCastOnly()
+        {
+            var go = new GameObject("StrategyScaleTest");
+            try
+            {
+                var strategy = new FakeStrategy();
+                var caster = WeaponFactory.Create(Data(), go.transform, new NullEnemyTargetProvider(), strategy);
+                caster.FireAt(Vector3.zero, .5f);
+                caster.FireAt(Vector3.zero);
+                Assert.AreEqual(5, strategy.Damages[0], .001f);
+                Assert.AreEqual(10, strategy.Damages[1], .001f, "배율은 그 시전에만 적용된다");
+            }
+            finally { UnityEngine.Object.DestroyImmediate(go); }
+        }
+
+        [Test]
+        public void Factory_RegistersProjectileHitscanAndArea()
         {
             Assert.IsTrue(WeaponFactory.IsRegistered(CastType.Projectile));
             Assert.IsTrue(WeaponFactory.IsRegistered(CastType.Hitscan));
+            Assert.IsTrue(WeaponFactory.IsRegistered(CastType.Area));
             Assert.IsFalse(WeaponFactory.IsRegistered((CastType)99));
         }
 
@@ -121,8 +139,8 @@ namespace Game.Tests
                     created++;
                     return WeaponFactory.Create(Data(), go.transform, new NullEnemyTargetProvider(), strategy);
                 });
-                children.Cast(7, new AttackContext(new Vector2(3, 4), Vector3.up));
-                children.Cast(7, new AttackContext(new Vector2(5, 6), Vector3.up));
+                children.Cast(7, new AttackContext(new Vector2(3, 4), Vector3.up), 1f);
+                children.Cast(7, new AttackContext(new Vector2(5, 6), Vector3.up), 1f);
                 Assert.AreEqual(1, created, "자식은 한 번만 만든다");
                 Assert.AreEqual(2, strategy.Fires, "요청마다 쿨타임 없이 시전한다");
                 Assert.AreEqual(new Vector3(3, 4, 0), strategy.Origins[0]);
@@ -140,8 +158,8 @@ namespace Game.Tests
             var children = new ChildSkillCaster(_ => { created++; return null; });
             Assert.DoesNotThrow(() =>
             {
-                children.Cast(7, new AttackContext(Vector2.zero, Vector3.up));
-                children.Cast(7, new AttackContext(Vector2.zero, Vector3.up));
+                children.Cast(7, new AttackContext(Vector2.zero, Vector3.up), 1f);
+                children.Cast(7, new AttackContext(Vector2.zero, Vector3.up), 1f);
             });
             Assert.AreEqual(1, created, "만들지 못한 자식도 반복해서 다시 만들지 않는다");
         }

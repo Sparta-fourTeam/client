@@ -10,7 +10,8 @@ namespace Game.Core
         private static readonly Dictionary<CastType, Func<GameObject, Game.Core.Defense.Wall, IAttackStrategy>> Strategies = new()
         {
             [CastType.Projectile] = (prefab, wall) => new ProjectileStrategy(prefab, wall),
-            [CastType.Hitscan] = (prefab, wall) => new HitscanStrategy(prefab)
+            [CastType.Hitscan] = (prefab, wall) => new HitscanStrategy(prefab),
+            [CastType.Area] = (prefab, wall) => new AreaStrategy(prefab)
         };
 
         /// <summary>전략이 등록된 공격 종류인지. 카탈로그 검증이 등록되지 않은 종류를 시작 때 막는다</summary>

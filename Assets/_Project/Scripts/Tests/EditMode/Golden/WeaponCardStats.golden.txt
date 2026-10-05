@@ -75,3 +75,13 @@
 5/log_fire@0: Burn.DamageRatio=0.099999994; Burn.Duration=6; Cast.Form=FireLog
 5/log_reserve@0: Cast.ReserveCount=3
 5/ALL@0: Burn.DamageRatio=0.099999994; Burn.Duration=6; Cast.Cooldown=0.75; Cast.Count=3; Cast.Damage=26.2144012; Cast.Form=FireLog; Cast.ReserveCount=3; Explosion.Damage=26.2144012; Projectile.KnockbackDistance=0.56; Projectile.SizeMultiplier=2.56000018; Projectile.Speed=5.6; Status.SlowDuration=6; Status.StunDuration=1; Status.VulnerabilityDuration=6; Status.VulnerabilityRatio=0.199999988
+6/frost_prison_cast@0: Cast.Count=2
+6/frost_prison_damage@0: Cast.Damage=12.8
+6/frost_prison_extreme@0: Cast.Damage=10.4; Status.FreezeDuration=2
+6/frost_prison_core@0: (변화 없음)
+6/frost_prison_zero@0: (변화 없음)
+6/frost_prison_expand@0: Area.Radius=3
+6/frost_prison_shatter@0: (변화 없음)
+6/frost_prison_polish@0: (변화 없음)
+6/frost_prison_bitter@0: (변화 없음)
+6/ALL@0: Area.Radius=3; Cast.Count=3; Cast.Damage=42.5984; Status.FreezeDuration=2

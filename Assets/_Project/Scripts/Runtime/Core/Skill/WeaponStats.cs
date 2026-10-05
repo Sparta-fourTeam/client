@@ -15,6 +15,7 @@ namespace Game.Core
         SplitCount, SplitDamageMultiplier, SplitFrostbiteRatio, SplitParalysisDuration, SplitLightningRatio,
         SplitExplosions, KillLightningRatio, LightningStrikeRatio,
         FieldDuration, FieldDamageRatio, FieldFlatDamage, FieldDamageMultiplier, FieldRadius, FieldSlowRatio,
+        AreaRadius, AreaDuration, AreaPulseInterval,
         Count
     }
 
@@ -81,6 +82,9 @@ namespace Game.Core
             Def(Stat.FieldDamageMultiplier, _ => 1);
             Def(Stat.FieldRadius, d => d.field.radius);
             Def(Stat.FieldSlowRatio, d => d.field.slowRatio);
+            Def(Stat.AreaRadius, d => d.area.radius);
+            Def(Stat.AreaDuration, d => d.area.duration);
+            Def(Stat.AreaPulseInterval, d => d.area.pulseInterval);
             for (int i = 0; i < t.Length; i++)
             {
                 if (t[i] == null) { throw new InvalidOperationException($"스탯 {(Stat)i}의 기본값 선언이 없습니다."); }
@@ -100,6 +104,7 @@ namespace Game.Core
         public ExplosionStats Explosion { get; }
         public SecondaryStats Secondary { get; }
         public FieldStats Field { get; }
+        public AreaStats Area { get; }
 
         public static WeaponStats FromDefinition(WeaponBaseStats data) => new WeaponStats(new WeaponStatsBuilder(data));
 
@@ -114,6 +119,7 @@ namespace Game.Core
             Explosion = new ExplosionStats(values);
             Secondary = new SecondaryStats(values);
             Field = new FieldStats(values);
+            Area = new AreaStats(values);
         }
 
         internal float[] CopyValues() => (float[])values.Clone();
@@ -213,6 +219,16 @@ namespace Game.Core
         public float DamageMultiplier => v[(int)Stat.FieldDamageMultiplier];
         public float Radius => v[(int)Stat.FieldRadius];
         public float SlowRatio => v[(int)Stat.FieldSlowRatio];
+    }
+
+    public readonly struct AreaStats
+    {
+        private readonly float[] v;
+        internal AreaStats(float[] values) => v = values;
+
+        public float Radius => v[(int)Stat.AreaRadius];
+        public float Duration => v[(int)Stat.AreaDuration];
+        public float PulseInterval => v[(int)Stat.AreaPulseInterval];
     }
 
     // Only upgrade preparation can mutate values; committed snapshots are read-only.

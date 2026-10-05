@@ -27,6 +27,8 @@ namespace Game.Core
         protected override void OnFire() => Strategy.Fire(Config, environment);
 
         /// <summary>쿨타임과 무관하게 지정한 위치에서 공격 한 번을 낸다. 자식 스킬 시전에 쓴다.</summary>
-        public void FireAt(Vector3 position) => Strategy.Fire(Config, environment.At(position));
+        /// <param name="damageScale">이번 시전의 피해 배율. 1이면 현재 설정 그대로다</param>
+        public void FireAt(Vector3 position, float damageScale = 1) =>
+            Strategy.Fire(Mathf.Approximately(damageScale, 1) ? Config : Config.WithDamageScale(damageScale), environment.At(position));
     }
 }

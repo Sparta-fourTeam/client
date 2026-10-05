@@ -34,6 +34,7 @@ namespace Game.Tests
             projectile = { speed = 10, pierceCount = 1, knockbackDistance = 1 },
             status = { freezeDuration = 1, paralysisDuration = 1, stunDuration = 1, slowDuration = 1 },
             explosion = { radius = 2, damageRatio = .5f },
+            area = { radius = 2, duration = 3, pulseInterval = 1 },
             field = { damageRatio = .5f, radius = 2, slowRatio = .3f }
         });
 
@@ -50,7 +51,7 @@ namespace Game.Tests
         [TestCaseSource(nameof(AllEffectKinds))]
         public void EveryEffectKind_IsConsumedByAtLeastOneAttack(string type)
         {
-            Assert.IsTrue(EffectRegistry.Supports(CastType.Projectile, type) || EffectRegistry.Supports(CastType.Hitscan, type),
+            Assert.IsTrue(Enum.GetValues(typeof(CastType)).Cast<CastType>().Any(c => EffectRegistry.Supports(c, type)),
                 $"{type}을 소비하는 공격이 없습니다. EffectRegistry의 허용 공격을 확인하세요.");
         }
 
@@ -75,7 +76,7 @@ namespace Game.Tests
         public void StatsDump_CoversEveryStatGroup()
         {
             var keys = WeaponStatsDump.Flatten(Baseline()).Keys.ToList();
-            foreach (var group in new[] { "Cast.", "Projectile.", "Status.", "Burn.", "Explosion.", "Secondary.", "Field." })
+            foreach (var group in new[] { "Cast.", "Projectile.", "Status.", "Burn.", "Explosion.", "Secondary.", "Field.", "Area." })
             {
                 Assert.IsTrue(keys.Any(k => k.StartsWith(group, StringComparison.Ordinal)), group);
             }
@@ -174,7 +175,8 @@ namespace Game.Tests
             var text = new StringBuilder();
             foreach (var weapon in new DefaultWeaponDataProvider().LoadAll().OrderBy(w => w.id))
             {
-                var start = SkillConfig.FromDefinition(weapon);
+                // 자식 스킬 시전 효과도 적용해 볼 수 있도록 아무것도 하지 않는 시전기를 연결한다.
+                var start = SkillConfig.FromDefinition(weapon).WithChildCaster(new NoopChildCaster());
                 var baseline = WeaponStatsDump.Flatten(start.Stats);
                 foreach (var option in weapon.upgrades)
                 {
@@ -199,6 +201,11 @@ namespace Game.Tests
                     .Append(WeaponStatsDump.Diff(baseline, WeaponStatsDump.Flatten(all.Build().Stats))).Append('\n');
             }
             return text.ToString();
+        }
+
+        private sealed class NoopChildCaster : IChildSkillCaster
+        {
+            public void Cast(int skillId, AttackContext context, float damageScale) { }
         }
 
         private static IEnumerable<int> PermanentLevels(WeaponUpgradeOption option) =>
@@ -246,9 +253,12 @@ namespace Game.Tests
                     problems.Add($"{weapon.id}({weapon.name}): prefabEntries에 프리팹이 없습니다.");
                     continue;
                 }
-                bool ok = weapon.castType == CastType.Hitscan
-                    ? prefab.GetComponent<HitscanEffect>() != null
-                    : prefab.GetComponent<Projectile>() != null;
+                bool ok = weapon.castType switch
+                {
+                    CastType.Hitscan => prefab.GetComponent<HitscanEffect>() != null,
+                    CastType.Area => prefab.GetComponent<AreaZone>() != null,
+                    _ => prefab.GetComponent<Projectile>() != null
+                };
                 if (!ok) { problems.Add($"{weapon.id}({weapon.name}): {prefab.name}에 {weapon.castType}용 컴포넌트가 없습니다."); }
             }
             Assert.IsEmpty(problems, string.Join("\n", problems));

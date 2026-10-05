@@ -1427,5 +1427,165 @@
       }
     ],
     "projectilePath": 1
+  },
+  {
+    "id": 6,
+    "name": "서리 감옥",
+    "iconKey": "weapon_frost_prison",
+    "castType": 2,
+    "maxLevel": 10,
+    "progressionId": null,
+    "prototypeBalanceSourceId": 4,
+    "baseStats": {
+      "cast": {
+        "cooldown": 5,
+        "baseDamage": 8,
+        "range": 14,
+        "projectileCount": 1,
+        "castCount": 1,
+        "castInterval": 0.1
+      },
+      "status": {
+        "slowDuration": 1,
+        "slowRatio": 0.4
+      },
+      "area": {
+        "radius": 1.5,
+        "duration": 3,
+        "pulseInterval": 0.5
+      }
+    },
+    "upgrades": [
+      {
+        "id": "frost_prison_cast",
+        "name": "연쇄 서리 폭발",
+        "desc": "추가 시전 +1",
+        "maxPickCount": 2,
+        "effects": [
+          {
+            "kind": "castCount",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "id": "frost_prison_damage",
+        "name": "서리 피해 증폭",
+        "desc": "공격력 +60%",
+        "maxPickCount": 3,
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 60
+          }
+        ]
+      },
+      {
+        "id": "frost_prison_extreme",
+        "name": "극한 서리",
+        "desc": "공격력 +30% / 빙결 2초",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 30
+          },
+          {
+            "kind": "freezeDuration",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "id": "frost_prison_core",
+        "name": "빙결핵",
+        "desc": "중심부 1회 추가 공격",
+        "maxPickCount": 1,
+        "effects": [],
+        "enabled": false,
+        "disabledReason": "중심부 추가 공격(영역 중심 타격)이 구현되지 않았다",
+        "requiredCardIds": [
+          "frost_prison_extreme"
+        ]
+      },
+      {
+        "id": "frost_prison_zero",
+        "name": "절대 영도",
+        "desc": "중심부 빙결 지속 2배",
+        "maxPickCount": 1,
+        "effects": [],
+        "enabled": false,
+        "disabledReason": "빙결핵(중심부 추가 공격)이 구현되지 않았다",
+        "requiredCardIds": [
+          "frost_prison_core"
+        ]
+      },
+      {
+        "id": "frost_prison_expand",
+        "name": "서리 확장",
+        "desc": "범위 +100%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "areaRadius",
+            "value": 100
+          }
+        ],
+        "requiredCardIds": [
+          "frost_prison_damage"
+        ]
+      },
+      {
+        "id": "frost_prison_shatter",
+        "name": "얼음 결정 파열",
+        "desc": "종료 시 소형 서리 결정 2개로 분열",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "onEvent",
+            "trigger": "Expired",
+            "skillId": 4,
+            "count": 2,
+            "damageScale": 0.5
+          }
+        ],
+        "requiredWeaponIds": [
+          4
+        ]
+      },
+      {
+        "id": "frost_prison_polish",
+        "name": "빙속성 연마",
+        "desc": "서리 감옥과 서리 결정 쿨타임 -25%",
+        "maxPickCount": 1,
+        "effects": [],
+        "enabled": false,
+        "disabledReason": "두 스킬의 습득 수가 함께 늘고 증폭 횟수를 공유하는 공유 카드가 연결되지 않았다",
+        "requiredWeaponIds": [
+          4
+        ],
+        "minPermanentLevel": 21
+      },
+      {
+        "id": "frost_prison_bitter",
+        "name": "매서운 서리",
+        "desc": "빙결 지속 동안 매초 최대 HP 1% 피해",
+        "maxPickCount": 1,
+        "effects": [],
+        "enabled": false,
+        "disabledReason": "빙결 중 최대 HP 비례 지속 피해가 구현되지 않았다",
+        "requiredWeaponIds": [
+          4
+        ],
+        "minPermanentLevel": 13,
+        "requiredCardCounts": [
+          {
+            "cardId": "ice_extreme",
+            "weaponId": 4,
+            "count": 1
+          }
+        ]
+      }
+    ]
   }
 ]

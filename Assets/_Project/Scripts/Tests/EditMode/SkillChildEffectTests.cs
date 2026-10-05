@@ -14,7 +14,8 @@ namespace Game.Tests
         {
             public readonly List<int> Casts = new List<int>();
             public readonly List<Vector2> Positions = new List<Vector2>();
-            public void Cast(int skillId, AttackContext context) { Casts.Add(skillId); Positions.Add(context.Position); }
+            public readonly List<float> Scales = new List<float>();
+            public void Cast(int skillId, AttackContext context, float damageScale) { Casts.Add(skillId); Positions.Add(context.Position); Scales.Add(damageScale); }
         }
 
         private static SkillConfigBuilder Builder(IChildSkillCaster caster) => new SkillConfigBuilder(

@@ -10,6 +10,7 @@ namespace Game.Core
         public StatusBase status = new StatusBase();
         public ExplosionBase explosion = new ExplosionBase();
         public FieldBase field = new FieldBase();
+        public AreaBase area = new AreaBase();
 
         public class CastBase
         {
@@ -53,6 +54,13 @@ namespace Game.Core
         {
             public float radius;
             public float damageRatio;
+        }
+
+        public class AreaBase
+        {
+            public float radius;
+            public float duration;
+            public float pulseInterval = 1;
         }
 
         public class FieldBase

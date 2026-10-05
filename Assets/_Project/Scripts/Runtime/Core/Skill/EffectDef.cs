@@ -13,6 +13,8 @@ namespace Game.Core
         public int skillId;
         /// <summary>시전 확률 (0 초과 1 이하)</summary>
         public float chance = 1;
+        /// <summary>자식 스킬 피해 배율 (1 = 자식의 기본 피해 그대로, 0.5 = 절반). "소형" 자식 스킬을 표현한다</summary>
+        public float damageScale = 1;
         /// <summary>한 번에 시전하는 횟수</summary>
         public int count = 1;
         /// <summary>periodic: 시전 주기(초)</summary>

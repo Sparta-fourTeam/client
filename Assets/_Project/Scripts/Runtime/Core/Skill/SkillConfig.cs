@@ -35,6 +35,15 @@ namespace Game.Core
             Reactions = new AttackReactions(Bindings);
         }
 
+        /// <summary>피해(직접·폭발)에 배율을 곱한 설정. 자식 스킬을 소형으로 시전할 때 쓴다</summary>
+        public SkillConfig WithDamageScale(float scale)
+        {
+            var builder = new WeaponStatsBuilder(Stats);
+            builder[Stat.Damage] *= scale;
+            builder[Stat.ExplosionDamage] *= scale;
+            return new SkillConfig(new WeaponStats(builder), Attack, Bindings, ChildCaster);
+        }
+
         public SkillConfig WithChildCaster(IChildSkillCaster childCaster) => new SkillConfig(Stats, Attack, Bindings, childCaster);
 
         public static SkillConfig FromDefinition(WeaponData data) => new SkillConfig(
