@@ -56,24 +56,9 @@ namespace Game.Core
 
         private IObjectPool<Projectile> pool;
         private Vector3 direction;
-        private float damage;
         private float speed;
         private float lifetime;
-        private float freezeDuration;
-        private float stunDuration, stunChance, slowDuration, slowRatio, vulnerabilityRatio, vulnerabilityDuration;
-        private float burnDuration;
-        private float burnDamage;
-        private float burnMaxHpRatio;
-        private System.Action<Vector2> burnOnDeath;
-        private float paralysisDuration;
-        private float paralysisChance;
-        private float freezeChance;
-        private float frostbiteChance;
-        private float burnChance;
-        private System.Func<float> randomValue;
-        private float lightningDamage;
-        private float knockbackDistance;
-        private float frostbiteRatio;
+        private ProjectileHitEffects hitEffects;
         private System.Action<Vector2, Vector3, IEnemyTarget> onHit;
         private IEnemyTarget ignoredTarget;
         private IEnemyTargetProvider targetProvider;
@@ -122,64 +107,17 @@ namespace Game.Core
 
         public void Init(IObjectPool<Projectile> pool, ProjectileSpawnSettings settings)
         {
-            var startPos = settings.StartPos;
-            var direction = settings.Direction;
-            var damage = settings.Damage;
-            var speed = settings.Speed;
-            var lifetime = settings.Lifetime;
-            var targetProvider = settings.TargetProvider;
-            var pierceCount = settings.PierceCount;
-            var freezeDuration = settings.FreezeDuration;
-            var onHit = settings.OnHit;
-            var ignoredTarget = settings.IgnoredTarget;
-            var knockbackDistance = settings.KnockbackDistance;
-            var frostbiteRatio = settings.FrostbiteRatio;
-            var paralysisDuration = settings.ParalysisDuration;
-            var lightningDamage = settings.LightningDamage;
-            var paralysisChance = settings.ParalysisChance;
-            var randomValue = settings.RandomValue;
-            var burnDuration = settings.BurnDuration;
-            var burnDamage = settings.BurnDamage;
-            var burnMaxHpRatio = settings.BurnMaxHpRatio;
-            var burnOnDeath = settings.BurnOnDeath;
-            var freezeChance = settings.FreezeChance;
-            var frostbiteChance = settings.FrostbiteChance;
-            var burnChance = settings.BurnChance;
-            var collisionRadius = settings.CollisionRadius;
-            var stunDuration = settings.StunDuration;
-            var stunChance = settings.StunChance;
-            var slowDuration = settings.SlowDuration;
-            var slowRatio = settings.SlowRatio;
-            var vulnerabilityRatio = settings.VulnerabilityRatio;
-            var vulnerabilityDuration = settings.VulnerabilityDuration;
-            hitRadius = Mathf.Max(0, collisionRadius);
-            this.onHit = onHit;
-            this.ignoredTarget = ignoredTarget;
+            hitRadius = Mathf.Max(0, settings.CollisionRadius);
+            onHit = settings.OnHit;
+            ignoredTarget = settings.IgnoredTarget;
             this.pool = pool;
-            transform.position = startPos;
-            this.direction = direction.normalized;
-            this.damage = damage;
-            this.speed = speed;
-            this.lifetime = lifetime;
-            this.freezeDuration = freezeDuration;
-            this.stunDuration = stunDuration; this.stunChance = stunChance;
-            this.slowDuration = slowDuration; this.slowRatio = slowRatio;
-            this.vulnerabilityRatio = vulnerabilityRatio; this.vulnerabilityDuration = vulnerabilityDuration;
-            this.burnDuration = burnDuration;
-            this.burnDamage = burnDamage;
-            this.burnMaxHpRatio = burnMaxHpRatio;
-            this.burnOnDeath = burnOnDeath;
-            this.paralysisDuration = paralysisDuration;
-            this.paralysisChance = paralysisChance;
-            this.freezeChance = freezeChance;
-            this.frostbiteChance = frostbiteChance;
-            this.burnChance = burnChance;
-            this.randomValue = randomValue ?? (() => Random.value);
-            this.lightningDamage = lightningDamage;
-            this.knockbackDistance = knockbackDistance;
-            this.frostbiteRatio = frostbiteRatio;
-            this.targetProvider = targetProvider;
-            hitLedger.Reset(pierceCount);
+            transform.position = settings.StartPos;
+            direction = settings.Direction.normalized;
+            speed = settings.Speed;
+            lifetime = settings.Lifetime;
+            targetProvider = settings.TargetProvider;
+            hitEffects = new ProjectileHitEffects(settings);
+            hitLedger.Reset(settings.PierceCount);
             ApplyDirectionRoration();
         }
 
@@ -218,16 +156,7 @@ namespace Game.Core
                 if (candidate is EnemyModel enemy && enemy.IsDead) { continue; }
                 if (ReferenceEquals(candidate, ignoredTarget)) { continue; }
                 if (!hitLedger.TryHit(candidate)) { continue; }
-                candidate.TakeDamage((int)damage);
-                if (freezeDuration > 0 && candidate is IFreezableTarget freezable && StatusProc.Roll(freezeChance, randomValue)) { freezable.ApplyFreeze(freezeDuration); }
-                if (knockbackDistance > 0 && candidate is IKnockbackTarget movable) { movable.ApplyKnockback(direction, knockbackDistance); }
-                if (frostbiteRatio > 0 && candidate is IFrostbiteTarget frosted && StatusProc.Roll(frostbiteChance, randomValue)) { frosted.ApplyFrostbite(damage * frostbiteRatio); }
-                if (paralysisDuration > 0 && candidate is IParalyzableTarget paralyzed && StatusProc.Roll(paralysisChance, randomValue)) { paralyzed.ApplyParalysis(paralysisDuration); }
-                if (lightningDamage > 0) { candidate.TakeDamage(Mathf.Max(1, (int)lightningDamage)); }
-                if (burnDuration > 0 && burnDamage > 0 && candidate is IBurnableTarget burning && StatusProc.Roll(burnChance, randomValue)) { burning.ApplyBurn(burnDamage, burnDuration, burnMaxHpRatio, burnOnDeath); }
-                if (stunDuration > 0 && candidate is IStunnableTarget stunned && StatusProc.Roll(stunChance, randomValue)) { stunned.ApplyStun(stunDuration); }
-                if (slowDuration > 0 && slowRatio > 0 && candidate is ISlowableTarget slowed) { slowed.ApplySlow(slowRatio, slowDuration); }
-                if (vulnerabilityDuration > 0 && vulnerabilityRatio > 0 && candidate is IVulnerableTarget vulnerable) { vulnerable.ApplyVulnerability(vulnerabilityRatio, vulnerabilityDuration); }
+                hitEffects.Apply(candidate, direction);
                 SpawnImpact(hitPosition);
                 onHit?.Invoke(hitPosition, direction, candidate);
                 if (hitLedger.Exhausted)

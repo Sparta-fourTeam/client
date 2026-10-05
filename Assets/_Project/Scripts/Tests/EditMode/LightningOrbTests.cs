@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Reflection;
 using Game.Core;
 using NUnit.Framework;
-using UnityEngine;
 using UnityEditor;
+using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace Game.Tests
@@ -16,7 +16,13 @@ namespace Game.Tests
         {
             public int GetNearest(Vector2 from, int count, List<IEnemyTarget> results) { results.Clear(); return 0; }
         }
-        private static T Read<T>(object obj, string name) => (T)obj.GetType().GetField(name, Flags).GetValue(obj);
+        private static T Read<T>(object obj, string name)
+        {
+            var field = obj.GetType().GetField(name, Flags);
+            if (field != null) { return (T)field.GetValue(obj); }
+            var effects = typeof(Projectile).GetField("hitEffects", Flags).GetValue(obj);
+            return (T)typeof(ProjectileHitEffects).GetField(name, Flags).GetValue(effects);
+        }
 
         [TestCase(false)]
         [TestCase(true)]
