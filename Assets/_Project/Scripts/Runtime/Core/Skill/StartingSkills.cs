@@ -11,7 +11,7 @@ namespace Game.Core
     /// <summary>캐릭터별 초기 스킬이 생기기 전까지 쓰는 고정 목록.</summary>
     public sealed class DefaultStartingSkills : IStartingSkills
     {
-        private static readonly int[] Ids = { 3 };
+        private static readonly int[] Ids = { 1 };
         public IReadOnlyList<int> GetSkillIds() => Ids;
     }
 }
