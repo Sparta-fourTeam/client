@@ -20,18 +20,20 @@ namespace Game.Core
         private Dictionary<int, WeaponData> dataTable;
         private IWeaponDataProvider dataProvider;
         private IWeaponProgression progression;
+        private Game.Core.Defense.Wall wall;
         private readonly Dictionary<int, int> permanentLevels = new();
         private List<WeaponBase> weapons = new List<WeaponBase>();
         private IEnemyTargetProvider targetProvider;
         private IBufferedPublisher<SkillChanged> skillChanged;
 
         [Inject]
-        public void Construct(IEnemyTargetProvider targetProvider, IBufferedPublisher<SkillChanged> skillChanged, IWeaponDataProvider dataProvider, IWeaponProgression progression = null)
+        public void Construct(IEnemyTargetProvider targetProvider, IBufferedPublisher<SkillChanged> skillChanged, IWeaponDataProvider dataProvider, IWeaponProgression progression = null, Game.Core.Defense.Wall wall = null)
         {
             this.targetProvider = targetProvider;
             this.skillChanged = skillChanged;
             this.dataProvider = dataProvider;
             this.progression = progression;
+            this.wall = wall;
         }
 
         private void Start()
@@ -70,7 +72,7 @@ namespace Game.Core
                 return false;
             }
 
-            weapons.Add(WeaponFactory.Create(data, entry.prefab, transform, targetProvider));
+            weapons.Add(WeaponFactory.Create(data, entry.prefab, transform, targetProvider, wall));
             PublishSkills();
             return true;
         }

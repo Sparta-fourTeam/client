@@ -1175,7 +1175,10 @@
       "burnChance": 1,
       "stunChance": 0.1,
       "slowRatio": 0.3,
-      "slowDuration": 2
+      "slowDuration": 2,
+      "reserveDistance": 1,
+      "reserveCooldown": 10,
+      "reserveInterval": 0.1
     },
     "upgrades": [
       {
@@ -1361,6 +1364,22 @@
           {
             "type": 25,
             "value": 5
+          }
+        ]
+      },
+      {
+        "id": "log_reserve",
+        "name": "예비 통나무",
+        "desc": "방벽 접근 시 0.1초 간격으로 3회 추가 시전 (재발동 10초)",
+        "maxPickCount": 1,
+        "minPermanentLevel": 13,
+        "requiredCardIds": [
+          "log_weight"
+        ],
+        "effects": [
+          {
+            "type": 37,
+            "value": 3
           }
         ]
       }

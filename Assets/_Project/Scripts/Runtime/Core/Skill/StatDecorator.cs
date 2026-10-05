@@ -42,6 +42,7 @@ namespace Game.Core
         public virtual float SlowRatio => inner.SlowRatio;
         public virtual float VulnerabilityRatio => inner.VulnerabilityRatio;
         public virtual float VulnerabilityDuration => inner.VulnerabilityDuration;
+        public virtual int ReserveCastCount => inner.ReserveCastCount;
         public virtual WeaponForm Form => inner.Form;
     }
 }

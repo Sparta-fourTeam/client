@@ -43,6 +43,7 @@ namespace Game.Core
         public float SlowRatio => data.slowRatio;
         public float VulnerabilityRatio => 0;
         public float VulnerabilityDuration => 0;
+        public int ReserveCastCount => 0;
         public WeaponForm Form => WeaponForm.Default;
     }
 }

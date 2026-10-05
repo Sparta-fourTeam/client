@@ -2,6 +2,13 @@ using System;
 
 namespace Game.Core
 {
+    public sealed class ReserveCastUpgrade : StatDecorator
+    {
+        private readonly int count;
+        public ReserveCastUpgrade(IWeaponStats inner, int count) : base(inner) => this.count = count;
+        public override int ReserveCastCount => count;
+    }
+
     public sealed class TargetStatusUpgrade : StatDecorator
     {
         private readonly UpgradeType type;

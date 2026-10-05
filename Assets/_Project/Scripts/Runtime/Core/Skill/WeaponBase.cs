@@ -53,8 +53,11 @@ namespace Game.Core
 
         public void Tick(float deltaTime)
         {
+            OnTickExtra(deltaTime);
             castClock.Tick(deltaTime, stats.Cooldown, stats.CastCount, data.baseStats.castInterval, OnFire);
         }
+
+        protected virtual void OnTickExtra(float deltaTime) { }
 
         protected abstract void OnFire();
 
@@ -111,6 +114,9 @@ namespace Game.Core
                     case UpgradeType.CastCount: nextStats = new CastCountUpgrade(nextStats, (int)effect.value); break;
                     case UpgradeType.PierceCount: nextStats = new PierceCountUpgrade(nextStats, (int)effect.value); break;
                     case UpgradeType.ProjectileSpeed: nextStats = new ProjectileSpeedUpgrade(nextStats, effect.value); break;
+                    case UpgradeType.ReserveCasts:
+                        if (effect.value <= 0 || effect.value != System.Math.Round(effect.value)) { return false; }
+                        nextStats = new ReserveCastUpgrade(nextStats, (int)effect.value); break;
                     case UpgradeType.StunDuration:
                     case UpgradeType.SlowDuration:
                     case UpgradeType.VulnerabilityRatio:

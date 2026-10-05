@@ -39,6 +39,7 @@ namespace Game.Core
         float SlowRatio { get; }
         float VulnerabilityRatio { get; }
         float VulnerabilityDuration { get; }
+        int ReserveCastCount { get; }
         WeaponForm Form { get; }
     }
 }

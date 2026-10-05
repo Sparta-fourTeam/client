@@ -116,6 +116,18 @@ namespace Game.Tests
             Assert.IsFalse(UpgradeEligibility.CanAcquire(large, 5, state));
         }
 
+        [Test]
+        public void ReserveLog_RequiresWeightAndPermanentThirteen()
+        {
+            var card = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == 5).upgrades.Find(c => c.id == "log_reserve");
+            var state = new State(); state.Levels[5] = 1; state.PermanentLevels[5] = 13;
+            Assert.IsFalse(UpgradeEligibility.CanAcquire(card, 5, state));
+            state.Counts[(5, "log_weight")] = 1; state.PermanentLevels[5] = 12;
+            Assert.IsFalse(UpgradeEligibility.CanAcquire(card, 5, state));
+            state.PermanentLevels[5] = 13; Assert.IsTrue(UpgradeEligibility.CanAcquire(card, 5, state));
+            state.Counts[(5, "log_reserve")] = 1; Assert.IsFalse(UpgradeEligibility.CanAcquire(card, 5, state));
+        }
+
         private static State Owned(int level = 1) => new State { Levels = { [1] = level } };
         private static WeaponUpgradeOption Option(string id = "upgrade") => new WeaponUpgradeOption { id = id, maxPickCount = 3 };
 
