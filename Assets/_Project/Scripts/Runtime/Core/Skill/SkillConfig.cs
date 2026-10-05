@@ -129,9 +129,10 @@ namespace Game.Core
         }
     }
 
-    // Adapts existing numeric JSON effects while new reactions can be authored directly.
-    internal sealed class NumericReactionUpgradeEffect : NumericUpgradeEffect
+    // 반응 분류의 숫자 효과는 반응 객체를 만들지 않고 스탯만 켠다. 실제 반응은 ReactionCompiler가 스냅샷에서 만든다.
+    // 반응을 직접 정의하려면 ReactionUpgradeEffect를 쓴다.
+    internal sealed class ReactionStatUpgradeEffect : NumericUpgradeEffect
     {
-        public NumericReactionUpgradeEffect(UpgradeType type, float value) : base(type, value, UpgradeEffectCategory.Reaction) { }
+        public ReactionStatUpgradeEffect(UpgradeType type, float value) : base(type, value, UpgradeEffectCategory.Reaction) { }
     }
 }

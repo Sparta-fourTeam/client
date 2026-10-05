@@ -41,7 +41,7 @@ namespace Game.Core
             {
                 UpgradeEffectCategory.Cast => new CastUpgradeEffect(effect.type, effect.value),
                 UpgradeEffectCategory.Transform => new TransformUpgradeEffect((WeaponForm)(int)effect.value),
-                UpgradeEffectCategory.Reaction => new NumericReactionUpgradeEffect(effect.type, effect.value),
+                UpgradeEffectCategory.Reaction => new ReactionStatUpgradeEffect(effect.type, effect.value),
                 _ => new StatUpgradeEffect(effect.type, effect.value)
             };
             return true;

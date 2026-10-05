@@ -252,10 +252,12 @@ python3 docs/ninjutsu/validate_requirements.py
    - **완료**: `Category()` switch를 없애고 분류를 규칙 선언(`AddStat`/`AddCast`/`AddReaction`)에 함께 적는다.
    - **완료**: `WeaponBaseStats`를 `cast`·`projectile`·`reserve`·`status`·`explosion`·`field` 묶음으로 나눴다. `Weapons.json`의 `baseStats`는 필요한 묶음만 적으면 되고, 적지 않은 값은 묶음 클래스의 기본값(`castCount` 1, 확률 1 등)을 쓴다. `hitCount`는 `projectileCount`로 이름을 바꿨다.
    - **완료**: `UpgradeType`을 정리했다. `HitCount`를 `ProjectileCount`로 통합했고, `Shard*`/`Auxiliary*`는 `Split*`로 바꿨고, 값은 묶음별 10단위 대역(시전 0, 투사체 10, 폭발 20, 상태이상 30, 화상 40, 분열 50, 번개 60, 장판 70)으로 재배열했다. 새 종류는 대역의 다음 빈 번호를 쓰므로 기존 값이 밀리지 않는다. `Weapons.json`의 type 숫자 106곳은 스크립트로 일괄 변환했다.
-3. **반응 컴파일 통합** (약 2일, B·C)
-   - `ProjectileHitEffects.Compile`의 "스탯 → 반응" 로직을 `ReactionCompiler`로 분리해 투사체와 Hitscan이 공유한다.
-   - `ProjectileSpawnSettings`의 상태이상 필드 약 15개를 `AttackReactions` 하나로 대체한다.
-   - `NumericReactionUpgradeEffect`의 이름과 동작을 일치시키고, `HitscanCastEffects`의 인라인 콜백(폭발·마비·킬 번개)도 같은 컴파일러로 옮긴다.
+3. **반응 컴파일 통합** (약 2일, B·C) — **완료**
+   - `HitReactionBuilder`(피해·빙결·밀치기·동상·마비·추가 번개·화상·기절·감속·취약을 정해진 순서로 쌓는다)와 `ReactionCompiler.ForProjectile`(스탯 스냅샷 → 적중 반응)로 변환 로직을 한 곳에 모았다. 보조 투사체(분기·분열 조각·번개 구체)도 같은 빌더를 쓴다.
+   - `ProjectileSpawnSettings`의 피해·상태이상 필드 약 20개를 `HitReactions`(`AttackReactions`) 하나로 대체했다. `ProjectileHitEffects`와 30개 인자 `Projectile.Init` 오버로드는 없앴다(오버로드는 테스트 확장으로 옮겼다).
+   - `HitscanEffect`의 `onHit`·`onTargetHit`·`onKilled` 콜백도 반응으로 옮겼다. 마비는 `Hit`, 폭발·번개 구체는 새 `Impact`(범위형 공격이 목표 지점에 한 번 닿을 때), 처치 번개는 `Kill`에 걸린다.
+   - `NumericReactionUpgradeEffect`는 반응이 아니라 스탯을 켜는 효과이므로 `ReactionStatUpgradeEffect`로 이름을 바꿨다. 반응 자체를 정의하는 효과는 `ReactionUpgradeEffect`다.
+   - 남은 것: 투사체의 `OnHit` 콜백(폭발·분열·삼각 분열)은 아직 `Action`으로 남아 있다. 4단계의 `onEvent` 핸들러 도입 때 함께 반응으로 옮긴다.
 4. **효과 스키마 교체** (약 2일, C·D)
    - `StatEffect{type,value}`를 `{kind, params}` 단일 스키마로 교체한다. 병행 도입이나 호환 어댑터 없이 `Weapons.json` 66장을 스크립트로 일괄 변환한다.
    - `EffectCompiler`에 `onEvent`(이벤트·확률·자식 스킬), `periodic`, `transform` 핸들러를 등록한다.
