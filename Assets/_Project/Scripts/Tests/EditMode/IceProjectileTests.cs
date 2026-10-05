@@ -518,7 +518,7 @@ namespace Game.Tests
         [Test]
         public void IcePrefab_IsConnectedToPlayerSlotAndHasProjectileComponent()
         {
-            var projectile = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Projectile/Projectile4.prefab");
+            var projectile = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Skills/IceSpear/IceSpear.prefab");
             Assert.IsNotNull(projectile.GetComponent<Projectile>());
             var player = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Player/Player_Animated.prefab");
             var controller = player.GetComponent<WeaponController>();

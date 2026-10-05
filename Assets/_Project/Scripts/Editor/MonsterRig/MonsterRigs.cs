@@ -14,8 +14,8 @@ namespace Game.Editor.MonsterRig
     /// </summary>
     public static class MonsterRigs
     {
-        private const string ArtFolder = "Assets/_Project/Art/Monsters";
-        private const string PrefabFolder = "Assets/_Project/Prefabs/Monsters";
+        private const string ArtFolder = "Assets/_Project/Art/Characters/Monsters";
+        private const string PrefabFolder = "Assets/_Project/Prefabs/Enemies/Monsters";
         private const int Pad = 8;
         private const float Tau = Mathf.PI * 2f;
         private static readonly Color HitTint = new(1f, 0.35f, 0.35f, 1f);

@@ -46,10 +46,26 @@
 ## 에셋
 
 - 에셋은 `Assets/_Project/` 안에만 둔다. `Assets/` 루트에 프리팹을 두지 않는다.
-- 폴더 역할: `Art`는 소재(`Monsters`, `Player`, `Backgrounds`, `VFX`), `Prefabs`는 종류별 프리팹, `Image`는 UI 시트, `Scenes`는 빌드에 들어가는 씬만. `Resources`는 코드가 경로 문자열로 불러오는 것만 둔다(현재 `MockData`와 `Materials/SpriteHitFlash`). 그 밖의 에셋을 `Resources`에 넣으면 참조와 무관하게 빌드에 포함된다.
-- 이름은 영문 PascalCase로 짓는다. 한글, 공백, 대문자 확장자(`.PNG`)를 쓰지 않고 새 파일은 숫자로 시작하지 않는다. 버전은 `_v2`처럼 접미로 붙인다. 오타를 발견하면 Unity 안에서 이름을 바꿔 GUID와 참조를 유지한다.
-- 이펙트 소재는 `Art/VFX`, 프리팹은 `Prefabs/VFX`에 둔다. `Fx` 폴더는 새로 쓰지 않는다(기존 몬스터 공격 연출만 예외).
+- 폴더는 역할별로 나눈다.
+
+```
+Assets/_Project/
+  Prefabs/
+    Skills/<스킬>/   플레이어 스킬. 본체와 명중 이펙트를 스킬 폴더 하나에 둔다 (Arrow, Fireball, Lightning, IceSpear, Log)
+    Enemies/         Monsters, Wave, Projectiles(적 투사체), Attacks(몬스터 공격 연출), Spawn
+    Player/ UI/ Scopes/
+  Art/
+    Characters/      Monsters, Player (리그 PSD와 애니메이션 포함)
+    VFX/             Textures, Materials, Shaders, Doodle, Enemy(몬스터 공격 연출용)
+    UI/              Sheets(N-Sheet), Backgrounds
+  Resources/         코드가 경로 문자열로 불러오는 것만 (MockData, Materials, VFX)
+  Data/ Settings/ Scenes/ Scripts/
+```
+
+- 새 스킬은 `Prefabs/Skills/<스킬 이름>/` 폴더를 만들어 본체와 명중 이펙트를 둔다. `Resources`에 넣은 에셋은 참조와 무관하게 빌드에 포함되므로 코드가 경로로 불러오는 것만 둔다.
+- 에디터 도구(`Editor/MonsterRig`, `WaveMonsterVisualLinker` 등)와 테스트는 에셋 경로를 문자열로 갖고 있다. 폴더를 옮기거나 이름을 바꾸면 이 경로도 함께 고친다. 이동은 Unity 안에서 하거나 `.meta`를 같이 옮겨 GUID를 유지한다.
+- 이름은 영문 PascalCase로 짓는다. 한글, 공백, 대문자 확장자(`.PNG`)를 쓰지 않고 새 파일은 숫자로 시작하지 않는다. 버전은 `_v2`처럼 접미로 붙인다.
 - 실험용 씬이나 테스트용 복제 프리팹은 커밋하지 않는다. 빌드에 연결되지 않은 에셋은 쓰임을 확인하고 지운다. 지우기 전에는 Unity의 Find References로 확인한다.
-- 임포트 설정은 에셋마다 쓰임에 묶여 있다. Pixels Per Unit은 프리팹 크기가 그 값에 맞춰져 있으므로 임의로 통일하지 않는다(`Art/Fx` 64, `Arrow_v1` 1000 등). Max Size는 화면에서 보이는 크기에 맞춘다(`VFX/Doodle`은 256). 스프라이트는 밉맵을 끈다. 다만 파티클 셰이더가 쓰는 `VFX/Textures`는 켠 상태를 유지한다.
+- 임포트 설정은 에셋마다 쓰임에 묶여 있다. Pixels Per Unit은 프리팹 크기가 그 값에 맞춰져 있으므로 임의로 통일하지 않는다(`Art/VFX/Enemy` 64, `Arrow_v1` 1000 등). Max Size는 화면에서 보이는 크기에 맞춘다(`VFX/Doodle`은 256). 스프라이트는 밉맵을 끈다. 다만 파티클 셰이더가 쓰는 `VFX/Textures`는 켠 상태를 유지한다.
 - 아이콘과 프리팹은 테이블의 `IconKey`/`PrefabKey`로 찾는다(위 "데이터와 API").
-- 기존 예외: `Image/`의 `N-Sheet.png`(1~6)는 UI 시트라 역할이 확정될 때 이름을 바꾼다. 몬스터 이미지는 `Monster_Normal`, `Monster_Elite`로 바꿨다.
+- 기존 예외: `Art/UI/Sheets`의 `N-Sheet.png`(1~6)는 UI 시트라 역할이 확정될 때 이름을 바꾼다.

@@ -15,8 +15,8 @@ namespace Game.Editor
     /// </summary>
     public static class MonsterAnimationBaker
     {
-        private const string PrefabFolder = "Assets/_Project/Prefabs/Monsters";
-        private const string OutputRoot = "Assets/_Project/Art/Monsters/Animations";
+        private const string PrefabFolder = "Assets/_Project/Prefabs/Enemies/Monsters";
+        private const string OutputRoot = "Assets/_Project/Art/Characters/Monsters/Animations";
         private const string ProceduralTypeName = "Game.View.Monster.MonsterAnimator";
         private const float FrameRate = 30f;
         private const float Tau = Mathf.PI * 2f;

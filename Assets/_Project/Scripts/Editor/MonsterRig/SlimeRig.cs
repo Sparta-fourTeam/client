@@ -14,7 +14,7 @@ namespace Game.Editor.MonsterRig
     public static class SlimeRig
     {
         public const string Name = "Slime";
-        public const string PsdPath = "Assets/_Project/Art/Monsters/Rig/Slime/Slime.psd";
+        public const string PsdPath = "Assets/_Project/Art/Characters/Monsters/Rig/Slime/Slime.psd";
         private const int Pad = 8;
 
         // 좌표는 slime.png(135x123) 픽셀 기준 + Pad
@@ -29,7 +29,7 @@ namespace Game.Editor.MonsterRig
             MaxInfluences = 3,
             Layers = new List<LayerSpec>
             {
-                new() { Name = "slime", PngPath = "Assets/_Project/Art/Monsters/slime.png", CanvasOffset = new Vector2Int(Pad, Pad) },
+                new() { Name = "slime", PngPath = "Assets/_Project/Art/Characters/Monsters/slime.png", CanvasOffset = new Vector2Int(Pad, Pad) },
             },
             Bones = new List<BoneSpec>
             {
@@ -51,8 +51,8 @@ namespace Game.Editor.MonsterRig
 
         // ---------- animation ----------
 
-        private const string AnimFolder = "Assets/_Project/Art/Monsters/Animations/Slime";
-        private const string PrefabPath = "Assets/_Project/Prefabs/Monsters/Slime_Animated.prefab";
+        private const string AnimFolder = "Assets/_Project/Art/Characters/Monsters/Animations/Slime";
+        private const string PrefabPath = "Assets/_Project/Prefabs/Enemies/Monsters/Slime_Animated.prefab";
         private const string RendererPath = "slime";
         private const float Tau = Mathf.PI * 2f;
         private static readonly Color HitTint = new(1f, 0.35f, 0.35f, 1f);

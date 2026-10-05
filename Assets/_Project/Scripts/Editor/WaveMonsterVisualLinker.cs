@@ -12,10 +12,10 @@ namespace Game.Editor
     /// </summary>
     public static class WaveMonsterVisualLinker
     {
-        private const string WaveFolder = "Assets/_Project/Prefabs/Wave";
-        private const string MonsterFolder = "Assets/_Project/Prefabs/Monsters";
+        private const string WaveFolder = "Assets/_Project/Prefabs/Enemies/Wave";
+        private const string MonsterFolder = "Assets/_Project/Prefabs/Enemies/Monsters";
         private const string DesaturateShader = "Game/2D/Sprite-Lit-Desaturate";
-        private const string DesaturateMaterialPath = "Assets/_Project/Art/Monsters/Materials/Monster_Desaturate.mat";
+        private const string DesaturateMaterialPath = "Assets/_Project/Art/Characters/Monsters/Materials/Monster_Desaturate.mat";
         private const string VisualName = "Visual";
         private const float EliteScale = 1.2f;
 

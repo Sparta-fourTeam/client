@@ -16,7 +16,7 @@ namespace Game.Editor.MonsterRig
     /// </summary>
     public static class EyeJellyRig
     {
-        private const string Png = "Assets/_Project/Art/Monsters/eyejelly_v2.png";
+        private const string Png = "Assets/_Project/Art/Characters/Monsters/eyejelly_v2.png";
         private const int Scale = 4;
         private const float Ppu = 200f;
         private const float Tau = Mathf.PI * 2f;
@@ -152,7 +152,7 @@ namespace Game.Editor.MonsterRig
         // ---------- 얼굴 가득 십자 + 번쩍임 ----------
 
         private const string CrossRoot = "CrossFx";
-        private const string CrossSpritePath = "Assets/_Project/Art/Fx/eyejelly_cross.png";
+        private const string CrossSpritePath = "Assets/_Project/Art/VFX/Enemy/eyejelly_cross.png";
 
         private static List<ClipFx.Track> CrossTracks(Art art)
         {
@@ -285,7 +285,7 @@ namespace Game.Editor.MonsterRig
                 }
             }
 
-            MonsterAnimationBaker.EnsureFolder("Assets/_Project/Art/Fx");
+            MonsterAnimationBaker.EnsureFolder("Assets/_Project/Art/VFX/Enemy");
             File.WriteAllBytes(Path.GetFullPath(CrossSpritePath), tex.EncodeToPNG());
             Object.DestroyImmediate(tex);
             AssetDatabase.ImportAsset(CrossSpritePath, ImportAssetOptions.ForceUpdate);

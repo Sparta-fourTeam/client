@@ -10,8 +10,8 @@ namespace Game.Editor.MonsterRig
     /// </summary>
     public static class GroundSlamFx
     {
-        public const string PrefabPath = "Assets/_Project/Prefabs/Fx/Fx_GroundSlam.prefab";
-        private const string ArtFolder = "Assets/_Project/Art/Fx";
+        public const string PrefabPath = "Assets/_Project/Prefabs/Enemies/Attacks/Fx_GroundSlam.prefab";
+        private const string ArtFolder = "Assets/_Project/Art/VFX/Enemy";
         private const string Shader2D = "Universal Render Pipeline/2D/Sprite-Unlit-Default";
         private const int SortingOrder = 20;
 
@@ -76,7 +76,7 @@ namespace Game.Editor.MonsterRig
             }
         }
 
-        public const string SonicPrefabPath = "Assets/_Project/Prefabs/Fx/Fx_SonicWave.prefab";
+        public const string SonicPrefabPath = "Assets/_Project/Prefabs/Enemies/Attacks/Fx_SonicWave.prefab";
 
         /// <summary>초음파: 입에서 아래(목표 쪽)로 납작한 파동 링 3개가 연달아 커지며 날아간다.</summary>
         public static GameObject BuildSonic()

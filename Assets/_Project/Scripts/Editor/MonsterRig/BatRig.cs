@@ -12,7 +12,7 @@ namespace Game.Editor.MonsterRig
     /// </summary>
     public static class BatRig
     {
-        private const string Png = "Assets/_Project/Art/Monsters/bat_parts.png";
+        private const string Png = "Assets/_Project/Art/Characters/Monsters/bat_parts.png";
         private const int Pad = 4;
         private const float Overlap = 8f; // 날개가 몸통 안쪽으로 파고드는 양(px)
 
@@ -143,7 +143,7 @@ namespace Game.Editor.MonsterRig
         private const float WaveStart = 0.24f, WaveGap = 0.07f, WaveLife = 0.32f, WaveTravel = 0.55f;
         private const float StartScale = 0.3f, EndScale = 1.1f, Flatten = 0.5f;
         private static readonly Color WaveColor = new(0.8f, 0.95f, 1f, 0.9f);
-        private const string RingPath = "Assets/_Project/Art/Fx/fx_ring.png";
+        private const string RingPath = "Assets/_Project/Art/VFX/Enemy/fx_ring.png";
 
         // Animator가 붙은 Body 아래에 투명한 링 3개를 둔다 (Attack 클립만 보이게 만든다).
         internal static void CreateSonicObjects(GameObject body, Art art)

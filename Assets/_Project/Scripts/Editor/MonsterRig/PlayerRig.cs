@@ -18,9 +18,9 @@ namespace Game.Editor.MonsterRig
     /// </summary>
     public static class PlayerRig
     {
-        private const string Png = "Assets/_Project/Art/Player/reaper.png";
-        private const string RigFolder = "Assets/_Project/Art/Player/Rig";
-        private const string AnimFolder = "Assets/_Project/Art/Player/Animations";
+        private const string Png = "Assets/_Project/Art/Characters/Player/reaper.png";
+        private const string RigFolder = "Assets/_Project/Art/Characters/Player/Rig";
+        private const string AnimFolder = "Assets/_Project/Art/Characters/Player/Animations";
         private const string PrefabPath = "Assets/_Project/Prefabs/Player/Player_Animated.prefab";
         private const int Scale = 4;
         private const float Ppu = 200f;
