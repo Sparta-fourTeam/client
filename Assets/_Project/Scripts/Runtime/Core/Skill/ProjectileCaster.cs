@@ -31,11 +31,11 @@ namespace Game.Core
             foreach (var candidate in candidates)
             {
                 if (candidate == null || candidate is EnemyModel model && model.IsDead) { continue; }
-                if (candidate.Position.y <= wall.AttackLineY + data.baseStats.reserveDistance
-                    && (candidate.Position - (Vector2)caster.position).sqrMagnitude <= data.baseStats.range * data.baseStats.range)
+                if (candidate.Position.y <= wall.AttackLineY + current.Cast.ReserveDistance
+                    && (candidate.Position - (Vector2)caster.position).sqrMagnitude <= Config.Attack.Range * Config.Attack.Range)
                 { nearby = true; break; }
             }
-            reserveClock.Tick(deltaTime, nearby, current.Cast.ReserveCount, data.baseStats.reserveCooldown, data.baseStats.reserveInterval, OnFire);
+            reserveClock.Tick(deltaTime, nearby, current.Cast.ReserveCount, current.Cast.ReserveCooldown, current.Cast.ReserveInterval, OnFire);
         }
 
         protected override void OnFire()
@@ -45,7 +45,7 @@ namespace Game.Core
             var targets = FindTargets(config.Attack.Range);
             if (targets.Count == 0) { return; }
 
-            var spawnRules = new ProjectileSpawnRules(current, data, targetProvider, pool, projectileScale, config.Reactions);
+            var spawnRules = new ProjectileSpawnRules(current, targetProvider, pool, projectileScale, config.Reactions);
             for (int i = 0; i < current.Cast.ProjectileCount; i++)
             {
                 var target = targets[i % targets.Count];

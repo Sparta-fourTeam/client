@@ -7,17 +7,15 @@ namespace Game.Core
     public sealed class ProjectileBranchSpawner
     {
         private readonly WeaponStats stats;
-        private readonly WeaponData data;
         private readonly IEnemyTargetProvider targetProvider;
         private readonly ObjectPool<Projectile> pool;
         private readonly Vector3 projectileScale;
         private const float ProjectileLifetime = 3f;
 
-        public ProjectileBranchSpawner(WeaponStats stats, WeaponData data, IEnemyTargetProvider targetProvider,
+        public ProjectileBranchSpawner(WeaponStats stats, IEnemyTargetProvider targetProvider,
             ObjectPool<Projectile> pool, Vector3 projectileScale)
         {
             this.stats = stats;
-            this.data = data;
             this.targetProvider = targetProvider;
             this.pool = pool;
             this.projectileScale = projectileScale;
@@ -32,8 +30,8 @@ namespace Game.Core
             float knockback = stats.Projectile.KnockbackDistance;
             float frostbite = stats.Status.FrostbiteRatio;
             var normalSplit = CreateSplitCallbackForDamage(damage);
-            float freezeChance = data.baseStats.freezeChance;
-            float frostbiteChance = data.baseStats.frostbiteChance;
+            float freezeChance = stats.Status.FreezeChance;
+            float frostbiteChance = stats.Status.FrostbiteChance;
             return (position, direction, source) =>
             {
                 for (int i = 0; i < 3; i++)
@@ -101,7 +99,7 @@ namespace Game.Core
                         IgnoredTarget = target,
                         FrostbiteRatio = shardFrostbite,
                         LightningDamage = auxiliaryLightningDamage,
-                        FrostbiteChance = data.baseStats.frostbiteChance
+                        FrostbiteChance = stats.Status.FrostbiteChance
                     });
                 }
             };

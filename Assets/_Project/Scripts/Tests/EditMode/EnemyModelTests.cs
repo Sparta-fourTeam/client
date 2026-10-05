@@ -203,7 +203,7 @@ namespace Game.Tests
                 weapon.LevelUp(data.upgrades.Find(c => c.id == "lightning_sanction"));
                 var pool = (UnityEngine.Pool.ObjectPool<HitscanEffect>)typeof(HitscanCaster)
                     .GetField("pool", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(weapon);
-                var callback = new HitscanCastEffects(weapon.Stats, data.baseStats, provider, pool, null, null, Vector3.one)
+                var callback = new HitscanCastEffects(weapon.Stats, data.baseStats.range, provider, pool, null, null, Vector3.one)
                     .CreateKillLightningCallback();
                 callback(Vector2.zero);
                 foreach (var effect in UnityEngine.Object.FindObjectsByType<HitscanEffect>(FindObjectsSortMode.None))

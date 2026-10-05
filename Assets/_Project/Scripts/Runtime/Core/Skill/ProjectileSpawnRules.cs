@@ -7,23 +7,21 @@ namespace Game.Core
     public sealed class ProjectileSpawnRules
     {
         private readonly WeaponStats stats;
-        private readonly WeaponData data;
         private readonly IEnemyTargetProvider targetProvider;
         private readonly ObjectPool<Projectile> pool;
         private readonly Vector3 projectileScale;
         private readonly ProjectileBranchSpawner branches;
         private readonly AttackReactions reactions;
 
-        public ProjectileSpawnRules(WeaponStats stats, WeaponData data, IEnemyTargetProvider targetProvider,
+        public ProjectileSpawnRules(WeaponStats stats, IEnemyTargetProvider targetProvider,
             ObjectPool<Projectile> pool, Vector3 projectileScale, AttackReactions reactions = null)
         {
             this.stats = stats;
-            this.data = data;
             this.targetProvider = targetProvider;
             this.pool = pool;
             this.projectileScale = projectileScale;
             this.reactions = reactions ?? AttackReactions.Empty;
-            branches = new ProjectileBranchSpawner(this.stats, data, targetProvider, pool, projectileScale);
+            branches = new ProjectileBranchSpawner(this.stats, targetProvider, pool, projectileScale);
         }
 
         public void SpawnMain(Vector3 start, Vector3 direction, float lifetime, int pierce)
@@ -47,17 +45,17 @@ namespace Game.Core
                 FrostbiteRatio = stats.Status.FrostbiteRatio,
                 ParalysisDuration = stats.Status.ParalysisDuration,
                 LightningDamage = stats.Cast.Damage * stats.Secondary.LightningStrikeRatio,
-                ParalysisChance = data.baseStats.paralysisChance,
+                ParalysisChance = stats.Status.ParalysisChance,
                 BurnDuration = stats.Burn.Duration,
                 BurnDamage = stats.Cast.Damage * stats.Burn.DamageRatio,
                 BurnMaxHpRatio = stats.Burn.MaxHpRatio,
                 BurnOnDeath = CreateBurnDeathCallback(),
-                FreezeChance = data.baseStats.freezeChance,
-                FrostbiteChance = data.baseStats.frostbiteChance,
-                BurnChance = data.baseStats.burnChance,
+                FreezeChance = stats.Status.FreezeChance,
+                FrostbiteChance = stats.Status.FrostbiteChance,
+                BurnChance = stats.Burn.Chance,
                 CollisionRadius = .3f * stats.Projectile.SizeMultiplier,
                 StunDuration = stats.Status.StunDuration,
-                StunChance = data.baseStats.stunChance,
+                StunChance = stats.Status.StunChance,
                 SlowDuration = stats.Status.SlowDuration,
                 SlowRatio = stats.Status.SlowRatio,
                 VulnerabilityRatio = stats.Status.VulnerabilityRatio,

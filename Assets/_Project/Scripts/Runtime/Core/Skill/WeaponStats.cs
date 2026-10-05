@@ -1,8 +1,98 @@
+using System;
+
 namespace Game.Core
 {
+    /// <summary>스냅샷과 빌더가 공유하는 스탯 키. 스탯 하나를 더하려면 여기, <see cref="WeaponStatRegistry"/>, 묶음 구조체에 한 줄씩 적는다.</summary>
+    internal enum Stat
+    {
+        Cooldown, Damage, ProjectileCount, CastCount, ReserveCastCount, Form, CastInterval,
+        ReserveDistance, ReserveCooldown, ReserveInterval,
+        PierceCount, ProjectileSpeed, ProjectileSizeMultiplier, KnockbackDistance,
+        FreezeDuration, FreezeChance, FrostbiteRatio, FrostbiteChance, ParalysisDuration, ParalysisChance,
+        StunDuration, StunChance, SlowDuration, SlowRatio, VulnerabilityRatio, VulnerabilityDuration,
+        BurnDuration, BurnRatio, BurnMaxHpRatio, BurnDeathExplosion, BurnChance,
+        ExplosionRadius, ExplosionDamage,
+        SplitCount, ShardDamageMultiplier, ShardFrostbiteRatio, AuxiliaryParalysisDuration, AuxiliaryLightningRatio,
+        AuxiliaryExplosions, KillLightningRatio, LightningStrikeRatio,
+        FieldDuration, FieldDamageRatio, FieldFlatDamage, FieldDamageMultiplier, FieldRadius, FieldSlowRatio,
+        Count
+    }
+
+    /// <summary>스탯별 기본값 선언. 선언이 빠진 스탯은 첫 사용 때 바로 예외가 나므로 조용히 0으로 남지 않는다.</summary>
+    internal static class WeaponStatRegistry
+    {
+        private static readonly Func<WeaponBaseStats, float>[] Defaults = Create();
+
+        public static float[] CreateValues(WeaponBaseStats d)
+        {
+            var values = new float[(int)Stat.Count];
+            for (int i = 0; i < values.Length; i++) { values[i] = Defaults[i](d); }
+            return values;
+        }
+
+        private static Func<WeaponBaseStats, float>[] Create()
+        {
+            var t = new Func<WeaponBaseStats, float>[(int)Stat.Count];
+            void Def(Stat stat, Func<WeaponBaseStats, float> value) => t[(int)stat] = value;
+            Def(Stat.Cooldown, d => d.cooldown);
+            Def(Stat.Damage, d => d.baseDamage);
+            Def(Stat.ProjectileCount, d => Math.Max(1, d.hitCount));
+            Def(Stat.CastCount, d => Math.Max(1, d.castCount));
+            Def(Stat.ReserveCastCount, _ => 0);
+            Def(Stat.Form, _ => (int)WeaponForm.Default);
+            Def(Stat.CastInterval, d => d.castInterval);
+            Def(Stat.ReserveDistance, d => d.reserveDistance);
+            Def(Stat.ReserveCooldown, d => d.reserveCooldown);
+            Def(Stat.ReserveInterval, d => d.reserveInterval);
+            Def(Stat.PierceCount, d => Math.Max(0, d.pierceCount));
+            Def(Stat.ProjectileSpeed, d => d.speed);
+            Def(Stat.ProjectileSizeMultiplier, _ => 1);
+            Def(Stat.KnockbackDistance, d => d.knockbackDistance);
+            Def(Stat.FreezeDuration, d => d.freezeDuration);
+            Def(Stat.FreezeChance, d => d.freezeChance);
+            Def(Stat.FrostbiteRatio, _ => 0);
+            Def(Stat.FrostbiteChance, d => d.frostbiteChance);
+            Def(Stat.ParalysisDuration, d => d.paralysisDuration);
+            Def(Stat.ParalysisChance, d => d.paralysisChance);
+            Def(Stat.StunDuration, d => d.stunDuration);
+            Def(Stat.StunChance, d => d.stunChance);
+            Def(Stat.SlowDuration, d => d.slowDuration);
+            Def(Stat.SlowRatio, d => d.slowRatio);
+            Def(Stat.VulnerabilityRatio, _ => 0);
+            Def(Stat.VulnerabilityDuration, _ => 0);
+            Def(Stat.BurnDuration, _ => 0);
+            Def(Stat.BurnRatio, _ => 0);
+            Def(Stat.BurnMaxHpRatio, _ => 0);
+            Def(Stat.BurnDeathExplosion, _ => 0);
+            Def(Stat.BurnChance, d => d.burnChance);
+            Def(Stat.ExplosionRadius, d => d.explosionRadius);
+            Def(Stat.ExplosionDamage, d => d.baseDamage * d.explosionDamageRatio);
+            Def(Stat.SplitCount, _ => 0);
+            Def(Stat.ShardDamageMultiplier, _ => 1);
+            Def(Stat.ShardFrostbiteRatio, _ => 0);
+            Def(Stat.AuxiliaryParalysisDuration, _ => 0);
+            Def(Stat.AuxiliaryLightningRatio, _ => 0);
+            Def(Stat.AuxiliaryExplosions, _ => 0);
+            Def(Stat.KillLightningRatio, _ => 0);
+            Def(Stat.LightningStrikeRatio, _ => 0);
+            Def(Stat.FieldDuration, _ => 0);
+            Def(Stat.FieldDamageRatio, d => d.fieldDamageRatio);
+            Def(Stat.FieldFlatDamage, _ => 0);
+            Def(Stat.FieldDamageMultiplier, _ => 1);
+            Def(Stat.FieldRadius, d => d.fieldRadius);
+            Def(Stat.FieldSlowRatio, d => d.fieldSlowRatio);
+            for (int i = 0; i < t.Length; i++)
+            {
+                if (t[i] == null) { throw new InvalidOperationException($"스탯 {(Stat)i}의 기본값 선언이 없습니다."); }
+            }
+            return t;
+        }
+    }
+
     /// <summary>Immutable combat values, grouped by the behavior that consumes them.</summary>
     public sealed class WeaponStats
     {
+        private readonly float[] values;
         public CastStats Cast { get; }
         public ProjectileStats Projectile { get; }
         public StatusStats Status { get; }
@@ -13,275 +103,134 @@ namespace Game.Core
 
         public static WeaponStats FromDefinition(WeaponBaseStats data) => new WeaponStats(new WeaponStatsBuilder(data));
 
+        // 값 배열은 생성 시 한 번 복사하고 밖으로 내보내지 않는다.
         internal WeaponStats(WeaponStatsBuilder source)
         {
-            Cast = new CastStats(source);
-            Projectile = new ProjectileStats(source);
-            Status = new StatusStats(source);
-            Burn = new BurnStats(source);
-            Explosion = new ExplosionStats(source);
-            Secondary = new SecondaryStats(source);
-            Field = new FieldStats(source);
+            values = source.CopyValues();
+            Cast = new CastStats(values);
+            Projectile = new ProjectileStats(values);
+            Status = new StatusStats(values);
+            Burn = new BurnStats(values);
+            Explosion = new ExplosionStats(values);
+            Secondary = new SecondaryStats(values);
+            Field = new FieldStats(values);
         }
 
+        internal float[] CopyValues() => (float[])values.Clone();
     }
 
     public readonly struct CastStats
     {
-        public float Cooldown { get; }
-        public float Damage { get; }
-        public int ProjectileCount { get; }
-        public int Count { get; }
-        public int ReserveCount { get; }
-        public WeaponForm Form { get; }
+        private readonly float[] v;
+        internal CastStats(float[] values) => v = values;
 
-        internal CastStats(WeaponStatsBuilder source)
-        {
-            Cooldown = source.Cooldown;
-            Damage = source.Damage;
-            ProjectileCount = source.ProjectileCount;
-            Count = source.CastCount;
-            ReserveCount = source.ReserveCastCount;
-            Form = source.Form;
-        }
+        public float Cooldown => v[(int)Stat.Cooldown];
+        public float Damage => v[(int)Stat.Damage];
+        public int ProjectileCount => (int)v[(int)Stat.ProjectileCount];
+        public int Count => (int)v[(int)Stat.CastCount];
+        public int ReserveCount => (int)v[(int)Stat.ReserveCastCount];
+        public WeaponForm Form => (WeaponForm)(int)v[(int)Stat.Form];
+        public float Interval => v[(int)Stat.CastInterval];
+        public float ReserveDistance => v[(int)Stat.ReserveDistance];
+        public float ReserveCooldown => v[(int)Stat.ReserveCooldown];
+        public float ReserveInterval => v[(int)Stat.ReserveInterval];
     }
 
     public readonly struct ProjectileStats
     {
-        public int PierceCount { get; }
-        public float Speed { get; }
-        public float SizeMultiplier { get; }
-        public float KnockbackDistance { get; }
+        private readonly float[] v;
+        internal ProjectileStats(float[] values) => v = values;
 
-        internal ProjectileStats(WeaponStatsBuilder source)
-        {
-            PierceCount = source.PierceCount;
-            Speed = source.ProjectileSpeed;
-            SizeMultiplier = source.ProjectileSizeMultiplier;
-            KnockbackDistance = source.KnockbackDistance;
-        }
+        public int PierceCount => (int)v[(int)Stat.PierceCount];
+        public float Speed => v[(int)Stat.ProjectileSpeed];
+        public float SizeMultiplier => v[(int)Stat.ProjectileSizeMultiplier];
+        public float KnockbackDistance => v[(int)Stat.KnockbackDistance];
     }
 
     public readonly struct StatusStats
     {
-        public float FreezeDuration { get; }
-        public float FrostbiteRatio { get; }
-        public float ParalysisDuration { get; }
-        public float StunDuration { get; }
-        public float SlowDuration { get; }
-        public float SlowRatio { get; }
-        public float VulnerabilityRatio { get; }
-        public float VulnerabilityDuration { get; }
+        private readonly float[] v;
+        internal StatusStats(float[] values) => v = values;
 
-        internal StatusStats(WeaponStatsBuilder source)
-        {
-            FreezeDuration = source.FreezeDuration;
-            FrostbiteRatio = source.FrostbiteRatio;
-            ParalysisDuration = source.ParalysisDuration;
-            StunDuration = source.StunDuration;
-            SlowDuration = source.SlowDuration;
-            SlowRatio = source.SlowRatio;
-            VulnerabilityRatio = source.VulnerabilityRatio;
-            VulnerabilityDuration = source.VulnerabilityDuration;
-        }
+        public float FreezeDuration => v[(int)Stat.FreezeDuration];
+        public float FreezeChance => v[(int)Stat.FreezeChance];
+        public float FrostbiteRatio => v[(int)Stat.FrostbiteRatio];
+        public float FrostbiteChance => v[(int)Stat.FrostbiteChance];
+        public float ParalysisDuration => v[(int)Stat.ParalysisDuration];
+        public float ParalysisChance => v[(int)Stat.ParalysisChance];
+        public float StunDuration => v[(int)Stat.StunDuration];
+        public float StunChance => v[(int)Stat.StunChance];
+        public float SlowDuration => v[(int)Stat.SlowDuration];
+        public float SlowRatio => v[(int)Stat.SlowRatio];
+        public float VulnerabilityRatio => v[(int)Stat.VulnerabilityRatio];
+        public float VulnerabilityDuration => v[(int)Stat.VulnerabilityDuration];
     }
 
     public readonly struct BurnStats
     {
-        public float Duration { get; }
-        public float DamageRatio { get; }
-        public float MaxHpRatio { get; }
-        public bool DeathExplosion { get; }
+        private readonly float[] v;
+        internal BurnStats(float[] values) => v = values;
 
-        internal BurnStats(WeaponStatsBuilder source)
-        {
-            Duration = source.BurnDuration;
-            DamageRatio = source.BurnRatio;
-            MaxHpRatio = source.BurnMaxHpRatio;
-            DeathExplosion = source.BurnDeathExplosion;
-        }
+        public float Duration => v[(int)Stat.BurnDuration];
+        public float DamageRatio => v[(int)Stat.BurnRatio];
+        public float MaxHpRatio => v[(int)Stat.BurnMaxHpRatio];
+        public bool DeathExplosion => v[(int)Stat.BurnDeathExplosion] != 0;
+        public float Chance => v[(int)Stat.BurnChance];
     }
 
     public readonly struct ExplosionStats
     {
-        public float Radius { get; }
-        public float Damage { get; }
+        private readonly float[] v;
+        internal ExplosionStats(float[] values) => v = values;
 
-        internal ExplosionStats(WeaponStatsBuilder source)
-        {
-            Radius = source.ExplosionRadius;
-            Damage = source.ExplosionDamage;
-        }
+        public float Radius => v[(int)Stat.ExplosionRadius];
+        public float Damage => v[(int)Stat.ExplosionDamage];
     }
 
     public readonly struct SecondaryStats
     {
-        public int Count { get; }
-        public float DamageMultiplier { get; }
-        public float FrostbiteRatio { get; }
-        public float ParalysisDuration { get; }
-        public float LightningRatio { get; }
-        public bool Explosions { get; }
-        public float KillLightningRatio { get; }
-        public float LightningStrikeRatio { get; }
+        private readonly float[] v;
+        internal SecondaryStats(float[] values) => v = values;
 
-        internal SecondaryStats(WeaponStatsBuilder source)
-        {
-            Count = source.SplitCount;
-            DamageMultiplier = source.ShardDamageMultiplier;
-            FrostbiteRatio = source.ShardFrostbiteRatio;
-            ParalysisDuration = source.AuxiliaryParalysisDuration;
-            LightningRatio = source.AuxiliaryLightningRatio;
-            Explosions = source.AuxiliaryExplosions;
-            KillLightningRatio = source.KillLightningRatio;
-            LightningStrikeRatio = source.LightningStrikeRatio;
-        }
+        public int Count => (int)v[(int)Stat.SplitCount];
+        public float DamageMultiplier => v[(int)Stat.ShardDamageMultiplier];
+        public float FrostbiteRatio => v[(int)Stat.ShardFrostbiteRatio];
+        public float ParalysisDuration => v[(int)Stat.AuxiliaryParalysisDuration];
+        public float LightningRatio => v[(int)Stat.AuxiliaryLightningRatio];
+        public bool Explosions => v[(int)Stat.AuxiliaryExplosions] != 0;
+        public float KillLightningRatio => v[(int)Stat.KillLightningRatio];
+        public float LightningStrikeRatio => v[(int)Stat.LightningStrikeRatio];
     }
 
     public readonly struct FieldStats
     {
-        public float Duration { get; }
-        public float DamageRatio { get; }
-        public float FlatDamage { get; }
-        public float DamageMultiplier { get; }
-        public float Radius { get; }
-        public float SlowRatio { get; }
+        private readonly float[] v;
+        internal FieldStats(float[] values) => v = values;
 
-        internal FieldStats(WeaponStatsBuilder source)
-        {
-            Duration = source.FieldDuration;
-            DamageRatio = source.FieldDamageRatio;
-            FlatDamage = source.FieldFlatDamage;
-            DamageMultiplier = source.FieldDamageMultiplier;
-            Radius = source.FieldRadius;
-            SlowRatio = source.FieldSlowRatio;
-        }
+        public float Duration => v[(int)Stat.FieldDuration];
+        public float DamageRatio => v[(int)Stat.FieldDamageRatio];
+        public float FlatDamage => v[(int)Stat.FieldFlatDamage];
+        public float DamageMultiplier => v[(int)Stat.FieldDamageMultiplier];
+        public float Radius => v[(int)Stat.FieldRadius];
+        public float SlowRatio => v[(int)Stat.FieldSlowRatio];
     }
 
     // Only upgrade preparation can mutate values; committed snapshots are read-only.
     internal sealed class WeaponStatsBuilder
     {
-        public float Cooldown;
-        public float Damage;
-        public int ProjectileCount;
-        public int CastCount;
-        public int PierceCount;
-        public float ProjectileSpeed;
-        public float ProjectileSizeMultiplier;
-        public float FreezeDuration;
-        public float KnockbackDistance;
-        public float ExplosionRadius;
-        public float ExplosionDamage;
-        public float FrostbiteRatio;
-        public float ShardFrostbiteRatio;
-        public int SplitCount;
-        public float ShardDamageMultiplier;
-        public float ParalysisDuration;
-        public float AuxiliaryParalysisDuration;
-        public float KillLightningRatio;
-        public float LightningStrikeRatio;
-        public float AuxiliaryLightningRatio;
-        public bool AuxiliaryExplosions;
-        public float BurnDuration;
-        public float BurnRatio;
-        public float BurnMaxHpRatio;
-        public bool BurnDeathExplosion;
-        public float FieldDuration;
-        public float FieldDamageRatio;
-        public float FieldFlatDamage;
-        public float FieldDamageMultiplier;
-        public float FieldRadius;
-        public float FieldSlowRatio;
-        public float StunDuration;
-        public float SlowDuration;
-        public float SlowRatio;
-        public float VulnerabilityRatio;
-        public float VulnerabilityDuration;
-        public int ReserveCastCount;
-        public WeaponForm Form;
+        private readonly float[] values;
 
-        public WeaponStatsBuilder(WeaponBaseStats data)
+        public WeaponStatsBuilder(WeaponBaseStats data) => values = WeaponStatRegistry.CreateValues(data);
+
+        // 스냅샷을 열어 보지 않고 값 배열째 복사하므로 새 스탯이 복사에서 빠질 수 없다.
+        public WeaponStatsBuilder(WeaponStats source) => values = source.CopyValues();
+
+        public float this[Stat stat]
         {
-            Cooldown = data.cooldown;
-            Damage = data.baseDamage;
-            ProjectileCount = System.Math.Max(1, data.hitCount);
-            CastCount = System.Math.Max(1, data.castCount);
-            PierceCount = System.Math.Max(0, data.pierceCount);
-            ProjectileSpeed = data.speed;
-            ProjectileSizeMultiplier = 1;
-            FreezeDuration = data.freezeDuration;
-            KnockbackDistance = data.knockbackDistance;
-            ExplosionRadius = data.explosionRadius;
-            ExplosionDamage = data.baseDamage * data.explosionDamageRatio;
-            FrostbiteRatio = 0;
-            ShardFrostbiteRatio = 0;
-            SplitCount = 0;
-            ShardDamageMultiplier = 1;
-            ParalysisDuration = data.paralysisDuration;
-            AuxiliaryParalysisDuration = 0;
-            KillLightningRatio = 0;
-            LightningStrikeRatio = 0;
-            AuxiliaryLightningRatio = 0;
-            AuxiliaryExplosions = false;
-            BurnDuration = 0;
-            BurnRatio = 0;
-            BurnMaxHpRatio = 0;
-            BurnDeathExplosion = false;
-            FieldDuration = 0;
-            FieldDamageRatio = data.fieldDamageRatio;
-            FieldFlatDamage = 0;
-            FieldDamageMultiplier = 1;
-            FieldRadius = data.fieldRadius;
-            FieldSlowRatio = data.fieldSlowRatio;
-            StunDuration = data.stunDuration;
-            SlowDuration = data.slowDuration;
-            SlowRatio = data.slowRatio;
-            VulnerabilityRatio = 0;
-            VulnerabilityDuration = 0;
-            ReserveCastCount = 0;
-            Form = WeaponForm.Default;
+            get => values[(int)stat];
+            set => values[(int)stat] = value;
         }
 
-        public WeaponStatsBuilder(WeaponStats source)
-        {
-            Cooldown = source.Cast.Cooldown;
-            Damage = source.Cast.Damage;
-            ProjectileCount = source.Cast.ProjectileCount;
-            CastCount = source.Cast.Count;
-            PierceCount = source.Projectile.PierceCount;
-            ProjectileSpeed = source.Projectile.Speed;
-            ProjectileSizeMultiplier = source.Projectile.SizeMultiplier;
-            FreezeDuration = source.Status.FreezeDuration;
-            KnockbackDistance = source.Projectile.KnockbackDistance;
-            ExplosionRadius = source.Explosion.Radius;
-            ExplosionDamage = source.Explosion.Damage;
-            FrostbiteRatio = source.Status.FrostbiteRatio;
-            ShardFrostbiteRatio = source.Secondary.FrostbiteRatio;
-            SplitCount = source.Secondary.Count;
-            ShardDamageMultiplier = source.Secondary.DamageMultiplier;
-            ParalysisDuration = source.Status.ParalysisDuration;
-            AuxiliaryParalysisDuration = source.Secondary.ParalysisDuration;
-            KillLightningRatio = source.Secondary.KillLightningRatio;
-            LightningStrikeRatio = source.Secondary.LightningStrikeRatio;
-            AuxiliaryLightningRatio = source.Secondary.LightningRatio;
-            AuxiliaryExplosions = source.Secondary.Explosions;
-            BurnDuration = source.Burn.Duration;
-            BurnRatio = source.Burn.DamageRatio;
-            BurnMaxHpRatio = source.Burn.MaxHpRatio;
-            BurnDeathExplosion = source.Burn.DeathExplosion;
-            FieldDuration = source.Field.Duration;
-            FieldDamageRatio = source.Field.DamageRatio;
-            FieldFlatDamage = source.Field.FlatDamage;
-            FieldDamageMultiplier = source.Field.DamageMultiplier;
-            FieldRadius = source.Field.Radius;
-            FieldSlowRatio = source.Field.SlowRatio;
-            StunDuration = source.Status.StunDuration;
-            SlowDuration = source.Status.SlowDuration;
-            SlowRatio = source.Status.SlowRatio;
-            VulnerabilityRatio = source.Status.VulnerabilityRatio;
-            VulnerabilityDuration = source.Status.VulnerabilityDuration;
-            ReserveCastCount = source.Cast.ReserveCount;
-            Form = source.Cast.Form;
-        }
+        public float[] CopyValues() => (float[])values.Clone();
     }
 }

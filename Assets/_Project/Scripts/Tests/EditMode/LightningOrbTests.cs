@@ -41,7 +41,7 @@ namespace Game.Tests
                 Assert.IsFalse(weapon.LevelUp(data.upgrades.Find(c => c.id == "lightning_split")));
                 if (voltage) { Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == "lightning_particle_voltage"))); }
                 var pool = (UnityEngine.Pool.ObjectPool<Projectile>)typeof(HitscanCaster).GetField("orbPool", Flags).GetValue(weapon);
-                var callback = LightningOrbSpawner.CreateCallback(weapon.Stats, data.baseStats, new Provider(), pool, null);
+                var callback = LightningOrbSpawner.CreateCallback(weapon.Stats, new Provider(), pool, null);
                 callback(new Vector2(1000, 1000));
                 var clones = new List<Projectile>();
                 foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))

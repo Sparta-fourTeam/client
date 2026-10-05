@@ -64,7 +64,7 @@ namespace Game.Core
             if (disposed) { return; }
             OnTickExtra(deltaTime);
             var current = Stats.Cast;
-            castClock.Tick(deltaTime, current.Cooldown, current.Count, data.baseStats.castInterval, OnFire);
+            castClock.Tick(deltaTime, current.Cooldown, current.Count, current.Interval, OnFire);
         }
 
         protected virtual void OnTickExtra(float deltaTime) { }

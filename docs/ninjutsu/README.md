@@ -246,10 +246,10 @@ python3 docs/ninjutsu/validate_requirements.py
    - 스냅샷 복사 테스트: 모든 `UpgradeType`을 적용한 스탯을 빈 강화로 한 번 더 복사해 값이 같은지 본다. 리플렉션으로 펼치므로 새 스탯이 자동으로 포함된다. `UpgradeType` 하나하나가 규칙을 갖고 스탯을 바꾸는지도 검사한다.
    - 골든 테스트: 카드 66장(변형 포함)의 단독 적용 결과와 무기별 전체 적용 결과를 `Tests/EditMode/Golden/WeaponCardStats.golden.txt`에 고정했다. 의도한 변경이면 `RegenerateGolden`(Explicit)을 실행해 파일을 갱신하고 diff를 리뷰한다. 폭발 반경 배율 카드처럼 선행 카드 없이 단독으로는 값이 안 바뀌는 카드는 `(변화 없음)`으로 기록된다.
    - 프리팹·아이콘 연결 테스트: `Weapons.json`의 id와 `iconKey`를 `prefabEntries`(공격 종류에 맞는 컴포넌트 포함), `SkillIconTable_Side`, `SkillIconTable_Card`(`_new`, `_upgrade`)와 대조하고, 기본 아이콘과 빈 스프라이트도 검사한다. 시작 시 예외가 아니라 테스트로 구현했다.
-2. **스탯 일원화와 기본 수치 분할** (약 2일, A·B·F)
-   - `StatKey` 레지스트리(기본값, 검증, Add/Multiply/Set/Max)를 만들고 `WeaponStatsBuilder`의 필드 나열·복사 생성자를 대체한다. 공개 API(`stats.Cast.Damage` 등)는 유지한다.
-   - `data.baseStats` 직접 접근을 제거하고 확률·예비 시전 값을 스냅샷으로 옮긴다.
-   - `Category()` switch를 레지스트리 속성으로 옮긴다.
+2. **스탯 일원화와 기본 수치 분할** (약 2일, A·B·F) — 2-1 완료, 나머지 진행 중
+   - **완료**: `Stat` enum과 `WeaponStatRegistry`(스탯별 기본값 한 줄)로 `WeaponStatsBuilder`의 필드 나열·복사 생성자를 대체했다. 스냅샷은 값 배열 하나를 갖고 묶음 구조체(`stats.Cast.Damage` 등)가 읽으므로 공개 API는 그대로고, 복사에서 스탯이 빠질 수 없다. 기본값 선언이 빠진 스탯은 시작 시 예외가 난다. 이제 스탯 하나를 더하려면 `Stat` enum, 레지스트리 기본값, 묶음 구조체 속성, 규칙 한 줄이다.
+   - **완료**: `data.baseStats` 직접 접근을 없앴다. 확률(마비·빙결·동상·화상·기절), 시전 간격, 예비 시전 값은 스냅샷(`Status`·`Burn`·`Cast`)으로, 사거리는 `AttackDefinition.Range`로 옮겼다.
+   - **완료**: `Category()` switch를 없애고 분류를 규칙 선언(`AddStat`/`AddCast`/`AddReaction`)에 함께 적는다.
    - `WeaponBaseStats`를 공격 종류별 데이터로 분할한다.
    - `UpgradeType`을 정리한다(`HitCount`/`ProjectileCount` 통합, `Auxiliary*`/`Shard*` 이름 정리, 값 재배열). enum·JSON 숫자는 마이그레이션 스크립트로 한 번에 바꾼다. 스키마 변환 커밋과 구조 변경 커밋은 분리한다.
 3. **반응 컴파일 통합** (약 2일, B·C)

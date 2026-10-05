@@ -9,7 +9,7 @@ namespace Game.Core
     public sealed class HitscanCastEffects
     {
         private readonly WeaponStats stats;
-        private readonly WeaponBaseStats definition;
+        private readonly float range;
         private readonly IEnemyTargetProvider targets;
         private readonly ObjectPool<HitscanEffect> strikes;
         private readonly ObjectPool<Projectile> orbs;
@@ -17,12 +17,12 @@ namespace Game.Core
         private readonly Vector3 scale;
         private readonly AttackReactions reactions;
 
-        public HitscanCastEffects(WeaponStats stats, WeaponBaseStats definition, IEnemyTargetProvider targets,
+        public HitscanCastEffects(WeaponStats stats, float range, IEnemyTargetProvider targets,
             ObjectPool<HitscanEffect> strikes, ObjectPool<Projectile> orbs,
             ObjectPool<ElectromagneticField> fields, Vector3 scale, AttackReactions reactions = null)
         {
             this.stats = stats;
-            this.definition = definition;
+            this.range = range;
             this.targets = targets;
             this.strikes = strikes;
             this.orbs = orbs;
@@ -47,9 +47,9 @@ namespace Game.Core
             Action<Vector2> onHit = radius > 0
                 ? position => SkillReactionEffects.Explode(targets, position, radius, explosionDamage)
                 : null;
-            onHit += LightningOrbSpawner.CreateCallback(stats, definition, targets, orbs, target);
+            onHit += LightningOrbSpawner.CreateCallback(stats, targets, orbs, target);
             float duration = stats.Status.ParalysisDuration;
-            float chance = definition.paralysisChance;
+            float chance = stats.Status.ParalysisChance;
             Action<Enemy> onTargetHit = duration > 0
                 ? enemy => { if (StatusProc.Roll(chance)) { enemy.ApplyParalysis(duration); } }
             : null;
@@ -61,7 +61,6 @@ namespace Game.Core
         {
             float damage = stats.Cast.Damage * stats.Secondary.KillLightningRatio;
             if (damage <= 0) { return null; }
-            float range = definition.range;
             return position =>
             {
                 var candidates = new List<IEnemyTarget>();

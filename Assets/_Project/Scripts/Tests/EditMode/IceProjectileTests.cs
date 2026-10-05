@@ -14,7 +14,7 @@ namespace Game.Tests
         {
             const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Instance;
             return new ProjectileSpawnRules(
-                (WeaponStats)typeof(WeaponBase).GetField("stats", flags).GetValue(weapon), weapon.Data,
+                (WeaponStats)typeof(WeaponBase).GetField("stats", flags).GetValue(weapon),
                 (IEnemyTargetProvider)typeof(WeaponBase).GetField("targetProvider", flags).GetValue(weapon),
                 (ObjectPool<Projectile>)typeof(ProjectileCaster).GetField("pool", flags).GetValue(weapon),
                 (Vector3)typeof(ProjectileCaster).GetField("projectileScale", flags).GetValue(weapon));
@@ -23,7 +23,7 @@ namespace Game.Tests
         private static ProjectileBranchSpawner BranchSpawner(ProjectileCaster weapon)
         {
             const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Instance;
-            return new ProjectileBranchSpawner(weapon.Stats, weapon.Data,
+            return new ProjectileBranchSpawner(weapon.Stats,
                 (IEnemyTargetProvider)typeof(WeaponBase).GetField("targetProvider", flags).GetValue(weapon),
                 (ObjectPool<Projectile>)typeof(ProjectileCaster).GetField("pool", flags).GetValue(weapon),
                 (Vector3)typeof(ProjectileCaster).GetField("projectileScale", flags).GetValue(weapon));

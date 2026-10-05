@@ -40,7 +40,7 @@ namespace Game.Core
             var current = config.Stats;
             var targets = FindTargets(config.Attack.Range);
             if (targets.Count == 0) { return; }
-            var effects = new HitscanCastEffects(current, data.baseStats, targetProvider, pool, orbPool, fieldPool, originalScale, config.Reactions);
+            var effects = new HitscanCastEffects(current, config.Attack.Range, targetProvider, pool, orbPool, fieldPool, originalScale, config.Reactions);
             for (int i = 0; i < current.Cast.ProjectileCount; i++)
             {
                 effects.Cast(targets[i % targets.Count]);

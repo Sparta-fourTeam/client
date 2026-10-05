@@ -5,14 +5,14 @@ namespace Game.Core
 {
     public static class LightningOrbSpawner
     {
-        public static System.Action<Vector2> CreateCallback(WeaponStats stats, WeaponBaseStats definition, IEnemyTargetProvider targetProvider, ObjectPool<Projectile> orbPool, IEnemyTarget sourceTarget)
+        public static System.Action<Vector2> CreateCallback(WeaponStats stats, IEnemyTargetProvider targetProvider, ObjectPool<Projectile> orbPool, IEnemyTarget sourceTarget)
         {
             var current = stats;
             int count = current.Secondary.Count;
             if (orbPool == null || count <= 0) { return null; }
             float damage = current.Cast.Damage * 0.5f * current.Secondary.DamageMultiplier;
             float paralysis = current.Secondary.ParalysisDuration;
-            float chance = definition.paralysisChance;
+            float chance = current.Status.ParalysisChance;
             return position =>
             {
                 for (int i = 0; i < count; i++)
