@@ -66,5 +66,5 @@ Unity 6000.6.3f1 CLI 컴파일·EditMode 394/394 통과, 실패·건너뜀 0. �
 ## 방벽 앞 출발 위치
 
 - 일반·대형·화염·예비 통나무는 실제 Wall.AttackLineY + 0.2에서 출발하고 적 x좌표를 유지한다. 방벽 중심 및 플레이어 위치와 독립적이다. Wall이 없는 테스트 구성에서는 기존 플레이어 y를 사용한다.
-- 앞쪽 여백은 ProjectileCaster.RollingWallFrontOffset 상수로 조정한다.
+- 앞쪽 여백은 ProjectileLaunchPath.RollingWallFrontOffset 상수로 조정한다.
 - 시작 위치 교정 검증: Unity CLI 컴파일·EditMode 409/409 통과, 실패·건너뜀 0. 방벽 중심·공격선·플레이어 y를 다르게 설정하여 일반 발사와 예비 3회 모두 공격선 +0.2에서 생성되는지 확인했다.

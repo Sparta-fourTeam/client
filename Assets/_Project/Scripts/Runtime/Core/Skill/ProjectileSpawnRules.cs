@@ -26,9 +26,7 @@ namespace Game.Core
         public void SpawnMain(Vector3 start, Vector3 direction, float lifetime, int pierce)
         {
             Projectile projectile = pool.Get();
-            projectile.transform.localScale = stats.Form == WeaponForm.Enbakutsu
-                ? Vector3.Scale(projectileScale, new Vector3(1.5f, 0.65f, 1)) : projectileScale;
-            projectile.transform.localScale *= stats.ProjectileSizeMultiplier;
+            projectile.transform.localScale = ProjectileVisual.MainScale(projectileScale, stats.Form, stats.ProjectileSizeMultiplier);
             projectile.SetVisualForm(stats.Form);
             projectile.Init(pool, new ProjectileSpawnSettings
             {
