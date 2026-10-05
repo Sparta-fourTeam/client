@@ -89,33 +89,7 @@ namespace Game.Core
                 secondary.Init(pool, nearest.Position, damage, directTarget: nearest);
             };
         }
-        private System.Action<Vector2> CreateOrbCallback(IEnemyTarget sourceTarget)
-        {
-            int count = stats.SplitCount;
-            if (orbPool == null || count <= 0) { return null; }
-            float damage = stats.Damage * 0.5f * stats.ShardDamageMultiplier;
-            float paralysis = stats.AuxiliaryParalysisDuration;
-            float chance = data.baseStats.paralysisChance;
-            return position =>
-            {
-                for (int i = 0; i < count; i++)
-                {
-                    float angle = i * Mathf.PI * 2 / count;
-                    var direction = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0);
-                    orbPool.Get().Init(orbPool, new ProjectileSpawnSettings
-                    {
-                        StartPos = position,
-                        Direction = direction,
-                        Damage = damage,
-                        Speed = 10,
-                        Lifetime = 3,
-                        TargetProvider = targetProvider,
-                        IgnoredTarget = sourceTarget,
-                        ParalysisDuration = paralysis,
-                        ParalysisChance = chance
-                    });
-                }
-            };
-        }
+        private System.Action<Vector2> CreateOrbCallback(IEnemyTarget sourceTarget) =>
+            ProjectileSpawnRules.CreateOrbCallback(stats, data, targetProvider, orbPool, sourceTarget);
     }
 }

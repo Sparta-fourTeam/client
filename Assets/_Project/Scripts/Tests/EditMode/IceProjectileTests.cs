@@ -10,6 +10,16 @@ namespace Game.Tests
 {
     public sealed class IceProjectileTests
     {
+        private static ProjectileSpawnRules SpawnRules(ProjectileCaster weapon)
+        {
+            const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Instance;
+            return new ProjectileSpawnRules(
+                (IWeaponStats)typeof(WeaponBase).GetField("stats", flags).GetValue(weapon), weapon.Data,
+                (IEnemyTargetProvider)typeof(WeaponBase).GetField("targetProvider", flags).GetValue(weapon),
+                (ObjectPool<Projectile>)typeof(ProjectileCaster).GetField("pool", flags).GetValue(weapon),
+                (Vector3)typeof(ProjectileCaster).GetField("projectileScale", flags).GetValue(weapon));
+        }
+
         private sealed class Target : IEnemyTarget, IFreezableTarget, IKnockbackTarget, IFrostbiteTarget, IParalyzableTarget, IBurnableTarget
         {
             public Vector2 Position { get; set; }
@@ -134,7 +144,7 @@ namespace Game.Tests
                 stats = new ShardDamageUpgrade(stats, 80);
                 if (split) { stats = new SplitCountUpgrade(stats, 3); }
                 typeof(WeaponBase).GetField("stats", flags).SetValue(weapon, stats);
-                var callback = (System.Action<Vector2, Vector3, IEnemyTarget>)typeof(ProjectileCaster).GetMethod("CreateHitCallback", flags).Invoke(weapon, null);
+                var callback = (System.Action<Vector2, Vector3, IEnemyTarget>)typeof(ProjectileSpawnRules).GetMethod("CreateHitCallback", flags).Invoke(SpawnRules(weapon), null);
                 var source = new Target(); callback(Vector2.zero, Vector3.up, source);
                 var normals = new System.Collections.Generic.List<Projectile>();
                 foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
@@ -209,8 +219,8 @@ namespace Game.Tests
                 var weapon = new ProjectileCaster(data, prefab, caster.transform, new Provider());
                 IWeaponStats stats = new ShardDamageUpgrade(new SplitCountUpgrade(new BaseWeaponStats(data.baseStats), expectedCount), 80);
                 typeof(WeaponBase).GetField("stats", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(weapon, stats);
-                var callback = (System.Action<Vector2, Vector3, IEnemyTarget>)typeof(ProjectileCaster)
-                    .GetMethod("CreateSplitCallback", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(weapon, null);
+                var callback = (System.Action<Vector2, Vector3, IEnemyTarget>)typeof(ProjectileSpawnRules)
+                    .GetMethod("CreateSplitCallback", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(SpawnRules(weapon), null);
                 var originTarget = new Target();
                 callback(Vector2.zero, Vector3.up, originTarget);
                 int count = 0;
@@ -335,8 +345,8 @@ namespace Game.Tests
                 }
 
                 typeof(WeaponBase).GetField("stats", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(weapon, stats);
-                var split = (System.Action<Vector2, Vector3, IEnemyTarget>)typeof(ProjectileCaster)
-                    .GetMethod("CreateSplitCallback", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(weapon, null);
+                var split = (System.Action<Vector2, Vector3, IEnemyTarget>)typeof(ProjectileSpawnRules)
+                    .GetMethod("CreateSplitCallback", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(SpawnRules(weapon), null);
                 split(Vector2.zero, Vector3.up, provider.Target);
                 int shards = 0;
                 foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
