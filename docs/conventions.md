@@ -46,11 +46,11 @@
 ## 에셋
 
 - 에셋은 `Assets/_Project/` 안에만 둔다. `Assets/` 루트에 프리팹을 두지 않는다.
-- 분류는 최소한으로, 같은 종류끼리 한 폴더에 둔다. 용도(스킬, 적, UI)별 하위 폴더는 만들지 않는다. 이름 접두사로 구분한다(`Skill...`, `Lobby...`).
+- 분류는 최소한으로, 같은 종류끼리 한 폴더에 둔다. 프리팹만 용도별로 한 단계 나누고(`UI`, `Skills`, `Monsters`, `Stage`, `Scopes`), 그 밖의 에셋은 종류별 한 폴더에 평면으로 둔다. 한 단계보다 깊게 나누지 않는다.
 
 ```
 Assets/_Project/
-  Prefabs/      모든 프리팹. 단 Monsters/는 예외로 남긴다
+  Prefabs/      UI/(화면과 팝업, HUD), Skills/(스킬 본체와 명중 이펙트), Monsters/(몬스터 리그), Stage/(플레이어, 방벽, 웨이브, 스폰, 적 투사체와 공격 연출), Scopes/(LifetimeScope)
   Sprites/      이미지(UI 시트, 배경, 파티클 이미지, 리그 PSD, 스프라이트 에셋)
   Textures/     몬스터 공격 연출용 fx_* 이미지
   Materials/    재질과 셰이더
@@ -60,7 +60,7 @@ Assets/_Project/
   Data/ Settings/ Scenes/ Scripts/
 ```
 
-- `Prefabs/Monsters`는 `MonsterAnimationBaker`가 이 폴더의 프리팹을 전부 몬스터로 보고 애니메이션을 만들기 때문에 남겼다. 몬스터 리그 프리팹(`*_Animated`)만 여기에 둔다.
+- `Prefabs/Monsters`에는 몬스터 리그 프리팹(`*_Animated`)만 둔다. `MonsterAnimationBaker`가 이 폴더의 프리팹을 전부 몬스터로 보고 애니메이션을 만들기 때문이다. 웨이브용 프리팹은 `Prefabs/Stage`에 둔다.
 - 이미지는 Sprite 타입으로 임포트한다. Sprite 타입 이미지도 재질의 텍스처로 그대로 쓸 수 있다(`fx_soft`는 재질 텍스처와 스프라이트로 함께 쓴다). 몬스터 공격 연출용 `fx_*` 이미지만 `Textures`에 두고 나머지는 `Sprites`에 둔다. 리그 PSD는 프리팹이 스프라이트 하위 에셋으로 참조하는 스프라이트 원본이다.
 - `Resources`에 넣은 에셋은 참조와 무관하게 빌드에 포함되므로 코드가 경로로 불러오는 것만 둔다.
 - 에디터 도구(`MonsterAnimationBaker`, `WaveMonsterVisualLinker`, `HudLayoutPreview`)와 테스트는 에셋 경로를 문자열로 갖고 있다. 폴더를 옮기거나 이름을 바꾸면 이 경로도 함께 고친다. 이동은 Unity 안에서 하거나 `.meta`를 같이 옮겨 GUID를 유지한다. 몬스터 리그(PSD, 애니메이션, 프리팹)는 한 번 만들어진 에셋이 원본이다. PNG에서 PSD를 만들던 생성 도구와 입력 PNG는 삭제했고, 필요하면 git 이력에서 복구한다.
