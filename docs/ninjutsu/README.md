@@ -297,7 +297,7 @@ python3 docs/ninjutsu/validate_requirements.py
 
 **새 효과 종류**: `EffectRegistry`에 한 줄(키, 분류, 허용 공격, 값 규칙, 적용)을 더한다. 새 스탯이 필요하면 `Stat` enum, `WeaponStatRegistry`의 기본값, 묶음 구조체 속성(`CastStats` 등)에 한 줄씩 더한다. 스탯을 읽는 쪽은 반응이면 `ReactionCompiler`/`HitReactionBuilder`, 그 밖이면 해당 전략이다. 안전망 테스트(등록·적용·스냅샷 복사 누락)가 빠뜨린 곳을 알려 준다.
 
-**새 스킬(기존 공격 종류)**: `Weapons.json`에 스킬을 추가한다(`castType`, `baseStats` 묶음, `upgrades`). 다른 스킬의 효과로만 쓰면 `childOnly: true`로 표시한다. `Player_Animated` 프리팹의 `WeaponController.prefabEntries`에 id와 프리팹을, `SkillIconTable_Side`에 HUD 아이콘 키(`iconKey`)를 연결한다. 프리팹·아이콘 연결 테스트가 누락을 잡는다. 영구 성장을 쓰면 `progressionId`를 맞춘다.
+**새 스킬(기존 공격 종류)**: 먼저 6.7의 스킬 샌드박스에서 눈으로 확인할 수 있도록 `Weapons.json`에 스킬을 추가한다(`castType`, `baseStats` 묶음, `upgrades`). 다른 스킬의 효과로만 쓰면 `childOnly: true`로 표시한다. `Player_Animated` 프리팹의 `WeaponController.prefabEntries`에 id와 프리팹을, `SkillIconTable_Side`에 HUD 아이콘 키(`iconKey`)를 연결한다. 프리팹·아이콘 연결 테스트가 누락을 잡는다. 영구 성장을 쓰면 `progressionId`를 맞춘다.
 
 **새 공격 종류**: `CastType`(Projectile, Hitscan, Area, Beam, Chain)에 값을 더하고, `IAttackStrategy` 구현을 만들어 `WeaponFactory`에 등록한다. 효과 종류의 허용 공격(`EffectRegistry`)에 새 종류를 반영한다.
 
@@ -337,6 +337,18 @@ python3 docs/ninjutsu/validate_requirements.py
 2. 사방 발사 경로(`ProjectilePath.Radial`: 시전 위치에서 발 수만큼 고르게 퍼지고, 적이 없어도 쏜다), 폭발을 반응으로 통일(`HitReactionBuilder.Explosion`: 투사체는 적중, Hitscan은 타격 지점에 건다. 타격 지점 반응의 `Target`은 그 타격이 겨냥한 적이다) — 완료.
 3. 얼음창 분열과 삼각 얼음창 — 완료. 삼각 얼음창은 "일반 얼음창(id 12) 자식 → 소형 얼음 조각(id 8) 손자"로, 분열 카드는 보관 효과로 일반 얼음창에도 소형 분열을 붙인다. 옮기기 전과 같은 수치(본체 100 기준 일반 50, 조각 45/90)를 테스트로 확인했다. 옛 `CreateTriangleCallback`은 없앴다.
 4. 벼락(전기 구체, id 15, 사방 6발), 화살(보조 화살, id 13), 화염구(불꽃, id 14)를 같은 방식으로 옮기고 옛 `ProjectileBranchSpawner`, `LightningOrbSpawner`, 분열 스탯(`Secondary` 묶음, `split*` 효과), 투사체 `OnHit` 콜백을 없앴다 — 완료. 조각은 작은 프리팹(`ArrowShard`, `FireballShard`, `IceShard`)을 가진 `childOnly` 스킬이다. 옮기기 전과 같은 수치(조각 피해, 개수, 폭발 상속, 전기 구체 피해·마비)를 `CatalogWorld` 기반 통합 테스트로 확인했다. 번개 스탯은 `Lightning`(피뢰침 비율, 처치 번개 비율) 묶음에 남았다. 전자기장은 아직 코드로 남아 있다(영역 스킬로 옮길 후보).
+
+### 6.7 스킬 샌드박스
+
+스킬을 만들거나 고친 뒤에는 **Tools → Project Nova → Skill Sandbox**로 씬(`Scenes/Sandbox/SkillSandbox.unity`)을 열고 재생한다. 스테이지와 같은 카메라, 플레이어, 벽 위치에 **실제 `Enemy` 프리팹**을 세워 두므로 투사체, Hitscan, 영역, 광선, 연쇄가 게임과 같은 방식으로 맞는다. 화면 아래쪽 패널(IMGUI)은 `패널 접기` 버튼으로 접을 수 있다.
+
+- **스킬**: `Weapons.json`의 스킬(자식 전용 제외)이 자동으로 나온다. 프리팹 연결(`prefabEntries`)이 없는 스킬은 비활성으로 표시된다.
+- **카드**: 기본은 선행 조건을 무시하고 목록에서 직접 고른다(`−`로 하나씩 뺄 수 있다). 비활성 카드는 `disabledReason`이 보이고, 공유 카드(`sharedId`)는 실제 선택 모드에서만 된다. **실제 3지선다** 모드는 게임과 같은 규칙(선행 조건, 최대 횟수, 제외)으로 카드를 뽑는다. 구성이 바뀔 때마다 보유 스킬을 비우고 처음부터 다시 쌓으므로 카드를 얻은 순서까지 같다.
+- **적**: 샌드백 1·3·5·10마리, 배치(직선, 군집, 흩뿌림), HP(100, 1,000, 10,000), 이동 모드(켜면 벽을 향해 내려옴), 되살림(죽으면 같은 자리에 새로 생성), 화면 클릭으로 배치. 적의 공격 피해는 0이다. 누적 피해와 최근 3초 초당 피해(DPS)가 아래에 보인다.
+- **환경**: 영구 레벨(`(+)` 변형과 해금 조건 확인), 시간 배속(0.25x~2x), 구성 저장·불러오기 3칸(`PlayerPrefs`, 이 기기에만 남음).
+- **현재 스킬 정보**: 값이 0이 아닌 스탯 묶음과 연결된 자식 스킬.
+
+구현은 `Game.Sandbox` 어셈블리다. 조작 로직(`SkillSandboxSession`)은 UI와 분리돼 EditMode 테스트로 보호하고, 패널(`SandboxPanel`)은 디버그 도구라 IMGUI로 만들어 프리팹과 EventSystem이 필요 없다. 새 스킬은 코드를 고칠 필요 없이 `Weapons.json`과 `prefabEntries`만 맞으면 목록에 나온다. 플레이 모드를 켠 채 에디터가 포커스를 잃으면 게임 루프가 멈추므로(Unity 기본 동작) 자동화로 확인할 때는 `Application.runInBackground`를 켠다.
 
 ### 6.4 위험과 주의
 

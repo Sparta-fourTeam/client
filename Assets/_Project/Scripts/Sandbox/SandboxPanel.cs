@@ -278,7 +278,7 @@ namespace Game.Sandbox
             button = Button(new Color(.22f, .24f, .3f, 1));
             buttonOn = Button(new Color(.2f, .55f, .85f, 1));
             box = new GUIStyle(GUI.skin.box);
-            box.normal.background = Texture(new Color(0, 0, 0, .82f));
+            box.normal.background = Texture(new Color(0, 0, 0, .68f));
         }
 
         private static Texture2D Texture(Color color)
