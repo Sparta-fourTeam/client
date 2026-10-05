@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 namespace Game.Core
 {
     /// <summary>이벤트가 난 위치에서 자식 스킬을 시전한다. 자식은 자기 공격과 반응을 직접 가진다.
@@ -47,5 +50,32 @@ namespace Game.Core
             Valid(e) && e.interval > 0 && !float.IsInfinity(e.interval)
                 ? new ChildCastUpgradeEffect(AttackEvent.Tick, e.skillId, e.count, e.chance, e.interval)
                 : null;
+    }
+
+    /// <summary>자식 스킬을 이벤트가 난 위치에서 시전한다. 자식은 처음 필요할 때 한 번 만들어 재사용하며,
+    /// 쿨타임과 무관하게 시전 요청마다 공격을 낸다. 자식 시전의 순환은 카탈로그 검증이 막는다.</summary>
+    public sealed class ChildSkillCaster : IChildSkillCaster, IDisposable
+    {
+        private readonly Func<int, SkillCaster> create;
+        private readonly Dictionary<int, SkillCaster> children = new Dictionary<int, SkillCaster>();
+
+        /// <param name="create">스킬 ID로 시전기를 만든다. 만들 수 없으면 null (사유는 만드는 쪽이 알린다)</param>
+        public ChildSkillCaster(Func<int, SkillCaster> create) => this.create = create;
+
+        public void Cast(int skillId, AttackContext context)
+        {
+            if (!children.TryGetValue(skillId, out var child))
+            {
+                child = create(skillId);
+                children[skillId] = child;
+            }
+            child?.FireAt(context.Position);
+        }
+
+        public void Dispose()
+        {
+            foreach (var child in children.Values) { child?.Dispose(); }
+            children.Clear();
+        }
     }
 }

@@ -106,7 +106,7 @@ namespace Game.Tests
             try
             {
                 var data = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == 3);
-                var weapon = new HitscanCaster(data, go, go.transform, new Provider());
+                var weapon = Casters.Hitscan(data, go, go.transform, new Provider());
                 Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == "lightning_field")));
                 string first = voltageFirst ? "lightning_field_voltage" : "lightning_field_stable";
                 string second = voltageFirst ? "lightning_field_stable" : "lightning_field_voltage";
@@ -128,9 +128,9 @@ namespace Game.Tests
             {
                 var data = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == 3);
                 var provider = new Provider(); var target = new Target { Position = Vector2.up * 2 }; provider.Targets.Add(target);
-                var weapon = new HitscanCaster(data, go, go.transform, provider);
+                var weapon = Casters.Hitscan(data, go, go.transform, provider);
                 weapon.LevelUp(data.upgrades.Find(c => c.id == "lightning_field"));
-                typeof(HitscanCaster).GetMethod("OnFire", Flags).Invoke(weapon, null);
+                typeof(SkillCaster).GetMethod("OnFire", Flags).Invoke(weapon, null);
                 var fields = Object.FindObjectsByType<ElectromagneticField>(FindObjectsSortMode.None);
                 Assert.AreEqual(1, fields.Length); var field = fields[0];
                 Assert.AreEqual((Vector3)target.Position, field.transform.position);

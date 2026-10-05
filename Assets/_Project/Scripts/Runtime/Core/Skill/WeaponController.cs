@@ -25,6 +25,7 @@ namespace Game.Core
         private List<WeaponBase> weapons = new List<WeaponBase>();
         private IEnemyTargetProvider targetProvider;
         private IBufferedPublisher<SkillChanged> skillChanged;
+        private ChildSkillCaster childCaster;
 
         [Inject]
         public void Construct(IEnemyTargetProvider targetProvider, IBufferedPublisher<SkillChanged> skillChanged, IWeaponDataProvider dataProvider, IWeaponProgression progression = null, Game.Core.Defense.Wall wall = null)
@@ -44,7 +45,22 @@ namespace Game.Core
                 dataTable.Add(data.id, data);
                 permanentLevels[data.id] = progression?.GetLevel(data.progressionId) ?? 0;
             }
+            childCaster = new ChildSkillCaster(CreateChild);
             AddWeapon(3);
+        }
+
+        // 자식 스킬은 보유 목록에 넣지 않고(틱하지 않는다) 효과가 요청할 때만 시전한다.
+        private SkillCaster CreateChild(int skillId)
+        {
+            var entry = prefabEntries.Find(e => e.id == skillId);
+            if (!dataTable.TryGetValue(skillId, out var data) || entry == null || entry.prefab == null)
+            {
+                Debug.LogWarning($"[WeaponController] 자식 스킬 skillId={skillId}의 데이터 또는 프리팹 엔트리가 없어 시전하지 못합니다.");
+                return null;
+            }
+            var child = WeaponFactory.Create(data, entry.prefab, transform, targetProvider, wall);
+            child.UseChildCaster(childCaster);
+            return child;
         }
 
 
@@ -72,7 +88,9 @@ namespace Game.Core
                 return false;
             }
 
-            weapons.Add(WeaponFactory.Create(data, entry.prefab, transform, targetProvider, wall));
+            var weapon = WeaponFactory.Create(data, entry.prefab, transform, targetProvider, wall);
+            weapon.UseChildCaster(childCaster);
+            weapons.Add(weapon);
             PublishSkills();
             return true;
         }
@@ -123,6 +141,7 @@ namespace Game.Core
         private void OnDestroy()
         {
             foreach (var weapon in weapons) { weapon.Dispose(); }
+            childCaster?.Dispose();
         }
 
         private void Update()

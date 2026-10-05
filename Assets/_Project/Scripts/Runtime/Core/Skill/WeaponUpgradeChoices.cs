@@ -54,7 +54,7 @@ namespace Game.Core
             }
             foreach (var data in catalog)
             {
-                if (state.GetWeaponLevel(data.id) == 0 && hasPrefab(data.id))
+                if (!data.childOnly && state.GetWeaponLevel(data.id) == 0 && hasPrefab(data.id))
                 {
                     candidates.Add(new UpgradeChoice { IsNewWeapon = true, NewWeaponData = data });
                 }

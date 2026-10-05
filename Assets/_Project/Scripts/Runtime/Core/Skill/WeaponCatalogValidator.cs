@@ -22,6 +22,10 @@ namespace Game.Core
                 {
                     throw new InvalidOperationException("무기 정의 또는 ID가 잘못되었습니다.");
                 }
+                if (!WeaponFactory.IsRegistered(weapon.castType))
+                {
+                    throw new InvalidOperationException($"무기 '{weapon.name}'의 공격 종류 {weapon.castType}에 등록된 공격 전략이 없습니다.");
+                }
 
                 foreach (var option in weapon.upgrades)
                 {

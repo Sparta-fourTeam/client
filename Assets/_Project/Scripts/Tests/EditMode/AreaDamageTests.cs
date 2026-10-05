@@ -68,7 +68,7 @@ namespace Game.Tests
             var go = new GameObject("HighVoltageStatsTest");
             try
             {
-                var weapon = new HitscanCaster(data, go, go.transform, new Provider());
+                var weapon = Casters.Hitscan(data, go, go.transform, new Provider());
                 var option = data.upgrades.Find(c => c.id == "lightning_voltage");
                 Assert.IsTrue(weapon.LevelUp(option));
                 Assert.IsFalse(weapon.LevelUp(option));
@@ -89,13 +89,13 @@ namespace Game.Tests
             {
                 var data = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == 3);
                 var provider = new Provider(); provider.Targets.Add(new Target { Position = new Vector2(1000, 1000) });
-                var weapon = new HitscanCaster(data, go, go.transform, provider);
+                var weapon = Casters.Hitscan(data, go, go.transform, provider);
                 Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == "lightning_judgement")));
                 Assert.IsFalse(weapon.LevelUp(data.upgrades.Find(c => c.id == "lightning_judgement")));
                 var flags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance;
                 var statsField = typeof(WeaponBase).GetField("stats", flags);
                 Assert.AreEqual(75, ((WeaponStats)statsField.GetValue(weapon)).Cast.Damage);
-                var fire = typeof(HitscanCaster).GetMethod("OnFire", flags);
+                var fire = typeof(SkillCaster).GetMethod("OnFire", flags);
                 fire.Invoke(weapon, null);
                 HitscanEffect clone = null;
                 foreach (var effect in Object.FindObjectsByType<HitscanEffect>(FindObjectsSortMode.None))

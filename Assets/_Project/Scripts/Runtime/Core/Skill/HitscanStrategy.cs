@@ -3,17 +3,19 @@ using UnityEngine.Pool;
 
 namespace Game.Core
 {
-    public class HitscanCaster : WeaponBase
+    /// <summary>대상 위치에 즉시 타격 이펙트를 낸다. 전기 구체와 전자기장 풀도 이 전략이 가진다.</summary>
+    public sealed class HitscanStrategy : IAttackStrategy
     {
-        private ObjectPool<HitscanEffect> pool;
         private readonly SkillObjectPool<HitscanEffect> ownedPool;
         private readonly SkillObjectPool<Projectile> ownedOrbPool;
         private readonly SkillObjectPool<ElectromagneticField> ownedFieldPool;
-        private ObjectPool<Projectile> orbPool;
         private readonly ObjectPool<ElectromagneticField> fieldPool;
         private readonly Vector3 originalScale;
 
-        public HitscanCaster(WeaponData data, GameObject prefab, Transform caster, IEnemyTargetProvider targetProvider, SkillConfig config = null) : base(data, caster, targetProvider, config)
+        public ObjectPool<HitscanEffect> Pool { get; }
+        public ObjectPool<Projectile> OrbPool { get; }
+
+        public HitscanStrategy(GameObject prefab)
         {
             ownedFieldPool = new SkillObjectPool<ElectromagneticField>(
                 () => new GameObject("ElectromagneticField_Prototype").AddComponent<ElectromagneticField>(), 8, 120);
@@ -23,24 +25,27 @@ namespace Game.Core
             if (secondary != null)
             {
                 ownedOrbPool = new SkillObjectPool<Projectile>(() => Object.Instantiate(secondary).GetComponent<Projectile>(), 6, 120);
-                orbPool = ownedOrbPool.Pool;
+                OrbPool = ownedOrbPool.Pool;
             }
             ownedPool = new SkillObjectPool<HitscanEffect>(() => Object.Instantiate(prefab).GetComponent<HitscanEffect>(), 5, 20);
-            pool = ownedPool.Pool;
+            Pool = ownedPool.Pool;
         }
 
-        public override void Dispose()
+        public void Dispose()
         {
-            base.Dispose(); ownedPool.Dispose(); ownedOrbPool?.Dispose(); ownedFieldPool.Dispose();
+            ownedPool.Dispose();
+            ownedOrbPool?.Dispose();
+            ownedFieldPool.Dispose();
         }
 
-        protected override void OnFire()
+        public void Tick(SkillConfig config, AttackEnvironment environment, float deltaTime) { }
+
+        public void Fire(SkillConfig config, AttackEnvironment environment)
         {
-            var config = Config;
             var current = config.Stats;
-            var targets = FindTargets(config.Attack.Range);
+            var targets = environment.FindTargets(config.Attack.Range);
             if (targets.Count == 0) { return; }
-            var effects = new HitscanCastEffects(current, config.Attack.Range, targetProvider, pool, orbPool, fieldPool, originalScale, config.Reactions);
+            var effects = new HitscanCastEffects(current, config.Attack.Range, environment.Targets, Pool, OrbPool, fieldPool, originalScale, config.Reactions);
             for (int i = 0; i < current.Cast.ProjectileCount; i++)
             {
                 effects.Cast(targets[i % targets.Count]);

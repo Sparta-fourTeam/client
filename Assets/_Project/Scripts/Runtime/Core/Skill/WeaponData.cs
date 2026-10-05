@@ -18,6 +18,8 @@ namespace Game.Core
         public CastType castType;
         public ProjectilePath projectilePath;
         public WeaponBaseStats baseStats;
+        /// <summary>다른 스킬의 효과로만 시전되는 스킬. 새 스킬 카드로 제시하지 않는다</summary>
+        public bool childOnly;
         public List<WeaponUpgradeOption> upgrades;
         // 최초 습득을 제외한 전투 중 성공한 강화 횟수 상한.
         public int maxLevel;

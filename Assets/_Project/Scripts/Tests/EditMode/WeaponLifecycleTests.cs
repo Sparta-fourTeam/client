@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Reflection;
 using Game.Core;
 using NUnit.Framework;
 using UnityEngine;
@@ -18,7 +17,7 @@ namespace Game.Tests
         public void Dispose_DestroysInactiveAndInFlightEffects_AndIsRepeatable(bool hitscan)
         {
             var prefab = new GameObject("PoolLifecyclePrefab");
-            WeaponBase weapon = null;
+            SkillCaster weapon = null;
             GameObject active = null, inactive = null;
             try
             {
@@ -26,15 +25,15 @@ namespace Game.Tests
                 if (hitscan)
                 {
                     prefab.AddComponent<HitscanEffect>();
-                    weapon = new HitscanCaster(data, prefab, prefab.transform, new Targets());
-                    var pool = (ObjectPool<HitscanEffect>)typeof(HitscanCaster).GetField("pool", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(weapon);
+                    weapon = Casters.Hitscan(data, prefab, prefab.transform, new Targets());
+                    var pool = (ObjectPool<HitscanEffect>)Casters.Hitscan(weapon).Pool;
                     var first = pool.Get(); var second = pool.Get(); active = first.gameObject; inactive = second.gameObject; pool.Release(second);
                 }
                 else
                 {
                     prefab.AddComponent<Projectile>();
-                    weapon = new ProjectileCaster(data, prefab, prefab.transform, new Targets());
-                    var pool = (ObjectPool<Projectile>)typeof(ProjectileCaster).GetField("pool", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(weapon);
+                    weapon = Casters.Projectile(data, prefab, prefab.transform, new Targets());
+                    var pool = Casters.Projectile(weapon).Pool;
                     var first = pool.Get(); var second = pool.Get(); active = first.gameObject; inactive = second.gameObject; pool.Release(second);
                 }
                 weapon.Dispose(); weapon.Dispose(); weapon.Tick(1);

@@ -10,23 +10,23 @@ namespace Game.Tests
 {
     public sealed class IceProjectileTests
     {
-        private static ProjectileSpawnRules SpawnRules(ProjectileCaster weapon)
+        private static ProjectileSpawnRules SpawnRules(SkillCaster weapon)
         {
             const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Instance;
             return new ProjectileSpawnRules(
                 (WeaponStats)typeof(WeaponBase).GetField("stats", flags).GetValue(weapon),
                 (IEnemyTargetProvider)typeof(WeaponBase).GetField("targetProvider", flags).GetValue(weapon),
-                (ObjectPool<Projectile>)typeof(ProjectileCaster).GetField("pool", flags).GetValue(weapon),
-                (Vector3)typeof(ProjectileCaster).GetField("projectileScale", flags).GetValue(weapon));
+                (ObjectPool<Projectile>)Casters.Projectile(weapon).Pool,
+                (Vector3)Casters.Projectile(weapon).Scale);
         }
 
-        private static ProjectileBranchSpawner BranchSpawner(ProjectileCaster weapon)
+        private static ProjectileBranchSpawner BranchSpawner(SkillCaster weapon)
         {
             const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Instance;
             return new ProjectileBranchSpawner(weapon.Stats,
                 (IEnemyTargetProvider)typeof(WeaponBase).GetField("targetProvider", flags).GetValue(weapon),
-                (ObjectPool<Projectile>)typeof(ProjectileCaster).GetField("pool", flags).GetValue(weapon),
-                (Vector3)typeof(ProjectileCaster).GetField("projectileScale", flags).GetValue(weapon));
+                (ObjectPool<Projectile>)Casters.Projectile(weapon).Pool,
+                (Vector3)Casters.Projectile(weapon).Scale);
         }
 
         private sealed class Target : IEnemyTarget, IFreezableTarget, IKnockbackTarget, IFrostbiteTarget, IParalyzableTarget, IBurnableTarget
@@ -147,7 +147,7 @@ namespace Game.Tests
             try
             {
                 var data = new WeaponData { baseStats = new WeaponBaseStats { cast = { baseDamage = 100 }, projectile = { speed = 10, pierceCount = 2, knockbackDistance = .6f }, status = { freezeDuration = 2 } }, maxLevel = 15 };
-                var weapon = new ProjectileCaster(data, prefab, caster.transform, new Provider());
+                var weapon = Casters.Projectile(data, prefab, caster.transform, new Provider());
                 WeaponStats stats = WeaponStatsTestFactory.Apply(WeaponStats.FromDefinition(data.baseStats), "form", (int)WeaponForm.TriangleIce);
                 stats = WeaponStatsTestFactory.Apply(WeaponStatsTestFactory.Apply(stats, "frostbite", 10), "splitFrostbite", 10);
                 stats = WeaponStatsTestFactory.Apply(stats, "splitDamage", 80);
@@ -231,7 +231,7 @@ namespace Game.Tests
             try
             {
                 var data = new WeaponData { baseStats = new WeaponBaseStats { cast = { baseDamage = 100 }, projectile = { speed = 10 } }, maxLevel = 15 };
-                var weapon = new ProjectileCaster(data, prefab, caster.transform, new Provider());
+                var weapon = Casters.Projectile(data, prefab, caster.transform, new Provider());
                 WeaponStats stats = WeaponStatsTestFactory.Apply(WeaponStatsTestFactory.Apply(WeaponStats.FromDefinition(data.baseStats), "splitCount", expectedCount), "splitDamage", 80);
                 typeof(WeaponBase).GetField("stats", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(weapon, stats);
                 var callback = BranchSpawner(weapon).CreateSplitCallback();
@@ -276,7 +276,7 @@ namespace Game.Tests
             var go = new GameObject("KunaiAuxStatsTest");
             try
             {
-                var weapon = new ProjectileCaster(data, go, go.transform, new Provider());
+                var weapon = Casters.Projectile(data, go, go.transform, new Provider());
                 Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == "arrow_sharp"), 13));
                 Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == "kunai_spread"), 13));
                 Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == "kunai_barrage"), 13));
@@ -351,7 +351,7 @@ namespace Game.Tests
             {
                 var provider = new Provider();
                 var data = new WeaponData { baseStats = new WeaponBaseStats { cast = { baseDamage = 100 }, explosion = { damageRatio = 1, radius = 0.8f } }, maxLevel = 15 };
-                var weapon = new ProjectileCaster(data, prefab, prefab.transform, provider);
+                var weapon = Casters.Projectile(data, prefab, prefab.transform, provider);
                 WeaponStats stats = WeaponStatsTestFactory.Apply(WeaponStats.FromDefinition(data.baseStats), "splitCount", 2);
                 if (enabled)
                 {
@@ -429,10 +429,10 @@ namespace Game.Tests
             {
                 var provider = new Provider { Second = new Target { Position = Vector2.right * 0.5f } };
                 var data = new WeaponData { baseStats = new WeaponBaseStats { cast = { baseDamage = 10, range = 10 }, status = { burnChance = 1 }, explosion = { damageRatio = 1, radius = 0.8f } }, maxLevel = 14 };
-                var weapon = new ProjectileCaster(data, prefab, prefab.transform, provider);
+                var weapon = Casters.Projectile(data, prefab, prefab.transform, provider);
                 WeaponStats stats = WeaponStatsTestFactory.Apply(WeaponStatsTestFactory.Apply(WeaponStats.FromDefinition(data.baseStats), "burnDuration", 6), "burnRatio", 10);
                 typeof(WeaponBase).GetField("stats", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(weapon, stats);
-                typeof(ProjectileCaster).GetMethod("OnFire", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(weapon, null);
+                typeof(SkillCaster).GetMethod("OnFire", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(weapon, null);
                 foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
                 {
                     if (projectile.name == "ExplosionBurnTest(Clone)")
@@ -481,7 +481,7 @@ namespace Game.Tests
             try
             {
                 var data = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == 2);
-                var weapon = new ProjectileCaster(data, prefab, prefab.transform, new Provider());
+                var weapon = Casters.Projectile(data, prefab, prefab.transform, new Provider());
                 foreach (var id in new[] { "fireball_impact_damage", "fireball_explosion_damage", "fireball_explosion_radius", "fireball_flames", "fireball_enbakutsu" })
                 {
                     Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == id), 13));
@@ -491,7 +491,7 @@ namespace Game.Tests
                 Assert.AreEqual(3, stats.Secondary.Count);
                 Assert.AreEqual(2, stats.Projectile.PierceCount);
                 Assert.AreEqual(WeaponForm.Enbakutsu, stats.Cast.Form);
-                typeof(ProjectileCaster).GetMethod("OnFire", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(weapon, null);
+                typeof(SkillCaster).GetMethod("OnFire", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(weapon, null);
                 foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
                 {
                     if (projectile.name == "EnbakutsuTest(Clone)")
