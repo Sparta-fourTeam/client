@@ -241,11 +241,11 @@ python3 docs/ninjutsu/validate_requirements.py
 
 각 단계는 독립된 PR이다. 단계가 끝날 때마다 EditMode 테스트와 `validate_requirements.py`가 통과해야 한다.
 
-1. **안전망** (약 0.5일)
-   - 카탈로그 의미 검증: 스킬 `castType`에 맞지 않는 `UpgradeType`이 있으면 시작 시 예외. 메시지에 카드 ID와 스킬 ID를 넣는다.
-   - 스냅샷 왕복 테스트: `WeaponStatsBuilder` ↔ `WeaponStats` 복사에서 모든 필드가 보존되는지 리플렉션으로 검사한다.
-   - 골든 테스트: 현재 5종 66장을 전부 적용했을 때의 스탯을 고정한다. 이후 단계의 회귀 기준이다.
-   - 프리팹·아이콘 누락 검증: `Weapons.json`의 id/iconKey를 `prefabEntries`, `SkillIconTable`과 시작 시 대조해 한 번에 모아서 알린다.
+1. **안전망** — **완료**. 테스트 126개(`WeaponCatalogSafetyNetTests`)가 지킨다.
+   - 카탈로그 의미 검증: `UpgradeCompatibility`가 강화 효과를 소비하는 공격 종류를 표로 갖고, `WeaponCatalogValidator`가 소비하지 않는 효과나 표에 없는 효과를 카드 ID와 함께 거부한다(변형 효과 포함). 새 `UpgradeType`은 이 표에 등록해야 한다. 표는 `ProjectileSpawnRules`, `ProjectileBranchSpawner`, `HitscanCastEffects`, `LightningOrbSpawner`가 실제로 읽는 값을 기준으로 만들었고, 현재 카탈로그가 모두 통과한다.
+   - 스냅샷 복사 테스트: 모든 `UpgradeType`을 적용한 스탯을 빈 강화로 한 번 더 복사해 값이 같은지 본다. 리플렉션으로 펼치므로 새 스탯이 자동으로 포함된다. `UpgradeType` 하나하나가 규칙을 갖고 스탯을 바꾸는지도 검사한다.
+   - 골든 테스트: 카드 66장(변형 포함)의 단독 적용 결과와 무기별 전체 적용 결과를 `Tests/EditMode/Golden/WeaponCardStats.golden.txt`에 고정했다. 의도한 변경이면 `RegenerateGolden`(Explicit)을 실행해 파일을 갱신하고 diff를 리뷰한다. 폭발 반경 배율 카드처럼 선행 카드 없이 단독으로는 값이 안 바뀌는 카드는 `(변화 없음)`으로 기록된다.
+   - 프리팹·아이콘 연결 테스트: `Weapons.json`의 id와 `iconKey`를 `prefabEntries`(공격 종류에 맞는 컴포넌트 포함), `SkillIconTable_Side`, `SkillIconTable_Card`(`_new`, `_upgrade`)와 대조하고, 기본 아이콘과 빈 스프라이트도 검사한다. 시작 시 예외가 아니라 테스트로 구현했다.
 2. **스탯 일원화와 기본 수치 분할** (약 2일, A·B·F)
    - `StatKey` 레지스트리(기본값, 검증, Add/Multiply/Set/Max)를 만들고 `WeaponStatsBuilder`의 필드 나열·복사 생성자를 대체한다. 공개 API(`stats.Cast.Damage` 등)는 유지한다.
    - `data.baseStats` 직접 접근을 제거하고 확률·예비 시전 값을 스냅샷으로 옮긴다.
