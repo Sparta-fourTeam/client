@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 8ba001f49132e45c49cec75f941f421c
+guid: 9fd106be00ffd46a0b9a5023a540fde3
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -5294026334478247828
-    second: DustPuff_0
+      213: -4873349075266261673
+    second: WoodCrumb_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -59,7 +59,7 @@ TextureImporter:
   spriteTessellationMethod: 0
   spriteTessellationDetail: -1
   spriteGeometrySubdivision: -1
-  textureType: 0
+  textureType: 8
   textureShape: 1
   singleChannelComponent: 0
   flipbookRows: 1
@@ -128,13 +128,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: DustPuff_0
+      name: WoodCrumb_0
       rect:
         serializedVersion: 2
-        x: 145
-        y: 103
-        width: 1064
-        height: 1099
+        x: 211
+        y: 348
+        width: 586
+        height: 501
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -143,8 +143,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: c685cd50917d786b0800000000000000
-      internalID: -5294026334478247828
+      spriteID: 75da64e06d26e5cb0800000000000000
+      internalID: -4873349075266261673
       vertices: []
       indices:
       edges: []
@@ -163,7 +163,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      DustPuff_0: -5294026334478247828
+      WoodCrumb_0: -4873349075266261673
   mipmapLimitGroupName:
   pSDRemoveMatte: 0
   userData:

@@ -1,10 +1,19 @@
 fileFormatVersion: 2
-guid: ad0ef76174781466b8474b3f1f18cdc9
+guid: be0f4edf7f67e473b9db1dd82dcf6c19
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 7922154895108286289
-    second: IceChip_0
+      213: 7091245485742556852
+    second: LightningStroke_0
+  - first:
+      213: -4651728359486146311
+    second: LightningStroke_1
+  - first:
+      213: -1040562157697596832
+    second: LightningStroke_2
+  - first:
+      213: 135226252278072430
+    second: LightningStroke_3
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -59,7 +68,7 @@ TextureImporter:
   spriteTessellationMethod: 0
   spriteTessellationDetail: -1
   spriteGeometrySubdivision: -1
-  textureType: 0
+  textureType: 8
   textureShape: 1
   singleChannelComponent: 0
   flipbookRows: 1
@@ -128,13 +137,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: IceChip_0
+      name: LightningStroke_0
       rect:
         serializedVersion: 2
-        x: 104
-        y: 71
-        width: 1105
-        height: 927
+        x: 145
+        y: 48
+        width: 919
+        height: 1152
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -143,8 +152,74 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 1572d8a57e521fd60800000000000000
-      internalID: 7922154895108286289
+      spriteID: 4b607c0c23a296260800000000000000
+      internalID: 7091245485742556852
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LightningStroke_1
+      rect:
+        serializedVersion: 2
+        x: 820
+        y: 1092
+        width: 7
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9f8b735f3bdb17fb0800000000000000
+      internalID: -4651728359486146311
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LightningStroke_2
+      rect:
+        serializedVersion: 2
+        x: 321
+        y: 531
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 06288bf0b3e2f81f0800000000000000
+      internalID: -1040562157697596832
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LightningStroke_3
+      rect:
+        serializedVersion: 2
+        x: 327
+        y: 535
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e64875b5f8b60e100800000000000000
+      internalID: 135226252278072430
       vertices: []
       indices:
       edges: []
@@ -163,7 +238,10 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      IceChip_0: 7922154895108286289
+      LightningStroke_0: 7091245485742556852
+      LightningStroke_1: -4651728359486146311
+      LightningStroke_2: -1040562157697596832
+      LightningStroke_3: 135226252278072430
   mipmapLimitGroupName:
   pSDRemoveMatte: 0
   userData:

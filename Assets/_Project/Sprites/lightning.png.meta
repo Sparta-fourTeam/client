@@ -1,18 +1,21 @@
 fileFormatVersion: 2
-guid: 2f2ef61f6d6024a35b44fd47618c9c15
+guid: 6b40519766fff4ae996a0bf4cb346dc3
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 5441799439263147200
-    second: FlameDab_0
+      213: -2983090718515566234
+    second: lightning_0
   - first:
-      213: 6203823754956816347
-    second: FlameDab_1
+      213: -1461059339494140160
+    second: lightning_1
+  - first:
+      213: -7846319024340782248
+    second: lightning_2
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
     mipMapMode: 0
-    enableMipMap: 0
+    enableMipMap: 1
     sRGBTexture: 1
     linearTexture: 0
     fadeOut: 0
@@ -58,11 +61,11 @@ TextureImporter:
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
-  alphaIsTransparency: 1
+  alphaIsTransparency: 0
   spriteTessellationMethod: 0
   spriteTessellationDetail: -1
   spriteGeometrySubdivision: -1
-  textureType: 0
+  textureType: 8
   textureShape: 1
   singleChannelComponent: 0
   flipbookRows: 1
@@ -77,10 +80,10 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 256
+    maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 0
+    textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -131,67 +134,90 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: FlameDab_0
+      name: lightning_0
       rect:
         serializedVersion: 2
-        x: 161
-        y: 41
-        width: 1050
-        height: 1161
+        x: 136
+        y: 0
+        width: 130
+        height: 512
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
-      customData:
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 0c4233412c7258b40800000000000000
-      internalID: 5441799439263147200
+      spriteID: 6696d1eebcee996d0800000000000000
+      internalID: -2983090718515566234
       vertices: []
-      indices:
+      indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: FlameDab_1
+      name: lightning_1
       rect:
         serializedVersion: 2
-        x: 882
-        y: 326
-        width: 13
-        height: 14
+        x: 538
+        y: 0
+        width: 122
+        height: 512
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
-      customData:
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: bdfb45bf5d8681650800000000000000
-      internalID: 6203823754956816347
+      spriteID: 0075fa1954649bbe0800000000000000
+      internalID: -1461059339494140160
       vertices: []
-      indices:
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lightning_2
+      rect:
+        serializedVersion: 2
+        x: 893
+        y: 0
+        width: 116
+        height: 512
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 85337cf3b664c1390800000000000000
+      internalID: -7846319024340782248
+      vertices: []
+      indices: 
       edges: []
       weights: []
     outline: []
-    customData:
+    customData: 
     physicsShape: []
     bones: []
-    spriteID:
+    spriteID: 
     internalID: 0
     vertices: []
-    indices:
+    indices: 
     edges: []
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      FlameDab_0: 5441799439263147200
-      FlameDab_1: 6203823754956816347
-  mipmapLimitGroupName:
+      lightning_0: -2983090718515566234
+      lightning_1: -1461059339494140160
+      lightning_2: -7846319024340782248
+  mipmapLimitGroupName: 
   pSDRemoveMatte: 0
-  userData:
-  assetBundleName:
-  assetBundleVariant:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
