@@ -7,6 +7,10 @@ namespace Game.Core
         public string kind;
         public float value;
 
+        /// <summary>kind가 "form"일 때 변형 이름(<see cref="SkillForm"/>, 예: "TriangleIce"). 데이터에는 숫자 대신 이름을 적는다.
+        /// 읽을 때 value로 바뀌어 이후 코드는 value만 본다. 없는 이름이면 value가 NaN이 되어 카탈로그 검증이 카드 ID와 함께 거부한다</summary>
+        public string form;
+
         /// <summary>onEvent: 자식 스킬을 시전할 시점 (Start, Hit, Kill, Expired, Bounce, Impact)</summary>
         public AttackEvent trigger;
         /// <summary>자식 스킬의 무기 ID. 카탈로그 검증이 존재와 순환을 확인한다</summary>
@@ -31,5 +35,14 @@ namespace Game.Core
         public bool excludeHit;
         /// <summary>periodic: 시전 주기(초)</summary>
         public float interval;
+
+        [System.Runtime.Serialization.OnDeserialized]
+        private void ResolveForm(System.Runtime.Serialization.StreamingContext context)
+        {
+            if (kind != "form" || string.IsNullOrEmpty(form)) { return; }
+            value = System.Enum.TryParse<SkillForm>(form, true, out var parsed) && System.Enum.IsDefined(typeof(SkillForm), parsed)
+                ? (int)parsed
+                : float.NaN;
+        }
     }
 }
