@@ -83,67 +83,11 @@ namespace Game.Core
             skillChanged.Publish(new SkillChanged(new List<ISkillStatus>(weapons)));
         }
 
-        public struct UpgradeChoice
-        {
-            public bool IsNewWeapon;
-            public WeaponData NewWeaponData;
-            public WeaponBase Weapon;
-            public WeaponUpgradeOption Option;
-            public string DisplayName;
-            public string DisplayDescription;
-        }
+        private WeaponUpgradeChoices Choices => new WeaponUpgradeChoices(weapons, dataTable.Values, this,
+            id => prefabEntries.Exists(e => e.id == id && e.prefab != null));
 
-        public List<UpgradeChoice> GetRandomUpgradeChoices(int count)
-        {
-            var pool = new List<UpgradeChoice>();
-            var sharedGroups = new HashSet<string>();
-            if (count <= 0) { return pool; }
-
-            foreach (var weapon in weapons)
-            {
-                if (weapon.IsMaxLevel)
-                {
-                    continue;
-                }
-
-                foreach (var option in weapon.Data.upgrades)
-                {
-                    if (!UpgradeEligibility.CanAcquire(option, weapon.Data.id, this)
-                        || !WeaponUpgradeResolver.TryResolve(option, GetPermanentWeaponLevel(weapon.Data.id), out var resolved)
-                        || !WeaponUpgradeTransaction.CanApply(weapon, option, weapons, GetPermanentWeaponLevel(weapon.Data.id)))
-                    {
-                        continue;
-                    }
-
-                    if (!string.IsNullOrEmpty(option.sharedId) && !sharedGroups.Add(option.sharedId)) { continue; }
-
-                    pool.Add(new UpgradeChoice
-                    {
-                        IsNewWeapon = false,
-                        Weapon = weapon,
-                        Option = option,
-                        DisplayName = resolved.Name,
-                        DisplayDescription = resolved.Description
-                    });
-                }
-            }
-
-            foreach (var kv in dataTable)
-            {
-                if (GetWeaponLevel(kv.Key) == 0 && prefabEntries.Exists(e => e.id == kv.Key && e.prefab != null))
-                {
-                    pool.Add(new UpgradeChoice { IsNewWeapon = true, NewWeaponData = kv.Value });
-                }
-            }
-
-            for (int i = pool.Count - 1; i >= 0; i--)
-            {
-                int j = Random.Range(0, i + 1);
-                (pool[i], pool[j]) = (pool[j], pool[i]);
-            }
-
-            return pool.GetRange(0, Mathf.Min(count, pool.Count));
-        }
+        public List<UpgradeChoice> GetRandomUpgradeChoices(int count) =>
+            Choices.Select(count, upperBound => Random.Range(0, upperBound));
 
         public bool ApplyUpgradeChoice(UpgradeChoice choice)
         {
@@ -153,14 +97,7 @@ namespace Game.Core
                 return choice.NewWeaponData != null && AddWeapon(choice.NewWeaponData.id);
             }
 
-            if (choice.Weapon == null || !weapons.Contains(choice.Weapon)
-                || choice.Option == null || !choice.Weapon.Data.upgrades.Contains(choice.Option)
-                || !UpgradeEligibility.CanAcquire(choice.Option, choice.Weapon.Data.id, this))
-            {
-                return false;
-            }
-
-            if (!WeaponUpgradeTransaction.TryApply(choice.Weapon, choice.Option, weapons, GetPermanentWeaponLevel(choice.Weapon.Data.id))) { return false; }
+            if (!Choices.TryApply(choice)) { return false; }
             PublishSkills();
             return true;
         }
@@ -182,6 +119,11 @@ namespace Game.Core
             return weapon == null ? 0 : weapon.GetAcquiredCount(cardId);
         }
 
+
+        private void OnDestroy()
+        {
+            foreach (var weapon in weapons) { weapon.Dispose(); }
+        }
 
         private void Update()
         {

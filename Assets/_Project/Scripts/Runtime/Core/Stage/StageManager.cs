@@ -35,7 +35,7 @@ namespace Game.Core
         private SubmitResultRequest _pendingRequest;
         private bool _submitting;
 
-        private List<WeaponController.UpgradeChoice> _choices = new();
+        private List<UpgradeChoice> _choices = new();
 
         public StageState State { get; private set; } = StageState.Starting;
 
@@ -43,7 +43,7 @@ namespace Game.Core
         public TimeSpan RetryDelay { get; set; } = TimeSpan.FromSeconds(1);
 
         /// <summary>CardSelect 상태에서 UI가 표시할 카드 후보</summary>
-        public IReadOnlyList<WeaponController.UpgradeChoice> Choices => _choices;
+        public IReadOnlyList<UpgradeChoice> Choices => _choices;
 
         public StageManager(
             IBufferedPublisher<StageStateChanged> stateChanged,
@@ -173,7 +173,7 @@ namespace Game.Core
                 return;
             }
             _stats.RecordCard(choice.IsNewWeapon ? $"weapon_{choice.NewWeaponData.id}" : choice.Option.id);
-            _choices = new List<WeaponController.UpgradeChoice>();
+            _choices = new List<UpgradeChoice>();
 
             Time.timeScale = _speed;
             ChangeState(StageState.Playing);

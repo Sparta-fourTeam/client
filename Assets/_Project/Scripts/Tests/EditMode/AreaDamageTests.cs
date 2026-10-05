@@ -45,19 +45,19 @@ namespace Game.Tests
         public void ImpactUpgrade_ChangesOnlyDirectDamageAndTrainingScalesBoth()
         {
             var data = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == 2);
-            IWeaponStats stats = new BaseWeaponStats(data.baseStats);
+            WeaponStats stats = WeaponStats.FromDefinition(data.baseStats);
             var impact = data.upgrades.Find(c => c.id == "fireball_impact_damage");
             Assert.AreEqual(3, impact.maxPickCount);
-            stats = new ImpactDamageUpgrade(stats, impact.effects[0].value);
-            Assert.AreEqual(21.6f, stats.Damage, 0.001f);
-            Assert.AreEqual(12, stats.ExplosionDamage, 0.001f);
-            stats = new ExplosionUpgrade(stats, 80, false);
-            Assert.AreEqual(21.6f, stats.Damage, 0.001f);
-            Assert.AreEqual(21.6f, stats.ExplosionDamage, 0.001f);
-            stats = new AttackSpeedUpgrade(new DamageUpgrade(stats, 20), 10);
-            Assert.AreEqual(25.92f, stats.Damage, 0.001f);
-            Assert.AreEqual(25.92f, stats.ExplosionDamage, 0.001f);
-            Assert.AreEqual(1.62f, stats.Cooldown, 0.001f);
+            stats = WeaponStatsTestFactory.Apply(stats, UpgradeType.ImpactDamage, impact.effects[0].value);
+            Assert.AreEqual(21.6f, stats.Cast.Damage, 0.001f);
+            Assert.AreEqual(12, stats.Explosion.Damage, 0.001f);
+            stats = WeaponStatsTestFactory.Apply(stats, UpgradeType.ExplosionDamage, 80);
+            Assert.AreEqual(21.6f, stats.Cast.Damage, 0.001f);
+            Assert.AreEqual(21.6f, stats.Explosion.Damage, 0.001f);
+            stats = WeaponStatsTestFactory.Apply(WeaponStatsTestFactory.Apply(stats, UpgradeType.Damage, 20), UpgradeType.AttackSpeed, 10);
+            Assert.AreEqual(25.92f, stats.Cast.Damage, 0.001f);
+            Assert.AreEqual(25.92f, stats.Explosion.Damage, 0.001f);
+            Assert.AreEqual(1.62f, stats.Cast.Cooldown, 0.001f);
         }
 
         [Test]
@@ -71,9 +71,9 @@ namespace Game.Tests
                 var option = data.upgrades.Find(c => c.id == "lightning_voltage");
                 Assert.IsTrue(weapon.LevelUp(option));
                 Assert.IsFalse(weapon.LevelUp(option));
-                var stats = (IWeaponStats)typeof(WeaponBase).GetField("stats", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(weapon);
-                Assert.AreEqual(32.5f, stats.Damage, 0.001f);
-                Assert.AreEqual(2.5f, stats.ParalysisDuration, 0.001f);
+                var stats = (WeaponStats)typeof(WeaponBase).GetField("stats", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(weapon);
+                Assert.AreEqual(32.5f, stats.Cast.Damage, 0.001f);
+                Assert.AreEqual(2.5f, stats.Status.ParalysisDuration, 0.001f);
                 Assert.AreEqual(1, data.baseStats.paralysisChance);
             }
             finally { Object.DestroyImmediate(go); }
@@ -93,7 +93,7 @@ namespace Game.Tests
                 Assert.IsFalse(weapon.LevelUp(data.upgrades.Find(c => c.id == "lightning_judgement")));
                 var flags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance;
                 var statsField = typeof(WeaponBase).GetField("stats", flags);
-                Assert.AreEqual(75, ((IWeaponStats)statsField.GetValue(weapon)).Damage);
+                Assert.AreEqual(75, ((WeaponStats)statsField.GetValue(weapon)).Cast.Damage);
                 var fire = typeof(HitscanCaster).GetMethod("OnFire", flags);
                 fire.Invoke(weapon, null);
                 HitscanEffect clone = null;
@@ -101,7 +101,7 @@ namespace Game.Tests
                 { if (effect.name == "JudgementScaleTest(Clone)") { clone = effect; } }
                 Assert.AreEqual(Vector3.one * 1.5f, clone.transform.localScale);
                 typeof(HitscanEffect).GetMethod("Release", flags).Invoke(clone, null);
-                statsField.SetValue(weapon, new BaseWeaponStats(data.baseStats));
+                statsField.SetValue(weapon, WeaponStats.FromDefinition(data.baseStats));
                 fire.Invoke(weapon, null);
                 Assert.AreEqual(Vector3.one, clone.transform.localScale);
             }
@@ -116,26 +116,26 @@ namespace Game.Tests
         [Test]
         public void JudgementForm_PreservesOtherStatsAndScalesDamage()
         {
-            IWeaponStats stats = new BaseWeaponStats(new WeaponBaseStats { baseDamage = 25, paralysisDuration = 1 });
-            stats = new DamageUpgrade(stats, 150);
-            stats = new FormUpgrade(new DamageUpgrade(stats, 200), WeaponForm.JudgementThunder);
-            Assert.AreEqual(187.5f, stats.Damage);
-            Assert.AreEqual(1, stats.ParalysisDuration);
-            Assert.AreEqual(WeaponForm.JudgementThunder, stats.Form);
+            WeaponStats stats = WeaponStats.FromDefinition(new WeaponBaseStats { baseDamage = 25, paralysisDuration = 1 });
+            stats = WeaponStatsTestFactory.Apply(stats, UpgradeType.Damage, 150);
+            stats = WeaponStatsTestFactory.Apply(WeaponStatsTestFactory.Apply(stats, UpgradeType.Damage, 200), UpgradeType.Form, (int)WeaponForm.JudgementThunder);
+            Assert.AreEqual(187.5f, stats.Cast.Damage);
+            Assert.AreEqual(1, stats.Status.ParalysisDuration);
+            Assert.AreEqual(WeaponForm.JudgementThunder, stats.Cast.Form);
         }
 
         [Test]
         public void ExplosionUpgrades_KeepDirectDamageSeparateAndScaleRadius()
         {
-            IWeaponStats stats = new BaseWeaponStats(new WeaponBaseStats { baseDamage = 12, explosionDamageRatio = 1, explosionRadius = 0.8f });
-            stats = new ExplosionUpgrade(stats, 80, false);
-            stats = new ExplosionUpgrade(stats, 80, true);
-            Assert.AreEqual(12, stats.Damage);
-            Assert.AreEqual(21.6f, stats.ExplosionDamage, 0.001f);
-            Assert.AreEqual(1.44f, stats.ExplosionRadius, 0.001f);
-            stats = new DamageUpgrade(stats, -30);
-            Assert.AreEqual(8.4f, stats.Damage, 0.001f);
-            Assert.AreEqual(15.12f, stats.ExplosionDamage, 0.001f);
+            WeaponStats stats = WeaponStats.FromDefinition(new WeaponBaseStats { baseDamage = 12, explosionDamageRatio = 1, explosionRadius = 0.8f });
+            stats = WeaponStatsTestFactory.Apply(stats, UpgradeType.ExplosionDamage, 80);
+            stats = WeaponStatsTestFactory.Apply(stats, UpgradeType.ExplosionRadius, 80);
+            Assert.AreEqual(12, stats.Cast.Damage);
+            Assert.AreEqual(21.6f, stats.Explosion.Damage, 0.001f);
+            Assert.AreEqual(1.44f, stats.Explosion.Radius, 0.001f);
+            stats = WeaponStatsTestFactory.Apply(stats, UpgradeType.Damage, -30);
+            Assert.AreEqual(8.4f, stats.Cast.Damage, 0.001f);
+            Assert.AreEqual(15.12f, stats.Explosion.Damage, 0.001f);
         }
 
         [Test]

@@ -14,7 +14,16 @@ namespace Game.Tests
         {
             const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Instance;
             return new ProjectileSpawnRules(
-                (IWeaponStats)typeof(WeaponBase).GetField("stats", flags).GetValue(weapon), weapon.Data,
+                (WeaponStats)typeof(WeaponBase).GetField("stats", flags).GetValue(weapon), weapon.Data,
+                (IEnemyTargetProvider)typeof(WeaponBase).GetField("targetProvider", flags).GetValue(weapon),
+                (ObjectPool<Projectile>)typeof(ProjectileCaster).GetField("pool", flags).GetValue(weapon),
+                (Vector3)typeof(ProjectileCaster).GetField("projectileScale", flags).GetValue(weapon));
+        }
+
+        private static ProjectileBranchSpawner BranchSpawner(ProjectileCaster weapon)
+        {
+            const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Instance;
+            return new ProjectileBranchSpawner(weapon.Stats, weapon.Data,
                 (IEnemyTargetProvider)typeof(WeaponBase).GetField("targetProvider", flags).GetValue(weapon),
                 (ObjectPool<Projectile>)typeof(ProjectileCaster).GetField("pool", flags).GetValue(weapon),
                 (Vector3)typeof(ProjectileCaster).GetField("projectileScale", flags).GetValue(weapon));
@@ -139,10 +148,10 @@ namespace Game.Tests
             {
                 var data = new WeaponData { baseStats = new WeaponBaseStats { baseDamage = 100, speed = 10, freezeDuration = 2, pierceCount = 2, knockbackDistance = .6f }, maxLevel = 15 };
                 var weapon = new ProjectileCaster(data, prefab, caster.transform, new Provider());
-                IWeaponStats stats = new FormUpgrade(new BaseWeaponStats(data.baseStats), WeaponForm.TriangleIce);
-                stats = new FrostbiteUpgrade(new FrostbiteUpgrade(stats, 10, false), 10, true);
-                stats = new ShardDamageUpgrade(stats, 80);
-                if (split) { stats = new SplitCountUpgrade(stats, 3); }
+                WeaponStats stats = WeaponStatsTestFactory.Apply(WeaponStats.FromDefinition(data.baseStats), UpgradeType.Form, (int)WeaponForm.TriangleIce);
+                stats = WeaponStatsTestFactory.Apply(WeaponStatsTestFactory.Apply(stats, UpgradeType.Frostbite, 10), UpgradeType.ShardFrostbite, 10);
+                stats = WeaponStatsTestFactory.Apply(stats, UpgradeType.ShardDamage, 80);
+                if (split) { stats = WeaponStatsTestFactory.Apply(stats, UpgradeType.SplitCount, 3); }
                 typeof(WeaponBase).GetField("stats", flags).SetValue(weapon, stats);
                 var callback = (System.Action<Vector2, Vector3, IEnemyTarget>)typeof(ProjectileSpawnRules).GetMethod("CreateHitCallback", flags).Invoke(SpawnRules(weapon), null);
                 var source = new Target(); callback(Vector2.zero, Vector3.up, source);
@@ -217,10 +226,9 @@ namespace Game.Tests
             {
                 var data = new WeaponData { baseStats = new WeaponBaseStats { baseDamage = 100, speed = 10 }, maxLevel = 15 };
                 var weapon = new ProjectileCaster(data, prefab, caster.transform, new Provider());
-                IWeaponStats stats = new ShardDamageUpgrade(new SplitCountUpgrade(new BaseWeaponStats(data.baseStats), expectedCount), 80);
+                WeaponStats stats = WeaponStatsTestFactory.Apply(WeaponStatsTestFactory.Apply(WeaponStats.FromDefinition(data.baseStats), UpgradeType.SplitCount, expectedCount), UpgradeType.ShardDamage, 80);
                 typeof(WeaponBase).GetField("stats", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(weapon, stats);
-                var callback = (System.Action<Vector2, Vector3, IEnemyTarget>)typeof(ProjectileSpawnRules)
-                    .GetMethod("CreateSplitCallback", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(SpawnRules(weapon), null);
+                var callback = BranchSpawner(weapon).CreateSplitCallback();
                 var originTarget = new Target();
                 callback(Vector2.zero, Vector3.up, originTarget);
                 int count = 0;
@@ -238,7 +246,7 @@ namespace Game.Tests
                     Assert.AreEqual(0.5f, projectile.transform.localScale.x);
                 }
                 Assert.AreEqual(expectedCount, count);
-                Assert.AreEqual(100, stats.Damage, "소형 피해 강화는 본체에 적용하지 않는다");
+                Assert.AreEqual(100, stats.Cast.Damage, "소형 피해 강화는 본체에 적용하지 않는다");
             }
             finally
             {
@@ -267,16 +275,16 @@ namespace Game.Tests
                 Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == "kunai_spread"), 13));
                 Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == "kunai_barrage"), 13));
                 Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == "kunai_aux_damage"), 13));
-                var stats = (IWeaponStats)typeof(WeaponBase).GetField("stats", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(weapon);
-                Assert.AreEqual(6, stats.SplitCount);
-                Assert.AreEqual(16, stats.Damage, 0.001f);
-                Assert.AreEqual(16, stats.Damage * 0.5f * stats.ShardDamageMultiplier, 0.001f);
+                var stats = (WeaponStats)typeof(WeaponBase).GetField("stats", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(weapon);
+                Assert.AreEqual(6, stats.Secondary.Count);
+                Assert.AreEqual(16, stats.Cast.Damage, 0.001f);
+                Assert.AreEqual(16, stats.Cast.Damage * 0.5f * stats.Secondary.DamageMultiplier, 0.001f);
                 var amplify = data.upgrades.Find(c => c.id == "kunai_amplify");
                 Assert.IsTrue(weapon.LevelUp(amplify, 13));
                 Assert.IsFalse(weapon.LevelUp(amplify, 13));
-                stats = (IWeaponStats)typeof(WeaponBase).GetField("stats", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(weapon);
-                Assert.AreEqual(32, stats.Damage, 0.001f);
-                Assert.AreEqual(32, stats.Damage * 0.5f * stats.ShardDamageMultiplier, 0.001f);
+                stats = (WeaponStats)typeof(WeaponBase).GetField("stats", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(weapon);
+                Assert.AreEqual(32, stats.Cast.Damage, 0.001f);
+                Assert.AreEqual(32, stats.Cast.Damage * 0.5f * stats.Secondary.DamageMultiplier, 0.001f);
 
             }
             finally { Object.DestroyImmediate(go); }
@@ -338,15 +346,14 @@ namespace Game.Tests
                 var provider = new Provider();
                 var data = new WeaponData { baseStats = new WeaponBaseStats { baseDamage = 100, explosionDamageRatio = 1, explosionRadius = 0.8f }, maxLevel = 15 };
                 var weapon = new ProjectileCaster(data, prefab, prefab.transform, provider);
-                IWeaponStats stats = new SplitCountUpgrade(new BaseWeaponStats(data.baseStats), 2);
+                WeaponStats stats = WeaponStatsTestFactory.Apply(WeaponStats.FromDefinition(data.baseStats), UpgradeType.SplitCount, 2);
                 if (enabled)
                 {
-                    stats = new AuxiliaryExplosionUpgrade(stats);
+                    stats = WeaponStatsTestFactory.Apply(stats, UpgradeType.AuxiliaryExplosion, 1);
                 }
 
                 typeof(WeaponBase).GetField("stats", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(weapon, stats);
-                var split = (System.Action<Vector2, Vector3, IEnemyTarget>)typeof(ProjectileSpawnRules)
-                    .GetMethod("CreateSplitCallback", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(SpawnRules(weapon), null);
+                var split = BranchSpawner(weapon).CreateSplitCallback();
                 split(Vector2.zero, Vector3.up, provider.Target);
                 int shards = 0;
                 foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
@@ -417,7 +424,7 @@ namespace Game.Tests
                 var provider = new Provider { Second = new Target { Position = Vector2.right * 0.5f } };
                 var data = new WeaponData { baseStats = new WeaponBaseStats { baseDamage = 10, explosionDamageRatio = 1, explosionRadius = 0.8f, range = 10, burnChance = 1 }, maxLevel = 14 };
                 var weapon = new ProjectileCaster(data, prefab, prefab.transform, provider);
-                IWeaponStats stats = new BurnUpgrade(new BurnUpgrade(new BaseWeaponStats(data.baseStats), 6, true), 10, false);
+                WeaponStats stats = WeaponStatsTestFactory.Apply(WeaponStatsTestFactory.Apply(WeaponStats.FromDefinition(data.baseStats), UpgradeType.BurnDuration, 6), UpgradeType.BurnRatio, 10);
                 typeof(WeaponBase).GetField("stats", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(weapon, stats);
                 typeof(ProjectileCaster).GetMethod("OnFire", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(weapon, null);
                 foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
@@ -474,10 +481,10 @@ namespace Game.Tests
                     Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == id), 13));
                 }
 
-                var stats = (IWeaponStats)typeof(WeaponBase).GetField("stats", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(weapon);
-                Assert.AreEqual(3, stats.SplitCount);
-                Assert.AreEqual(2, stats.PierceCount);
-                Assert.AreEqual(WeaponForm.Enbakutsu, stats.Form);
+                var stats = (WeaponStats)typeof(WeaponBase).GetField("stats", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(weapon);
+                Assert.AreEqual(3, stats.Secondary.Count);
+                Assert.AreEqual(2, stats.Projectile.PierceCount);
+                Assert.AreEqual(WeaponForm.Enbakutsu, stats.Cast.Form);
                 typeof(ProjectileCaster).GetMethod("OnFire", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(weapon, null);
                 foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
                 {

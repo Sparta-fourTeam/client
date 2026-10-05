@@ -10,7 +10,7 @@ namespace Game.Core
         {
             public WeaponBase Weapon;
             public WeaponUpgradeOption Option;
-            public IWeaponStats Stats;
+            public SkillConfig Config;
         }
 
         public static bool CanApply(WeaponBase owner, WeaponUpgradeOption option, IReadOnlyList<WeaponBase> weapons, int permanentLevel)
@@ -21,7 +21,7 @@ namespace Game.Core
         public static bool TryApply(WeaponBase owner, WeaponUpgradeOption option, IReadOnlyList<WeaponBase> weapons, int permanentLevel)
         {
             if (!TryPrepare(owner, option, weapons, permanentLevel, out var prepared)) { return false; }
-            foreach (var item in prepared) { item.Weapon.CommitUpgrade(item.Option, item.Stats); }
+            foreach (var item in prepared) { item.Weapon.CommitUpgrade(item.Option, item.Config); }
             return true;
         }
 
@@ -52,7 +52,7 @@ namespace Game.Core
                 var member = shared ? weapon.Data.upgrades?.Find(o => o.sharedId == option.sharedId) : option;
                 if (member == null || (shared && !SameSharedDefinition(option, member))
                     || !weapon.TryPrepareUpgrade(member, resolved.Effects, out var stats)) { return false; }
-                prepared.Add(new Prepared { Weapon = weapon, Option = member, Stats = stats });
+                prepared.Add(new Prepared { Weapon = weapon, Option = member, Config = stats });
             }
             return containsOwner;
         }

@@ -76,8 +76,8 @@ namespace Game.Tests
             {
                 var weapon = new ProjectileCaster(data, go, go.transform, new NullEnemyTargetProvider());
                 Assert.IsTrue(weapon.LevelUp(triangle)); Assert.IsFalse(weapon.LevelUp(triangle));
-                var stats = (IWeaponStats)typeof(WeaponBase).GetField("stats", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(weapon);
-                Assert.AreEqual(WeaponForm.TriangleIce, stats.Form);
+                var stats = (WeaponStats)typeof(WeaponBase).GetField("stats", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(weapon);
+                Assert.AreEqual(WeaponForm.TriangleIce, stats.Cast.Form);
             }
             finally { UnityEngine.Object.DestroyImmediate(go); }
         }

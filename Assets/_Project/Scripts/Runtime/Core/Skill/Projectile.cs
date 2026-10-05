@@ -22,8 +22,11 @@ namespace Game.Core
         private Vector3 direction;
         private float speed;
         private float lifetime;
+        private float elapsed;
         private ProjectileHitEffects hitEffects;
         private System.Action<Vector2, Vector3, IEnemyTarget> onHit;
+        private AttackReactions reactions;
+        private bool released;
         private IEnemyTarget ignoredTarget;
         private IEnemyTargetProvider targetProvider;
         private readonly ProjectileHitLedger hitLedger = new();
@@ -79,10 +82,14 @@ namespace Game.Core
             direction = settings.Direction.normalized;
             speed = settings.Speed;
             lifetime = settings.Lifetime;
+            elapsed = 0;
             targetProvider = settings.TargetProvider;
             hitEffects = new ProjectileHitEffects(settings);
+            reactions = settings.Reactions ?? AttackReactions.Empty;
+            released = false;
             hitLedger.Reset(settings.PierceCount);
             ApplyDirectionRoration();
+            reactions.Raise(AttackEvent.Start, new AttackContext(settings.StartPos, direction));
         }
 
         private void Update()
@@ -92,13 +99,19 @@ namespace Game.Core
 
         internal void Tick(float deltaTime)
         {
+            if (released) { return; }
             Vector2 start = transform.position;
             transform.position += direction * speed * deltaTime;
             Vector2 end = transform.position;
 
+            float activeDelta = Mathf.Min(deltaTime, Mathf.Max(0, lifetime));
             lifetime -= deltaTime;
+            elapsed += activeDelta;
+            reactions.Raise(AttackEvent.Tick, new AttackContext(end, direction, deltaTime: activeDelta, elapsed: elapsed));
             if (lifetime <= 0)
             {
+                released = true;
+                reactions.Raise(AttackEvent.Expired, new AttackContext(end, direction, elapsed: elapsed));
                 pool.Release(this);
                 return;
             }
@@ -123,12 +136,21 @@ namespace Game.Core
                 hitEffects.Apply(candidate, direction);
                 SpawnImpact(hitPosition);
                 onHit?.Invoke(hitPosition, direction, candidate);
+                var context = new AttackContext(hitPosition, direction, candidate);
+                reactions.Raise(AttackEvent.Hit, context);
+                if (candidate is EnemyModel killed && killed.IsDead) { reactions.Raise(AttackEvent.Kill, context); }
                 if (hitLedger.Exhausted)
                 {
-                    pool.Release(this);
+                    Release();
                     break;
                 }
             }
+        }
+
+        private void Release()
+        {
+            released = true;
+            pool.Release(this);
         }
 
         private static float SegmentFraction(Vector2 start, Vector2 end, Vector2 point)

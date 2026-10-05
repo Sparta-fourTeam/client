@@ -25,7 +25,7 @@ namespace Game.View
             _button.onClick.AddListener(() => _onPick?.Invoke(_index));
         }
 
-        public void Bind(int index, WeaponController.UpgradeChoice choice, Sprite icon, Sprite background, Action<int> onPick)
+        public void Bind(int index, UpgradeChoice choice, Sprite icon, Sprite background, Action<int> onPick)
         {
             _index = index;
             _onPick = onPick;

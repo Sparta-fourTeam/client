@@ -113,9 +113,9 @@ namespace Game.Tests
                 Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == first)));
                 Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == second)));
                 Assert.IsFalse(weapon.LevelUp(data.upgrades.Find(c => c.id == first)));
-                var stats = (IWeaponStats)typeof(WeaponBase).GetField("stats", Flags).GetValue(weapon);
-                Assert.AreEqual(262.5f, (stats.Damage * stats.FieldDamageRatio + stats.FieldFlatDamage) * stats.FieldDamageMultiplier);
-                Assert.AreEqual(5, stats.FieldDuration); Assert.AreEqual(25, stats.Damage); Assert.AreEqual(.8f, stats.FieldRadius);
+                var stats = (WeaponStats)typeof(WeaponBase).GetField("stats", Flags).GetValue(weapon);
+                Assert.AreEqual(262.5f, (stats.Cast.Damage * stats.Field.DamageRatio + stats.Field.FlatDamage) * stats.Field.DamageMultiplier);
+                Assert.AreEqual(5, stats.Field.Duration); Assert.AreEqual(25, stats.Cast.Damage); Assert.AreEqual(.8f, stats.Field.Radius);
             }
             finally { Object.DestroyImmediate(go); }
         }

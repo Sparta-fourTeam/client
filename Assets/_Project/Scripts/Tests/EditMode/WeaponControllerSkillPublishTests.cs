@@ -147,9 +147,9 @@ namespace Game.Tests
             Assert.AreEqual("연속 벼락(+)", choice.DisplayName);
             Assert.AreEqual("시전 수 +1", choice.DisplayDescription);
             Assert.IsTrue(_controller.ApplyUpgradeChoice(choice));
-            var stats = (IWeaponStats)typeof(WeaponBase).GetField("stats", Private).GetValue(choice.Weapon);
-            Assert.AreEqual(choice.Weapon.Data.baseStats.baseDamage, stats.Damage);
-            Assert.AreEqual(2, stats.CastCount);
+            var stats = (WeaponStats)typeof(WeaponBase).GetField("stats", Private).GetValue(choice.Weapon);
+            Assert.AreEqual(choice.Weapon.Data.baseStats.baseDamage, stats.Cast.Damage);
+            Assert.AreEqual(2, stats.Cast.Count);
             Assert.AreEqual(1, choice.Weapon.GetAcquiredCount("lightning_burst"));
         }
 

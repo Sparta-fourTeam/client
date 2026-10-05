@@ -171,6 +171,7 @@ namespace Game.Core
         }
 
         public bool IsDead => _enemyModel == null || _enemyModel.IsDead;
+        public IEnemyTarget Target => _enemyModel;
 
         public void ApplyParalysis(float duration) => _enemyModel?.ApplyParalysis(duration);
 

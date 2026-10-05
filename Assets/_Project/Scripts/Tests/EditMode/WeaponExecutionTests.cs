@@ -10,7 +10,7 @@ namespace Game.Tests
         {
             public TestWeapon(WeaponData data) : base(data, null, null) { }
             protected override void OnFire() { }
-            public IWeaponStats CurrentStats => stats;
+            public WeaponStats CurrentStats => stats;
         }
 
         [TestCase(5, -20, 0)]
@@ -27,10 +27,10 @@ namespace Game.Tests
             var highWeapon = NewWeapon();
             Assert.IsTrue(lowWeapon.LevelUp(option, gate - 1));
             Assert.IsTrue(highWeapon.LevelUp(option, gate));
-            Assert.AreEqual(10 * (1 + before / 100), lowWeapon.CurrentStats.Damage, 0.0001f);
-            Assert.AreEqual(10 * (1 + after / 100), highWeapon.CurrentStats.Damage, 0.0001f);
-            Assert.AreEqual(2, lowWeapon.CurrentStats.CastCount);
-            Assert.AreEqual(2, highWeapon.CurrentStats.CastCount);
+            Assert.AreEqual(10 * (1 + before / 100), lowWeapon.CurrentStats.Cast.Damage, 0.0001f);
+            Assert.AreEqual(10 * (1 + after / 100), highWeapon.CurrentStats.Cast.Damage, 0.0001f);
+            Assert.AreEqual(2, lowWeapon.CurrentStats.Cast.Count);
+            Assert.AreEqual(2, highWeapon.CurrentStats.Cast.Count);
             Assert.AreEqual(before, option.effects[1].value, "변형 해석은 원본 효과를 수정하지 않는다");
             Assert.AreEqual(1, highWeapon.GetAcquiredCount(option.id));
         }
@@ -43,7 +43,7 @@ namespace Game.Tests
             option.variants[0].effects.Add(new StatEffect { type = UpgradeType.ProjectileSpeed, value = -30 });
             var weapon = NewWeapon();
             Assert.IsTrue(weapon.LevelUp(option, 9));
-            Assert.AreEqual(14, weapon.CurrentStats.ProjectileSpeed, 0.0001f);
+            Assert.AreEqual(14, weapon.CurrentStats.Projectile.Speed, 0.0001f);
             Assert.IsFalse(weapon.LevelUp(option, 8));
             Assert.AreEqual(1, weapon.UpgradeCount);
         }
@@ -55,7 +55,7 @@ namespace Game.Tests
             option.variants[0].effects = null;
             var weapon = NewWeapon();
             Assert.IsFalse(weapon.LevelUp(option, 9));
-            Assert.AreEqual(10, weapon.CurrentStats.Damage);
+            Assert.AreEqual(10, weapon.CurrentStats.Cast.Damage);
             Assert.AreEqual(0, weapon.UpgradeCount);
         }
 
@@ -104,13 +104,13 @@ namespace Game.Tests
             Assert.IsFalse(WeaponUpgradeTransaction.TryApply(b, b.Data.upgrades[0], weapons, 0));
             if (type == UpgradeType.Damage)
             {
-                Assert.AreEqual(18, a.CurrentStats.Damage, 0.0001f);
-                Assert.AreEqual(18, b.CurrentStats.Damage, 0.0001f);
+                Assert.AreEqual(18, a.CurrentStats.Cast.Damage, 0.0001f);
+                Assert.AreEqual(18, b.CurrentStats.Cast.Damage, 0.0001f);
             }
             else
             {
-                Assert.AreEqual(1.6f, a.CurrentStats.Cooldown, 0.0001f);
-                Assert.AreEqual(1.6f, b.CurrentStats.Cooldown, 0.0001f);
+                Assert.AreEqual(1.6f, a.CurrentStats.Cast.Cooldown, 0.0001f);
+                Assert.AreEqual(1.6f, b.CurrentStats.Cast.Cooldown, 0.0001f);
             }
         }
 
@@ -121,8 +121,8 @@ namespace Game.Tests
             var option = VariantOption(9, -20, 0);
             weapon.Data.upgrades = new System.Collections.Generic.List<WeaponUpgradeOption> { option };
             Assert.IsTrue(WeaponUpgradeTransaction.TryApply(weapon, option, new WeaponBase[] { weapon }, 9));
-            Assert.AreEqual(10, weapon.CurrentStats.Damage);
-            Assert.AreEqual(2, weapon.CurrentStats.CastCount);
+            Assert.AreEqual(10, weapon.CurrentStats.Cast.Damage);
+            Assert.AreEqual(2, weapon.CurrentStats.Cast.Count);
             Assert.AreEqual(1, weapon.GetAcquiredCount(option.id));
         }
 
@@ -141,7 +141,7 @@ namespace Game.Tests
             Assert.IsFalse(WeaponUpgradeTransaction.TryApply(a, a.Data.upgrades[0], new WeaponBase[] { a, b }, 0));
             Assert.AreEqual(0, a.UpgradeCount);
             Assert.AreEqual(0, a.GetAcquiredCount("shared_1"));
-            Assert.AreEqual(10, a.CurrentStats.Damage);
+            Assert.AreEqual(10, a.CurrentStats.Cast.Damage);
             Assert.AreEqual(1, b.UpgradeCount);
         }
 
@@ -155,7 +155,7 @@ namespace Game.Tests
             Assert.IsFalse(WeaponUpgradeTransaction.TryApply(a, a.Data.upgrades[0], new WeaponBase[] { a, b }, 0));
             Assert.AreEqual(0, a.UpgradeCount);
             Assert.AreEqual(0, b.UpgradeCount);
-            Assert.AreEqual(10, a.CurrentStats.Damage);
+            Assert.AreEqual(10, a.CurrentStats.Cast.Damage);
         }
 
         [Test]
@@ -216,7 +216,7 @@ namespace Game.Tests
             Assert.AreEqual(cap, weapon.GetAcquiredCount(option.id));
         }
 
-        private static IWeaponStats Stats() => new BaseWeaponStats(new WeaponBaseStats
+        private static WeaponStats Stats() => WeaponStats.FromDefinition(new WeaponBaseStats
         {
             cooldown = 2f,
             baseDamage = 10f,
@@ -227,30 +227,30 @@ namespace Game.Tests
         [Test]
         public void CountUpgrades_AreIndependent()
         {
-            IWeaponStats stats = new ProjectileCountUpgrade(Stats(), 1);
-            stats = new CastCountUpgrade(stats, 2);
-            stats = new PierceCountUpgrade(stats, 3);
-            Assert.AreEqual(2, stats.ProjectileCount);
-            Assert.AreEqual(3, stats.CastCount);
-            Assert.AreEqual(3, stats.PierceCount);
-            Assert.AreEqual(20f, stats.ProjectileSpeed);
+            WeaponStats stats = WeaponStatsTestFactory.Apply(Stats(), UpgradeType.ProjectileCount, 1);
+            stats = WeaponStatsTestFactory.Apply(stats, UpgradeType.CastCount, 2);
+            stats = WeaponStatsTestFactory.Apply(stats, UpgradeType.PierceCount, 3);
+            Assert.AreEqual(2, stats.Cast.ProjectileCount);
+            Assert.AreEqual(3, stats.Cast.Count);
+            Assert.AreEqual(3, stats.Projectile.PierceCount);
+            Assert.AreEqual(20f, stats.Projectile.Speed);
         }
 
         [Test]
         public void SpeedUpgrade_DoesNotChangeCooldown()
         {
-            var stats = new ProjectileSpeedUpgrade(Stats(), 25);
-            Assert.AreEqual(25f, stats.ProjectileSpeed);
-            Assert.AreEqual(2f, stats.Cooldown);
+            var stats = WeaponStatsTestFactory.Apply(Stats(), UpgradeType.ProjectileSpeed, 25);
+            Assert.AreEqual(25f, stats.Projectile.Speed);
+            Assert.AreEqual(2f, stats.Cast.Cooldown);
         }
 
         [Test]
         public void LegacyHitCount_StillMeansProjectiles()
         {
-            var stats = new HitCountUpgrade(Stats(), 2);
-            Assert.AreEqual(3, stats.ProjectileCount);
-            Assert.AreEqual(3, stats.HitCount);
-            Assert.AreEqual(0, stats.PierceCount);
+            var stats = WeaponStatsTestFactory.Apply(Stats(), UpgradeType.HitCount, 2);
+            Assert.AreEqual(3, stats.Cast.ProjectileCount);
+            Assert.AreEqual(3, stats.Cast.ProjectileCount);
+            Assert.AreEqual(0, stats.Projectile.PierceCount);
         }
 
         [Test]

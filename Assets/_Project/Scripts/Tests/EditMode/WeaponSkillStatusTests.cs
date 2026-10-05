@@ -9,7 +9,7 @@ namespace Game.Tests
         private sealed class TestWeapon : WeaponBase
         {
             public int Fired;
-            public float Damage => stats.Damage;
+            public float Damage => stats.Cast.Damage;
 
             public TestWeapon(WeaponData data) : base(data, null, null)
             {

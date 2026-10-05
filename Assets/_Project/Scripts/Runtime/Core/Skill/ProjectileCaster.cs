@@ -6,28 +6,25 @@ namespace Game.Core
     public class ProjectileCaster : WeaponBase
     {
         private ObjectPool<Projectile> pool;
+        private readonly SkillObjectPool<Projectile> ownedPool;
         private readonly Game.Core.Defense.Wall wall;
         private readonly ReactiveCastClock reserveClock = new();
         private readonly Vector3 projectileScale;
 
-        public ProjectileCaster(WeaponData data, GameObject prefab, Transform caster, IEnemyTargetProvider targetProvider, Game.Core.Defense.Wall wall = null) : base(data, caster, targetProvider)
+        public ProjectileCaster(WeaponData data, GameObject prefab, Transform caster, IEnemyTargetProvider targetProvider, Game.Core.Defense.Wall wall = null, SkillConfig config = null) : base(data, caster, targetProvider, config)
         {
             this.wall = wall;
             projectileScale = prefab.transform.localScale;
-            pool = new ObjectPool<Projectile>(
-                createFunc: () => Object.Instantiate(prefab).GetComponent<Projectile>(),
-                actionOnGet: p => p.gameObject.SetActive(true),
-                actionOnRelease: p => p.gameObject.SetActive(false),
-                actionOnDestroy: p => { if (p != null) { Object.Destroy(p.gameObject); } },
-                collectionCheck: true,
-                defaultCapacity: 10,
-                maxSize: 10
-            );
+            ownedPool = new SkillObjectPool<Projectile>(() => Object.Instantiate(prefab).GetComponent<Projectile>(), 10, 10);
+            pool = ownedPool.Pool;
         }
+
+        public override void Dispose() { base.Dispose(); ownedPool.Dispose(); }
 
         protected override void OnTickExtra(float deltaTime)
         {
-            if (stats.ReserveCastCount <= 0 || wall == null || wall.IsDestroyed) { return; }
+            var current = Stats;
+            if (current.Cast.ReserveCount <= 0 || wall == null || wall.IsDestroyed) { return; }
             bool nearby = false;
             var candidates = new System.Collections.Generic.List<IEnemyTarget>();
             targetProvider.GetNearest(new Vector2(caster.position.x, wall.AttackLineY), int.MaxValue, candidates);
@@ -38,20 +35,22 @@ namespace Game.Core
                     && (candidate.Position - (Vector2)caster.position).sqrMagnitude <= data.baseStats.range * data.baseStats.range)
                 { nearby = true; break; }
             }
-            reserveClock.Tick(deltaTime, nearby, stats.ReserveCastCount, data.baseStats.reserveCooldown, data.baseStats.reserveInterval, OnFire);
+            reserveClock.Tick(deltaTime, nearby, current.Cast.ReserveCount, data.baseStats.reserveCooldown, data.baseStats.reserveInterval, OnFire);
         }
 
         protected override void OnFire()
         {
-            var targets = FindTargets(data.baseStats.range, stats.ProjectileCount);
+            var config = Config;
+            var current = config.Stats;
+            var targets = FindTargets(config.Attack.Range);
             if (targets.Count == 0) { return; }
 
-            var spawnRules = new ProjectileSpawnRules(stats, data, targetProvider, pool, projectileScale);
-            for (int i = 0; i < stats.ProjectileCount; i++)
+            var spawnRules = new ProjectileSpawnRules(current, data, targetProvider, pool, projectileScale, config.Reactions);
+            for (int i = 0; i < current.Cast.ProjectileCount; i++)
             {
                 var target = targets[i % targets.Count];
-                var path = ProjectileLaunchPath.Calculate(data.projectilePath, caster.position, target.Position,
-                    wall != null ? wall.AttackLineY : (float?)null, data.baseStats.range, stats.ProjectileSpeed, stats.PierceCount);
+                var path = ProjectileLaunchPath.Calculate(config.Attack.Path, caster.position, target.Position,
+                    wall != null ? wall.AttackLineY : (float?)null, config.Attack.Range, current.Projectile.Speed, current.Projectile.PierceCount);
                 spawnRules.SpawnMain(path.Start, path.Direction, path.Lifetime, path.PierceCount);
             }
         }

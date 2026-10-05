@@ -14,6 +14,7 @@ namespace Game.Core
         private System.Action<Vector2> onHit;
         private System.Action<Vector2> onKilled;
         private IEnemyTarget directTarget;
+        private AttackReactions reactions;
         [SerializeField] private float radius;
 
         // 애니메이션 이벤트(Hit, Release) 대신 시간으로 진행하는 이펙트(파티클 프리팹)용. 0보다 작으면 쓰지 않는다 (기존 프리팹은 그대로)
@@ -27,7 +28,7 @@ namespace Game.Core
 
 
 
-        public void Init(IObjectPool<HitscanEffect> pool, Vector3 position, float damage, System.Action<Vector2> onHit = null, System.Action<Enemy> onTargetHit = null, System.Action<Vector2> onKilled = null, IEnemyTarget directTarget = null)
+        public void Init(IObjectPool<HitscanEffect> pool, Vector3 position, float damage, System.Action<Vector2> onHit = null, System.Action<Enemy> onTargetHit = null, System.Action<Vector2> onKilled = null, IEnemyTarget directTarget = null, AttackReactions reactions = null)
         {
 
             this.pool = pool;
@@ -37,9 +38,11 @@ namespace Game.Core
             this.onKilled = onKilled;
             this.directTarget = directTarget;
             this.onTargetHit = onTargetHit;
+            this.reactions = reactions ?? AttackReactions.Empty;
             elapsed = 0f;
             hitDone = false;
             released = false;
+            this.reactions.Raise(AttackEvent.Start, new AttackContext(position, Vector3.zero));
         }
 
         private void Update()
@@ -50,6 +53,7 @@ namespace Game.Core
             }
 
             elapsed += Time.deltaTime;
+            reactions.Raise(AttackEvent.Tick, new AttackContext(transform.position, Vector3.zero, deltaTime: Time.deltaTime, elapsed: elapsed));
 
             if (hitDelay >= 0f && !hitDone && elapsed >= hitDelay)
             {
@@ -73,7 +77,13 @@ namespace Game.Core
             // Secondary lightning hits only its chosen target and has no inherited callbacks.
             if (directTarget != null)
             {
-                if (!(directTarget is EnemyModel model && model.IsDead)) { directTarget.TakeDamage(Mathf.Max(1, (int)damage)); }
+                if (!(directTarget is EnemyModel model && model.IsDead))
+                {
+                    directTarget.TakeDamage(Mathf.Max(1, (int)damage));
+                    var context = new AttackContext(transform.position, Vector3.zero, directTarget);
+                    reactions.Raise(AttackEvent.Hit, context);
+                    if (directTarget is EnemyModel killed && killed.IsDead) { reactions.Raise(AttackEvent.Kill, context); }
+                }
                 return;
             }
             var killedPositions = new System.Collections.Generic.List<Vector2>();
@@ -88,6 +98,9 @@ namespace Game.Core
                     enemy.TakeDamage((int)damage);
                     if (enemy.IsDead) { killedPositions.Add(position); }
                     onTargetHit?.Invoke(enemy);
+                    var context = new AttackContext(position, Vector3.zero, enemy.Target);
+                    reactions.Raise(AttackEvent.Hit, context);
+                    if (enemy.IsDead) { reactions.Raise(AttackEvent.Kill, context); }
                 }
             }
             foreach (var position in killedPositions) { onKilled?.Invoke(position); }
@@ -102,6 +115,7 @@ namespace Game.Core
             }
 
             released = true;
+            reactions.Raise(AttackEvent.Expired, new AttackContext(transform.position, Vector3.zero));
             pool.Release(this);
         }
     }

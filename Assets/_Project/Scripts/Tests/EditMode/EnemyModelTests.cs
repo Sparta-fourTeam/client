@@ -201,7 +201,10 @@ namespace Game.Tests
                 provider.Targets.Add(CreateEnemy(position: Vector2.right * (data.baseStats.range + 1)));
                 var weapon = new HitscanCaster(data, go, go.transform, provider);
                 weapon.LevelUp(data.upgrades.Find(c => c.id == "lightning_sanction"));
-                var callback = (Action<Vector2>)typeof(HitscanCaster).GetMethod("CreateKillLightningCallback", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Invoke(weapon, null);
+                var pool = (UnityEngine.Pool.ObjectPool<HitscanEffect>)typeof(HitscanCaster)
+                    .GetField("pool", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(weapon);
+                var callback = new HitscanCastEffects(weapon.Stats, data.baseStats, provider, pool, null, null, Vector3.one)
+                    .CreateKillLightningCallback();
                 callback(Vector2.zero);
                 foreach (var effect in UnityEngine.Object.FindObjectsByType<HitscanEffect>(FindObjectsSortMode.None))
                 { Assert.AreNotEqual("NoKillTargetTest(Clone)", effect.name); }

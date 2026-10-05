@@ -15,6 +15,7 @@ namespace Game.Core
         public float FreezeDuration { get; set; } = 0;
         public System.Action<Vector2, Vector3, IEnemyTarget> OnHit { get; set; }
         public IEnemyTarget IgnoredTarget { get; set; }
+        public AttackReactions Reactions { get; set; } = AttackReactions.Empty;
         public float KnockbackDistance { get; set; } = 0;
         public float FrostbiteRatio { get; set; } = 0;
         public float ParalysisDuration { get; set; } = 0;
