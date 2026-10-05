@@ -129,12 +129,50 @@ namespace Game.Tests
         }
 
         [Test]
-        public void ExcludeHit_FiresNothingWhenTheHitEnemyIsTheOnlyOne()
+        public void ExcludeHit_FansOutAroundTheIncomingDirectionWhenTheHitEnemyIsTheOnlyOne()
         {
             var hit = Enemy(1, 0);
             provider.Targets.Add(hit);
-            ParentWithLink(3, excludeHit: true).Reactions.Raise(AttackEvent.Hit, new AttackContext(hit.Position, Vector3.up, hit));
-            Assert.AreEqual(0, Active().Count, "노릴 다른 적이 없으면 쏘지 않는다");
+            var incoming = Vector3.right;
+            ParentWithLink(3, excludeHit: true).Reactions.Raise(AttackEvent.Hit, new AttackContext(hit.Position, incoming, hit));
+
+            var shots = Active();
+            Assert.AreEqual(3, shots.Count, "노릴 다른 적이 없어도 쏜다");
+            var angles = shots.Select(p => Vector3.SignedAngle(incoming, Direction(p), Vector3.forward)).OrderBy(a => a).ToList();
+            Assert.AreEqual(-30f, angles[0], .5f);
+            Assert.AreEqual(0f, angles[1], .5f);
+            Assert.AreEqual(30f, angles[2], .5f);
+            foreach (var shot in shots) { Assert.AreSame(hit, Ignored(shot), "맞은 적은 지나친다"); }
+        }
+
+        [Test]
+        public void ExcludeHit_SingleShotGoesStraightAheadWhenNoOtherEnemy()
+        {
+            var hit = Enemy(1, 0);
+            provider.Targets.Add(hit);
+            ParentWithLink(1, excludeHit: true).Reactions.Raise(AttackEvent.Hit, new AttackContext(hit.Position, Vector3.up, hit));
+            var shots = Active();
+            Assert.AreEqual(1, shots.Count);
+            Assert.AreEqual(0f, Vector3.Angle(Vector3.up, Direction(shots[0])), .5f);
+        }
+
+        [Test]
+        public void ExcludeHit_FiresNothingWhenThereIsNoOtherEnemyAndNoIncomingDirection()
+        {
+            var hit = Enemy(1, 0);
+            provider.Targets.Add(hit);
+            ParentWithLink(3, excludeHit: true).Reactions.Raise(AttackEvent.Hit, new AttackContext(hit.Position, Vector3.zero, hit));
+            Assert.AreEqual(0, Active().Count, "방향도 없으면 어디로 쏠지 알 수 없다");
+        }
+
+        [Test]
+        public void OtherEnemiesPresent_AimAtThemInsteadOfFanning()
+        {
+            var hit = Enemy(0, 0);
+            var other = Enemy(0, 5);
+            provider.Targets.AddRange(new IEnemyTarget[] { hit, other });
+            ParentWithLink(3, excludeHit: true).Reactions.Raise(AttackEvent.Hit, new AttackContext(Vector2.zero, Vector3.right, hit));
+            foreach (var shot in Active()) { Assert.AreEqual(0f, Vector3.Angle(Direction(shot), Vector3.up), .5f, "다른 적이 있으면 그 적을 노린다"); }
         }
 
         [Test]

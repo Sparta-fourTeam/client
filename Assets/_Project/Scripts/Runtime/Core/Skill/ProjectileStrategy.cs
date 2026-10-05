@@ -54,15 +54,19 @@ namespace Game.Core
             // 사방 발사는 조준하지 않으므로 대상이 없어도 쏜다. 그 밖에는 가까운 적부터 서로 다른 적에게 나눠 쏜다.
             bool radial = config.Attack.Path == ProjectilePath.Radial;
             var targets = radial ? null : environment.FindTargets(config.Attack.Range);
-            if (!radial && targets.Count == 0) { return; }
+            // 맞은 적을 빼고 나니 노릴 적이 없으면, 부모가 날아온 방향이 있을 때 그 방향 기준 부채꼴로 쏜다.
+            bool fan = !radial && targets.Count == 0 && environment.Exclude != null && environment.Direction.sqrMagnitude > 0;
+            if (!radial && !fan && targets.Count == 0) { return; }
 
             var spawnRules = new ProjectileSpawnRules(current, environment.Targets, Pool, Scale, config.Reactions);
             int count = current.Cast.ProjectileCount;
             for (int i = 0; i < count; i++)
             {
-                Vector2 aim = radial ? default : targets[i % targets.Count].Position;
-                var path = ProjectileLaunchPath.Calculate(config.Attack.Path, environment.Origin, aim,
-                    wall != null ? wall.AttackLineY : (float?)null, config.Attack.Range, current.Projectile.Speed, current.Projectile.PierceCount, i, count);
+                Vector2 aim = radial || fan ? default : targets[i % targets.Count].Position;
+                var path = fan
+                    ? ProjectileLaunchPath.Fan(environment.Origin, environment.Direction, current.Projectile.PierceCount, i, count)
+                    : ProjectileLaunchPath.Calculate(config.Attack.Path, environment.Origin, aim,
+                        wall != null ? wall.AttackLineY : (float?)null, config.Attack.Range, current.Projectile.Speed, current.Projectile.PierceCount, i, count);
                 spawnRules.SpawnMain(path.Start, path.Direction, path.Lifetime, path.PierceCount, environment.Exclude);
             }
         }

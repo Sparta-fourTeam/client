@@ -14,6 +14,17 @@ namespace Game.Core
         private ProjectileLaunchPath(Vector3 start, Vector3 direction, float lifetime, int pierceCount)
         { Start = start; Direction = direction; Lifetime = lifetime; PierceCount = pierceCount; }
 
+        public const float FanHalfAngle = 30f;
+
+        /// <summary>진행 방향 기준 -30도에서 +30도까지 발 수만큼 고르게 퍼지는 부채꼴 (한 발이면 정면).
+        /// 맞은 적 말고 노릴 적이 없을 때 분열 조각이 쓴다.</summary>
+        public static ProjectileLaunchPath Fan(Vector3 origin, Vector3 direction, int pierceCount, int index, int count)
+        {
+            float angle = count <= 1 ? 0 : -FanHalfAngle + 2 * FanHalfAngle * index / (count - 1);
+            Vector3 rotated = Quaternion.Euler(0, 0, angle) * direction.normalized;
+            return new ProjectileLaunchPath(origin, rotated, 3f, pierceCount);
+        }
+
         public static ProjectileLaunchPath Calculate(ProjectilePath path, Vector3 caster, Vector2 target,
             float? wallAttackLineY, float range, float speed, int pierceCount, int index = 0, int count = 1)
         {

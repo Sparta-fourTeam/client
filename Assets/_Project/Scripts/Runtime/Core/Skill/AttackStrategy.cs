@@ -28,9 +28,15 @@ namespace Game.Core
         /// <summary>조준 대상에서 빼고 공격이 지나치게 할 적 (자식 스킬이 방금 맞은 적을 피할 때). 없으면 null</summary>
         public IEnemyTarget Exclude { get; }
 
+        /// <summary>자식 스킬을 낳은 이벤트의 진행 방향(부모가 날아온 방향). 없으면 영벡터.
+        /// 조준할 다른 적이 없을 때 이 방향 기준으로 부채꼴로 퍼지는 데 쓴다.</summary>
+        public Vector3 Direction { get; }
+
         public AttackEnvironment(Transform caster, IEnemyTargetProvider targets,
-            Func<Vector2, float, IReadOnlyList<IEnemyTarget>> select, Vector3? origin = null, IEnemyTarget exclude = null)
+            Func<Vector2, float, IReadOnlyList<IEnemyTarget>> select, Vector3? origin = null, IEnemyTarget exclude = null,
+            Vector3 direction = default)
         {
+            Direction = direction;
             this.caster = caster;
             Targets = targets;
             this.select = select;
@@ -56,7 +62,7 @@ namespace Game.Core
         }
 
         /// <summary>같은 시전자와 대상 선택을 쓰되 다른 위치에서 시전하는 환경 (exclude를 주면 그 적은 조준하지 않는다)</summary>
-        public AttackEnvironment At(Vector3 position, IEnemyTarget exclude = null) =>
-            new AttackEnvironment(caster, Targets, select, position, exclude);
+        public AttackEnvironment At(Vector3 position, IEnemyTarget exclude = null, Vector3 direction = default) =>
+            new AttackEnvironment(caster, Targets, select, position, exclude, direction);
     }
 }

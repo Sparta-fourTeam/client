@@ -258,7 +258,8 @@ namespace Game.Core
                 child = create(cast.SkillId);
                 children[cast.SkillId] = child;
             }
-            child?.FireAt(context.Position, config => cast.Resolve(config, this), cast.ExcludeHit ? context.Target : null);
+            child?.FireAt(context.Position, config => cast.Resolve(config, this), cast.ExcludeHit ? context.Target : null,
+                cast.ExcludeHit ? context.Direction : default);
         }
 
         public void Dispose()
