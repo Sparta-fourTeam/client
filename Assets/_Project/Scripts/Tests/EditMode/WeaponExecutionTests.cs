@@ -245,9 +245,9 @@ namespace Game.Tests
         }
 
         [Test]
-        public void LegacyHitCount_StillMeansProjectiles()
+        public void ProjectileCount_AddsProjectilesNotPierce()
         {
-            var stats = WeaponStatsTestFactory.Apply(Stats(), UpgradeType.HitCount, 2);
+            var stats = WeaponStatsTestFactory.Apply(Stats(), UpgradeType.ProjectileCount, 2);
             Assert.AreEqual(3, stats.Cast.ProjectileCount);
             Assert.AreEqual(3, stats.Cast.ProjectileCount);
             Assert.AreEqual(0, stats.Projectile.PierceCount);

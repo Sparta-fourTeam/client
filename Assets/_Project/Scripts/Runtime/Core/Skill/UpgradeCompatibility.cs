@@ -24,7 +24,6 @@ namespace Game.Core
             [UpgradeType.Damage] = Users.Both,
             [UpgradeType.ImpactDamage] = Users.Both,
             [UpgradeType.ProjectileCount] = Users.Both,
-            [UpgradeType.HitCount] = Users.Both,
             [UpgradeType.CastCount] = Users.Both,
             [UpgradeType.Form] = Users.Both,
             [UpgradeType.ReserveCasts] = Users.Projectile,

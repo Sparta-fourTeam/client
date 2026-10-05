@@ -94,7 +94,6 @@ namespace Game.Core
             AddStat(rules, UpgradeType.Damage, (s, v) => { s[Stat.Damage] *= Factor(v); s[Stat.ExplosionDamage] *= Factor(v); });
             AddStat(rules, UpgradeType.ImpactDamage, (s, v) => s[Stat.Damage] *= Factor(v));
             AddCast(rules, UpgradeType.ProjectileCount, (s, v) => s[Stat.ProjectileCount] = Math.Max(1, s[Stat.ProjectileCount] + (int)Math.Round(v)));
-            AddCast(rules, UpgradeType.HitCount, (s, v) => s[Stat.ProjectileCount] = Math.Max(1, s[Stat.ProjectileCount] + (int)v));
             AddCast(rules, UpgradeType.CastCount, (s, v) => s[Stat.CastCount] = Math.Max(1, s[Stat.CastCount] + (int)v));
             AddCast(rules, UpgradeType.ReserveCasts, (s, v) => s[Stat.ReserveCastCount] = (int)v, PositiveInteger);
             Add(rules, UpgradeType.Form, UpgradeEffectCategory.Transform, (s, v) => s[Stat.Form] = (int)v,

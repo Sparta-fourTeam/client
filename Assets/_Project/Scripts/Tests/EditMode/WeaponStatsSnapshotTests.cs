@@ -34,7 +34,6 @@ namespace Game.Tests
             yield return Case(UpgradeType.Damage, 20, s => s.Cast.Damage, 120);
             yield return Case(UpgradeType.ImpactDamage, 20, s => s.Cast.Damage, 120);
             yield return Case(UpgradeType.ProjectileCount, 1.6f, s => s.Cast.ProjectileCount, 4);
-            yield return Case(UpgradeType.HitCount, 1.6f, s => s.Cast.ProjectileCount, 3);
             yield return Case(UpgradeType.CastCount, 2, s => s.Cast.Count, 3);
             yield return Case(UpgradeType.ReserveCasts, 2, s => s.Cast.ReserveCount, 2);
             yield return Case(UpgradeType.Form, 3, s => (int)s.Cast.Form, 3);
