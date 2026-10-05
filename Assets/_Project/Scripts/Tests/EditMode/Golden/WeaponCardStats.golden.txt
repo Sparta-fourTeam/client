@@ -56,13 +56,13 @@
 4/ice_pierce@0: Cast.Damage=13; Projectile.PierceCount=2
 4/ice_heavy@0: Cast.Damage=15; Projectile.PierceCount=1; Projectile.Speed=14
 4/ice_volley@0: Cast.Damage=6; Cast.ProjectileCount=2
-4/ice_split@0: Secondary.Count=3
-4/ice_shard_damage@0: Secondary.DamageMultiplier=1.8
+4/ice_split@0: (변화 없음)
+4/ice_shard_damage@0: (변화 없음)
 4/ice_impact@0: Projectile.KnockbackDistance=0.6; Projectile.PierceCount=2
 4/ice_frostbite@0: Status.FrostbiteRatio=0.099999994
-4/ice_shard_frostbite@0: Secondary.FrostbiteRatio=0.099999994
+4/ice_shard_frostbite@0: (변화 없음)
 4/ice_triangle@0: Cast.Form=TriangleIce
-4/ALL@0: Cast.Count=3; Cast.Damage=67.38385; Cast.Form=TriangleIce; Cast.ProjectileCount=2; Projectile.KnockbackDistance=0.6; Projectile.PierceCount=9; Projectile.Speed=14; Secondary.Count=3; Secondary.DamageMultiplier=1.8; Secondary.FrostbiteRatio=0.099999994; Status.FreezeDuration=2; Status.FrostbiteRatio=0.099999994
+4/ALL@0: Cast.Count=3; Cast.Damage=67.38385; Cast.Form=TriangleIce; Cast.ProjectileCount=2; Projectile.KnockbackDistance=0.6; Projectile.PierceCount=9; Projectile.Speed=14; Status.FreezeDuration=2; Status.FrostbiteRatio=0.099999994
 5/log_damage@0: Cast.Damage=16; Explosion.Damage=16
 5/log_repeat@0: Cast.Count=2; Cast.Damage=8; Explosion.Damage=8
 5/log_repeat@5: Cast.Count=2
@@ -96,3 +96,5 @@
 7/lightning_cloud_guide@0: (변화 없음)
 7/lightning_cloud_storm@0: (변화 없음)
 7/ALL@0: Area.Duration=16.384; Area.MoveSpeed=1.15200007; Area.Pull=0.3125; Area.Radius=1.80000007; Cast.Damage=67.43655; Status.ParalysisDuration=2
+8/ALL@0: (변화 없음)
+12/ALL@0: (변화 없음)

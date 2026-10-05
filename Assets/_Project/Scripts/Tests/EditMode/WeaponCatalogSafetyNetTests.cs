@@ -203,11 +203,6 @@ namespace Game.Tests
             return text.ToString();
         }
 
-        private sealed class NoopChildCaster : IChildSkillCaster
-        {
-            public void Cast(ChildCast cast, AttackContext context) { }
-        }
-
         private static IEnumerable<int> PermanentLevels(WeaponUpgradeOption option) =>
             new[] { 0 }.Concat((option.variants ?? Array.Empty<WeaponUpgradeVariant>()).Select(v => v.minPermanentLevel))
                 .Distinct().OrderBy(level => level);

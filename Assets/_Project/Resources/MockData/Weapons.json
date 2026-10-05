@@ -1087,8 +1087,30 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "kind": "splitCount",
-            "value": 3
+            "kind": "onEvent",
+            "trigger": "Hit",
+            "skillId": 8,
+            "count": 3,
+            "excludeHit": true,
+            "onlyForm": "Default",
+            "inherit": {
+              "damage": 0.5,
+              "projectileSpeed": 1,
+              "frostbiteChance": 1
+            }
+          },
+          {
+            "kind": "onEvent",
+            "trigger": "Hit",
+            "skillId": 8,
+            "count": 3,
+            "excludeHit": true,
+            "target": 12,
+            "inherit": {
+              "damage": 0.5,
+              "projectileSpeed": 1,
+              "frostbiteChance": 1
+            }
           }
         ],
         "enabled": true,
@@ -1101,8 +1123,9 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "kind": "splitDamage",
-            "value": 80
+            "kind": "damage",
+            "value": 80,
+            "target": 8
           }
         ],
         "enabled": true,
@@ -1152,8 +1175,9 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "kind": "splitFrostbite",
-            "value": 10
+            "kind": "frostbite",
+            "value": 10,
+            "target": 8
           }
         ],
         "enabled": true,
@@ -1171,6 +1195,23 @@
           {
             "kind": "form",
             "value": 3
+          },
+          {
+            "kind": "onEvent",
+            "trigger": "Hit",
+            "skillId": 12,
+            "count": 3,
+            "excludeHit": true,
+            "inherit": {
+              "damage": 0.5,
+              "projectileSpeed": 1,
+              "pierceCount": 1,
+              "freezeDuration": 1,
+              "freezeChance": 1,
+              "knockbackDistance": 1,
+              "frostbiteRatio": 1,
+              "frostbiteChance": 1
+            }
           }
         ],
         "enabled": true,
@@ -1757,5 +1798,53 @@
         ]
       }
     ]
+  },
+  {
+    "id": 8,
+    "name": "얼음 조각",
+    "iconKey": "weapon_ice",
+    "castType": 0,
+    "maxLevel": 1,
+    "progressionId": null,
+    "prototypeBalanceSourceId": 4,
+    "childOnly": true,
+    "baseStats": {
+      "cast": {
+        "cooldown": 1,
+        "baseDamage": 1,
+        "range": 22,
+        "projectileCount": 1,
+        "castCount": 1,
+        "castInterval": 0.1
+      },
+      "projectile": {
+        "speed": 20
+      }
+    },
+    "upgrades": []
+  },
+  {
+    "id": 12,
+    "name": "일반 얼음창",
+    "iconKey": "weapon_ice",
+    "castType": 0,
+    "maxLevel": 1,
+    "progressionId": null,
+    "prototypeBalanceSourceId": 4,
+    "childOnly": true,
+    "baseStats": {
+      "cast": {
+        "cooldown": 1,
+        "baseDamage": 1,
+        "range": 22,
+        "projectileCount": 1,
+        "castCount": 1,
+        "castInterval": 0.1
+      },
+      "projectile": {
+        "speed": 20
+      }
+    },
+    "upgrades": []
   }
 ]

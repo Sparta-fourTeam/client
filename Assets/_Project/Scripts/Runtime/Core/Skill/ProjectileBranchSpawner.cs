@@ -21,48 +21,7 @@ namespace Game.Core
             this.projectileScale = projectileScale;
         }
 
-        public System.Action<Vector2, Vector3, IEnemyTarget> CreateTriangleCallback()
-        {
-            float damage = stats.Cast.Damage * 0.5f;
-            float speed = stats.Projectile.Speed;
-            int pierce = stats.Projectile.PierceCount;
-            float freeze = stats.Status.FreezeDuration;
-            float knockback = stats.Projectile.KnockbackDistance;
-            float frostbite = stats.Status.FrostbiteRatio;
-            var normalSplit = CreateSplitCallbackForDamage(damage);
-            float freezeChance = stats.Status.FreezeChance;
-            float frostbiteChance = stats.Status.FrostbiteChance;
-            return (position, direction, source) =>
-            {
-                for (int i = 0; i < 3; i++)
-                {
-                    var normal = pool.Get();
-                    normal.transform.localScale = projectileScale;
-                    normal.SetVisualForm(WeaponForm.Default);
-                    normal.Init(pool, new ProjectileSpawnSettings
-                    {
-                        StartPos = position,
-                        Direction = Quaternion.Euler(0, 0, -30 + i * 30) * direction,
-                        Speed = speed,
-                        Lifetime = ProjectileLifetime,
-                        TargetProvider = targetProvider,
-                        PierceCount = pierce,
-                        OnHit = normalSplit,
-                        IgnoredTarget = source,
-                        HitReactions = new HitReactionBuilder()
-                            .Damage(damage)
-                            .Freeze(freeze, freezeChance)
-                            .Knockback(knockback)
-                            .Frostbite(damage * frostbite, frostbiteChance)
-                            .Build()
-                    });
-                }
-            };
-        }
-
-        public System.Action<Vector2, Vector3, IEnemyTarget> CreateSplitCallback() => CreateSplitCallbackForDamage(stats.Cast.Damage);
-
-        private System.Action<Vector2, Vector3, IEnemyTarget> CreateSplitCallbackForDamage(float sourceDamage)
+        public System.Action<Vector2, Vector3, IEnemyTarget> CreateSplitCallback()
         {
             int count = stats.Secondary.Count;
             if (count <= 0)
@@ -70,7 +29,7 @@ namespace Game.Core
                 return null;
             }
 
-            float shardDamage = sourceDamage * 0.5f * stats.Secondary.DamageMultiplier;
+            float shardDamage = stats.Cast.Damage * 0.5f * stats.Secondary.DamageMultiplier;
             float shardSpeed = stats.Projectile.Speed;
             float shardFrostbite = stats.Secondary.FrostbiteRatio;
             float auxiliaryLightningDamage = shardDamage * stats.Secondary.LightningRatio;

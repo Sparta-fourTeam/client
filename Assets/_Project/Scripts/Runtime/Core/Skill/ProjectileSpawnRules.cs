@@ -58,7 +58,7 @@ namespace Game.Core
 
         private System.Action<Vector2, Vector3, IEnemyTarget> CreateHitCallback()
         {
-            var split = stats.Cast.Form == WeaponForm.TriangleIce ? branches.CreateTriangleCallback() : branches.CreateSplitCallback();
+            var split = branches.CreateSplitCallback();
             var bindings = new System.Collections.Generic.List<ReactionBinding>();
             if (split != null)
             {

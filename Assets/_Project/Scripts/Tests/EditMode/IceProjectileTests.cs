@@ -137,64 +137,6 @@ namespace Game.Tests
             finally { Object.DestroyImmediate(go); }
         }
 
-        [TestCase(false)]
-        [TestCase(true)]
-        public void TriangleSplit_ProducesNormalProjectilesThenOptionalNonRecursiveShards(bool split)
-        {
-            var prefab = new GameObject("TriangleSplitTest"); prefab.AddComponent<Projectile>();
-            var caster = new GameObject("TriangleCasterTest");
-            var flags = BindingFlags.NonPublic | BindingFlags.Instance;
-            try
-            {
-                var data = new WeaponData { baseStats = new WeaponBaseStats { cast = { baseDamage = 100 }, projectile = { speed = 10, pierceCount = 2, knockbackDistance = .6f }, status = { freezeDuration = 2 } }, maxLevel = 15 };
-                var weapon = Casters.Projectile(data, prefab, caster.transform, new Provider());
-                WeaponStats stats = WeaponStatsTestFactory.Apply(WeaponStats.FromDefinition(data.baseStats), "form", (int)WeaponForm.TriangleIce);
-                stats = WeaponStatsTestFactory.Apply(WeaponStatsTestFactory.Apply(stats, "frostbite", 10), "splitFrostbite", 10);
-                stats = WeaponStatsTestFactory.Apply(stats, "splitDamage", 80);
-                if (split) { stats = WeaponStatsTestFactory.Apply(stats, "splitCount", 3); }
-                typeof(WeaponBase).GetField("stats", flags).SetValue(weapon, stats);
-                var callback = (System.Action<Vector2, Vector3, IEnemyTarget>)typeof(ProjectileSpawnRules).GetMethod("CreateHitCallback", flags).Invoke(SpawnRules(weapon), null);
-                var source = new Target(); callback(Vector2.zero, Vector3.up, source);
-                var normals = new System.Collections.Generic.List<Projectile>();
-                foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
-                { if (projectile.name == "TriangleSplitTest(Clone)") { normals.Add(projectile); } }
-                Assert.AreEqual(3, normals.Count);
-                foreach (var normal in normals)
-                {
-                    Assert.AreEqual(50, HitRecorder.Hit(normal).Damage);
-                    Assert.AreEqual(2, HitRecorder.Hit(normal).Freeze);
-                    Assert.AreEqual(.6f, HitRecorder.Hit(normal).KnockbackDistance, .001f);
-                    Assert.AreEqual(HitRecorder.Hit(normal).Damage * .1f, HitRecorder.Hit(normal).Frostbite, .001f);
-                    Assert.AreSame(source, typeof(Projectile).GetField("ignoredTarget", flags).GetValue(normal));
-                    Assert.AreEqual(Vector3.one, normal.transform.localScale);
-                }
-                var normalHit = (System.Action<Vector2, Vector3, IEnemyTarget>)typeof(Projectile).GetField("onHit", flags).GetValue(normals[0]);
-                if (!split) { Assert.IsNull(normalHit); }
-                else
-                {
-                    var secondTarget = new Target(); normalHit(Vector2.up, Vector3.up, secondTarget);
-                    int shards = 0;
-                    foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
-                    {
-                        if (projectile.name != "TriangleSplitTest(Clone)" || normals.Contains(projectile)) { continue; }
-                        shards++;
-                        Assert.AreEqual(45, HitRecorder.Hit(projectile).Damage);
-                        Assert.AreEqual(0, HitRecorder.Hit(projectile).Freeze);
-                        Assert.AreEqual(HitRecorder.Hit(projectile).Damage * .1f, HitRecorder.Hit(projectile).Frostbite, .001f);
-                        Assert.IsNull(typeof(Projectile).GetField("onHit", flags).GetValue(projectile));
-                        Assert.AreSame(secondTarget, typeof(Projectile).GetField("ignoredTarget", flags).GetValue(projectile));
-                    }
-                    Assert.AreEqual(3, shards);
-                }
-            }
-            finally
-            {
-                foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
-                { if (projectile.name == "TriangleSplitTest(Clone)") { Object.DestroyImmediate(projectile.gameObject); } }
-                Object.DestroyImmediate(prefab); Object.DestroyImmediate(caster);
-            }
-        }
-
         [Test]
         public void TriangleVisual_ReturnsToOriginalSpriteWhenProjectileIsReused()
         {
@@ -219,54 +161,6 @@ namespace Game.Tests
                 Object.DestroyImmediate(baseSprite); Object.DestroyImmediate(triangle);
             }
             finally { Object.DestroyImmediate(go); }
-        }
-
-        [TestCase(3)]
-        [TestCase(6)]
-        public void SplitCallback_CreatesNonRecursiveShardsWithIndependentDamageBonus(int expectedCount)
-        {
-            var prefab = new GameObject("ShardTest");
-            prefab.AddComponent<Projectile>();
-            var caster = new GameObject("ShardCasterTest");
-            try
-            {
-                var data = new WeaponData { baseStats = new WeaponBaseStats { cast = { baseDamage = 100 }, projectile = { speed = 10 } }, maxLevel = 15 };
-                var weapon = Casters.Projectile(data, prefab, caster.transform, new Provider());
-                WeaponStats stats = WeaponStatsTestFactory.Apply(WeaponStatsTestFactory.Apply(WeaponStats.FromDefinition(data.baseStats), "splitCount", expectedCount), "splitDamage", 80);
-                typeof(WeaponBase).GetField("stats", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(weapon, stats);
-                var callback = BranchSpawner(weapon).CreateSplitCallback();
-                var originTarget = new Target();
-                callback(Vector2.zero, Vector3.up, originTarget);
-                int count = 0;
-                foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
-                {
-                    if (projectile.gameObject == prefab || projectile.name != "ShardTest(Clone)")
-                    {
-                        continue;
-                    }
-
-                    count++;
-                    Assert.AreEqual(90, HitRecorder.Hit(projectile).Damage);
-                    Assert.IsNull(typeof(Projectile).GetField("onHit", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(projectile));
-                    Assert.AreSame(originTarget, typeof(Projectile).GetField("ignoredTarget", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(projectile));
-                    Assert.AreEqual(0.5f, projectile.transform.localScale.x);
-                }
-                Assert.AreEqual(expectedCount, count);
-                Assert.AreEqual(100, stats.Cast.Damage, "소형 피해 강화는 본체에 적용하지 않는다");
-            }
-            finally
-            {
-                foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
-                {
-                    if (projectile.name == "ShardTest(Clone)")
-                    {
-                        Object.DestroyImmediate(projectile.gameObject);
-                    }
-                }
-
-                Object.DestroyImmediate(prefab);
-                Object.DestroyImmediate(caster);
-            }
         }
 
         [Test]

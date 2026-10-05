@@ -75,6 +75,7 @@ namespace Game.Tests
             try
             {
                 var weapon = Casters.Projectile(data, go, go.transform, new NullEnemyTargetProvider());
+                weapon.UseChildCaster(new NoopChildCaster());
                 Assert.IsTrue(weapon.LevelUp(triangle)); Assert.IsFalse(weapon.LevelUp(triangle));
                 var stats = (WeaponStats)typeof(WeaponBase).GetField("stats", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(weapon);
                 Assert.AreEqual(WeaponForm.TriangleIce, stats.Cast.Form);
