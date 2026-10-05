@@ -29,7 +29,7 @@ namespace Game.Tests
         private sealed class FakeCaster : IChildSkillCaster
         {
             public readonly List<(int id, Vector2 position, float scale)> Casts = new List<(int, Vector2, float)>();
-            public void Cast(int skillId, AttackContext context, float damageScale) => Casts.Add((skillId, context.Position, damageScale));
+            public void Cast(ChildCast cast, AttackContext context) => Casts.Add((cast.SkillId, context.Position, cast.DamageScale));
         }
 
         private readonly List<GameObject> created = new List<GameObject>();

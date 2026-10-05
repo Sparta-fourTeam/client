@@ -139,8 +139,8 @@ namespace Game.Tests
                     created++;
                     return WeaponFactory.Create(Data(), go.transform, new NullEnemyTargetProvider(), strategy);
                 });
-                children.Cast(7, new AttackContext(new Vector2(3, 4), Vector3.up), 1f);
-                children.Cast(7, new AttackContext(new Vector2(5, 6), Vector3.up), 1f);
+                children.Cast(new ChildCast(7, 1f, null, null), new AttackContext(new Vector2(3, 4), Vector3.up));
+                children.Cast(new ChildCast(7, 1f, null, null), new AttackContext(new Vector2(5, 6), Vector3.up));
                 Assert.AreEqual(1, created, "자식은 한 번만 만든다");
                 Assert.AreEqual(2, strategy.Fires, "요청마다 쿨타임 없이 시전한다");
                 Assert.AreEqual(new Vector3(3, 4, 0), strategy.Origins[0]);
@@ -158,8 +158,8 @@ namespace Game.Tests
             var children = new ChildSkillCaster(_ => { created++; return null; });
             Assert.DoesNotThrow(() =>
             {
-                children.Cast(7, new AttackContext(Vector2.zero, Vector3.up), 1f);
-                children.Cast(7, new AttackContext(Vector2.zero, Vector3.up), 1f);
+                children.Cast(new ChildCast(7, 1f, null, null), new AttackContext(Vector2.zero, Vector3.up));
+                children.Cast(new ChildCast(7, 1f, null, null), new AttackContext(Vector2.zero, Vector3.up));
             });
             Assert.AreEqual(1, created, "만들지 못한 자식도 반복해서 다시 만들지 않는다");
         }

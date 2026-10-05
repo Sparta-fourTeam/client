@@ -27,7 +27,7 @@ namespace Game.Core
             get
             {
                 // Protected stats is retained for existing test subclasses.
-                if (!ReferenceEquals(config.Stats, stats)) { config = new SkillConfig(stats, config.Attack, config.Bindings, config.ChildCaster); }
+                if (!ReferenceEquals(config.Stats, stats)) { config = config.WithStats(stats); }
                 return config;
             }
         }

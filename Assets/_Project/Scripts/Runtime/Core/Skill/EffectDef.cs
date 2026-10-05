@@ -15,6 +15,11 @@ namespace Game.Core
         public float chance = 1;
         /// <summary>자식 스킬 피해 배율 (1 = 자식의 기본 피해 그대로, 0.5 = 절반). "소형" 자식 스킬을 표현한다</summary>
         public float damageScale = 1;
+        /// <summary>onEvent/periodic: 자식이 부모의 스탯을 가져오는 규칙. 키는 스탯 이름(예: "damage"), 값은 배율이다.
+        /// 시전 시점의 부모 스탯 × 배율이 자식의 값이 된다. 자식 연결을 처음 만드는 효과만 쓸 수 있다</summary>
+        public System.Collections.Generic.Dictionary<string, float> inherit;
+        /// <summary>0이 아니면 이 효과(스탯 효과)는 부모가 아니라 해당 ID의 자식 스킬에만 적용된다. 자식을 시전하는 선행 카드가 필요하다</summary>
+        public int target;
         /// <summary>한 번에 시전하는 횟수</summary>
         public int count = 1;
         /// <summary>periodic: 시전 주기(초)</summary>

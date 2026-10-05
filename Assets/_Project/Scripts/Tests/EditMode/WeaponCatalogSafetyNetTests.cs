@@ -205,7 +205,7 @@ namespace Game.Tests
 
         private sealed class NoopChildCaster : IChildSkillCaster
         {
-            public void Cast(int skillId, AttackContext context, float damageScale) { }
+            public void Cast(ChildCast cast, AttackContext context) { }
         }
 
         private static IEnumerable<int> PermanentLevels(WeaponUpgradeOption option) =>

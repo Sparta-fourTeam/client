@@ -50,6 +50,7 @@ namespace Game.Core
             WeaponUpgradeTransaction.ValidateCatalog(weapons);
             ValidateConditions(weapons);
             ValidateChildSkills(weapons);
+            ValidateChildOverlays(weapons);
         }
 
         // 자식 스킬 시전 효과는 존재하는 스킬만 가리켜야 하고, 자식이 부모를 다시 시전하는 순환이 없어야 한다.
@@ -89,6 +90,73 @@ namespace Game.Core
             }
         }
 
+        // 자식 전용 강화(target)는 자식을 시전하는 카드를 먼저(또는 함께) 얻은 경우에만 적용되고,
+        // 자식의 공격 종류가 소비하는 효과여야 한다. 위반하면 카드를 얻어도 효과가 조용히 사라지거나 강화가 실패한다.
+        private static void ValidateChildOverlays(List<WeaponData> weapons)
+        {
+            var byId = new Dictionary<int, WeaponData>();
+            foreach (var weapon in weapons) { byId[weapon.id] = weapon; }
+            foreach (var weapon in weapons)
+            {
+                var cardsById = new Dictionary<string, WeaponUpgradeOption>();
+                foreach (var option in weapon.upgrades) { cardsById[option.id] = option; }
+                foreach (var option in weapon.upgrades)
+                {
+                    foreach (var effects in EffectLists(option))
+                    {
+                        foreach (var effect in effects)
+                        {
+                            if (effect.target == 0) { continue; }
+                            string where = $"카드 '{option.id}'({weapon.name})의 효과 {effect.kind}";
+                            if (!byId.TryGetValue(effect.target, out var child) || effect.target == weapon.id)
+                            {
+                                throw new InvalidOperationException($"{where}: 대상 자식 스킬 {effect.target}가 없거나 자기 자신입니다.");
+                            }
+                            if (!EffectRegistry.IsStatKind(effect.kind) || !EffectRegistry.Supports(child.castType, effect.kind))
+                            {
+                                throw new InvalidOperationException($"{where}: 자식 스킬 {child.name}({child.castType})이 소비하지 않는 효과입니다.");
+                            }
+                            if (!LinksChild(option, effect.target, cardsById, new HashSet<string>()))
+                            {
+                                throw new InvalidOperationException($"{where}: 자식 스킬 {child.name}을 시전하는 선행 카드가 없습니다.");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private static IEnumerable<List<EffectDef>> EffectLists(WeaponUpgradeOption option)
+        {
+            yield return option.effects;
+            if (option.variants == null) { yield break; }
+            foreach (var variant in option.variants) { yield return variant.effects; }
+        }
+
+        // 카드 자신이나 선행 카드(requiredCardIds, requiredCardCounts)를 거슬러 올라가 자식을 시전하는 효과가 있는지 본다.
+        private static bool LinksChild(WeaponUpgradeOption option, int childId, Dictionary<string, WeaponUpgradeOption> cards, HashSet<string> seen)
+        {
+            if (!seen.Add(option.id)) { return false; }
+            foreach (var effects in EffectLists(option))
+            {
+                foreach (var effect in effects)
+                {
+                    if (EffectRegistry.IsChildCast(effect.kind) && effect.skillId == childId) { return true; }
+                }
+            }
+            var required = new List<string>();
+            if (option.requiredCardIds != null) { required.AddRange(option.requiredCardIds); }
+            if (option.requiredCardCounts != null)
+            {
+                foreach (var r in option.requiredCardCounts) { if (r != null && r.weaponId == 0) { required.Add(r.cardId); } }
+            }
+            foreach (var id in required)
+            {
+                if (cards.TryGetValue(id, out var previous) && LinksChild(previous, childId, cards, seen)) { return true; }
+            }
+            return false;
+        }
+
         private static void CollectChildren(WeaponData weapon, WeaponUpgradeOption option, List<EffectDef> effects,
             HashSet<int> ids, List<int> children)
         {
@@ -99,6 +167,11 @@ namespace Game.Core
                 {
                     throw new InvalidOperationException(
                         $"카드 '{option.id}'({weapon.name})의 효과 {effect.kind}: 자식 스킬 {effect.skillId}가 카탈로그에 없습니다.");
+                }
+                if (!ChildLink.TryParseInherit(effect.inherit, out _))
+                {
+                    throw new InvalidOperationException(
+                        $"카드 '{option.id}'({weapon.name})의 효과 {effect.kind}: inherit에 알 수 없는 스탯 이름이 있거나 배율이 0 이하입니다.");
                 }
                 children.Add(effect.skillId);
             }

@@ -37,11 +37,29 @@ namespace Game.Core
     {
         public AttackEvent Event { get; }
         public IAttackReaction Reaction { get; }
+        private readonly Func<SkillConfig, IAttackReaction> factory;
+
         public ReactionBinding(AttackEvent trigger, IAttackReaction reaction)
         {
             Event = trigger;
             Reaction = reaction ?? throw new ArgumentNullException(nameof(reaction));
+            factory = null;
         }
+
+        private ReactionBinding(AttackEvent trigger, Func<SkillConfig, IAttackReaction> factory)
+        {
+            Event = trigger;
+            Reaction = null;
+            this.factory = factory ?? throw new ArgumentNullException(nameof(factory));
+        }
+
+        /// <summary>설정이 만들어질 때 그 설정(스탯 스냅샷, 자식 연결)으로 반응을 만드는 바인딩.
+        /// 부모의 현재 스탯을 읽는 반응이 이 방식을 쓴다. 이미 발사된 공격은 발사 때의 설정을 계속 쓴다.</summary>
+        internal static ReactionBinding Late(AttackEvent trigger, Func<SkillConfig, IAttackReaction> factory) =>
+            new ReactionBinding(trigger, factory);
+
+        internal ReactionBinding Resolve(SkillConfig config) =>
+            factory == null ? this : new ReactionBinding(Event, factory(config));
     }
 
     /// <summary>Fixed reaction order. Events run locally on an attack, independently of the scene message bus.</summary>

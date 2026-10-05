@@ -24,6 +24,10 @@ namespace Game.Core
     {
         private static readonly Func<WeaponBaseStats, float>[] Defaults = Create();
 
+        /// <summary>스탯 이름(대소문자 무시)을 찾는다. 자식의 상속 규칙이 쓴다</summary>
+        public static bool TryParse(string name, out Stat stat) =>
+            Enum.TryParse(name, true, out stat) && stat != Stat.Count && Enum.IsDefined(typeof(Stat), stat);
+
         public static float[] CreateValues(WeaponBaseStats d)
         {
             var values = new float[(int)Stat.Count];
@@ -125,6 +129,8 @@ namespace Game.Core
         }
 
         internal float[] CopyValues() => (float[])values.Clone();
+
+        internal float Get(Stat stat) => values[(int)stat];
     }
 
     public readonly struct CastStats

@@ -25,6 +25,11 @@ namespace Game.Core
                 compiled = kind.Compile(effect);
                 return compiled != null;
             }
+            if (effect.target != 0)
+            {
+                compiled = ChildOverlayUpgradeEffect.From(effect);
+                return compiled != null;
+            }
             if (!kind.Accept(effect.value)) { return false; }
             compiled = kind.Category switch
             {
