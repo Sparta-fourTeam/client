@@ -72,3 +72,5 @@ Assets/_Project/
 - 임포트 설정은 에셋마다 쓰임에 묶여 있다. Pixels Per Unit은 프리팹 크기가 그 값에 맞춰져 있으므로 임의로 통일하지 않는다(몬스터 공격 연출 `fx_*` 64, `Arrow_v1` 1000 등). Max Size는 화면에서 보이는 크기에 맞춘다(파티클용 손그림 텍스처는 256). 스프라이트는 밉맵을 끈다. 다만 파티클 셰이더가 쓰는 텍스처(`lightning`, `Electric01_3x3`)는 켠 상태를 유지한다.
 - 아이콘과 프리팹은 테이블의 `IconKey`/`PrefabKey`로 찾는다(위 "데이터와 API").
 - 기존 예외: `Sprites`의 `N-Sheet.png`(1~6)는 UI 시트라 역할이 확정될 때 이름을 바꾼다.
+- Unity가 자동으로 다시 저장한 변경(`.meta`의 플랫폼 블록, `m_Name:` 뒤 공백, `ProjectSettings` 형식 변경)은 `git restore`로 되돌리지 않는다. 되돌리면 Unity가 저장할 때마다 같은 변경이 다시 생긴다. 의도한 변경과 분리해 "Unity 직렬화 형식으로 정리" 커밋으로 한 번 반영한다.
+- Unity YAML(`.unity`, `.prefab`, `.mat`, `.asset`, `.meta`, `.anim`, `.controller`)은 스크립트나 IDE로 직접 편집하지 않고 Unity에서 저장한다. 팀이 같은 Unity 버전(`ProjectSettings/ProjectVersion.txt`)을 쓰는지도 확인한다.

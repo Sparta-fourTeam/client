@@ -43,10 +43,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c4648491560446278a4a5d8efa5c3a14, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Game.Boot::Game.Boot.RootLifetimeScope
   parentReference:
-    TypeName:
+    TypeName: 
   autoRun: 1
   autoInjectGameObjects: []
   curtain: {fileID: 7114150179666808380}
@@ -152,6 +152,12 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 4315205429382748261, guid: 41d5a0ec5fa844167b5b13466d4d8160, type: 3}
   m_PrefabInstance: {fileID: 6437959013779920473}
   m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51cbd20022e44c59a61c20312b24e693, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.TransitionCurtain
 --- !u!224 &7137567871096557028 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4203412841569704893, guid: 41d5a0ec5fa844167b5b13466d4d8160, type: 3}
