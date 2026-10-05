@@ -501,7 +501,7 @@ namespace Game.Editor.MonsterRig
                     : def.Layers.Select(l => new LayerSpec
                     {
                         Name = l.png,
-                        PngPath = $"{ArtFolder}/{l.png}.png",
+                        PngPath = $"{ArtFolder}/Source/{l.png}.png",
                         CanvasOffset = new Vector2Int(Pad, Pad),
                         Bones = l.bones,
                     }).ToList(),

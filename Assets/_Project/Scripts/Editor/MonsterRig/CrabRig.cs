@@ -16,7 +16,7 @@ namespace Game.Editor.MonsterRig
     /// </summary>
     public static class CrabRig
     {
-        private const string Png = "Assets/_Project/Art/Characters/Monsters/crab.png";
+        private const string Png = "Assets/_Project/Art/Characters/Monsters/Source/crab.png";
         private const float Ppu = 200f;
         private const float Tau = Mathf.PI * 2f;
         private const int W = 237, H = 234;

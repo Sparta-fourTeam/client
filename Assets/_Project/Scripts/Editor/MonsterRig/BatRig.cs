@@ -12,7 +12,7 @@ namespace Game.Editor.MonsterRig
     /// </summary>
     public static class BatRig
     {
-        private const string Png = "Assets/_Project/Art/Characters/Monsters/bat_parts.png";
+        private const string Png = "Assets/_Project/Art/Characters/Monsters/Source/bat_parts.png";
         private const int Pad = 4;
         private const float Overlap = 8f; // 날개가 몸통 안쪽으로 파고드는 양(px)
 

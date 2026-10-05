@@ -16,7 +16,7 @@ namespace Game.Editor.MonsterRig
     /// </summary>
     public static class GhostRig
     {
-        private const string Png = "Assets/_Project/Art/Characters/Monsters/ghost_v2.png";
+        private const string Png = "Assets/_Project/Art/Characters/Monsters/Source/ghost_v2.png";
         private const int Scale = 4;
         private const float Ppu = 200f;
         private const float Tau = Mathf.PI * 2f;

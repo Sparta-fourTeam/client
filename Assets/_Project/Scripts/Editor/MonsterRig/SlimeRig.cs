@@ -29,7 +29,7 @@ namespace Game.Editor.MonsterRig
             MaxInfluences = 3,
             Layers = new List<LayerSpec>
             {
-                new() { Name = "slime", PngPath = "Assets/_Project/Art/Characters/Monsters/slime.png", CanvasOffset = new Vector2Int(Pad, Pad) },
+                new() { Name = "slime", PngPath = "Assets/_Project/Art/Characters/Monsters/Source/slime.png", CanvasOffset = new Vector2Int(Pad, Pad) },
             },
             Bones = new List<BoneSpec>
             {

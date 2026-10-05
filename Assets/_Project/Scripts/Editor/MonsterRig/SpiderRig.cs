@@ -15,7 +15,7 @@ namespace Game.Editor.MonsterRig
     /// </summary>
     public static class SpiderRig
     {
-        private const string Png = "Assets/_Project/Art/Characters/Monsters/spider.png";
+        private const string Png = "Assets/_Project/Art/Characters/Monsters/Source/spider.png";
         private const float Ppu = 200f;
         private const float Tau = Mathf.PI * 2f;
 
