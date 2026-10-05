@@ -17,8 +17,6 @@ namespace Game.Core
             if (regularVisual != null) { regularVisual.SetActive(!upgraded); }
         }
 
-        [SerializeField] private GameObject secondaryProjectilePrefab;
-        public GameObject SecondaryProjectilePrefab => secondaryProjectilePrefab;
         [SerializeField] private LayerMask targetMask;
         private float damage;
         private IEnemyTarget directTarget;

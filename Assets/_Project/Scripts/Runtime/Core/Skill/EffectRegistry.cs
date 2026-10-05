@@ -122,14 +122,6 @@ namespace Game.Core
             Add("burnMaxHp", Reaction, Projectile, (s, v) => s[Stat.BurnMaxHpRatio] = v * .01f, Positive);
             Add("burnDeathExplosion", Reaction, Projectile, (s, v) => s[Stat.BurnDeathExplosion] = 1, v => v == 1);
 
-            // 보조 공격: 분열 수와 피해 배율은 두 공격이 함께 쓴다(투사체 분열, 전기 구체).
-            Add("splitCount", Reaction, Both, (s, v) => s[Stat.SplitCount] += (int)v, PositiveInteger);
-            Add("splitDamage", Plain, Both, (s, v) => s[Stat.SplitDamageMultiplier] *= Factor(v));
-            Add("splitFrostbite", Reaction, Projectile, (s, v) => s[Stat.SplitFrostbiteRatio] = v * .01f, Positive);
-            Add("splitLightning", Reaction, Projectile, (s, v) => s[Stat.SplitLightningRatio] = v * .01f, Positive);
-            Add("splitExplosion", Reaction, Projectile, (s, v) => s[Stat.SplitExplosions] = 1, v => v == 1);
-            Add("splitParalysis", Reaction, Hitscan, (s, v) => s[Stat.SplitParalysisDuration] = Math.Max(s[Stat.SplitParalysisDuration], v), Positive);
-
             // 번개
             Add("lightningStrike", Reaction, Projectile, (s, v) => s[Stat.LightningStrikeRatio] = v * .01f, Positive);
             Add("killLightning", Reaction, Hitscan, (s, v) => s[Stat.KillLightningRatio] = v * .01f, Positive);

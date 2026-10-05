@@ -3,14 +3,13 @@ using UnityEngine.Pool;
 
 namespace Game.Core
 {
-    /// <summary>Creates primary projectiles and composes their impact callbacks.</summary>
+    /// <summary>Creates primary projectiles. 맞았을 때의 피해·상태이상·폭발은 ReactionCompiler가, 분열 같은 자식 시전은 강화 카드의 반응이 맡는다.</summary>
     public sealed class ProjectileSpawnRules
     {
         private readonly WeaponStats stats;
         private readonly IEnemyTargetProvider targetProvider;
         private readonly ObjectPool<Projectile> pool;
         private readonly Vector3 projectileScale;
-        private readonly ProjectileBranchSpawner branches;
         private readonly AttackReactions reactions;
 
         public ProjectileSpawnRules(WeaponStats stats, IEnemyTargetProvider targetProvider,
@@ -21,7 +20,6 @@ namespace Game.Core
             this.pool = pool;
             this.projectileScale = projectileScale;
             this.reactions = reactions ?? AttackReactions.Empty;
-            branches = new ProjectileBranchSpawner(this.stats, targetProvider, pool, projectileScale);
         }
 
         public void SpawnMain(Vector3 start, Vector3 direction, float lifetime, int pierce, IEnemyTarget ignoredTarget = null)
@@ -40,7 +38,6 @@ namespace Game.Core
                 PierceCount = pierce,
                 IgnoredTarget = ignoredTarget,
                 HitReactions = ReactionCompiler.ForProjectile(stats, CreateBurnDeathCallback(), targetProvider),
-                OnHit = CreateHitCallback(),
                 CollisionRadius = .3f * stats.Projectile.SizeMultiplier
             });
         }
@@ -55,20 +52,5 @@ namespace Game.Core
             float damage = stats.Explosion.Damage;
             return position => SkillReactionEffects.Explode(targetProvider, position, radius, damage);
         }
-
-        private System.Action<Vector2, Vector3, IEnemyTarget> CreateHitCallback()
-        {
-            var split = branches.CreateSplitCallback();
-            var bindings = new System.Collections.Generic.List<ReactionBinding>();
-            if (split != null)
-            {
-                bindings.Add(new ReactionBinding(AttackEvent.Hit,
-                new CastSkillReaction(c => split(c.Position, c.Direction, c.Target))));
-            }
-            if (bindings.Count == 0) { return null; }
-            var onHit = new AttackReactions(bindings);
-            return (position, direction, target) => onHit.Raise(AttackEvent.Hit, new AttackContext(position, direction, target));
-        }
-
     }
 }

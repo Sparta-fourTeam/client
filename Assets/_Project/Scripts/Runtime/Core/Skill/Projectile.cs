@@ -27,7 +27,6 @@ namespace Game.Core
         private float elapsed;
         private AttackReactions hitReactions;
         private System.Func<float> randomValue;
-        private System.Action<Vector2, Vector3, IEnemyTarget> onHit;
         private AttackReactions reactions;
         private bool released;
         private IEnemyTarget ignoredTarget;
@@ -41,7 +40,6 @@ namespace Game.Core
         public void Init(IObjectPool<Projectile> pool, ProjectileSpawnSettings settings)
         {
             hitRadius = Mathf.Max(0, settings.CollisionRadius);
-            onHit = settings.OnHit;
             ignoredTarget = settings.IgnoredTarget;
             this.pool = pool;
             transform.position = settings.StartPos;
@@ -102,7 +100,6 @@ namespace Game.Core
                 if (!hitLedger.TryHit(candidate)) { continue; }
                 hitReactions.Raise(AttackEvent.Hit, new AttackContext(hitPosition, direction, candidate, randomValue));
                 SpawnImpact(hitPosition);
-                onHit?.Invoke(hitPosition, direction, candidate);
                 var context = new AttackContext(hitPosition, direction, candidate);
                 reactions.Raise(AttackEvent.Hit, context);
                 if (candidate is EnemyModel killed && killed.IsDead) { reactions.Raise(AttackEvent.Kill, context); }

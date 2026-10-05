@@ -26,7 +26,6 @@ namespace Game.Tests
                 Lifetime = lifetime,
                 TargetProvider = targetProvider,
                 PierceCount = pierceCount,
-                OnHit = onHit,
                 IgnoredTarget = ignoredTarget,
                 RandomValue = randomValue,
                 CollisionRadius = collisionRadius,
@@ -41,6 +40,7 @@ namespace Game.Tests
                     .Stun(stunDuration, stunChance)
                     .Slow(slowRatio, slowDuration)
                     .Vulnerability(vulnerabilityRatio, vulnerabilityDuration)
+                    .On(AttackEvent.Hit, new CastSkillReaction(c => onHit?.Invoke(c.Position, c.Direction, c.Target)))
                     .Build()
             });
         }

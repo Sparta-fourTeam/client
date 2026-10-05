@@ -303,8 +303,7 @@ namespace Game.Tests
             Assert.IsTrue(builder.TryApplyCatalog(new[] { Link(new Dictionary<string, float> { ["damage"] = .5f }), ForChild("damage", 80) }));
             Assert.AreEqual(90f, RaiseOnce(builder.Build(), recorder).Resolve(ChildBase()).Stats.Cast.Damage, .001f);
 
-            var legacy = WeaponStatsTestFactory.Apply(WeaponStatsTestFactory.Apply(WeaponStats.FromDefinition(Parent().baseStats), "splitCount", 2), "splitDamage", 80);
-            Assert.AreEqual(legacy.Cast.Damage * .5f * legacy.Secondary.DamageMultiplier, 90f, .001f, "기존 공식도 같은 값");
+            Assert.AreEqual(100f * .5f * 1.8f, 90f, .001f, "옛 하드코딩 공식(부모 피해 × 0.5 × 분열 배율)과 같은 값");
 
             Assert.IsTrue(builder.TryApplyCatalog(new[] { new EffectDef { kind = "damage", value = 100 } }));
             Assert.AreEqual(180f, RaiseOnce(builder.Build(), recorder).Resolve(ChildBase()).Stats.Cast.Damage, .001f, "부모 피해 200 × 0.5 × 1.8");

@@ -20,15 +20,6 @@ namespace Game.Tests
                 (Vector3)Casters.Projectile(weapon).Scale);
         }
 
-        private static ProjectileBranchSpawner BranchSpawner(SkillCaster weapon)
-        {
-            const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Instance;
-            return new ProjectileBranchSpawner(weapon.Stats,
-                (IEnemyTargetProvider)typeof(WeaponBase).GetField("targetProvider", flags).GetValue(weapon),
-                (ObjectPool<Projectile>)Casters.Projectile(weapon).Pool,
-                (Vector3)Casters.Projectile(weapon).Scale);
-        }
-
         private sealed class Target : IEnemyTarget, IFreezableTarget, IKnockbackTarget, IFrostbiteTarget, IParalyzableTarget, IBurnableTarget
         {
             public Vector2 Position { get; set; }
@@ -164,33 +155,6 @@ namespace Game.Tests
         }
 
         [Test]
-        public void KunaiAuxiliaryCards_AddToSixAndKeepDamageBonusesSeparate()
-        {
-            var data = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == 1);
-            var go = new GameObject("KunaiAuxStatsTest");
-            try
-            {
-                var weapon = Casters.Projectile(data, go, go.transform, new Provider());
-                Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == "arrow_sharp"), 13));
-                Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == "kunai_spread"), 13));
-                Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == "kunai_barrage"), 13));
-                Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == "kunai_aux_damage"), 13));
-                var stats = (WeaponStats)typeof(WeaponBase).GetField("stats", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(weapon);
-                Assert.AreEqual(6, stats.Secondary.Count);
-                Assert.AreEqual(16, stats.Cast.Damage, 0.001f);
-                Assert.AreEqual(16, stats.Cast.Damage * 0.5f * stats.Secondary.DamageMultiplier, 0.001f);
-                var amplify = data.upgrades.Find(c => c.id == "kunai_amplify");
-                Assert.IsTrue(weapon.LevelUp(amplify, 13));
-                Assert.IsFalse(weapon.LevelUp(amplify, 13));
-                stats = (WeaponStats)typeof(WeaponBase).GetField("stats", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(weapon);
-                Assert.AreEqual(32, stats.Cast.Damage, 0.001f);
-                Assert.AreEqual(32, stats.Cast.Damage * 0.5f * stats.Secondary.DamageMultiplier, 0.001f);
-
-            }
-            finally { Object.DestroyImmediate(go); }
-        }
-
-        [Test]
         public void LightningRod_TriggersPerMainProjectileAndClearsOnReuse()
         {
             var go = new GameObject("LightningRodTest");
@@ -233,58 +197,6 @@ namespace Game.Tests
                 Assert.AreEqual(1, provider.Target.Paralyses);
             }
             finally { Object.DestroyImmediate(go); }
-        }
-
-        [TestCase(false)]
-        [TestCase(true)]
-        public void SplitExplosion_RequiresExplicitUpgradeAndDoesNotSplitAgain(bool enabled)
-        {
-            var prefab = new GameObject("AuxExplosionTest");
-            prefab.AddComponent<Projectile>();
-            try
-            {
-                var provider = new Provider();
-                var data = new WeaponData { baseStats = new WeaponBaseStats { cast = { baseDamage = 100 }, explosion = { damageRatio = 1, radius = 0.8f } }, maxLevel = 15 };
-                var weapon = Casters.Projectile(data, prefab, prefab.transform, provider);
-                WeaponStats stats = WeaponStatsTestFactory.Apply(WeaponStats.FromDefinition(data.baseStats), "splitCount", 2);
-                if (enabled)
-                {
-                    stats = WeaponStatsTestFactory.Apply(stats, "splitExplosion", 1);
-                }
-
-                typeof(WeaponBase).GetField("stats", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(weapon, stats);
-                var split = BranchSpawner(weapon).CreateSplitCallback();
-                split(Vector2.zero, Vector3.up, provider.Target);
-                int shards = 0;
-                foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
-                {
-                    if (projectile.name != "AuxExplosionTest(Clone)")
-                    {
-                        continue;
-                    }
-
-                    shards++;
-                    var callback = (System.Action<Vector2, Vector3, IEnemyTarget>)typeof(Projectile)
-                        .GetField("onHit", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(projectile);
-                    Assert.AreEqual(enabled, callback != null);
-                    callback?.Invoke(Vector2.zero, Vector3.up, provider.Target);
-                }
-                Assert.AreEqual(2, shards);
-                Assert.AreEqual(enabled ? 100 : 0, provider.Target.DamageTaken);
-                // 폭발 콜백은 보조 투사체를 다시 생성하지 않는다.
-            }
-            finally
-            {
-                foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
-                {
-                    if (projectile.name == "AuxExplosionTest(Clone)")
-                    {
-                        Object.DestroyImmediate(projectile.gameObject);
-                    }
-                }
-
-                Object.DestroyImmediate(prefab);
-            }
         }
 
         [TestCase(0f)]
@@ -376,13 +288,14 @@ namespace Game.Tests
             {
                 var data = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == 2);
                 var weapon = Casters.Projectile(data, prefab, prefab.transform, new Provider());
+                weapon.UseChildCaster(new NoopChildCaster());
                 foreach (var id in new[] { "fireball_impact_damage", "fireball_explosion_damage", "fireball_explosion_radius", "fireball_flames", "fireball_enbakutsu" })
                 {
                     Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == id), 13));
                 }
 
                 var stats = (WeaponStats)typeof(WeaponBase).GetField("stats", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(weapon);
-                Assert.AreEqual(3, stats.Secondary.Count);
+                Assert.IsTrue(weapon.Config.Children.ContainsKey(14), "불꽃 조각(자식 스킬 14)을 시전하는 연결");
                 Assert.AreEqual(2, stats.Projectile.PierceCount);
                 Assert.AreEqual(WeaponForm.Enbakutsu, stats.Cast.Form);
                 typeof(SkillCaster).GetMethod("OnFire", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(weapon, null);

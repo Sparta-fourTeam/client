@@ -79,7 +79,7 @@ namespace Game.Core
                 .Knockback(stats.Projectile.KnockbackDistance)
                 .Frostbite(damage * status.FrostbiteRatio, status.FrostbiteChance)
                 .Paralysis(status.ParalysisDuration, status.ParalysisChance)
-                .LightningStrike(damage * stats.Secondary.LightningStrikeRatio)
+                .LightningStrike(damage * stats.Lightning.StrikeRatio)
                 .Burn(damage * burn.DamageRatio, burn.Duration, burn.MaxHpRatio, burn.Chance, burnOnDeath)
                 .Stun(status.StunDuration, status.StunChance)
                 .Slow(status.SlowRatio, status.SlowDuration)

@@ -12,20 +12,18 @@ namespace Game.Core
         private readonly float range;
         private readonly IEnemyTargetProvider targets;
         private readonly ObjectPool<HitscanEffect> strikes;
-        private readonly ObjectPool<Projectile> orbs;
         private readonly ObjectPool<ElectromagneticField> fields;
         private readonly Vector3 scale;
         private readonly AttackReactions reactions;
 
         public HitscanCastEffects(WeaponStats stats, float range, IEnemyTargetProvider targets,
-            ObjectPool<HitscanEffect> strikes, ObjectPool<Projectile> orbs,
+            ObjectPool<HitscanEffect> strikes,
             ObjectPool<ElectromagneticField> fields, Vector3 scale, AttackReactions reactions = null)
         {
             this.stats = stats;
             this.range = range;
             this.targets = targets;
             this.strikes = strikes;
-            this.orbs = orbs;
             this.fields = fields;
             this.scale = scale;
             this.reactions = reactions ?? AttackReactions.Empty;
@@ -43,16 +41,14 @@ namespace Game.Core
             strike.SetVisualForm(stats.Cast.Form);
             strike.transform.localScale = stats.Cast.Form == WeaponForm.JudgementThunder ? scale * 1.5f : scale;
             strike.Init(strikes, new Vector3(target.Position.x, target.Position.y, 0), stats.Cast.Damage,
-                reactions: CompileReactions(target).Then(reactions), sourceTarget: target);
+                reactions: CompileReactions().Then(reactions), sourceTarget: target);
         }
 
-        // 맞은 적마다 마비(Hit), 목표 지점에 한 번 폭발과 번개 구체(Impact), 처치마다 처치 번개(Kill)
-        private AttackReactions CompileReactions(IEnemyTarget target)
+        // 맞은 적마다 마비(Hit), 목표 지점에 한 번 폭발(Impact), 처치마다 처치 번개(Kill). 번개 구체 같은 자식 시전은 강화 카드의 반응이 맡는다.
+        private AttackReactions CompileReactions()
         {
             var builder = new HitReactionBuilder().Paralysis(stats.Status.ParalysisDuration, stats.Status.ParalysisChance);
             builder.Explosion(AttackEvent.Impact, targets, stats.Explosion.Radius, stats.Explosion.Damage);
-            var orbs = LightningOrbSpawner.CreateCallback(stats, targets, this.orbs, target);
-            if (orbs != null) { builder.On(AttackEvent.Impact, new CastSkillReaction(c => orbs(c.Position))); }
             var killLightning = CreateKillLightningCallback();
             if (killLightning != null) { builder.On(AttackEvent.Kill, new CastSkillReaction(c => killLightning(c.Position))); }
             return builder.Build();
@@ -60,7 +56,7 @@ namespace Game.Core
 
         public Action<Vector2> CreateKillLightningCallback()
         {
-            float damage = stats.Cast.Damage * stats.Secondary.KillLightningRatio;
+            float damage = stats.Cast.Damage * stats.Lightning.KillRatio;
             if (damage <= 0) { return null; }
             return position =>
             {

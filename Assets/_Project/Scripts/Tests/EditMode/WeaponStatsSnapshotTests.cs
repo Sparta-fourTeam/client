@@ -45,14 +45,8 @@ namespace Game.Tests
             yield return Case("burnRatio", 20, s => s.Burn.DamageRatio, .2f);
             yield return Case("burnMaxHp", 20, s => s.Burn.MaxHpRatio, .2f);
             yield return Case("burnDeathExplosion", 1, s => s.Burn.DeathExplosion ? 1 : 0, 1);
-            yield return Case("splitCount", 2, s => s.Secondary.Count, 2);
-            yield return Case("splitDamage", 20, s => s.Secondary.DamageMultiplier, 1.2f);
-            yield return Case("splitFrostbite", 20, s => s.Secondary.FrostbiteRatio, .2f);
-            yield return Case("lightningStrike", 20, s => s.Secondary.LightningStrikeRatio, .2f);
-            yield return Case("splitLightning", 20, s => s.Secondary.LightningRatio, .2f);
-            yield return Case("splitParalysis", 2, s => s.Secondary.ParalysisDuration, 2);
-            yield return Case("splitExplosion", 1, s => s.Secondary.Explosions ? 1 : 0, 1);
-            yield return Case("killLightning", 20, s => s.Secondary.KillLightningRatio, .2f);
+            yield return Case("lightningStrike", 20, s => s.Lightning.StrikeRatio, .2f);
+            yield return Case("killLightning", 20, s => s.Lightning.KillRatio, .2f);
             yield return Case("fieldDuration", 2, s => s.Field.Duration, 2);
             yield return Case("fieldDamageFlat", 2, s => s.Field.FlatDamage, 2);
             yield return Case("fieldDamageMultiplier", 20, s => s.Field.DamageMultiplier, 1.2f);
@@ -95,11 +89,9 @@ namespace Game.Tests
             Assert.AreEqual(75.6f, result.Explosion.Damage, .001f);
         }
 
-        [TestCase("splitCount", 1.5f)]
         [TestCase("reserveCasts", 0)]
         [TestCase("form", 0)]
         [TestCase("burnDeathExplosion", 2)]
-        [TestCase("splitExplosion", 2)]
         [TestCase("freezeDuration", -1)]
         [TestCase("damage", float.NaN)]
         [TestCase("damage", float.PositiveInfinity)]

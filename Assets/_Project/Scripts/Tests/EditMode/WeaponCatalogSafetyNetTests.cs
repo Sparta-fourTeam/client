@@ -41,7 +41,7 @@ namespace Game.Tests
         // 기준값과 겹치지 않으면서 규칙이 받아들이는 값. 폭발 계열 두 개는 1만, 형태는 정의된 값만 받는다.
         private static float ProbeValue(string type) => type switch
         {
-            "burnDeathExplosion" or "splitExplosion" => 1,
+            "burnDeathExplosion" => 1,
             "form" => 3,
             _ => 5
         };
@@ -76,7 +76,7 @@ namespace Game.Tests
         public void StatsDump_CoversEveryStatGroup()
         {
             var keys = WeaponStatsDump.Flatten(Baseline()).Keys.ToList();
-            foreach (var group in new[] { "Cast.", "Projectile.", "Status.", "Burn.", "Explosion.", "Secondary.", "Field.", "Area." })
+            foreach (var group in new[] { "Cast.", "Projectile.", "Status.", "Burn.", "Explosion.", "Lightning.", "Field.", "Area." })
             {
                 Assert.IsTrue(keys.Any(k => k.StartsWith(group, StringComparison.Ordinal)), group);
             }

@@ -241,8 +241,15 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "kind": "splitCount",
-            "value": 2
+            "kind": "onEvent",
+            "trigger": "Hit",
+            "skillId": 13,
+            "count": 2,
+            "excludeHit": true,
+            "inherit": {
+              "damage": 0.5,
+              "projectileSpeed": 1
+            }
           }
         ],
         "requiredCardIds": [
@@ -257,8 +264,9 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "kind": "splitCount",
-            "value": 4
+            "kind": "projectileCount",
+            "value": 4,
+            "target": 13
           }
         ],
         "requiredCardIds": [
@@ -273,8 +281,9 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "kind": "splitDamage",
-            "value": 100
+            "kind": "damage",
+            "value": 100,
+            "target": 13
           }
         ],
         "requiredCardIds": [
@@ -359,8 +368,9 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "kind": "splitLightning",
-            "value": 50
+            "kind": "lightningStrike",
+            "value": 50,
+            "target": 13
           }
         ],
         "requiredCardIds": [
@@ -375,8 +385,12 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "kind": "splitExplosion",
-            "value": 1
+            "kind": "inherit",
+            "skillId": 13,
+            "inherit": {
+              "explosionRadius": 1,
+              "explosionDamage": 0.5
+            }
           }
         ],
         "requiredCardIds": [
@@ -615,8 +629,15 @@
         "maxPickCount": 1,
         "effects": [
           {
-            "kind": "splitCount",
-            "value": 3
+            "kind": "onEvent",
+            "trigger": "Hit",
+            "skillId": 14,
+            "count": 3,
+            "excludeHit": true,
+            "inherit": {
+              "damage": 0.5,
+              "projectileSpeed": 1
+            }
           }
         ],
         "requiredCardIds": [
@@ -803,8 +824,15 @@
         ],
         "effects": [
           {
-            "kind": "splitCount",
-            "value": 6
+            "kind": "onEvent",
+            "trigger": "Impact",
+            "skillId": 15,
+            "count": 6,
+            "excludeHit": true,
+            "inherit": {
+              "damage": 0.5,
+              "paralysisChance": 1
+            }
           }
         ]
       },
@@ -818,12 +846,14 @@
         ],
         "effects": [
           {
-            "kind": "splitDamage",
-            "value": 40
+            "kind": "damage",
+            "value": 40,
+            "target": 15
           },
           {
-            "kind": "splitParalysis",
-            "value": 0.5
+            "kind": "paralysis",
+            "value": 0.5,
+            "target": 15
           }
         ]
       },
@@ -1846,5 +1876,78 @@
       }
     },
     "upgrades": []
+  },
+  {
+    "id": 13,
+    "name": "화살 조각",
+    "iconKey": "weapon_arrow",
+    "castType": 0,
+    "maxLevel": 1,
+    "progressionId": null,
+    "prototypeBalanceSourceId": 1,
+    "childOnly": true,
+    "baseStats": {
+      "cast": {
+        "cooldown": 1,
+        "baseDamage": 1,
+        "range": 22,
+        "projectileCount": 1,
+        "castCount": 1,
+        "castInterval": 0.1
+      },
+      "projectile": {
+        "speed": 20
+      }
+    },
+    "upgrades": []
+  },
+  {
+    "id": 14,
+    "name": "불꽃 조각",
+    "iconKey": "weapon_fireball",
+    "castType": 0,
+    "maxLevel": 1,
+    "progressionId": null,
+    "prototypeBalanceSourceId": 1,
+    "childOnly": true,
+    "baseStats": {
+      "cast": {
+        "cooldown": 1,
+        "baseDamage": 1,
+        "range": 20,
+        "projectileCount": 1,
+        "castCount": 1,
+        "castInterval": 0.1
+      },
+      "projectile": {
+        "speed": 16
+      }
+    },
+    "upgrades": []
+  },
+  {
+    "id": 15,
+    "name": "전기 구체",
+    "iconKey": "weapon_lightning",
+    "castType": 0,
+    "maxLevel": 1,
+    "progressionId": null,
+    "prototypeBalanceSourceId": 1,
+    "childOnly": true,
+    "baseStats": {
+      "cast": {
+        "cooldown": 1,
+        "baseDamage": 1,
+        "range": 20,
+        "projectileCount": 1,
+        "castCount": 1,
+        "castInterval": 0.1
+      },
+      "projectile": {
+        "speed": 10
+      }
+    },
+    "upgrades": [],
+    "projectilePath": 2
   }
 ]

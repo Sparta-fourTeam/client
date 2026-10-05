@@ -12,8 +12,7 @@ namespace Game.Core
         StunDuration, StunChance, SlowDuration, SlowRatio, VulnerabilityRatio, VulnerabilityDuration,
         BurnDuration, BurnRatio, BurnMaxHpRatio, BurnDeathExplosion, BurnChance,
         ExplosionRadius, ExplosionDamage,
-        SplitCount, SplitDamageMultiplier, SplitFrostbiteRatio, SplitParalysisDuration, SplitLightningRatio,
-        SplitExplosions, KillLightningRatio, LightningStrikeRatio,
+        KillLightningRatio, LightningStrikeRatio,
         FieldDuration, FieldDamageRatio, FieldFlatDamage, FieldDamageMultiplier, FieldRadius, FieldSlowRatio,
         AreaRadius, AreaDuration, AreaPulseInterval, AreaMoveSpeed, AreaPull,
         Count
@@ -72,12 +71,6 @@ namespace Game.Core
             Def(Stat.BurnChance, d => d.status.burnChance);
             Def(Stat.ExplosionRadius, d => d.explosion.radius);
             Def(Stat.ExplosionDamage, d => d.cast.baseDamage * d.explosion.damageRatio);
-            Def(Stat.SplitCount, _ => 0);
-            Def(Stat.SplitDamageMultiplier, _ => 1);
-            Def(Stat.SplitFrostbiteRatio, _ => 0);
-            Def(Stat.SplitParalysisDuration, _ => 0);
-            Def(Stat.SplitLightningRatio, _ => 0);
-            Def(Stat.SplitExplosions, _ => 0);
             Def(Stat.KillLightningRatio, _ => 0);
             Def(Stat.LightningStrikeRatio, _ => 0);
             Def(Stat.FieldDuration, _ => 0);
@@ -108,7 +101,7 @@ namespace Game.Core
         public StatusStats Status { get; }
         public BurnStats Burn { get; }
         public ExplosionStats Explosion { get; }
-        public SecondaryStats Secondary { get; }
+        public LightningStats Lightning { get; }
         public FieldStats Field { get; }
         public AreaStats Area { get; }
 
@@ -123,7 +116,7 @@ namespace Game.Core
             Status = new StatusStats(values);
             Burn = new BurnStats(values);
             Explosion = new ExplosionStats(values);
-            Secondary = new SecondaryStats(values);
+            Lightning = new LightningStats(values);
             Field = new FieldStats(values);
             Area = new AreaStats(values);
         }
@@ -201,19 +194,15 @@ namespace Game.Core
         public float Damage => v[(int)Stat.ExplosionDamage];
     }
 
-    public readonly struct SecondaryStats
+    public readonly struct LightningStats
     {
         private readonly float[] v;
-        internal SecondaryStats(float[] values) => v = values;
+        internal LightningStats(float[] values) => v = values;
 
-        public int Count => (int)v[(int)Stat.SplitCount];
-        public float DamageMultiplier => v[(int)Stat.SplitDamageMultiplier];
-        public float FrostbiteRatio => v[(int)Stat.SplitFrostbiteRatio];
-        public float ParalysisDuration => v[(int)Stat.SplitParalysisDuration];
-        public float LightningRatio => v[(int)Stat.SplitLightningRatio];
-        public bool Explosions => v[(int)Stat.SplitExplosions] != 0;
-        public float KillLightningRatio => v[(int)Stat.KillLightningRatio];
-        public float LightningStrikeRatio => v[(int)Stat.LightningStrikeRatio];
+        /// <summary>적중할 때 추가로 떨어지는 번개의 피해 비율 (피뢰침)</summary>
+        public float StrikeRatio => v[(int)Stat.LightningStrikeRatio];
+        /// <summary>처치한 자리 근처 적에게 떨어지는 번개의 피해 비율</summary>
+        public float KillRatio => v[(int)Stat.KillLightningRatio];
     }
 
     public readonly struct FieldStats

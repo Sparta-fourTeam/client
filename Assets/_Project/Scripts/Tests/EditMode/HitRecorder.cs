@@ -31,10 +31,12 @@ namespace Game.Tests
         public void ApplyVulnerability(float ratio, float duration) { VulnerabilityRatio = ratio; VulnerabilityDuration = duration; }
 
         /// <summary>투사체가 가진 적중 반응을 새 대상에게 실행한다. random이 작을수록 확률 효과가 걸린다 (기본 0 = 모두 성공)</summary>
-        public static HitRecorder Hit(Projectile projectile, float random = 0)
+        public static HitRecorder Hit(Projectile projectile, float random = 0) => HitAt(projectile, new HitRecorder(), random);
+
+        /// <summary>투사체의 적중 반응(피해·상태이상·폭발)을 지정한 대상의 위치에서 실행한다</summary>
+        public static HitRecorder HitAt(Projectile projectile, HitRecorder target, float random = 0)
         {
             var reactions = (AttackReactions)typeof(Projectile).GetField("hitReactions", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(projectile);
-            var target = new HitRecorder();
             reactions.Raise(AttackEvent.Hit, new AttackContext(target.Position, Vector3.up, target, () => random));
             return target;
         }

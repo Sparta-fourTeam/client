@@ -12,7 +12,6 @@ namespace Game.Core
         public float Lifetime { get; set; }
         public IEnemyTargetProvider TargetProvider { get; set; }
         public int PierceCount { get; set; } = 0;
-        public System.Action<Vector2, Vector3, IEnemyTarget> OnHit { get; set; }
         public IEnemyTarget IgnoredTarget { get; set; }
         /// <summary>적중 때 가장 먼저 실행하는 피해·상태이상 반응</summary>
         public AttackReactions HitReactions { get; set; } = AttackReactions.Empty;
