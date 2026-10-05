@@ -6,6 +6,17 @@ namespace Game.Core
     public class HitscanEffect : MonoBehaviour
     {
         private IObjectPool<HitscanEffect> pool;
+        [SerializeField] private GameObject judgementVisual;
+        [SerializeField] private GameObject regularVisual;
+
+        public void SetVisualForm(WeaponForm form)
+        {
+            if (judgementVisual == null) { return; }
+            bool upgraded = form == WeaponForm.JudgementThunder;
+            judgementVisual.SetActive(upgraded);
+            if (regularVisual != null) { regularVisual.SetActive(!upgraded); }
+        }
+
         [SerializeField] private GameObject secondaryProjectilePrefab;
         public GameObject SecondaryProjectilePrefab => secondaryProjectilePrefab;
         [SerializeField] private LayerMask targetMask;

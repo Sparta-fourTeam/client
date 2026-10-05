@@ -203,14 +203,20 @@ namespace Game.Tests
             var projectile = go.AddComponent<Projectile>();
             try
             {
+                var baseSprite = Sprite.Create(Texture2D.whiteTexture, new Rect(0, 0, 1, 1), Vector2.one * .5f);
+                var triangle = Sprite.Create(Texture2D.whiteTexture, new Rect(0, 0, 1, 1), Vector2.one * .5f);
+                Assert.IsNotNull(baseSprite); Assert.IsNotNull(triangle);
+                sprite.sprite = baseSprite;
+                typeof(Projectile).GetField("formSprites", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(projectile,
+                    new[] { new ProjectileVisual.FormSprite { form = WeaponForm.TriangleIce, sprite = triangle } });
                 projectile.SetVisualForm(WeaponForm.TriangleIce);
-                Assert.IsFalse(sprite.enabled);
-                var outline = go.GetComponent<LineRenderer>();
-                Assert.IsTrue(outline.enabled); Assert.IsTrue(outline.loop); Assert.AreEqual(3, outline.positionCount);
+                Assert.AreSame(triangle, sprite.sprite); Assert.IsTrue(sprite.enabled);
+                Assert.IsNull(go.GetComponent<LineRenderer>());
                 projectile.SetVisualForm(WeaponForm.Default);
-                Assert.IsTrue(sprite.enabled); Assert.IsFalse(outline.enabled);
+                Assert.AreSame(baseSprite, sprite.sprite);
                 projectile.SetVisualForm(WeaponForm.Enbakutsu);
-                Assert.IsTrue(sprite.enabled); Assert.IsFalse(outline.enabled);
+                Assert.AreSame(baseSprite, sprite.sprite);
+                Object.DestroyImmediate(baseSprite); Object.DestroyImmediate(triangle);
             }
             finally { Object.DestroyImmediate(go); }
         }

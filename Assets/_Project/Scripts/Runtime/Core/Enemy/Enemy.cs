@@ -54,6 +54,10 @@ namespace Game.Core
                 _hitFlash = gameObject.AddComponent<HitFlash>();
             }
 
+            var statuses = GetComponent<EnemyStatusEffects>();
+            if (statuses == null) { statuses = gameObject.AddComponent<EnemyStatusEffects>(); }
+            statuses.Bind(enemyModel);
+
             var bag = DisposableBag.CreateBuilder();
             hpChanged.Subscribe(OnHpChanged).AddTo(bag);
             died.Subscribe(OnDied).AddTo(bag);

@@ -142,7 +142,10 @@ namespace Game.Tests
                 foreach (var effect in Object.FindObjectsByType<HitscanEffect>(FindObjectsSortMode.None))
                 { if (effect.name == "FieldCasterTest(Clone)") { hitscans++; } }
                 Assert.AreEqual(1, hitscans);
-                var line = field.GetComponent<LineRenderer>(); Assert.AreEqual(48, line.positionCount); Assert.IsTrue(line.loop);
+                Assert.IsNull(field.GetComponent<LineRenderer>());
+                var fieldVisual = field.GetComponentInChildren<ParticleSystem>();
+                Assert.IsNotNull(fieldVisual); Assert.IsTrue(fieldVisual.main.loop);
+                Assert.IsNotNull(fieldVisual.GetComponent<ParticleSystemRenderer>().sharedMaterial.GetTexture("_BaseMap"));
             }
             finally
             {

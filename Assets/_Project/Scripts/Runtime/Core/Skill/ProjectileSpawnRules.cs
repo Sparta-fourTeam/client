@@ -73,7 +73,7 @@ namespace Game.Core
 
             float radius = stats.Explosion.Radius;
             float damage = stats.Explosion.Damage;
-            return position => AreaDamage.Apply(targetProvider, position, radius, damage);
+            return position => SkillReactionEffects.Explode(targetProvider, position, radius, damage);
         }
 
         private System.Action<Vector2, Vector3, IEnemyTarget> CreateHitCallback()
@@ -85,7 +85,7 @@ namespace Game.Core
             if (radius > 0)
             {
                 bindings.Add(new ReactionBinding(AttackEvent.Hit,
-                new CastSkillReaction(c => AreaDamage.Apply(targetProvider, c.Position, radius, damage))));
+                new CastSkillReaction(c => SkillReactionEffects.Explode(targetProvider, c.Position, radius, damage))));
             }
             if (split != null)
             {

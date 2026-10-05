@@ -79,7 +79,7 @@ namespace Game.Core
             float auxiliaryExplosionRadius = stats.Secondary.Explosions ? stats.Explosion.Radius : 0;
             float auxiliaryExplosionDamage = stats.Explosion.Damage * 0.5f * stats.Secondary.DamageMultiplier;
             System.Action<Vector2, Vector3, IEnemyTarget> auxiliaryHit = auxiliaryExplosionRadius > 0
-                ? (position, direction, target) => AreaDamage.Apply(targetProvider, position, auxiliaryExplosionRadius, auxiliaryExplosionDamage)
+                ? (position, direction, target) => SkillReactionEffects.Explode(targetProvider, position, auxiliaryExplosionRadius, auxiliaryExplosionDamage)
                 : null;
             return (position, direction, target) =>
             {

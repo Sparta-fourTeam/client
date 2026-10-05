@@ -40,11 +40,12 @@ namespace Game.Core
                 fields.Get().Init(fields, targets, target.Position, field.Radius, damage, field.Duration, field.SlowRatio);
             }
             var strike = strikes.Get();
+            strike.SetVisualForm(stats.Cast.Form);
             strike.transform.localScale = stats.Cast.Form == WeaponForm.JudgementThunder ? scale * 1.5f : scale;
             float radius = stats.Explosion.Radius;
             float explosionDamage = stats.Explosion.Damage;
             Action<Vector2> onHit = radius > 0
-                ? position => AreaDamage.Apply(targets, position, radius, explosionDamage)
+                ? position => SkillReactionEffects.Explode(targets, position, radius, explosionDamage)
                 : null;
             onHit += LightningOrbSpawner.CreateCallback(stats, definition, targets, orbs, target);
             float duration = stats.Status.ParalysisDuration;
@@ -75,6 +76,7 @@ namespace Game.Core
                 }
                 if (nearest == null) { return; }
                 var secondary = strikes.Get();
+                secondary.SetVisualForm(WeaponForm.Default);
                 secondary.transform.localScale = scale * .5f;
                 secondary.Init(strikes, nearest.Position, damage, directTarget: nearest);
             };

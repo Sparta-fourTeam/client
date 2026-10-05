@@ -67,7 +67,11 @@ namespace Game.Core
             if (s.FrostbiteRatio > 0) { Add(new StatusReaction<IFrostbiteTarget>(s.FrostbiteChance, (t, _) => t.ApplyFrostbite(frostbite))); }
             float paralysis = s.ParalysisDuration;
             if (paralysis > 0) { Add(new StatusReaction<IParalyzableTarget>(s.ParalysisChance, (t, _) => t.ApplyParalysis(paralysis))); }
-            if (s.LightningDamage > 0) { Add(new DamageReaction(s.LightningDamage, minimumOne: true)); }
+            if (s.LightningDamage > 0)
+            {
+                Add(new DamageReaction(s.LightningDamage, minimumOne: true));
+                Add(new CastSkillReaction(c => SkillReactionEffects.Lightning(c.Position)));
+            }
             float burn = s.BurnDamage, burnTime = s.BurnDuration, maxHp = s.BurnMaxHpRatio;
             var onDeath = s.BurnOnDeath;
             if (burn > 0 && burnTime > 0) { Add(new StatusReaction<IBurnableTarget>(s.BurnChance, (t, _) => t.ApplyBurn(burn, burnTime, maxHp, onDeath))); }

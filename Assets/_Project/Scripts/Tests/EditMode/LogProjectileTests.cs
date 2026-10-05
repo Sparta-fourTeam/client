@@ -34,8 +34,8 @@ namespace Game.Tests
         }
         private static WeaponStats Stats(WeaponBase weapon) => (WeaponStats)typeof(WeaponBase).GetField("stats", Flags).GetValue(weapon);
 
-        [TestCase(4, 10.24f, "연발 통나무")]
-        [TestCase(5, 16f, "연발 통나무+")]
+        [TestCase(4, 10.24f, "연발 나무뿌리")]
+        [TestCase(5, 16f, "연발 나무뿌리+")]
         public void LogRepeat_UsesPermanentVariantAndSameTwoPickCounter(int permanent, float damage, string name)
         {
             var go = new GameObject("LogRepeatTest");
@@ -203,6 +203,11 @@ namespace Game.Tests
         {
             var go = new GameObject("FireLogTest"); go.AddComponent<Projectile>();
             var sprite = go.AddComponent<SpriteRenderer>(); var brown = new Color(.55f, .3f, .12f); sprite.color = brown;
+            var baseArt = Sprite.Create(Texture2D.whiteTexture, new Rect(0, 0, 1, 1), Vector2.one * .5f);
+            var fireArt = Sprite.Create(Texture2D.whiteTexture, new Rect(0, 0, 1, 1), Vector2.one * .5f);
+            Assert.IsNotNull(baseArt); Assert.IsNotNull(fireArt); sprite.sprite = baseArt;
+            typeof(Projectile).GetField("formSprites", Flags).SetValue(go.GetComponent<Projectile>(),
+                new[] { new ProjectileVisual.FormSprite { form = WeaponForm.FireLog, sprite = fireArt } });
             try
             {
                 var data = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == 5);
@@ -217,7 +222,8 @@ namespace Game.Tests
                 Projectile clone = null;
                 foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
                 { if (projectile.name == "FireLogTest(Clone)") { clone = projectile; } }
-                Assert.AreEqual(new Color(1, .35f, .05f), clone.GetComponent<SpriteRenderer>().color);
+                Assert.AreEqual(brown, clone.GetComponent<SpriteRenderer>().color);
+                Assert.AreSame(fireArt, clone.GetComponent<SpriteRenderer>().sprite);
                 Assert.AreEqual(1.6f, clone.transform.localScale.x, .001f);
                 var effectsField = typeof(Projectile).GetField("hitEffects", Flags);
                 var effects = effectsField.GetValue(clone);
@@ -232,6 +238,7 @@ namespace Game.Tests
                 typeof(WeaponBase).GetField("stats", Flags).SetValue(weapon, WeaponStats.FromDefinition(data.baseStats));
                 typeof(ProjectileCaster).GetMethod("OnFire", Flags).Invoke(weapon, null);
                 Assert.AreEqual(brown, clone.GetComponent<SpriteRenderer>().color); Assert.AreEqual(Vector3.one, clone.transform.localScale);
+                Assert.AreSame(baseArt, clone.GetComponent<SpriteRenderer>().sprite);
                 typeof(Projectile).GetMethod("Tick", Flags).Invoke(clone, new object[] { .01f });
                 Assert.AreEqual(1, provider.Target.Burns); Assert.AreEqual(1, provider.Target.Stuns); Assert.AreEqual(1, provider.Target.Wounds);
             }
@@ -239,7 +246,7 @@ namespace Game.Tests
             {
                 foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
                 { if (projectile.name == "FireLogTest(Clone)") { Object.DestroyImmediate(projectile.gameObject); } }
-                Object.DestroyImmediate(go);
+                Object.DestroyImmediate(go); Object.DestroyImmediate(baseArt); Object.DestroyImmediate(fireArt);
             }
         }
 

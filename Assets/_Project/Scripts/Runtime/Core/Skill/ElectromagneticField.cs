@@ -15,7 +15,7 @@ namespace Game.Core
         private readonly HashSet<IEnemyTarget> occupants = new();
         private readonly HashSet<IAreaSlowTarget> slowed = new();
         private bool released;
-        private Material visualMaterial;
+        private GameObject visual;
 
         public void Init(IObjectPool<ElectromagneticField> pool, IEnemyTargetProvider provider, Vector2 position,
             float radius, float damage, float duration, float slowRatio)
@@ -25,27 +25,23 @@ namespace Game.Core
             this.radius = radius; this.damage = damage; this.slowRatio = slowRatio;
             remaining = duration; elapsed = 0; released = false;
             transform.position = position;
-            DrawCircle(radius);
+            ShowVisual(radius);
             RefreshOccupants();
         }
 
-        private void DrawCircle(float radius)
+        private void ShowVisual(float radius)
         {
-            var line = GetComponent<LineRenderer>();
-            if (line == null) { line = gameObject.AddComponent<LineRenderer>(); }
-            if (visualMaterial == null)
+            if (visual == null)
             {
-                var shader = Shader.Find("Sprites/Default");
-                if (shader != null) { visualMaterial = new Material(shader); line.sharedMaterial = visualMaterial; }
+                var prefab = Resources.Load<GameObject>("VFX/ElectricField");
+                if (prefab != null) { visual = Instantiate(prefab, transform); }
             }
-            line.useWorldSpace = false; line.loop = true; line.positionCount = 48;
-            line.startWidth = line.endWidth = .035f;
-            line.startColor = line.endColor = new Color(.2f, .8f, 1, .6f);
-            line.sortingOrder = 10;
-            for (int i = 0; i < 48; i++)
+            if (visual == null) { return; }
+            visual.transform.localScale = Vector3.one * (radius * 2.1f);
+            foreach (var effect in visual.GetComponentsInChildren<ParticleSystem>())
             {
-                float angle = i * Mathf.PI * 2 / 48;
-                line.SetPosition(i, new Vector3(Mathf.Cos(angle) * radius, Mathf.Sin(angle) * radius, 0));
+                effect.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+                effect.Play(true);
             }
         }
 
@@ -97,14 +93,6 @@ namespace Game.Core
             slowed.Clear(); occupants.Clear();
         }
         private void OnDisable() => ClearSlows();
-        private void OnDestroy()
-        {
-            ClearSlows();
-            if (visualMaterial != null)
-            {
-                if (Application.isPlaying) { Destroy(visualMaterial); }
-                else { DestroyImmediate(visualMaterial); }
-            }
-        }
+        private void OnDestroy() => ClearSlows();
     }
 }

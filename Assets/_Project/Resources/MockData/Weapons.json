@@ -1,7 +1,7 @@
 [
   {
     "id": 1,
-    "name": "쿠나이",
+    "name": "화살",
     "iconKey": "weapon_arrow",
     "castType": 0,
     "maxLevel": 15,
@@ -25,7 +25,7 @@
     "upgrades": [
       {
         "id": "arrow_multishot",
-        "name": "쿠나이 일제 사격",
+        "name": "화살 일제 사격",
         "desc": "발사 수 +1 / 공격력 -20%",
         "maxPickCount": 2,
         "effects": [
@@ -41,7 +41,7 @@
         "variants": [
           {
             "minPermanentLevel": 9,
-            "name": "쿠나이 일제 사격(+)",
+            "name": "화살 일제 사격(+)",
             "desc": "발사 수 +1",
             "effects": [
               {
@@ -54,7 +54,7 @@
       },
       {
         "id": "arrow_sharp",
-        "name": "쿠나이 강화",
+        "name": "화살 강화",
         "desc": "공격력 +60%",
         "maxPickCount": 3,
         "effects": [
@@ -66,7 +66,7 @@
       },
       {
         "id": "arrow_light",
-        "name": "쿠나이 가속",
+        "name": "화살 가속",
         "desc": "공격력 +25% / 투척 속도 +25%",
         "maxPickCount": 2,
         "effects": [
@@ -82,7 +82,7 @@
       },
       {
         "id": "arrow_burst",
-        "name": "연발 쿠나이",
+        "name": "연발 화살",
         "desc": "시전 수 +1 / 공격력 -30%",
         "maxPickCount": 1,
         "effects": [
@@ -101,7 +101,7 @@
         "variants": [
           {
             "minPermanentLevel": 17,
-            "name": "연발 쿠나이(+)",
+            "name": "연발 화살(+)",
             "desc": "시전 수 +1 / 공격력 +10%",
             "effects": [
               {
@@ -118,7 +118,7 @@
       },
       {
         "id": "arrow_rapid",
-        "name": "쿠나이 수련",
+        "name": "화살 수련",
         "desc": "쿨타임 -10%",
         "maxPickCount": 1,
         "effects": [
@@ -153,7 +153,7 @@
       },
       {
         "id": "kunai_explosion",
-        "name": "폭발 쿠나이",
+        "name": "폭발 화살",
         "desc": "폭발 효과 추가",
         "maxPickCount": 1,
         "effects": [
@@ -206,7 +206,7 @@
       },
       {
         "id": "kunai_shock",
-        "name": "충격 쿠나이",
+        "name": "충격 화살",
         "desc": "밀침 +15%",
         "maxPickCount": 1,
         "effects": [
@@ -228,8 +228,8 @@
       },
       {
         "id": "kunai_spread",
-        "name": "확산 쿠나이",
-        "desc": "명중 시 보조 쿠나이 2개 발사",
+        "name": "확산 화살",
+        "desc": "명중 시 보조 화살 2개 발사",
         "maxPickCount": 1,
         "effects": [
           {
@@ -244,8 +244,8 @@
       },
       {
         "id": "kunai_barrage",
-        "name": "쿠나이 난사",
-        "desc": "명중 시 보조 쿠나이 4개 추가 발사",
+        "name": "화살 난사",
+        "desc": "명중 시 보조 화살 4개 추가 발사",
         "maxPickCount": 1,
         "effects": [
           {
@@ -260,8 +260,8 @@
       },
       {
         "id": "kunai_aux_damage",
-        "name": "보조 쿠나이 강화",
-        "desc": "보조 쿠나이 공격력 +100%",
+        "name": "보조 화살 강화",
+        "desc": "보조 화살 공격력 +100%",
         "maxPickCount": 1,
         "effects": [
           {
@@ -276,8 +276,8 @@
       },
       {
         "id": "kunai_amplify",
-        "name": "쿠나이 증폭",
-        "desc": "쿠나이/보조 쿠나이 공격력 +100%",
+        "name": "화살 증폭",
+        "desc": "화살/보조 화살 공격력 +100%",
         "maxPickCount": 1,
         "effects": [
           {
@@ -292,7 +292,7 @@
       },
       {
         "id": "kunai_thunder",
-        "name": "뇌전 쿠나이",
+        "name": "뇌전 화살",
         "desc": "마비 추가 / 투척 속도 +100%",
         "maxPickCount": 1,
         "effects": [
@@ -363,7 +363,7 @@
       {
         "id": "kunai_aux_explosion",
         "name": "추가 폭발",
-        "desc": "보조 쿠나이 폭발 효과 추가",
+        "desc": "보조 화살 폭발 효과 추가",
         "maxPickCount": 1,
         "effects": [
           {
@@ -378,7 +378,7 @@
       },
       {
         "id": "kunai_flame",
-        "name": "화염 쿠나이",
+        "name": "화염 화살",
         "desc": "점화 추가 (6초 지속)",
         "maxPickCount": 1,
         "effects": [
@@ -610,8 +610,8 @@
       },
       {
         "id": "fireball_enbakutsu",
-        "name": "염폭술",
-        "desc": "염폭술로 형태 변화 / 관통력 +2",
+        "name": "불사조 불꽃",
+        "desc": "불사조 불꽃로 형태 변화 / 관통력 +2",
         "maxPickCount": 1,
         "effects": [
           {
@@ -804,7 +804,7 @@
       {
         "id": "lightning_sanction",
         "name": "뇌전 제재",
-        "desc": "공격력 +150% / 요마 처치 시 소형 벼락 1회 시전",
+        "desc": "공격력 +150% / 적 처치 시 소형 벼락 1회 시전",
         "maxPickCount": 1,
         "minPermanentLevel": 5,
         "requiredCardIds": [
@@ -823,8 +823,8 @@
       },
       {
         "id": "lightning_judgement",
-        "name": "심판의 천둥",
-        "desc": "심판의 천둥으로 강화 / 공격력 +200%",
+        "name": "폭풍의 격노",
+        "desc": "폭풍의 격노으로 강화 / 공격력 +200%",
         "maxPickCount": 1,
         "minPermanentLevel": 13,
         "requiredCardIds": [
@@ -900,7 +900,7 @@
   },
   {
     "id": 4,
-    "name": "얼음창",
+    "name": "서리 결정",
     "iconKey": "weapon_ice",
     "castType": 0,
     "maxLevel": 15,
@@ -924,7 +924,7 @@
     "upgrades": [
       {
         "id": "ice_repeat",
-        "name": "얼음창 연발",
+        "name": "서리 결정 연발",
         "desc": "추가 시전 +1 / 공격력 -20%",
         "maxPickCount": 2,
         "effects": [
@@ -945,7 +945,7 @@
         "variants": [
           {
             "minPermanentLevel": 5,
-            "name": "얼음창 연발(+)",
+            "name": "서리 결정 연발(+)",
             "desc": "추가 시전 +1",
             "effects": [
               {
@@ -958,7 +958,7 @@
       },
       {
         "id": "ice_damage",
-        "name": "얼음창 피해 증폭",
+        "name": "서리 결정 피해 증폭",
         "desc": "공격력 +60%",
         "maxPickCount": 3,
         "effects": [
@@ -970,7 +970,7 @@
       },
       {
         "id": "ice_extreme",
-        "name": "극한의 얼음창",
+        "name": "극한의 서리 결정",
         "desc": "공격력 +30% / 빙결 2초",
         "maxPickCount": 1,
         "effects": [
@@ -986,7 +986,7 @@
       },
       {
         "id": "ice_pierce",
-        "name": "얼음창 관통",
+        "name": "서리 결정 관통",
         "desc": "공격력 +30% / 관통력 +2",
         "maxPickCount": 3,
         "effects": [
@@ -1002,7 +1002,7 @@
       },
       {
         "id": "ice_heavy",
-        "name": "헤비 얼음창",
+        "name": "헤비 서리 결정",
         "desc": "공격력 +50% / 비행 속도 -30% / 관통력 +1",
         "maxPickCount": 1,
         "effects": [
@@ -1025,7 +1025,7 @@
       },
       {
         "id": "ice_volley",
-        "name": "얼음창 일제 사격",
+        "name": "서리 결정 일제 사격",
         "desc": "발사 수 +1 / 공격력 -40%",
         "maxPickCount": 1,
         "effects": [
@@ -1050,8 +1050,8 @@
       },
       {
         "id": "ice_split",
-        "name": "얼음창 분열",
-        "desc": "명중 시 소형 얼음창 3개로 분열",
+        "name": "서리 결정 분열",
+        "desc": "명중 시 소형 서리 결정 3개로 분열",
         "maxPickCount": 1,
         "effects": [
           {
@@ -1065,7 +1065,7 @@
       {
         "id": "ice_shard_damage",
         "name": "얼음 조각 피해 증폭",
-        "desc": "소형 얼음창 공격력 +80%",
+        "desc": "소형 서리 결정 공격력 +80%",
         "maxPickCount": 1,
         "effects": [
           {
@@ -1080,7 +1080,7 @@
       },
       {
         "id": "ice_impact",
-        "name": "얼음창 충격",
+        "name": "서리 결정 충격",
         "desc": "밀침 +200% / 관통력 +2",
         "maxPickCount": 1,
         "effects": [
@@ -1116,7 +1116,7 @@
       {
         "id": "ice_shard_frostbite",
         "name": "스며드는 냉기",
-        "desc": "소형 얼음창 동상 추가",
+        "desc": "소형 서리 결정 동상 추가",
         "maxPickCount": 1,
         "effects": [
           {
@@ -1132,8 +1132,8 @@
       },
       {
         "id": "ice_triangle",
-        "name": "삼각얼음창",
-        "desc": "삼각→일반→소형 얼음창 분열 / 강화 효과 유지",
+        "name": "삼중 서리 결정",
+        "desc": "삼각→일반→소형 서리 결정 분열 / 강화 효과 유지",
         "maxPickCount": 1,
         "effects": [
           {
@@ -1152,7 +1152,7 @@
   },
   {
     "id": 5,
-    "name": "통나무",
+    "name": "나무뿌리",
     "iconKey": "weapon_log",
     "castType": 0,
     "maxLevel": 10,
@@ -1183,7 +1183,7 @@
     "upgrades": [
       {
         "id": "log_damage",
-        "name": "통나무 피해 증폭",
+        "name": "나무뿌리 피해 증폭",
         "desc": "공격력 +60%",
         "maxPickCount": 2,
         "effects": [
@@ -1195,7 +1195,7 @@
       },
       {
         "id": "log_repeat",
-        "name": "연발 통나무",
+        "name": "연발 나무뿌리",
         "desc": "추가 시전 +1 / 공격력 -20%",
         "maxPickCount": 2,
         "requiredCardIds": [
@@ -1214,7 +1214,7 @@
         "variants": [
           {
             "minPermanentLevel": 5,
-            "name": "연발 통나무+",
+            "name": "연발 나무뿌리+",
             "desc": "추가 시전 +1",
             "effects": [
               {
@@ -1258,7 +1258,7 @@
       },
       {
         "id": "log_impact",
-        "name": "충격 통나무",
+        "name": "충격 나무뿌리",
         "desc": "밀침 +75% / 10% 확률로 기절 1초",
         "maxPickCount": 1,
         "effects": [
@@ -1287,7 +1287,7 @@
       {
         "id": "log_wound",
         "name": "상처 악화",
-        "desc": "피격된 요마가 받는 피해 +20% (6초)",
+        "desc": "피격된 적가 받는 피해 +20% (6초)",
         "maxPickCount": 1,
         "effects": [
           {
@@ -1302,7 +1302,7 @@
       },
       {
         "id": "log_large",
-        "name": "대형 통나무",
+        "name": "대형 나무뿌리",
         "desc": "공격력·크기·밀침 +60%",
         "maxPickCount": 1,
         "requiredCardIds": [
@@ -1336,8 +1336,8 @@
       },
       {
         "id": "log_fire",
-        "name": "화염 통나무",
-        "desc": "불타는 통나무로 변화 / 직격 시 점화",
+        "name": "불타는 뿌리",
+        "desc": "불타는 나무뿌리로 변화 / 직격 시 점화",
         "maxPickCount": 1,
         "minPermanentLevel": 9,
         "requiredCardIds": [
@@ -1369,7 +1369,7 @@
       },
       {
         "id": "log_reserve",
-        "name": "예비 통나무",
+        "name": "예비 나무뿌리",
         "desc": "방벽 접근 시 0.1초 간격으로 3회 추가 시전 (재발동 10초)",
         "maxPickCount": 1,
         "minPermanentLevel": 13,

@@ -209,7 +209,7 @@ namespace Game.Tests
             var levels = (Dictionary<int, int>)typeof(WeaponController).GetField("permanentLevels", Private).GetValue(_controller);
             levels[4] = 13;
             var repeat = _controller.GetRandomUpgradeChoices(100).Find(c => c.Option?.id == "ice_repeat");
-            Assert.AreEqual("얼음창 연발(+)", repeat.DisplayName);
+            Assert.AreEqual("서리 결정 연발(+)", repeat.DisplayName);
             Assert.IsTrue(_controller.ApplyUpgradeChoice(repeat));
             var extreme = _controller.GetRandomUpgradeChoices(100).Find(c => c.Option?.id == "ice_extreme");
             Assert.IsTrue(_controller.ApplyUpgradeChoice(extreme));

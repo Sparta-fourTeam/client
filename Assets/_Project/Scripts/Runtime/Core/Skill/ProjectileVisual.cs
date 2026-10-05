@@ -2,58 +2,57 @@ using UnityEngine;
 
 namespace Game.Core
 {
-    /// <summary>Per-projectile visual state, restored on each pooled spawn.</summary>
+    /// <summary>Displays authored form artwork and restores the base sprite on pooled reuse.</summary>
     public sealed class ProjectileVisual : System.IDisposable
     {
-        private readonly GameObject owner;
-        public ProjectileVisual(GameObject owner) { this.owner = owner; }
+        [System.Serializable]
+        public struct FormSprite
+        {
+            public WeaponForm form;
+            public Sprite sprite;
+            public GameObject visualRoot;
+            public bool hideBaseSprite;
+        }
+
+        private readonly SpriteRenderer renderer;
+        private readonly Sprite original;
+        private readonly FormSprite[] forms;
+        private readonly GameObject baseVisual;
+        private readonly bool originalEnabled;
+        private readonly bool originalActive;
+
+        public ProjectileVisual(GameObject owner, FormSprite[] forms = null, GameObject baseVisual = null)
+        {
+            renderer = owner.GetComponentInChildren<SpriteRenderer>(true);
+            original = renderer != null ? renderer.sprite : null;
+            this.forms = forms;
+            this.baseVisual = baseVisual;
+            originalEnabled = renderer != null && renderer.enabled;
+            originalActive = baseVisual != null && baseVisual.activeSelf;
+        }
 
         public static Vector3 MainScale(Vector3 original, WeaponForm form, float multiplier) =>
             (form == WeaponForm.Enbakutsu ? Vector3.Scale(original, new Vector3(1.5f, .65f, 1)) : original) * multiplier;
 
-        private LineRenderer triangleOutline;
-        private Material triangleMaterial;
-        private SpriteRenderer originalSprite;
-        private bool originalSpriteEnabled;
-        private Color originalSpriteColor;
-
         public void SetForm(WeaponForm form)
         {
-            if (originalSprite == null)
+            if (renderer != null) { renderer.sprite = original; renderer.enabled = originalEnabled; }
+            if (baseVisual != null) { baseVisual.SetActive(originalActive); }
+            if (forms == null) { return; }
+            foreach (var entry in forms)
             {
-                originalSprite = owner.GetComponent<SpriteRenderer>();
-                if (originalSprite != null) { originalSpriteEnabled = originalSprite.enabled; originalSpriteColor = originalSprite.color; }
-            }
-            bool triangle = form == WeaponForm.TriangleIce;
-            if (triangle && triangleOutline == null)
-            {
-                triangleOutline = owner.AddComponent<LineRenderer>();
-                var shader = Shader.Find("Sprites/Default");
-                if (shader != null) { triangleMaterial = new Material(shader); triangleOutline.sharedMaterial = triangleMaterial; }
-                triangleOutline.useWorldSpace = false; triangleOutline.loop = true; triangleOutline.positionCount = 3;
-                triangleOutline.startWidth = triangleOutline.endWidth = .12f;
-                triangleOutline.startColor = triangleOutline.endColor = new Color(.35f, .85f, 1);
-                triangleOutline.sortingOrder = originalSprite != null ? originalSprite.sortingOrder : 10;
-                triangleOutline.SetPosition(0, new Vector3(0, 1.2f, 0));
-                triangleOutline.SetPosition(1, new Vector3(-.8f, -.7f, 0));
-                triangleOutline.SetPosition(2, new Vector3(.8f, -.7f, 0));
-            }
-            if (originalSprite != null)
-            {
-                originalSprite.enabled = !triangle && originalSpriteEnabled;
-                originalSprite.color = form == WeaponForm.FireLog ? new Color(1, .35f, .05f) : originalSpriteColor;
-            }
-            if (triangleOutline != null) { triangleOutline.enabled = triangle; }
-        }
-
-        public void Dispose()
-        {
-            if (triangleMaterial != null)
-            {
-                if (Application.isPlaying) { Object.Destroy(triangleMaterial); }
-                else { Object.DestroyImmediate(triangleMaterial); }
+                bool selected = entry.form == form;
+                if (entry.visualRoot != null) { entry.visualRoot.SetActive(selected); }
+                if (!selected) { continue; }
+                if (entry.sprite != null && renderer != null) { renderer.sprite = entry.sprite; }
+                if (entry.hideBaseSprite && (entry.sprite != null || entry.visualRoot != null))
+                {
+                    if (renderer != null) { renderer.enabled = false; }
+                    if (baseVisual != null) { baseVisual.SetActive(false); }
+                }
             }
         }
 
+        public void Dispose() { }
     }
 }
