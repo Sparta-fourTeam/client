@@ -4034,7 +4034,7 @@ GameObject:
   - component: {fileID: 6871913177502835472}
   - component: {fileID: 5710412169927993896}
   m_Layer: 5
-  m_Name: ShinobiScreen
+  m_Name: CharacterScreen
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5004,7 +5004,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3603786542160827529, guid: b7f25b34fd05b3549a0afa6b2cb11a79, type: 3}
       propertyPath: m_Name
-      value: ShinobiTab
+      value: CharacterTab
       objectReference: {fileID: 0}
     - target: {fileID: 4994120418748874683, guid: b7f25b34fd05b3549a0afa6b2cb11a79, type: 3}
       propertyPath: m_text

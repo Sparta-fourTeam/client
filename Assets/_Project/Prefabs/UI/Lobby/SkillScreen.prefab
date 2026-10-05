@@ -1140,7 +1140,7 @@ GameObject:
   - component: {fileID: 1249142830605203937}
   - component: {fileID: 8744682057140218435}
   m_Layer: 5
-  m_Name: NinpoScreen
+  m_Name: SkillScreen
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1560,7 +1560,7 @@ GameObject:
   - component: {fileID: 2383867467107832912}
   - component: {fileID: 4088464869100334852}
   m_Layer: 5
-  m_Name: NinpoList
+  m_Name: SkillList
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1883,7 +1883,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4458331594636345003, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
       propertyPath: m_Name
-      value: NinpoSlot17
+      value: SkillListSlot17
       objectReference: {fileID: 0}
     - target: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
       propertyPath: m_Pivot.x
@@ -2024,7 +2024,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4458331594636345003, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
       propertyPath: m_Name
-      value: NinpoSlot6
+      value: SkillListSlot6
       objectReference: {fileID: 0}
     - target: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
       propertyPath: m_Pivot.x
@@ -2141,7 +2141,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4458331594636345003, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
       propertyPath: m_Name
-      value: NinpoSlot13
+      value: SkillListSlot13
       objectReference: {fileID: 0}
     - target: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
       propertyPath: m_Pivot.x
@@ -2282,7 +2282,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4458331594636345003, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
       propertyPath: m_Name
-      value: NinpoSlot5
+      value: SkillListSlot5
       objectReference: {fileID: 0}
     - target: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
       propertyPath: m_Pivot.x
@@ -2399,7 +2399,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4458331594636345003, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
       propertyPath: m_Name
-      value: NinpoSlot2
+      value: SkillListSlot2
       objectReference: {fileID: 0}
     - target: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
       propertyPath: m_Pivot.x
@@ -2516,7 +2516,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4458331594636345003, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
       propertyPath: m_Name
-      value: NinpoSlot4
+      value: SkillListSlot4
       objectReference: {fileID: 0}
     - target: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
       propertyPath: m_Pivot.x
@@ -2633,7 +2633,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4458331594636345003, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
       propertyPath: m_Name
-      value: NinpoSlot7
+      value: SkillListSlot7
       objectReference: {fileID: 0}
     - target: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
       propertyPath: m_Pivot.x
@@ -2770,7 +2770,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4458331594636345003, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
       propertyPath: m_Name
-      value: NinpoSlot16
+      value: SkillListSlot16
       objectReference: {fileID: 0}
     - target: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
       propertyPath: m_Pivot.x
@@ -2911,7 +2911,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4458331594636345003, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
       propertyPath: m_Name
-      value: NinpoSlot14
+      value: SkillListSlot14
       objectReference: {fileID: 0}
     - target: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
       propertyPath: m_Pivot.x
@@ -3052,7 +3052,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4458331594636345003, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
       propertyPath: m_Name
-      value: NinpoSlot12
+      value: SkillListSlot12
       objectReference: {fileID: 0}
     - target: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
       propertyPath: m_Pivot.x
@@ -3193,7 +3193,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4458331594636345003, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
       propertyPath: m_Name
-      value: NinpoSlot10
+      value: SkillListSlot10
       objectReference: {fileID: 0}
     - target: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
       propertyPath: m_Pivot.x
@@ -3334,7 +3334,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4458331594636345003, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
       propertyPath: m_Name
-      value: NinpoSlot3
+      value: SkillListSlot3
       objectReference: {fileID: 0}
     - target: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
       propertyPath: m_Pivot.x
@@ -3451,7 +3451,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4458331594636345003, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
       propertyPath: m_Name
-      value: NinpoSlot9
+      value: SkillListSlot9
       objectReference: {fileID: 0}
     - target: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
       propertyPath: m_Pivot.x
@@ -3592,7 +3592,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4458331594636345003, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
       propertyPath: m_Name
-      value: NinpoSlot8
+      value: SkillListSlot8
       objectReference: {fileID: 0}
     - target: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
       propertyPath: m_Pivot.x
@@ -3868,7 +3868,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4458331594636345003, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
       propertyPath: m_Name
-      value: NinpoSlot11
+      value: SkillListSlot11
       objectReference: {fileID: 0}
     - target: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
       propertyPath: m_Pivot.x
@@ -4009,7 +4009,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4458331594636345003, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
       propertyPath: m_Name
-      value: NinpoSlot1
+      value: SkillListSlot1
       objectReference: {fileID: 0}
     - target: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
       propertyPath: m_Pivot.x
@@ -4265,7 +4265,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4458331594636345003, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
       propertyPath: m_Name
-      value: NinpoSlot18
+      value: SkillListSlot18
       objectReference: {fileID: 0}
     - target: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
       propertyPath: m_Pivot.x
@@ -4406,7 +4406,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4458331594636345003, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
       propertyPath: m_Name
-      value: NinpoSlot15
+      value: SkillListSlot15
       objectReference: {fileID: 0}
     - target: {fileID: 4983520652097643122, guid: 9235c9f48a7c85444af9a9a1a8b21ab2, type: 3}
       propertyPath: m_Pivot.x
@@ -4627,7 +4627,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3603786542160827529, guid: b7f25b34fd05b3549a0afa6b2cb11a79, type: 3}
       propertyPath: m_Name
-      value: NinpoTab
+      value: SkillTab
       objectReference: {fileID: 0}
     - target: {fileID: 4994120418748874683, guid: b7f25b34fd05b3549a0afa6b2cb11a79, type: 3}
       propertyPath: m_text

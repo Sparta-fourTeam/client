@@ -866,7 +866,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7069128086345914554, guid: 3e27697522b2fc94991b55e2f489e443, type: 3}
       propertyPath: m_Name
-      value: NinpoUpgradePopup
+      value: SkillUpgradePopup
       objectReference: {fileID: 0}
     - target: {fileID: 7413786616234248363, guid: 3e27697522b2fc94991b55e2f489e443, type: 3}
       propertyPath: m_fontColor32.rgba
@@ -2297,7 +2297,7 @@ PrefabInstance:
       objectReference: {fileID: 1921941343}
     - target: {fileID: 5206714037083988636, guid: 0e42460100744fa44b697372d9515003, type: 3}
       propertyPath: m_Name
-      value: NinpoScreen
+      value: SkillScreen
       objectReference: {fileID: 0}
     - target: {fileID: 5905430663312391697, guid: 0e42460100744fa44b697372d9515003, type: 3}
       propertyPath: m_fontColor32.rgba
@@ -3834,7 +3834,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9200070561298085480, guid: e79f4c84097498b48ac78d2a3d2ce3a9, type: 3}
       propertyPath: m_Name
-      value: ShinobiScreen
+      value: CharacterScreen
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
