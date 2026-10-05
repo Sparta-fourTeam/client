@@ -97,6 +97,30 @@ namespace Game.Core
             return true;
         }
 
+        /// <summary>보유 스킬 (조회용)</summary>
+        public IReadOnlyList<WeaponBase> Weapons => weapons;
+
+        /// <summary>카탈로그를 읽어 스킬을 얻을 수 있는 상태인지 (Start 이후)</summary>
+        public bool IsReady => dataTable != null;
+
+        /// <summary>이 스킬을 얻을 때 쓸 프리팹이 연결돼 있는지</summary>
+        public bool HasPrefab(int weaponId) => prefabEntries != null && prefabEntries.Exists(e => e.id == weaponId && e.prefab != null);
+
+        /// <summary>보유 스킬을 모두 정리하고 목록을 비운다 (샌드박스 같은 도구가 처음부터 다시 쌓을 때 쓴다)</summary>
+        public void ClearWeapons()
+        {
+            foreach (var weapon in weapons) { weapon.Dispose(); }
+            weapons.Clear();
+            PublishSkills();
+        }
+
+        /// <summary>영구 레벨 표를 진행 서비스에서 다시 읽는다 ((+) 변형 같은 영구 레벨 의존 규칙이 바뀐 값을 쓰게 한다)</summary>
+        public void RefreshPermanentLevels()
+        {
+            if (dataTable == null) { return; }
+            foreach (var data in dataTable.Values) { permanentLevels[data.id] = progression?.GetLevel(data.progressionId) ?? 0; }
+        }
+
         /// <summary>보유 무기 전체의 스냅샷을 HUD에 알린다. Buffered로 발행해야 나중에 켜진 구독자도 현재 목록을 받는다</summary>
         private void PublishSkills()
         {

@@ -105,6 +105,55 @@ namespace Game.Tests
             Assert.AreEqual(0, controller.GetWeaponLevel(3), "기본 시작 스킬이 섞이면 안 된다");
         }
 
+        private sealed class MutableProgression : IWeaponProgression
+        {
+            public int Level;
+            public int GetLevel(string progressionId) => Level;
+        }
+
+        [Test(Description = "ClearWeapons는 보유 스킬을 모두 정리하고 빈 목록을 발행한다")]
+        public void ClearWeapons_DisposesAllAndPublishesEmptySnapshot()
+        {
+            Assert.IsTrue(_controller.AddWeapon(1));
+            Assert.AreEqual(2, _controller.Weapons.Count, "시작 스킬과 추가한 스킬");
+            _controller.ClearWeapons();
+            Assert.AreEqual(0, _controller.Weapons.Count);
+            Assert.AreEqual(0, _publisher.Published[_publisher.Published.Count - 1].Skills.Count);
+            Assert.IsTrue(_controller.AddWeapon(1), "정리 후에는 같은 스킬을 다시 얻을 수 있다");
+        }
+
+        [Test(Description = "RefreshPermanentLevels는 진행 서비스가 바꾼 영구 레벨을 다시 읽는다")]
+        public void RefreshPermanentLevels_ReadsProgressionAgain()
+        {
+            var player = new GameObject("PlayerProgression");
+            _created.Add(player);
+            var controller = player.AddComponent<WeaponController>();
+            const BindingFlags Private = BindingFlags.NonPublic | BindingFlags.Instance;
+            typeof(WeaponController).GetField("prefabEntries", Private).SetValue(controller, new List<WeaponPrefabEntry>());
+            var progression = new MutableProgression { Level = 3 };
+            controller.Construct(new NullEnemyTargetProvider(), new FakeSkillPublisher(), new DefaultWeaponDataProvider(), progression,
+                startingSkills: new EmptySkills());
+            typeof(WeaponController).GetMethod("Start", Private).Invoke(controller, null);
+            Assert.IsTrue(controller.IsReady);
+            var withProgression = new DefaultWeaponDataProvider().LoadAll().Find(w => !string.IsNullOrEmpty(w.progressionId));
+            Assert.AreEqual(3, controller.GetPermanentWeaponLevel(withProgression.id));
+            progression.Level = 21;
+            controller.RefreshPermanentLevels();
+            Assert.AreEqual(21, controller.GetPermanentWeaponLevel(withProgression.id));
+        }
+
+        private sealed class EmptySkills : IStartingSkills
+        {
+            public IReadOnlyList<int> GetSkillIds() => new int[0];
+        }
+
+        [Test(Description = "HasPrefab은 prefabEntries의 연결 여부를 알려 준다")]
+        public void HasPrefab_ReflectsPrefabEntries()
+        {
+            Assert.IsTrue(_controller.HasPrefab(1));
+            Assert.IsFalse(_controller.HasPrefab(99));
+        }
+
         [Test(Description = "새 무기를 얻으면 보유 목록 전체를 다시 발행한다")]
         public void AcquireWeapon_PublishesFullSnapshot()
         {
