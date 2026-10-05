@@ -58,12 +58,12 @@ namespace Game.Tests
             yield return Case(UpgradeType.BurnMaxHp, 20, s => s.Burn.MaxHpRatio, .2f);
             yield return Case(UpgradeType.BurnDeathExplosion, 1, s => s.Burn.DeathExplosion ? 1 : 0, 1);
             yield return Case(UpgradeType.SplitCount, 2, s => s.Secondary.Count, 2);
-            yield return Case(UpgradeType.ShardDamage, 20, s => s.Secondary.DamageMultiplier, 1.2f);
-            yield return Case(UpgradeType.ShardFrostbite, 20, s => s.Secondary.FrostbiteRatio, .2f);
+            yield return Case(UpgradeType.SplitDamage, 20, s => s.Secondary.DamageMultiplier, 1.2f);
+            yield return Case(UpgradeType.SplitFrostbite, 20, s => s.Secondary.FrostbiteRatio, .2f);
             yield return Case(UpgradeType.LightningStrike, 20, s => s.Secondary.LightningStrikeRatio, .2f);
-            yield return Case(UpgradeType.AuxiliaryLightning, 20, s => s.Secondary.LightningRatio, .2f);
-            yield return Case(UpgradeType.AuxiliaryParalysis, 2, s => s.Secondary.ParalysisDuration, 2);
-            yield return Case(UpgradeType.AuxiliaryExplosion, 1, s => s.Secondary.Explosions ? 1 : 0, 1);
+            yield return Case(UpgradeType.SplitLightning, 20, s => s.Secondary.LightningRatio, .2f);
+            yield return Case(UpgradeType.SplitParalysis, 2, s => s.Secondary.ParalysisDuration, 2);
+            yield return Case(UpgradeType.SplitExplosion, 1, s => s.Secondary.Explosions ? 1 : 0, 1);
             yield return Case(UpgradeType.KillLightning, 20, s => s.Secondary.KillLightningRatio, .2f);
             yield return Case(UpgradeType.FieldDuration, 2, s => s.Field.Duration, 2);
             yield return Case(UpgradeType.FieldDamageFlat, 2, s => s.Field.FlatDamage, 2);
@@ -111,7 +111,7 @@ namespace Game.Tests
         [TestCase(UpgradeType.ReserveCasts, 0)]
         [TestCase(UpgradeType.Form, 0)]
         [TestCase(UpgradeType.BurnDeathExplosion, 2)]
-        [TestCase(UpgradeType.AuxiliaryExplosion, 2)]
+        [TestCase(UpgradeType.SplitExplosion, 2)]
         [TestCase(UpgradeType.FreezeDuration, -1)]
         [TestCase(UpgradeType.Damage, float.NaN)]
         [TestCase(UpgradeType.Damage, float.PositiveInfinity)]

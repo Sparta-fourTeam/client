@@ -149,8 +149,8 @@ namespace Game.Tests
                 var data = new WeaponData { baseStats = new WeaponBaseStats { baseDamage = 100, speed = 10, freezeDuration = 2, pierceCount = 2, knockbackDistance = .6f }, maxLevel = 15 };
                 var weapon = new ProjectileCaster(data, prefab, caster.transform, new Provider());
                 WeaponStats stats = WeaponStatsTestFactory.Apply(WeaponStats.FromDefinition(data.baseStats), UpgradeType.Form, (int)WeaponForm.TriangleIce);
-                stats = WeaponStatsTestFactory.Apply(WeaponStatsTestFactory.Apply(stats, UpgradeType.Frostbite, 10), UpgradeType.ShardFrostbite, 10);
-                stats = WeaponStatsTestFactory.Apply(stats, UpgradeType.ShardDamage, 80);
+                stats = WeaponStatsTestFactory.Apply(WeaponStatsTestFactory.Apply(stats, UpgradeType.Frostbite, 10), UpgradeType.SplitFrostbite, 10);
+                stats = WeaponStatsTestFactory.Apply(stats, UpgradeType.SplitDamage, 80);
                 if (split) { stats = WeaponStatsTestFactory.Apply(stats, UpgradeType.SplitCount, 3); }
                 typeof(WeaponBase).GetField("stats", flags).SetValue(weapon, stats);
                 var callback = (System.Action<Vector2, Vector3, IEnemyTarget>)typeof(ProjectileSpawnRules).GetMethod("CreateHitCallback", flags).Invoke(SpawnRules(weapon), null);
@@ -232,7 +232,7 @@ namespace Game.Tests
             {
                 var data = new WeaponData { baseStats = new WeaponBaseStats { baseDamage = 100, speed = 10 }, maxLevel = 15 };
                 var weapon = new ProjectileCaster(data, prefab, caster.transform, new Provider());
-                WeaponStats stats = WeaponStatsTestFactory.Apply(WeaponStatsTestFactory.Apply(WeaponStats.FromDefinition(data.baseStats), UpgradeType.SplitCount, expectedCount), UpgradeType.ShardDamage, 80);
+                WeaponStats stats = WeaponStatsTestFactory.Apply(WeaponStatsTestFactory.Apply(WeaponStats.FromDefinition(data.baseStats), UpgradeType.SplitCount, expectedCount), UpgradeType.SplitDamage, 80);
                 typeof(WeaponBase).GetField("stats", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(weapon, stats);
                 var callback = BranchSpawner(weapon).CreateSplitCallback();
                 var originTarget = new Target();
@@ -343,7 +343,7 @@ namespace Game.Tests
 
         [TestCase(false)]
         [TestCase(true)]
-        public void AuxiliaryExplosion_RequiresExplicitUpgradeAndDoesNotSplitAgain(bool enabled)
+        public void SplitExplosion_RequiresExplicitUpgradeAndDoesNotSplitAgain(bool enabled)
         {
             var prefab = new GameObject("AuxExplosionTest");
             prefab.AddComponent<Projectile>();
@@ -355,7 +355,7 @@ namespace Game.Tests
                 WeaponStats stats = WeaponStatsTestFactory.Apply(WeaponStats.FromDefinition(data.baseStats), UpgradeType.SplitCount, 2);
                 if (enabled)
                 {
-                    stats = WeaponStatsTestFactory.Apply(stats, UpgradeType.AuxiliaryExplosion, 1);
+                    stats = WeaponStatsTestFactory.Apply(stats, UpgradeType.SplitExplosion, 1);
                 }
 
                 typeof(WeaponBase).GetField("stats", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(weapon, stats);

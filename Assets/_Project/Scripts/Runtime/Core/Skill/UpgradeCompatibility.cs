@@ -58,12 +58,12 @@ namespace Game.Core
 
             // 보조 공격: 분열 수와 피해 배율은 두 공격이 함께 쓴다(투사체 분열, 전기 구체).
             [UpgradeType.SplitCount] = Users.Both,
-            [UpgradeType.ShardDamage] = Users.Both,
-            [UpgradeType.ShardFrostbite] = Users.Projectile,
+            [UpgradeType.SplitDamage] = Users.Both,
+            [UpgradeType.SplitFrostbite] = Users.Projectile,
             [UpgradeType.LightningStrike] = Users.Projectile,
-            [UpgradeType.AuxiliaryLightning] = Users.Projectile,
-            [UpgradeType.AuxiliaryExplosion] = Users.Projectile,
-            [UpgradeType.AuxiliaryParalysis] = Users.Hitscan,
+            [UpgradeType.SplitLightning] = Users.Projectile,
+            [UpgradeType.SplitExplosion] = Users.Projectile,
+            [UpgradeType.SplitParalysis] = Users.Hitscan,
             [UpgradeType.KillLightning] = Users.Hitscan,
 
             // 전자기장은 Hitscan만 만든다.

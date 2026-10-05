@@ -12,8 +12,8 @@ namespace Game.Core
         StunDuration, StunChance, SlowDuration, SlowRatio, VulnerabilityRatio, VulnerabilityDuration,
         BurnDuration, BurnRatio, BurnMaxHpRatio, BurnDeathExplosion, BurnChance,
         ExplosionRadius, ExplosionDamage,
-        SplitCount, ShardDamageMultiplier, ShardFrostbiteRatio, AuxiliaryParalysisDuration, AuxiliaryLightningRatio,
-        AuxiliaryExplosions, KillLightningRatio, LightningStrikeRatio,
+        SplitCount, SplitDamageMultiplier, SplitFrostbiteRatio, SplitParalysisDuration, SplitLightningRatio,
+        SplitExplosions, KillLightningRatio, LightningStrikeRatio,
         FieldDuration, FieldDamageRatio, FieldFlatDamage, FieldDamageMultiplier, FieldRadius, FieldSlowRatio,
         Count
     }
@@ -68,11 +68,11 @@ namespace Game.Core
             Def(Stat.ExplosionRadius, d => d.explosionRadius);
             Def(Stat.ExplosionDamage, d => d.baseDamage * d.explosionDamageRatio);
             Def(Stat.SplitCount, _ => 0);
-            Def(Stat.ShardDamageMultiplier, _ => 1);
-            Def(Stat.ShardFrostbiteRatio, _ => 0);
-            Def(Stat.AuxiliaryParalysisDuration, _ => 0);
-            Def(Stat.AuxiliaryLightningRatio, _ => 0);
-            Def(Stat.AuxiliaryExplosions, _ => 0);
+            Def(Stat.SplitDamageMultiplier, _ => 1);
+            Def(Stat.SplitFrostbiteRatio, _ => 0);
+            Def(Stat.SplitParalysisDuration, _ => 0);
+            Def(Stat.SplitLightningRatio, _ => 0);
+            Def(Stat.SplitExplosions, _ => 0);
             Def(Stat.KillLightningRatio, _ => 0);
             Def(Stat.LightningStrikeRatio, _ => 0);
             Def(Stat.FieldDuration, _ => 0);
@@ -193,11 +193,11 @@ namespace Game.Core
         internal SecondaryStats(float[] values) => v = values;
 
         public int Count => (int)v[(int)Stat.SplitCount];
-        public float DamageMultiplier => v[(int)Stat.ShardDamageMultiplier];
-        public float FrostbiteRatio => v[(int)Stat.ShardFrostbiteRatio];
-        public float ParalysisDuration => v[(int)Stat.AuxiliaryParalysisDuration];
-        public float LightningRatio => v[(int)Stat.AuxiliaryLightningRatio];
-        public bool Explosions => v[(int)Stat.AuxiliaryExplosions] != 0;
+        public float DamageMultiplier => v[(int)Stat.SplitDamageMultiplier];
+        public float FrostbiteRatio => v[(int)Stat.SplitFrostbiteRatio];
+        public float ParalysisDuration => v[(int)Stat.SplitParalysisDuration];
+        public float LightningRatio => v[(int)Stat.SplitLightningRatio];
+        public bool Explosions => v[(int)Stat.SplitExplosions] != 0;
         public float KillLightningRatio => v[(int)Stat.KillLightningRatio];
         public float LightningStrikeRatio => v[(int)Stat.LightningStrikeRatio];
     }

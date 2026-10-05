@@ -51,7 +51,7 @@ namespace Game.Tests
         // 기준값과 겹치지 않으면서 규칙이 받아들이는 값. 폭발 계열 두 개는 1만, 형태는 정의된 값만 받는다.
         private static float ProbeValue(UpgradeType type) => type switch
         {
-            UpgradeType.BurnDeathExplosion or UpgradeType.AuxiliaryExplosion => 1,
+            UpgradeType.BurnDeathExplosion or UpgradeType.SplitExplosion => 1,
             UpgradeType.Form => 3,
             _ => 5
         };

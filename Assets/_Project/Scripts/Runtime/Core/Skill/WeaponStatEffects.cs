@@ -136,12 +136,12 @@ namespace Game.Core
         private static void AddSecondaryRules(Dictionary<UpgradeType, Rule> rules)
         {
             AddReaction(rules, UpgradeType.SplitCount, (s, v) => s[Stat.SplitCount] += (int)v, PositiveInteger);
-            AddStat(rules, UpgradeType.ShardDamage, (s, v) => s[Stat.ShardDamageMultiplier] *= Factor(v));
-            AddReaction(rules, UpgradeType.ShardFrostbite, (s, v) => s[Stat.ShardFrostbiteRatio] = v * .01f, Positive);
+            AddStat(rules, UpgradeType.SplitDamage, (s, v) => s[Stat.SplitDamageMultiplier] *= Factor(v));
+            AddReaction(rules, UpgradeType.SplitFrostbite, (s, v) => s[Stat.SplitFrostbiteRatio] = v * .01f, Positive);
             AddReaction(rules, UpgradeType.LightningStrike, (s, v) => s[Stat.LightningStrikeRatio] = v * .01f, Positive);
-            AddReaction(rules, UpgradeType.AuxiliaryLightning, (s, v) => s[Stat.AuxiliaryLightningRatio] = v * .01f, Positive);
-            AddReaction(rules, UpgradeType.AuxiliaryParalysis, (s, v) => s[Stat.AuxiliaryParalysisDuration] = Math.Max(s[Stat.AuxiliaryParalysisDuration], v), Positive);
-            AddReaction(rules, UpgradeType.AuxiliaryExplosion, (s, v) => s[Stat.AuxiliaryExplosions] = 1, v => v == 1);
+            AddReaction(rules, UpgradeType.SplitLightning, (s, v) => s[Stat.SplitLightningRatio] = v * .01f, Positive);
+            AddReaction(rules, UpgradeType.SplitParalysis, (s, v) => s[Stat.SplitParalysisDuration] = Math.Max(s[Stat.SplitParalysisDuration], v), Positive);
+            AddReaction(rules, UpgradeType.SplitExplosion, (s, v) => s[Stat.SplitExplosions] = 1, v => v == 1);
             AddReaction(rules, UpgradeType.KillLightning, (s, v) => s[Stat.KillLightningRatio] = v * .01f, Positive);
         }
 
