@@ -73,7 +73,7 @@ namespace Game.Tests
         [Test]
         public void ActualLightningPrefab_HasProjectileForElectronSplit()
         {
-            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Skills/Lightning/Lightning_Lv1.prefab");
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Lightning_Lv1.prefab");
             Assert.IsNotNull(prefab.GetComponent<HitscanEffect>().SecondaryProjectilePrefab.GetComponent<Projectile>());
             var data = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == 3);
             CollectionAssert.AreEquivalent(new[] { "lightning_voltage", "lightning_damage" }, data.upgrades.Find(c => c.id == "lightning_split").requiredCardIds);

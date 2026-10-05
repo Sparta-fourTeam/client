@@ -15,7 +15,7 @@ namespace Game.Editor.MonsterRig
     /// </summary>
     public static class BrainSpiderRig
     {
-        private const string Png = "Assets/_Project/Art/Characters/Monsters/Source/brain.png";
+        private const string Png = "Assets/_Project/Sprites/brain.png";
         private const float Ppu = 200f;
         private const float Tau = Mathf.PI * 2f;
         private const int H = 300;

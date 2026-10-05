@@ -34,10 +34,10 @@ namespace Game.Tests
             finally { Object.DestroyImmediate(visual); }
         }
 
-        [TestCase("Skills/Fireball/Fireball", WeaponForm.Default)]
-        [TestCase("Skills/Lightning/Lightning_Lv1", WeaponForm.Default)]
-        [TestCase("Skills/IceSpear/IceSpear", WeaponForm.TriangleIce)]
-        [TestCase("Skills/Lightning/LightningOrb", WeaponForm.Default)]
+        [TestCase("Fireball", WeaponForm.Default)]
+        [TestCase("Lightning_Lv1", WeaponForm.Default)]
+        [TestCase("IceSpear", WeaponForm.TriangleIce)]
+        [TestCase("LightningOrb", WeaponForm.Default)]
         public void SecondaryCastScale_HalvesRenderedParticleBounds(string path, WeaponForm form)
         {
             var prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/" + path + ".prefab");

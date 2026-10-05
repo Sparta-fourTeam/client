@@ -18,7 +18,7 @@ namespace Game.Tests
     /// </summary>
     public sealed class WeaponCatalogSafetyNetTests
     {
-        private const string PlayerPrefab = "Assets/_Project/Prefabs/Player/Player_Animated.prefab";
+        private const string PlayerPrefab = "Assets/_Project/Prefabs/Player_Animated.prefab";
         private const string SideIconTable = "Assets/_Project/Data/SkillIconTable_Side.asset";
         private const string CardIconTable = "Assets/_Project/Data/SkillIconTable_Card.asset";
         private const string GoldenRelativePath = "_Project/Scripts/Tests/EditMode/Golden/WeaponCardStats.golden.txt";

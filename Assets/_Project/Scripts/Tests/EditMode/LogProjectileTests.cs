@@ -297,7 +297,7 @@ namespace Game.Tests
         [Test]
         public void ActualPlayerPrefab_HasIdFiveProjectileForLogAcquisition()
         {
-            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Player/Player_Animated.prefab");
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Player_Animated.prefab");
             var controller = prefab.GetComponent<WeaponController>();
             var entries = new SerializedObject(controller).FindProperty("prefabEntries");
             bool found = false;

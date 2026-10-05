@@ -12,8 +12,8 @@ namespace Game.Editor.MonsterRig
     /// </summary>
     internal static class ClipFx
     {
-        public const string Ring = "Assets/_Project/Art/VFX/Enemy/fx_ring.png";
-        public const string Soft = "Assets/_Project/Art/VFX/Enemy/fx_soft.png";
+        public const string Ring = "Assets/_Project/Sprites/fx_ring.png";
+        public const string Soft = "Assets/_Project/Sprites/fx_soft.png";
 
         internal sealed class Track
         {
@@ -110,13 +110,13 @@ namespace Game.Editor.MonsterRig
         /// <summary>코드로 그린 64x64 텍스처를 스프라이트로 저장 (u, v: -1..1). 이미 있으면 그대로 쓴다.</summary>
         public static string Generated(string name, System.Func<float, float, Color> paint)
         {
-            string path = $"Assets/_Project/Art/VFX/Enemy/{name}.png";
+            string path = $"Assets/_Project/Sprites/{name}.png";
             if (File.Exists(Path.GetFullPath(path)))
             {
                 return path;
             }
 
-            MonsterAnimationBaker.EnsureFolder("Assets/_Project/Art/VFX/Enemy");
+            MonsterAnimationBaker.EnsureFolder("Assets/_Project/Sprites");
             const int size = 64;
             var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
             for (int y = 0; y < size; y++)

@@ -48,7 +48,7 @@ namespace Game.Tests
         [Test]
         public void JudgementArtwork_ReturnsToAnimatedBaseOnReuse()
         {
-            var prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Skills/Lightning/Lightning_Lv1.prefab");
+            var prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Lightning_Lv1.prefab");
             var go = Object.Instantiate(prefab);
             try
             {

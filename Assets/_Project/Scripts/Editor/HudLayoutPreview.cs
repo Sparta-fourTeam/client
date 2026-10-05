@@ -15,7 +15,7 @@ namespace Game.Editor
     /// 노치와 홈 인디케이터는 Safe Area 여백으로 흉내 낸다 (빨간 띠가 여백). 실제 기기 동작은 Device Simulator로 확인한다</summary>
     public static class HudLayoutPreview
     {
-        private const string HudPrefabPath = "Assets/_Project/Prefabs/UI/Stage/HudCanvas.prefab";
+        private const string HudPrefabPath = "Assets/_Project/Prefabs/HudCanvas.prefab";
         private const float ReferenceWidth = 1080f;
         private const float ReferenceHeight = 1920f;
         private const float MatchWidthOrHeight = 0.5f;

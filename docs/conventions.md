@@ -46,31 +46,27 @@
 ## 에셋
 
 - 에셋은 `Assets/_Project/` 안에만 둔다. `Assets/` 루트에 프리팹을 두지 않는다.
-- 폴더는 역할별로 나눈다.
+- 분류는 최소한으로, 같은 종류끼리 한 폴더에 둔다. 용도(스킬, 적, UI)별 하위 폴더는 만들지 않는다. 이름 접두사로 구분한다(`Skill...`, `Lobby...`).
 
 ```
 Assets/_Project/
-  Prefabs/
-    Skills/<스킬>/   플레이어 스킬. 본체와 명중 이펙트를 스킬 폴더 하나에 둔다 (Arrow, Fireball, Lightning, IceSpear, Log)
-    Enemies/         Monsters, Wave, Projectiles(적 투사체), Attacks(몬스터 공격 연출), Spawn
-    Stage/           Wall
-    UI/              Lobby, Stage, Popups, Common
-    Player/ Scopes/
-  Art/
-    Characters/      Monsters(Source, Sprites, Rig, Animations, Materials, Shaders), Player
-    VFX/             Shared(여러 스킬이 함께 쓰는 키트), Skills/<스킬>(전용 소재), Enemy(몬스터 공격 연출)
-    UI/              Sheets(N-Sheet), Backgrounds
-  Fonts/             프로젝트 폰트와 TMP 폰트 에셋
-  Resources/         코드가 경로 문자열로 불러오는 것만 (MockData, Materials, VFX)
+  Prefabs/      모든 프리팹. 단 Monsters/는 예외로 남긴다
+  Sprites/      스프라이트로 임포트하는 이미지(리그 소스, UI 시트, 배경, 리그 PSD, 스프라이트 에셋)
+  Textures/     재질이 쓰는 텍스처(파티클 등)
+  Materials/    재질과 셰이더
+  Animations/   애니메이션 클립과 컨트롤러
+  Fonts/        프로젝트 폰트와 TMP 폰트 에셋
+  Resources/    코드가 경로 문자열로 불러오는 것만 (MockData, Materials, VFX)
   Data/ Settings/ Scenes/ Scripts/
 ```
 
-- 새 스킬은 `Prefabs/Skills/<스킬 이름>/`에 본체와 명중 이펙트를 둔다. 그 스킬만 쓰는 소재는 `Art/VFX/Skills/<스킬 이름>/`, 여러 스킬이나 상태 효과가 함께 쓰는 소재는 `Art/VFX/Shared/`에 둔다. 스킬 이름은 두 곳에서 같게 쓴다.
+- `Prefabs/Monsters`는 `MonsterAnimationBaker`가 이 폴더의 프리팹을 전부 몬스터로 보고 애니메이션을 만들기 때문에 남겼다. 몬스터 리그 프리팹(`*_Animated`)만 여기에 둔다.
+- 이미지가 `Sprites`인지 `Textures`인지는 임포트 타입으로 정한다. Sprite로 임포트하면 `Sprites`, 재질이 텍스처로 쓰면 `Textures`다.
 - `Resources`에 넣은 에셋은 참조와 무관하게 빌드에 포함되므로 코드가 경로로 불러오는 것만 둔다.
-- 에디터 도구(`Editor/MonsterRig`, `WaveMonsterVisualLinker` 등)와 테스트는 에셋 경로를 문자열로 갖고 있다. 폴더를 옮기거나 이름을 바꾸면 이 경로도 함께 고친다. 이동은 Unity 안에서 하거나 `.meta`를 같이 옮겨 GUID를 유지한다.
-- 미사용 에셋을 찾을 때 GUID 참조만 보면 안 된다. 몬스터 리그 생성기는 `Art/Characters/Monsters/Source`의 PNG를 GUID가 아니라 파일 경로로 읽으므로 GUID 감사에서는 참조되지 않은 것으로 보인다. 지우기 전에 Unity의 Find References와 에디터 도구의 경로 문자열을 함께 확인한다.
-- 이름 규칙: 한글, 공백, 대문자 확장자(`.PNG`)를 쓰지 않는다. 프리팹, 재질, 애니메이션, 씬 같은 Unity 에셋은 PascalCase로 짓는다(`SkillScreen`, `ResultPopup`). 원본 소재 이미지와 리그 부품(`bat_parts.png`, `fx_ring.png`)은 영문 snake_case를 허용한다. 에디터 도구가 이 이름으로 파일을 읽기 때문이다. 새 파일은 숫자로 시작하지 않고 버전은 `_v2`처럼 접미로 붙인다.
+- 에디터 도구(`Editor/MonsterRig`, `WaveMonsterVisualLinker` 등)와 테스트는 에셋 경로를 문자열로 갖고 있다. 폴더를 옮기거나 이름을 바꾸면 이 경로도 함께 고친다. 이동은 Unity 안에서 하거나 `.meta`를 같이 옮겨 GUID를 유지한다. 몬스터 리그 생성기는 `Sprites`의 PNG와 PSD를 GUID가 아니라 파일 경로로 읽고, 애니메이션을 `Animations`에 만든다.
+- 미사용 에셋을 찾을 때 GUID 참조만 보면 안 된다. 위 생성기가 읽는 `Sprites`의 PNG는 GUID 감사에서 참조되지 않은 것으로 보인다. 지우기 전에 Unity의 Find References와 에디터 도구의 경로 문자열을 함께 확인한다.
+- 이름 규칙: 한글, 공백, 대문자 확장자(`.PNG`)를 쓰지 않는다. 프리팹, 재질, 애니메이션, 씬 같은 Unity 에셋은 PascalCase로 짓는다(`SkillScreen`, `ResultPopup`). 원본 소재 이미지와 리그 부품(`bat_parts.png`, `fx_ring.png`)은 영문 snake_case를 허용한다. 에디터 도구가 이 이름으로 파일을 읽기 때문이다. 새 파일은 숫자로 시작하지 않고 버전은 `_v2`처럼 접미로 붙인다. 폴더를 합쳤으므로 다른 종류의 파일과 이름이 겹치지 않게 접두사를 붙인다.
 - 실험용 씬이나 테스트용 복제 프리팹은 커밋하지 않는다. 빌드에 연결되지 않은 에셋은 쓰임을 확인하고 지운다.
-- 임포트 설정은 에셋마다 쓰임에 묶여 있다. Pixels Per Unit은 프리팹 크기가 그 값에 맞춰져 있으므로 임의로 통일하지 않는다(`Art/VFX/Enemy` 64, `Arrow_v1` 1000 등). Max Size는 화면에서 보이는 크기에 맞춘다(`VFX/Shared` 텍스처는 256). 스프라이트는 밉맵을 끈다. 다만 파티클 셰이더가 쓰는 `VFX/Skills`의 텍스처는 켠 상태를 유지한다.
+- 임포트 설정은 에셋마다 쓰임에 묶여 있다. Pixels Per Unit은 프리팹 크기가 그 값에 맞춰져 있으므로 임의로 통일하지 않는다(몬스터 공격 연출 `fx_*` 64, `Arrow_v1` 1000 등). Max Size는 화면에서 보이는 크기에 맞춘다(파티클용 손그림 텍스처는 256). 스프라이트는 밉맵을 끈다. 다만 파티클 셰이더가 쓰는 `Textures`는 켠 상태를 유지한다.
 - 아이콘과 프리팹은 테이블의 `IconKey`/`PrefabKey`로 찾는다(위 "데이터와 API").
-- 기존 예외: `Art/UI/Sheets`의 `N-Sheet.png`(1~6)는 UI 시트라 역할이 확정될 때 이름을 바꾼다. C# 클래스 이름에 남은 옛 컨셉 용어(`NinpoScreenView` 등)는 아직 바꾸지 않았다. HUD의 `SkillSlotView`와 이름이 겹쳐 새 이름을 정해야 한다.
+- 기존 예외: `Sprites`의 `N-Sheet.png`(1~6)는 UI 시트라 역할이 확정될 때 이름을 바꾼다.

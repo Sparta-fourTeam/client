@@ -14,8 +14,9 @@ namespace Game.Editor.MonsterRig
     /// </summary>
     public static class MonsterRigs
     {
-        private const string ArtFolder = "Assets/_Project/Art/Characters/Monsters";
-        private const string PrefabFolder = "Assets/_Project/Prefabs/Enemies/Monsters";
+        private const string SpritesFolder = "Assets/_Project/Sprites";
+        private const string AnimationFolder = "Assets/_Project/Animations";
+        private const string PrefabFolder = "Assets/_Project/Prefabs/Monsters";
         private const int Pad = 8;
         private const float Tau = Mathf.PI * 2f;
         private static readonly Color HitTint = new(1f, 0.35f, 0.35f, 1f);
@@ -483,8 +484,8 @@ namespace Game.Editor.MonsterRig
 
         private static string Build(Def def)
         {
-            string psdPath = $"{ArtFolder}/Rig/{def.Name}/{def.Name}.psd";
-            MonsterAnimationBaker.EnsureFolder($"{ArtFolder}/Rig/{def.Name}");
+            string psdPath = $"{SpritesFolder}/{def.Name}.psd";
+            MonsterAnimationBaker.EnsureFolder(SpritesFolder);
             int maxSide = Mathf.Max(def.Size.x, def.Size.y);
 
             var spec = new RigSpec
@@ -501,7 +502,7 @@ namespace Game.Editor.MonsterRig
                     : def.Layers.Select(l => new LayerSpec
                     {
                         Name = l.png,
-                        PngPath = $"{ArtFolder}/Source/{l.png}.png",
+                        PngPath = $"{SpritesFolder}/{l.png}.png",
                         CanvasOffset = new Vector2Int(Pad, Pad),
                         Bones = l.bones,
                     }).ToList(),
@@ -517,7 +518,7 @@ namespace Game.Editor.MonsterRig
             var rig = MonsterRigBuilder.Build(spec);
             var channels = Channels(rig.transform, def.Bones.Select(b => b.Name));
 
-            string folder = $"{ArtFolder}/Animations/{def.Name}";
+            string folder = AnimationFolder;
             MonsterAnimationBaker.EnsureFolder(folder);
             foreach (var stale in new[] { "Idle", "Hit" })
             {

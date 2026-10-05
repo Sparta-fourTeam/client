@@ -15,7 +15,7 @@ namespace Game.Editor.MonsterRig
     /// </summary>
     public static class GolemRig
     {
-        private const string Png = "Assets/_Project/Art/Characters/Monsters/Source/golem.png";
+        private const string Png = "Assets/_Project/Sprites/golem.png";
         private const float Tau = Mathf.PI * 2f;
 
         // 파츠: 레이어 이름, 본들, 픽셀 배정용 두께(px)

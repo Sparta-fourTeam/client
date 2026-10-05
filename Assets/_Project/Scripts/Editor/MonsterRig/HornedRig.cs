@@ -15,7 +15,7 @@ namespace Game.Editor.MonsterRig
     /// </summary>
     public static class HornedRig
     {
-        private const string Png = "Assets/_Project/Art/Characters/Monsters/Source/horned_parts.png";
+        private const string Png = "Assets/_Project/Sprites/horned_parts.png";
         private const float Ppu = 200f;
         private const float Tau = Mathf.PI * 2f;
 
