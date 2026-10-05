@@ -1,0 +1,77 @@
+1/arrow_multishot@0: Cast.Damage=8; Cast.ProjectileCount=2; Explosion.Damage=8
+1/arrow_multishot@9: Cast.ProjectileCount=2
+1/arrow_sharp@0: Cast.Damage=16; Explosion.Damage=16
+1/arrow_light@0: Cast.Damage=12.5; Explosion.Damage=12.5; Projectile.Speed=25
+1/arrow_burst@0: Cast.Count=2; Cast.Damage=7; Explosion.Damage=7
+1/arrow_burst@17: Cast.Count=2; Cast.Damage=11; Explosion.Damage=11
+1/arrow_rapid@0: Cast.Cooldown=0.9
+1/kunai_pierce@0: Cast.Damage=13; Explosion.Damage=13; Projectile.PierceCount=1
+1/kunai_explosion@0: Explosion.Radius=0.8
+1/kunai_explosion_damage@0: Explosion.Damage=18
+1/kunai_explosion_radius@0: (변화 없음)
+1/kunai_shock@0: Projectile.KnockbackDistance=0.23
+1/kunai_spread@0: Secondary.Count=2
+1/kunai_barrage@0: Secondary.Count=4
+1/kunai_aux_damage@0: Secondary.DamageMultiplier=2
+1/kunai_amplify@0: Cast.Damage=20; Explosion.Damage=20
+1/kunai_thunder@0: Projectile.Speed=40; Status.ParalysisDuration=1
+1/kunai_quick@0: Cast.Cooldown=0.8; Cast.Damage=9; Explosion.Damage=9
+1/kunai_rod@0: Secondary.LightningStrikeRatio=0.5
+1/kunai_aux_rod@0: Secondary.LightningRatio=0.5
+1/kunai_aux_explosion@0: Secondary.Explosions=true
+1/kunai_flame@0: Burn.DamageRatio=0.099999994; Burn.Duration=6
+1/ALL@0: Burn.DamageRatio=0.099999994; Burn.Duration=6; Cast.Cooldown=0.719999969; Cast.Count=2; Cast.Damage=87.22022; Cast.ProjectileCount=3; Explosion.Damage=282.5935; Explosion.Radius=1.43999994; Projectile.KnockbackDistance=0.23; Projectile.PierceCount=2; Projectile.Speed=62.5; Secondary.Count=6; Secondary.DamageMultiplier=2; Secondary.Explosions=true; Secondary.LightningRatio=0.5; Secondary.LightningStrikeRatio=0.5; Status.ParalysisDuration=1
+2/fireball_burst@0: Cast.Count=2
+2/fireball_burst_ii@0: Cast.Count=3; Cast.Damage=8.4; Explosion.Damage=8.4
+2/fireball_burst_ii@9: Cast.Count=3
+2/fireball_explosion_damage@0: Explosion.Damage=21.5999985
+2/fireball_explosion_radius@0: Explosion.Radius=1.43999994
+2/fireball_burn@0: Burn.DamageRatio=0.099999994; Burn.Duration=6
+2/fireball_inferno@0: Burn.MaxHpRatio=0.03
+2/fireball_spreading_burn@0: Burn.DeathExplosion=true
+2/fireball_impact_damage@0: Cast.Damage=21.5999985
+2/fireball_training@0: Cast.Cooldown=1.62; Cast.Damage=14.4000006; Explosion.Damage=14.4000006
+2/fireball_flames@0: Secondary.Count=3
+2/fireball_enbakutsu@0: Cast.Form=Enbakutsu; Projectile.PierceCount=2
+2/ALL@0: Burn.DamageRatio=0.099999994; Burn.DeathExplosion=true; Burn.Duration=6; Burn.MaxHpRatio=0.03; Cast.Cooldown=1.62; Cast.Count=5; Cast.Damage=58.7865562; Cast.Form=Enbakutsu; Explosion.Damage=58.7865562; Explosion.Radius=1.43999994; Projectile.PierceCount=2; Secondary.Count=3
+3/lightning_damage@0: Cast.Damage=45; Explosion.Damage=45
+3/lightning_burst@0: Cast.Count=2; Cast.Damage=20; Explosion.Damage=20
+3/lightning_burst@9: Cast.Count=2
+3/lightning_storm@0: Explosion.Radius=0.8
+3/lightning_storm_damage@0: Explosion.Damage=45
+3/lightning_storm_radius@0: (변화 없음)
+3/lightning_voltage@0: Cast.Damage=32.5; Explosion.Damage=32.5; Status.ParalysisDuration=2.5
+3/lightning_split@0: Secondary.Count=6
+3/lightning_particle_voltage@0: Secondary.DamageMultiplier=1.4; Secondary.ParalysisDuration=0.5
+3/lightning_sanction@0: Cast.Damage=62.5; Explosion.Damage=62.5; Secondary.KillLightningRatio=0.5
+3/lightning_judgement@0: Cast.Damage=75; Cast.Form=JudgementThunder; Explosion.Damage=75
+3/lightning_field@0: Field.Duration=3
+3/lightning_field_stable@0: Field.Duration=2; Field.FlatDamage=50
+3/lightning_field_voltage@0: Field.DamageMultiplier=5
+3/ALL@0: Cast.Count=4; Cast.Damage=727.8336; Cast.Form=JudgementThunder; Explosion.Damage=1310.10034; Explosion.Radius=1.43999994; Field.DamageMultiplier=5; Field.Duration=5; Field.FlatDamage=50; Secondary.Count=6; Secondary.DamageMultiplier=1.4; Secondary.KillLightningRatio=0.5; Secondary.ParalysisDuration=0.5; Status.ParalysisDuration=2.5
+4/ice_repeat@0: Cast.Count=2; Cast.Damage=8
+4/ice_repeat@5: Cast.Count=2
+4/ice_damage@0: Cast.Damage=16
+4/ice_extreme@0: Cast.Damage=13; Status.FreezeDuration=2
+4/ice_pierce@0: Cast.Damage=13; Projectile.PierceCount=2
+4/ice_heavy@0: Cast.Damage=15; Projectile.PierceCount=1; Projectile.Speed=14
+4/ice_volley@0: Cast.Damage=6; Cast.ProjectileCount=2
+4/ice_split@0: Secondary.Count=3
+4/ice_shard_damage@0: Secondary.DamageMultiplier=1.8
+4/ice_impact@0: Projectile.KnockbackDistance=0.6; Projectile.PierceCount=2
+4/ice_frostbite@0: Status.FrostbiteRatio=0.099999994
+4/ice_shard_frostbite@0: Secondary.FrostbiteRatio=0.099999994
+4/ice_triangle@0: Cast.Form=TriangleIce
+4/ALL@0: Cast.Count=3; Cast.Damage=67.38385; Cast.Form=TriangleIce; Cast.ProjectileCount=2; Projectile.KnockbackDistance=0.6; Projectile.PierceCount=9; Projectile.Speed=14; Secondary.Count=3; Secondary.DamageMultiplier=1.8; Secondary.FrostbiteRatio=0.099999994; Status.FreezeDuration=2; Status.FrostbiteRatio=0.099999994
+5/log_damage@0: Cast.Damage=16; Explosion.Damage=16
+5/log_repeat@0: Cast.Count=2; Cast.Damage=8; Explosion.Damage=8
+5/log_repeat@5: Cast.Count=2
+5/log_size@0: Projectile.SizeMultiplier=1.6
+5/log_speed@0: Cast.Cooldown=0.75; Projectile.Speed=5.6
+5/log_impact@0: Projectile.KnockbackDistance=0.35; Status.StunDuration=1
+5/log_weight@0: Status.SlowDuration=6
+5/log_wound@0: Status.VulnerabilityDuration=6; Status.VulnerabilityRatio=0.199999988
+5/log_large@0: Cast.Damage=16; Cast.Form=LargeLog; Explosion.Damage=16; Projectile.KnockbackDistance=0.320000023; Projectile.SizeMultiplier=1.6
+5/log_fire@0: Burn.DamageRatio=0.099999994; Burn.Duration=6; Cast.Form=FireLog
+5/log_reserve@0: Cast.ReserveCount=3
+5/ALL@0: Burn.DamageRatio=0.099999994; Burn.Duration=6; Cast.Cooldown=0.75; Cast.Count=3; Cast.Damage=26.2144012; Cast.Form=FireLog; Cast.ReserveCount=3; Explosion.Damage=26.2144012; Projectile.KnockbackDistance=0.56; Projectile.SizeMultiplier=2.56000018; Projectile.Speed=5.6; Status.SlowDuration=6; Status.StunDuration=1; Status.VulnerabilityDuration=6; Status.VulnerabilityRatio=0.199999988

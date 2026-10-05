@@ -30,6 +30,7 @@ namespace Game.Core
                     {
                         throw new InvalidOperationException("강화 정의 또는 ID가 잘못되었습니다.");
                     }
+                    ValidateEffectCompatibility(weapon, option);
                 }
             }
             foreach (var weapon in weapons)
@@ -44,6 +45,26 @@ namespace Game.Core
             }
             WeaponUpgradeTransaction.ValidateCatalog(weapons);
             ValidateConditions(weapons);
+        }
+
+        // 공격이 소비하지 않는 효과는 적용돼도 아무 일이 없으므로, 어느 카드가 문제인지 알려 주며 막는다.
+        private static void ValidateEffectCompatibility(WeaponData weapon, WeaponUpgradeOption option)
+        {
+            Check(weapon, option, option.effects);
+            if (option.variants == null) { return; }
+            foreach (var variant in option.variants) { Check(weapon, option, variant.effects); }
+        }
+
+        private static void Check(WeaponData weapon, WeaponUpgradeOption option, List<StatEffect> effects)
+        {
+            foreach (var effect in effects)
+            {
+                if (UpgradeCompatibility.Supports(weapon.castType, effect.type)) { continue; }
+                string reason = UpgradeCompatibility.IsRegistered(effect.type)
+                    ? $"{weapon.castType} 공격이 쓰지 않는 효과입니다."
+                    : "호환 표(UpgradeCompatibility)에 등록되지 않았습니다.";
+                throw new InvalidOperationException($"카드 '{option.id}'({weapon.name})의 효과 {effect.type}: {reason}");
+            }
         }
 
         private static void ValidateConditions(List<WeaponData> weapons)
