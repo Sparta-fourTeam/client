@@ -25,7 +25,8 @@ namespace Game.Core
         private float speed;
         private float lifetime;
         private float elapsed;
-        private ProjectileHitEffects hitEffects;
+        private AttackReactions hitReactions;
+        private System.Func<float> randomValue;
         private System.Action<Vector2, Vector3, IEnemyTarget> onHit;
         private AttackReactions reactions;
         private bool released;
@@ -36,43 +37,6 @@ namespace Game.Core
         // 적 스프라이트가 레퍼런스 크기로 줄어든 것(슬라임 가로 약 0.6, 콜라이더 반지름 약 0.3)에 맞춘 값. 이전에는 1.4짜리 적에 맞춘 0.7이었다
         private float hitRadius = 0.3f;
         private const int HitCandidateCount = 4;
-
-        public void Init(IObjectPool<Projectile> pool, Vector3 startPos, Vector3 direction, float damage, float speed, float lifetime, IEnemyTargetProvider targetProvider, int pierceCount = 0, float freezeDuration = 0, System.Action<Vector2, Vector3, IEnemyTarget> onHit = null, IEnemyTarget ignoredTarget = null, float knockbackDistance = 0, float frostbiteRatio = 0, float paralysisDuration = 0, float lightningDamage = 0, float paralysisChance = 1, System.Func<float> randomValue = null, float burnDuration = 0, float burnDamage = 0, float burnMaxHpRatio = 0, System.Action<Vector2> burnOnDeath = null, float freezeChance = 1, float frostbiteChance = 1, float burnChance = 1, float collisionRadius = .3f, float stunDuration = 0, float stunChance = 1, float slowDuration = 0, float slowRatio = 0, float vulnerabilityRatio = 0, float vulnerabilityDuration = 0)
-        {
-            Init(pool, new ProjectileSpawnSettings
-            {
-                StartPos = startPos,
-                Direction = direction,
-                Damage = damage,
-                Speed = speed,
-                Lifetime = lifetime,
-                TargetProvider = targetProvider,
-                PierceCount = pierceCount,
-                FreezeDuration = freezeDuration,
-                OnHit = onHit,
-                IgnoredTarget = ignoredTarget,
-                KnockbackDistance = knockbackDistance,
-                FrostbiteRatio = frostbiteRatio,
-                ParalysisDuration = paralysisDuration,
-                LightningDamage = lightningDamage,
-                ParalysisChance = paralysisChance,
-                RandomValue = randomValue,
-                BurnDuration = burnDuration,
-                BurnDamage = burnDamage,
-                BurnMaxHpRatio = burnMaxHpRatio,
-                BurnOnDeath = burnOnDeath,
-                FreezeChance = freezeChance,
-                FrostbiteChance = frostbiteChance,
-                BurnChance = burnChance,
-                CollisionRadius = collisionRadius,
-                StunDuration = stunDuration,
-                StunChance = stunChance,
-                SlowDuration = slowDuration,
-                SlowRatio = slowRatio,
-                VulnerabilityRatio = vulnerabilityRatio,
-                VulnerabilityDuration = vulnerabilityDuration
-            });
-        }
 
         public void Init(IObjectPool<Projectile> pool, ProjectileSpawnSettings settings)
         {
@@ -86,7 +50,8 @@ namespace Game.Core
             lifetime = settings.Lifetime;
             elapsed = 0;
             targetProvider = settings.TargetProvider;
-            hitEffects = new ProjectileHitEffects(settings);
+            hitReactions = settings.HitReactions ?? AttackReactions.Empty;
+            randomValue = settings.RandomValue ?? (() => Random.value);
             reactions = settings.Reactions ?? AttackReactions.Empty;
             released = false;
             hitLedger.Reset(settings.PierceCount);
@@ -135,7 +100,7 @@ namespace Game.Core
                 if (candidate is EnemyModel enemy && enemy.IsDead) { continue; }
                 if (ReferenceEquals(candidate, ignoredTarget)) { continue; }
                 if (!hitLedger.TryHit(candidate)) { continue; }
-                hitEffects.Apply(candidate, direction);
+                hitReactions.Raise(AttackEvent.Hit, new AttackContext(candidate.Position, direction, candidate, randomValue));
                 SpawnImpact(hitPosition);
                 onHit?.Invoke(hitPosition, direction, candidate);
                 var context = new AttackContext(hitPosition, direction, candidate);

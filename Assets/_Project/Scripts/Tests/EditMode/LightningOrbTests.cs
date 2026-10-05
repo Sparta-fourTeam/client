@@ -17,10 +17,7 @@ namespace Game.Tests
         }
         private static T Read<T>(object obj, string name)
         {
-            var field = obj.GetType().GetField(name, Flags);
-            if (field != null) { return (T)field.GetValue(obj); }
-            var effects = typeof(Projectile).GetField("hitEffects", Flags).GetValue(obj);
-            return (T)typeof(ProjectileHitEffects).GetField(name, Flags).GetValue(effects);
+            return (T)obj.GetType().GetField(name, Flags).GetValue(obj);
         }
 
         [TestCase(false)]
@@ -52,8 +49,9 @@ namespace Game.Tests
                 var directions = new List<Vector3>();
                 foreach (var projectile in clones)
                 {
-                    Assert.AreEqual(32.5f * (voltage ? .7f : .5f), Read<float>(projectile, "damage"), .001f);
-                    Assert.AreEqual(voltage ? .5f : 0, Read<float>(projectile, "paralysisDuration"));
+                    var hit = HitRecorder.Hit(projectile);
+                    Assert.AreEqual((int)(32.5f * (voltage ? .7f : .5f)), hit.Damage);
+                    Assert.AreEqual(voltage ? .5f : 0, hit.Paralysis);
                     Assert.AreEqual(10, Read<float>(projectile, "speed"));
                     Assert.AreEqual(3, Read<float>(projectile, "lifetime"));
                     Assert.IsNull(Read<object>(projectile, "onHit"));

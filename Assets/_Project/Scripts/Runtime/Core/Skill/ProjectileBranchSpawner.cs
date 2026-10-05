@@ -43,18 +43,18 @@ namespace Game.Core
                     {
                         StartPos = position,
                         Direction = Quaternion.Euler(0, 0, -30 + i * 30) * direction,
-                        Damage = damage,
                         Speed = speed,
                         Lifetime = ProjectileLifetime,
                         TargetProvider = targetProvider,
                         PierceCount = pierce,
-                        FreezeDuration = freeze,
                         OnHit = normalSplit,
                         IgnoredTarget = source,
-                        KnockbackDistance = knockback,
-                        FrostbiteRatio = frostbite,
-                        FreezeChance = freezeChance,
-                        FrostbiteChance = frostbiteChance
+                        HitReactions = new HitReactionBuilder()
+                            .Damage(damage)
+                            .Freeze(freeze, freezeChance)
+                            .Knockback(knockback)
+                            .Frostbite(damage * frostbite, frostbiteChance)
+                            .Build()
                     });
                 }
             };
@@ -91,15 +91,16 @@ namespace Game.Core
                     {
                         StartPos = position,
                         Direction = Quaternion.Euler(0, 0, angle) * direction,
-                        Damage = shardDamage,
                         Speed = shardSpeed,
                         Lifetime = ProjectileLifetime,
                         TargetProvider = targetProvider,
                         OnHit = auxiliaryHit,
                         IgnoredTarget = target,
-                        FrostbiteRatio = shardFrostbite,
-                        LightningDamage = auxiliaryLightningDamage,
-                        FrostbiteChance = stats.Status.FrostbiteChance
+                        HitReactions = new HitReactionBuilder()
+                            .Damage(shardDamage)
+                            .Frostbite(shardDamage * shardFrostbite, stats.Status.FrostbiteChance)
+                            .LightningStrike(auxiliaryLightningDamage)
+                            .Build()
                     });
                 }
             };

@@ -23,13 +23,11 @@ namespace Game.Core
                     {
                         StartPos = position,
                         Direction = direction,
-                        Damage = damage,
                         Speed = 10,
                         Lifetime = 3,
                         TargetProvider = targetProvider,
                         IgnoredTarget = sourceTarget,
-                        ParalysisDuration = paralysis,
-                        ParalysisChance = chance
+                        HitReactions = new HitReactionBuilder().Damage(damage).Paralysis(paralysis, chance).Build()
                     });
                 }
             };

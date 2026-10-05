@@ -146,14 +146,14 @@ namespace Game.Tests
         }
 
         [Test]
-        public void HitEffects_CompileValuesBeforeMutableSpawnSettingsChange()
+        public void HitReactions_KeepValuesFromBuildTime()
         {
-            var settings = new ProjectileSpawnSettings { Damage = 60, FreezeDuration = 2 };
-            var effects = new ProjectileHitEffects(settings);
-            settings.Damage = 999;
-            settings.FreezeDuration = 99;
+            float damage = 60, freeze = 2;
+            var reactions = new HitReactionBuilder().Damage(damage).Freeze(freeze).Build();
+            damage = 999;
+            freeze = 99;
             var target = new Target();
-            effects.Apply(target, Vector3.up);
+            reactions.Raise(AttackEvent.Hit, new AttackContext(target.Position, Vector3.up, target));
             Assert.AreEqual(60, target.Damage);
             Assert.AreEqual(2, target.Freeze);
         }

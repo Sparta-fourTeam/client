@@ -148,12 +148,13 @@ namespace Game.Tests
                 Projectile clone = null;
                 foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
                 { if (projectile.name == "LogStatusCasterTest(Clone)") { clone = projectile; } }
-                Assert.AreEqual(.35f, (float)typeof(ProjectileHitEffects).GetField("knockbackDistance", Flags).GetValue(typeof(Projectile).GetField("hitEffects", Flags).GetValue(clone)), .001f);
-                Assert.AreEqual(1, (float)typeof(ProjectileHitEffects).GetField("stunDuration", Flags).GetValue(typeof(Projectile).GetField("hitEffects", Flags).GetValue(clone)));
-                Assert.AreEqual(.1f, (float)typeof(ProjectileHitEffects).GetField("stunChance", Flags).GetValue(typeof(Projectile).GetField("hitEffects", Flags).GetValue(clone)));
-                Assert.AreEqual(6, (float)typeof(ProjectileHitEffects).GetField("slowDuration", Flags).GetValue(typeof(Projectile).GetField("hitEffects", Flags).GetValue(clone)));
-                Assert.AreEqual(.2f, (float)typeof(ProjectileHitEffects).GetField("vulnerabilityRatio", Flags).GetValue(typeof(Projectile).GetField("hitEffects", Flags).GetValue(clone)), .001f);
-                Assert.AreEqual(6, (float)typeof(ProjectileHitEffects).GetField("vulnerabilityDuration", Flags).GetValue(typeof(Projectile).GetField("hitEffects", Flags).GetValue(clone)));
+                var hit = HitRecorder.Hit(clone, .05f);
+                Assert.AreEqual(.35f, hit.KnockbackDistance, .001f);
+                Assert.AreEqual(1, hit.Stun);
+                Assert.AreEqual(0, HitRecorder.Hit(clone, .5f).Stun, "기절 확률은 10%이므로 0.5에서는 걸리지 않는다");
+                Assert.AreEqual(6, hit.SlowDuration);
+                Assert.AreEqual(.2f, hit.VulnerabilityRatio, .001f);
+                Assert.AreEqual(6, hit.VulnerabilityDuration);
                 Assert.AreEqual(10, Stats(weapon).Cast.Damage);
             }
             finally
@@ -225,10 +226,7 @@ namespace Game.Tests
                 Assert.AreEqual(brown, clone.GetComponent<SpriteRenderer>().color);
                 Assert.AreSame(fireArt, clone.GetComponent<SpriteRenderer>().sprite);
                 Assert.AreEqual(1.6f, clone.transform.localScale.x, .001f);
-                var effectsField = typeof(Projectile).GetField("hitEffects", Flags);
-                var effects = effectsField.GetValue(clone);
-                typeof(ProjectileHitEffects).GetField("randomValue", Flags).SetValue(effects, (System.Func<float>)(() => 0));
-                effectsField.SetValue(clone, effects);
+                typeof(Projectile).GetField("randomValue", Flags).SetValue(clone, (System.Func<float>)(() => 0));
                 typeof(Projectile).GetMethod("Tick", Flags).Invoke(clone, new object[] { .01f });
                 Assert.AreEqual(1, provider.Target.Burns); Assert.AreEqual(6, provider.Target.BurnDuration);
                 Assert.AreEqual(1.6f, provider.Target.BurnDamage, .001f);

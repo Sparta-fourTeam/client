@@ -161,10 +161,10 @@ namespace Game.Tests
                 Assert.AreEqual(3, normals.Count);
                 foreach (var normal in normals)
                 {
-                    Assert.AreEqual(50, (float)typeof(ProjectileHitEffects).GetField("damage", flags).GetValue(typeof(Projectile).GetField("hitEffects", flags).GetValue(normal)));
-                    Assert.AreEqual(2, (float)typeof(ProjectileHitEffects).GetField("freezeDuration", flags).GetValue(typeof(Projectile).GetField("hitEffects", flags).GetValue(normal)));
-                    Assert.AreEqual(.6f, (float)typeof(ProjectileHitEffects).GetField("knockbackDistance", flags).GetValue(typeof(Projectile).GetField("hitEffects", flags).GetValue(normal)));
-                    Assert.AreEqual(.1f, (float)typeof(ProjectileHitEffects).GetField("frostbiteRatio", flags).GetValue(typeof(Projectile).GetField("hitEffects", flags).GetValue(normal)), .00001f);
+                    Assert.AreEqual(50, HitRecorder.Hit(normal).Damage);
+                    Assert.AreEqual(2, HitRecorder.Hit(normal).Freeze);
+                    Assert.AreEqual(.6f, HitRecorder.Hit(normal).KnockbackDistance, .001f);
+                    Assert.AreEqual(HitRecorder.Hit(normal).Damage * .1f, HitRecorder.Hit(normal).Frostbite, .001f);
                     Assert.AreSame(source, typeof(Projectile).GetField("ignoredTarget", flags).GetValue(normal));
                     Assert.AreEqual(Vector3.one, normal.transform.localScale);
                 }
@@ -178,9 +178,9 @@ namespace Game.Tests
                     {
                         if (projectile.name != "TriangleSplitTest(Clone)" || normals.Contains(projectile)) { continue; }
                         shards++;
-                        Assert.AreEqual(45, (float)typeof(ProjectileHitEffects).GetField("damage", flags).GetValue(typeof(Projectile).GetField("hitEffects", flags).GetValue(projectile)), .001f);
-                        Assert.AreEqual(0, (float)typeof(ProjectileHitEffects).GetField("freezeDuration", flags).GetValue(typeof(Projectile).GetField("hitEffects", flags).GetValue(projectile)));
-                        Assert.AreEqual(.1f, (float)typeof(ProjectileHitEffects).GetField("frostbiteRatio", flags).GetValue(typeof(Projectile).GetField("hitEffects", flags).GetValue(projectile)), .00001f);
+                        Assert.AreEqual(45, HitRecorder.Hit(projectile).Damage);
+                        Assert.AreEqual(0, HitRecorder.Hit(projectile).Freeze);
+                        Assert.AreEqual(HitRecorder.Hit(projectile).Damage * .1f, HitRecorder.Hit(projectile).Frostbite, .001f);
                         Assert.IsNull(typeof(Projectile).GetField("onHit", flags).GetValue(projectile));
                         Assert.AreSame(secondTarget, typeof(Projectile).GetField("ignoredTarget", flags).GetValue(projectile));
                     }
@@ -246,7 +246,7 @@ namespace Game.Tests
                     }
 
                     count++;
-                    Assert.AreEqual(90f, typeof(ProjectileHitEffects).GetField("damage", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(typeof(Projectile).GetField("hitEffects", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(projectile)));
+                    Assert.AreEqual(90, HitRecorder.Hit(projectile).Damage);
                     Assert.IsNull(typeof(Projectile).GetField("onHit", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(projectile));
                     Assert.AreSame(originTarget, typeof(Projectile).GetField("ignoredTarget", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(projectile));
                     Assert.AreEqual(0.5f, projectile.transform.localScale.x);

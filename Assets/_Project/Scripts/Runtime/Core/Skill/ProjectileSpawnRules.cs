@@ -33,33 +33,14 @@ namespace Game.Core
             {
                 StartPos = start,
                 Direction = direction,
-                Damage = stats.Cast.Damage,
                 Speed = stats.Projectile.Speed,
                 Lifetime = lifetime,
                 TargetProvider = targetProvider,
                 Reactions = reactions,
                 PierceCount = pierce,
-                FreezeDuration = stats.Status.FreezeDuration,
+                HitReactions = ReactionCompiler.ForProjectile(stats, CreateBurnDeathCallback()),
                 OnHit = CreateHitCallback(),
-                KnockbackDistance = stats.Projectile.KnockbackDistance,
-                FrostbiteRatio = stats.Status.FrostbiteRatio,
-                ParalysisDuration = stats.Status.ParalysisDuration,
-                LightningDamage = stats.Cast.Damage * stats.Secondary.LightningStrikeRatio,
-                ParalysisChance = stats.Status.ParalysisChance,
-                BurnDuration = stats.Burn.Duration,
-                BurnDamage = stats.Cast.Damage * stats.Burn.DamageRatio,
-                BurnMaxHpRatio = stats.Burn.MaxHpRatio,
-                BurnOnDeath = CreateBurnDeathCallback(),
-                FreezeChance = stats.Status.FreezeChance,
-                FrostbiteChance = stats.Status.FrostbiteChance,
-                BurnChance = stats.Burn.Chance,
-                CollisionRadius = .3f * stats.Projectile.SizeMultiplier,
-                StunDuration = stats.Status.StunDuration,
-                StunChance = stats.Status.StunChance,
-                SlowDuration = stats.Status.SlowDuration,
-                SlowRatio = stats.Status.SlowRatio,
-                VulnerabilityRatio = stats.Status.VulnerabilityRatio,
-                VulnerabilityDuration = stats.Status.VulnerabilityDuration
+                CollisionRadius = .3f * stats.Projectile.SizeMultiplier
             });
         }
         private System.Action<Vector2> CreateBurnDeathCallback()
