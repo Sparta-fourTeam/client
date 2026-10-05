@@ -2,7 +2,7 @@ namespace Game.Core
 {
     /// <summary>스킬의 기본 수치. 소비하는 쪽(시전·투사체·상태이상 등)별로 묶어 JSON에서 필요한 묶음만 적는다.
     /// 적지 않은 묶음과 값은 각 클래스의 기본값을 쓴다.</summary>
-    public class WeaponBaseStats
+    public class SkillBaseStats
     {
         public CastBase cast = new CastBase();
         public ProjectileBase projectile = new ProjectileBase();

@@ -17,16 +17,16 @@ namespace Game.Sandbox
             // 벽 체력은 스테이지 테이블에서 온다. 샌드박스는 첫 스테이지 값을 쓴다
             builder.Register(resolver => resolver.Resolve<GameDataStore>().StageOrFirst(0), Lifetime.Singleton);
             builder.RegisterComponentInHierarchy<Wall>();
-            builder.RegisterComponentInHierarchy<WeaponController>();
+            builder.RegisterComponentInHierarchy<SkillController>();
             builder.RegisterComponentInHierarchy<SandboxEnemyField>().AsSelf().As<IEnemyTargetProvider>();
             builder.RegisterComponentInHierarchy<SandboxController>();
-            builder.Register<IWeaponDataProvider, DefaultWeaponDataProvider>(Lifetime.Scoped);
+            builder.Register<ISkillDataProvider, DefaultSkillDataProvider>(Lifetime.Scoped);
             builder.Register<IStartingSkills, NoStartingSkills>(Lifetime.Scoped);
             builder.RegisterInstance(new SandboxProgression()).AsSelf().As<IWeaponProgression>();
             // 씬에 있는 컴포넌트는 누군가 요청해야 주입되므로, 시작할 때 한 번 꺼내 주입을 끝낸다.
             builder.RegisterBuildCallback(resolver =>
             {
-                resolver.Resolve<WeaponController>();
+                resolver.Resolve<SkillController>();
                 resolver.Resolve<SandboxEnemyField>();
                 resolver.Resolve<SandboxController>();
             });

@@ -3,9 +3,9 @@ using System.Collections.Generic;
 namespace Game.Core
 {
     /// <summary>Compiles ordered card effects into one snapshot without a decorator chain.</summary>
-    public static class WeaponStatEffects
+    public static class SkillStatEffects
     {
-        public static bool TryApply(WeaponStats current, IReadOnlyList<EffectDef> effects, out WeaponStats result)
+        public static bool TryApply(SkillStats current, IReadOnlyList<EffectDef> effects, out SkillStats result)
         {
             result = null;
             if (current == null || effects == null) { return false; }
@@ -34,14 +34,14 @@ namespace Game.Core
             compiled = kind.Category switch
             {
                 UpgradeEffectCategory.Cast => new CastUpgradeEffect(effect.kind, effect.value),
-                UpgradeEffectCategory.Transform => new TransformUpgradeEffect((WeaponForm)(int)effect.value),
+                UpgradeEffectCategory.Transform => new TransformUpgradeEffect((SkillForm)(int)effect.value),
                 UpgradeEffectCategory.Reaction => new ReactionStatUpgradeEffect(effect.kind, effect.value),
                 _ => new StatUpgradeEffect(effect.kind, effect.value)
             };
             return true;
         }
 
-        internal static bool TryApplyValue(WeaponStatsBuilder builder, string key, float value, UpgradeEffectCategory category)
+        internal static bool TryApplyValue(SkillStatsBuilder builder, string key, float value, UpgradeEffectCategory category)
         {
             if (float.IsNaN(value) || float.IsInfinity(value)
                 || !EffectRegistry.TryGet(key, out var kind) || category != kind.Category || !kind.Accept(value)) { return false; }

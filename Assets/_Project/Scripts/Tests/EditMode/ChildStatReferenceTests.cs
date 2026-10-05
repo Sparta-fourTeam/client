@@ -19,13 +19,13 @@ namespace Game.Tests
             public void Cast(ChildCast cast, AttackContext context) => Casts.Add(cast);
         }
 
-        private static WeaponData Parent(float damage = 100) => new WeaponData
+        private static SkillData Parent(float damage = 100) => new SkillData
         {
             id = ParentId,
             name = "부모",
             maxLevel = 5,
-            upgrades = new List<WeaponUpgradeOption>(),
-            baseStats = new WeaponBaseStats
+            upgrades = new List<SkillUpgradeOption>(),
+            baseStats = new SkillBaseStats
             {
                 cast = { baseDamage = damage, cooldown = 1, range = 10, projectileCount = 1 },
                 projectile = { speed = 20, pierceCount = 1 },
@@ -33,13 +33,13 @@ namespace Game.Tests
             }
         };
 
-        private static WeaponData Child() => new WeaponData
+        private static SkillData Child() => new SkillData
         {
             id = ChildId,
             name = "자식",
             maxLevel = 5,
-            upgrades = new List<WeaponUpgradeOption>(),
-            baseStats = new WeaponBaseStats
+            upgrades = new List<SkillUpgradeOption>(),
+            baseStats = new SkillBaseStats
             {
                 cast = { baseDamage = 3, cooldown = 1, range = 10, projectileCount = 1 },
                 projectile = { speed = 5 }
@@ -197,13 +197,13 @@ namespace Game.Tests
 
         private const int GrandchildId = 3;
 
-        private static SkillConfig GrandchildBase() => SkillConfig.FromDefinition(new WeaponData
+        private static SkillConfig GrandchildBase() => SkillConfig.FromDefinition(new SkillData
         {
             id = GrandchildId,
             name = "손자",
             maxLevel = 5,
-            upgrades = new List<WeaponUpgradeOption>(),
-            baseStats = new WeaponBaseStats { cast = { baseDamage = 1, cooldown = 1, range = 10, projectileCount = 1 } }
+            upgrades = new List<SkillUpgradeOption>(),
+            baseStats = new SkillBaseStats { cast = { baseDamage = 1, cooldown = 1, range = 10, projectileCount = 1 } }
         });
 
         [Test]
@@ -255,7 +255,7 @@ namespace Game.Tests
             Assert.IsTrue(builder.TryApplyCatalog(new[] { guarded }));
             Assert.AreEqual(1, RaiseCount(builder.Build(), recorder), "기본 형태에서는 시전한다");
 
-            Assert.IsTrue(builder.TryApplyCatalog(new[] { new EffectDef { kind = "form", value = (int)WeaponForm.TriangleIce } }));
+            Assert.IsTrue(builder.TryApplyCatalog(new[] { new EffectDef { kind = "form", value = (int)SkillForm.TriangleIce } }));
             Assert.AreEqual(0, RaiseCount(builder.Build(), recorder), "형태가 바뀌면 이 반응은 빠진다");
         }
 
@@ -322,7 +322,7 @@ namespace Game.Tests
 
         // ── 카탈로그 검증 ─────────────────────────────────────────────
 
-        private static List<WeaponData> Catalog(Action<WeaponData, WeaponData> configure)
+        private static List<SkillData> Catalog(Action<SkillData, SkillData> configure)
         {
             var parent = Parent();
             var child = Child();
@@ -330,11 +330,11 @@ namespace Game.Tests
             child.castType = CastType.Projectile;
             parent.iconKey = "p"; child.iconKey = "c";
             configure(parent, child);
-            return new List<WeaponData> { parent, child };
+            return new List<SkillData> { parent, child };
         }
 
-        private static WeaponUpgradeOption Card(string id, params EffectDef[] effects) =>
-            new WeaponUpgradeOption { id = id, name = id, desc = id, maxPickCount = 1, effects = new List<EffectDef>(effects) };
+        private static SkillUpgradeOption Card(string id, params EffectDef[] effects) =>
+            new SkillUpgradeOption { id = id, name = id, desc = id, maxPickCount = 1, effects = new List<EffectDef>(effects) };
 
         [Test]
         public void Validator_AcceptsOverlayWhenSomeCardCastsTheChildEvenWithoutPrerequisite()
@@ -344,21 +344,21 @@ namespace Game.Tests
                 p.upgrades.Add(Card("link", Link()));
                 p.upgrades.Add(Card("boost", ForChild("damage", 80)));   // 선행 조건이 없어도 된다. 보관했다가 자식이 시전될 때 적용한다
             });
-            Assert.DoesNotThrow(() => WeaponCatalogValidator.Validate(catalog));
+            Assert.DoesNotThrow(() => SkillCatalogValidator.Validate(catalog));
         }
 
         [Test]
         public void Validator_AcceptsOverlayInTheSameCardAsTheLink()
         {
             var catalog = Catalog((p, c) => p.upgrades.Add(Card("both", Link(), ForChild("damage", 80))));
-            Assert.DoesNotThrow(() => WeaponCatalogValidator.Validate(catalog));
+            Assert.DoesNotThrow(() => SkillCatalogValidator.Validate(catalog));
         }
 
         [Test]
         public void Validator_RejectsOverlayOnSkillThatNoCardEverCasts()
         {
             var catalog = Catalog((p, c) => p.upgrades.Add(Card("boost", ForChild("damage", 80))));
-            var error = Assert.Throws<InvalidOperationException>(() => WeaponCatalogValidator.Validate(catalog));
+            var error = Assert.Throws<InvalidOperationException>(() => SkillCatalogValidator.Validate(catalog));
             StringAssert.Contains("boost", error.Message);
             StringAssert.Contains("시전되는 카드가 없어", error.Message);
         }
@@ -375,10 +375,10 @@ namespace Game.Tests
                 catalogExtra = grand;
             });
             catalog.Add(catalogExtra);
-            Assert.DoesNotThrow(() => WeaponCatalogValidator.Validate(catalog));
+            Assert.DoesNotThrow(() => SkillCatalogValidator.Validate(catalog));
         }
 
-        private static WeaponData catalogExtra;
+        private static SkillData catalogExtra;
 
         [Test]
         public void Validator_RejectsCycleCreatedByAttachedReaction()
@@ -389,7 +389,7 @@ namespace Game.Tests
                 // 부모 → 자식, 자식 → 부모는 자기 순환이다.
                 p.upgrades.Add(Card("loop", new EffectDef { kind = "onEvent", trigger = AttackEvent.Hit, skillId = ChildId, target = ChildId }));
             });
-            Assert.Throws<InvalidOperationException>(() => WeaponCatalogValidator.Validate(catalog));
+            Assert.Throws<InvalidOperationException>(() => SkillCatalogValidator.Validate(catalog));
         }
 
         [Test]
@@ -400,7 +400,7 @@ namespace Game.Tests
                 c.castType = CastType.Hitscan;
                 p.upgrades.Add(Card("link", Link(), ForChild("pierceCount", 1)));   // Hitscan 자식은 관통을 쓰지 않는다
             });
-            var error = Assert.Throws<InvalidOperationException>(() => WeaponCatalogValidator.Validate(catalog));
+            var error = Assert.Throws<InvalidOperationException>(() => SkillCatalogValidator.Validate(catalog));
             StringAssert.Contains("pierceCount", error.Message);
         }
 
@@ -408,11 +408,11 @@ namespace Game.Tests
         public void Validator_RejectsUnknownOrSelfTargetAndUnknownInheritStat()
         {
             var unknown = Catalog((p, c) => p.upgrades.Add(Card("x", new EffectDef { kind = "damage", value = 1, target = 99 })));
-            Assert.Throws<InvalidOperationException>(() => WeaponCatalogValidator.Validate(unknown));
+            Assert.Throws<InvalidOperationException>(() => SkillCatalogValidator.Validate(unknown));
             var self = Catalog((p, c) => p.upgrades.Add(Card("x", new EffectDef { kind = "damage", value = 1, target = ParentId })));
-            Assert.Throws<InvalidOperationException>(() => WeaponCatalogValidator.Validate(self));
+            Assert.Throws<InvalidOperationException>(() => SkillCatalogValidator.Validate(self));
             var badStat = Catalog((p, c) => p.upgrades.Add(Card("x", Link(new Dictionary<string, float> { ["noSuchStat"] = 1 }))));
-            var error = Assert.Throws<InvalidOperationException>(() => WeaponCatalogValidator.Validate(badStat));
+            var error = Assert.Throws<InvalidOperationException>(() => SkillCatalogValidator.Validate(badStat));
             StringAssert.Contains("inherit", error.Message);
         }
     }

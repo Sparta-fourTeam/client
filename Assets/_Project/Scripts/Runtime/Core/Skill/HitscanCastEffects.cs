@@ -8,7 +8,7 @@ namespace Game.Core
     /// <summary>Builds cast callbacks from fixed values; active casts keep their original upgrades.</summary>
     public sealed class HitscanCastEffects
     {
-        private readonly WeaponStats stats;
+        private readonly SkillStats stats;
         private readonly float range;
         private readonly IEnemyTargetProvider targets;
         private readonly ObjectPool<HitscanEffect> strikes;
@@ -16,7 +16,7 @@ namespace Game.Core
         private readonly Vector3 scale;
         private readonly AttackReactions reactions;
 
-        public HitscanCastEffects(WeaponStats stats, float range, IEnemyTargetProvider targets,
+        public HitscanCastEffects(SkillStats stats, float range, IEnemyTargetProvider targets,
             ObjectPool<HitscanEffect> strikes,
             ObjectPool<ElectromagneticField> fields, Vector3 scale, AttackReactions reactions = null)
         {
@@ -39,7 +39,7 @@ namespace Game.Core
             }
             var strike = strikes.Get();
             strike.SetVisualForm(stats.Cast.Form);
-            strike.transform.localScale = stats.Cast.Form == WeaponForm.JudgementThunder ? scale * 1.5f : scale;
+            strike.transform.localScale = stats.Cast.Form == SkillForm.JudgementThunder ? scale * 1.5f : scale;
             strike.Init(strikes, new Vector3(target.Position.x, target.Position.y, 0), stats.Cast.Damage,
                 reactions: CompileReactions().Then(reactions), sourceTarget: target);
         }
@@ -72,7 +72,7 @@ namespace Game.Core
                 }
                 if (nearest == null) { return; }
                 var secondary = strikes.Get();
-                secondary.SetVisualForm(WeaponForm.Default);
+                secondary.SetVisualForm(SkillForm.Default);
                 secondary.transform.localScale = scale * .5f;
                 secondary.Init(strikes, nearest.Position, damage, directTarget: nearest);
             };

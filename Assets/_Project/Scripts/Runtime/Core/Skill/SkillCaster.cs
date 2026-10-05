@@ -3,13 +3,13 @@ using UnityEngine;
 namespace Game.Core
 {
     /// <summary>쿨타임과 시전 수를 관리하고 실제 공격은 <see cref="IAttackStrategy"/>에 맡기는 공통 시전기.</summary>
-    public sealed class SkillCaster : WeaponBase
+    public sealed class SkillCaster : SkillBase
     {
         private readonly AttackEnvironment environment;
 
         public IAttackStrategy Strategy { get; }
 
-        public SkillCaster(WeaponData data, Transform caster, IEnemyTargetProvider targetProvider,
+        public SkillCaster(SkillData data, Transform caster, IEnemyTargetProvider targetProvider,
             IAttackStrategy strategy, SkillConfig config = null) : base(data, caster, targetProvider, config)
         {
             Strategy = strategy;

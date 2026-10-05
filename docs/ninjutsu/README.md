@@ -2,7 +2,7 @@
 
 스킬의 요구사항, 현재 구조, 실행 규칙, 구현 상태, 리팩 계획을 한 문서에 모았다. 2026-10-05 기준이다.
 
-- 실행 데이터의 원본은 `Assets/_Project/Resources/MockData/Weapons.json`이다.
+- 실행 데이터의 원본은 `Assets/_Project/Resources/MockData/Skills.json`이다.
 - 같은 폴더의 `requirements.json`은 요구사항 추적용이며 런타임에서 읽지 않는다. 검증은 저장소 루트에서 `python3 docs/ninjutsu/validate_requirements.py`로 한다.
 - 원문은 `ninjutsu-source-initial.txt`, `ninjutsu-source-additional.txt`다. 15종·168개 카드를 줄 번호로 연결했다.
 
@@ -37,7 +37,7 @@
 - 화살 난사와 확산은 합쳐 보조 화살 총 6개다. 히스이 필살기는 예외로 태풍 레벨을 참조한다.
 - 단방향 제한을 보존한다. 얼음창 연발→일제 사격→관통, 벼락 심판의 천둥→자기 폭풍은 허용 순서다. 제외 조건을 양방향으로 바꾸지 않는다.
 - 기본 상태이상 확률은 100%이고, 자료의 별도 확률이 우선한다(충격 통나무 기절 10%). 점화는 본체 직접 명중에만 적용하고 폭발에 전파하지 않는다.
-- 저장 데이터 호환은 고려하지 않는다. 아직 출시 전이라 효과 종류 키, JSON 스키마, 카드 ID를 바꿔도 된다. 다만 `Weapons.json`, 테스트, `requirements.json`, `validate_requirements.py`는 함께 갱신해야 한다.
+- 저장 데이터 호환은 고려하지 않는다. 아직 출시 전이라 효과 종류 키, JSON 스키마, 카드 ID를 바꿔도 된다. 다만 `Skills.json`, 테스트, `requirements.json`, `validate_requirements.py`는 함께 갱신해야 한다.
 
 ### 보류
 
@@ -194,7 +194,7 @@ flowchart TD
 | 화염구·얼음창·통나무 | 각각 11·12·10개 강화 연결 | 자료 충돌 및 임시 수치 확정, 실제 성장 해금·아트·플레이 검증 |
 | 벼락 | 13개 강화, 구체·처치 소형 벼락·심판·전자기장 연결 | 연쇄 번개 연계 증폭·연마, 초기 단일/범위 타격 구분 |
 | 분류·시간 | Projectile/Hitscan, 조준/통나무 경로, 별도 전자기장 수명·피해 주기 | 6속성·4형태·지상/공중 필터, 지속 주공격 종료 후 쿨타임. 현재 CastClock은 즉발 기준 |
-| 카탈로그 | Weapons.json 런타임, 별도 요구사항 표·검증기 | 기존 Cards.json 및 GameDataStore와의 통합 계약 정리 |
+| 카탈로그 | Skills.json 런타임, 별도 요구사항 표·검증기 | GeneralCards.json(스킬이 아닌 카드)과의 경계는 정리했고, GameDataStore에는 Skills 테이블로 편입했다 |
 | 리팩토링 | 불변 SkillConfig·효과별 스탯·공격 이벤트·강화 빌더·후보/조건/검증 서비스 분리 | 이전 Init 호환 진입점과 테스트 호출부 전환 여부, 다수 적 조회·정렬 성능 확인 |
 | 검증 | 5장의 Unity 검증, 요구사항 검증 통과 | 프로덕션 선택 UI·영구 성장·최종 시각 효과·다수 적 성능 검증 |
 
@@ -239,7 +239,7 @@ python3 docs/ninjutsu/validate_requirements.py
 | B | 같은 값이 `WeaponStats` → `ProjectileSpawnSettings` → `ProjectileHitEffects`로 세 번 복사된다. Hitscan은 `HitscanCastEffects`가 따로 만든다. | `Projectile*`, `Hitscan*` |
 | C | 반응(Reaction) 시스템이 JSON에 닿지 않는다. 새 반응은 모두 C# 코드를 써야 한다. `NumericReactionUpgradeEffect`는 이름과 달리 스탯을 쓴 뒤 Caster가 해석한다. | `SkillConfig.cs` |
 | D | `StatEffect`는 float 하나뿐이라 다중 파라미터 효과(확률·횟수·자식 스킬)를 담지 못한다. `Category()` switch를 수동 유지하며 빠뜨리면 조용히 Stat으로 분류된다. `HitCount`와 `ProjectileCount`가 중복이다. `WeaponForm` 분기가 `ProjectileVisual`, `SpawnRules`, `HitscanCastEffects`에 흩어져 있다. | `WeaponStatEffects.cs` |
-| E | 새 스킬은 `Weapons.json`, 프리팹 `prefabEntries`(씬 직렬화), `SkillIconTable` 세 곳을 따로 맞춰야 하고 누락은 런타임 경고로만 드러난다. `WeaponFactory`는 Projectile/Hitscan 외에는 `NotImplementedException`을 던진다. 두 Caster의 풀링·Dispose 코드가 비슷하다. | `WeaponFactory.cs`, `WeaponController.cs` |
+| E | 새 스킬은 `Skills.json`, 프리팹 `prefabEntries`(씬 직렬화), `SkillIconTable` 세 곳을 따로 맞춰야 하고 누락은 런타임 경고로만 드러난다. `WeaponFactory`는 Projectile/Hitscan 외에는 `NotImplementedException`을 던진다. 두 Caster의 풀링·Dispose 코드가 비슷하다. | `WeaponFactory.cs`, `WeaponController.cs` |
 | F | `data.baseStats`를 직접 읽는 곳이 남아 있다(`paralysisChance`, `freezeChance`, `reserve*`, `range`). 불변 스냅샷 밖이라 강화로 확률을 바꿀 수 없다. `WeaponBaseStats`는 모든 스킬 필드를 합친 28필드 평면 클래스다. `WeaponController.Start()`에 `AddWeapon(3)`이 하드코딩돼 있다. `WeaponCatalogValidator`는 구조만 검증하고 카드 효과가 스킬 종류에 의미가 있는지는 모른다. 예를 들어 Hitscan 스킬의 `PierceCount`는 통과하고 조용히 무시된다. | 여러 곳 |
 
 적용 로직(`WeaponUpgradeTransaction`, `UpgradeEligibility`, 불변 스냅샷, 조건 그래프 검증)은 이미 분리가 잘 돼 있어 유지한다.
@@ -261,13 +261,13 @@ python3 docs/ninjutsu/validate_requirements.py
    - 카탈로그 의미 검증: `EffectRegistry`가 효과를 소비하는 공격 종류를 선언에 갖고, `WeaponCatalogValidator`가 소비하지 않는 효과나 등록되지 않은 키를 카드 ID와 함께 거부한다(변형 효과 포함). 허용 공격은 `ProjectileSpawnRules`, `ReactionCompiler`, `HitscanCastEffects`가 실제로 읽는 값을 기준으로 만들었고, 현재 카탈로그가 모두 통과한다.
    - 스냅샷 복사 테스트: 등록된 모든 효과 종류를 적용한 스탯을 빈 강화로 한 번 더 복사해 값이 같은지 본다. 리플렉션으로 펼치므로 새 스탯이 자동으로 포함된다. 효과 종류 하나하나가 규칙을 갖고 스탯을 바꾸는지도 검사한다.
    - 골든 테스트: 카드 66장(변형 포함)의 단독 적용 결과와 무기별 전체 적용 결과를 `Tests/EditMode/Golden/WeaponCardStats.golden.txt`에 고정했다. 의도한 변경이면 `RegenerateGolden`(Explicit)을 실행해 파일을 갱신하고 diff를 리뷰한다. 폭발 반경 배율 카드처럼 선행 카드 없이 단독으로는 값이 안 바뀌는 카드는 `(변화 없음)`으로 기록된다.
-   - 프리팹·아이콘 연결 테스트: `Weapons.json`의 id와 `iconKey`를 `prefabEntries`(공격 종류에 맞는 컴포넌트 포함), `SkillIconTable_Side`, `SkillIconTable_Card`(`_new`, `_upgrade`)와 대조하고, 기본 아이콘과 빈 스프라이트도 검사한다. 시작 시 예외가 아니라 테스트로 구현했다.
+   - 프리팹·아이콘 연결 테스트: `Skills.json`의 id와 `iconKey`를 `prefabEntries`(공격 종류에 맞는 컴포넌트 포함), `SkillIconTable_Side`, `SkillIconTable_Card`(`_new`, `_upgrade`)와 대조하고, 기본 아이콘과 빈 스프라이트도 검사한다. 시작 시 예외가 아니라 테스트로 구현했다.
 2. **스탯 일원화와 기본 수치 분할** (약 2일, A·B·F) — **완료**
    - **완료**: `Stat` enum과 `WeaponStatRegistry`(스탯별 기본값 한 줄)로 `WeaponStatsBuilder`의 필드 나열·복사 생성자를 대체했다. 스냅샷은 값 배열 하나를 갖고 묶음 구조체(`stats.Cast.Damage` 등)가 읽으므로 공개 API는 그대로고, 복사에서 스탯이 빠질 수 없다. 기본값 선언이 빠진 스탯은 시작 시 예외가 난다. 이제 스탯 하나를 더하려면 `Stat` enum, 레지스트리 기본값, 묶음 구조체 속성, 규칙 한 줄이다.
    - **완료**: `data.baseStats` 직접 접근을 없앴다. 확률(마비·빙결·동상·화상·기절), 시전 간격, 예비 시전 값은 스냅샷(`Status`·`Burn`·`Cast`)으로, 사거리는 `AttackDefinition.Range`로 옮겼다.
    - **완료**: `Category()` switch를 없애고 분류를 규칙 선언(`AddStat`/`AddCast`/`AddReaction`)에 함께 적는다.
-   - **완료**: `WeaponBaseStats`를 `cast`·`projectile`·`reserve`·`status`·`explosion`·`field` 묶음으로 나눴다. `Weapons.json`의 `baseStats`는 필요한 묶음만 적으면 되고, 적지 않은 값은 묶음 클래스의 기본값(`castCount` 1, 확률 1 등)을 쓴다. `hitCount`는 `projectileCount`로 이름을 바꿨다.
-   - **완료**: `UpgradeType`을 정리했다(이후 4단계에서 enum 자체를 `EffectRegistry`로 대체했다). `HitCount`를 `ProjectileCount`로 통합했고, `Shard*`/`Auxiliary*`는 `Split*`로 바꿨고, 값은 묶음별 10단위 대역(시전 0, 투사체 10, 폭발 20, 상태이상 30, 화상 40, 분열 50, 번개 60, 장판 70)으로 재배열했다. 새 종류는 대역의 다음 빈 번호를 쓰므로 기존 값이 밀리지 않는다. `Weapons.json`의 type 숫자 106곳은 스크립트로 일괄 변환했다.
+   - **완료**: `WeaponBaseStats`를 `cast`·`projectile`·`reserve`·`status`·`explosion`·`field` 묶음으로 나눴다. `Skills.json`의 `baseStats`는 필요한 묶음만 적으면 되고, 적지 않은 값은 묶음 클래스의 기본값(`castCount` 1, 확률 1 등)을 쓴다. `hitCount`는 `projectileCount`로 이름을 바꿨다.
+   - **완료**: `UpgradeType`을 정리했다(이후 4단계에서 enum 자체를 `EffectRegistry`로 대체했다). `HitCount`를 `ProjectileCount`로 통합했고, `Shard*`/`Auxiliary*`는 `Split*`로 바꿨고, 값은 묶음별 10단위 대역(시전 0, 투사체 10, 폭발 20, 상태이상 30, 화상 40, 분열 50, 번개 60, 장판 70)으로 재배열했다. 새 종류는 대역의 다음 빈 번호를 쓰므로 기존 값이 밀리지 않는다. `Skills.json`의 type 숫자 106곳은 스크립트로 일괄 변환했다.
 3. **반응 컴파일 통합** (약 2일, B·C) — **완료**
    - `HitReactionBuilder`(피해·빙결·밀치기·동상·마비·추가 번개·화상·기절·감속·취약을 정해진 순서로 쌓는다)와 `ReactionCompiler.ForProjectile`(스탯 스냅샷 → 적중 반응)로 변환 로직을 한 곳에 모았다. 보조 투사체(분기·분열 조각·번개 구체)도 같은 빌더를 쓴다.
    - `ProjectileSpawnSettings`의 피해·상태이상 필드 약 20개를 `HitReactions`(`AttackReactions`) 하나로 대체했다. `ProjectileHitEffects`와 30개 인자 `Projectile.Init` 오버로드는 없앴다(오버로드는 테스트 확장으로 옮겼다).
@@ -275,12 +275,12 @@ python3 docs/ninjutsu/validate_requirements.py
    - `NumericReactionUpgradeEffect`는 반응이 아니라 스탯을 켜는 효과이므로 `ReactionStatUpgradeEffect`로 이름을 바꿨다. 반응 자체를 정의하는 효과는 `ReactionUpgradeEffect`다.
    - 남은 것: 투사체의 `OnHit` 콜백(폭발·분열·삼각 분열)은 아직 `Action`으로 남아 있다. 4단계의 `onEvent` 핸들러 도입 때 함께 반응으로 옮긴다.
 4. **효과 스키마 교체** (약 2일, C·D) — **완료**
-   - **완료(4-1)**: `UpgradeType` enum과 `UpgradeCompatibility` 표, `WeaponStatEffects`의 규칙 사전, `Category()` switch를 `EffectRegistry` 하나로 합쳤다. 효과는 `EffectDef{kind(문자열 키), value}`가 되었고 `Weapons.json`의 효과 106곳(`type` 숫자 → `kind` 키)은 스크립트로 변환했다. 새 효과 종류는 `EffectRegistry`에 한 줄만 더하면 된다. 골든 테스트가 변환 전후 카드 66장의 결과가 같음을 보장한다. 옛 `Cards.json`의 `UpgradeOption`도 키 문자열로 바꿨다.
+   - **완료(4-1)**: `UpgradeType` enum과 `UpgradeCompatibility` 표, `WeaponStatEffects`의 규칙 사전, `Category()` switch를 `EffectRegistry` 하나로 합쳤다. 효과는 `EffectDef{kind(문자열 키), value}`가 되었고 `Skills.json`의 효과 106곳(`type` 숫자 → `kind` 키)은 스크립트로 변환했다. 새 효과 종류는 `EffectRegistry`에 한 줄만 더하면 된다. 골든 테스트가 변환 전후 카드 66장의 결과가 같음을 보장한다. 옛 `Cards.json`의 `UpgradeOption`도 키 문자열로 바꿨다.
    - **완료(4-2)**: `EffectRegistry`에 `onEvent`(시점·확률·횟수·자식 스킬 ID)와 `periodic`(주기·자식 스킬 ID) 효과를 등록했다. `EffectDef`의 선택 필드(`trigger`, `skillId`, `chance`, `count`, `interval`)로 표현하고, 컴파일하면 `CastSkillReaction`(주기형은 `PeriodicReaction`으로 감싼다)이 해당 시점의 반응으로 붙는다. 예: `{"kind":"onEvent","trigger":"Expired","skillId":12}`.
    - **완료(4-2)**: 자식 스킬은 무기 ID로 참조하고 `WeaponCatalogValidator`가 존재와 순환(자기 자신 포함, 변형 효과 포함)을 카드 ID·경로(`1 → 3 → 1`)와 함께 거부한다.
    - **완료(5단계에서 연결)**: 자식 스킬 시전은 `ChildSkillCaster`가 맡는다. 자식은 처음 필요할 때 한 번 만들어 재사용하며, 이벤트 위치를 시전 위치(`AttackEnvironment.Origin`)로 해서 쿨타임 없이 `SkillCaster.FireAt`으로 공격을 낸다. `WeaponController`가 연결하고, 다른 스킬의 효과로만 쓰는 스킬은 `WeaponData.childOnly`로 표시해 새 스킬 카드에서 빼야 한다. 시전기가 연결되지 않았으면 자식 시전 효과를 적용할 때 조용히 사라지지 않고 강화가 실패한다. 현재 카드 66장은 자식 시전을 쓰지 않는다.
    - **결정**: `WeaponForm`은 이번에 데이터화하지 않고 enum으로 둔다. 형태는 스프라이트(`ProjectileVisual`), 발사 규칙(`SpawnRules`), `HitscanCastEffects`의 분기와 묶여 있어서, 공격 전략 추상화(5단계)에서 "형태 = 전략 구성" 구조가 정해진 뒤 데이터화하는 편이 한 번에 끝난다. 새 형태를 더할 때는 enum, `form` 효과 허용 값(`EffectRegistry`), 해당 분기를 고친다.
-   - 끝나면 서리 감옥·번개 구름 같은 `Expired`/`Hit` 자식 시전 카드를 코드 없이 추가할 수 있다. 자식이 될 스킬을 `Weapons.json`에 `childOnly: true`로 추가하고, 부모 카드에 `onEvent`/`periodic` 효과를 적는다. 자식 스킬도 프리팹 엔트리와 아이콘이 필요하다.
+   - 끝나면 서리 감옥·번개 구름 같은 `Expired`/`Hit` 자식 시전 카드를 코드 없이 추가할 수 있다. 자식이 될 스킬을 `Skills.json`에 `childOnly: true`로 추가하고, 부모 카드에 `onEvent`/`periodic` 효과를 적는다. 자식 스킬도 프리팹 엔트리와 아이콘이 필요하다.
 5. **공격 전략 추상화** (약 3일, E) — **완료**(미구현 10종 구현은 별도 작업)
    - `IAttackStrategy`(`Fire`, `Tick`)와 `AttackEnvironment`(시전자, 대상 제공자, 시전 위치)를 도입했다. 쿨타임과 시전 수는 공통 `SkillCaster`가 관리하고 공격은 전략에 위임한다. 풀링과 Dispose는 전략이 가진다.
    - `ProjectileCaster`와 `HitscanCaster`를 `ProjectileStrategy`와 `HitscanStrategy`로 바꿨다(예비 시전은 `ProjectileStrategy`가 가진다). `WeaponFactory`는 `castType` → 전략 등록 테이블이고, `WeaponCatalogValidator`가 전략이 등록되지 않은 `castType`을 시작 때 막는다.
@@ -293,11 +293,11 @@ python3 docs/ninjutsu/validate_requirements.py
 
 ### 6.5 추가 체크리스트
 
-**새 카드(기존 효과만 쓰는 경우)**: `Weapons.json`의 해당 스킬 `upgrades`에 카드를 적는다. `effects`의 `kind`는 `EffectRegistry`에 등록된 키다. 카드 아이콘은 `SkillIconTable_Card`에 `카드ID_new`, `카드ID_upgrade` 키로 연결한다. 이후 `RegenerateGolden`(Explicit 테스트)으로 골든을 갱신하고 diff를 리뷰한다. 검증기가 등록되지 않은 키, 스킬이 소비하지 않는 효과, 조건 그래프 오류를 카드 ID와 함께 알려 준다.
+**새 카드(기존 효과만 쓰는 경우)**: `Skills.json`의 해당 스킬 `upgrades`에 카드를 적는다. `effects`의 `kind`는 `EffectRegistry`에 등록된 키다. 카드 아이콘은 `SkillIconTable_Card`에 `카드ID_new`, `카드ID_upgrade` 키로 연결한다. 이후 `RegenerateGolden`(Explicit 테스트)으로 골든을 갱신하고 diff를 리뷰한다. 검증기가 등록되지 않은 키, 스킬이 소비하지 않는 효과, 조건 그래프 오류를 카드 ID와 함께 알려 준다.
 
 **새 효과 종류**: `EffectRegistry`에 한 줄(키, 분류, 허용 공격, 값 규칙, 적용)을 더한다. 새 스탯이 필요하면 `Stat` enum, `WeaponStatRegistry`의 기본값, 묶음 구조체 속성(`CastStats` 등)에 한 줄씩 더한다. 스탯을 읽는 쪽은 반응이면 `ReactionCompiler`/`HitReactionBuilder`, 그 밖이면 해당 전략이다. 안전망 테스트(등록·적용·스냅샷 복사 누락)가 빠뜨린 곳을 알려 준다.
 
-**새 스킬(기존 공격 종류)**: 먼저 6.7의 스킬 샌드박스에서 눈으로 확인할 수 있도록 `Weapons.json`에 스킬을 추가한다(`castType`, `baseStats` 묶음, `upgrades`). 다른 스킬의 효과로만 쓰면 `childOnly: true`로 표시한다. `Player_Animated` 프리팹의 `WeaponController.prefabEntries`에 id와 프리팹을, `SkillIconTable_Side`에 HUD 아이콘 키(`iconKey`)를 연결한다. 프리팹·아이콘 연결 테스트가 누락을 잡는다. 영구 성장을 쓰면 `progressionId`를 맞춘다.
+**새 스킬(기존 공격 종류)**: 먼저 6.7의 스킬 샌드박스에서 눈으로 확인할 수 있도록 `Skills.json`에 스킬을 추가한다(`castType`, `baseStats` 묶음, `upgrades`). 다른 스킬의 효과로만 쓰면 `childOnly: true`로 표시한다. `Player_Animated` 프리팹의 `WeaponController.prefabEntries`에 id와 프리팹을, `SkillIconTable_Side`에 HUD 아이콘 키(`iconKey`)를 연결한다. 프리팹·아이콘 연결 테스트가 누락을 잡는다. 영구 성장을 쓰면 `progressionId`를 맞춘다.
 
 **새 공격 종류**: `CastType`(Projectile, Hitscan, Area, Beam, Chain)에 값을 더하고, `IAttackStrategy` 구현을 만들어 `WeaponFactory`에 등록한다. 효과 종류의 허용 공격(`EffectRegistry`)에 새 종류를 반영한다.
 
@@ -342,18 +342,18 @@ python3 docs/ninjutsu/validate_requirements.py
 
 스킬을 만들거나 고친 뒤에는 **Tools → Project Nova → Skill Sandbox**로 씬(`Scenes/Sandbox/SkillSandbox.unity`)을 열고 재생한다. 스테이지와 같은 카메라, 플레이어, 벽 위치에 **실제 `Enemy` 프리팹**을 세워 두므로 투사체, Hitscan, 영역, 광선, 연쇄가 게임과 같은 방식으로 맞는다. 화면 아래쪽 패널(IMGUI)은 `패널 접기` 버튼으로 접을 수 있다.
 
-- **스킬**: `Weapons.json`의 스킬(자식 전용 제외)이 자동으로 나온다. 프리팹 연결(`prefabEntries`)이 없는 스킬은 비활성으로 표시된다.
+- **스킬**: `Skills.json`의 스킬(자식 전용 제외)이 자동으로 나온다. 프리팹 연결(`prefabEntries`)이 없는 스킬은 비활성으로 표시된다.
 - **카드**: 기본은 선행 조건을 무시하고 목록에서 직접 고른다(`−`로 하나씩 뺄 수 있다). 비활성 카드는 `disabledReason`이 보이고, 공유 카드(`sharedId`)는 실제 선택 모드에서만 된다. **실제 3지선다** 모드는 게임과 같은 규칙(선행 조건, 최대 횟수, 제외)으로 카드를 뽑는다. 구성이 바뀔 때마다 보유 스킬을 비우고 처음부터 다시 쌓으므로 카드를 얻은 순서까지 같다.
 - **적**: 샌드백 1·3·5·10마리, 배치(직선, 군집, 흩뿌림), HP(100, 1,000, 10,000), 이동 모드(켜면 벽을 향해 내려옴), 되살림(죽으면 같은 자리에 새로 생성), 화면 클릭으로 배치. 적의 공격 피해는 0이다. 누적 피해와 최근 3초 초당 피해(DPS)가 아래에 보인다.
 - **환경**: 영구 레벨(`(+)` 변형과 해금 조건 확인), 시간 배속(0.25x~2x), 구성 저장·불러오기 3칸(`PlayerPrefs`, 이 기기에만 남음).
 - **현재 스킬 정보**: 값이 0이 아닌 스탯 묶음과 연결된 자식 스킬.
 
-구현은 `Game.Sandbox` 어셈블리다. 조작 로직(`SkillSandboxSession`)은 UI와 분리돼 EditMode 테스트로 보호하고, 패널(`SandboxPanel`)은 디버그 도구라 IMGUI로 만들어 프리팹과 EventSystem이 필요 없다. 새 스킬은 코드를 고칠 필요 없이 `Weapons.json`과 `prefabEntries`만 맞으면 목록에 나온다. 플레이 모드를 켠 채 에디터가 포커스를 잃으면 게임 루프가 멈추므로(Unity 기본 동작) 자동화로 확인할 때는 `Application.runInBackground`를 켠다.
+구현은 `Game.Sandbox` 어셈블리다. 조작 로직(`SkillSandboxSession`)은 UI와 분리돼 EditMode 테스트로 보호하고, 패널(`SandboxPanel`)은 디버그 도구라 IMGUI로 만들어 프리팹과 EventSystem이 필요 없다. 새 스킬은 코드를 고칠 필요 없이 `Skills.json`과 `prefabEntries`만 맞으면 목록에 나온다. 플레이 모드를 켠 채 에디터가 포커스를 잃으면 게임 루프가 멈추므로(Unity 기본 동작) 자동화로 확인할 때는 `Application.runInBackground`를 켠다.
 
 ### 6.4 위험과 주의
 
 - 2단계가 가장 넓게 영향을 준다. 1단계의 골든 테스트 없이 시작하지 않는다.
-- 카드 ID, enum 숫자, `progressionId`를 바꾸면 repo 내부 파일(`Weapons.json`, 테스트, `requirements.json`, `validate_requirements.py`, `LocalUpgradeApi`)을 함께 고쳐야 한다.
+- 카드 ID, enum 숫자, `progressionId`를 바꾸면 repo 내부 파일(`Skills.json`, 테스트, `requirements.json`, `validate_requirements.py`, `LocalUpgradeApi`)을 함께 고쳐야 한다.
 - 프리팹과 씬의 직렬화 참조(`prefabEntries`의 id, `SkillIconTable`의 키)는 사용자 데이터가 아니라 에셋이므로 id를 바꾸면 에셋도 같이 고친다.
 - 한 PR에 enum 재배열, JSON 변환, 테스트 수정이 겹치면 리뷰가 어렵다. 커밋을 나눈다.
 

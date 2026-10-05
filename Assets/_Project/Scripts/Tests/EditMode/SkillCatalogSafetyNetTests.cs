@@ -16,7 +16,7 @@ namespace Game.Tests
     /// 스킬 구조를 바꾸기 전의 안전망. 새 카드와 새 스킬을 넣을 때 조용히 깨지는 곳을 테스트가 먼저 알려 준다.
     /// 카탈로그 의미 검증, 스냅샷 복사 누락, 카드 효과 골든, 프리팹과 아이콘 연결을 지킨다.
     /// </summary>
-    public sealed class WeaponCatalogSafetyNetTests
+    public sealed class SkillCatalogSafetyNetTests
     {
         private const string PlayerPrefab = "Assets/_Project/Prefabs/Stage/Player_Animated.prefab";
         private const string SideIconTable = "Assets/_Project/Data/SkillIconTable_Side.asset";
@@ -25,10 +25,10 @@ namespace Game.Tests
 
         private static IEnumerable<string> AllEffectKinds() => EffectRegistry.Keys.Where(EffectRegistry.IsStatKind).ToList();
 
-        private static List<WeaponData> LoadUnvalidated() =>
-            JsonConvert.DeserializeObject<List<WeaponData>>(Resources.Load<TextAsset>("MockData/Weapons").text);
+        private static List<SkillData> LoadUnvalidated() =>
+            JsonConvert.DeserializeObject<List<SkillData>>(Resources.Load<TextAsset>("MockData/Skills").text);
 
-        private static WeaponStats Baseline() => WeaponStats.FromDefinition(new WeaponBaseStats
+        private static SkillStats Baseline() => SkillStats.FromDefinition(new SkillBaseStats
         {
             cast = { baseDamage = 100, cooldown = 2, projectileCount = 2, castCount = 1 },
             projectile = { speed = 10, pierceCount = 1, knockbackDistance = 1 },
@@ -60,16 +60,16 @@ namespace Game.Tests
         [TestCaseSource(nameof(AllEffectKinds))]
         public void EveryEffectKind_HasAcceptingRule(string type)
         {
-            Assert.IsTrue(WeaponStatEffects.TryCompile(new EffectDef { kind = type, value = ProbeValue(type) }, out _),
+            Assert.IsTrue(SkillStatEffects.TryCompile(new EffectDef { kind = type, value = ProbeValue(type) }, out _),
                 $"{type}의 적용 규칙이 없거나 값을 받아들이지 않습니다.");
         }
 
         [TestCaseSource(nameof(AllEffectKinds))]
         public void EveryEffectKind_ChangesSomeStat(string type)
         {
-            var before = WeaponStatsDump.Flatten(Baseline());
-            var after = WeaponStatsDump.Flatten(WeaponStatsTestFactory.Apply(Baseline(), type, ProbeValue(type)));
-            Assert.AreNotEqual("(변화 없음)", WeaponStatsDump.Diff(before, after), $"{type}이 어떤 스탯도 바꾸지 않습니다.");
+            var before = SkillStatsDump.Flatten(Baseline());
+            var after = SkillStatsDump.Flatten(SkillTestFactory.Apply(Baseline(), type, ProbeValue(type)));
+            Assert.AreNotEqual("(변화 없음)", SkillStatsDump.Diff(before, after), $"{type}이 어떤 스탯도 바꾸지 않습니다.");
         }
 
         // ── 스냅샷 복사 누락 ──────────────────────────────────────────
@@ -77,7 +77,7 @@ namespace Game.Tests
         [Test]
         public void StatsDump_CoversEveryStatGroup()
         {
-            var keys = WeaponStatsDump.Flatten(Baseline()).Keys.ToList();
+            var keys = SkillStatsDump.Flatten(Baseline()).Keys.ToList();
             foreach (var group in new[] { "Cast.", "Projectile.", "Status.", "Burn.", "Explosion.", "Lightning.", "Field.", "Area.", "Beam.", "Chain." })
             {
                 Assert.IsTrue(keys.Any(k => k.StartsWith(group, StringComparison.Ordinal)), group);
@@ -89,12 +89,12 @@ namespace Game.Tests
         public void SnapshotCopy_PreservesEveryField()
         {
             var effects = AllEffectKinds().Select(t => new EffectDef { kind = t, value = ProbeValue(t) }).ToList();
-            Assert.IsTrue(WeaponStatEffects.TryApply(Baseline(), effects, out var full));
-            Assert.IsTrue(WeaponStatEffects.TryApply(full, new List<EffectDef>(), out var copy), "빈 강화 적용이 실패했습니다.");
+            Assert.IsTrue(SkillStatEffects.TryApply(Baseline(), effects, out var full));
+            Assert.IsTrue(SkillStatEffects.TryApply(full, new List<EffectDef>(), out var copy), "빈 강화 적용이 실패했습니다.");
 
-            var expected = WeaponStatsDump.Flatten(full);
-            var actual = WeaponStatsDump.Flatten(copy);
-            Assert.AreEqual("(변화 없음)", WeaponStatsDump.Diff(expected, actual),
+            var expected = SkillStatsDump.Flatten(full);
+            var actual = SkillStatsDump.Flatten(copy);
+            Assert.AreEqual("(변화 없음)", SkillStatsDump.Diff(expected, actual),
                 "스냅샷을 복사하면서 값이 바뀌었습니다. WeaponStatsBuilder의 복사 생성자에서 필드가 빠졌는지 확인하세요.");
         }
 
@@ -103,7 +103,7 @@ namespace Game.Tests
         [Test]
         public void Validator_AcceptsShippedCatalog()
         {
-            Assert.DoesNotThrow(() => WeaponCatalogValidator.Validate(LoadUnvalidated()));
+            Assert.DoesNotThrow(() => SkillCatalogValidator.Validate(LoadUnvalidated()));
         }
 
         [Test]
@@ -114,7 +114,7 @@ namespace Game.Tests
             var card = weapon.upgrades[0];
             card.effects.Add(new EffectDef { kind = "pierceCount", value = 1 });
 
-            var error = Assert.Throws<InvalidOperationException>(() => WeaponCatalogValidator.Validate(catalog));
+            var error = Assert.Throws<InvalidOperationException>(() => SkillCatalogValidator.Validate(catalog));
             StringAssert.Contains(card.id, error.Message);
             StringAssert.Contains("pierceCount", error.Message);
         }
@@ -127,7 +127,7 @@ namespace Game.Tests
             var card = weapon.upgrades[0];
             card.effects.Add(new EffectDef { kind = "fieldDuration", value = 1 });
 
-            var error = Assert.Throws<InvalidOperationException>(() => WeaponCatalogValidator.Validate(catalog));
+            var error = Assert.Throws<InvalidOperationException>(() => SkillCatalogValidator.Validate(catalog));
             StringAssert.Contains(card.id, error.Message);
             StringAssert.Contains("fieldDuration", error.Message);
         }
@@ -140,7 +140,7 @@ namespace Game.Tests
             var card = weapon.upgrades.First(u => u.variants != null && u.variants.Length > 0);
             card.variants[0].effects.Add(new EffectDef { kind = "projectileSpeed", value = 1 });
 
-            var error = Assert.Throws<InvalidOperationException>(() => WeaponCatalogValidator.Validate(catalog));
+            var error = Assert.Throws<InvalidOperationException>(() => SkillCatalogValidator.Validate(catalog));
             StringAssert.Contains(card.id, error.Message);
         }
 
@@ -175,20 +175,20 @@ namespace Game.Tests
         private static string BuildGolden()
         {
             var text = new StringBuilder();
-            foreach (var weapon in new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().OrderBy(w => w.id))
+            foreach (var weapon in new DefaultSkillDataProvider(new GameDataStore()).LoadAll().OrderBy(w => w.id))
             {
                 // 자식 스킬 시전 효과도 적용해 볼 수 있도록 아무것도 하지 않는 시전기를 연결한다.
                 var start = SkillConfig.FromDefinition(weapon).WithChildCaster(new NoopChildCaster());
-                var baseline = WeaponStatsDump.Flatten(start.Stats);
+                var baseline = SkillStatsDump.Flatten(start.Stats);
                 foreach (var option in weapon.upgrades)
                 {
                     foreach (int level in PermanentLevels(option))
                     {
-                        Assert.IsTrue(WeaponUpgradeResolver.TryResolve(option, level, out var resolved), option.id);
+                        Assert.IsTrue(SkillUpgradeResolver.TryResolve(option, level, out var resolved), option.id);
                         var builder = new SkillConfigBuilder(start);
                         Assert.IsTrue(builder.TryApplyCatalog(resolved.Effects), option.id);
                         text.Append(weapon.id).Append('/').Append(option.id).Append('@').Append(level).Append(": ")
-                            .Append(WeaponStatsDump.Diff(baseline, WeaponStatsDump.Flatten(builder.Build().Stats))).Append('\n');
+                            .Append(SkillStatsDump.Diff(baseline, SkillStatsDump.Flatten(builder.Build().Stats))).Append('\n');
                     }
                 }
 
@@ -196,17 +196,17 @@ namespace Game.Tests
                 var all = new SkillConfigBuilder(start);
                 foreach (var option in weapon.upgrades)
                 {
-                    Assert.IsTrue(WeaponUpgradeResolver.TryResolve(option, 0, out var resolved), option.id);
+                    Assert.IsTrue(SkillUpgradeResolver.TryResolve(option, 0, out var resolved), option.id);
                     for (int n = 0; n < option.maxPickCount; n++) { Assert.IsTrue(all.TryApplyCatalog(resolved.Effects), option.id); }
                 }
                 text.Append(weapon.id).Append("/ALL@0: ")
-                    .Append(WeaponStatsDump.Diff(baseline, WeaponStatsDump.Flatten(all.Build().Stats))).Append('\n');
+                    .Append(SkillStatsDump.Diff(baseline, SkillStatsDump.Flatten(all.Build().Stats))).Append('\n');
             }
             return text.ToString();
         }
 
-        private static IEnumerable<int> PermanentLevels(WeaponUpgradeOption option) =>
-            new[] { 0 }.Concat((option.variants ?? Array.Empty<WeaponUpgradeVariant>()).Select(v => v.minPermanentLevel))
+        private static IEnumerable<int> PermanentLevels(SkillUpgradeOption option) =>
+            new[] { 0 }.Concat((option.variants ?? Array.Empty<SkillUpgradeVariant>()).Select(v => v.minPermanentLevel))
                 .Distinct().OrderBy(level => level);
 
         private static string Normalize(string text) => text.Replace("\r\n", "\n");
@@ -231,7 +231,7 @@ namespace Game.Tests
         {
             var player = AssetDatabase.LoadAssetAtPath<GameObject>(PlayerPrefab);
             Assert.IsNotNull(player, PlayerPrefab);
-            var controller = player.GetComponentInChildren<WeaponController>(true);
+            var controller = player.GetComponentInChildren<SkillController>(true);
             Assert.IsNotNull(controller, "플레이어 프리팹에 WeaponController가 없습니다.");
 
             var entries = new SerializedObject(controller).FindProperty("prefabEntries");
@@ -243,7 +243,7 @@ namespace Game.Tests
             }
 
             var problems = new List<string>();
-            foreach (var weapon in new DefaultWeaponDataProvider(new GameDataStore()).LoadAll())
+            foreach (var weapon in new DefaultSkillDataProvider(new GameDataStore()).LoadAll())
             {
                 if (!prefabs.TryGetValue(weapon.id, out var prefab) || prefab == null)
                 {
@@ -266,7 +266,7 @@ namespace Game.Tests
         public void EveryCatalogWeapon_HasHudIcon()
         {
             var keys = IconKeys(SideIconTable);
-            var missing = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Where(w => !keys.Contains(w.iconKey))
+            var missing = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Where(w => !keys.Contains(w.iconKey))
                 .Select(w => $"{w.id}({w.name}): {w.iconKey}").ToList();
             Assert.IsEmpty(missing, "SkillIconTable_Side에 아이콘이 없습니다.\n" + string.Join("\n", missing));
         }
@@ -276,7 +276,7 @@ namespace Game.Tests
         {
             var keys = IconKeys(CardIconTable);
             var missing = new List<string>();
-            foreach (var weapon in new DefaultWeaponDataProvider(new GameDataStore()).LoadAll())
+            foreach (var weapon in new DefaultSkillDataProvider(new GameDataStore()).LoadAll())
             {
                 foreach (var suffix in new[] { "_new", "_upgrade" })
                 {

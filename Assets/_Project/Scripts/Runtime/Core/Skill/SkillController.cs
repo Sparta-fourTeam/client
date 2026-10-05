@@ -7,29 +7,29 @@ using VContainer;
 namespace Game.Core
 {
     [System.Serializable]
-    public class WeaponPrefabEntry
+    public class SkillPrefabEntry
     {
         public int id;
         public GameObject prefab;
     }
 
 
-    public class WeaponController : MonoBehaviour, IUpgradeState
+    public class SkillController : MonoBehaviour, IUpgradeState, IUpgradeChoiceSource
     {
-        [SerializeField] private List<WeaponPrefabEntry> prefabEntries;
-        private Dictionary<int, WeaponData> dataTable;
-        private IWeaponDataProvider dataProvider;
+        [SerializeField] private List<SkillPrefabEntry> prefabEntries;
+        private Dictionary<int, SkillData> dataTable;
+        private ISkillDataProvider dataProvider;
         private IWeaponProgression progression;
         private IStartingSkills startingSkills;
-        private Game.Core.Defense.Wall wall;
+        private Defense.Wall wall;
         private readonly Dictionary<int, int> permanentLevels = new();
-        private List<WeaponBase> weapons = new List<WeaponBase>();
+        private List<SkillBase> skills = new();
         private IEnemyTargetProvider targetProvider;
         private IBufferedPublisher<SkillChanged> skillChanged;
         private ChildSkillCaster childCaster;
 
         [Inject]
-        public void Construct(IEnemyTargetProvider targetProvider, IBufferedPublisher<SkillChanged> skillChanged, IWeaponDataProvider dataProvider, IWeaponProgression progression = null, Game.Core.Defense.Wall wall = null, IStartingSkills startingSkills = null)
+        public void Construct(IEnemyTargetProvider targetProvider, IBufferedPublisher<SkillChanged> skillChanged, ISkillDataProvider dataProvider, IWeaponProgression progression = null, Game.Core.Defense.Wall wall = null, IStartingSkills startingSkills = null)
         {
             this.startingSkills = startingSkills ?? new DefaultStartingSkills();
             this.targetProvider = targetProvider;
@@ -41,7 +41,7 @@ namespace Game.Core
 
         private void Start()
         {
-            dataTable = new Dictionary<int, WeaponData>();
+            dataTable = new Dictionary<int, SkillData>();
             foreach (var data in dataProvider.LoadAll())
             {
                 dataTable.Add(data.id, data);
@@ -60,7 +60,7 @@ namespace Game.Core
                 Debug.LogWarning($"[WeaponController] 자식 스킬 skillId={skillId}의 데이터 또는 프리팹 엔트리가 없어 시전하지 못합니다.");
                 return null;
             }
-            var child = WeaponFactory.Create(data, entry.prefab, transform, targetProvider, wall);
+            var child = SkillFactory.Create(data, entry.prefab, transform, targetProvider, wall);
             child.UseChildCaster(childCaster);
             return child;
         }
@@ -74,7 +74,7 @@ namespace Game.Core
                 return false;
             }
 
-            foreach (var owned in weapons)
+            foreach (var owned in skills)
             {
                 if (owned.Data.id == weaponId)
                 {
@@ -90,15 +90,15 @@ namespace Game.Core
                 return false;
             }
 
-            var weapon = WeaponFactory.Create(data, entry.prefab, transform, targetProvider, wall);
+            var weapon = SkillFactory.Create(data, entry.prefab, transform, targetProvider, wall);
             weapon.UseChildCaster(childCaster);
-            weapons.Add(weapon);
+            skills.Add(weapon);
             PublishSkills();
             return true;
         }
 
         /// <summary>보유 스킬 (조회용)</summary>
-        public IReadOnlyList<WeaponBase> Weapons => weapons;
+        public IReadOnlyList<SkillBase> Skills => skills;
 
         /// <summary>카탈로그를 읽어 스킬을 얻을 수 있는 상태인지 (Start 이후)</summary>
         public bool IsReady => dataTable != null;
@@ -109,8 +109,8 @@ namespace Game.Core
         /// <summary>보유 스킬을 모두 정리하고 목록을 비운다 (샌드박스 같은 도구가 처음부터 다시 쌓을 때 쓴다)</summary>
         public void ClearWeapons()
         {
-            foreach (var weapon in weapons) { weapon.Dispose(); }
-            weapons.Clear();
+            foreach (var weapon in skills) { weapon.Dispose(); }
+            skills.Clear();
             PublishSkills();
         }
 
@@ -124,21 +124,23 @@ namespace Game.Core
         /// <summary>보유 무기 전체의 스냅샷을 HUD에 알린다. Buffered로 발행해야 나중에 켜진 구독자도 현재 목록을 받는다</summary>
         private void PublishSkills()
         {
-            skillChanged.Publish(new SkillChanged(new List<ISkillStatus>(weapons)));
+            skillChanged.Publish(new SkillChanged(new List<ISkillStatus>(skills)));
         }
 
-        private WeaponUpgradeChoices Choices => new WeaponUpgradeChoices(weapons, dataTable.Values, this,
+        private SkillUpgradeChoices Choices => new SkillUpgradeChoices(skills, dataTable.Values, this,
             id => prefabEntries.Exists(e => e.id == id && e.prefab != null));
 
         public List<UpgradeChoice> GetRandomUpgradeChoices(int count) =>
             Choices.Select(count, upperBound => Random.Range(0, upperBound));
+
+        public List<UpgradeChoice> GetUpgradeCandidates() => Choices.Candidates();
 
         public bool ApplyUpgradeChoice(UpgradeChoice choice)
         {
             if (choice.IsNewWeapon)
             {
                 // Use the catalog entry, never caller-supplied weapon data.
-                return choice.NewWeaponData != null && AddWeapon(choice.NewWeaponData.id);
+                return choice.newSkillData != null && AddWeapon(choice.newSkillData.id);
             }
 
             if (!Choices.TryApply(choice)) { return false; }
@@ -148,7 +150,7 @@ namespace Game.Core
 
         public int GetWeaponLevel(int weaponId)
         {
-            var weapon = weapons.Find(w => w.Data.id == weaponId);
+            var weapon = skills.Find(w => w.Data.id == weaponId);
             return weapon == null ? 0 : weapon.Level;
         }
 
@@ -159,20 +161,20 @@ namespace Game.Core
 
         public int GetAcquiredCount(int weaponId, string cardId)
         {
-            var weapon = weapons.Find(w => w.Data.id == weaponId);
+            var weapon = skills.Find(w => w.Data.id == weaponId);
             return weapon == null ? 0 : weapon.GetAcquiredCount(cardId);
         }
 
 
         private void OnDestroy()
         {
-            foreach (var weapon in weapons) { weapon.Dispose(); }
+            foreach (var weapon in skills) { weapon.Dispose(); }
             childCaster?.Dispose();
         }
 
         private void Update()
         {
-            foreach (var weapon in weapons)
+            foreach (var weapon in skills)
             {
                 weapon.Tick();
             }

@@ -68,14 +68,14 @@ namespace Game.Core
     public static class ReactionCompiler
     {
         /// <summary>투사체 적중 반응: 피해와 스탯이 켠 모든 상태이상</summary>
-        public static AttackReactions ForProjectile(WeaponStats stats, Action<Vector2> burnOnDeath = null, IEnemyTargetProvider explosionTargets = null) =>
+        public static AttackReactions ForProjectile(SkillStats stats, Action<Vector2> burnOnDeath = null, IEnemyTargetProvider explosionTargets = null) =>
             Compile(stats, burnOnDeath, explosionTargets, AttackEvent.Hit);
 
         /// <summary>연쇄 적중 반응: 투사체와 같되 폭발은 적중마다가 아니라 튕겨 도착할 때(Bounce)마다 난다</summary>
-        public static AttackReactions ForChain(WeaponStats stats, IEnemyTargetProvider explosionTargets) =>
+        public static AttackReactions ForChain(SkillStats stats, IEnemyTargetProvider explosionTargets) =>
             Compile(stats, null, explosionTargets, AttackEvent.Bounce);
 
-        private static AttackReactions Compile(WeaponStats stats, Action<Vector2> burnOnDeath, IEnemyTargetProvider explosionTargets, AttackEvent explosionTrigger)
+        private static AttackReactions Compile(SkillStats stats, Action<Vector2> burnOnDeath, IEnemyTargetProvider explosionTargets, AttackEvent explosionTrigger)
         {
             float damage = stats.Cast.Damage;
             var status = stats.Status;

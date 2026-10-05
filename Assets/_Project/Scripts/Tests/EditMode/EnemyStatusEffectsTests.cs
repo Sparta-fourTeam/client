@@ -57,9 +57,9 @@ namespace Game.Tests
                 var upgraded = (GameObject)typeof(HitscanEffect).GetField("judgementVisual", flags).GetValue(effect);
                 var regular = (GameObject)typeof(HitscanEffect).GetField("regularVisual", flags).GetValue(effect);
                 Assert.IsNotNull(upgraded); Assert.IsNotNull(regular);
-                effect.SetVisualForm(WeaponForm.JudgementThunder);
+                effect.SetVisualForm(SkillForm.JudgementThunder);
                 Assert.IsTrue(upgraded.activeSelf); Assert.IsFalse(regular.activeSelf);
-                effect.SetVisualForm(WeaponForm.Default);
+                effect.SetVisualForm(SkillForm.Default);
                 Assert.IsFalse(upgraded.activeSelf); Assert.IsTrue(regular.activeSelf);
             }
             finally { Object.DestroyImmediate(go); }

@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Game.Core
 {
     /// <summary>공격 한 번을 시전하는 방법. 풀링과 자원 정리는 전략이 갖고, 시전 시점(쿨타임·시전 수)은 <see cref="SkillCaster"/>가 관리한다.
-    /// 새 공격 종류는 전략 하나를 만들어 <see cref="WeaponFactory"/>에 등록한다.</summary>
+    /// 새 공격 종류는 전략 하나를 만들어 <see cref="SkillFactory"/>에 등록한다.</summary>
     public interface IAttackStrategy : IDisposable
     {
         /// <summary>현재 설정으로 공격 한 번을 낸다</summary>

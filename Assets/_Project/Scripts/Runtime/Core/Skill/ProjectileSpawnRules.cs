@@ -6,13 +6,13 @@ namespace Game.Core
     /// <summary>Creates primary projectiles. 맞았을 때의 피해·상태이상·폭발은 ReactionCompiler가, 분열 같은 자식 시전은 강화 카드의 반응이 맡는다.</summary>
     public sealed class ProjectileSpawnRules
     {
-        private readonly WeaponStats stats;
+        private readonly SkillStats stats;
         private readonly IEnemyTargetProvider targetProvider;
         private readonly ObjectPool<Projectile> pool;
         private readonly Vector3 projectileScale;
         private readonly AttackReactions reactions;
 
-        public ProjectileSpawnRules(WeaponStats stats, IEnemyTargetProvider targetProvider,
+        public ProjectileSpawnRules(SkillStats stats, IEnemyTargetProvider targetProvider,
             ObjectPool<Projectile> pool, Vector3 projectileScale, AttackReactions reactions = null)
         {
             this.stats = stats;

@@ -54,8 +54,8 @@ namespace Game.Tests
                 typeof(Wall).GetField("_attackLineOffset", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(wall, 2f);
                 prefab.transform.position = new Vector3(-5, -4, 0);
                 var provider = new Provider();
-                var data = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 5);
-                var weapon = WeaponFactory.Create(data, prefab, prefab.transform, provider, wall);
+                var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 5);
+                var weapon = SkillFactory.Create(data, prefab, prefab.transform, provider, wall);
                 Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == "log_reserve")));
                 Assert.IsFalse(weapon.LevelUp(data.upgrades.Find(c => c.id == "log_reserve")));
                 weapon.Tick(0); Assert.AreEqual(1, CountLogs());

@@ -4,14 +4,14 @@ using NUnit.Framework;
 
 namespace Game.Tests
 {
-    public sealed class WeaponSkillStatusTests
+    public sealed class SkillSkillStatusTests
     {
-        private sealed class TestWeapon : WeaponBase
+        private sealed class TestSkill : SkillBase
         {
             public int Fired;
             public float Damage => stats.Cast.Damage;
 
-            public TestWeapon(WeaponData data) : base(data, null, null)
+            public TestSkill(SkillData data) : base(data, null, null)
             {
             }
 
@@ -27,23 +27,23 @@ namespace Game.Tests
             }
         }
 
-        private static WeaponData Data(float cooldown = 2f)
+        private static SkillData Data(float cooldown = 2f)
         {
-            return new WeaponData
+            return new SkillData
             {
                 id = 7,
                 name = "테스트",
                 iconKey = "weapon_test",
                 castType = CastType.Projectile,
-                baseStats = new WeaponBaseStats { cast = { cooldown = cooldown, baseDamage = 10f, range = 10f, projectileCount = 1 }, projectile = { speed = 10f } },
+                baseStats = new SkillBaseStats { cast = { cooldown = cooldown, baseDamage = 10f, range = 10f, projectileCount = 1 }, projectile = { speed = 10f } },
                 maxLevel = 5,
-                upgrades = new List<WeaponUpgradeOption>()
+                upgrades = new List<SkillUpgradeOption>()
             };
         }
 
-        private static WeaponUpgradeOption AttackSpeed(float percent)
+        private static SkillUpgradeOption AttackSpeed(float percent)
         {
-            return new WeaponUpgradeOption
+            return new SkillUpgradeOption
             {
                 id = "speed",
                 effects = new List<EffectDef> { new EffectDef { kind = "attackSpeed", value = percent } }
@@ -53,7 +53,7 @@ namespace Game.Tests
         [Test(Description = "무기는 Id, Level, IconKey를 HUD에 그대로 내준다")]
         public void Status_ExposesIdLevelAndIconKey()
         {
-            ISkillStatus status = new TestWeapon(Data());
+            ISkillStatus status = new TestSkill(Data());
 
             Assert.AreEqual(7, status.Id);
             Assert.AreEqual(1, status.Level);
@@ -63,7 +63,7 @@ namespace Game.Tests
         [Test(Description = "강화하면 Level이 HUD에 올라간 값으로 보인다")]
         public void Status_LevelFollowsLevelUp()
         {
-            var weapon = new TestWeapon(Data());
+            var weapon = new TestSkill(Data());
 
             weapon.LevelUp(AttackSpeed(10f));
 
@@ -73,7 +73,7 @@ namespace Game.Tests
         [Test(Description = "아직 한 번도 발사하지 않았으면 쿨타임 진행도는 0(발사 가능)이다")]
         public void CooldownRatio_BeforeFirstFire_IsZero()
         {
-            var weapon = new TestWeapon(Data());
+            var weapon = new TestSkill(Data());
 
             Assert.AreEqual(0f, weapon.CooldownRatio);
         }
@@ -81,7 +81,7 @@ namespace Game.Tests
         [Test(Description = "발사한 직후에는 쿨타임 진행도가 1이다")]
         public void CooldownRatio_RightAfterFire_IsOne()
         {
-            var weapon = new TestWeapon(Data());
+            var weapon = new TestSkill(Data());
 
             weapon.Tick();
 
@@ -92,7 +92,7 @@ namespace Game.Tests
         [Test(Description = "쿨타임이 절반 남았으면 진행도는 0.5다")]
         public void CooldownRatio_HalfRemaining_IsHalf()
         {
-            var weapon = new TestWeapon(Data(2f));
+            var weapon = new TestSkill(Data(2f));
             weapon.SetCooldownTimer(1f);
 
             Assert.AreEqual(0.5f, weapon.CooldownRatio, 0.0001f);
@@ -101,7 +101,7 @@ namespace Game.Tests
         [Test(Description = "쿨타임이 0 이하인 무기는 0으로 나눠 NaN이 되지 않고 0을 돌려준다")]
         public void CooldownRatio_NonPositiveCooldown_IsZero()
         {
-            var weapon = new TestWeapon(Data(0f));
+            var weapon = new TestSkill(Data(0f));
             weapon.SetCooldownTimer(1f);
 
             Assert.AreEqual(0f, weapon.CooldownRatio);
@@ -110,7 +110,7 @@ namespace Game.Tests
         [Test(Description = "발사 직후 공격 속도를 강화해 쿨타임이 줄어도 진행도는 1을 넘지 않는다")]
         public void CooldownRatio_AfterCooldownShrinks_IsClampedToOne()
         {
-            var weapon = new TestWeapon(Data(2f));
+            var weapon = new TestSkill(Data(2f));
             weapon.Tick();
 
             weapon.LevelUp(AttackSpeed(50f));
@@ -121,8 +121,8 @@ namespace Game.Tests
         [Test]
         public void InvalidEffect_DoesNotPartiallyApplyUpgrade()
         {
-            var weapon = new TestWeapon(Data());
-            var option = new WeaponUpgradeOption
+            var weapon = new TestSkill(Data());
+            var option = new SkillUpgradeOption
             {
                 id = "invalid",
                 effects = new List<EffectDef>

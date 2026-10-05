@@ -7,9 +7,9 @@ namespace Game.Core
 
     /// <summary>Projectile: 날아가 맞춤(투척), Hitscan: 대상 위치에 즉시 타격, Area: 위치에 머무는 범위, Beam: 지속하며 닿는 모든 적을 공격하는 광선, Chain: 여러 적을 연쇄적으로 튕기며 공격</summary>
     public enum CastType { Projectile, Hitscan, Area, Beam, Chain }
-    public enum WeaponForm { Default, Enbakutsu, JudgementThunder, TriangleIce, LargeLog, FireLog }
+    public enum SkillForm { Default, Enbakutsu, JudgementThunder, TriangleIce, LargeLog, FireLog }
 
-    public class WeaponData
+    public class SkillData
     {
         public int id;
         public string name;
@@ -19,10 +19,10 @@ namespace Game.Core
         public string iconKey;
         public CastType castType;
         public ProjectilePath projectilePath;
-        public WeaponBaseStats baseStats;
+        public SkillBaseStats baseStats;
         /// <summary>다른 스킬의 효과로만 시전되는 스킬. 새 스킬 카드로 제시하지 않는다</summary>
         public bool childOnly;
-        public List<WeaponUpgradeOption> upgrades;
+        public List<SkillUpgradeOption> upgrades;
         // 최초 습득을 제외한 전투 중 성공한 강화 횟수 상한.
         public int maxLevel;
         // PlayerProfile의 영구 성장 ID. 미매핑 스킬은 null이며 영구 레벨 0으로 처리.

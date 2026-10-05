@@ -19,7 +19,7 @@ namespace Game.Core
         private readonly BattleStats _stats;
         private readonly StageClock _clock;
         private readonly ISubscriber<WaveGaugeFilled> _gaugeFilled;
-        private readonly WeaponController _weaponController;
+        private readonly CardDeck _deck;
         private readonly IPublisher<SubmitRejected> _submitRejected;
         private readonly IPublisher<SubmitFailed> _submitFailed;
 
@@ -54,7 +54,7 @@ namespace Game.Core
             BattleStats stats,
             StageClock clock,
             ISubscriber<WaveGaugeFilled> gaugeFilled,
-            WeaponController weaponController,
+            CardDeck deck,
             IPublisher<SubmitRejected> submitRejected,
             IPublisher<SubmitFailed> submitFailed)
         {
@@ -66,7 +66,7 @@ namespace Game.Core
             _stats = stats;
             _clock = clock;
             _gaugeFilled = gaugeFilled;
-            _weaponController = weaponController;
+            _deck = deck;
             _submitRejected = submitRejected;
             _submitFailed = submitFailed;
         }
@@ -136,7 +136,7 @@ namespace Game.Core
                 return;
             }
 
-            var choices = _weaponController.GetRandomUpgradeChoices(3);
+            var choices = _deck.Draw(3);
 
             // 고를 카드가 없으면(무기 만렙, 강화 소진) 카드 선택으로 넘어가지 않는다.
             // 넘어가면 PickCard가 항상 무시되고 Pause/Resume으로도 CardSelect로 돌아와 영영 멈춘다
@@ -158,10 +158,10 @@ namespace Game.Core
             }
 
             var choice = _choices[index];
-            if (!_weaponController.ApplyUpgradeChoice(choice))
+            if (!_deck.TryApply(choice))
             {
                 // Refresh stale choices; if none remain, resume without recording a card.
-                _choices = _weaponController.GetRandomUpgradeChoices(3);
+                _choices = _deck.Draw(3);
                 if (_choices.Count > 0)
                 {
                     ChangeState(StageState.CardSelect);
@@ -172,7 +172,8 @@ namespace Game.Core
                 ChangeState(StageState.Playing);
                 return;
             }
-            _stats.RecordCard(choice.IsNewWeapon ? $"weapon_{choice.NewWeaponData.id}" : choice.Option.id);
+            _stats.RecordCard(choice.IsGeneral ? choice.GeneralCard.Id
+                : choice.IsNewWeapon ? $"weapon_{choice.newSkillData.id}" : choice.Option.id);
             _choices = new List<UpgradeChoice>();
 
             Time.timeScale = _speed;

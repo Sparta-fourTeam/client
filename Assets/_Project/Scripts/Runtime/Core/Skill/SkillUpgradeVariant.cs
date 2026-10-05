@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Game.Core
 {
-    public class WeaponUpgradeVariant
+    public class SkillUpgradeVariant
     {
         public int minPermanentLevel;
         public string name;

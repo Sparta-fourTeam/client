@@ -53,8 +53,10 @@ namespace Game.View
                 if (hasChoice)
                 {
                     var choice = choices[i];
-                    string baseKey = choice.IsNewWeapon ? choice.NewWeaponData.iconKey : choice.Weapon.Data.iconKey;
-                    string iconKey = baseKey + (choice.IsNewWeapon ? "_new" : "_upgrade");
+                    string iconKey = choice.IsGeneral
+                        ? choice.GeneralCard.IconKey
+                        : (choice.IsNewWeapon ? choice.newSkillData.iconKey : choice.skill.Data.iconKey)
+                            + (choice.IsNewWeapon ? "_new" : "_upgrade");
                     Sprite icon = _iconTable != null ? _iconTable.Find(iconKey) : null;
                     Sprite background = choice.IsNewWeapon ? _newWeaponBg : _upgradeBg;
                     _slots[i].Bind(i, choice, icon, background, OnPick);

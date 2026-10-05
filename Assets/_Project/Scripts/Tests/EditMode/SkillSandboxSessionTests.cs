@@ -26,7 +26,7 @@ namespace Game.Tests
         }
 
         private GameObject root;
-        private WeaponController controller;
+        private SkillController controller;
         private SandboxProgression progression;
         private SkillSandboxSession session;
 
@@ -34,20 +34,20 @@ namespace Game.Tests
         public void SetUp()
         {
             root = new GameObject("SandboxSessionTest");
-            controller = root.AddComponent<WeaponController>();
+            controller = root.AddComponent<SkillController>();
             // 플레이어 프리팹의 실제 prefabEntries를 그대로 쓴다.
-            var entries = new List<WeaponPrefabEntry>();
-            var source = new SerializedObject(AssetDatabase.LoadAssetAtPath<GameObject>(PlayerPrefab).GetComponentInChildren<WeaponController>(true)).FindProperty("prefabEntries");
+            var entries = new List<SkillPrefabEntry>();
+            var source = new SerializedObject(AssetDatabase.LoadAssetAtPath<GameObject>(PlayerPrefab).GetComponentInChildren<SkillController>(true)).FindProperty("prefabEntries");
             for (int i = 0; i < source.arraySize; i++)
             {
                 var entry = source.GetArrayElementAtIndex(i);
-                entries.Add(new WeaponPrefabEntry { id = entry.FindPropertyRelative("id").intValue, prefab = (GameObject)entry.FindPropertyRelative("prefab").objectReferenceValue });
+                entries.Add(new SkillPrefabEntry { id = entry.FindPropertyRelative("id").intValue, prefab = (GameObject)entry.FindPropertyRelative("prefab").objectReferenceValue });
             }
-            typeof(WeaponController).GetField("prefabEntries", Private).SetValue(controller, entries);
+            typeof(SkillController).GetField("prefabEntries", Private).SetValue(controller, entries);
             progression = new SandboxProgression();
-            controller.Construct(new Targets(), new Publisher(), new DefaultWeaponDataProvider(new GameDataStore()), progression, startingSkills: new NoStartingSkills());
-            typeof(WeaponController).GetMethod("Start", Private).Invoke(controller, null);
-            session = new SkillSandboxSession(controller, new DefaultWeaponDataProvider(new GameDataStore()), progression);
+            controller.Construct(new Targets(), new Publisher(), new DefaultSkillDataProvider(new GameDataStore()), progression, startingSkills: new NoStartingSkills());
+            typeof(SkillController).GetMethod("Start", Private).Invoke(controller, null);
+            session = new SkillSandboxSession(controller, new DefaultSkillDataProvider(new GameDataStore()), progression);
         }
 
         [TearDown]
@@ -62,7 +62,7 @@ namespace Game.Tests
         [Test]
         public void Catalog_ListsEverySkillExceptChildOnlyOnes()
         {
-            var all = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll();
+            var all = new DefaultSkillDataProvider(new GameDataStore()).LoadAll();
             CollectionAssert.AreEquivalent(all.Where(w => !w.childOnly).Select(w => w.id), session.Skills.Select(s => s.Id));
             Assert.IsTrue(session.Skills.All(s => s.HasPrefab), "카탈로그의 모든 스킬은 프리팹이 연결돼 있다");
             foreach (var id in new[] { 6, 7, 16, 18 }) { Assert.IsTrue(session.Skills.Any(s => s.Id == id), $"스킬 {id}가 목록에 있다"); }
@@ -82,10 +82,10 @@ namespace Game.Tests
         public void SelectSkill_ReplacesPreviousSkillAndStartsFromBaseStats()
         {
             Assert.IsTrue(session.SelectSkill(1));
-            Assert.AreEqual(1, controller.Weapons.Count);
+            Assert.AreEqual(1, controller.Skills.Count);
             Assert.IsTrue(session.TryAddCard("arrow_sharp", out _));
             Assert.IsTrue(session.SelectSkill(2));
-            Assert.AreEqual(1, controller.Weapons.Count, "이전 스킬은 정리된다");
+            Assert.AreEqual(1, controller.Skills.Count, "이전 스킬은 정리된다");
             Assert.AreEqual(2, session.Current.Data.id);
             Assert.AreEqual(0, session.Build.cards.Count, "스킬을 바꾸면 카드 목록도 새로 시작한다");
         }
@@ -96,7 +96,7 @@ namespace Game.Tests
             session.SelectSkill(1);
             foreach (var id in new[] { "arrow_sharp", "kunai_spread", "kunai_barrage" }) { Assert.IsTrue(session.TryAddCard(id, out var reason), reason); }
 
-            var data = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 1);
+            var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 1);
             var expected = SkillConfig.FromDefinition(data).WithChildCaster(new NoopChildCaster());
             foreach (var id in new[] { "arrow_sharp", "kunai_spread", "kunai_barrage" })
             {
@@ -104,7 +104,7 @@ namespace Game.Tests
                 Assert.IsTrue(builder.TryApplyCatalog(data.upgrades.Find(c => c.id == id).effects));
                 expected = builder.Build();
             }
-            Assert.AreEqual("(변화 없음)", WeaponStatsDump.Diff(WeaponStatsDump.Flatten(expected.Stats), WeaponStatsDump.Flatten(session.Current.Stats)));
+            Assert.AreEqual("(변화 없음)", SkillStatsDump.Diff(SkillStatsDump.Flatten(expected.Stats), SkillStatsDump.Flatten(session.Current.Stats)));
         }
 
         [Test]
@@ -176,13 +176,13 @@ namespace Game.Tests
         {
             session.SelectSkill(1);
             session.SetPermanentLevel(0);
-            var low = controller.Weapons[0].Data.upgrades.Find(c => c.id == "arrow_multishot");
-            WeaponUpgradeResolver.TryResolve(low, session.Build.permanentLevel, out var before);
+            var low = controller.Skills[0].Data.upgrades.Find(c => c.id == "arrow_multishot");
+            SkillUpgradeResolver.TryResolve(low, session.Build.permanentLevel, out var before);
             session.SetPermanentLevel(9);
             Assert.AreEqual(9, controller.GetPermanentWeaponLevel(1), "슬라이더 값이 컨트롤러의 영구 레벨 표에 반영된다");
-            WeaponUpgradeResolver.TryResolve(low, session.Build.permanentLevel, out var after);
+            SkillUpgradeResolver.TryResolve(low, session.Build.permanentLevel, out var after);
             Assert.AreNotEqual(before.Name, after.Name, "영구 레벨 9에서 (+) 변형으로 바뀐다");
-            Assert.AreEqual(0, new SkillSandboxSession(controller, new DefaultWeaponDataProvider(new GameDataStore()), progression).Build.permanentLevel);
+            Assert.AreEqual(0, new SkillSandboxSession(controller, new DefaultSkillDataProvider(new GameDataStore()), progression).Build.permanentLevel);
         }
 
         [Test]
@@ -213,7 +213,7 @@ namespace Game.Tests
             foreach (var choice in choices)
             {
                 Assert.IsFalse(choice.IsNewWeapon);
-                Assert.AreEqual(1, choice.Weapon.Data.id);
+                Assert.AreEqual(1, choice.skill.Data.id);
             }
             // 선행 조건이 있는 카드는 처음에는 나오지 않는다 (kunai_barrage는 kunai_spread가 먼저 필요하다).
             Assert.IsFalse(choices.Any(c => c.Option.id == "kunai_barrage"));

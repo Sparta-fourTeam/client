@@ -3,13 +3,13 @@ using UnityEngine;
 
 namespace Game.Core
 {
-    public abstract class WeaponBase : ISkillStatus, System.IDisposable
+    public abstract class SkillBase : ISkillStatus, System.IDisposable
     {
         private bool disposed;
-        protected WeaponData data;
-        public WeaponData Data => data;
+        protected SkillData data;
+        public SkillData Data => data;
         protected Transform caster;
-        private readonly WeaponUpgradeState upgrades;
+        private readonly SkillUpgradeState upgrades;
         public int Level => upgrades.Level;
         // 최초 습득은 강화 상한에 포함하지 않는다. 기존 표시 레벨은 유지한다.
         public int UpgradeCount => upgrades.UpgradeCount;
@@ -20,7 +20,7 @@ namespace Game.Core
             set => castClock.RemainingCooldown = value;
         }
 
-        protected WeaponStats stats;
+        protected SkillStats stats;
         private SkillConfig config;
         public SkillConfig Config
         {
@@ -32,8 +32,8 @@ namespace Game.Core
             }
         }
         protected IEnemyTargetProvider targetProvider;
-        private readonly WeaponTargetSelector targets;
-        public WeaponStats Stats => stats;
+        private readonly SkillTargetSelector targets;
+        public SkillStats Stats => stats;
         public bool IsMaxLevel => upgrades.IsMaxLevel;
 
         int ISkillStatus.Id => data.id;
@@ -43,7 +43,7 @@ namespace Game.Core
         /// <summary>0이면 발사 가능, 1이면 방금 발사. 강화로 쿨타임이 줄어든 직후에도 1을 넘지 않게 자른다</summary>
         public float CooldownRatio => Stats.Cast.Cooldown <= 0f ? 0f : Mathf.Clamp01(cooldownTimer / Stats.Cast.Cooldown);
 
-        public WeaponBase(WeaponData data, Transform caster, IEnemyTargetProvider targetProvider, SkillConfig config = null)
+        public SkillBase(SkillData data, Transform caster, IEnemyTargetProvider targetProvider, SkillConfig config = null)
         {
             this.data = data;
             this.caster = caster;
@@ -51,8 +51,8 @@ namespace Game.Core
 
             this.config = config ?? SkillConfig.FromDefinition(data);
             stats = this.config.Stats;
-            upgrades = new WeaponUpgradeState(data);
-            targets = new WeaponTargetSelector(targetProvider);
+            upgrades = new SkillUpgradeState(data);
+            targets = new SkillTargetSelector(targetProvider);
         }
 
         /// <summary>자식 스킬 시전 효과가 쓸 시전기를 연결한다</summary>
@@ -82,17 +82,17 @@ namespace Game.Core
         protected IReadOnlyList<IEnemyTarget> FindTargets(Vector2 origin, float maxRange) =>
             targets.Select(origin, maxRange);
 
-        public bool LevelUp(WeaponUpgradeOption option, int permanentLevel = 0)
+        public bool LevelUp(SkillUpgradeOption option, int permanentLevel = 0)
         {
             // 공유 강화는 전체 참여 스킬을 준비하는 트랜잭션을 통해서만 적용한다.
             if (!string.IsNullOrEmpty(option?.sharedId)
-                || !WeaponUpgradeResolver.TryResolve(option, permanentLevel, out var resolved)
+                || !SkillUpgradeResolver.TryResolve(option, permanentLevel, out var resolved)
                 || !TryPrepareUpgrade(option, resolved.Effects, out var nextStats)) { return false; }
             CommitUpgrade(option, nextStats);
             return true;
         }
 
-        internal bool TryPrepareUpgrade(WeaponUpgradeOption option, List<EffectDef> effects, out SkillConfig nextConfig)
+        internal bool TryPrepareUpgrade(SkillUpgradeOption option, List<EffectDef> effects, out SkillConfig nextConfig)
         {
             nextConfig = Config;
             if (!upgrades.CanPrepare(option)) { return false; }
@@ -102,7 +102,7 @@ namespace Game.Core
             return true;
         }
 
-        internal void CommitUpgrade(WeaponUpgradeOption option, SkillConfig nextConfig)
+        internal void CommitUpgrade(SkillUpgradeOption option, SkillConfig nextConfig)
         {
             config = nextConfig;
             stats = config.Stats;

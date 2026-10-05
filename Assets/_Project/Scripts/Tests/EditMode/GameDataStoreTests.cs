@@ -34,17 +34,17 @@ namespace Game.Tests
         {
             var store = new GameDataStore();
 
-            Assert.IsTrue(store.Revisions.ContainsKey("Weapons"));
-            Assert.IsNotEmpty(store.RawJson("Weapons"));
-            Assert.IsTrue(store.LoadWeapons().Any(w => w.id == 1));
+            Assert.IsTrue(store.Revisions.ContainsKey("Skills"));
+            Assert.IsNotEmpty(store.RawJson("Skills"));
+            Assert.IsTrue(store.LoadSkills().Any(w => w.id == 1));
         }
 
         [Test(Description = "스킬 정의는 가변이라 호출마다 새 객체를 돌려준다")]
-        public void LoadWeapons_ReturnsFreshObjectsEachCall()
+        public void LoadSkills_ReturnsFreshObjectsEachCall()
         {
             var store = new GameDataStore();
 
-            Assert.AreNotSame(store.LoadWeapons()[0], store.LoadWeapons()[0]);
+            Assert.AreNotSame(store.LoadSkills()[0], store.LoadSkills()[0]);
         }
 
         [Test(Description = "방벽 체력, 스폰, 웨이브가 스테이지 행에서 온다")]
@@ -122,6 +122,44 @@ namespace Game.Tests
             var noInterval = JsonConvert.DeserializeObject<MonsterDefinition>(JsonConvert.SerializeObject(monster));
             noInterval.AttackInterval = 0f;
             Assert.Throws<InvalidOperationException>(() => noInterval.Validate());
+        }
+
+        [Test(Description = "일반 카드 테이블에 방벽 수리가 조건과 효과와 함께 있다")]
+        public void GeneralCards_HaveWallRepairWithConditionAndEffect()
+        {
+            var card = new GameDataStore().GeneralCards.Single(c => c.Id == "wall_repair");
+
+            Assert.IsTrue(card.Forced);
+            Assert.AreEqual("wallHpBelow", card.Condition.Kind);
+            Assert.AreEqual(50f, card.Condition.Value);
+            Assert.AreEqual("wallRepair", card.Effect.Kind);
+            Assert.AreEqual(20f, card.Effect.Value);
+        }
+
+        [Test]
+        public void GeneralCardValidate_BadValues_Throw()
+        {
+            GeneralCardDefinition Valid() => new GeneralCardDefinition
+            {
+                Id = "c",
+                Name = "카드",
+                MaxPicks = 1,
+                Effect = new GeneralCardRule { Kind = "wallRepair", Value = 1 },
+            };
+
+            Assert.DoesNotThrow(() => Valid().Validate());
+
+            var noPicks = Valid();
+            noPicks.MaxPicks = 0;
+            Assert.Throws<InvalidOperationException>(() => noPicks.Validate());
+
+            var unknownEffect = Valid();
+            unknownEffect.Effect.Kind = "nope";
+            Assert.Throws<InvalidOperationException>(() => unknownEffect.Validate());
+
+            var unknownCondition = Valid();
+            unknownCondition.Condition = new GeneralCardRule { Kind = "nope" };
+            Assert.Throws<InvalidOperationException>(() => unknownCondition.Validate());
         }
     }
 }

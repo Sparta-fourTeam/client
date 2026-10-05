@@ -18,7 +18,7 @@ namespace Game.Core
 
     public sealed class SkillConfig
     {
-        public WeaponStats Stats { get; }
+        public SkillStats Stats { get; }
         public AttackDefinition Attack { get; }
         public AttackReactions Reactions { get; }
         /// <summary>자식 스킬 시전 효과가 쓰는 시전기. 연결되지 않았으면 null</summary>
@@ -30,7 +30,7 @@ namespace Game.Core
         public IReadOnlyDictionary<int, IReadOnlyList<EffectDef>> Overlays { get; }
         internal readonly ReactionBinding[] Bindings;
 
-        internal SkillConfig(WeaponStats stats, AttackDefinition attack, IEnumerable<ReactionBinding> bindings,
+        internal SkillConfig(SkillStats stats, AttackDefinition attack, IEnumerable<ReactionBinding> bindings,
             IChildSkillCaster childCaster = null, IReadOnlyDictionary<int, ChildLink> children = null,
             IReadOnlyDictionary<int, IReadOnlyList<EffectDef>> overlays = null)
         {
@@ -51,27 +51,27 @@ namespace Game.Core
         /// <summary>피해(직접·폭발)에 배율을 곱한 설정. 자식 스킬을 소형으로 시전할 때 쓴다</summary>
         public SkillConfig WithDamageScale(float scale)
         {
-            var builder = new WeaponStatsBuilder(Stats);
+            var builder = new SkillStatsBuilder(Stats);
             builder[Stat.Damage] *= scale;
             builder[Stat.ExplosionDamage] *= scale;
-            return WithStats(new WeaponStats(builder));
+            return WithStats(new SkillStats(builder));
         }
 
         public SkillConfig WithChildCaster(IChildSkillCaster childCaster) => new SkillConfig(Stats, Attack, Bindings, childCaster, Children, Overlays);
 
         internal SkillConfig WithOverlays(IReadOnlyDictionary<int, IReadOnlyList<EffectDef>> overlays) => new SkillConfig(Stats, Attack, Bindings, ChildCaster, Children, overlays);
 
-        internal SkillConfig WithStats(WeaponStats stats) => new SkillConfig(stats, Attack, Bindings, ChildCaster, Children, Overlays);
+        internal SkillConfig WithStats(SkillStats stats) => new SkillConfig(stats, Attack, Bindings, ChildCaster, Children, Overlays);
 
-        public static SkillConfig FromDefinition(WeaponData data) => new SkillConfig(
-            WeaponStats.FromDefinition(data.baseStats), new AttackDefinition(data.castType, data.projectilePath, data.baseStats.cast.range),
+        public static SkillConfig FromDefinition(SkillData data) => new SkillConfig(
+            SkillStats.FromDefinition(data.baseStats), new AttackDefinition(data.castType, data.projectilePath, data.baseStats.cast.range),
             Array.Empty<ReactionBinding>());
     }
 
     /// <summary>Builds an immutable configuration. Failed effect batches never change the builder.</summary>
     public sealed class SkillConfigBuilder
     {
-        internal WeaponStatsBuilder Values { get; private set; }
+        internal SkillStatsBuilder Values { get; private set; }
         private readonly AttackDefinition attack;
         internal IChildSkillCaster ChildCaster { get; }
         private List<ReactionBinding> bindings;
@@ -80,7 +80,7 @@ namespace Game.Core
 
         public SkillConfigBuilder(SkillConfig config)
         {
-            Values = new WeaponStatsBuilder(config.Stats);
+            Values = new SkillStatsBuilder(config.Stats);
             attack = config.Attack;
             ChildCaster = config.ChildCaster;
             bindings = new List<ReactionBinding>(config.Bindings);
@@ -88,7 +88,7 @@ namespace Game.Core
             overlays = new Dictionary<int, IReadOnlyList<EffectDef>>(config.Overlays);
         }
 
-        internal SkillConfigBuilder(WeaponStats stats) : this(new SkillConfig(stats, default, Array.Empty<ReactionBinding>())) { }
+        internal SkillConfigBuilder(SkillStats stats) : this(new SkillConfig(stats, default, Array.Empty<ReactionBinding>())) { }
 
         public void AddReaction(AttackEvent trigger, IAttackReaction reaction) => bindings.Add(new ReactionBinding(trigger, reaction));
 
@@ -117,7 +117,7 @@ namespace Game.Core
             var compiled = new List<IUpgradeEffect>();
             foreach (var effect in effects)
             {
-                if (!WeaponStatEffects.TryCompile(effect, out var upgrade)) { return false; }
+                if (!SkillStatEffects.TryCompile(effect, out var upgrade)) { return false; }
                 compiled.Add(upgrade);
             }
             return TryApply(compiled);
@@ -138,7 +138,7 @@ namespace Game.Core
             return true;
         }
 
-        public SkillConfig Build() => new SkillConfig(new WeaponStats(Values), attack, bindings, ChildCaster, children, overlays);
+        public SkillConfig Build() => new SkillConfig(new SkillStats(Values), attack, bindings, ChildCaster, children, overlays);
     }
 
     public interface IUpgradeEffect
@@ -157,7 +157,7 @@ namespace Game.Core
             this.value = value;
             this.category = category;
         }
-        public bool TryApply(SkillConfigBuilder builder) => WeaponStatEffects.TryApplyValue(builder.Values, kind, value, category);
+        public bool TryApply(SkillConfigBuilder builder) => SkillStatEffects.TryApplyValue(builder.Values, kind, value, category);
     }
 
     public sealed class StatUpgradeEffect : NumericUpgradeEffect
@@ -172,7 +172,7 @@ namespace Game.Core
 
     public sealed class TransformUpgradeEffect : NumericUpgradeEffect
     {
-        public TransformUpgradeEffect(WeaponForm form) : base("form", (int)form, UpgradeEffectCategory.Transform) { }
+        public TransformUpgradeEffect(SkillForm form) : base("form", (int)form, UpgradeEffectCategory.Transform) { }
     }
 
     public sealed class ReactionUpgradeEffect : IUpgradeEffect

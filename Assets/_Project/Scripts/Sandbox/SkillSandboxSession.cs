@@ -16,7 +16,7 @@ namespace Game.Sandbox
             public string IconKey { get; }
             public CastType CastType { get; }
             public bool HasPrefab { get; }
-            public SkillInfo(WeaponData data, bool hasPrefab)
+            public SkillInfo(SkillData data, bool hasPrefab)
             {
                 Id = data.id;
                 Name = data.name;
@@ -40,9 +40,9 @@ namespace Game.Sandbox
             public string Blocked { get; set; }
         }
 
-        private readonly WeaponController controller;
+        private readonly SkillController controller;
         private readonly SandboxProgression progression;
-        private readonly Dictionary<int, WeaponData> catalog;
+        private readonly Dictionary<int, SkillData> catalog;
 
         public SandboxBuild Build { get; private set; } = new SandboxBuild();
         public IReadOnlyList<SkillInfo> Skills { get; }
@@ -50,7 +50,7 @@ namespace Game.Sandbox
         public string LastError { get; private set; }
         public event Action Changed;
 
-        public SkillSandboxSession(WeaponController controller, IWeaponDataProvider provider, SandboxProgression progression)
+        public SkillSandboxSession(SkillController controller, ISkillDataProvider provider, SandboxProgression progression)
         {
             this.controller = controller;
             this.progression = progression;
@@ -59,7 +59,7 @@ namespace Game.Sandbox
             Skills = all.Where(w => !w.childOnly).OrderBy(w => w.id).Select(w => new SkillInfo(w, controller.HasPrefab(w.id))).ToList();
         }
 
-        public WeaponBase Current => controller.Weapons.FirstOrDefault(w => w.Data.id == Build.skillId);
+        public SkillBase Current => controller.Skills.FirstOrDefault(w => w.Data.id == Build.skillId);
 
         // ── 스킬과 카드 ───────────────────────────────────────────────
 
@@ -143,7 +143,7 @@ namespace Game.Sandbox
             if (Current == null) { return result; }
             foreach (var choice in controller.GetRandomUpgradeChoices(200))
             {
-                if (choice.IsNewWeapon || choice.Weapon == null || choice.Weapon.Data.id != Build.skillId) { continue; }
+                if (choice.IsNewWeapon || choice.skill == null || choice.skill.Data.id != Build.skillId) { continue; }
                 result.Add(choice);
                 if (result.Count >= count) { break; }
             }

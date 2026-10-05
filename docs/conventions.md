@@ -18,7 +18,7 @@
 - 클리어·실패 판정은 StageJudge 한 곳에서, 먼저 도착한 신호로 판당 한 번만 한다. 매 프레임 확인하지 않고 메시지를 받을 때 판정한다
 - 엔트리포인트끼리 실행 순서에 기대지 않는다. 순서가 필요하면 메시지나 명시적 호출로 연결한다
 - Stage 씬은 로비에서 `BattleLauncher`가 전투를 발급받은 뒤에 들어와야 `StageContext`가 채워진다. 실제 흐름을 확인할 때는 **Tools → Project Nova → Play From Boot**를 켜서 재생을 Boot 씬부터 시작한다. 끄면 열어 둔 씬에서 재생한다. 켠 선택은 에디터를 다시 켜도 유지되고, 프로젝트 폴더마다 따로 저장된다 (Unity에는 이 값을 바꾸는 기본 메뉴가 없고 값 자체도 재시작하면 풀려서 직접 만들었다)
-- 스킬을 새로 만들거나 고쳤을 때는 **Tools → Project Nova → Skill Sandbox**로 눈으로 확인한다. Boot 씬을 거치지 않는 독립 씬이고, `Weapons.json`의 스킬이 목록에 자동으로 나타난다. 사용법은 `docs/ninjutsu/README.md`의 "스킬 샌드박스"에 있다. 샌드박스 코드는 `Game.Sandbox` 어셈블리(에디터와 개발 빌드에서만 컴파일)에 둔다.
+- 스킬을 새로 만들거나 고쳤을 때는 **Tools → Project Nova → Skill Sandbox**로 눈으로 확인한다. Boot 씬을 거치지 않는 독립 씬이고, `Skills.json`의 스킬이 목록에 자동으로 나타난다. 사용법은 `docs/ninjutsu/README.md`의 "스킬 샌드박스"에 있다. 샌드박스 코드는 `Game.Sandbox` 어셈블리(에디터와 개발 빌드에서만 컴파일)에 둔다.
 
 ## 메시지
 
@@ -38,7 +38,8 @@
 
 - 밸런스 수치·해금·재화·보상은 서버, 판 안의 진행 상태·쿨타임·에셋은 클라이언트
 - 게임 테이블은 도메인 모델로 변환해 쓴다. 전투 발급·제출 요청과 응답만 예외로 `Core/Api`의 타입을 그대로 쓴다
-- 밸런스 값은 코드나 프리팹에 박지 않고 `GameDataStore`의 테이블(`MockData/*.json`)에 둔다. 테이블: `Monsters`(체력, 속도, 공격 값, 투사체 속도), `Stages`(방벽 체력, 스폰 간격, 웨이브 목록, 보상), `Weapons`(스킬), `Upgrades`, `Energy`, `Cards`. 새 테이블은 `GameDataStore.TableNames`에 넣으면 버전 목록과 원문 조회(`IDataApi`)에도 자동으로 포함된다
+- 밸런스 값은 코드나 프리팹에 박지 않고 `GameDataStore`의 테이블(`MockData/*.json`)에 둔다. 테이블: `Monsters`(체력, 속도, 공격 값, 투사체 속도), `Stages`(방벽 체력, 스폰 간격, 웨이브 목록, 보상), `Skills`(스킬과 스킬 카드), `Upgrades`, `Energy`, `GeneralCards`(스킬이 아닌 카드: 방벽 수리 등). 새 테이블은 `GameDataStore.TableNames`에 넣으면 버전 목록과 원문 조회(`IDataApi`)에도 자동으로 포함된다
+- 카드는 두 곳에서 관리한다. 스킬 카드는 `Skills.json`의 각 스킬 `upgrades`에, 스킬이 아닌 카드(방벽 수리 등)는 `GeneralCards.json`에 둔다. 뽑는 것은 `CardDeck` 하나가 합친다. 일반 카드는 `Condition`(언제 나오는가)과 `Effect`(고르면 무엇이 되는가)를 `GeneralCardRules`에 등록된 이름으로 적고, `Forced`이면 조건이 맞을 때 3장 중 한 칸을 먼저 차지한다 (한 번에 최대 1장)
 - 적 프리팹 엔트리(`EnemyPrefabEntry`)는 프리팹과 공격 방식만 갖고, 수치는 `MonsterId`로 `Monsters` 행을 가리킨다. Stage 씬은 `StageContext.StageId`로 `StageDefinition`을 한 번 정해 방벽, 웨이브, 스폰에 나눠 준다 (Stage 씬을 바로 열면 첫 스테이지)
 - 프리팹·아이콘은 테이블의 `PrefabKey`/`IconKey`로 찾는다
 - 1주차는 저장되는 Local 구현(`Network/Local`)을 쓴다. `save.json`에 저장되어 재실행해도 값이 유지된다. `MockData` 폴더는 Local이 읽는 초기 테이블 JSON을 두는 곳이다

@@ -14,8 +14,8 @@ namespace Game.Tests
         {
             const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Instance;
             return new ProjectileSpawnRules(
-                (WeaponStats)typeof(WeaponBase).GetField("stats", flags).GetValue(weapon),
-                (IEnemyTargetProvider)typeof(WeaponBase).GetField("targetProvider", flags).GetValue(weapon),
+                (SkillStats)typeof(SkillBase).GetField("stats", flags).GetValue(weapon),
+                (IEnemyTargetProvider)typeof(SkillBase).GetField("targetProvider", flags).GetValue(weapon),
                 (ObjectPool<Projectile>)Casters.Projectile(weapon).Pool,
                 (Vector3)Casters.Projectile(weapon).Scale);
         }
@@ -141,13 +141,13 @@ namespace Game.Tests
                 Assert.IsNotNull(baseSprite); Assert.IsNotNull(triangle);
                 sprite.sprite = baseSprite;
                 typeof(Projectile).GetField("formSprites", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(projectile,
-                    new[] { new ProjectileVisual.FormSprite { form = WeaponForm.TriangleIce, sprite = triangle } });
-                projectile.SetVisualForm(WeaponForm.TriangleIce);
+                    new[] { new ProjectileVisual.FormSprite { form = SkillForm.TriangleIce, sprite = triangle } });
+                projectile.SetVisualForm(SkillForm.TriangleIce);
                 Assert.AreSame(triangle, sprite.sprite); Assert.IsTrue(sprite.enabled);
                 Assert.IsNull(go.GetComponent<LineRenderer>());
-                projectile.SetVisualForm(WeaponForm.Default);
+                projectile.SetVisualForm(SkillForm.Default);
                 Assert.AreSame(baseSprite, sprite.sprite);
-                projectile.SetVisualForm(WeaponForm.Enbakutsu);
+                projectile.SetVisualForm(SkillForm.Enbakutsu);
                 Assert.AreSame(baseSprite, sprite.sprite);
                 Object.DestroyImmediate(baseSprite); Object.DestroyImmediate(triangle);
             }
@@ -234,10 +234,10 @@ namespace Game.Tests
             try
             {
                 var provider = new Provider { Second = new Target { Position = Vector2.right * 0.5f } };
-                var data = new WeaponData { baseStats = new WeaponBaseStats { cast = { baseDamage = 10, range = 10 }, status = { burnChance = 1 }, explosion = { damageRatio = 1, radius = 0.8f } }, maxLevel = 14 };
+                var data = new SkillData { baseStats = new SkillBaseStats { cast = { baseDamage = 10, range = 10 }, status = { burnChance = 1 }, explosion = { damageRatio = 1, radius = 0.8f } }, maxLevel = 14 };
                 var weapon = Casters.Projectile(data, prefab, prefab.transform, provider);
-                WeaponStats stats = WeaponStatsTestFactory.Apply(WeaponStatsTestFactory.Apply(WeaponStats.FromDefinition(data.baseStats), "burnDuration", 6), "burnRatio", 10);
-                typeof(WeaponBase).GetField("stats", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(weapon, stats);
+                SkillStats stats = SkillTestFactory.Apply(SkillTestFactory.Apply(SkillStats.FromDefinition(data.baseStats), "burnDuration", 6), "burnRatio", 10);
+                typeof(SkillBase).GetField("stats", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(weapon, stats);
                 typeof(SkillCaster).GetMethod("OnFire", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(weapon, null);
                 foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
                 {
@@ -270,7 +270,7 @@ namespace Game.Tests
         [Test]
         public void Catalog_DefaultStatusChancesAreCertain()
         {
-            foreach (var weapon in new DefaultWeaponDataProvider(new GameDataStore()).LoadAll())
+            foreach (var weapon in new DefaultSkillDataProvider(new GameDataStore()).LoadAll())
             {
                 Assert.AreEqual(1, weapon.baseStats.status.freezeChance);
                 Assert.AreEqual(1, weapon.baseStats.status.frostbiteChance);
@@ -286,7 +286,7 @@ namespace Game.Tests
             prefab.AddComponent<Projectile>();
             try
             {
-                var data = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 2);
+                var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 2);
                 var weapon = Casters.Projectile(data, prefab, prefab.transform, new Provider());
                 weapon.UseChildCaster(new NoopChildCaster());
                 foreach (var id in new[] { "fireball_impact_damage", "fireball_explosion_damage", "fireball_explosion_radius", "fireball_flames", "fireball_enbakutsu" })
@@ -294,10 +294,10 @@ namespace Game.Tests
                     Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == id), 13));
                 }
 
-                var stats = (WeaponStats)typeof(WeaponBase).GetField("stats", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(weapon);
+                var stats = (SkillStats)typeof(SkillBase).GetField("stats", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(weapon);
                 Assert.IsTrue(weapon.Config.Children.ContainsKey(14), "불꽃 조각(자식 스킬 14)을 시전하는 연결");
                 Assert.AreEqual(2, stats.Projectile.PierceCount);
-                Assert.AreEqual(WeaponForm.Enbakutsu, stats.Cast.Form);
+                Assert.AreEqual(SkillForm.Enbakutsu, stats.Cast.Form);
                 typeof(SkillCaster).GetMethod("OnFire", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(weapon, null);
                 foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
                 {
@@ -328,8 +328,8 @@ namespace Game.Tests
             var projectile = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Skills/IceSpear.prefab");
             Assert.IsNotNull(projectile.GetComponent<Projectile>());
             var player = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Stage/Player_Animated.prefab");
-            var controller = player.GetComponent<WeaponController>();
-            var entries = (List<WeaponPrefabEntry>)typeof(WeaponController)
+            var controller = player.GetComponent<SkillController>();
+            var entries = (List<SkillPrefabEntry>)typeof(SkillController)
                 .GetField("prefabEntries", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(controller);
             Assert.AreEqual(projectile, entries.Find(e => e.id == 4).prefab);
         }

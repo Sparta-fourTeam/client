@@ -9,10 +9,10 @@ namespace Game.Tests
 {
     public sealed class SkillConfigReactionTests
     {
-        private static SkillConfig Config() => SkillConfig.FromDefinition(new WeaponData
+        private static SkillConfig Config() => SkillConfig.FromDefinition(new SkillData
         {
             castType = CastType.Projectile,
-            baseStats = new WeaponBaseStats { cast = { baseDamage = 100, range = 8 }, projectile = { speed = 10 } }
+            baseStats = new SkillBaseStats { cast = { baseDamage = 100, range = 8 }, projectile = { speed = 10 } }
         });
 
         private sealed class Target : IEnemyTarget, IFreezableTarget
@@ -37,12 +37,12 @@ namespace Game.Tests
                 new StatUpgradeEffect("damage", 60),
                 new CastUpgradeEffect("castCount", 1),
                 new ReactionUpgradeEffect(AttackEvent.Hit, new CastSkillReaction(_ => childCasts += 2)),
-                new TransformUpgradeEffect(WeaponForm.FireLog)
+                new TransformUpgradeEffect(SkillForm.FireLog)
             }));
             var config = builder.Build();
             Assert.AreEqual(160, config.Stats.Cast.Damage, .001f);
             Assert.AreEqual(2, config.Stats.Cast.Count);
-            Assert.AreEqual(WeaponForm.FireLog, config.Stats.Cast.Form);
+            Assert.AreEqual(SkillForm.FireLog, config.Stats.Cast.Form);
             Assert.AreEqual(8, config.Attack.Range);
             config.Reactions.Raise(AttackEvent.Start, new AttackContext(Vector2.zero, Vector3.up));
             Assert.AreEqual(0, childCasts);
@@ -209,10 +209,10 @@ namespace Game.Tests
         public void Factory_UsesCompiledConfigAndUpgradePreservesItsReactions()
         {
             int children = 0;
-            var data = new WeaponData
+            var data = new SkillData
             {
                 maxLevel = 15,
-                baseStats = new WeaponBaseStats { cast = { baseDamage = 100, range = 8 } }
+                baseStats = new SkillBaseStats { cast = { baseDamage = 100, range = 8 } }
             };
             var builder = new SkillConfigBuilder(SkillConfig.FromDefinition(data));
             Assert.IsTrue(builder.TryApply(new IUpgradeEffect[]
@@ -224,9 +224,9 @@ namespace Game.Tests
             prefab.AddComponent<Projectile>();
             try
             {
-                var weapon = WeaponFactory.Create(data, prefab, prefab.transform, new NullEnemyTargetProvider(), config: config);
+                var weapon = SkillFactory.Create(data, prefab, prefab.transform, new NullEnemyTargetProvider(), config: config);
                 Assert.AreSame(config, weapon.Config);
-                Assert.IsTrue(weapon.LevelUp(new WeaponUpgradeOption
+                Assert.IsTrue(weapon.LevelUp(new SkillUpgradeOption
                 {
                     id = "damage",
                     effects = new List<EffectDef> { new EffectDef { kind = "damage", value = 20 } }

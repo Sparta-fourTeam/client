@@ -113,17 +113,17 @@ namespace Game.Tests
 
         // ── 전략과 카탈로그 ───────────────────────────────────────────
 
-        private static WeaponData FrostPrison() =>
-            new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == FrostPrisonId);
+        private static SkillData FrostPrison() =>
+            new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == FrostPrisonId);
 
-        private SkillCaster CreateCaster(WeaponData data, Provider provider, out GameObject prefab)
+        private SkillCaster CreateCaster(SkillData data, Provider provider, out GameObject prefab)
         {
             var asset = AssetDatabase.LoadAssetAtPath<GameObject>(FrostPrisonPrefab);
             Assert.IsNotNull(asset, FrostPrisonPrefab);
             prefab = asset;
             var owner = new GameObject("AreaCasterOwner");
             created.Add(owner);
-            return WeaponFactory.Create(data, asset, owner.transform, provider);
+            return SkillFactory.Create(data, asset, owner.transform, provider);
         }
 
         private static List<Projectile> ActiveProjectiles() => Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None)
@@ -194,7 +194,7 @@ namespace Game.Tests
         {
             const string IceSpearPrefab = "Assets/_Project/Prefabs/Skills/IceSpear.prefab";
             var data = FrostPrison();
-            var all = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll();
+            var all = new DefaultSkillDataProvider(new GameDataStore()).LoadAll();
             var iceData = all.Find(w => w.id == 4);
             var icePrefab = AssetDatabase.LoadAssetAtPath<GameObject>(IceSpearPrefab);
             Assert.IsNotNull(icePrefab, IceSpearPrefab);
@@ -206,7 +206,7 @@ namespace Game.Tests
             {
                 Assert.AreEqual(4, id);
                 var owner = new GameObject("ChildOwner"); created.Add(owner);
-                return WeaponFactory.Create(iceData, icePrefab, owner.transform, provider);
+                return SkillFactory.Create(iceData, icePrefab, owner.transform, provider);
             });
             try
             {
@@ -257,19 +257,19 @@ namespace Game.Tests
         [Test]
         public void Validator_RejectsAreaEffectOnProjectileWeapon()
         {
-            var catalog = JsonConvert.DeserializeObject<List<WeaponData>>(Resources.Load<TextAsset>("MockData/Weapons").text);
+            var catalog = JsonConvert.DeserializeObject<List<SkillData>>(Resources.Load<TextAsset>("MockData/Skills").text);
             var weapon = catalog.Find(w => w.castType == CastType.Projectile);
             weapon.upgrades[0].effects.Add(new EffectDef { kind = "areaRadius", value = 10 });
-            var error = Assert.Throws<InvalidOperationException>(() => WeaponCatalogValidator.Validate(catalog));
+            var error = Assert.Throws<InvalidOperationException>(() => SkillCatalogValidator.Validate(catalog));
             StringAssert.Contains("areaRadius", error.Message);
         }
 
         [Test]
         public void DamageScale_ScalesDirectAndExplosionDamageOnly()
         {
-            var config = SkillConfig.FromDefinition(new WeaponData
+            var config = SkillConfig.FromDefinition(new SkillData
             {
-                baseStats = new WeaponBaseStats { cast = { baseDamage = 10, cooldown = 2 }, explosion = { radius = 1, damageRatio = 1 } }
+                baseStats = new SkillBaseStats { cast = { baseDamage = 10, cooldown = 2 }, explosion = { radius = 1, damageRatio = 1 } }
             });
             var scaled = config.WithDamageScale(.5f);
             Assert.AreEqual(5, scaled.Stats.Cast.Damage, .001f);
@@ -284,7 +284,7 @@ namespace Game.Tests
         private const int LightningId = 3;
         private const string LightningPrefab = "Assets/_Project/Prefabs/Skills/Lightning_Lv1.prefab";
 
-        private static WeaponData Cloud() => new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == LightningCloudId);
+        private static SkillData Cloud() => new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == LightningCloudId);
 
         [Test]
         public void Zone_PullsEnemiesInsideTowardCenterWithoutOvershootAndIgnoresOutside()
@@ -381,7 +381,7 @@ namespace Game.Tests
         public void GuideCard_EndToEnd_SpawnsRealLightningStrikeFromAreaHit()
         {
             var data = Cloud();
-            var lightningData = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == LightningId);
+            var lightningData = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == LightningId);
             var lightningPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(LightningPrefab);
             Assert.IsNotNull(lightningPrefab, LightningPrefab);
             var target = new HitRecorder { Position = new Vector2(1, 1) };
@@ -390,7 +390,7 @@ namespace Game.Tests
             {
                 Assert.AreEqual(LightningId, id);
                 var owner = new GameObject("LightningChildOwner"); created.Add(owner);
-                return WeaponFactory.Create(lightningData, lightningPrefab, owner.transform, provider);
+                return SkillFactory.Create(lightningData, lightningPrefab, owner.transform, provider);
             });
             try
             {

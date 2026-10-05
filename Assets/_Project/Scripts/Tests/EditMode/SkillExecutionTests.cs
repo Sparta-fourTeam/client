@@ -4,13 +4,13 @@ using NUnit.Framework;
 
 namespace Game.Tests
 {
-    public sealed class WeaponExecutionTests
+    public sealed class SkillExecutionTests
     {
-        private sealed class TestWeapon : WeaponBase
+        private sealed class TestSkill : SkillBase
         {
-            public TestWeapon(WeaponData data) : base(data, null, null) { }
+            public TestSkill(SkillData data) : base(data, null, null) { }
             protected override void OnFire() { }
-            public WeaponStats CurrentStats => stats;
+            public SkillStats CurrentStats => stats;
         }
 
         [TestCase(5, -20, 0)]
@@ -19,9 +19,9 @@ namespace Game.Tests
         public void PermanentVariant_ChangesPresentationAndDamageAtBoundary(int gate, float before, float after)
         {
             var option = VariantOption(gate, before, after);
-            Assert.IsTrue(WeaponUpgradeResolver.TryResolve(option, gate - 1, out var low));
+            Assert.IsTrue(SkillUpgradeResolver.TryResolve(option, gate - 1, out var low));
             Assert.AreEqual("연발", low.Name);
-            Assert.IsTrue(WeaponUpgradeResolver.TryResolve(option, gate, out var high));
+            Assert.IsTrue(SkillUpgradeResolver.TryResolve(option, gate, out var high));
             Assert.AreEqual("연발(+)", high.Name);
             var lowWeapon = NewWeapon();
             var highWeapon = NewWeapon();
@@ -59,15 +59,15 @@ namespace Game.Tests
             Assert.AreEqual(0, weapon.UpgradeCount);
         }
 
-        private static TestWeapon NewWeapon() => new TestWeapon(new WeaponData
+        private static TestSkill NewWeapon() => new TestSkill(new SkillData
         {
             maxLevel = 15,
-            baseStats = new WeaponBaseStats { cast = { baseDamage = 10, projectileCount = 1 }, projectile = { speed = 20 } }
+            baseStats = new SkillBaseStats { cast = { baseDamage = 10, projectileCount = 1 }, projectile = { speed = 20 } }
         });
 
-        private static TestWeapon SharedWeapon(int id, string type = "damage")
+        private static TestSkill SharedWeapon(int id, string type = "damage")
         {
-            var option = new WeaponUpgradeOption
+            var option = new SkillUpgradeOption
             {
                 id = "shared_" + id,
                 sharedId = "pair",
@@ -78,12 +78,12 @@ namespace Game.Tests
                     new EffectDef { kind = type, value = type == "damage" ? 80 : 20 }
                 }
             };
-            return new TestWeapon(new WeaponData
+            return new TestSkill(new SkillData
             {
                 id = id,
                 maxLevel = 15,
-                baseStats = new WeaponBaseStats { cast = { baseDamage = 10, cooldown = 2, projectileCount = 1 } },
-                upgrades = new System.Collections.Generic.List<WeaponUpgradeOption> { option }
+                baseStats = new SkillBaseStats { cast = { baseDamage = 10, cooldown = 2, projectileCount = 1 } },
+                upgrades = new System.Collections.Generic.List<SkillUpgradeOption> { option }
             });
         }
 
@@ -93,15 +93,15 @@ namespace Game.Tests
         {
             var a = SharedWeapon(1, type);
             var b = SharedWeapon(2, type);
-            var weapons = new WeaponBase[] { a, b };
-            Assert.IsTrue(WeaponUpgradeTransaction.CanApply(a, a.Data.upgrades[0], weapons, 0));
+            var weapons = new SkillBase[] { a, b };
+            Assert.IsTrue(SkillUpgradeTransaction.CanApply(a, a.Data.upgrades[0], weapons, 0));
             Assert.AreEqual(0, a.UpgradeCount, "후보 판정은 상태를 변경하지 않는다");
-            Assert.IsTrue(WeaponUpgradeTransaction.TryApply(a, a.Data.upgrades[0], weapons, 0));
+            Assert.IsTrue(SkillUpgradeTransaction.TryApply(a, a.Data.upgrades[0], weapons, 0));
             Assert.AreEqual(1, a.UpgradeCount);
             Assert.AreEqual(1, b.UpgradeCount);
             Assert.AreEqual(1, a.GetAcquiredCount("shared_1"));
             Assert.AreEqual(1, b.GetAcquiredCount("shared_2"));
-            Assert.IsFalse(WeaponUpgradeTransaction.TryApply(b, b.Data.upgrades[0], weapons, 0));
+            Assert.IsFalse(SkillUpgradeTransaction.TryApply(b, b.Data.upgrades[0], weapons, 0));
             if (type == "damage")
             {
                 Assert.AreEqual(18, a.CurrentStats.Cast.Damage, 0.0001f);
@@ -119,8 +119,8 @@ namespace Game.Tests
         {
             var weapon = NewWeapon();
             var option = VariantOption(9, -20, 0);
-            weapon.Data.upgrades = new System.Collections.Generic.List<WeaponUpgradeOption> { option };
-            Assert.IsTrue(WeaponUpgradeTransaction.TryApply(weapon, option, new WeaponBase[] { weapon }, 9));
+            weapon.Data.upgrades = new System.Collections.Generic.List<SkillUpgradeOption> { option };
+            Assert.IsTrue(SkillUpgradeTransaction.TryApply(weapon, option, new SkillBase[] { weapon }, 9));
             Assert.AreEqual(10, weapon.CurrentStats.Cast.Damage);
             Assert.AreEqual(2, weapon.CurrentStats.Cast.Count);
             Assert.AreEqual(1, weapon.GetAcquiredCount(option.id));
@@ -131,14 +131,14 @@ namespace Game.Tests
         {
             var a = SharedWeapon(1);
             var b = SharedWeapon(2);
-            Assert.IsFalse(WeaponUpgradeTransaction.TryApply(a, a.Data.upgrades[0], new WeaponBase[] { a }, 0));
+            Assert.IsFalse(SkillUpgradeTransaction.TryApply(a, a.Data.upgrades[0], new SkillBase[] { a }, 0));
             b.Data.maxLevel = 1;
-            Assert.IsTrue(b.LevelUp(new WeaponUpgradeOption
+            Assert.IsTrue(b.LevelUp(new SkillUpgradeOption
             {
                 id = "basic",
                 effects = new System.Collections.Generic.List<EffectDef>()
             }));
-            Assert.IsFalse(WeaponUpgradeTransaction.TryApply(a, a.Data.upgrades[0], new WeaponBase[] { a, b }, 0));
+            Assert.IsFalse(SkillUpgradeTransaction.TryApply(a, a.Data.upgrades[0], new SkillBase[] { a, b }, 0));
             Assert.AreEqual(0, a.UpgradeCount);
             Assert.AreEqual(0, a.GetAcquiredCount("shared_1"));
             Assert.AreEqual(10, a.CurrentStats.Cast.Damage);
@@ -152,7 +152,7 @@ namespace Game.Tests
             var b = SharedWeapon(2);
             Assert.IsFalse(a.LevelUp(a.Data.upgrades[0]));
             b.Data.upgrades[0].effects[0].value = 60;
-            Assert.IsFalse(WeaponUpgradeTransaction.TryApply(a, a.Data.upgrades[0], new WeaponBase[] { a, b }, 0));
+            Assert.IsFalse(SkillUpgradeTransaction.TryApply(a, a.Data.upgrades[0], new SkillBase[] { a, b }, 0));
             Assert.AreEqual(0, a.UpgradeCount);
             Assert.AreEqual(0, b.UpgradeCount);
             Assert.AreEqual(10, a.CurrentStats.Cast.Damage);
@@ -163,13 +163,13 @@ namespace Game.Tests
         {
             var a = SharedWeapon(1);
             var b = SharedWeapon(2);
-            var definitions = new System.Collections.Generic.List<WeaponData> { a.Data, b.Data };
-            Assert.AreEqual(2, GameDataStore.ParseWeapons(Newtonsoft.Json.JsonConvert.SerializeObject(definitions)).Count);
+            var definitions = new System.Collections.Generic.List<SkillData> { a.Data, b.Data };
+            Assert.AreEqual(2, GameDataStore.ParseSkills(Newtonsoft.Json.JsonConvert.SerializeObject(definitions)).Count);
             b.Data.upgrades[0].maxPickCount = 2;
-            Assert.Throws<InvalidOperationException>(() => GameDataStore.ParseWeapons(Newtonsoft.Json.JsonConvert.SerializeObject(definitions)));
+            Assert.Throws<InvalidOperationException>(() => GameDataStore.ParseSkills(Newtonsoft.Json.JsonConvert.SerializeObject(definitions)));
         }
 
-        private static WeaponUpgradeOption VariantOption(int gate, float before, float after) => new WeaponUpgradeOption
+        private static SkillUpgradeOption VariantOption(int gate, float before, float after) => new SkillUpgradeOption
         {
             id = "repeat",
             name = "연발",
@@ -179,7 +179,7 @@ namespace Game.Tests
                 new EffectDef { kind = "castCount", value = 1 },
                 new EffectDef { kind = "damage", value = before }
             },
-            variants = new[] { new WeaponUpgradeVariant
+            variants = new[] { new SkillUpgradeVariant
             {
                 minPermanentLevel = gate, name = "연발(+)",
                 effects = new System.Collections.Generic.List<EffectDef>
@@ -195,8 +195,8 @@ namespace Game.Tests
         [TestCase(15)]
         public void BattleUpgradeCap_ExcludesInitialAcquisition(int cap)
         {
-            var weapon = new TestWeapon(new WeaponData { maxLevel = cap, baseStats = new WeaponBaseStats() });
-            var option = new WeaponUpgradeOption
+            var weapon = new TestSkill(new SkillData { maxLevel = cap, baseStats = new SkillBaseStats() });
+            var option = new SkillUpgradeOption
             {
                 id = "repeat",
                 maxPickCount = cap + 1,
@@ -216,7 +216,7 @@ namespace Game.Tests
             Assert.AreEqual(cap, weapon.GetAcquiredCount(option.id));
         }
 
-        private static WeaponStats Stats() => WeaponStats.FromDefinition(new WeaponBaseStats
+        private static SkillStats Stats() => SkillStats.FromDefinition(new SkillBaseStats
         {
             cast = { cooldown = 2f, baseDamage = 10f, projectileCount = 1 },
             projectile = { speed = 20f }
@@ -225,9 +225,9 @@ namespace Game.Tests
         [Test]
         public void CountUpgrades_AreIndependent()
         {
-            WeaponStats stats = WeaponStatsTestFactory.Apply(Stats(), "projectileCount", 1);
-            stats = WeaponStatsTestFactory.Apply(stats, "castCount", 2);
-            stats = WeaponStatsTestFactory.Apply(stats, "pierceCount", 3);
+            SkillStats stats = SkillTestFactory.Apply(Stats(), "projectileCount", 1);
+            stats = SkillTestFactory.Apply(stats, "castCount", 2);
+            stats = SkillTestFactory.Apply(stats, "pierceCount", 3);
             Assert.AreEqual(2, stats.Cast.ProjectileCount);
             Assert.AreEqual(3, stats.Cast.Count);
             Assert.AreEqual(3, stats.Projectile.PierceCount);
@@ -237,7 +237,7 @@ namespace Game.Tests
         [Test]
         public void SpeedUpgrade_DoesNotChangeCooldown()
         {
-            var stats = WeaponStatsTestFactory.Apply(Stats(), "projectileSpeed", 25);
+            var stats = SkillTestFactory.Apply(Stats(), "projectileSpeed", 25);
             Assert.AreEqual(25f, stats.Projectile.Speed);
             Assert.AreEqual(2f, stats.Cast.Cooldown);
         }
@@ -245,7 +245,7 @@ namespace Game.Tests
         [Test]
         public void ProjectileCount_AddsProjectilesNotPierce()
         {
-            var stats = WeaponStatsTestFactory.Apply(Stats(), "projectileCount", 2);
+            var stats = SkillTestFactory.Apply(Stats(), "projectileCount", 2);
             Assert.AreEqual(3, stats.Cast.ProjectileCount);
             Assert.AreEqual(3, stats.Cast.ProjectileCount);
             Assert.AreEqual(0, stats.Projectile.PierceCount);
@@ -293,36 +293,36 @@ namespace Game.Tests
         [Test]
         public void Catalog_RejectsDanglingImpossibleAndCyclicPrerequisites()
         {
-            var a = new WeaponUpgradeOption { id = "a", maxPickCount = 1, effects = new System.Collections.Generic.List<EffectDef>() };
-            var b = new WeaponUpgradeOption { id = "b", maxPickCount = 1, effects = new System.Collections.Generic.List<EffectDef>() };
-            var data = new[] { new WeaponData
+            var a = new SkillUpgradeOption { id = "a", maxPickCount = 1, effects = new System.Collections.Generic.List<EffectDef>() };
+            var b = new SkillUpgradeOption { id = "b", maxPickCount = 1, effects = new System.Collections.Generic.List<EffectDef>() };
+            var data = new[] { new SkillData
             {
-                id = 1, maxLevel = 15, baseStats = new WeaponBaseStats(),
-                upgrades = new System.Collections.Generic.List<WeaponUpgradeOption> { a, b }
+                id = 1, maxLevel = 15, baseStats = new SkillBaseStats(),
+                upgrades = new System.Collections.Generic.List<SkillUpgradeOption> { a, b }
             } };
             a.requiredCardIds = new[] { "missing" };
-            Assert.Throws<InvalidOperationException>(() => GameDataStore.ParseWeapons(Newtonsoft.Json.JsonConvert.SerializeObject(data)));
+            Assert.Throws<InvalidOperationException>(() => GameDataStore.ParseSkills(Newtonsoft.Json.JsonConvert.SerializeObject(data)));
             a.requiredCardIds = null;
             a.requiredCardCounts = new[] { new CardCountRequirement { cardId = "b", count = 2 } };
-            Assert.Throws<InvalidOperationException>(() => GameDataStore.ParseWeapons(Newtonsoft.Json.JsonConvert.SerializeObject(data)));
+            Assert.Throws<InvalidOperationException>(() => GameDataStore.ParseSkills(Newtonsoft.Json.JsonConvert.SerializeObject(data)));
             a.requiredCardCounts = null;
             a.requiredCardIds = new[] { "b" };
             b.requiredCardIds = new[] { "a" };
-            Assert.Throws<InvalidOperationException>(() => GameDataStore.ParseWeapons(Newtonsoft.Json.JsonConvert.SerializeObject(data)));
+            Assert.Throws<InvalidOperationException>(() => GameDataStore.ParseSkills(Newtonsoft.Json.JsonConvert.SerializeObject(data)));
         }
 
         [Test]
         public void Catalog_RejectsDuplicateWeaponIds()
         {
             const string json = "[{\"id\":1,\"maxLevel\":1,\"baseStats\":{},\"upgrades\":[]},{\"id\":1,\"maxLevel\":1,\"baseStats\":{},\"upgrades\":[]}]";
-            Assert.Throws<InvalidOperationException>(() => GameDataStore.ParseWeapons(json));
+            Assert.Throws<InvalidOperationException>(() => GameDataStore.ParseSkills(json));
         }
 
         [Test]
         public void Catalog_RejectsDuplicateCardIdsAcrossWeapons()
         {
             const string json = "[{\"id\":1,\"maxLevel\":1,\"baseStats\":{},\"upgrades\":[{\"id\":\"same\",\"effects\":[]}]},{\"id\":2,\"maxLevel\":1,\"baseStats\":{},\"upgrades\":[{\"id\":\"same\",\"effects\":[]}]}]";
-            Assert.Throws<InvalidOperationException>(() => GameDataStore.ParseWeapons(json));
+            Assert.Throws<InvalidOperationException>(() => GameDataStore.ParseSkills(json));
         }
     }
 }

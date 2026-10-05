@@ -105,7 +105,7 @@ namespace Game.Tests
             var go = new GameObject("FieldStatsTest");
             try
             {
-                var data = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 3);
+                var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 3);
                 var weapon = Casters.Hitscan(data, go, go.transform, new Provider());
                 Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == "lightning_field")));
                 string first = voltageFirst ? "lightning_field_voltage" : "lightning_field_stable";
@@ -113,7 +113,7 @@ namespace Game.Tests
                 Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == first)));
                 Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == second)));
                 Assert.IsFalse(weapon.LevelUp(data.upgrades.Find(c => c.id == first)));
-                var stats = (WeaponStats)typeof(WeaponBase).GetField("stats", Flags).GetValue(weapon);
+                var stats = (SkillStats)typeof(SkillBase).GetField("stats", Flags).GetValue(weapon);
                 Assert.AreEqual(262.5f, (stats.Cast.Damage * stats.Field.DamageRatio + stats.Field.FlatDamage) * stats.Field.DamageMultiplier);
                 Assert.AreEqual(5, stats.Field.Duration); Assert.AreEqual(25, stats.Cast.Damage); Assert.AreEqual(.8f, stats.Field.Radius);
             }
@@ -126,7 +126,7 @@ namespace Game.Tests
             var go = new GameObject("FieldCasterTest"); go.AddComponent<HitscanEffect>();
             try
             {
-                var data = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 3);
+                var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 3);
                 var provider = new Provider(); var target = new Target { Position = Vector2.up * 2 }; provider.Targets.Add(target);
                 var weapon = Casters.Hitscan(data, go, go.transform, provider);
                 weapon.LevelUp(data.upgrades.Find(c => c.id == "lightning_field"));

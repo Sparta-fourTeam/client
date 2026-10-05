@@ -81,6 +81,18 @@ namespace Game.Core.Defense
             }
         }
 
+        public void Repair(int amount)
+        {
+            if (IsDestroyed || amount <= 0 || MaxHp <= 0 || CurrentHp >= MaxHp)
+            {
+                return;
+            }
+
+            CurrentHp = Math.Min(MaxHp, CurrentHp + amount);
+            _hpChangedPublisher.Publish(new WallHpChanged(CurrentHp, MaxHp));
+            ApplySprite();
+        }
+
         // 적과 같은 피격 플래시. 프리팹에 없으면 붙인다
         private void FlashHit()
         {

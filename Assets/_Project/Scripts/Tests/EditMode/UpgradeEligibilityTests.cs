@@ -19,7 +19,7 @@ namespace Game.Tests
         [Test]
         public void LightningSanctionAndJudgement_UsePermanentGatesAndDirectionalExclusion()
         {
-            var cards = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 3).upgrades;
+            var cards = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 3).upgrades;
             var sanction = cards.Find(c => c.id == "lightning_sanction");
             var judgement = cards.Find(c => c.id == "lightning_judgement");
             var state = new State(); state.Levels[3] = 1; state.PermanentLevels[3] = 5;
@@ -43,7 +43,7 @@ namespace Game.Tests
         [Test]
         public void FieldCards_RequireStormThenFieldAndRespectOneSuccessfulPick()
         {
-            var cards = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 3).upgrades;
+            var cards = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 3).upgrades;
             var state = new State(); state.Levels[3] = 1;
             var field = cards.Find(c => c.id == "lightning_field");
             Assert.IsFalse(UpgradeEligibility.CanAcquire(field, 3, state));
@@ -64,7 +64,7 @@ namespace Game.Tests
         [Test]
         public void TriangleIce_RequiresAllThreeCardsAndEnablesActualForm()
         {
-            var data = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 4);
+            var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 4);
             var triangle = data.upgrades.Find(c => c.id == "ice_triangle");
             var state = new State(); state.Levels[4] = 1;
             state.Counts[(4, "ice_pierce")] = 1; state.Counts[(4, "ice_extreme")] = 1;
@@ -77,8 +77,8 @@ namespace Game.Tests
                 var weapon = Casters.Projectile(data, go, go.transform, new NullEnemyTargetProvider());
                 weapon.UseChildCaster(new NoopChildCaster());
                 Assert.IsTrue(weapon.LevelUp(triangle)); Assert.IsFalse(weapon.LevelUp(triangle));
-                var stats = (WeaponStats)typeof(WeaponBase).GetField("stats", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(weapon);
-                Assert.AreEqual(WeaponForm.TriangleIce, stats.Cast.Form);
+                var stats = (SkillStats)typeof(SkillBase).GetField("stats", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(weapon);
+                Assert.AreEqual(SkillForm.TriangleIce, stats.Cast.Form);
             }
             finally { UnityEngine.Object.DestroyImmediate(go); }
         }
@@ -86,7 +86,7 @@ namespace Game.Tests
         [Test]
         public void LogRepeatAndSize_KeepConservativeDamagePrerequisite()
         {
-            var data = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 5);
+            var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 5);
             var state = new State(); state.Levels[5] = 1;
             foreach (string id in new[] { "log_repeat", "log_size" })
             {
@@ -101,7 +101,7 @@ namespace Game.Tests
         [Test]
         public void LogForms_RequirePredecessorsPermanentNineAndMutualExclusion()
         {
-            var data = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 5);
+            var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 5);
             var large = data.upgrades.Find(c => c.id == "log_large"); var fire = data.upgrades.Find(c => c.id == "log_fire");
             var state = new State(); state.Levels[5] = 1; state.PermanentLevels[5] = 9;
             state.Counts[(5, "log_size")] = 1; state.Counts[(5, "log_impact")] = 1;
@@ -120,7 +120,7 @@ namespace Game.Tests
         [Test]
         public void ReserveLog_RequiresWeightAndPermanentThirteen()
         {
-            var card = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 5).upgrades.Find(c => c.id == "log_reserve");
+            var card = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 5).upgrades.Find(c => c.id == "log_reserve");
             var state = new State(); state.Levels[5] = 1; state.PermanentLevels[5] = 13;
             Assert.IsFalse(UpgradeEligibility.CanAcquire(card, 5, state));
             state.Counts[(5, "log_weight")] = 1; state.PermanentLevels[5] = 12;
@@ -130,12 +130,12 @@ namespace Game.Tests
         }
 
         private static State Owned(int level = 1) => new State { Levels = { [1] = level } };
-        private static WeaponUpgradeOption Option(string id = "upgrade") => new WeaponUpgradeOption { id = id, maxPickCount = 3 };
+        private static SkillUpgradeOption Option(string id = "upgrade") => new SkillUpgradeOption { id = id, maxPickCount = 3 };
 
         [Test]
         public void KunaiAmplification_RequiresPermanent13AndAllowsOneSelection()
         {
-            var option = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 1).upgrades.Find(c => c.id == "kunai_amplify");
+            var option = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 1).upgrades.Find(c => c.id == "kunai_amplify");
             var state = Owned();
             state.Counts[(1, "kunai_spread")] = 1;
             state.PermanentLevels[1] = 12;
@@ -149,7 +149,7 @@ namespace Game.Tests
         [Test]
         public void KunaiLightningRoute_RequiresPredecessorsAndExcludesExplosion()
         {
-            var cards = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 1).upgrades;
+            var cards = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 1).upgrades;
             var state = Owned();
             var shock = cards.Find(c => c.id == "kunai_shock");
             Assert.IsFalse(UpgradeEligibility.CanAcquire(shock, 1, state));
@@ -177,7 +177,7 @@ namespace Game.Tests
         [Test]
         public void BurnCards_RequireTheirPredecessors()
         {
-            var catalog = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll();
+            var catalog = new DefaultSkillDataProvider(new GameDataStore()).LoadAll();
             var state = Owned();
             var flame = catalog.Find(w => w.id == 1).upgrades.Find(c => c.id == "kunai_flame");
             state.Counts[(1, "kunai_explosion")] = 1;
@@ -194,7 +194,7 @@ namespace Game.Tests
         [Test]
         public void FireballTraining_RequiresImpactAndExpandedExplosion()
         {
-            var option = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 2).upgrades.Find(c => c.id == "fireball_training");
+            var option = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 2).upgrades.Find(c => c.id == "fireball_training");
             var state = Owned();
             state.Levels[2] = 1;
             state.Counts[(2, "fireball_impact_damage")] = 1;
@@ -208,7 +208,7 @@ namespace Game.Tests
         [Test]
         public void Enbakutsu_UnlocksAt13AndRepeatRestrictionEndsAt25()
         {
-            var cards = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 2).upgrades;
+            var cards = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 2).upgrades;
             var enbakutsu = cards.Find(c => c.id == "fireball_enbakutsu");
             var repeat = cards.Find(c => c.id == "fireball_burst");
             var state = Owned(); state.Levels[2] = 1;
@@ -255,7 +255,7 @@ namespace Game.Tests
         public void CrossWeaponRequirements_DoNotUseSameNamedLocalCard()
         {
             var s = Owned(); var o = Option();
-            o.requiredCardCounts = new[] { new CardCountRequirement { weaponId = 2, cardId = "explosion" } };
+            o.requiredCardCounts = new[] { new CardCountRequirement { skillId = 2, cardId = "explosion" } };
             s.Counts[(1, "explosion")] = 1;
             Assert.IsFalse(UpgradeEligibility.CanAcquire(o, 1, s));
             s.Counts[(2, "explosion")] = 1;

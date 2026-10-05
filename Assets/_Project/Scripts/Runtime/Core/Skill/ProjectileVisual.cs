@@ -8,7 +8,7 @@ namespace Game.Core
         [System.Serializable]
         public struct FormSprite
         {
-            public WeaponForm form;
+            public SkillForm form;
             public Sprite sprite;
             public GameObject visualRoot;
             public bool hideBaseSprite;
@@ -31,10 +31,10 @@ namespace Game.Core
             originalActive = baseVisual != null && baseVisual.activeSelf;
         }
 
-        public static Vector3 MainScale(Vector3 original, WeaponForm form, float multiplier) =>
-            (form == WeaponForm.Enbakutsu ? Vector3.Scale(original, new Vector3(1.5f, .65f, 1)) : original) * multiplier;
+        public static Vector3 MainScale(Vector3 original, SkillForm form, float multiplier) =>
+            (form == SkillForm.Enbakutsu ? Vector3.Scale(original, new Vector3(1.5f, .65f, 1)) : original) * multiplier;
 
-        public void SetForm(WeaponForm form)
+        public void SetForm(SkillForm form)
         {
             if (renderer != null) { renderer.sprite = original; renderer.enabled = originalEnabled; }
             if (baseVisual != null) { baseVisual.SetActive(originalActive); }

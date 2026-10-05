@@ -12,13 +12,13 @@ namespace Game.Tests
 
     internal static class Casters
     {
-        public static SkillCaster Projectile(WeaponData data, GameObject prefab, Transform caster, IEnemyTargetProvider targets,
+        public static SkillCaster Projectile(SkillData data, GameObject prefab, Transform caster, IEnemyTargetProvider targets,
             Game.Core.Defense.Wall wall = null, SkillConfig config = null) =>
-            WeaponFactory.Create(data, caster, targets, new ProjectileStrategy(prefab, wall), config);
+            SkillFactory.Create(data, caster, targets, new ProjectileStrategy(prefab, wall), config);
 
-        public static SkillCaster Hitscan(WeaponData data, GameObject prefab, Transform caster, IEnemyTargetProvider targets,
+        public static SkillCaster Hitscan(SkillData data, GameObject prefab, Transform caster, IEnemyTargetProvider targets,
             SkillConfig config = null) =>
-            WeaponFactory.Create(data, caster, targets, new HitscanStrategy(prefab), config);
+            SkillFactory.Create(data, caster, targets, new HitscanStrategy(prefab), config);
 
         public static ProjectileStrategy Projectile(SkillCaster weapon) => (ProjectileStrategy)weapon.Strategy;
         public static HitscanStrategy Hitscan(SkillCaster weapon) => (HitscanStrategy)weapon.Strategy;

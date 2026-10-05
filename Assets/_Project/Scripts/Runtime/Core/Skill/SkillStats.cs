@@ -2,7 +2,7 @@ using System;
 
 namespace Game.Core
 {
-    /// <summary>스냅샷과 빌더가 공유하는 스탯 키. 스탯 하나를 더하려면 여기, <see cref="WeaponStatRegistry"/>, 묶음 구조체에 한 줄씩 적는다.</summary>
+    /// <summary>스냅샷과 빌더가 공유하는 스탯 키. 스탯 하나를 더하려면 여기, <see cref="SkillStatRegistry"/>, 묶음 구조체에 한 줄씩 적는다.</summary>
     internal enum Stat
     {
         Cooldown, Damage, ProjectileCount, CastCount, ReserveCastCount, Form, CastInterval,
@@ -21,31 +21,31 @@ namespace Game.Core
     }
 
     /// <summary>스탯별 기본값 선언. 선언이 빠진 스탯은 첫 사용 때 바로 예외가 나므로 조용히 0으로 남지 않는다.</summary>
-    internal static class WeaponStatRegistry
+    internal static class SkillStatRegistry
     {
-        private static readonly Func<WeaponBaseStats, float>[] Defaults = Create();
+        private static readonly Func<SkillBaseStats, float>[] Defaults = Create();
 
         /// <summary>스탯 이름(대소문자 무시)을 찾는다. 자식의 상속 규칙이 쓴다</summary>
         public static bool TryParse(string name, out Stat stat) =>
             Enum.TryParse(name, true, out stat) && stat != Stat.Count && Enum.IsDefined(typeof(Stat), stat);
 
-        public static float[] CreateValues(WeaponBaseStats d)
+        public static float[] CreateValues(SkillBaseStats d)
         {
             var values = new float[(int)Stat.Count];
             for (int i = 0; i < values.Length; i++) { values[i] = Defaults[i](d); }
             return values;
         }
 
-        private static Func<WeaponBaseStats, float>[] Create()
+        private static Func<SkillBaseStats, float>[] Create()
         {
-            var t = new Func<WeaponBaseStats, float>[(int)Stat.Count];
-            void Def(Stat stat, Func<WeaponBaseStats, float> value) => t[(int)stat] = value;
+            var t = new Func<SkillBaseStats, float>[(int)Stat.Count];
+            void Def(Stat stat, Func<SkillBaseStats, float> value) => t[(int)stat] = value;
             Def(Stat.Cooldown, d => d.cast.cooldown);
             Def(Stat.Damage, d => d.cast.baseDamage);
             Def(Stat.ProjectileCount, d => Math.Max(1, d.cast.projectileCount));
             Def(Stat.CastCount, d => Math.Max(1, d.cast.castCount));
             Def(Stat.ReserveCastCount, _ => 0);
-            Def(Stat.Form, _ => (int)WeaponForm.Default);
+            Def(Stat.Form, _ => (int)SkillForm.Default);
             Def(Stat.CastInterval, d => d.cast.castInterval);
             Def(Stat.ReserveDistance, d => d.reserve.distance);
             Def(Stat.ReserveCooldown, d => d.reserve.cooldown);
@@ -103,7 +103,7 @@ namespace Game.Core
     }
 
     /// <summary>Immutable combat values, grouped by the behavior that consumes them.</summary>
-    public sealed class WeaponStats
+    public sealed class SkillStats
     {
         private readonly float[] values;
         public CastStats Cast { get; }
@@ -117,10 +117,10 @@ namespace Game.Core
         public BeamStats Beam { get; }
         public ChainStats Chain { get; }
 
-        public static WeaponStats FromDefinition(WeaponBaseStats data) => new WeaponStats(new WeaponStatsBuilder(data));
+        public static SkillStats FromDefinition(SkillBaseStats data) => new SkillStats(new SkillStatsBuilder(data));
 
         // 값 배열은 생성 시 한 번 복사하고 밖으로 내보내지 않는다.
-        internal WeaponStats(WeaponStatsBuilder source)
+        internal SkillStats(SkillStatsBuilder source)
         {
             values = source.CopyValues();
             Cast = new CastStats(values);
@@ -150,7 +150,7 @@ namespace Game.Core
         public int ProjectileCount => (int)v[(int)Stat.ProjectileCount];
         public int Count => (int)v[(int)Stat.CastCount];
         public int ReserveCount => (int)v[(int)Stat.ReserveCastCount];
-        public WeaponForm Form => (WeaponForm)(int)v[(int)Stat.Form];
+        public SkillForm Form => (SkillForm)(int)v[(int)Stat.Form];
         public float Interval => v[(int)Stat.CastInterval];
         public float ReserveDistance => v[(int)Stat.ReserveDistance];
         public float ReserveCooldown => v[(int)Stat.ReserveCooldown];
@@ -268,14 +268,14 @@ namespace Game.Core
     }
 
     // Only upgrade preparation can mutate values; committed snapshots are read-only.
-    internal sealed class WeaponStatsBuilder
+    internal sealed class SkillStatsBuilder
     {
         private readonly float[] values;
 
-        public WeaponStatsBuilder(WeaponBaseStats data) => values = WeaponStatRegistry.CreateValues(data);
+        public SkillStatsBuilder(SkillBaseStats data) => values = SkillStatRegistry.CreateValues(data);
 
         // 스냅샷을 열어 보지 않고 값 배열째 복사하므로 새 스탯이 복사에서 빠질 수 없다.
-        public WeaponStatsBuilder(WeaponStats source) => values = source.CopyValues();
+        public SkillStatsBuilder(SkillStats source) => values = source.CopyValues();
 
         public float this[Stat stat]
         {

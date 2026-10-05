@@ -126,7 +126,7 @@ namespace Game.Tests
         [Test]
         public void Explosion_FiresOnEachBounceArrivalButNotOnTheFirstHit()
         {
-            var stats = WeaponStats.FromDefinition(new WeaponBaseStats { cast = { baseDamage = 20 }, explosion = { radius = 1, damageRatio = .5f } });
+            var stats = SkillStats.FromDefinition(new SkillBaseStats { cast = { baseDamage = 20 }, explosion = { radius = 1, damageRatio = .5f } });
             var a = Enemy(3, 0); var b = Enemy(5, 0);
             // 폭발이 닿는 적은 연쇄 대상과 분리해 둔다(연쇄 대상이 되면 직접 맞아 구분이 안 된다)
             var bystanderA = Enemy(3, .5f); var bystanderB = Enemy(5, .5f);
@@ -194,7 +194,7 @@ namespace Game.Tests
         [Test]
         public void Cards_ContinuousAddsBouncesAndDamage_CrossAddsCasts_ConductionAddsPath()
         {
-            var start = SkillConfig.FromDefinition(new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == ChainLightningId)).Stats;
+            var start = SkillConfig.FromDefinition(new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == ChainLightningId)).Stats;
             var chain = ChainLightning("chain_lightning_continuous", "chain_lightning_cross", "chain_lightning_voltage");
             Assert.AreEqual(start.Chain.Bounces + 2, chain.Stats.Chain.Bounces);
             Assert.AreEqual(2, chain.Stats.Cast.Count);
@@ -222,7 +222,7 @@ namespace Game.Tests
         [Test]
         public void ShippedCatalog_ChainLightningHasThreeDisabledCardsWithReasons()
         {
-            var data = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == ChainLightningId);
+            var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == ChainLightningId);
             var disabled = data.upgrades.Where(c => !c.enabled).ToList();
             Assert.AreEqual(3, disabled.Count);
             foreach (var card in disabled) { Assert.IsNotEmpty(card.disabledReason, card.id); }
@@ -239,7 +239,7 @@ namespace Game.Tests
             {
                 Assert.IsTrue(EffectRegistry.Supports(CastType.Chain, kind), kind);
             }
-            Assert.IsTrue(WeaponFactory.IsRegistered(CastType.Chain));
+            Assert.IsTrue(SkillFactory.IsRegistered(CastType.Chain));
         }
     }
 }

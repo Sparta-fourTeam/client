@@ -102,6 +102,50 @@ namespace Game.Tests
             Assert.IsFalse(wall.IsDestroyed);
         }
 
+        [Test(Description = "수리하면 체력이 늘고 HUD에 보내는 값도 늘어난다")]
+        public void Repair_RestoresHpAndPublishes()
+        {
+            Wall wall = CreateWall(100);
+            wall.TakeDamage(60);
+
+            wall.Repair(20);
+
+            Assert.AreEqual(60, wall.CurrentHp);
+            Assert.AreEqual(60, _hp.Published.Last().Current);
+        }
+
+        [Test(Description = "수리해도 최대 체력을 넘지 않는다")]
+        public void Repair_ClampsToMaxHp()
+        {
+            Wall wall = CreateWall(100);
+            wall.TakeDamage(10);
+
+            wall.Repair(50);
+
+            Assert.AreEqual(100, wall.CurrentHp);
+        }
+
+        [Test(Description = "부서진 방벽, 가득 찬 방벽, 0 이하 수리량은 무시한다")]
+        public void Repair_IgnoredWhenDestroyedFullOrNonPositive()
+        {
+            Wall wall = CreateWall(100);
+            int published = _hp.Published.Count;
+            wall.Repair(10); // 가득 찬 방벽
+            Assert.AreEqual(published, _hp.Published.Count);
+
+            wall.TakeDamage(10);
+            published = _hp.Published.Count;
+            wall.Repair(0);
+            wall.Repair(-5);
+            Assert.AreEqual(90, wall.CurrentHp);
+            Assert.AreEqual(published, _hp.Published.Count);
+
+            wall.TakeDamage(999);
+            wall.Repair(50); // 부서진 방벽
+            Assert.AreEqual(0, wall.CurrentHp);
+            Assert.IsTrue(wall.IsDestroyed);
+        }
+
         [Test(Description = "IDamageable로 다뤄도 HP가 줄어든다")]
         public void TakeDamage_ViaIDamageable_ReducesHp()
         {

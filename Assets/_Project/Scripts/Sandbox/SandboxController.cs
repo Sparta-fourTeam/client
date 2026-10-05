@@ -9,8 +9,8 @@ namespace Game.Sandbox
     {
         [SerializeField] private Font font;
 
-        private WeaponController weapons;
-        private IWeaponDataProvider provider;
+        private SkillController _skills;
+        private ISkillDataProvider provider;
         private SandboxProgression progression;
         private SandboxEnemyField enemies;
         private SandboxPanel panel;
@@ -19,9 +19,9 @@ namespace Game.Sandbox
         public SandboxEnemyField Enemies => enemies;
 
         [Inject]
-        public void Construct(WeaponController weapons, IWeaponDataProvider provider, SandboxProgression progression, SandboxEnemyField enemies)
+        public void Construct(SkillController skills, ISkillDataProvider provider, SandboxProgression progression, SandboxEnemyField enemies)
         {
-            this.weapons = weapons;
+            this._skills = skills;
             this.provider = provider;
             this.progression = progression;
             this.enemies = enemies;
@@ -29,8 +29,8 @@ namespace Game.Sandbox
 
         private void Update()
         {
-            if (Session != null || weapons == null || !weapons.IsReady) { return; }
-            Session = new SkillSandboxSession(weapons, provider, progression);
+            if (Session != null || _skills == null || !_skills.IsReady) { return; }
+            Session = new SkillSandboxSession(_skills, provider, progression);
             panel = new SandboxPanel(Session, enemies, font);
         }
 

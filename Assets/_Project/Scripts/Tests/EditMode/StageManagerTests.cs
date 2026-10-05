@@ -51,7 +51,7 @@ namespace Game.Tests
         private BattleStats _stats;
         private StageClock _clock;
         private StageManager _manager;
-        private WeaponController _weapons;
+        private SkillController _skills;
         private readonly List<GameObject> _objects = new();
         private readonly List<StageState> _states = new();
         private readonly List<StageResult> _results = new();
@@ -107,19 +107,19 @@ namespace Game.Tests
 
             var player = new GameObject("TestPlayer");
             _objects.Add(player);
-            _weapons = player.AddComponent<WeaponController>();
-            var entries = new List<WeaponPrefabEntry>();
+            _skills = player.AddComponent<SkillController>();
+            var entries = new List<SkillPrefabEntry>();
             for (int id = 1; id <= 3; id++)
             {
                 var prefab = new GameObject("Weapon" + id);
                 _objects.Add(prefab);
-                entries.Add(new WeaponPrefabEntry { id = id, prefab = prefab });
+                entries.Add(new SkillPrefabEntry { id = id, prefab = prefab });
             }
             const BindingFlags Private = BindingFlags.NonPublic | BindingFlags.Instance;
-            typeof(WeaponController).GetField("prefabEntries", Private).SetValue(_weapons, entries);
-            _weapons.Construct(new NullEnemyTargetProvider(),
-                provider.GetRequiredService<IBufferedPublisher<SkillChanged>>(), new DefaultWeaponDataProvider(new GameDataStore()));
-            typeof(WeaponController).GetMethod("Start", Private).Invoke(_weapons, null);
+            typeof(SkillController).GetField("prefabEntries", Private).SetValue(_skills, entries);
+            _skills.Construct(new NullEnemyTargetProvider(),
+                provider.GetRequiredService<IBufferedPublisher<SkillChanged>>(), new DefaultSkillDataProvider(new GameDataStore()));
+            typeof(SkillController).GetMethod("Start", Private).Invoke(_skills, null);
 
             _manager = new StageManager(
                 provider.GetRequiredService<IBufferedPublisher<StageStateChanged>>(),
@@ -130,7 +130,7 @@ namespace Game.Tests
                 _stats,
                 _clock,
                 provider.GetRequiredService<ISubscriber<WaveGaugeFilled>>(),
-                _weapons,
+                new CardDeck(_skills, null, new List<GeneralCardDefinition>(), new UnityRandomProvider()),
                 provider.GetRequiredService<IPublisher<SubmitRejected>>(),
                 provider.GetRequiredService<IPublisher<SubmitFailed>>());
             _manager.RetryDelay = TimeSpan.Zero;
@@ -440,13 +440,13 @@ namespace Game.Tests
             var choice = _manager.Choices[0];
             if (choice.IsNewWeapon)
             {
-                Assert.IsTrue(_weapons.ApplyUpgradeChoice(choice));
+                Assert.IsTrue(_skills.ApplyUpgradeChoice(choice));
             }
             else
             {
                 for (int i = 0; i < choice.Option.maxPickCount; i++)
                 {
-                    Assert.IsTrue(_weapons.ApplyUpgradeChoice(choice));
+                    Assert.IsTrue(_skills.ApplyUpgradeChoice(choice));
                 }
             }
             _manager.PickCard(0);

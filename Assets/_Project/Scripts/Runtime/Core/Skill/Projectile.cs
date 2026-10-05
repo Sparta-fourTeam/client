@@ -13,7 +13,7 @@ namespace Game.Core
         [SerializeField] private GameObject baseVisual;
 
         private ProjectileVisual visual;
-        public void SetVisualForm(WeaponForm form)
+        public void SetVisualForm(SkillForm form)
         {
             visual ??= new ProjectileVisual(gameObject, formSprites, baseVisual);
             visual.SetForm(form);

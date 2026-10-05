@@ -38,13 +38,13 @@ namespace Game.Tests
             created.Add(prefab);
             var owner = new GameObject("ChildAimingOwner");
             created.Add(owner);
-            var childData = new WeaponData
+            var childData = new SkillData
             {
                 id = ChildId,
                 name = "자식",
                 maxLevel = 5,
-                upgrades = new List<WeaponUpgradeOption>(),
-                baseStats = new WeaponBaseStats { cast = { baseDamage = 5, cooldown = 1, range = 20, projectileCount = 1 }, projectile = { speed = 10 } }
+                upgrades = new List<SkillUpgradeOption>(),
+                baseStats = new SkillBaseStats { cast = { baseDamage = 5, cooldown = 1, range = 20, projectileCount = 1 }, projectile = { speed = 10 } }
             };
             children = new ChildSkillCaster(_ => Casters.Projectile(childData, prefab, owner.transform, provider));
         }
@@ -59,7 +59,7 @@ namespace Game.Tests
 
         private SkillConfig ParentWithLink(int count, bool excludeHit)
         {
-            var parent = SkillConfig.FromDefinition(new WeaponData { baseStats = new WeaponBaseStats { cast = { baseDamage = 100 } } }).WithChildCaster(children);
+            var parent = SkillConfig.FromDefinition(new SkillData { baseStats = new SkillBaseStats { cast = { baseDamage = 100 } } }).WithChildCaster(children);
             var builder = new SkillConfigBuilder(parent);
             Assert.IsTrue(builder.TryApplyCatalog(new[]
             {
@@ -187,9 +187,9 @@ namespace Game.Tests
         [Test]
         public void Count_SetsChildProjectileCountOnlyWhenGreaterThanOne()
         {
-            var childBase = SkillConfig.FromDefinition(new WeaponData
+            var childBase = SkillConfig.FromDefinition(new SkillData
             {
-                baseStats = new WeaponBaseStats { cast = { baseDamage = 5, projectileCount = 4 } }
+                baseStats = new SkillBaseStats { cast = { baseDamage = 5, projectileCount = 4 } }
             });
             Assert.AreEqual(4, new ChildCast(ChildId, 1, null, null, count: 1).Resolve(childBase).Stats.Cast.ProjectileCount, "1이면 자식의 기본 수");
             Assert.AreEqual(3, new ChildCast(ChildId, 1, null, null, count: 3).Resolve(childBase).Stats.Cast.ProjectileCount);

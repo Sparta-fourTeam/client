@@ -16,8 +16,9 @@ namespace Game.Boot
                 resolver.Resolve<GameDataStore>().StageOrFirst(resolver.Resolve<StageContext>().StageId), Lifetime.Scoped);
             builder.Register(resolver => EnemySpawnConfig.From(resolver.Resolve<StageDefinition>().Spawn), Lifetime.Scoped);
             builder.RegisterComponentInHierarchy<Wall>();
-            builder.RegisterComponentInHierarchy<WeaponController>();
-            builder.Register<IWeaponDataProvider, DefaultWeaponDataProvider>(Lifetime.Scoped);
+            builder.RegisterComponentInHierarchy<SkillController>().AsSelf().As<IUpgradeChoiceSource>();
+            builder.Register<CardDeck>(Lifetime.Scoped);
+            builder.Register<ISkillDataProvider, DefaultSkillDataProvider>(Lifetime.Scoped);
             builder.Register<IWeaponProgression, ProfileWeaponProgression>(Lifetime.Scoped);
             builder.Register<IStartingSkills, DefaultStartingSkills>(Lifetime.Scoped);
             builder.RegisterEntryPoint<StageClock>().AsSelf();

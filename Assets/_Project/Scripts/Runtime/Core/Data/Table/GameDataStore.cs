@@ -9,7 +9,7 @@ namespace Game.Core
     /// <summary>Resources/MockData의 테이블 JSON을 읽어 도메인 모델 테이블로 만든다</summary>
     public sealed class GameDataStore
     {
-        private static readonly string[] TableNames = { "Monsters", "Stages", "Upgrades", "Energy", "Cards", "Weapons" };
+        private static readonly string[] TableNames = { "Monsters", "Stages", "Upgrades", "Energy", "GeneralCards", "Skills" };
         private readonly Dictionary<string, string> _rawJson;
 
         public Dictionary<string, int> Revisions { get; }
@@ -17,7 +17,9 @@ namespace Game.Core
         public Table<int, StageDefinition> Stages { get; }
         public Table<string, UpgradeDefinition> Upgrades { get; }
         public EnergyConfig Energy { get; }
-        public Table<string, CardDefinition> Cards { get; }
+
+        /// <summary>스킬이 아닌 카드(방벽 회복 등). 스킬 카드는 Skills의 upgrades에 있다</summary>
+        public IReadOnlyList<GeneralCardDefinition> GeneralCards { get; }
 
         /// <summary>어떤 스테이지로도 시작하지 않았을 때(Stage 씬을 바로 열었을 때) 쓰는 첫 번째 스테이지의 ID</summary>
         public int FirstStageId { get; }
@@ -52,11 +54,18 @@ namespace Game.Core
             Stages = new Table<int, StageDefinition>(stages);
             Upgrades = new Table<string, UpgradeDefinition>(ParseIndexed<string, UpgradeDefinition>("Upgrades", d => d.UpgradeId));
             Energy = JsonConvert.DeserializeObject<EnergyConfig>(_rawJson["Energy"]);
-            Cards = new Table<string, CardDefinition>(ParseIndexed<string, CardDefinition>("Cards", d => d.Id));
+
+            var generalCards = ParseIndexed<string, GeneralCardDefinition>("GeneralCards", d => d.Id).Values.ToList();
+            foreach (var card in generalCards)
+            {
+                card.Validate();
+            }
+
+            GeneralCards = generalCards;
 
             FirstStageId = stages.Keys.First();
             // 스킬은 정의 객체가 가변이라 호출마다 새로 읽는다. 여기서는 부팅 때 잘못된 데이터를 바로 잡는다
-            LoadWeapons();
+            LoadSkills();
 
             // TODO(server): 전부 1 고정 — 예: 빌드에 포함된 테이블 버전 메타데이터로 교체
             Revisions = TableNames.ToDictionary(n => n, _ => 1);
@@ -65,12 +74,12 @@ namespace Game.Core
         public string RawJson(string name) => _rawJson[name];
 
         /// <summary>스킬 정의 목록. 호출마다 새 객체를 만들고 카탈로그 검증을 통과해야 돌려준다</summary>
-        public List<WeaponData> LoadWeapons() => ParseWeapons(_rawJson["Weapons"]);
+        public List<SkillData> LoadSkills() => ParseSkills(_rawJson["Skills"]);
 
-        public static List<WeaponData> ParseWeapons(string json)
+        public static List<SkillData> ParseSkills(string json)
         {
-            var weapons = JsonConvert.DeserializeObject<List<WeaponData>>(json);
-            WeaponCatalogValidator.Validate(weapons);
+            var weapons = JsonConvert.DeserializeObject<List<SkillData>>(json);
+            SkillCatalogValidator.Validate(weapons);
             return weapons;
         }
 

@@ -4,9 +4,9 @@ using System.Collections.Generic;
 namespace Game.Core
 {
     /// <summary>Validates catalog identities, shared upgrades, and the prerequisite graph.</summary>
-    public static class WeaponCatalogValidator
+    public static class SkillCatalogValidator
     {
-        public static void Validate(List<WeaponData> weapons)
+        public static void Validate(List<SkillData> weapons)
         {
             if (weapons == null || weapons.Count == 0)
             {
@@ -22,7 +22,7 @@ namespace Game.Core
                 {
                     throw new InvalidOperationException("무기 정의 또는 ID가 잘못되었습니다.");
                 }
-                if (!WeaponFactory.IsRegistered(weapon.castType))
+                if (!SkillFactory.IsRegistered(weapon.castType))
                 {
                     throw new InvalidOperationException($"무기 '{weapon.name}'의 공격 종류 {weapon.castType}에 등록된 공격 전략이 없습니다.");
                 }
@@ -30,7 +30,7 @@ namespace Game.Core
                 foreach (var option in weapon.upgrades)
                 {
                     if (option == null || string.IsNullOrEmpty(option.id) || !cards.Add(option.id)
-                        || option.maxPickCount <= 0 || !WeaponUpgradeResolver.TryResolve(option, 0, out _))
+                        || option.maxPickCount <= 0 || !SkillUpgradeResolver.TryResolve(option, 0, out _))
                     {
                         throw new InvalidOperationException("강화 정의 또는 ID가 잘못되었습니다.");
                     }
@@ -47,16 +47,16 @@ namespace Game.Core
                     }
                 }
             }
-            WeaponUpgradeTransaction.ValidateCatalog(weapons);
+            SkillUpgradeTransaction.ValidateCatalog(weapons);
             ValidateConditions(weapons);
             ValidateChildSkills(weapons);
         }
 
         // 자식 스킬 시전과 보관 효과(target)는 존재하는 스킬만 가리켜야 하고, 한 스킬 아래에서 시전이 순환하면 안 된다.
         // 시전 관계는 스킬마다 따로 본다: 자기 효과(onEvent)와 target으로 후손에게 붙인 효과가 같은 시전 트리를 이룬다.
-        private static void ValidateChildSkills(List<WeaponData> weapons)
+        private static void ValidateChildSkills(List<SkillData> weapons)
         {
-            var byId = new Dictionary<int, WeaponData>();
+            var byId = new Dictionary<int, SkillData>();
             foreach (var weapon in weapons) { byId[weapon.id] = weapon; }
             var global = new Dictionary<int, List<int>>();
             foreach (var weapon in weapons)
@@ -110,7 +110,7 @@ namespace Game.Core
             }
         }
 
-        private static void ValidateChildEffect(WeaponData weapon, EffectDef effect, string where, Dictionary<int, WeaponData> byId)
+        private static void ValidateChildEffect(SkillData skill, EffectDef effect, string where, Dictionary<int, SkillData> byId)
         {
             if (EffectRegistry.IsChildCast(effect.kind) || effect.kind == "inherit")
             {
@@ -124,7 +124,7 @@ namespace Game.Core
                 }
             }
             if (effect.target == 0) { return; }
-            if (!byId.TryGetValue(effect.target, out var target) || effect.target == weapon.id)
+            if (!byId.TryGetValue(effect.target, out var target) || effect.target == skill.id)
             {
                 throw new InvalidOperationException($"{where}: 대상 스킬 {effect.target}가 없거나 자기 자신입니다.");
             }
@@ -135,19 +135,19 @@ namespace Game.Core
         }
 
         // 순환과, 보관 효과의 대상이 이 스킬 아래에서 실제로 시전될 수 있는지를 확인한다.
-        private static void ValidateTree(WeaponData weapon, Dictionary<int, List<int>> edges)
+        private static void ValidateTree(SkillData skill, Dictionary<int, List<int>> edges)
         {
-            DetectCycle(edges, new List<int>(edges.Keys) { weapon.id });
+            DetectCycle(edges, new List<int>(edges.Keys) { skill.id });
 
-            var reachable = new HashSet<int> { weapon.id };
+            var reachable = new HashSet<int> { skill.id };
             var queue = new Queue<int>();
-            queue.Enqueue(weapon.id);
+            queue.Enqueue(skill.id);
             while (queue.Count > 0)
             {
                 if (!edges.TryGetValue(queue.Dequeue(), out var next)) { continue; }
                 foreach (int child in next) { if (reachable.Add(child)) { queue.Enqueue(child); } }
             }
-            foreach (var option in weapon.upgrades)
+            foreach (var option in skill.upgrades)
             {
                 foreach (var effects in EffectLists(option))
                 {
@@ -156,14 +156,14 @@ namespace Game.Core
                         if (effect.target != 0 && !reachable.Contains(effect.target))
                         {
                             throw new InvalidOperationException(
-                                $"카드 '{option.id}'({weapon.name})의 효과 {effect.kind}: 스킬 {effect.target}는 {weapon.name} 아래에서 시전되는 카드가 없어 효과가 쓰이지 않습니다.");
+                                $"카드 '{option.id}'({skill.name})의 효과 {effect.kind}: 스킬 {effect.target}는 {skill.name} 아래에서 시전되는 카드가 없어 효과가 쓰이지 않습니다.");
                         }
                     }
                 }
             }
         }
 
-        private static IEnumerable<List<EffectDef>> EffectLists(WeaponUpgradeOption option)
+        private static IEnumerable<List<EffectDef>> EffectLists(SkillUpgradeOption option)
         {
             yield return option.effects;
             if (option.variants == null) { yield break; }
@@ -172,31 +172,31 @@ namespace Game.Core
 
         // 공격이 소비하지 않는 효과는 적용돼도 아무 일이 없으므로, 어느 카드가 문제인지 알려 주며 막는다.
         // target이 있는 효과는 대상 스킬이 소비하는지를 따로 본다(ValidateChildEffect).
-        private static void ValidateEffectCompatibility(WeaponData weapon, WeaponUpgradeOption option)
+        private static void ValidateEffectCompatibility(SkillData skill, SkillUpgradeOption option)
         {
-            Check(weapon, option, option.effects);
+            Check(skill, option, option.effects);
             if (option.variants == null) { return; }
-            foreach (var variant in option.variants) { Check(weapon, option, variant.effects); }
+            foreach (var variant in option.variants) { Check(skill, option, variant.effects); }
         }
 
-        private static void Check(WeaponData weapon, WeaponUpgradeOption option, List<EffectDef> effects)
+        private static void Check(SkillData skill, SkillUpgradeOption option, List<EffectDef> effects)
         {
             foreach (var effect in effects)
             {
                 if (effect.target != 0 && EffectRegistry.IsRegistered(effect.kind)) { continue; }
-                if (EffectRegistry.Supports(weapon.castType, effect.kind)) { continue; }
+                if (EffectRegistry.Supports(skill.castType, effect.kind)) { continue; }
                 string reason = EffectRegistry.IsRegistered(effect.kind)
-                    ? $"{weapon.castType} 공격이 쓰지 않는 효과입니다."
+                    ? $"{skill.castType} 공격이 쓰지 않는 효과입니다."
                     : "EffectRegistry에 등록되지 않은 효과 종류입니다.";
-                throw new InvalidOperationException($"카드 '{option.id}'({weapon.name})의 효과 {effect.kind}: {reason}");
+                throw new InvalidOperationException($"카드 '{option.id}'({skill.name})의 효과 {effect.kind}: {reason}");
             }
         }
 
-        private static void ValidateConditions(List<WeaponData> weapons)
+        private static void ValidateConditions(List<SkillData> weapons)
         {
-            var byId = new Dictionary<int, WeaponData>();
+            var byId = new Dictionary<int, SkillData>();
             var owners = new Dictionary<string, int>();
-            var options = new Dictionary<string, WeaponUpgradeOption>();
+            var options = new Dictionary<string, SkillUpgradeOption>();
             var edges = new Dictionary<string, List<string>>();
             foreach (var weapon in weapons)
             {
@@ -232,7 +232,7 @@ namespace Game.Core
                         foreach (var r in option.requiredCardCounts)
                         {
                             if (r == null) { Invalid(); }
-                            Require(r.cardId, r.weaponId == 0 ? weapon.id : r.weaponId, r.count);
+                            Require(r.cardId, r.skillId == 0 ? weapon.id : r.skillId, r.count);
                         }
                     }
                     if (option.exclusions != null)
@@ -241,7 +241,7 @@ namespace Game.Core
                         {
                             if (e == null || e.belowPermanentLevel < 0 || string.IsNullOrEmpty(e.cardId)
                                 || !owners.TryGetValue(e.cardId, out var owner)
-                                || owner != (e.weaponId == 0 ? weapon.id : e.weaponId)) { Invalid(); }
+                                || owner != (e.skillId == 0 ? weapon.id : e.skillId)) { Invalid(); }
                         }
                     }
                     void Require(string id, int owner, int count)

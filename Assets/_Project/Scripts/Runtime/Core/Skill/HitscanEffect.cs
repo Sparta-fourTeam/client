@@ -9,10 +9,10 @@ namespace Game.Core
         [SerializeField] private GameObject judgementVisual;
         [SerializeField] private GameObject regularVisual;
 
-        public void SetVisualForm(WeaponForm form)
+        public void SetVisualForm(SkillForm form)
         {
             if (judgementVisual == null) { return; }
-            bool upgraded = form == WeaponForm.JudgementThunder;
+            bool upgraded = form == SkillForm.JudgementThunder;
             judgementVisual.SetActive(upgraded);
             if (regularVisual != null) { regularVisual.SetActive(!upgraded); }
         }

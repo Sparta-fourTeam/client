@@ -28,12 +28,12 @@ namespace Game.Core
         {
             public readonly UpgradeEffectCategory Category;
             public readonly Users Users;
-            public readonly Action<WeaponStatsBuilder, float> Apply;
+            public readonly Action<SkillStatsBuilder, float> Apply;
             public readonly Func<float, bool> Accept;
             /// <summary>숫자 하나로 표현되지 않는 효과(자식 스킬 시전 등)의 컴파일. null이면 value를 스탯에 적용하는 효과다</summary>
             public readonly Func<EffectDef, IUpgradeEffect> Compile;
 
-            public Kind(UpgradeEffectCategory category, Users users, Action<WeaponStatsBuilder, float> apply, Func<float, bool> accept,
+            public Kind(UpgradeEffectCategory category, Users users, Action<SkillStatsBuilder, float> apply, Func<float, bool> accept,
                 Func<EffectDef, IUpgradeEffect> compile = null)
             {
                 Category = category;
@@ -79,7 +79,7 @@ namespace Game.Core
         private static Dictionary<string, Kind> Create()
         {
             var k = new Dictionary<string, Kind>();
-            void Add(string key, UpgradeEffectCategory category, Users users, Action<WeaponStatsBuilder, float> apply, Func<float, bool> accept = null) =>
+            void Add(string key, UpgradeEffectCategory category, Users users, Action<SkillStatsBuilder, float> apply, Func<float, bool> accept = null) =>
                 k.Add(key, new Kind(category, users, apply, accept ?? (_ => true)));
             const UpgradeEffectCategory Plain = UpgradeEffectCategory.Stat, Cast = UpgradeEffectCategory.Cast,
                 Reaction = UpgradeEffectCategory.Reaction, Transform = UpgradeEffectCategory.Transform;
@@ -95,8 +95,8 @@ namespace Game.Core
             Add("castCount", Cast, All, (s, v) => s[Stat.CastCount] = Math.Max(1, s[Stat.CastCount] + (int)v));
             Add("reserveCasts", Cast, Projectile, (s, v) => s[Stat.ReserveCastCount] = (int)v, PositiveInteger);
             Add("form", Transform, Both, (s, v) => s[Stat.Form] = (int)v,
-                v => v == (int)WeaponForm.Enbakutsu || v == (int)WeaponForm.JudgementThunder
-                    || v == (int)WeaponForm.TriangleIce || v == (int)WeaponForm.LargeLog || v == (int)WeaponForm.FireLog);
+                v => v == (int)SkillForm.Enbakutsu || v == (int)SkillForm.JudgementThunder
+                    || v == (int)SkillForm.TriangleIce || v == (int)SkillForm.LargeLog || v == (int)SkillForm.FireLog);
 
             // 투사체의 이동과 충돌
             Add("pierceCount", Plain, Projectile, (s, v) => s[Stat.PierceCount] = Math.Max(0, s[Stat.PierceCount] + (int)v));

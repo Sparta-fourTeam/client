@@ -67,7 +67,7 @@ namespace Game.Tests
             var provider = new CatalogWorld.Targets(); provider.All.Add(aim);
             var pool = Pool();
             var zone = pool.Get();
-            var settings = AreaSettings.From(WeaponStats.FromDefinition(new WeaponBaseStats
+            var settings = AreaSettings.From(SkillStats.FromDefinition(new SkillBaseStats
             {
                 beam = { length = 10, width = 1, duration = 2, pulses = 4 }
             }).Beam);
@@ -144,7 +144,7 @@ namespace Game.Tests
         [Test]
         public void Cards_OverloadDoublesPulsesAndRaisesCooldown_StableAddsFlatPulses_SpreadWidensBeam()
         {
-            var start = SkillConfig.FromDefinition(new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == SunBeamId)).Stats;
+            var start = SkillConfig.FromDefinition(new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == SunBeamId)).Stats;
             var beam = SunBeam("sun_beam_overload", "sun_beam_stable", "sun_beam_amplify", "sun_beam_spread");
             var stats = beam.Stats;
             Assert.AreEqual((start.Beam.Pulses * 2) + 5, stats.Beam.Pulses, .001f, "공격 횟수 +100% 뒤 +5");
@@ -192,7 +192,7 @@ namespace Game.Tests
         [Test]
         public void ShippedCatalog_SunBeamHasFiveDisabledCardsWithReasons()
         {
-            var data = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == SunBeamId);
+            var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == SunBeamId);
             var disabled = data.upgrades.Where(c => !c.enabled).ToList();
             Assert.AreEqual(5, disabled.Count);
             foreach (var card in disabled) { Assert.IsNotEmpty(card.disabledReason, card.id); }
@@ -210,7 +210,7 @@ namespace Game.Tests
             {
                 Assert.IsTrue(EffectRegistry.Supports(CastType.Beam, kind), kind);
             }
-            Assert.IsTrue(WeaponFactory.IsRegistered(CastType.Beam));
+            Assert.IsTrue(SkillFactory.IsRegistered(CastType.Beam));
         }
     }
 }

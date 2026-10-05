@@ -9,15 +9,15 @@ namespace Game.Sandbox
     /// <summary>스킬의 현재 스탯을 사람이 읽는 글로 펼친다. 리플렉션으로 읽으므로 새 스탯 묶음이 생겨도 따로 고치지 않는다.</summary>
     public static class SandboxStatsText
     {
-        public static string Describe(WeaponBase weapon)
+        public static string Describe(SkillBase skill)
         {
-            if (weapon == null) { return "(스킬 없음)"; }
+            if (skill == null) { return "(스킬 없음)"; }
             var text = new StringBuilder();
-            var data = weapon.Data;
-            text.Append(data.name).Append("  [").Append(data.castType).Append("]  Lv ").Append(weapon.Level).Append('\n');
-            foreach (var group in typeof(WeaponStats).GetProperties(BindingFlags.Public | BindingFlags.Instance))
+            var data = skill.Data;
+            text.Append(data.name).Append("  [").Append(data.castType).Append("]  Lv ").Append(skill.Level).Append('\n');
+            foreach (var group in typeof(SkillStats).GetProperties(BindingFlags.Public | BindingFlags.Instance))
             {
-                object value = group.GetValue(weapon.Stats);
+                object value = group.GetValue(skill.Stats);
                 var parts = new StringBuilder();
                 foreach (var field in group.PropertyType.GetProperties(BindingFlags.Public | BindingFlags.Instance))
                 {
@@ -28,7 +28,7 @@ namespace Game.Sandbox
                 }
                 if (parts.Length > 0) { text.Append(group.Name).Append(": ").Append(parts).Append('\n'); }
             }
-            var config = weapon.Config;
+            var config = skill.Config;
             if (config.Children.Count > 0)
             {
                 text.Append("자식: ");

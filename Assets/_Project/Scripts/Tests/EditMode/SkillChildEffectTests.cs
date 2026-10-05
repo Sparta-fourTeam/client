@@ -20,7 +20,7 @@ namespace Game.Tests
         }
 
         private static SkillConfigBuilder Builder(IChildSkillCaster caster) => new SkillConfigBuilder(
-            SkillConfig.FromDefinition(new WeaponData { baseStats = new WeaponBaseStats() }).WithChildCaster(caster));
+            SkillConfig.FromDefinition(new SkillData { baseStats = new SkillBaseStats() }).WithChildCaster(caster));
 
         private static EffectDef OnEvent(AttackEvent trigger, int skillId, float chance = 1, int count = 1) =>
             new EffectDef { kind = "onEvent", trigger = trigger, skillId = skillId, chance = chance, count = count };
@@ -106,18 +106,18 @@ namespace Game.Tests
 
         // ── 카탈로그 검증 ──────────────────────────────────────────────
 
-        private static List<WeaponData> Catalog() =>
-            JsonConvert.DeserializeObject<List<WeaponData>>(Resources.Load<TextAsset>("MockData/Weapons").text);
+        private static List<SkillData> Catalog() =>
+            JsonConvert.DeserializeObject<List<SkillData>>(Resources.Load<TextAsset>("MockData/Skills").text);
 
-        private static void AddChildCast(WeaponData weapon, int childId) =>
-            weapon.upgrades[0].effects.Add(OnEvent(AttackEvent.Hit, childId));
+        private static void AddChildCast(SkillData skill, int childId) =>
+            skill.upgrades[0].effects.Add(OnEvent(AttackEvent.Hit, childId));
 
         [Test]
         public void Validator_AcceptsChildSkillThatExists()
         {
             var catalog = Catalog();
             AddChildCast(catalog[0], catalog[1].id);
-            Assert.DoesNotThrow(() => WeaponCatalogValidator.Validate(catalog));
+            Assert.DoesNotThrow(() => SkillCatalogValidator.Validate(catalog));
         }
 
         [Test]
@@ -125,7 +125,7 @@ namespace Game.Tests
         {
             var catalog = Catalog();
             AddChildCast(catalog[0], 9999);
-            var error = Assert.Throws<InvalidOperationException>(() => WeaponCatalogValidator.Validate(catalog));
+            var error = Assert.Throws<InvalidOperationException>(() => SkillCatalogValidator.Validate(catalog));
             StringAssert.Contains(catalog[0].upgrades[0].id, error.Message);
             StringAssert.Contains("9999", error.Message);
         }
@@ -135,7 +135,7 @@ namespace Game.Tests
         {
             var catalog = Catalog();
             AddChildCast(catalog[0], catalog[0].id);
-            var error = Assert.Throws<InvalidOperationException>(() => WeaponCatalogValidator.Validate(catalog));
+            var error = Assert.Throws<InvalidOperationException>(() => SkillCatalogValidator.Validate(catalog));
             StringAssert.Contains("순환", error.Message);
         }
 
@@ -145,7 +145,7 @@ namespace Game.Tests
             var catalog = Catalog();
             AddChildCast(catalog[0], catalog[1].id);
             AddChildCast(catalog[1], catalog[0].id);
-            var error = Assert.Throws<InvalidOperationException>(() => WeaponCatalogValidator.Validate(catalog));
+            var error = Assert.Throws<InvalidOperationException>(() => SkillCatalogValidator.Validate(catalog));
             StringAssert.Contains("순환", error.Message);
             StringAssert.Contains($"{catalog[0].id} → {catalog[1].id} → {catalog[0].id}", error.Message);
         }
@@ -157,9 +157,9 @@ namespace Game.Tests
             var card = catalog[0].upgrades[0];
             card.variants = new[]
             {
-                new WeaponUpgradeVariant { minPermanentLevel = 1, name = "v", desc = "v", effects = new List<EffectDef> { OnEvent(AttackEvent.Hit, catalog[0].id) } }
+                new SkillUpgradeVariant { minPermanentLevel = 1, name = "v", desc = "v", effects = new List<EffectDef> { OnEvent(AttackEvent.Hit, catalog[0].id) } }
             };
-            Assert.Throws<InvalidOperationException>(() => WeaponCatalogValidator.Validate(catalog));
+            Assert.Throws<InvalidOperationException>(() => SkillCatalogValidator.Validate(catalog));
         }
     }
 }

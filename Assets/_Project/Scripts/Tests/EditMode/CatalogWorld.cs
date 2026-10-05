@@ -26,18 +26,18 @@ namespace Game.Tests
         }
 
         public Targets Provider { get; } = new Targets();
-        public Dictionary<int, WeaponData> Data { get; }
+        public Dictionary<int, SkillData> Data { get; }
         private readonly Dictionary<int, GameObject> prefabs = new Dictionary<int, GameObject>();
         private readonly ChildSkillCaster children;
         private readonly List<GameObject> owners = new List<GameObject>();
         private readonly List<SkillCaster> casters = new List<SkillCaster>();
 
-        public CatalogWorld(Action<Dictionary<int, WeaponData>> tweak = null)
+        public CatalogWorld(Action<Dictionary<int, SkillData>> tweak = null)
         {
-            Data = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().ToDictionary(w => w.id);
+            Data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().ToDictionary(w => w.id);
             tweak?.Invoke(Data);
             var player = AssetDatabase.LoadAssetAtPath<GameObject>(PlayerPrefab);
-            var entries = new SerializedObject(player.GetComponentInChildren<WeaponController>(true)).FindProperty("prefabEntries");
+            var entries = new SerializedObject(player.GetComponentInChildren<SkillController>(true)).FindProperty("prefabEntries");
             for (int i = 0; i < entries.arraySize; i++)
             {
                 var entry = entries.GetArrayElementAtIndex(i);
@@ -50,7 +50,7 @@ namespace Game.Tests
         {
             var owner = new GameObject("CatalogWorldOwner" + id);
             owners.Add(owner);
-            var caster = WeaponFactory.Create(Data[id], prefabs[id], owner.transform, Provider);
+            var caster = SkillFactory.Create(Data[id], prefabs[id], owner.transform, Provider);
             caster.UseChildCaster(children);
             casters.Add(caster);
             return caster;

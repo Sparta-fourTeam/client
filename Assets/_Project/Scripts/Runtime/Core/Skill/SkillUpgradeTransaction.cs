@@ -4,34 +4,34 @@ using System.Collections.Generic;
 namespace Game.Core
 {
     /// <summary>공유 강화의 모든 효과를 준비한 뒤 상태를 함께 갱신한다.</summary>
-    public static class WeaponUpgradeTransaction
+    public static class SkillUpgradeTransaction
     {
         private sealed class Prepared
         {
-            public WeaponBase Weapon;
-            public WeaponUpgradeOption Option;
+            public SkillBase skill;
+            public SkillUpgradeOption Option;
             public SkillConfig Config;
         }
 
-        public static bool CanApply(WeaponBase owner, WeaponUpgradeOption option, IReadOnlyList<WeaponBase> weapons, int permanentLevel)
+        public static bool CanApply(SkillBase owner, SkillUpgradeOption option, IReadOnlyList<SkillBase> weapons, int permanentLevel)
         {
             return TryPrepare(owner, option, weapons, permanentLevel, out _);
         }
 
-        public static bool TryApply(WeaponBase owner, WeaponUpgradeOption option, IReadOnlyList<WeaponBase> weapons, int permanentLevel)
+        public static bool TryApply(SkillBase owner, SkillUpgradeOption option, IReadOnlyList<SkillBase> weapons, int permanentLevel)
         {
             if (!TryPrepare(owner, option, weapons, permanentLevel, out var prepared)) { return false; }
-            foreach (var item in prepared) { item.Weapon.CommitUpgrade(item.Option, item.Config); }
+            foreach (var item in prepared) { item.skill.CommitUpgrade(item.Option, item.Config); }
             return true;
         }
 
-        private static bool TryPrepare(WeaponBase owner, WeaponUpgradeOption option, IReadOnlyList<WeaponBase> weapons,
+        private static bool TryPrepare(SkillBase owner, SkillUpgradeOption option, IReadOnlyList<SkillBase> weapons,
             int permanentLevel, out List<Prepared> prepared)
         {
             prepared = new List<Prepared>();
             if (owner == null || option == null || weapons == null
                 || owner.Data.upgrades == null || !owner.Data.upgrades.Contains(option)
-                || !WeaponUpgradeResolver.TryResolve(option, permanentLevel, out var resolved)) { return false; }
+                || !SkillUpgradeResolver.TryResolve(option, permanentLevel, out var resolved)) { return false; }
             bool shared = !string.IsNullOrEmpty(option.sharedId);
             var participants = shared ? option.affectedWeaponIds : new[] { owner.Data.id };
             if (participants == null || (shared && participants.Length < 2)) { return false; }
@@ -40,24 +40,24 @@ namespace Game.Core
             foreach (int id in participants)
             {
                 if (!ids.Add(id)) { return false; }
-                WeaponBase weapon = null;
+                SkillBase skill = null;
                 foreach (var candidate in weapons)
                 {
                     if (candidate.Data.id != id) { continue; }
-                    if (weapon != null) { return false; }
-                    weapon = candidate;
+                    if (skill != null) { return false; }
+                    skill = candidate;
                 }
-                if (weapon == null) { return false; }
-                containsOwner |= ReferenceEquals(weapon, owner);
-                var member = shared ? weapon.Data.upgrades?.Find(o => o.sharedId == option.sharedId) : option;
+                if (skill == null) { return false; }
+                containsOwner |= ReferenceEquals(skill, owner);
+                var member = shared ? skill.Data.upgrades?.Find(o => o.sharedId == option.sharedId) : option;
                 if (member == null || (shared && !SameSharedDefinition(option, member))
-                    || !weapon.TryPrepareUpgrade(member, resolved.Effects, out var stats)) { return false; }
-                prepared.Add(new Prepared { Weapon = weapon, Option = member, Config = stats });
+                    || !skill.TryPrepareUpgrade(member, resolved.Effects, out var stats)) { return false; }
+                prepared.Add(new Prepared { skill = skill, Option = member, Config = stats });
             }
             return containsOwner;
         }
 
-        private static bool SameSharedDefinition(WeaponUpgradeOption a, WeaponUpgradeOption b)
+        private static bool SameSharedDefinition(SkillUpgradeOption a, SkillUpgradeOption b)
         {
             if (a.sharedId != b.sharedId || a.maxPickCount != b.maxPickCount || a.variants?.Length > 0 || b.variants?.Length > 0
                 || a.affectedWeaponIds == null || b.affectedWeaponIds == null
@@ -73,9 +73,9 @@ namespace Game.Core
             return true;
         }
 
-        public static void ValidateCatalog(List<WeaponData> weapons)
+        public static void ValidateCatalog(List<SkillData> weapons)
         {
-            var ids = new Dictionary<int, WeaponData>();
+            var ids = new Dictionary<int, SkillData>();
             foreach (var weapon in weapons) { ids.Add(weapon.id, weapon); }
             foreach (var weapon in weapons)
             {

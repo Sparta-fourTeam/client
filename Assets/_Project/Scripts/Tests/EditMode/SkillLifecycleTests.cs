@@ -6,7 +6,7 @@ using UnityEngine.Pool;
 
 namespace Game.Tests
 {
-    public sealed class WeaponLifecycleTests
+    public sealed class SkillLifecycleTests
     {
         private sealed class Targets : IEnemyTargetProvider
         {
@@ -21,7 +21,7 @@ namespace Game.Tests
             GameObject active = null, inactive = null;
             try
             {
-                var data = new WeaponData { baseStats = new WeaponBaseStats { cast = { cooldown = 1, baseDamage = 10, projectileCount = 1 } }, maxLevel = 10 };
+                var data = new SkillData { baseStats = new SkillBaseStats { cast = { cooldown = 1, baseDamage = 10, projectileCount = 1 } }, maxLevel = 10 };
                 if (hitscan)
                 {
                     prefab.AddComponent<HitscanEffect>();

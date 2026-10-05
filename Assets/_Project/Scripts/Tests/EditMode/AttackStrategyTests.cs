@@ -20,9 +20,9 @@ namespace Game.Tests
             public void Dispose() => Disposed++;
         }
 
-        private static WeaponData Data() => new WeaponData
+        private static SkillData Data() => new SkillData
         {
-            baseStats = new WeaponBaseStats { cast = { cooldown = 1, baseDamage = 10, projectileCount = 1 } },
+            baseStats = new SkillBaseStats { cast = { cooldown = 1, baseDamage = 10, projectileCount = 1 } },
             maxLevel = 10
         };
 
@@ -33,7 +33,7 @@ namespace Game.Tests
             try
             {
                 var strategy = new FakeStrategy();
-                var caster = WeaponFactory.Create(Data(), go.transform, new NullEnemyTargetProvider(), strategy);
+                var caster = SkillFactory.Create(Data(), go.transform, new NullEnemyTargetProvider(), strategy);
                 caster.Tick(.1f);
                 Assert.AreEqual(1, strategy.Ticks);
                 Assert.AreEqual(1, strategy.Fires, "첫 틱에 쿨타임 0으로 시작해 한 번 발사한다");
@@ -51,7 +51,7 @@ namespace Game.Tests
             try
             {
                 var strategy = new FakeStrategy();
-                var caster = WeaponFactory.Create(Data(), go.transform, new NullEnemyTargetProvider(), strategy);
+                var caster = SkillFactory.Create(Data(), go.transform, new NullEnemyTargetProvider(), strategy);
                 caster.Dispose();
                 Assert.AreEqual(1, strategy.Disposed);
             }
@@ -66,7 +66,7 @@ namespace Game.Tests
             try
             {
                 var strategy = new FakeStrategy();
-                var caster = WeaponFactory.Create(Data(), go.transform, new NullEnemyTargetProvider(), strategy);
+                var caster = SkillFactory.Create(Data(), go.transform, new NullEnemyTargetProvider(), strategy);
                 caster.FireAt(new Vector3(5, 6, 0));
                 Assert.AreEqual(new Vector3(5, 6, 0), strategy.Origins[0]);
                 caster.Tick(.1f);
@@ -82,7 +82,7 @@ namespace Game.Tests
             try
             {
                 var strategy = new FakeStrategy();
-                var caster = WeaponFactory.Create(Data(), go.transform, new NullEnemyTargetProvider(), strategy);
+                var caster = SkillFactory.Create(Data(), go.transform, new NullEnemyTargetProvider(), strategy);
                 caster.FireAt(Vector3.zero, .5f);
                 caster.FireAt(Vector3.zero);
                 Assert.AreEqual(5, strategy.Damages[0], .001f);
@@ -94,10 +94,10 @@ namespace Game.Tests
         [Test]
         public void Factory_RegistersProjectileHitscanAndArea()
         {
-            Assert.IsTrue(WeaponFactory.IsRegistered(CastType.Projectile));
-            Assert.IsTrue(WeaponFactory.IsRegistered(CastType.Hitscan));
-            Assert.IsTrue(WeaponFactory.IsRegistered(CastType.Area));
-            Assert.IsFalse(WeaponFactory.IsRegistered((CastType)99));
+            Assert.IsTrue(SkillFactory.IsRegistered(CastType.Projectile));
+            Assert.IsTrue(SkillFactory.IsRegistered(CastType.Hitscan));
+            Assert.IsTrue(SkillFactory.IsRegistered(CastType.Area));
+            Assert.IsFalse(SkillFactory.IsRegistered((CastType)99));
         }
 
         [Test]
@@ -109,7 +109,7 @@ namespace Game.Tests
                 var data = Data();
                 data.castType = (CastType)99;
                 var error = Assert.Throws<NotSupportedException>(() =>
-                    WeaponFactory.Create(data, go, go.transform, new NullEnemyTargetProvider()));
+                    SkillFactory.Create(data, go, go.transform, new NullEnemyTargetProvider()));
                 StringAssert.Contains("99", error.Message);
             }
             finally { UnityEngine.Object.DestroyImmediate(go); }
@@ -118,9 +118,9 @@ namespace Game.Tests
         [Test]
         public void Validator_RejectsCastTypeWithoutRegisteredStrategy()
         {
-            var catalog = JsonConvert.DeserializeObject<List<WeaponData>>(Resources.Load<TextAsset>("MockData/Weapons").text);
+            var catalog = JsonConvert.DeserializeObject<List<SkillData>>(Resources.Load<TextAsset>("MockData/Skills").text);
             catalog[0].castType = (CastType)99;
-            var error = Assert.Throws<InvalidOperationException>(() => WeaponCatalogValidator.Validate(catalog));
+            var error = Assert.Throws<InvalidOperationException>(() => SkillCatalogValidator.Validate(catalog));
             StringAssert.Contains(catalog[0].name, error.Message);
         }
 
@@ -137,7 +137,7 @@ namespace Game.Tests
                 var children = new ChildSkillCaster(id =>
                 {
                     created++;
-                    return WeaponFactory.Create(Data(), go.transform, new NullEnemyTargetProvider(), strategy);
+                    return SkillFactory.Create(Data(), go.transform, new NullEnemyTargetProvider(), strategy);
                 });
                 children.Cast(new ChildCast(7, 1f, null, null), new AttackContext(new Vector2(3, 4), Vector3.up));
                 children.Cast(new ChildCast(7, 1f, null, null), new AttackContext(new Vector2(5, 6), Vector3.up));
@@ -167,12 +167,12 @@ namespace Game.Tests
         [Test]
         public void ChildOnlySkill_IsNeverOfferedAsNewSkillCard()
         {
-            var normal = new WeaponData { id = 1, name = "일반", baseStats = new WeaponBaseStats(), maxLevel = 5, upgrades = new List<WeaponUpgradeOption>() };
-            var child = new WeaponData { id = 2, name = "자식", baseStats = new WeaponBaseStats(), maxLevel = 5, upgrades = new List<WeaponUpgradeOption>(), childOnly = true };
-            var choices = new WeaponUpgradeChoices(new List<WeaponBase>(), new[] { normal, child }, new EmptyState(), _ => true);
+            var normal = new SkillData { id = 1, name = "일반", baseStats = new SkillBaseStats(), maxLevel = 5, upgrades = new List<SkillUpgradeOption>() };
+            var child = new SkillData { id = 2, name = "자식", baseStats = new SkillBaseStats(), maxLevel = 5, upgrades = new List<SkillUpgradeOption>(), childOnly = true };
+            var choices = new SkillUpgradeChoices(new List<SkillBase>(), new[] { normal, child }, new EmptyState(), _ => true);
             var offered = choices.Select(5, upper => 0);
             Assert.AreEqual(1, offered.Count);
-            Assert.AreEqual(1, offered[0].NewWeaponData.id);
+            Assert.AreEqual(1, offered[0].newSkillData.id);
         }
 
         private sealed class EmptyState : IUpgradeState

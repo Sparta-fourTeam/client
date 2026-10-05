@@ -8,12 +8,12 @@ using Game.Core;
 namespace Game.Tests
 {
     /// <summary>WeaponStats의 모든 값을 "그룹.이름" 키로 펼친다. 리플렉션으로 읽으므로 새 스탯이 생기면 자동으로 포함된다.</summary>
-    internal static class WeaponStatsDump
+    internal static class SkillStatsDump
     {
-        public static SortedDictionary<string, string> Flatten(WeaponStats stats)
+        public static SortedDictionary<string, string> Flatten(SkillStats stats)
         {
             var map = new SortedDictionary<string, string>(StringComparer.Ordinal);
-            foreach (var group in typeof(WeaponStats).GetProperties(BindingFlags.Public | BindingFlags.Instance))
+            foreach (var group in typeof(SkillStats).GetProperties(BindingFlags.Public | BindingFlags.Instance))
             {
                 object value = group.GetValue(stats);
                 foreach (var field in group.PropertyType.GetProperties(BindingFlags.Public | BindingFlags.Instance))

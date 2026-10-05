@@ -22,11 +22,11 @@ namespace Game.Core
         public bool ExcludeHit { get; }
         public ChildLink Link { get; }
         /// <summary>이 시전을 만든 부모 공격의 스탯. 발사 때의 설정이므로 이후 강화는 반영되지 않는다</summary>
-        public WeaponStats ParentStats { get; }
+        public SkillStats ParentStats { get; }
         /// <summary>스킬 ID별 보관 효과. 자식과 그 후손이 시전될 때 적용한다</summary>
         public IReadOnlyDictionary<int, IReadOnlyList<EffectDef>> Overlays { get; }
 
-        public ChildCast(int skillId, float damageScale, ChildLink link, WeaponStats parentStats, int count = 1, bool excludeHit = false,
+        public ChildCast(int skillId, float damageScale, ChildLink link, SkillStats parentStats, int count = 1, bool excludeHit = false,
             IReadOnlyDictionary<int, IReadOnlyList<EffectDef>> overlays = null)
         {
             SkillId = skillId;
@@ -44,13 +44,13 @@ namespace Game.Core
         /// </summary>
         public SkillConfig Resolve(SkillConfig childBase, IChildSkillCaster caster = null)
         {
-            var values = new WeaponStatsBuilder(childBase.Stats);
+            var values = new SkillStatsBuilder(childBase.Stats);
             if (Link != null)
             {
                 foreach (var rule in Link.Inherit) { values[rule.Stat] = ParentStats.Get(rule.Stat) * rule.Scale; }
             }
             if (Count > 1) { values[Stat.ProjectileCount] = Count; }
-            var config = childBase.WithStats(new WeaponStats(values)).WithChildCaster(caster ?? childBase.ChildCaster)
+            var config = childBase.WithStats(new SkillStats(values)).WithChildCaster(caster ?? childBase.ChildCaster)
                 .WithOverlays(Overlays ?? new Dictionary<int, IReadOnlyList<EffectDef>>());
             if (!Mathf.Approximately(DamageScale, 1)) { config = config.WithDamageScale(DamageScale); }
             if (Overlays != null && Overlays.TryGetValue(SkillId, out var effects) && effects.Count > 0)
@@ -102,7 +102,7 @@ namespace Game.Core
             if (source == null) { return true; }
             foreach (var pair in source)
             {
-                if (!WeaponStatRegistry.TryParse(pair.Key, out var stat) || !(pair.Value > 0) || float.IsInfinity(pair.Value))
+                if (!SkillStatRegistry.TryParse(pair.Key, out var stat) || !(pair.Value > 0) || float.IsInfinity(pair.Value))
                 {
                     return false;
                 }
@@ -123,11 +123,11 @@ namespace Game.Core
         private readonly float interval;
         private readonly float damageScale;
         private readonly bool excludeHit;
-        private readonly WeaponForm? onlyForm;
+        private readonly SkillForm? onlyForm;
         private readonly List<ChildLink.Inheritance> inherit;
 
         public ChildCastUpgradeEffect(AttackEvent trigger, int skillId, int count, float chance, float damageScale,
-            List<ChildLink.Inheritance> inherit, bool excludeHit, WeaponForm? onlyForm, float interval = 0)
+            List<ChildLink.Inheritance> inherit, bool excludeHit, SkillForm? onlyForm, float interval = 0)
         {
             this.excludeHit = excludeHit;
             this.onlyForm = onlyForm;
@@ -159,13 +159,13 @@ namespace Game.Core
             return true;
         }
 
-        public static bool Valid(EffectDef e, out List<ChildLink.Inheritance> inherit, out WeaponForm? onlyForm)
+        public static bool Valid(EffectDef e, out List<ChildLink.Inheritance> inherit, out SkillForm? onlyForm)
         {
             inherit = null;
             onlyForm = null;
             if (!string.IsNullOrEmpty(e.onlyForm))
             {
-                if (!Enum.TryParse<WeaponForm>(e.onlyForm, true, out var form)) { return false; }
+                if (!Enum.TryParse<SkillForm>(e.onlyForm, true, out var form)) { return false; }
                 onlyForm = form;
             }
             return e.skillId > 0 && e.count >= 1 && e.chance > 0 && e.chance <= 1 && !float.IsNaN(e.chance)

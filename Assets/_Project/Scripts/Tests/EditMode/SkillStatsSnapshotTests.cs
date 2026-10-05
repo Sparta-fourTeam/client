@@ -6,9 +6,9 @@ using UnityEngine;
 
 namespace Game.Tests
 {
-    public sealed class WeaponStatsSnapshotTests
+    public sealed class SkillStatsSnapshotTests
     {
-        private static WeaponStats Baseline() => WeaponStats.FromDefinition(new WeaponBaseStats
+        private static SkillStats Baseline() => SkillStats.FromDefinition(new SkillBaseStats
         {
             cast = { baseDamage = 100, cooldown = 2, projectileCount = 2, castCount = 1 },
             projectile = { speed = 10, pierceCount = 1, knockbackDistance = 1 },
@@ -52,14 +52,14 @@ namespace Game.Tests
             yield return Case("fieldDamageMultiplier", 20, s => s.Field.DamageMultiplier, 1.2f);
         }
 
-        private static TestCaseData Case(string type, float value, Func<WeaponStats, float> read, float expected) =>
+        private static TestCaseData Case(string type, float value, Func<SkillStats, float> read, float expected) =>
             new TestCaseData(type, value, read, expected).SetName("SnapshotEffect_" + type);
 
         [TestCaseSource(nameof(EffectCases))]
-        public void Effects_PreserveCombatValues(string type, float value, Func<WeaponStats, float> read, float expected)
+        public void Effects_PreserveCombatValues(string type, float value, Func<SkillStats, float> read, float expected)
         {
             var current = Baseline();
-            Assert.IsTrue(WeaponStatEffects.TryApply(current, new[] { new EffectDef { kind = type, value = value } }, out var result));
+            Assert.IsTrue(SkillStatEffects.TryApply(current, new[] { new EffectDef { kind = type, value = value } }, out var result));
             Assert.AreEqual(expected, read(result), .0001f);
             Assert.AreEqual(100, current.Cast.Damage);
             Assert.AreEqual(2, current.Cast.Cooldown);
@@ -68,8 +68,8 @@ namespace Game.Tests
         [Test]
         public void Snapshot_DetachesFromMutableDefinition()
         {
-            var data = new WeaponBaseStats { cast = { baseDamage = 100 }, explosion = { damageRatio = .5f } };
-            var snapshot = WeaponStats.FromDefinition(data);
+            var data = new SkillBaseStats { cast = { baseDamage = 100 }, explosion = { damageRatio = .5f } };
+            var snapshot = SkillStats.FromDefinition(data);
             data.cast.baseDamage = 900;
             Assert.AreEqual(100, snapshot.Cast.Damage);
             Assert.AreEqual(50, snapshot.Explosion.Damage);
@@ -78,7 +78,7 @@ namespace Game.Tests
         [Test]
         public void OrderedEffects_KeepImpactAndExplosionDamageIndependent()
         {
-            Assert.IsTrue(WeaponStatEffects.TryApply(Baseline(), new[]
+            Assert.IsTrue(SkillStatEffects.TryApply(Baseline(), new[]
             {
                 new EffectDef { kind = "impactDamage", value = 80 },
                 new EffectDef { kind = "explosionDamage", value = 80 },
@@ -99,7 +99,7 @@ namespace Game.Tests
         public void InvalidEffect_DiscardsWholePreparation(string type, float value)
         {
             var current = Baseline();
-            Assert.IsFalse(WeaponStatEffects.TryApply(current, new[]
+            Assert.IsFalse(SkillStatEffects.TryApply(current, new[]
             {
                 new EffectDef { kind = "damage", value = 80 },
                 new EffectDef { kind = type, value = value }
@@ -135,7 +135,7 @@ namespace Game.Tests
             var nearWall = new Target { Position = new Vector2(2, 1) };
             var nearCaster = new Target { Position = new Vector2(0, 2) };
             provider.Values.AddRange(new IEnemyTarget[] { nearCaster, new Target { Position = new Vector2(100, 0) }, nearWall });
-            var selector = new WeaponTargetSelector(provider);
+            var selector = new SkillTargetSelector(provider);
             var result = selector.Select(Vector2.zero, 3);
             Assert.AreEqual(8, provider.Requested);
             CollectionAssert.AreEqual(new IEnemyTarget[] { nearWall, nearCaster }, result);

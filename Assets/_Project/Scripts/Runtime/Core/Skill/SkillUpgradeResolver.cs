@@ -17,9 +17,9 @@ namespace Game.Core
     }
 
     /// <summary>표시와 적용에 같은 변형을 사용하며 원본 카탈로그를 변경하지 않는다.</summary>
-    public static class WeaponUpgradeResolver
+    public static class SkillUpgradeResolver
     {
-        public static bool TryResolve(WeaponUpgradeOption option, int permanentLevel, out ResolvedWeaponUpgrade resolved)
+        public static bool TryResolve(SkillUpgradeOption option, int permanentLevel, out ResolvedWeaponUpgrade resolved)
         {
             resolved = null;
             if (option == null || permanentLevel < 0 || !ValidEffects(option.effects)) { return false; }

@@ -10,7 +10,7 @@ cards = {c['id']: c for c in data['cards']}
 assert len(skills) == len(data['skills']) == 15
 assert len(cards) == len(data['cards']) == 168
 source = (HERE / 'ninjutsu-source-additional.txt').read_text().splitlines()
-runtime = json.loads((REPO / 'Assets/_Project/Resources/MockData/Weapons.json').read_text())
+runtime = json.loads((REPO / 'Assets/_Project/Resources/MockData/Skills.json').read_text())
 runtime_cards = {(w['id'], c['id']): c for w in runtime for c in w['upgrades']}
 mapped = set()
 edges = {}

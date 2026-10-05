@@ -39,14 +39,14 @@ namespace Game.Tests
         {
             var prefab = new GameObject("RadialPrefab"); prefab.AddComponent<Projectile>();
             var owner = new GameObject("RadialOwner");
-            var data = new WeaponData
+            var data = new SkillData
             {
                 id = 9,
                 name = "방사",
                 maxLevel = 5,
-                upgrades = new List<WeaponUpgradeOption>(),
+                upgrades = new List<SkillUpgradeOption>(),
                 projectilePath = ProjectilePath.Radial,
-                baseStats = new WeaponBaseStats { cast = { baseDamage = 5, cooldown = 1, range = 10, projectileCount = 6 }, projectile = { speed = 10 } }
+                baseStats = new SkillBaseStats { cast = { baseDamage = 5, cooldown = 1, range = 10, projectileCount = 6 }, projectile = { speed = 10 } }
             };
             SkillCaster caster = null;
             try
@@ -96,7 +96,7 @@ namespace Game.Tests
         [Test]
         public void ProjectileCompiler_AddsExplosionFromStats()
         {
-            var stats = WeaponStats.FromDefinition(new WeaponBaseStats
+            var stats = SkillStats.FromDefinition(new SkillBaseStats
             {
                 cast = { baseDamage = 20 },
                 explosion = { radius = 2, damageRatio = .5f }

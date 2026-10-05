@@ -32,7 +32,7 @@ namespace Game.Tests
             public int GetNearest(Vector2 from, int count, List<IEnemyTarget> results)
             { results.Clear(); results.Add(Target); return 1; }
         }
-        private static WeaponStats Stats(WeaponBase weapon) => (WeaponStats)typeof(WeaponBase).GetField("stats", Flags).GetValue(weapon);
+        private static SkillStats Stats(SkillBase skill) => (SkillStats)typeof(SkillBase).GetField("stats", Flags).GetValue(skill);
 
         [TestCase(4, 10.24f, "연발 나무뿌리")]
         [TestCase(5, 16f, "연발 나무뿌리+")]
@@ -41,7 +41,7 @@ namespace Game.Tests
             var go = new GameObject("LogRepeatTest");
             try
             {
-                var data = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 5);
+                var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 5);
                 Assert.AreEqual(10, data.maxLevel); Assert.IsNull(data.progressionId);
                 var weapon = Casters.Projectile(data, go, go.transform, new Provider());
                 Assert.AreEqual(0, weapon.UpgradeCount);
@@ -51,7 +51,7 @@ namespace Game.Tests
                 Assert.IsFalse(weapon.LevelUp(repeat, permanent));
                 Assert.AreEqual(3, Stats(weapon).Cast.Count); Assert.AreEqual(damage, Stats(weapon).Cast.Damage, .001f);
                 Assert.AreEqual(2, weapon.GetAcquiredCount("log_repeat")); Assert.AreEqual(3, weapon.UpgradeCount);
-                Assert.IsTrue(WeaponUpgradeResolver.TryResolve(repeat, permanent, out var resolved)); Assert.AreEqual(name, resolved.Name);
+                Assert.IsTrue(SkillUpgradeResolver.TryResolve(repeat, permanent, out var resolved)); Assert.AreEqual(name, resolved.Name);
             }
             finally { Object.DestroyImmediate(go); }
         }
@@ -62,7 +62,7 @@ namespace Game.Tests
             var go = new GameObject("LogBasicTest");
             try
             {
-                var data = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 5);
+                var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 5);
                 var weapon = Casters.Projectile(data, go, go.transform, new Provider());
                 var damage = data.upgrades.Find(c => c.id == "log_damage");
                 Assert.IsTrue(weapon.LevelUp(damage)); Assert.IsTrue(weapon.LevelUp(damage)); Assert.IsFalse(weapon.LevelUp(damage));
@@ -82,7 +82,7 @@ namespace Game.Tests
             var go = new GameObject("LogSizeTest"); go.AddComponent<Projectile>();
             try
             {
-                var data = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 5);
+                var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 5);
                 var provider = new Provider(); provider.Target.Position = Vector2.up * 2;
                 var weapon = Casters.Projectile(data, go, go.transform, provider);
                 weapon.LevelUp(data.upgrades.Find(c => c.id == "log_size"));
@@ -139,7 +139,7 @@ namespace Game.Tests
             var go = new GameObject("LogStatusCasterTest"); go.AddComponent<Projectile>();
             try
             {
-                var data = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 5);
+                var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 5);
                 var provider = new Provider(); provider.Target.Position = Vector2.up;
                 var weapon = Casters.Projectile(data, go, go.transform, provider);
                 foreach (var id in new[] { "log_impact", "log_weight", "log_wound" })
@@ -171,7 +171,7 @@ namespace Game.Tests
             var go = new GameObject("LargeLogTest"); go.AddComponent<Projectile>();
             try
             {
-                var data = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 5);
+                var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 5);
                 var weapon = Casters.Projectile(data, go, go.transform, new Provider());
                 foreach (var id in new[] { "log_damage", "log_size", "log_impact", "log_weight", "log_repeat", "log_speed", "log_wound", "log_large" })
                 { Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == id), 5)); }
@@ -182,7 +182,7 @@ namespace Game.Tests
                 Assert.AreEqual(1, stats.Status.StunDuration); Assert.AreEqual(2, stats.Cast.Count);
                 Assert.AreEqual(5.6f, stats.Projectile.Speed, .001f); Assert.AreEqual(.75f, stats.Cast.Cooldown);
                 Assert.AreEqual(.2f, stats.Status.VulnerabilityRatio, .001f); Assert.AreEqual(0, stats.Burn.DamageRatio);
-                Assert.AreEqual(WeaponForm.LargeLog, stats.Cast.Form);
+                Assert.AreEqual(SkillForm.LargeLog, stats.Cast.Form);
                 typeof(SkillCaster).GetMethod("OnFire", Flags).Invoke(weapon, null);
                 foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
                 {
@@ -208,16 +208,16 @@ namespace Game.Tests
             var fireArt = Sprite.Create(Texture2D.whiteTexture, new Rect(0, 0, 1, 1), Vector2.one * .5f);
             Assert.IsNotNull(baseArt); Assert.IsNotNull(fireArt); sprite.sprite = baseArt;
             typeof(Projectile).GetField("formSprites", Flags).SetValue(go.GetComponent<Projectile>(),
-                new[] { new ProjectileVisual.FormSprite { form = WeaponForm.FireLog, sprite = fireArt } });
+                new[] { new ProjectileVisual.FormSprite { form = SkillForm.FireLog, sprite = fireArt } });
             try
             {
-                var data = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 5);
+                var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 5);
                 var provider = new Provider(); provider.Target.Position = Vector2.up * .1f;
                 var weapon = Casters.Projectile(data, go, go.transform, provider);
                 foreach (var id in new[] { "log_damage", "log_size", "log_impact", "log_weight", "log_wound", "log_fire" })
                 { Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == id))); }
                 Assert.IsFalse(weapon.LevelUp(data.upgrades.Find(c => c.id == "log_fire")));
-                Assert.AreEqual(WeaponForm.FireLog, Stats(weapon).Cast.Form);
+                Assert.AreEqual(SkillForm.FireLog, Stats(weapon).Cast.Form);
                 Assert.AreEqual(16, Stats(weapon).Cast.Damage, .001f);
                 typeof(SkillCaster).GetMethod("OnFire", Flags).Invoke(weapon, null);
                 Projectile clone = null;
@@ -233,7 +233,7 @@ namespace Game.Tests
                 Assert.AreEqual(1, provider.Target.Stuns); Assert.AreEqual(6, provider.Target.SlowDuration); Assert.AreEqual(1, provider.Target.Wounds);
                 var reusePool = (UnityEngine.Pool.IObjectPool<Projectile>)typeof(Projectile).GetField("pool", Flags).GetValue(clone);
                 reusePool.Release(clone);
-                typeof(WeaponBase).GetField("stats", Flags).SetValue(weapon, WeaponStats.FromDefinition(data.baseStats));
+                typeof(SkillBase).GetField("stats", Flags).SetValue(weapon, SkillStats.FromDefinition(data.baseStats));
                 typeof(SkillCaster).GetMethod("OnFire", Flags).Invoke(weapon, null);
                 Assert.AreEqual(brown, clone.GetComponent<SpriteRenderer>().color); Assert.AreEqual(Vector3.one, clone.transform.localScale);
                 Assert.AreSame(baseArt, clone.GetComponent<SpriteRenderer>().sprite);
@@ -255,7 +255,7 @@ namespace Game.Tests
             go.transform.position = new Vector3(-5, -2, 0);
             try
             {
-                var data = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 5);
+                var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 5);
                 var provider = new LaneProvider();
                 var first = new Target { Position = new Vector2(3, 0) };
                 var second = new Target { Position = new Vector2(3, 1) };
@@ -296,7 +296,7 @@ namespace Game.Tests
         public void ActualPlayerPrefab_HasIdFiveProjectileForLogAcquisition()
         {
             var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Stage/Player_Animated.prefab");
-            var controller = prefab.GetComponent<WeaponController>();
+            var controller = prefab.GetComponent<SkillController>();
             var entries = new SerializedObject(controller).FindProperty("prefabEntries");
             bool found = false;
             for (int i = 0; i < entries.arraySize; i++)
