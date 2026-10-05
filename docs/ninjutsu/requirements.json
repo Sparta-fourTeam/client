@@ -27,7 +27,7 @@
       "character": "쿠로네코 아카네",
       "skillId": "moon_beam",
       "sourceEffects": [
-        "진: 월광 쿠나이",
+        "진: 월광 화살",
         "월광 피해 증폭"
       ],
       "status": "unresolved-name-and-count-mapping"
@@ -36,7 +36,7 @@
   "skills": [
     {
       "id": "kunai",
-      "name": "쿠나이",
+      "name": "화살",
       "reportedMaxLevel": 15,
       "maxLevelMeaning": "maximum-successful-battle-upgrades-excluding-initial-acquisition"
     },
@@ -129,7 +129,7 @@
     {
       "id": "kunai.01",
       "skillId": "kunai",
-      "name": "쿠나이 일제 사격+",
+      "name": "화살 일제 사격+",
       "effectDescription": "발사 수 +1; 공격력 -20% (영구 9 미만)",
       "maxAppearanceCount": 2,
       "requirementsText": "",
@@ -138,8 +138,8 @@
       "exclusions": [],
       "levelVariant": {
         "minPermanentLevel": 9,
-        "baseName": "쿠나이 일제 사격",
-        "upgradedName": "쿠나이 일제 사격+",
+        "baseName": "화살 일제 사격",
+        "upgradedName": "화살 일제 사격+",
         "damageModifierBefore": -20,
         "damageModifierAfter": 0,
         "sharedSelectionCounter": true,
@@ -171,7 +171,7 @@
     {
       "id": "kunai.02",
       "skillId": "kunai",
-      "name": "쿠나이 강화",
+      "name": "화살 강화",
       "effectDescription": "공격력 +60%",
       "maxAppearanceCount": 3,
       "requirementsText": "",
@@ -207,7 +207,7 @@
     {
       "id": "kunai.03",
       "skillId": "kunai",
-      "name": "쿠나이 가속",
+      "name": "화살 가속",
       "effectDescription": "공격력 +25%; 투척 속도 +25%",
       "maxAppearanceCount": 2,
       "requirementsText": "",
@@ -241,10 +241,10 @@
     {
       "id": "kunai.04",
       "skillId": "kunai",
-      "name": "확산 쿠나이",
-      "effectDescription": "명중 시 보조 쿠나이 2개 발사",
+      "name": "확산 화살",
+      "effectDescription": "명중 시 보조 화살 2개 발사",
       "maxAppearanceCount": 1,
-      "requirementsText": "쿠나이 강화",
+      "requirementsText": "화살 강화",
       "minPermanentLevel": 0,
       "unresolvedIssues": [],
       "exclusions": [],
@@ -282,21 +282,21 @@
     {
       "id": "kunai.06",
       "skillId": "kunai",
-      "name": "연발 쿠나이",
+      "name": "연발 화살",
       "effectDescription": "시전 수 +1; 공격력 -30%",
       "maxAppearanceCount": 1,
-      "requirementsText": "쿠나이 강화",
+      "requirementsText": "화살 강화",
       "minPermanentLevel": 0,
       "unresolvedIssues": [],
       "exclusions": [],
       "sourceAliases": [
-        "연발 쿠나이",
-        "연발 쿠나이+"
+        "연발 화살",
+        "연발 화살+"
       ],
       "levelVariant": {
         "minPermanentLevel": 17,
-        "baseName": "연발 쿠나이",
-        "upgradedName": "연발 쿠나이+",
+        "baseName": "연발 화살",
+        "upgradedName": "연발 화살+",
         "damageModifierBefore": -30,
         "damageModifierAfter": 10,
         "sharedSelectionCounter": true,
@@ -334,10 +334,10 @@
     {
       "id": "kunai.07",
       "skillId": "kunai",
-      "name": "쿠나이 난사",
-      "effectDescription": "보조 쿠나이 4방향 발사; 확산 쿠나이와 합쳐 보조 쿠나이 총 6개",
+      "name": "화살 난사",
+      "effectDescription": "보조 화살 4방향 발사; 확산 화살과 합쳐 보조 화살 총 6개",
       "maxAppearanceCount": 1,
-      "requirementsText": "확산 쿠나이",
+      "requirementsText": "확산 화살",
       "minPermanentLevel": 0,
       "unresolvedIssues": [],
       "exclusions": [],
@@ -372,10 +372,10 @@
     {
       "id": "kunai.08",
       "skillId": "kunai",
-      "name": "보조 쿠나이 강화",
-      "effectDescription": "보조 쿠나이 공격력 +100%",
+      "name": "보조 화살 강화",
+      "effectDescription": "보조 화살 공격력 +100%",
       "maxAppearanceCount": 1,
-      "requirementsText": "확산 쿠나이",
+      "requirementsText": "확산 화살",
       "minPermanentLevel": 0,
       "unresolvedIssues": [],
       "exclusions": [],
@@ -410,10 +410,10 @@
     {
       "id": "kunai.09",
       "skillId": "kunai",
-      "name": "쿠나이 증폭",
-      "effectDescription": "쿠나이와 보조 쿠나이 공격력 +100%",
+      "name": "화살 증폭",
+      "effectDescription": "화살과 보조 화살 공격력 +100%",
       "maxAppearanceCount": 1,
-      "requirementsText": "확산 쿠나이",
+      "requirementsText": "확산 화살",
       "minPermanentLevel": 13,
       "unresolvedIssues": [],
       "exclusions": [],
@@ -449,10 +449,10 @@
     {
       "id": "kunai.10",
       "skillId": "kunai",
-      "name": "쿠나이 수련",
+      "name": "화살 수련",
       "effectDescription": "쿨타임 -10%",
       "maxAppearanceCount": 1,
-      "requirementsText": "연발 쿠나이",
+      "requirementsText": "연발 화살",
       "minPermanentLevel": 0,
       "unresolvedIssues": [],
       "exclusions": [],
@@ -487,10 +487,10 @@
     {
       "id": "kunai.11",
       "skillId": "kunai",
-      "name": "쿠나이 폭풍",
+      "name": "화살 폭풍",
       "effectDescription": "쿨타임 -30%",
       "maxAppearanceCount": null,
-      "requirementsText": "연발 쿠나이",
+      "requirementsText": "연발 화살",
       "minPermanentLevel": 21,
       "unresolvedIssues": [
         "횟수 미기재"
@@ -522,7 +522,7 @@
     {
       "id": "kunai.12",
       "skillId": "kunai",
-      "name": "폭발 쿠나이",
+      "name": "폭발 화살",
       "effectDescription": "폭발 효과 추가",
       "maxAppearanceCount": 1,
       "requirementsText": "@화염구",
@@ -571,7 +571,7 @@
       "name": "폭발 강화",
       "effectDescription": "폭발 공격력 +80%",
       "maxAppearanceCount": 2,
-      "requirementsText": "폭발 쿠나이",
+      "requirementsText": "폭발 화살",
       "minPermanentLevel": 0,
       "unresolvedIssues": [],
       "exclusions": [],
@@ -645,9 +645,9 @@
       "id": "kunai.15",
       "skillId": "kunai",
       "name": "추가 폭발",
-      "effectDescription": "보조 쿠나이에 폭발 효과 추가",
+      "effectDescription": "보조 화살에 폭발 효과 추가",
       "maxAppearanceCount": 1,
-      "requirementsText": "폭발 쿠나이&확산 쿠나이",
+      "requirementsText": "폭발 화살&확산 화살",
       "minPermanentLevel": 0,
       "unresolvedIssues": [],
       "exclusions": [],
@@ -687,10 +687,10 @@
     {
       "id": "kunai.16",
       "skillId": "kunai",
-      "name": "화염 쿠나이",
+      "name": "화염 화살",
       "effectDescription": "점화 효과 추가; 형태 변화",
       "maxAppearanceCount": 1,
-      "requirementsText": "폭발 쿠나이&쿠나이 강화",
+      "requirementsText": "폭발 화살&화살 강화",
       "minPermanentLevel": 0,
       "unresolvedIssues": [],
       "exclusions": [],
@@ -730,7 +730,7 @@
     {
       "id": "kunai.17",
       "skillId": "kunai",
-      "name": "충격 쿠나이",
+      "name": "충격 화살",
       "effectDescription": "밀침 +15%",
       "maxAppearanceCount": 1,
       "requirementsText": "@벼락",
@@ -774,10 +774,10 @@
     {
       "id": "kunai.18",
       "skillId": "kunai",
-      "name": "뇌전 쿠나이",
+      "name": "뇌전 화살",
       "effectDescription": "마비 추가; 투척 속도 +100%; 형태 변화",
       "maxAppearanceCount": 1,
-      "requirementsText": "충격 쿠나이&쿠나이 가속",
+      "requirementsText": "충격 화살&화살 가속",
       "minPermanentLevel": 0,
       "unresolvedIssues": [],
       "exclusions": [],
@@ -821,7 +821,7 @@
       "name": "쾌속 투척",
       "effectDescription": "공격력 -10%; 쿨타임 -20%",
       "maxAppearanceCount": 1,
-      "requirementsText": "뇌전 쿠나이",
+      "requirementsText": "뇌전 화살",
       "minPermanentLevel": 0,
       "unresolvedIssues": [],
       "exclusions": [],
@@ -857,7 +857,7 @@
       "id": "kunai.20",
       "skillId": "kunai",
       "name": "피뢰침",
-      "effectDescription": "명중 시 소형 벼락 1회 시전; 다중 발사 시 각 쿠나이마다 발동",
+      "effectDescription": "명중 시 소형 벼락 1회 시전; 다중 발사 시 각 화살마다 발동",
       "maxAppearanceCount": 1,
       "requirementsText": "쾌속 투척",
       "minPermanentLevel": 0,
@@ -896,9 +896,9 @@
       "id": "kunai.21",
       "skillId": "kunai",
       "name": "보조 피뢰침",
-      "effectDescription": "보조 쿠나이 명중 시 소형 벼락 1회 시전",
+      "effectDescription": "보조 화살 명중 시 소형 벼락 1회 시전",
       "maxAppearanceCount": 1,
-      "requirementsText": "확산 쿠나이&피뢰침",
+      "requirementsText": "확산 화살&피뢰침",
       "minPermanentLevel": 0,
       "unresolvedIssues": [],
       "exclusions": [],
@@ -975,8 +975,8 @@
     {
       "id": "kunai.23",
       "skillId": "kunai",
-      "name": "비둔술 증폭 · 甲",
-      "effectDescription": "쿠나이와 태양 광선 공격력 +50%",
+      "name": "무속성 증폭 · Ⅰ",
+      "effectDescription": "화살과 태양 광선 공격력 +50%",
       "maxAppearanceCount": 1,
       "requirementsText": "@태양 광선",
       "minPermanentLevel": 0,
@@ -997,7 +997,7 @@
           "kunai",
           "sun_beam"
         ],
-        "sharedSelectionGroup": "kunai+sun_beam:비둔술증폭·甲",
+        "sharedSelectionGroup": "kunai+sun_beam:무속성증폭·Ⅰ",
         "sourceFootnote": "증폭"
       },
       "source": {
@@ -1015,8 +1015,8 @@
     {
       "id": "kunai.24",
       "skillId": "kunai",
-      "name": "비둔술 증폭 · 乙",
-      "effectDescription": "쿠나이와 달빛 광선 공격력 +50%",
+      "name": "무속성 증폭 · Ⅱ",
+      "effectDescription": "화살과 달빛 광선 공격력 +50%",
       "maxAppearanceCount": 1,
       "requirementsText": "@달빛 광선",
       "minPermanentLevel": 0,
@@ -1037,7 +1037,7 @@
           "kunai",
           "moon_beam"
         ],
-        "sharedSelectionGroup": "kunai+moon_beam:비둔술증폭·乙",
+        "sharedSelectionGroup": "kunai+moon_beam:무속성증폭·Ⅱ",
         "sourceFootnote": "증폭"
       },
       "source": {
@@ -1455,8 +1455,8 @@
     {
       "id": "fireball.11",
       "skillId": "fireball",
-      "name": "염폭술",
-      "effectDescription": "염폭술로 형태 변화; 관통력 +2",
+      "name": "폭염 각성",
+      "effectDescription": "폭염 각성으로 형태 변화; 관통력 +2",
       "maxAppearanceCount": 1,
       "requirementsText": "충격 강화&폭발 화염구",
       "minPermanentLevel": 13,
@@ -2507,7 +2507,7 @@
     {
       "id": "lightning.15",
       "skillId": "lightning",
-      "name": "뇌둔술 연마",
+      "name": "뇌속성 연마",
       "effectDescription": "벼락과 연쇄 번개 쿨타임 -20%",
       "maxAppearanceCount": 1,
       "requirementsText": "@연쇄 번개",
@@ -2529,7 +2529,7 @@
           "chain_lightning",
           "lightning"
         ],
-        "sharedSelectionGroup": "chain_lightning+lightning:뇌둔술연마",
+        "sharedSelectionGroup": "chain_lightning+lightning:뇌속성연마",
         "sourceFootnote": "증폭"
       },
       "source": {
@@ -2547,7 +2547,7 @@
     {
       "id": "lightning.16",
       "skillId": "lightning",
-      "name": "뇌둔술 증폭",
+      "name": "뇌속성 증폭",
       "effectDescription": "벼락과 연쇄 번개 공격력 +80%",
       "maxAppearanceCount": 1,
       "requirementsText": "@연쇄 번개",
@@ -2569,7 +2569,7 @@
           "chain_lightning",
           "lightning"
         ],
-        "sharedSelectionGroup": "chain_lightning+lightning:뇌둔술증폭",
+        "sharedSelectionGroup": "chain_lightning+lightning:뇌속성증폭",
         "sourceFootnote": "증폭"
       },
       "source": {
@@ -3169,7 +3169,7 @@
     {
       "id": "sun_beam.07",
       "skillId": "sun_beam",
-      "name": "비기 · 아마테라스",
+      "name": "필살기 · 태양의 심판",
       "effectDescription": "1회용; 태양 광선 영구 레벨 비례 공격력 상승; 최대 20레벨",
       "maxAppearanceCount": 1,
       "requirementsText": "#히노 마도카",
@@ -3377,10 +3377,10 @@
     {
       "id": "sun_beam.12",
       "skillId": "sun_beam",
-      "name": "비둔술 증폭 · 甲",
-      "effectDescription": "쿠나이와 태양 광선 공격력 +50%",
+      "name": "무속성 증폭 · Ⅰ",
+      "effectDescription": "화살과 태양 광선 공격력 +50%",
       "maxAppearanceCount": 1,
-      "requirementsText": "@쿠나이",
+      "requirementsText": "@화살",
       "minPermanentLevel": 0,
       "unresolvedIssues": [],
       "exclusions": [],
@@ -3399,7 +3399,7 @@
           "kunai",
           "sun_beam"
         ],
-        "sharedSelectionGroup": "kunai+sun_beam:비둔술증폭·甲",
+        "sharedSelectionGroup": "kunai+sun_beam:무속성증폭·Ⅰ",
         "sourceFootnote": "증폭"
       },
       "source": {
@@ -3449,7 +3449,7 @@
     {
       "id": "sun_beam.14",
       "skillId": "sun_beam",
-      "name": "비둔술 증폭 · 丙",
+      "name": "무속성 증폭 · Ⅲ",
       "effectDescription": "태양 광선과 달빛 광선 공격력 +60%",
       "maxAppearanceCount": 1,
       "requirementsText": "@달빛 광선",
@@ -3471,7 +3471,7 @@
           "moon_beam",
           "sun_beam"
         ],
-        "sharedSelectionGroup": "moon_beam+sun_beam:비둔술증폭·丙",
+        "sharedSelectionGroup": "moon_beam+sun_beam:무속성증폭·Ⅲ",
         "sourceFootnote": "증폭"
       },
       "source": {
@@ -3579,7 +3579,7 @@
     {
       "id": "moon_beam.04",
       "skillId": "moon_beam",
-      "name": "비기 · 츠쿠요미",
+      "name": "필살기 · 달의 심판",
       "effectDescription": "1회용; 달빛 광선 영구 레벨 비례 공격력 상승; 최대 20레벨",
       "maxAppearanceCount": 1,
       "requirementsText": "#마요네코 아카네",
@@ -3718,10 +3718,10 @@
     {
       "id": "moon_beam.08",
       "skillId": "moon_beam",
-      "name": "비둔술 증폭 · 乙",
-      "effectDescription": "쿠나이와 달빛 광선 공격력 +50%",
+      "name": "무속성 증폭 · Ⅱ",
+      "effectDescription": "화살과 달빛 광선 공격력 +50%",
       "maxAppearanceCount": 1,
-      "requirementsText": "@쿠나이",
+      "requirementsText": "@화살",
       "minPermanentLevel": 0,
       "unresolvedIssues": [],
       "exclusions": [],
@@ -3740,7 +3740,7 @@
           "kunai",
           "moon_beam"
         ],
-        "sharedSelectionGroup": "kunai+moon_beam:비둔술증폭·乙",
+        "sharedSelectionGroup": "kunai+moon_beam:무속성증폭·Ⅱ",
         "sourceFootnote": "증폭"
       },
       "source": {
@@ -3758,13 +3758,13 @@
     {
       "id": "moon_beam.09",
       "skillId": "moon_beam",
-      "name": "월광쿠나이",
-      "effectDescription": "월광 쿠나이 발사 추가; 쿠나이 일제 사격 적용",
+      "name": "월광 화살",
+      "effectDescription": "월광 화살 발사 추가; 화살 일제 사격 적용",
       "maxAppearanceCount": 1,
-      "requirementsText": "초점&@쿠나이",
+      "requirementsText": "초점&@화살",
       "minPermanentLevel": 0,
       "unresolvedIssues": [
-        "진: 월광 쿠나이 기본 습득과 관계"
+        "진: 월광 화살 기본 습득과 관계"
       ],
       "exclusions": [],
       "requirements": [
@@ -3798,7 +3798,7 @@
     {
       "id": "moon_beam.10",
       "skillId": "moon_beam",
-      "name": "비둔술 증폭 · 丙",
+      "name": "무속성 증폭 · Ⅲ",
       "effectDescription": "태양 광선과 달빛 광선 공격력 +60%",
       "maxAppearanceCount": 1,
       "requirementsText": "@태양 광선",
@@ -3820,7 +3820,7 @@
           "moon_beam",
           "sun_beam"
         ],
-        "sharedSelectionGroup": "moon_beam+sun_beam:비둔술증폭·丙",
+        "sharedSelectionGroup": "moon_beam+sun_beam:무속성증폭·Ⅲ",
         "sourceFootnote": "증폭"
       },
       "source": {
@@ -4055,7 +4055,7 @@
     {
       "id": "frost_prison.08",
       "skillId": "frost_prison",
-      "name": "수둔술 연마",
+      "name": "빙속성 연마",
       "effectDescription": "서리 감옥과 얼음창 쿨타임 -25%",
       "maxAppearanceCount": 1,
       "requirementsText": "@얼음창",
@@ -4077,7 +4077,7 @@
           "frost_prison",
           "ice_spear"
         ],
-        "sharedSelectionGroup": "frost_prison+ice_spear:수둔술연마",
+        "sharedSelectionGroup": "frost_prison+ice_spear:빙속성연마",
         "sourceFootnote": "증폭"
       },
       "source": {
@@ -4386,7 +4386,7 @@
       "id": "chain_lightning.09",
       "skillId": "chain_lightning",
       "name": "전류전도",
-      "effectDescription": "공격력 -60%; 경로상의 요마에 피해",
+      "effectDescription": "공격력 -60%; 경로상의 마물에 피해",
       "maxAppearanceCount": 1,
       "requirementsText": "번개 연속&고전압 전격&번개 피해 증폭",
       "minPermanentLevel": 17,
@@ -4428,7 +4428,7 @@
     {
       "id": "chain_lightning.10",
       "skillId": "chain_lightning",
-      "name": "뇌둔술 증폭",
+      "name": "뇌속성 증폭",
       "effectDescription": "벼락과 연쇄 번개 공격력 +80%",
       "maxAppearanceCount": 1,
       "requirementsText": "@벼락",
@@ -4450,7 +4450,7 @@
           "chain_lightning",
           "lightning"
         ],
-        "sharedSelectionGroup": "chain_lightning+lightning:뇌둔술증폭",
+        "sharedSelectionGroup": "chain_lightning+lightning:뇌속성증폭",
         "sourceFootnote": "증폭"
       },
       "source": {
@@ -4957,7 +4957,7 @@
       "id": "typhoon.08",
       "skillId": "typhoon",
       "name": "번개 태풍",
-      "effectDescription": "뇌둔 속성 번개 태풍으로 형태 변화",
+      "effectDescription": "뇌속성 번개 태풍으로 형태 변화",
       "maxAppearanceCount": 1,
       "requirementsText": "태풍 확장&몰아치는 태풍&@연쇄 번개",
       "minPermanentLevel": 0,
@@ -5757,8 +5757,8 @@
     {
       "id": "spiral.08",
       "skillId": "spiral",
-      "name": "비기 · 비취 폭풍",
-      "effectDescription": "1회용; 예외적으로 태풍 영구 인술 레벨 비례 공격력 상승",
+      "name": "필살기 · 비취 폭풍",
+      "effectDescription": "1회용; 예외적으로 태풍 영구 스킬 레벨 비례 공격력 상승",
       "maxAppearanceCount": 1,
       "requirementsText": "#나나기 히스이",
       "minPermanentLevel": 0,
@@ -6154,7 +6154,7 @@
       "id": "lightning_cloud.10",
       "skillId": "lightning_cloud",
       "name": "폭풍 특이점",
-      "effectDescription": "주변 요마 1체에게 추가 전기 공격",
+      "effectDescription": "주변 마물 1체에게 추가 전기 공격",
       "maxAppearanceCount": 1,
       "requirementsText": "@연쇄 번개&번개 구름 가속&번개 구름 피해 증폭",
       "minPermanentLevel": 0,

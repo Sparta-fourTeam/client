@@ -42,3 +42,14 @@
 - Local도 ApiDog 명세와 같은 DTO(`Network/Dto`)로 변환하고, 서버와 같은 오류 코드(`INSUFFICIENT_GOLD` 등)로 `ApiException`을 던진다
 - 서버 전환은 `BackendSettings`(ScriptableObject)의 스위치로 그룹 단위로 한다: Account(`IAuthApi`, `IDataApi`)를 먼저, Player(`IPlayerApi`, `IBattleApi`, `IUpgradeApi`, `IEnergyApi`, `IStageApi`) 5개는 한 번에 전환한다. 다섯 다 지갑을 건드리므로 따로 바꾸면 로컬과 서버 잔액이 어긋난다
 - 로컬 데이터는 서버로 이관하지 않는다. 전환 후에는 새 계정으로 시작하고, Local에서 만든 미전송 결과는 서버로 보내지 않는다
+
+## 에셋
+
+- 에셋은 `Assets/_Project/` 안에만 둔다. `Assets/` 루트에 프리팹을 두지 않는다.
+- 폴더 역할: `Art`는 소재(`Monsters`, `Player`, `Backgrounds`, `VFX`), `Prefabs`는 종류별 프리팹, `Image`는 UI 시트, `Scenes`는 빌드에 들어가는 씬만. `Resources`는 코드가 경로 문자열로 불러오는 것만 둔다(현재 `MockData`와 `Materials/SpriteHitFlash`). 그 밖의 에셋을 `Resources`에 넣으면 참조와 무관하게 빌드에 포함된다.
+- 이름은 영문 PascalCase로 짓는다. 한글, 공백, 대문자 확장자(`.PNG`)를 쓰지 않고 새 파일은 숫자로 시작하지 않는다. 버전은 `_v2`처럼 접미로 붙인다. 오타를 발견하면 Unity 안에서 이름을 바꿔 GUID와 참조를 유지한다.
+- 이펙트 소재는 `Art/VFX`, 프리팹은 `Prefabs/VFX`에 둔다. `Fx` 폴더는 새로 쓰지 않는다(기존 몬스터 공격 연출만 예외).
+- 실험용 씬이나 테스트용 복제 프리팹은 커밋하지 않는다. 빌드에 연결되지 않은 에셋은 쓰임을 확인하고 지운다. 지우기 전에는 Unity의 Find References로 확인한다.
+- 임포트 설정은 에셋마다 쓰임에 묶여 있다. Pixels Per Unit은 프리팹 크기가 그 값에 맞춰져 있으므로 임의로 통일하지 않는다(`Art/Fx` 64, `Arrow_v1` 1000 등). Max Size는 화면에서 보이는 크기에 맞춘다(`VFX/Doodle`은 256). 스프라이트는 밉맵을 끈다. 다만 파티클 셰이더가 쓰는 `VFX/Textures`는 켠 상태를 유지한다.
+- 아이콘과 프리팹은 테이블의 `IconKey`/`PrefabKey`로 찾는다(위 "데이터와 API").
+- 기존 예외: `Image/`의 `N-Sheet.png`(1~6)는 UI 시트라 역할이 확정될 때 이름을 바꾼다. 몬스터 이미지는 `Monster_Normal`, `Monster_Elite`로 바꿨다.

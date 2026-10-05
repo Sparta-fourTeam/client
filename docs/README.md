@@ -8,7 +8,7 @@
 | [messages.md](messages.md) | 메시지 규칙과 목록 |
 | [flows.md](flows.md) | 스테이지 생명주기, 실패와 복구, 스킬 선택, 상태 머신 |
 | [conventions.md](conventions.md) | 코딩 규칙 |
-| [ninjutsu/](ninjutsu/README.md) | 인술 구조·원문 요구사항·현재 규칙 |
+| [ninjutsu/](ninjutsu/README.md) | 스킬 구조·원문 요구사항·현재 규칙 |
 | [qa-v0.0.1.md](qa-v0.0.1.md) | 기존 Android QA와 발견된 이슈 |
 
 공통 작업 규칙(브랜치, 커밋, PR)은 조직 `.github` 레포의 `CONTRIBUTING.md`를 본다.
