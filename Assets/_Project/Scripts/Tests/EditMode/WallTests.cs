@@ -47,7 +47,7 @@ namespace Game.Tests
         {
             _go = new GameObject("Wall");
             Wall wall = _go.AddComponent<Wall>();
-            wall.Construct(_hp, _destroyed);
+            wall.Construct(_hp, _destroyed, null); // EditMode에서는 Start가 호출되지 않아 스테이지 값을 쓰지 않는다
             return wall;
         }
 

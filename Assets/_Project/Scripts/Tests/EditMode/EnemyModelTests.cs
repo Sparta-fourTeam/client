@@ -133,7 +133,7 @@ namespace Game.Tests
                 typeof(HitscanEffect).GetField("radius", flags).SetValue(template, .5f);
                 typeof(HitscanEffect).GetField("targetMask", flags).SetValue(template, (LayerMask)(-1));
                 var provider = new LightningProvider(); provider.Targets.AddRange(new IEnemyTarget[] { victim, farther, dead, neighbour });
-                var data = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == 3);
+                var data = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 3);
                 var weapon = Casters.Hitscan(data, prefab, prefab.transform, provider);
                 Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == "lightning_sanction")));
                 Assert.IsFalse(weapon.LevelUp(data.upgrades.Find(c => c.id == "lightning_sanction")));
@@ -195,7 +195,7 @@ namespace Game.Tests
             var go = new GameObject("NoKillTargetTest"); go.AddComponent<HitscanEffect>();
             try
             {
-                var data = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == 3);
+                var data = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 3);
                 var provider = new LightningProvider();
                 provider.Targets.Add(CreateEnemy(position: Vector2.right * (data.baseStats.cast.range + 1)));
                 var weapon = Casters.Hitscan(data, go, go.transform, provider);
@@ -495,7 +495,7 @@ namespace Game.Tests
         [Test]
         public void Constructor_KeepsAttackType()
         {
-            var ranged = new EnemyAttackStats(AttackType.Ranged, 5, 2f, 4f);
+            var ranged = new EnemyAttackStats(AttackType.Ranged, 5, 2f, 4f, 8f);
             var enemy = new EnemyModel(1, Vector2.zero, 0f, EnemyType.Normal, 10, ranged, _hpChanged, _died);
 
             Assert.AreEqual(AttackType.Ranged, enemy.AttackType);

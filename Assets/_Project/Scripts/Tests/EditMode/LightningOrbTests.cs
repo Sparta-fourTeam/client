@@ -24,7 +24,7 @@ namespace Game.Tests
         {
             var orb = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Skills/LightningOrb.prefab");
             Assert.IsNotNull(orb.GetComponent<Projectile>(), "전기 구체 자식 스킬(id 15)의 프리팹");
-            var data = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == 3);
+            var data = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 3);
             CollectionAssert.AreEquivalent(new[] { "lightning_voltage", "lightning_damage" }, data.upgrades.Find(c => c.id == "lightning_split").requiredCardIds);
             CollectionAssert.AreEqual(new[] { "lightning_split" }, data.upgrades.Find(c => c.id == "lightning_particle_voltage").requiredCardIds);
         }

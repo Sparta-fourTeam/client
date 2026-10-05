@@ -118,7 +118,7 @@ namespace Game.Tests
             const BindingFlags Private = BindingFlags.NonPublic | BindingFlags.Instance;
             typeof(WeaponController).GetField("prefabEntries", Private).SetValue(_weapons, entries);
             _weapons.Construct(new NullEnemyTargetProvider(),
-                provider.GetRequiredService<IBufferedPublisher<SkillChanged>>(), new DefaultWeaponDataProvider());
+                provider.GetRequiredService<IBufferedPublisher<SkillChanged>>(), new DefaultWeaponDataProvider(new GameDataStore()));
             typeof(WeaponController).GetMethod("Start", Private).Invoke(_weapons, null);
 
             _manager = new StageManager(

@@ -1,5 +1,7 @@
 [
-  { "Id": 1, "Exp": 10, "Hp": 30, "Damage": 5, "GaugeValue": 10, "Speed": 1, "AttackInterval": 1.0, "IsBoss": false },
-  { "Id": 2, "Exp": 25, "Hp": 60, "Damage": 8, "GaugeValue": 20, "Speed": 1, "AttackInterval": 1.2, "IsBoss": false },
-  { "Id": 100, "Exp": 200, "Hp": 500, "Damage": 30, "GaugeValue": 100, "Speed": 1, "AttackInterval": 2.0, "IsBoss": true }
+  {"Id": 1, "Exp": 10, "Hp": 999, "Damage": 1, "GaugeValue": 10, "Speed": 0.1, "AttackInterval": 3.0, "AttackRange": 2.0, "ProjectileSpeed": 8.0, "IsBoss": false},
+  {"Id": 2, "Exp": 25, "Hp": 999, "Damage": 1, "GaugeValue": 20, "Speed": 0.1, "AttackInterval": 2.0, "AttackRange": 0.0, "ProjectileSpeed": 0.0, "IsBoss": false},
+  {"Id": 11, "Exp": 50, "Hp": 25, "Damage": 2, "GaugeValue": 30, "Speed": 0.1, "AttackInterval": 2.5, "AttackRange": 2.0, "ProjectileSpeed": 8.0, "IsBoss": false},
+  {"Id": 12, "Exp": 50, "Hp": 999, "Damage": 3, "GaugeValue": 30, "Speed": 0.1, "AttackInterval": 2.5, "AttackRange": 0.0, "ProjectileSpeed": 0.0, "IsBoss": false},
+  {"Id": 100, "Exp": 200, "Hp": 999, "Damage": 5, "GaugeValue": 100, "Speed": 0.1, "AttackInterval": 1.8, "AttackRange": 0.0, "ProjectileSpeed": 0.0, "IsBoss": true}
 ]

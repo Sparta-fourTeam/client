@@ -114,7 +114,7 @@ namespace Game.Tests
         // ── 전략과 카탈로그 ───────────────────────────────────────────
 
         private static WeaponData FrostPrison() =>
-            new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == FrostPrisonId);
+            new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == FrostPrisonId);
 
         private SkillCaster CreateCaster(WeaponData data, Provider provider, out GameObject prefab)
         {
@@ -194,7 +194,7 @@ namespace Game.Tests
         {
             const string IceSpearPrefab = "Assets/_Project/Prefabs/Skills/IceSpear.prefab";
             var data = FrostPrison();
-            var all = new DefaultWeaponDataProvider().LoadAll();
+            var all = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll();
             var iceData = all.Find(w => w.id == 4);
             var icePrefab = AssetDatabase.LoadAssetAtPath<GameObject>(IceSpearPrefab);
             Assert.IsNotNull(icePrefab, IceSpearPrefab);
@@ -284,7 +284,7 @@ namespace Game.Tests
         private const int LightningId = 3;
         private const string LightningPrefab = "Assets/_Project/Prefabs/Skills/Lightning_Lv1.prefab";
 
-        private static WeaponData Cloud() => new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == LightningCloudId);
+        private static WeaponData Cloud() => new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == LightningCloudId);
 
         [Test]
         public void Zone_PullsEnemiesInsideTowardCenterWithoutOvershootAndIgnoresOutside()
@@ -381,7 +381,7 @@ namespace Game.Tests
         public void GuideCard_EndToEnd_SpawnsRealLightningStrikeFromAreaHit()
         {
             var data = Cloud();
-            var lightningData = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == LightningId);
+            var lightningData = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == LightningId);
             var lightningPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(LightningPrefab);
             Assert.IsNotNull(lightningPrefab, LightningPrefab);
             var target = new HitRecorder { Position = new Vector2(1, 1) };

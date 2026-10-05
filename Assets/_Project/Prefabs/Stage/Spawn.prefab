@@ -49,48 +49,28 @@ MonoBehaviour:
   - Type: 0
     Prefab: {fileID: 6311776197841859623, guid: 70a166a28c1780c469109fc1d97d3411, type: 3}
     ProjectilePrefab: {fileID: 6940759657125676971, guid: b21e1b571797a984abd123376e5056e5, type: 3}
-    Speed: 0.1
-    MaxHp: 999
+    MonsterId: 1
     AttackType: 1
-    Damage: 1
-    AttackInterval: 3
-    AttackRange: 2
   - Type: 0
     Prefab: {fileID: 4685488075804649445, guid: eedef41ae584e7948b908250bd9a7241, type: 3}
     ProjectilePrefab: {fileID: 0}
-    Speed: 0.1
-    MaxHp: 999
+    MonsterId: 2
     AttackType: 0
-    Damage: 1
-    AttackInterval: 2
-    AttackRange: 0
   - Type: 1
     Prefab: {fileID: 6311776197841859623, guid: a73362f167b46e84bbef04c82c95a1fc, type: 3}
     ProjectilePrefab: {fileID: 6940759657125676971, guid: b21e1b571797a984abd123376e5056e5, type: 3}
-    Speed: 0.1
-    MaxHp: 25
+    MonsterId: 11
     AttackType: 1
-    Damage: 2
-    AttackInterval: 2.5
-    AttackRange: 2
   - Type: 1
     Prefab: {fileID: 4685488075804649445, guid: 3e4124bbebca72048b38a59d202ee1c4, type: 3}
     ProjectilePrefab: {fileID: 0}
-    Speed: 0.1
-    MaxHp: 999
+    MonsterId: 12
     AttackType: 0
-    Damage: 3
-    AttackInterval: 2.5
-    AttackRange: 0
   - Type: 2
     Prefab: {fileID: 7187176536582799020, guid: 1954ba4f587d1d646819481aecf0ede5, type: 3}
     ProjectilePrefab: {fileID: 0}
-    Speed: 0.1
-    MaxHp: 999
+    MonsterId: 100
     AttackType: 0
-    Damage: 5
-    AttackInterval: 1.8
-    AttackRange: 0
 --- !u!114 &1027409405871136764
 MonoBehaviour:
   m_ObjectHideFlags: 0

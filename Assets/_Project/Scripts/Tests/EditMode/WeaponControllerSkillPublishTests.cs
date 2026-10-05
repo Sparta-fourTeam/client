@@ -46,7 +46,7 @@ namespace Game.Tests
             const BindingFlags Private = BindingFlags.NonPublic | BindingFlags.Instance;
             typeof(WeaponController).GetField("prefabEntries", Private).SetValue(_controller, entries);
 
-            _controller.Construct(new NullEnemyTargetProvider(), _publisher, new DefaultWeaponDataProvider());
+            _controller.Construct(new NullEnemyTargetProvider(), _publisher, new DefaultWeaponDataProvider(new GameDataStore()));
             typeof(WeaponController).GetMethod("Start", Private).Invoke(_controller, null);
         }
 
@@ -97,7 +97,7 @@ namespace Game.Tests
             const BindingFlags Private = BindingFlags.NonPublic | BindingFlags.Instance;
             typeof(WeaponController).GetField("prefabEntries", Private).SetValue(controller, entries);
             var publisher = new FakeSkillPublisher();
-            controller.Construct(new NullEnemyTargetProvider(), publisher, new DefaultWeaponDataProvider(), startingSkills: new FixedStartingSkills(1, 2));
+            controller.Construct(new NullEnemyTargetProvider(), publisher, new DefaultWeaponDataProvider(new GameDataStore()), startingSkills: new FixedStartingSkills(1, 2));
             typeof(WeaponController).GetMethod("Start", Private).Invoke(controller, null);
 
             Assert.AreEqual(1, controller.GetWeaponLevel(1));
@@ -131,11 +131,11 @@ namespace Game.Tests
             const BindingFlags Private = BindingFlags.NonPublic | BindingFlags.Instance;
             typeof(WeaponController).GetField("prefabEntries", Private).SetValue(controller, new List<WeaponPrefabEntry>());
             var progression = new MutableProgression { Level = 3 };
-            controller.Construct(new NullEnemyTargetProvider(), new FakeSkillPublisher(), new DefaultWeaponDataProvider(), progression,
+            controller.Construct(new NullEnemyTargetProvider(), new FakeSkillPublisher(), new DefaultWeaponDataProvider(new GameDataStore()), progression,
                 startingSkills: new EmptySkills());
             typeof(WeaponController).GetMethod("Start", Private).Invoke(controller, null);
             Assert.IsTrue(controller.IsReady);
-            var withProgression = new DefaultWeaponDataProvider().LoadAll().Find(w => !string.IsNullOrEmpty(w.progressionId));
+            var withProgression = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => !string.IsNullOrEmpty(w.progressionId));
             Assert.AreEqual(3, controller.GetPermanentWeaponLevel(withProgression.id));
             progression.Level = 21;
             controller.RefreshPermanentLevels();

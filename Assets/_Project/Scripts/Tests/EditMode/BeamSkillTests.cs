@@ -144,7 +144,7 @@ namespace Game.Tests
         [Test]
         public void Cards_OverloadDoublesPulsesAndRaisesCooldown_StableAddsFlatPulses_SpreadWidensBeam()
         {
-            var start = SkillConfig.FromDefinition(new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == SunBeamId)).Stats;
+            var start = SkillConfig.FromDefinition(new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == SunBeamId)).Stats;
             var beam = SunBeam("sun_beam_overload", "sun_beam_stable", "sun_beam_amplify", "sun_beam_spread");
             var stats = beam.Stats;
             Assert.AreEqual((start.Beam.Pulses * 2) + 5, stats.Beam.Pulses, .001f, "공격 횟수 +100% 뒤 +5");
@@ -192,7 +192,7 @@ namespace Game.Tests
         [Test]
         public void ShippedCatalog_SunBeamHasFiveDisabledCardsWithReasons()
         {
-            var data = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == SunBeamId);
+            var data = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == SunBeamId);
             var disabled = data.upgrades.Where(c => !c.enabled).ToList();
             Assert.AreEqual(5, disabled.Count);
             foreach (var card in disabled) { Assert.IsNotEmpty(card.disabledReason, card.id); }

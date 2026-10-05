@@ -270,7 +270,7 @@ namespace Game.Tests
         [Test]
         public void Catalog_DefaultStatusChancesAreCertain()
         {
-            foreach (var weapon in new DefaultWeaponDataProvider().LoadAll())
+            foreach (var weapon in new DefaultWeaponDataProvider(new GameDataStore()).LoadAll())
             {
                 Assert.AreEqual(1, weapon.baseStats.status.freezeChance);
                 Assert.AreEqual(1, weapon.baseStats.status.frostbiteChance);
@@ -286,7 +286,7 @@ namespace Game.Tests
             prefab.AddComponent<Projectile>();
             try
             {
-                var data = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == 2);
+                var data = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 2);
                 var weapon = Casters.Projectile(data, prefab, prefab.transform, new Provider());
                 weapon.UseChildCaster(new NoopChildCaster());
                 foreach (var id in new[] { "fireball_impact_damage", "fireball_explosion_damage", "fireball_explosion_radius", "fireball_flames", "fireball_enbakutsu" })

@@ -175,7 +175,7 @@ namespace Game.Tests
         private static string BuildGolden()
         {
             var text = new StringBuilder();
-            foreach (var weapon in new DefaultWeaponDataProvider().LoadAll().OrderBy(w => w.id))
+            foreach (var weapon in new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().OrderBy(w => w.id))
             {
                 // 자식 스킬 시전 효과도 적용해 볼 수 있도록 아무것도 하지 않는 시전기를 연결한다.
                 var start = SkillConfig.FromDefinition(weapon).WithChildCaster(new NoopChildCaster());
@@ -243,7 +243,7 @@ namespace Game.Tests
             }
 
             var problems = new List<string>();
-            foreach (var weapon in new DefaultWeaponDataProvider().LoadAll())
+            foreach (var weapon in new DefaultWeaponDataProvider(new GameDataStore()).LoadAll())
             {
                 if (!prefabs.TryGetValue(weapon.id, out var prefab) || prefab == null)
                 {
@@ -266,7 +266,7 @@ namespace Game.Tests
         public void EveryCatalogWeapon_HasHudIcon()
         {
             var keys = IconKeys(SideIconTable);
-            var missing = new DefaultWeaponDataProvider().LoadAll().Where(w => !keys.Contains(w.iconKey))
+            var missing = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Where(w => !keys.Contains(w.iconKey))
                 .Select(w => $"{w.id}({w.name}): {w.iconKey}").ToList();
             Assert.IsEmpty(missing, "SkillIconTable_Side에 아이콘이 없습니다.\n" + string.Join("\n", missing));
         }
@@ -276,7 +276,7 @@ namespace Game.Tests
         {
             var keys = IconKeys(CardIconTable);
             var missing = new List<string>();
-            foreach (var weapon in new DefaultWeaponDataProvider().LoadAll())
+            foreach (var weapon in new DefaultWeaponDataProvider(new GameDataStore()).LoadAll())
             {
                 foreach (var suffix in new[] { "_new", "_upgrade" })
                 {

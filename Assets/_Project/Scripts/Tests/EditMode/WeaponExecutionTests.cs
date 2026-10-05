@@ -164,9 +164,9 @@ namespace Game.Tests
             var a = SharedWeapon(1);
             var b = SharedWeapon(2);
             var definitions = new System.Collections.Generic.List<WeaponData> { a.Data, b.Data };
-            Assert.AreEqual(2, DefaultWeaponDataProvider.Parse(Newtonsoft.Json.JsonConvert.SerializeObject(definitions)).Count);
+            Assert.AreEqual(2, GameDataStore.ParseWeapons(Newtonsoft.Json.JsonConvert.SerializeObject(definitions)).Count);
             b.Data.upgrades[0].maxPickCount = 2;
-            Assert.Throws<InvalidOperationException>(() => DefaultWeaponDataProvider.Parse(Newtonsoft.Json.JsonConvert.SerializeObject(definitions)));
+            Assert.Throws<InvalidOperationException>(() => GameDataStore.ParseWeapons(Newtonsoft.Json.JsonConvert.SerializeObject(definitions)));
         }
 
         private static WeaponUpgradeOption VariantOption(int gate, float before, float after) => new WeaponUpgradeOption
@@ -301,28 +301,28 @@ namespace Game.Tests
                 upgrades = new System.Collections.Generic.List<WeaponUpgradeOption> { a, b }
             } };
             a.requiredCardIds = new[] { "missing" };
-            Assert.Throws<InvalidOperationException>(() => DefaultWeaponDataProvider.Parse(Newtonsoft.Json.JsonConvert.SerializeObject(data)));
+            Assert.Throws<InvalidOperationException>(() => GameDataStore.ParseWeapons(Newtonsoft.Json.JsonConvert.SerializeObject(data)));
             a.requiredCardIds = null;
             a.requiredCardCounts = new[] { new CardCountRequirement { cardId = "b", count = 2 } };
-            Assert.Throws<InvalidOperationException>(() => DefaultWeaponDataProvider.Parse(Newtonsoft.Json.JsonConvert.SerializeObject(data)));
+            Assert.Throws<InvalidOperationException>(() => GameDataStore.ParseWeapons(Newtonsoft.Json.JsonConvert.SerializeObject(data)));
             a.requiredCardCounts = null;
             a.requiredCardIds = new[] { "b" };
             b.requiredCardIds = new[] { "a" };
-            Assert.Throws<InvalidOperationException>(() => DefaultWeaponDataProvider.Parse(Newtonsoft.Json.JsonConvert.SerializeObject(data)));
+            Assert.Throws<InvalidOperationException>(() => GameDataStore.ParseWeapons(Newtonsoft.Json.JsonConvert.SerializeObject(data)));
         }
 
         [Test]
         public void Catalog_RejectsDuplicateWeaponIds()
         {
             const string json = "[{\"id\":1,\"maxLevel\":1,\"baseStats\":{},\"upgrades\":[]},{\"id\":1,\"maxLevel\":1,\"baseStats\":{},\"upgrades\":[]}]";
-            Assert.Throws<InvalidOperationException>(() => DefaultWeaponDataProvider.Parse(json));
+            Assert.Throws<InvalidOperationException>(() => GameDataStore.ParseWeapons(json));
         }
 
         [Test]
         public void Catalog_RejectsDuplicateCardIdsAcrossWeapons()
         {
             const string json = "[{\"id\":1,\"maxLevel\":1,\"baseStats\":{},\"upgrades\":[{\"id\":\"same\",\"effects\":[]}]},{\"id\":2,\"maxLevel\":1,\"baseStats\":{},\"upgrades\":[{\"id\":\"same\",\"effects\":[]}]}]";
-            Assert.Throws<InvalidOperationException>(() => DefaultWeaponDataProvider.Parse(json));
+            Assert.Throws<InvalidOperationException>(() => GameDataStore.ParseWeapons(json));
         }
     }
 }

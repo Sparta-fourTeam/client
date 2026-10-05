@@ -194,7 +194,7 @@ namespace Game.Tests
         [Test]
         public void Cards_ContinuousAddsBouncesAndDamage_CrossAddsCasts_ConductionAddsPath()
         {
-            var start = SkillConfig.FromDefinition(new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == ChainLightningId)).Stats;
+            var start = SkillConfig.FromDefinition(new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == ChainLightningId)).Stats;
             var chain = ChainLightning("chain_lightning_continuous", "chain_lightning_cross", "chain_lightning_voltage");
             Assert.AreEqual(start.Chain.Bounces + 2, chain.Stats.Chain.Bounces);
             Assert.AreEqual(2, chain.Stats.Cast.Count);
@@ -222,7 +222,7 @@ namespace Game.Tests
         [Test]
         public void ShippedCatalog_ChainLightningHasThreeDisabledCardsWithReasons()
         {
-            var data = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == ChainLightningId);
+            var data = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == ChainLightningId);
             var disabled = data.upgrades.Where(c => !c.enabled).ToList();
             Assert.AreEqual(3, disabled.Count);
             foreach (var card in disabled) { Assert.IsNotEmpty(card.disabledReason, card.id); }

@@ -41,7 +41,7 @@ namespace Game.Tests
             var go = new GameObject("LogRepeatTest");
             try
             {
-                var data = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == 5);
+                var data = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 5);
                 Assert.AreEqual(10, data.maxLevel); Assert.IsNull(data.progressionId);
                 var weapon = Casters.Projectile(data, go, go.transform, new Provider());
                 Assert.AreEqual(0, weapon.UpgradeCount);
@@ -62,7 +62,7 @@ namespace Game.Tests
             var go = new GameObject("LogBasicTest");
             try
             {
-                var data = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == 5);
+                var data = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 5);
                 var weapon = Casters.Projectile(data, go, go.transform, new Provider());
                 var damage = data.upgrades.Find(c => c.id == "log_damage");
                 Assert.IsTrue(weapon.LevelUp(damage)); Assert.IsTrue(weapon.LevelUp(damage)); Assert.IsFalse(weapon.LevelUp(damage));
@@ -82,7 +82,7 @@ namespace Game.Tests
             var go = new GameObject("LogSizeTest"); go.AddComponent<Projectile>();
             try
             {
-                var data = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == 5);
+                var data = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 5);
                 var provider = new Provider(); provider.Target.Position = Vector2.up * 2;
                 var weapon = Casters.Projectile(data, go, go.transform, provider);
                 weapon.LevelUp(data.upgrades.Find(c => c.id == "log_size"));
@@ -139,7 +139,7 @@ namespace Game.Tests
             var go = new GameObject("LogStatusCasterTest"); go.AddComponent<Projectile>();
             try
             {
-                var data = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == 5);
+                var data = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 5);
                 var provider = new Provider(); provider.Target.Position = Vector2.up;
                 var weapon = Casters.Projectile(data, go, go.transform, provider);
                 foreach (var id in new[] { "log_impact", "log_weight", "log_wound" })
@@ -171,7 +171,7 @@ namespace Game.Tests
             var go = new GameObject("LargeLogTest"); go.AddComponent<Projectile>();
             try
             {
-                var data = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == 5);
+                var data = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 5);
                 var weapon = Casters.Projectile(data, go, go.transform, new Provider());
                 foreach (var id in new[] { "log_damage", "log_size", "log_impact", "log_weight", "log_repeat", "log_speed", "log_wound", "log_large" })
                 { Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == id), 5)); }
@@ -211,7 +211,7 @@ namespace Game.Tests
                 new[] { new ProjectileVisual.FormSprite { form = WeaponForm.FireLog, sprite = fireArt } });
             try
             {
-                var data = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == 5);
+                var data = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 5);
                 var provider = new Provider(); provider.Target.Position = Vector2.up * .1f;
                 var weapon = Casters.Projectile(data, go, go.transform, provider);
                 foreach (var id in new[] { "log_damage", "log_size", "log_impact", "log_weight", "log_wound", "log_fire" })
@@ -255,7 +255,7 @@ namespace Game.Tests
             go.transform.position = new Vector3(-5, -2, 0);
             try
             {
-                var data = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == 5);
+                var data = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 5);
                 var provider = new LaneProvider();
                 var first = new Target { Position = new Vector2(3, 0) };
                 var second = new Target { Position = new Vector2(3, 1) };

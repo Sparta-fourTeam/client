@@ -289,7 +289,7 @@ namespace Game.Core
             }
             else
             {
-                var projectile = projectiles.Fire(Position, _attack.Damage);
+                var projectile = projectiles.Fire(Position, _attack.Damage, _attack.ProjectileSpeed);
                 ProjectileFired?.Invoke(projectile);
             }
         }

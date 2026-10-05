@@ -34,7 +34,7 @@ namespace Game.Tests
 
         public CatalogWorld(Action<Dictionary<int, WeaponData>> tweak = null)
         {
-            Data = new DefaultWeaponDataProvider().LoadAll().ToDictionary(w => w.id);
+            Data = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().ToDictionary(w => w.id);
             tweak?.Invoke(Data);
             var player = AssetDatabase.LoadAssetAtPath<GameObject>(PlayerPrefab);
             var entries = new SerializedObject(player.GetComponentInChildren<WeaponController>(true)).FindProperty("prefabEntries");

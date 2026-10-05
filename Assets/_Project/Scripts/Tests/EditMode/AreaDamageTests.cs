@@ -45,7 +45,7 @@ namespace Game.Tests
         [Test]
         public void ImpactUpgrade_ChangesOnlyDirectDamageAndTrainingScalesBoth()
         {
-            var data = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == 2);
+            var data = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 2);
             WeaponStats stats = WeaponStats.FromDefinition(data.baseStats);
             var impact = data.upgrades.Find(c => c.id == "fireball_impact_damage");
             Assert.AreEqual(3, impact.maxPickCount);
@@ -64,7 +64,7 @@ namespace Game.Tests
         [Test]
         public void HighVoltageLightning_IncreasesDamageAndAddsParalysisDuration()
         {
-            var data = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == 3);
+            var data = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 3);
             var go = new GameObject("HighVoltageStatsTest");
             try
             {
@@ -87,7 +87,7 @@ namespace Game.Tests
             go.transform.position = new Vector3(1000, 1000, 0);
             try
             {
-                var data = new DefaultWeaponDataProvider().LoadAll().Find(w => w.id == 3);
+                var data = new DefaultWeaponDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 3);
                 var provider = new Provider(); provider.Targets.Add(new Target { Position = new Vector2(1000, 1000) });
                 var weapon = Casters.Hitscan(data, go, go.transform, provider);
                 Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == "lightning_judgement")));

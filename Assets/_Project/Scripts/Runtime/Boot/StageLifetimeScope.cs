@@ -11,6 +11,10 @@ namespace Game.Boot
     {
         protected override void Configure(IContainerBuilder builder)
         {
+            // 어떤 스테이지인지는 로비에서 정해 StageContext에 남긴다. Stage 씬을 바로 열었으면 첫 스테이지 값을 쓴다
+            builder.Register(resolver =>
+                resolver.Resolve<GameDataStore>().StageOrFirst(resolver.Resolve<StageContext>().StageId), Lifetime.Scoped);
+            builder.Register(resolver => EnemySpawnConfig.From(resolver.Resolve<StageDefinition>().Spawn), Lifetime.Scoped);
             builder.RegisterComponentInHierarchy<Wall>();
             builder.RegisterComponentInHierarchy<WeaponController>();
             builder.Register<IWeaponDataProvider, DefaultWeaponDataProvider>(Lifetime.Scoped);
@@ -25,20 +29,9 @@ namespace Game.Boot
             builder.Register<IRandomProvider, UnityRandomProvider>(Lifetime.Scoped);
             builder.RegisterComponentInHierarchy<EnemyFactory>().AsImplementedInterfaces();
             builder.RegisterComponentInHierarchy<SpawnArea>();
-            builder.RegisterInstance(CreateWaveData());
             builder.Register<EnemyProjectileSystem>(Lifetime.Scoped);
             builder.RegisterEntryPoint<EnemySpawner>(Lifetime.Scoped).AsSelf().As<IEnemyTargetProvider>();
             builder.RegisterEntryPoint<WaveManager>();
-        }
-
-        // TODO : 현재는 하드코딩, 추후 로컬 데이터 연동시 수정할 수 있음.
-        private static EnemySpawnConfig CreateWaveData()
-        {
-            return new EnemySpawnConfig(
-                spawnIntervalMin: 0.1f,
-                spawnIntervalMax: 0.5f,
-                spawnCooldown: 3f
-                );
         }
     }
 }

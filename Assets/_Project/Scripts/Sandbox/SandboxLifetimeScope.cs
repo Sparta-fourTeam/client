@@ -13,6 +13,9 @@ namespace Game.Sandbox
         protected override void Configure(IContainerBuilder builder)
         {
             builder.RegisterMessagePipe();
+            builder.Register<GameDataStore>(Lifetime.Singleton);
+            // 벽 체력은 스테이지 테이블에서 온다. 샌드박스는 첫 스테이지 값을 쓴다
+            builder.Register(resolver => resolver.Resolve<GameDataStore>().StageOrFirst(0), Lifetime.Singleton);
             builder.RegisterComponentInHierarchy<Wall>();
             builder.RegisterComponentInHierarchy<WeaponController>();
             builder.RegisterComponentInHierarchy<SandboxEnemyField>().AsSelf().As<IEnemyTargetProvider>();
