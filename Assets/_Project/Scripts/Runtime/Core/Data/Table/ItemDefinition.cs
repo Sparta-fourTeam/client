@@ -21,7 +21,7 @@ namespace Game.Core
                 throw new InvalidOperationException("Items: Id, Name, IconKey가 필요합니다.");
             }
 
-            if (string.IsNullOrWhiteSpace(TargetId))
+            if (Id != ItemIds.GemChest && string.IsNullOrWhiteSpace(TargetId))
             {
                 throw new InvalidOperationException($"Items {Id}: 마법북은 고유 ID와 TargetId가 필요합니다.");
             }
