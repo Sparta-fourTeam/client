@@ -73,5 +73,24 @@ namespace Game.Tests
             Assert.Throws<OverflowException>(() => cache.RecordAcquired(ItemIds.ArrowBook, 1));
             Assert.AreEqual(int.MaxValue, cache.AcquiredQuantity(ItemIds.ArrowBook));
         }
+
+        [Test]
+        public void SetAcquired_ReplacesTotalsAndKeepsPreviousOnInvalidInput()
+        {
+            var cache = new StageItemCache();
+            cache.Begin(1, new[] { ItemIds.ArrowBook, ItemIds.FireballBook });
+            cache.SetAcquired(new[] { new ItemAmount { itemId = ItemIds.ArrowBook, quantity = 2 } });
+            cache.SetAcquired(new[]
+            {
+                new ItemAmount { itemId = ItemIds.ArrowBook, quantity = 5 },
+                new ItemAmount { itemId = ItemIds.FireballBook, quantity = 1 },
+            });
+
+            Assert.AreEqual(5, cache.AcquiredQuantity(ItemIds.ArrowBook));
+            Assert.AreEqual(1, cache.AcquiredQuantity(ItemIds.FireballBook));
+            Assert.Throws<ArgumentOutOfRangeException>(() =>
+                cache.SetAcquired(new[] { new ItemAmount { itemId = ItemIds.ArrowBook, quantity = 0 } }));
+            Assert.AreEqual(5, cache.AcquiredQuantity(ItemIds.ArrowBook));
+        }
     }
 }

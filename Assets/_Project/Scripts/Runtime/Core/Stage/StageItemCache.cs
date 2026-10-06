@@ -43,6 +43,25 @@ namespace Game.Core
             _acquired.Clear();
         }
 
+        /// <summary>누적 확보량 전체로 획득 내역을 교체한다. 웨이브마다 누적 합계가 다시 계산되는 집계용이다.</summary>
+        public void SetAcquired(IEnumerable<ItemAmount> items)
+        {
+            if (StageId == 0) { throw new InvalidOperationException("전투를 시작한 뒤 획득량을 기록해야 합니다."); }
+            if (items == null) { throw new ArgumentNullException(nameof(items)); }
+
+            // 검증이 끝난 뒤에만 교체해 실패 시 기존 집계를 유지한다.
+            var next = new Dictionary<string, int>(StringComparer.Ordinal);
+            foreach (var item in items)
+            {
+                if (item == null || string.IsNullOrWhiteSpace(item.itemId)) { throw new ArgumentException("아이템 ID가 필요합니다.", nameof(items)); }
+                if (item.quantity <= 0) { throw new ArgumentOutOfRangeException(nameof(items)); }
+                next[item.itemId] = checked(next.TryGetValue(item.itemId, out var current) ? current + item.quantity : item.quantity);
+            }
+
+            _acquired.Clear();
+            foreach (var item in next) { _acquired[item.Key] = item.Value; }
+        }
+
         /// <summary>지급 모듈이 획득을 확정한 뒤 호출한다. 중복 지급 판단은 지급 모듈에서 한다.</summary>
         public void RecordAcquired(string itemId, int quantity)
         {
