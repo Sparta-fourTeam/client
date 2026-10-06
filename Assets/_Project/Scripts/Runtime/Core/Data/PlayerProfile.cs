@@ -7,7 +7,7 @@ namespace Game.Core
     public sealed class PlayerProfile
     {
         private readonly GameDataStore _data;
-        private PlayerSnapshot _snapshot = new PlayerSnapshot { stageProgress = new(), upgrades = new() };
+        private PlayerSnapshot _snapshot = new PlayerSnapshot { stageProgress = new(), upgrades = new(), items = new() };
 
         public event Action<PlayerProfile> Changed;
 
@@ -17,6 +17,7 @@ namespace Game.Core
         }
 
         public int Gold => _snapshot.gold;
+        public int ItemQuantity(string itemId) => _snapshot.items.Find(item => item.itemId == itemId)?.quantity ?? 0;
         public int EnergyStored => _snapshot.energyStored;
 
         /// <summary>energyUpdatedAt을 UTC로 해석한다. Apply 전(값 없음)에는 DateTime.UtcNow를 반환한다</summary>
@@ -33,6 +34,7 @@ namespace Game.Core
         {
             snap.stageProgress ??= new();
             snap.upgrades ??= new();
+            snap.items ??= new();
             _snapshot = snap;
             Changed?.Invoke(this);
         }
