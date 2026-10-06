@@ -14,5 +14,6 @@
   { "Id": "book.weapon", "Name": "무기 마법북", "IconKey": "WeaponBook", "TargetId": "equipment.weapon" },
   { "Id": "book.ring", "Name": "반지 마법북", "IconKey": "RingBook", "TargetId": "equipment.ring" },
   { "Id": "book.tie", "Name": "넥타이 마법북", "IconKey": "TieBook", "TargetId": "equipment.tie" },
-  { "Id": "book.employee_id", "Name": "사원증 마법북", "IconKey": "EmployeeIdBook", "TargetId": "equipment.employee_id" }
+  { "Id": "book.employee_id", "Name": "사원증 마법북", "IconKey": "EmployeeIdBook", "TargetId": "equipment.employee_id" },
+  {"Id": "chest.gem", "Name": "보석상자", "IconKey": "GemChest"}
 ]
