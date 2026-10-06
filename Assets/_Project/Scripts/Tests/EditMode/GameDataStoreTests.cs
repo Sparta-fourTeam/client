@@ -66,9 +66,9 @@ namespace Game.Tests
 
             Assert.AreEqual(100, stage.WallHp);
             Assert.AreEqual(0.5f, stage.Spawn.IntervalMax);
-            Assert.AreEqual(3, stage.Waves.Count);
+            Assert.AreEqual(20, stage.Waves.Count);
             Assert.AreEqual(2, stage.Waves[1].MaxEliteCount);
-            Assert.AreEqual(1, stage.Waves[2].MaxBossCount);
+            Assert.AreEqual(1, stage.Waves[19].MaxBossCount);
         }
 
         [Test]
@@ -91,9 +91,14 @@ namespace Game.Tests
             Assert.AreEqual(0.2f, config.EliteSpawnChance);
         }
 
-        private static StageDefinition ValidStage() => JsonConvert.DeserializeObject<StageDefinition>(
+        private static StageDefinition ValidStage()
+        {
+            var stage = JsonConvert.DeserializeObject<StageDefinition>(
             "{\"Id\":1,\"WallHp\":100,\"Spawn\":{\"IntervalMin\":0.1,\"IntervalMax\":0.5,\"Cooldown\":3,\"EliteChance\":0.2},"
             + "\"Waves\":[{\"EnemyCount\":5,\"MaxEliteCount\":0,\"MaxBossCount\":0}]}");
+            stage.Waves = Enumerable.Range(0, 20).Select(_ => new WaveDefinition { EnemyCount = 5 }).ToList();
+            return stage;
+        }
 
         [Test]
         public void StageValidate_ValidStage_Passes()
