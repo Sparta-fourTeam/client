@@ -102,14 +102,14 @@ namespace Game.Editor
 
             using (new EditorGUILayout.HorizontalScope())
             {
-                if (GUILayout.Button("WaveGaugeFilled (중간 웨이브)"))
+                if (GUILayout.Button("WaveCompleted (중간 웨이브)"))
                 {
-                    Publish(new WaveGaugeFilled(false));
+                    Publish(new WaveCompleted(1, false));
                 }
 
-                if (GUILayout.Button("WaveGaugeFilled (마지막 웨이브)"))
+                if (GUILayout.Button("WaveCompleted (마지막 웨이브)"))
                 {
-                    Publish(new WaveGaugeFilled(true));
+                    Publish(new WaveCompleted(20, true));
                 }
             }
 
