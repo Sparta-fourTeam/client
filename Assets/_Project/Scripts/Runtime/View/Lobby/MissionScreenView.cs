@@ -16,6 +16,7 @@ namespace Game.View
         [SerializeField] private GameObject _lockOverlay;
         [SerializeField] private Button _prevButton, _nextButton, _backButton, _enterButton;
         [SerializeField] private TMP_Text _costText;
+        [SerializeField] private TMP_Text _rewardSummary;
         [SerializeField] private Image _rewardFill;             // RewardTrack/Bar/Fill
         [SerializeField] private Image[] _chests;               // RewardNode 3개의 Chest
         [SerializeField] private Sprite _closedChest, _openedChest;
@@ -75,6 +76,13 @@ namespace Game.View
             _prevButton.interactable = _data.Stages.Contains(_stageId - 1);
             _nextButton.interactable = _data.Stages.Contains(_stageId + 1);
             _costText.text = $"에너지 x{_profile.EnergyConfig.Cost}";
+            var maximum = StageRewardRules.Maximum(_data.StageRewards.GetOrThrow(_stageId));
+            var summary = new StageRewardSummary(maximum.Coin, maximum.Exp, maximum.Items);
+            if (_rewardSummary != null)
+            {
+                _rewardSummary.text = $"예상 최대 보상\n코인 {summary.Coin:N0}   스킬재료 {summary.SkillMaterial:N0}\n"
+                    + $"장비재료 {summary.EquipmentMaterial:N0}   EXP {summary.Exp:N0}   보석상자 {summary.GemChest:N0}";
+            }
 
             // 보상 3단계는 표시만: 달성한 단계까지 열린 상자, 바는 1단계=0, 2단계=0.5, 3단계=1
             for (int i = 0; i < _chests.Length; i++)
