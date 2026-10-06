@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Game.Core;
 using Game.Core.Messages;
@@ -25,7 +27,7 @@ namespace Game.View
         [Header("보상 (골드가 첫 칸. 다른 보상 아이템이 생기면 목록에 더한다)")]
         [SerializeField] private ResultRewardListView _rewardList;
         [SerializeField] private Sprite _goldIcon;
-        [SerializeField] private TMP_Text _rewardSummary;
+        [SerializeField] private Sprite _expIcon, _skillMaterialIcon, _equipmentMaterialIcon, _gemChestIcon;
 
         [SerializeField] private ResultStarsView _starsView;
 
@@ -62,16 +64,26 @@ namespace Game.View
             _waveText.text = result.ReachedWave > 0 ? $"도달 웨이브\n{result.ReachedWave}" : "도달 웨이브\n-";
             _timeText.text = $"플레이 시간\n{FormatTime(result.PlayTime)}";
             _bubbleText.text = result.Cleared ? ClearBubble : FailBubble;
-            _rewardList.Show(new[] { new ResultRewardItem(_goldIcon, result.RewardGold) });
-            if (_rewardSummary != null)
-            {
-                var summary = new StageRewardSummary(result.RewardGold, result.RewardExp, result.RewardItems);
-                _rewardSummary.text = $"코인 {summary.Coin:N0}   스킬재료 {summary.SkillMaterial:N0}\n"
-                    + $"장비재료 {summary.EquipmentMaterial:N0}   EXP {summary.Exp:N0}   보석상자 {summary.GemChest:N0}";
-            }
+            ShowRewards(new StageRewardSummary(result.RewardGold, result.RewardExp, result.RewardItems));
             _starsView.SetCount(result.ClearRating);
             _lobbyButton.interactable = true;
             _panel.SetActive(true);
+        }
+
+        /// <summary>코인은 항상, 나머지는 받은 것만 코인·EXP·스킬재료·장비재료·보석상자 순으로 보여준다</summary>
+        private void ShowRewards(StageRewardSummary summary)
+        {
+            var rows = new List<ResultRewardItem> { new(_goldIcon, summary.Coin) };
+            AddIfAny(rows, _expIcon, summary.Exp);
+            AddIfAny(rows, _skillMaterialIcon, summary.SkillMaterial);
+            AddIfAny(rows, _equipmentMaterialIcon, summary.EquipmentMaterial);
+            AddIfAny(rows, _gemChestIcon, summary.GemChest);
+            _rewardList.Show(rows);
+        }
+
+        private static void AddIfAny(List<ResultRewardItem> rows, Sprite icon, long count)
+        {
+            if (count > 0) { rows.Add(new ResultRewardItem(icon, (int)Math.Min(count, int.MaxValue))); }
         }
 
         private void OnLobbyClicked()
