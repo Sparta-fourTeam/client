@@ -13,14 +13,14 @@ namespace Game.Sandbox
         {
             public int Id { get; }
             public string Name { get; }
-            public string IconKey { get; }
+            public string AssetKey { get; }
             public CastType CastType { get; }
             public bool HasPrefab { get; }
             public SkillInfo(SkillData data, bool hasPrefab)
             {
                 Id = data.id;
                 Name = data.name;
-                IconKey = data.iconKey;
+                AssetKey = data.assetKey;
                 CastType = data.castType;
                 HasPrefab = hasPrefab;
             }
@@ -66,7 +66,7 @@ namespace Game.Sandbox
         public bool SelectSkill(int skillId)
         {
             if (!catalog.TryGetValue(skillId, out var data) || data.childOnly) { LastError = $"알 수 없는 스킬 {skillId}"; return false; }
-            if (!controller.HasPrefab(skillId)) { LastError = $"{data.name}: 프리팹 연결(prefabEntries)이 없습니다."; Changed?.Invoke(); return false; }
+            if (!controller.HasPrefab(skillId)) { LastError = $"{data.name}: SkillAssetTable에 프리팹이 없습니다."; Changed?.Invoke(); return false; }
             Build = new SandboxBuild { skillId = skillId, permanentLevel = Build.permanentLevel };
             Rebuild();
             return LastError == null;

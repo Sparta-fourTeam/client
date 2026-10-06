@@ -263,7 +263,7 @@ python3 docs/ninjutsu/validate_requirements.py
    - 카탈로그 의미 검증: `EffectRegistry`가 효과를 소비하는 공격 종류를 선언에 갖고, `SkillCatalogValidator`가 소비하지 않는 효과나 등록되지 않은 키를 카드 ID와 함께 거부한다(변형 효과 포함). 허용 공격은 `ProjectileSpawnRules`, `ReactionCompiler`, `HitscanCastEffects`가 실제로 읽는 값을 기준으로 만들었고, 현재 카탈로그가 모두 통과한다.
    - 스냅샷 복사 테스트: 등록된 모든 효과 종류를 적용한 스탯을 빈 강화로 한 번 더 복사해 값이 같은지 본다. 리플렉션으로 펼치므로 새 스탯이 자동으로 포함된다. 효과 종류 하나하나가 규칙을 갖고 스탯을 바꾸는지도 검사한다.
    - 골든 테스트: 카드 66장(변형 포함)의 단독 적용 결과와 무기별 전체 적용 결과를 `Tests/EditMode/Golden/WeaponCardStats.golden.txt`에 고정했다. 의도한 변경이면 `RegenerateGolden`(Explicit)을 실행해 파일을 갱신하고 diff를 리뷰한다. 폭발 반경 배율 카드처럼 선행 카드 없이 단독으로는 값이 안 바뀌는 카드는 `(변화 없음)`으로 기록된다.
-   - 프리팹·아이콘 연결 테스트: `Skills.json`의 id와 `iconKey`를 `prefabEntries`(공격 종류에 맞는 컴포넌트 포함), `SkillIconTable_Side`, `SkillIconTable_Card`(`_new`, `_upgrade`)와 대조하고, 기본 아이콘과 빈 스프라이트도 검사한다. 시작 시 예외가 아니라 테스트로 구현했다.
+   - 프리팹·아이콘 연결 테스트: `Skills.json`의 `assetKey`를 `SkillAssetTable`(공격 종류에 맞는 컴포넌트 포함한 프리팹, HUD 아이콘, 새 스킬·강화 카드 아이콘)과 대조하고, 기본 아이콘과 키 중복·고아 항목도 검사한다. 시작 시 예외가 아니라 테스트로 구현했다. (옛 `prefabEntries`와 `SkillIconTable_*`는 `SkillAssetTable` 하나로 합쳤다.)
 2. **스탯 일원화와 기본 수치 분할** (약 2일, A·B·F) — **완료**
    - **완료**: `Stat` enum과 `SkillStatRegistry`(스탯별 기본값 한 줄)로 `SkillStatsBuilder`의 필드 나열·복사 생성자를 대체했다. 스냅샷은 값 배열 하나를 갖고 묶음 구조체(`stats.Cast.Damage` 등)가 읽으므로 공개 API는 그대로고, 복사에서 스탯이 빠질 수 없다. 기본값 선언이 빠진 스탯은 시작 시 예외가 난다. 이제 스탯 하나를 더하려면 `Stat` enum, 레지스트리 기본값, 묶음 구조체 속성, 규칙 한 줄이다.
    - **완료**: `data.baseStats` 직접 접근을 없앴다. 확률(마비·빙결·동상·화상·기절), 시전 간격, 예비 시전 값은 스냅샷(`Status`·`Burn`·`Cast`)으로, 사거리는 `AttackDefinition.Range`로 옮겼다.
@@ -295,11 +295,11 @@ python3 docs/ninjutsu/validate_requirements.py
 
 ### 6.5 추가 체크리스트
 
-**새 카드(기존 효과만 쓰는 경우)**: `Skills.json`의 해당 스킬 `upgrades`에 카드를 적는다. `effects`의 `kind`는 `EffectRegistry`에 등록된 키다. 카드 아이콘은 스킬마다 두 장(`iconKey_new`, `iconKey_upgrade`)이라 카드를 추가할 때 따로 필요 없다. 이후 `RegenerateGolden`(Explicit 테스트)으로 골든을 갱신하고 diff를 리뷰한다. 검증기가 등록되지 않은 키, 스킬이 소비하지 않는 효과, 조건 그래프 오류를 카드 ID와 함께 알려 준다.
+**새 카드(기존 효과만 쓰는 경우)**: `Skills.json`의 해당 스킬 `upgrades`에 카드를 적는다. `effects`의 `kind`는 `EffectRegistry`에 등록된 키다. 카드 아이콘은 스킬마다 두 장(`SkillAssetTable` 항목의 `newCardIcon`, `upgradeCardIcon`)이라 카드를 추가할 때 따로 필요 없다. 이후 `RegenerateGolden`(Explicit 테스트)으로 골든을 갱신하고 diff를 리뷰한다. 검증기가 등록되지 않은 키, 스킬이 소비하지 않는 효과, 조건 그래프 오류를 카드 ID와 함께 알려 준다.
 
 **새 효과 종류**: `EffectRegistry`에 한 줄(키, 분류, 허용 공격, 값 규칙, 적용)을 더한다. 새 스탯이 필요하면 `Stat` enum, `SkillStatRegistry`의 기본값, 묶음 구조체 속성(`CastStats` 등)에 한 줄씩 더한다. 스탯을 읽는 쪽은 반응이면 `ReactionCompiler`/`HitReactionBuilder`, 그 밖이면 해당 전략이다. 안전망 테스트(등록·적용·스냅샷 복사 누락)가 빠뜨린 곳을 알려 준다.
 
-**새 스킬(기존 공격 종류)**: 먼저 6.7의 스킬 샌드박스에서 눈으로 확인할 수 있도록 `Skills.json`에 스킬을 추가한다(`castType`, `baseStats` 묶음, `upgrades`). 다른 스킬의 효과로만 쓰면 `childOnly: true`로 표시한다. `Player_Animated` 프리팹의 `SkillController.prefabEntries`에 id와 프리팹을, `SkillIconTable_Side`에 HUD 아이콘 키(`iconKey`)를 연결한다. 프리팹·아이콘 연결 테스트가 누락을 잡는다. 영구 성장을 쓰면 `progressionId`를 맞춘다.
+**새 스킬(기존 공격 종류)**: 먼저 6.7의 스킬 샌드박스에서 눈으로 확인할 수 있도록 `Skills.json`에 스킬을 추가한다(`castType`, `baseStats` 묶음, `upgrades`). 다른 스킬의 효과로만 쓰면 `childOnly: true`로 표시한다. `SkillAssetTable`에 `assetKey`로 프리팹과 아이콘(HUD, 새 스킬 카드, 강화 카드)을 한 항목으로 연결한다. 프리팹·아이콘 연결 테스트가 누락을 잡는다. 영구 성장을 쓰면 `progressionId`를 맞춘다.
 
 **새 공격 종류**: `CastType`(Projectile, Hitscan, Area, Beam, Chain)에 값을 더하고, `IAttackStrategy` 구현을 만들어 `SkillFactory`에 등록한다. 효과 종류의 허용 공격(`EffectRegistry`)에 새 종류를 반영한다.
 
@@ -344,19 +344,19 @@ python3 docs/ninjutsu/validate_requirements.py
 
 스킬을 만들거나 고친 뒤에는 **Tools → Project Nova → Skill Sandbox**로 씬(`Scenes/Sandbox/SkillSandbox.unity`)을 열고 재생한다. 스테이지와 같은 카메라, 플레이어, 벽 위치에 **실제 `Enemy` 프리팹**을 세워 두므로 투사체, Hitscan, 영역, 광선, 연쇄가 게임과 같은 방식으로 맞는다. 화면 아래쪽 패널(IMGUI)은 `패널 접기` 버튼으로 접을 수 있다.
 
-- **스킬**: `Skills.json`의 스킬(자식 전용 제외)이 자동으로 나온다. 프리팹 연결(`prefabEntries`)이 없는 스킬은 비활성으로 표시된다.
+- **스킬**: `Skills.json`의 스킬(자식 전용 제외)이 자동으로 나온다. `SkillAssetTable`에 프리팹이 없는 스킬은 비활성으로 표시된다.
 - **카드**: 기본은 선행 조건을 무시하고 목록에서 직접 고른다(`−`로 하나씩 뺄 수 있다). 비활성 카드는 `disabledReason`이 보이고, 공유 카드(`sharedId`)는 실제 선택 모드에서만 된다. **실제 3지선다** 모드는 게임과 같은 규칙(선행 조건, 최대 횟수, 제외)으로 카드를 뽑는다. 구성이 바뀔 때마다 보유 스킬을 비우고 처음부터 다시 쌓으므로 카드를 얻은 순서까지 같다.
 - **적**: 샌드백 1·3·5·10마리, 배치(직선, 군집, 흩뿌림), HP(100, 1,000, 10,000), 이동 모드(켜면 벽을 향해 내려옴), 되살림(죽으면 같은 자리에 새로 생성), 화면 클릭으로 배치. 적의 공격 피해는 0이다. 누적 피해와 최근 3초 초당 피해(DPS)가 아래에 보인다.
 - **환경**: 영구 레벨(`(+)` 변형과 해금 조건 확인), 시간 배속(0.25x~2x), 구성 저장·불러오기 3칸(`PlayerPrefs`, 이 기기에만 남음).
 - **현재 스킬 정보**: 값이 0이 아닌 스탯 묶음과 연결된 자식 스킬.
 
-구현은 `Game.Sandbox` 어셈블리다. 조작 로직(`SkillSandboxSession`)은 UI와 분리돼 EditMode 테스트로 보호하고, 패널(`SandboxPanel`)은 디버그 도구라 IMGUI로 만들어 프리팹과 EventSystem이 필요 없다. 새 스킬은 코드를 고칠 필요 없이 `Skills.json`과 `prefabEntries`만 맞으면 목록에 나온다. 플레이 모드를 켠 채 에디터가 포커스를 잃으면 게임 루프가 멈추므로(Unity 기본 동작) 자동화로 확인할 때는 `Application.runInBackground`를 켠다.
+구현은 `Game.Sandbox` 어셈블리다. 조작 로직(`SkillSandboxSession`)은 UI와 분리돼 EditMode 테스트로 보호하고, 패널(`SandboxPanel`)은 디버그 도구라 IMGUI로 만들어 프리팹과 EventSystem이 필요 없다. 새 스킬은 코드를 고칠 필요 없이 `Skills.json`과 `SkillAssetTable` 항목만 맞으면 목록에 나온다. 플레이 모드를 켠 채 에디터가 포커스를 잃으면 게임 루프가 멈추므로(Unity 기본 동작) 자동화로 확인할 때는 `Application.runInBackground`를 켠다.
 
 ### 6.4 위험과 주의
 
 - 2단계가 가장 넓게 영향을 준다. 1단계의 골든 테스트 없이 시작하지 않는다.
 - 카드 ID, enum 숫자, `progressionId`를 바꾸면 repo 내부 파일(`Skills.json`, 테스트, `requirements.json`, `validate_requirements.py`, `LocalUpgradeApi`)을 함께 고쳐야 한다.
-- 프리팹과 씬의 직렬화 참조(`prefabEntries`의 id, `SkillIconTable`의 키)는 사용자 데이터가 아니라 에셋이므로 id를 바꾸면 에셋도 같이 고친다.
+- 에셋 참조(`SkillAssetTable`의 `key`)는 사용자 데이터가 아니라 에셋이므로 `assetKey`를 바꾸면 에셋도 같이 고친다.
 - 한 PR에 enum 재배열, JSON 변환, 테스트 수정이 겹치면 리뷰가 어렵다. 커밋을 나눈다.
 
 ## 부록 A. 제공 각주

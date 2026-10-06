@@ -2,7 +2,7 @@
   {
     "id": 1,
     "name": "화살",
-    "iconKey": "weapon_arrow",
+    "assetKey": "weapon_arrow",
     "castType": 0,
     "maxLevel": 15,
     "progressionId": "shuriken",
@@ -423,7 +423,7 @@
   {
     "id": 2,
     "name": "화염구",
-    "iconKey": "weapon_fireball",
+    "assetKey": "weapon_fireball",
     "castType": 0,
     "maxLevel": 14,
     "progressionId": "fireball",
@@ -677,7 +677,7 @@
   {
     "id": 3,
     "name": "벼락",
-    "iconKey": "weapon_lightning",
+    "assetKey": "weapon_lightning",
     "castType": 1,
     "maxLevel": 14,
     "progressionId": "lightning",
@@ -957,7 +957,7 @@
   {
     "id": 4,
     "name": "서리 결정",
-    "iconKey": "weapon_ice",
+    "assetKey": "weapon_ice",
     "castType": 0,
     "maxLevel": 15,
     "progressionId": null,
@@ -1256,7 +1256,7 @@
   {
     "id": 5,
     "name": "나무뿌리",
-    "iconKey": "weapon_log",
+    "assetKey": "weapon_log",
     "castType": 0,
     "maxLevel": 10,
     "progressionId": null,
@@ -1502,7 +1502,7 @@
   {
     "id": 6,
     "name": "서리 감옥",
-    "iconKey": "weapon_frost_prison",
+    "assetKey": "weapon_frost_prison",
     "castType": 2,
     "maxLevel": 10,
     "progressionId": null,
@@ -1662,7 +1662,7 @@
   {
     "id": 7,
     "name": "번개 구름",
-    "iconKey": "weapon_lightning_cloud",
+    "assetKey": "weapon_lightning_cloud",
     "castType": 2,
     "maxLevel": 10,
     "progressionId": null,
@@ -1832,7 +1832,7 @@
   {
     "id": 8,
     "name": "얼음 조각",
-    "iconKey": "weapon_ice",
+    "assetKey": "weapon_ice_shard",
     "castType": 0,
     "maxLevel": 1,
     "progressionId": null,
@@ -1856,7 +1856,7 @@
   {
     "id": 12,
     "name": "일반 얼음창",
-    "iconKey": "weapon_ice",
+    "assetKey": "weapon_ice_spear",
     "castType": 0,
     "maxLevel": 1,
     "progressionId": null,
@@ -1880,7 +1880,7 @@
   {
     "id": 13,
     "name": "화살 조각",
-    "iconKey": "weapon_arrow",
+    "assetKey": "weapon_arrow_shard",
     "castType": 0,
     "maxLevel": 1,
     "progressionId": null,
@@ -1904,7 +1904,7 @@
   {
     "id": 14,
     "name": "불꽃 조각",
-    "iconKey": "weapon_fireball",
+    "assetKey": "weapon_fireball_shard",
     "castType": 0,
     "maxLevel": 1,
     "progressionId": null,
@@ -1928,7 +1928,7 @@
   {
     "id": 15,
     "name": "전기 구체",
-    "iconKey": "weapon_lightning",
+    "assetKey": "weapon_lightning_orb",
     "castType": 0,
     "maxLevel": 1,
     "progressionId": null,
@@ -1953,7 +1953,7 @@
   {
     "id": 16,
     "name": "태양 광선",
-    "iconKey": "weapon_sun_beam",
+    "assetKey": "weapon_sun_beam",
     "castType": 3,
     "maxLevel": 13,
     "progressionId": null,
@@ -2175,7 +2175,7 @@
   {
     "id": 17,
     "name": "보조 태양 광선",
-    "iconKey": "weapon_sun_beam",
+    "assetKey": "weapon_sun_beam_aux",
     "castType": 3,
     "maxLevel": 1,
     "progressionId": null,
@@ -2202,7 +2202,7 @@
   {
     "id": 18,
     "name": "연쇄 번개",
-    "iconKey": "weapon_chain_lightning",
+    "assetKey": "weapon_chain_lightning",
     "castType": 4,
     "maxLevel": 11,
     "progressionId": null,

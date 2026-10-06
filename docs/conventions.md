@@ -42,6 +42,7 @@
 - 카드는 두 곳에서 관리한다. 스킬 카드는 `Skills.json`의 각 스킬 `upgrades`에, 스킬이 아닌 카드(방벽 수리 등)는 `GeneralCards.json`에 둔다. 뽑는 것은 `CardDeck` 하나가 합친다. 일반 카드는 `Condition`(언제 나오는가)과 `Effect`(고르면 무엇이 되는가)를 `GeneralCardRules`에 등록된 이름으로 적고, `Forced`이면 조건이 맞을 때 3장 중 한 칸을 먼저 차지한다 (한 번에 최대 1장)
 - 적 프리팹 엔트리(`EnemyPrefabEntry`)는 프리팹과 공격 방식만 갖고, 수치는 `MonsterId`로 `Monsters` 행을 가리킨다. Stage 씬은 `StageContext.StageId`로 `StageDefinition`을 한 번 정해 방벽, 웨이브, 스폰에 나눠 준다 (Stage 씬을 바로 열면 첫 스테이지)
 - 프리팹·아이콘은 테이블의 `PrefabKey`/`IconKey`로 찾는다
+- 스킬의 프리팹과 아이콘은 `Skills.json`의 `assetKey`로 `SkillAssetTable`(`Data/`)에서 찾는다. 플레이어 프리팹에는 스킬 목록을 두지 않는다
 - 1주차는 저장되는 Local 구현(`Network/Local`)을 쓴다. `save.json`에 저장되어 재실행해도 값이 유지된다. `MockData` 폴더는 Local이 읽는 초기 테이블 JSON을 두는 곳이다
 - Local도 ApiDog 명세와 같은 DTO(`Network/Dto`)로 변환하고, 서버와 같은 오류 코드(`INSUFFICIENT_GOLD` 등)로 `ApiException`을 던진다
 - 서버 전환은 `BackendSettings`(ScriptableObject)의 스위치로 그룹 단위로 한다: Account(`IAuthApi`, `IDataApi`)를 먼저, Player(`IPlayerApi`, `IBattleApi`, `IUpgradeApi`, `IEnergyApi`, `IStageApi`) 5개는 한 번에 전환한다. 다섯 다 지갑을 건드리므로 따로 바꾸면 로컬과 서버 잔액이 어긋난다

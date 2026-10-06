@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Game.Core;
-using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -36,13 +35,8 @@ namespace Game.Tests
         {
             Data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().ToDictionary(w => w.id);
             tweak?.Invoke(Data);
-            var player = AssetDatabase.LoadAssetAtPath<GameObject>(PlayerPrefab);
-            var entries = new SerializedObject(player.GetComponentInChildren<SkillController>(true)).FindProperty("prefabEntries");
-            for (int i = 0; i < entries.arraySize; i++)
-            {
-                var entry = entries.GetArrayElementAtIndex(i);
-                prefabs[entry.FindPropertyRelative("id").intValue] = (GameObject)entry.FindPropertyRelative("prefab").objectReferenceValue;
-            }
+            var assets = TestSkillAssets.Real();
+            foreach (var data in Data.Values) { prefabs[data.id] = assets.GetPrefab(data.assetKey); }
             children = new ChildSkillCaster(id => Build(id));
         }
 

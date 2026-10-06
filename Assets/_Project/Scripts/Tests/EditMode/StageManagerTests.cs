@@ -108,15 +108,8 @@ namespace Game.Tests
             var player = new GameObject("TestPlayer");
             _objects.Add(player);
             _skills = player.AddComponent<SkillController>();
-            var entries = new List<SkillPrefabEntry>();
-            for (int id = 1; id <= 3; id++)
-            {
-                var prefab = new GameObject("Weapon" + id);
-                _objects.Add(prefab);
-                entries.Add(new SkillPrefabEntry { id = id, prefab = prefab });
-            }
+            TestSkillAssets.Attach(_skills, new[] { 1, 2, 3 }, _objects);
             const BindingFlags Private = BindingFlags.NonPublic | BindingFlags.Instance;
-            typeof(SkillController).GetField("prefabEntries", Private).SetValue(_skills, entries);
             _skills.Construct(new NullEnemyTargetProvider(),
                 provider.GetRequiredService<IBufferedPublisher<SkillChanged>>(), new DefaultSkillDataProvider(new GameDataStore()));
             typeof(SkillController).GetMethod("Start", Private).Invoke(_skills, null);

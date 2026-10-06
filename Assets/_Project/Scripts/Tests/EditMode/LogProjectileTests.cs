@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using Game.Core;
 using NUnit.Framework;
-using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -293,20 +292,11 @@ namespace Game.Tests
         }
 
         [Test]
-        public void ActualPlayerPrefab_HasIdFiveProjectileForLogAcquisition()
+        public void ActualAssetTable_HasProjectileForLogAcquisition()
         {
-            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Stage/Player_Animated.prefab");
-            var controller = prefab.GetComponent<SkillController>();
-            var entries = new SerializedObject(controller).FindProperty("prefabEntries");
-            bool found = false;
-            for (int i = 0; i < entries.arraySize; i++)
-            {
-                var entry = entries.GetArrayElementAtIndex(i);
-                if (entry.FindPropertyRelative("id").intValue != 5) { continue; }
-                var log = (GameObject)entry.FindPropertyRelative("prefab").objectReferenceValue;
-                Assert.IsNotNull(log.GetComponent<Projectile>()); found = true;
-            }
-            Assert.IsTrue(found);
+            var log = TestSkillAssets.Real().GetPrefab(TestSkillAssets.Data(5).assetKey);
+            Assert.IsNotNull(log);
+            Assert.IsNotNull(log.GetComponent<Projectile>());
         }
     }
 }

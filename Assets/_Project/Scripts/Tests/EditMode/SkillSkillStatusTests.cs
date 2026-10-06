@@ -33,7 +33,7 @@ namespace Game.Tests
             {
                 id = 7,
                 name = "테스트",
-                iconKey = "weapon_test",
+                assetKey = "weapon_test",
                 castType = CastType.Projectile,
                 baseStats = new SkillBaseStats { cast = { cooldown = cooldown, baseDamage = 10f, range = 10f, projectileCount = 1 }, projectile = { speed = 10f } },
                 maxLevel = 5,
@@ -50,14 +50,14 @@ namespace Game.Tests
             };
         }
 
-        [Test(Description = "무기는 Id, Level, IconKey를 HUD에 그대로 내준다")]
-        public void Status_ExposesIdLevelAndIconKey()
+        [Test(Description = "무기는 Id, Level, AssetKey를 HUD에 그대로 내준다")]
+        public void Status_ExposesIdLevelAndAssetKey()
         {
             ISkillStatus status = new TestSkill(Data());
 
             Assert.AreEqual(7, status.Id);
             Assert.AreEqual(1, status.Level);
-            Assert.AreEqual("weapon_test", status.IconKey);
+            Assert.AreEqual("weapon_test", status.AssetKey);
         }
 
         [Test(Description = "강화하면 Level이 HUD에 올라간 값으로 보인다")]

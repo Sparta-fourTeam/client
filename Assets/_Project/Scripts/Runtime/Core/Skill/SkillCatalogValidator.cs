@@ -14,6 +14,7 @@ namespace Game.Core
             }
 
             var ids = new HashSet<int>();
+            var assetKeys = new HashSet<string>();
             var cards = new HashSet<string>();
             foreach (var weapon in weapons)
             {
@@ -21,6 +22,10 @@ namespace Game.Core
                     || weapon.maxLevel < 1 || weapon.upgrades == null)
                 {
                     throw new InvalidOperationException("무기 정의 또는 ID가 잘못되었습니다.");
+                }
+                if (string.IsNullOrEmpty(weapon.assetKey) || !assetKeys.Add(weapon.assetKey))
+                {
+                    throw new InvalidOperationException($"스킬 '{weapon.name}'의 assetKey가 비어 있거나 다른 스킬과 겹칩니다. 프리팹과 아이콘을 찾는 키라 스킬마다 유일해야 합니다.");
                 }
                 if (!SkillFactory.IsRegistered(weapon.castType))
                 {

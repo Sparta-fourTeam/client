@@ -6,17 +6,9 @@ using VContainer;
 
 namespace Game.Core
 {
-    [System.Serializable]
-    public class SkillPrefabEntry
-    {
-        public int id;
-        public GameObject prefab;
-    }
-
-
     public class SkillController : MonoBehaviour, IUpgradeState, IUpgradeChoiceSource
     {
-        [SerializeField] private List<SkillPrefabEntry> prefabEntries;
+        [SerializeField] private SkillAssetTable assets;
         private Dictionary<int, SkillData> dataTable;
         private ISkillDataProvider dataProvider;
         private IWeaponProgression progression;
@@ -54,13 +46,13 @@ namespace Game.Core
         // 자식 스킬은 보유 목록에 넣지 않고(틱하지 않는다) 효과가 요청할 때만 시전한다.
         private SkillCaster CreateChild(int skillId)
         {
-            var entry = prefabEntries.Find(e => e.id == skillId);
-            if (!dataTable.TryGetValue(skillId, out var data) || entry == null || entry.prefab == null)
+            GameObject prefab = null;
+            if (!dataTable.TryGetValue(skillId, out var data) || (prefab = assets.GetPrefab(data.assetKey)) == null)
             {
-                Debug.LogWarning($"[WeaponController] 자식 스킬 skillId={skillId}의 데이터 또는 프리팹 엔트리가 없어 시전하지 못합니다.");
+                Debug.LogWarning($"[SkillController] 자식 스킬 skillId={skillId}의 데이터 또는 프리팹이 없어 시전하지 못합니다 (SkillAssetTable의 assetKey 확인).");
                 return null;
             }
-            var child = SkillFactory.Create(data, entry.prefab, transform, targetProvider, wall);
+            var child = SkillFactory.Create(data, prefab, transform, targetProvider, wall);
             child.UseChildCaster(childCaster);
             return child;
         }
@@ -83,14 +75,14 @@ namespace Game.Core
                 }
             }
 
-            var entry = prefabEntries.Find(e => e.id == weaponId);
-            if (entry == null || entry.prefab == null)
+            var prefab = assets.GetPrefab(data.assetKey);
+            if (prefab == null)
             {
-                Debug.LogWarning($"[WeaponController] weaponId={weaponId}에 해당하는 프리팹 엔트리가 없습니다.");
+                Debug.LogWarning($"[SkillController] weaponId={weaponId}(assetKey={data.assetKey})에 해당하는 프리팹이 SkillAssetTable에 없습니다.");
                 return false;
             }
 
-            var weapon = SkillFactory.Create(data, entry.prefab, transform, targetProvider, wall);
+            var weapon = SkillFactory.Create(data, prefab, transform, targetProvider, wall);
             weapon.UseChildCaster(childCaster);
             skills.Add(weapon);
             PublishSkills();
@@ -104,7 +96,8 @@ namespace Game.Core
         public bool IsReady => dataTable != null;
 
         /// <summary>이 스킬을 얻을 때 쓸 프리팹이 연결돼 있는지</summary>
-        public bool HasPrefab(int weaponId) => prefabEntries != null && prefabEntries.Exists(e => e.id == weaponId && e.prefab != null);
+        public bool HasPrefab(int weaponId) =>
+            assets != null && dataTable != null && dataTable.TryGetValue(weaponId, out var data) && assets.HasPrefab(data.assetKey);
 
         /// <summary>보유 스킬을 모두 정리하고 목록을 비운다 (샌드박스 같은 도구가 처음부터 다시 쌓을 때 쓴다)</summary>
         public void ClearWeapons()
@@ -128,7 +121,7 @@ namespace Game.Core
         }
 
         private SkillUpgradeChoices Choices => new SkillUpgradeChoices(skills, dataTable.Values, this,
-            id => prefabEntries.Exists(e => e.id == id && e.prefab != null));
+            HasPrefab);
 
         public List<UpgradeChoice> GetRandomUpgradeChoices(int count) =>
             Choices.Select(count, upperBound => Random.Range(0, upperBound));

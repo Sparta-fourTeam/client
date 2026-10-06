@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Game.Core;
-using Game.View;
 using Newtonsoft.Json;
 using NUnit.Framework;
 using UnityEditor;
@@ -18,9 +17,6 @@ namespace Game.Tests
     /// </summary>
     public sealed class SkillCatalogSafetyNetTests
     {
-        private const string PlayerPrefab = "Assets/_Project/Prefabs/Stage/Player_Animated.prefab";
-        private const string SideIconTable = "Assets/_Project/Data/SkillIconTable_Side.asset";
-        private const string CardIconTable = "Assets/_Project/Data/SkillIconTable_Card.asset";
         private const string GoldenRelativePath = "_Project/Scripts/Tests/EditMode/Golden/WeaponCardStats.golden.txt";
 
         private static IEnumerable<string> AllEffectKinds() => EffectRegistry.Keys.Where(EffectRegistry.IsStatKind).ToList();
@@ -224,98 +220,75 @@ namespace Game.Tests
             return "(차이를 찾지 못했습니다)";
         }
 
-        // ── 프리팹과 아이콘 연결 ──────────────────────────────────────
+        // ── 프리팹과 아이콘 연결 (SkillAssetTable) ───────────────────
+
+        private static SkillAssetTable Table()
+        {
+            var table = TestSkillAssets.Real();
+            Assert.IsNotNull(table, TestSkillAssets.TablePath);
+            return table;
+        }
 
         [Test]
-        public void EveryCatalogWeapon_HasPrefabWithMatchingComponent()
+        public void EveryCatalogSkill_HasPrefabWithMatchingComponent()
         {
-            var player = AssetDatabase.LoadAssetAtPath<GameObject>(PlayerPrefab);
-            Assert.IsNotNull(player, PlayerPrefab);
-            var controller = player.GetComponentInChildren<SkillController>(true);
-            Assert.IsNotNull(controller, "플레이어 프리팹에 WeaponController가 없습니다.");
-
-            var entries = new SerializedObject(controller).FindProperty("prefabEntries");
-            var prefabs = new Dictionary<int, GameObject>();
-            for (int i = 0; i < entries.arraySize; i++)
-            {
-                var entry = entries.GetArrayElementAtIndex(i);
-                prefabs[entry.FindPropertyRelative("id").intValue] = entry.FindPropertyRelative("prefab").objectReferenceValue as GameObject;
-            }
-
+            var table = Table();
             var problems = new List<string>();
-            foreach (var weapon in new DefaultSkillDataProvider(new GameDataStore()).LoadAll())
+            foreach (var skill in new DefaultSkillDataProvider(new GameDataStore()).LoadAll())
             {
-                if (!prefabs.TryGetValue(weapon.id, out var prefab) || prefab == null)
+                var prefab = table.GetPrefab(skill.assetKey);
+                if (prefab == null)
                 {
-                    problems.Add($"{weapon.id}({weapon.name}): prefabEntries에 프리팹이 없습니다.");
+                    problems.Add($"{skill.id}({skill.name}): SkillAssetTable에 assetKey '{skill.assetKey}'의 프리팹이 없습니다.");
                     continue;
                 }
-                bool ok = weapon.castType switch
+                bool ok = skill.castType switch
                 {
                     CastType.Hitscan => prefab.GetComponent<HitscanEffect>() != null,
                     CastType.Area or CastType.Beam => prefab.GetComponent<AreaZone>() != null,
                     CastType.Chain => prefab.GetComponent<ChainBolt>() != null,
                     _ => prefab.GetComponent<Projectile>() != null
                 };
-                if (!ok) { problems.Add($"{weapon.id}({weapon.name}): {prefab.name}에 {weapon.castType}용 컴포넌트가 없습니다."); }
+                if (!ok) { problems.Add($"{skill.id}({skill.name}): {prefab.name}에 {skill.castType}용 컴포넌트가 없습니다."); }
             }
             Assert.IsEmpty(problems, string.Join("\n", problems));
         }
 
-        [Test]
-        public void EveryCatalogWeapon_HasHudIcon()
+        [Test(Description = "HUD와 카드에 나오는 스킬(자식 전용 제외)은 HUD 아이콘과 카드 아이콘 두 장이 모두 있어야 한다")]
+        public void EveryShownSkill_HasHudAndCardIcons()
         {
-            var keys = IconKeys(SideIconTable);
-            var missing = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Where(w => !keys.Contains(w.iconKey))
-                .Select(w => $"{w.id}({w.name}): {w.iconKey}").ToList();
-            Assert.IsEmpty(missing, "SkillIconTable_Side에 아이콘이 없습니다.\n" + string.Join("\n", missing));
-        }
-
-        [Test]
-        public void EveryCatalogWeapon_HasCardIcons()
-        {
-            var keys = IconKeys(CardIconTable);
+            var table = Table();
             var missing = new List<string>();
-            foreach (var weapon in new DefaultSkillDataProvider(new GameDataStore()).LoadAll())
+            foreach (var skill in new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Where(w => !w.childOnly))
             {
-                foreach (var suffix in new[] { "_new", "_upgrade" })
-                {
-                    if (!keys.Contains(weapon.iconKey + suffix)) { missing.Add($"{weapon.id}({weapon.name}): {weapon.iconKey}{suffix}"); }
-                }
+                table.TryGet(skill.assetKey, out var entry);
+                if (entry == null || entry.hudIcon == null) { missing.Add($"{skill.id}({skill.name}): {skill.assetKey} hudIcon"); }
+                if (entry == null || entry.newCardIcon == null) { missing.Add($"{skill.id}({skill.name}): {skill.assetKey} newCardIcon"); }
+                if (entry == null || entry.upgradeCardIcon == null) { missing.Add($"{skill.id}({skill.name}): {skill.assetKey} upgradeCardIcon"); }
             }
-            Assert.IsEmpty(missing, "SkillIconTable_Card에 아이콘이 없습니다.\n" + string.Join("\n", missing));
+            Assert.IsEmpty(missing, "SkillAssetTable에 아이콘이 없습니다.\n" + string.Join("\n", missing));
         }
 
-        [TestCase(SideIconTable)]
-        [TestCase(CardIconTable)]
-        public void IconTable_HasFallbackAndNoEmptySprites(string path)
+        [Test(Description = "표에는 기본 아이콘이 있고, 키가 비어 있거나 겹치거나 스킬 없이 남은 항목이 없어야 한다")]
+        public void AssetTable_HasFallbacksAndConsistentKeys()
         {
-            var table = AssetDatabase.LoadAssetAtPath<SkillIconTable>(path);
-            Assert.IsNotNull(table, path);
+            var table = Table();
             var so = new SerializedObject(table);
-            Assert.IsNotNull(so.FindProperty("_fallback").objectReferenceValue, "기본 아이콘(_fallback)이 비어 있습니다.");
+            Assert.IsNotNull(so.FindProperty("hudFallback").objectReferenceValue, "hudFallback이 비어 있습니다.");
+            Assert.IsNotNull(so.FindProperty("cardFallback").objectReferenceValue, "cardFallback이 비어 있습니다.");
 
-            var entries = so.FindProperty("_entries");
-            var empty = new List<string>();
-            for (int i = 0; i < entries.arraySize; i++)
-            {
-                var entry = entries.GetArrayElementAtIndex(i);
-                if (entry.FindPropertyRelative("Sprite").objectReferenceValue == null) { empty.Add(entry.FindPropertyRelative("Key").stringValue); }
-            }
-            Assert.IsEmpty(empty, "스프라이트가 비어 있는 키: " + string.Join(", ", empty));
-        }
+            var known = new HashSet<string>(new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Select(w => w.assetKey));
+            foreach (var card in new GameDataStore().GeneralCards) { known.Add(card.IconKey); }
 
-        private static HashSet<string> IconKeys(string path)
-        {
-            var table = AssetDatabase.LoadAssetAtPath<SkillIconTable>(path);
-            Assert.IsNotNull(table, path);
-            var entries = new SerializedObject(table).FindProperty("_entries");
-            var keys = new HashSet<string>();
-            for (int i = 0; i < entries.arraySize; i++)
+            var seen = new HashSet<string>();
+            var problems = new List<string>();
+            foreach (var entry in table.Entries)
             {
-                keys.Add(entries.GetArrayElementAtIndex(i).FindPropertyRelative("Key").stringValue);
+                if (string.IsNullOrEmpty(entry.key)) { problems.Add("키가 빈 항목이 있습니다."); continue; }
+                if (!seen.Add(entry.key)) { problems.Add($"키가 겹칩니다: {entry.key}"); }
+                if (!known.Contains(entry.key)) { problems.Add($"어느 스킬(assetKey)이나 일반 카드(IconKey)도 쓰지 않는 항목: {entry.key}"); }
             }
-            return keys;
+            Assert.IsEmpty(problems, string.Join("\n", problems));
         }
     }
 }

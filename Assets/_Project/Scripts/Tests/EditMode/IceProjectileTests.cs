@@ -323,15 +323,11 @@ namespace Game.Tests
         }
 
         [Test]
-        public void IcePrefab_IsConnectedToPlayerSlotAndHasProjectileComponent()
+        public void IcePrefab_IsConnectedToAssetTableAndHasProjectileComponent()
         {
             var projectile = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Skills/IceSpear.prefab");
             Assert.IsNotNull(projectile.GetComponent<Projectile>());
-            var player = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Stage/Player_Animated.prefab");
-            var controller = player.GetComponent<SkillController>();
-            var entries = (List<SkillPrefabEntry>)typeof(SkillController)
-                .GetField("prefabEntries", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(controller);
-            Assert.AreEqual(projectile, entries.Find(e => e.id == 4).prefab);
+            Assert.AreEqual(projectile, TestSkillAssets.Real().GetPrefab(TestSkillAssets.Data(4).assetKey));
         }
     }
 }

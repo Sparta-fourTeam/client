@@ -328,7 +328,7 @@ namespace Game.Tests
             var child = Child();
             parent.castType = CastType.Projectile;
             child.castType = CastType.Projectile;
-            parent.iconKey = "p"; child.iconKey = "c";
+            parent.assetKey = "p"; child.assetKey = "c";
             configure(parent, child);
             return new List<SkillData> { parent, child };
         }
@@ -368,7 +368,7 @@ namespace Game.Tests
         {
             var catalog = Catalog((p, c) =>
             {
-                var grand = Child(); grand.id = GrandchildId; grand.name = "손자"; grand.castType = CastType.Projectile; grand.iconKey = "g";
+                var grand = Child(); grand.id = GrandchildId; grand.name = "손자"; grand.castType = CastType.Projectile; grand.assetKey = "g";
                 p.upgrades.Add(Card("link", Link()));
                 p.upgrades.Add(Card("attach", new EffectDef { kind = "onEvent", trigger = AttackEvent.Hit, skillId = GrandchildId, target = ChildId }));
                 p.upgrades.Add(Card("boost", new EffectDef { kind = "damage", value = 10, target = GrandchildId }));

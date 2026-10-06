@@ -35,15 +35,8 @@ namespace Game.Tests
         {
             root = new GameObject("SandboxSessionTest");
             controller = root.AddComponent<SkillController>();
-            // 플레이어 프리팹의 실제 prefabEntries를 그대로 쓴다.
-            var entries = new List<SkillPrefabEntry>();
-            var source = new SerializedObject(AssetDatabase.LoadAssetAtPath<GameObject>(PlayerPrefab).GetComponentInChildren<SkillController>(true)).FindProperty("prefabEntries");
-            for (int i = 0; i < source.arraySize; i++)
-            {
-                var entry = source.GetArrayElementAtIndex(i);
-                entries.Add(new SkillPrefabEntry { id = entry.FindPropertyRelative("id").intValue, prefab = (GameObject)entry.FindPropertyRelative("prefab").objectReferenceValue });
-            }
-            typeof(SkillController).GetField("prefabEntries", Private).SetValue(controller, entries);
+            // 실제 SkillAssetTable을 그대로 쓴다.
+            TestSkillAssets.AttachReal(controller);
             progression = new SandboxProgression();
             controller.Construct(new Targets(), new Publisher(), new DefaultSkillDataProvider(new GameDataStore()), progression, startingSkills: new NoStartingSkills());
             typeof(SkillController).GetMethod("Start", Private).Invoke(controller, null);

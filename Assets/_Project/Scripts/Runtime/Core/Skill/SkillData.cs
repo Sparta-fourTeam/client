@@ -15,8 +15,8 @@ namespace Game.Core
         public string name;
         public string desc;
 
-        /// <summary>HUD가 아이콘을 찾는 키 (SkillIconTable). 컨벤션상 아이콘은 테이블의 IconKey로 찾는다</summary>
-        public string iconKey;
+        /// <summary>SkillAssetTable에서 이 스킬의 프리팹과 아이콘을 찾는 키. 스킬마다 유일해야 한다</summary>
+        public string assetKey;
         public CastType castType;
         public ProjectilePath projectilePath;
         public SkillBaseStats baseStats;

@@ -2,6 +2,7 @@ using Game.Core;
 using Game.Core.Messages;
 using MessagePipe;
 using UnityEngine;
+using UnityEngine.Serialization;
 using VContainer;
 
 namespace Game.View
@@ -11,7 +12,8 @@ namespace Game.View
     {
         [SerializeField] private GameObject _panel;
         [SerializeField] private CardSlotView[] _slots;
-        [SerializeField] private SkillIconTable _iconTable;
+        [FormerlySerializedAs("_iconTable")]
+        [SerializeField] private SkillAssetTable _assets;
         [SerializeField] private Sprite _newWeaponBg, _upgradeBg;
 
         private StageManager _stageManager;
@@ -53,17 +55,26 @@ namespace Game.View
                 if (hasChoice)
                 {
                     var choice = choices[i];
-                    string iconKey = choice.IsGeneral
-                        ? choice.GeneralCard.IconKey
-                        : (choice.IsNewWeapon ? choice.newSkillData.iconKey : choice.skill.Data.iconKey)
-                            + (choice.IsNewWeapon ? "_new" : "_upgrade");
-                    Sprite icon = _iconTable != null ? _iconTable.Find(iconKey) : null;
+                    Sprite icon = _assets != null ? FindIcon(choice) : null;
                     Sprite background = choice.IsNewWeapon ? _newWeaponBg : _upgradeBg;
                     _slots[i].Bind(i, choice, icon, background, OnPick);
                 }
             }
 
             _panel.SetActive(true);
+        }
+
+        // 스킬 카드는 스킬의 assetKey로, 일반 카드는 IconKey로 찾는다 (일반 카드는 강화 아이콘 칸을 쓴다)
+        private Sprite FindIcon(UpgradeChoice choice)
+        {
+            if (choice.IsGeneral)
+            {
+                return _assets.GetCardIcon(choice.GeneralCard.IconKey, SkillCardIcon.Upgrade);
+            }
+
+            return choice.IsNewWeapon
+                ? _assets.GetCardIcon(choice.newSkillData.assetKey, SkillCardIcon.New)
+                : _assets.GetCardIcon(choice.skill.Data.assetKey, SkillCardIcon.Upgrade);
         }
 
         private void OnPick(int index)

@@ -46,7 +46,8 @@ flowchart TD
 | 자식 스킬 | `ChildSkillEffects`, `ChildSkillCaster` | 다른 스킬의 이벤트 위치에서 스킬 시전 |
 | 카드 | `SkillUpgradeChoices`, `UpgradeEligibility`, `SkillUpgradeTransaction`, `SkillUpgradeResolver` | 후보 만들기, 조건 판정, 적용, 영구 레벨 변형 |
 | 카드 뽑기 | `Core/Card/CardDeck`, `GeneralCardRules` | 스킬 카드와 일반 카드를 합쳐 3장 뽑기, 일반 카드 조건·효과 |
-| 총괄 | `SkillController` | 보유 스킬, 프리팹 연결(`prefabEntries`), 후보와 적용 |
+| 총괄 | `SkillController` | 보유 스킬, 후보와 적용. 프리팹은 `SkillAssetTable`에서 `assetKey`로 찾음 |
+| 에셋 표 | `SkillAssetTable` (`Assets/_Project/Data/SkillAssetTable.asset`) | 스킬별 프리팹, HUD 아이콘, 카드 아이콘을 `assetKey` 하나로 연결 |
 | 검증 | `SkillCatalogValidator` | 시작할 때 카탈로그 오류를 카드 ID와 함께 거부 |
 | 영구 성장 | `IWeaponProgression`, `ProfileWeaponProgression` | `progressionId`로 로비 영구 레벨 조회 |
 | 시작 스킬 | `IStartingSkills`, `DefaultStartingSkills` | 전투 시작 때 가진 스킬(현재 벼락, id 3) |
@@ -59,7 +60,7 @@ flowchart TD
 |---|---|
 | `id` | 스킬 ID. 새 스킬은 가장 큰 번호의 다음 번호를 쓴다 |
 | `name`, `desc` | 이름과 설명 |
-| `iconKey` | HUD 아이콘 키. 관례는 `weapon_이름`. 카드 아이콘 키도 여기서 만든다(4절) |
+| `assetKey` | `SkillAssetTable`에서 프리팹과 아이콘을 찾는 키. 관례는 `weapon_이름`. **스킬마다 유일해야** 하고 비어 있으면 검증이 거부한다(4절) |
 | `castType` | 공격 종류. **숫자**: 0 Projectile, 1 Hitscan, 2 Area, 3 Beam, 4 Chain |
 | `projectilePath` | 투사체 경로. **숫자**: 0 Aimed(가장 가까운 적), 1 RollingLane(대상 줄을 따라 굴러감), 2 Radial(발 수만큼 사방으로) |
 | `baseStats` | 기본 수치. 필요한 묶음만 적는다(아래) |
@@ -137,7 +138,7 @@ flowchart TD
 | 3 Beam | `BeamStrategy` | `AreaZone` | 지속하며 닿는 모든 적을 공격하는 선 (태양 광선) |
 | 4 Chain | `ChainStrategy` | `ChainBolt` | 여러 적을 연쇄로 튕기며 공격 (연쇄 번개) |
 
-**아이콘 키 규칙**: HUD 아이콘은 `iconKey`로 `SkillIconTable_Side`(`Assets/_Project/Data/`)에서, 카드 화면 아이콘은 `iconKey + "_new"`(새 스킬 카드)와 `iconKey + "_upgrade"`(강화 카드)로 `SkillIconTable_Card`에서 찾는다. 카드마다가 아니라 스킬마다 아이콘 두 장이다.
+**에셋 표 규칙**: 스킬의 프리팹, HUD 아이콘, 카드 아이콘은 `SkillAssetTable`의 항목 하나(`key` = 스킬의 `assetKey`)에 모은다. 항목은 `prefab`, `hudIcon`, `newCardIcon`(새 스킬 카드), `upgradeCardIcon`(강화 카드)을 가진다. 카드마다가 아니라 스킬마다 아이콘 두 장이다. 자식 전용 스킬은 `prefab`만 있으면 된다. 표에는 기본 아이콘(`hudFallback`, `cardFallback`)이 있어 아이콘이 비어 있으면 기본 아이콘이 나온다. 스킬이 아닌 일반 카드는 `IconKey`를 같은 표의 `key`로 쓰고 `upgradeCardIcon`을 쓴다.
 
 ## 5. 카드 뽑기와 적용
 
@@ -188,10 +189,10 @@ flowchart TD
 
 ### A. 기존 공격 종류로 새 스킬 만들기
 
-1. **정의**: `Skills.json`에 스킬을 추가한다. `id`, `name`, `iconKey`, `castType`, `baseStats`(필요한 묶음), `maxLevel`, `upgrades`(처음에는 비어 있어도 된다). 다른 스킬의 효과로만 쓰면 `childOnly: true`.
+1. **정의**: `Skills.json`에 스킬을 추가한다. `id`, `name`, `assetKey`(다른 스킬과 겹치지 않게), `castType`, `baseStats`(필요한 묶음), `maxLevel`, `upgrades`(처음에는 비어 있어도 된다). 다른 스킬의 효과로만 쓰면 `childOnly: true`.
 2. **프리팹**: `Prefabs/Skills/`에 공격 실체 프리팹을 만든다. 4절 표의 컴포넌트가 붙어 있어야 한다. 같은 컴포넌트를 쓰는 기존 프리팹을 복제해 시작하면 쉽다.
-3. **연결**: `Prefabs/Stage/Player_Animated`의 `SkillController`에서 `prefabEntries`에 `id`와 프리팹을 추가한다. 연결이 없으면 새 스킬 카드로 나오지 않는다.
-4. **아이콘**: `SkillIconTable_Side`에 `iconKey`, `SkillIconTable_Card`에 `iconKey_new`, `iconKey_upgrade`를 추가한다. 아트가 아직 없으면 기존 아이콘을 임시로 연결한다.
+3. **에셋 표 항목**: `Assets/_Project/Data/SkillAssetTable`을 열어 항목을 하나 추가한다. `key`는 `Skills.json`의 `assetKey`와 같게 하고 `prefab`에 2번 프리팹을 넣는다. 프리팹이 없으면 새 스킬 카드로 나오지 않는다. 플레이어 프리팹은 건드리지 않는다.
+4. **아이콘**: 같은 항목에 `hudIcon`, `newCardIcon`, `upgradeCardIcon`을 넣는다. 아트가 아직 없으면 기존 아이콘을 임시로 연결한다. 자식 전용 스킬은 아이콘이 필요 없다.
 5. **눈으로 확인**: **Tools → Project Nova → Skill Sandbox**를 열면 스킬이 목록에 자동으로 나온다. 카드를 고르고 적을 놓아 동작과 수치를 본다(8절).
 6. **영구 성장**을 쓰면 `progressionId`를 `Upgrades` 테이블의 ID와 맞춘다.
 7. **검증**: 테스트를 돌린다(9절). 프리팹 컴포넌트와 아이콘 누락은 테스트가 알려 준다.
@@ -229,7 +230,7 @@ flowchart TD
 
 ### G. 일반 카드 만들기
 
-기존 조건과 효과를 쓰면 `GeneralCards.json`에 행만 추가한다. 새 조건이나 효과 종류가 필요하면 `GeneralCardRules`에 한 줄 더한다(5절). 아이콘은 `IconKey`로 `SkillIconTable_Card`에 연결하며, 없으면 아이콘 칸이 숨겨진다.
+기존 조건과 효과를 쓰면 `GeneralCards.json`에 행만 추가한다. 새 조건이나 효과 종류가 필요하면 `GeneralCardRules`에 한 줄 더한다(5절). 아이콘은 `IconKey`와 같은 `key`의 `SkillAssetTable` 항목(`upgradeCardIcon`)에 연결하며, 없으면 기본 카드 아이콘이 나온다.
 
 ## 8. 스킬 샌드박스
 
@@ -271,5 +272,5 @@ python3 docs/ninjutsu/validate_requirements.py
 - 변형(`form`)은 스킬 전용 이름이 든 enum이라 새 변형마다 코드를 고쳐야 한다. 문자열 키와 프리팹의 `키 → 스프라이트` 표로 바꾸는 것이 개선 후보다.
 - 전자기장(벼락의 부가 효과)은 아직 코드로 남아 있다. 영역 스킬로 옮기려면 영역의 감속, 고정 피해 분리, 펄스 간격 맞춤이 먼저 필요하다.
 - 새 스킬의 아이콘과 프리팹 일부(서리 감옥, 번개 구름, 태양 광선, 연쇄 번개)는 임시 연결이다.
-- 카드 ID, `progressionId`, enum 숫자를 바꾸면 `Skills.json`, 테스트, `requirements.json`, `validate_requirements.py`, `LocalUpgradeApi`를 함께 고쳐야 한다. 프리팹의 `prefabEntries` id와 아이콘 표의 키도 에셋이므로 같이 고친다.
+- 카드 ID, `progressionId`, enum 숫자를 바꾸면 `Skills.json`, 테스트, `requirements.json`, `validate_requirements.py`, `LocalUpgradeApi`를 함께 고쳐야 한다. `assetKey`를 바꾸면 `SkillAssetTable`의 `key`도 같이 고친다(에셋이라 테스트가 불일치를 알려 준다).
 - 한 PR에 enum 재배열, JSON 변환, 테스트 수정이 겹치면 리뷰가 어렵다. 커밋을 나눈다.

@@ -35,18 +35,11 @@ namespace Game.Tests
             _created.Add(player);
             _controller = player.AddComponent<SkillController>();
 
-            var entries = new List<SkillPrefabEntry>();
-            for (int id = 1; id <= 4; id++)
-            {
-                var prefab = new GameObject($"WeaponPrefab{id}");
-                _created.Add(prefab);
-                entries.Add(new SkillPrefabEntry { id = id, prefab = prefab });
-            }
-
+            TestSkillAssets.Attach(_controller, new[] { 1, 2, 3, 4 }, _created);
             const BindingFlags Private = BindingFlags.NonPublic | BindingFlags.Instance;
-            typeof(SkillController).GetField("prefabEntries", Private).SetValue(_controller, entries);
 
-            _controller.Construct(new NullEnemyTargetProvider(), _publisher, new DefaultSkillDataProvider(new GameDataStore()));
+            _controller.Construct(new NullEnemyTargetProvider(), _publisher, new DefaultSkillDataProvider(new GameDataStore()),
+                startingSkills: new FixedStartingSkills(3)); // 기본 시작 스킬이 바뀌어도 이 테스트가 흔들리지 않게 고정한다
             typeof(SkillController).GetMethod("Start", Private).Invoke(_controller, null);
         }
 
@@ -71,7 +64,7 @@ namespace Game.Tests
             var skills = _publisher.Published[0].Skills;
             Assert.AreEqual(1, skills.Count);
             Assert.AreEqual(1, skills[0].Level);
-            Assert.IsNotEmpty(skills[0].IconKey);
+            Assert.IsNotEmpty(skills[0].AssetKey);
         }
 
         private sealed class FixedStartingSkills : IStartingSkills
@@ -87,15 +80,8 @@ namespace Game.Tests
             var player = new GameObject("PlayerWithStartingSkills");
             _created.Add(player);
             var controller = player.AddComponent<SkillController>();
-            var entries = new List<SkillPrefabEntry>();
-            for (int id = 1; id <= 4; id++)
-            {
-                var prefab = new GameObject($"StartingPrefab{id}");
-                _created.Add(prefab);
-                entries.Add(new SkillPrefabEntry { id = id, prefab = prefab });
-            }
+            TestSkillAssets.Attach(controller, new[] { 1, 2, 3, 4 }, _created);
             const BindingFlags Private = BindingFlags.NonPublic | BindingFlags.Instance;
-            typeof(SkillController).GetField("prefabEntries", Private).SetValue(controller, entries);
             var publisher = new FakeSkillPublisher();
             controller.Construct(new NullEnemyTargetProvider(), publisher, new DefaultSkillDataProvider(new GameDataStore()), startingSkills: new FixedStartingSkills(1, 2));
             typeof(SkillController).GetMethod("Start", Private).Invoke(controller, null);
@@ -129,7 +115,7 @@ namespace Game.Tests
             _created.Add(player);
             var controller = player.AddComponent<SkillController>();
             const BindingFlags Private = BindingFlags.NonPublic | BindingFlags.Instance;
-            typeof(SkillController).GetField("prefabEntries", Private).SetValue(controller, new List<SkillPrefabEntry>());
+            TestSkillAssets.Attach(controller, new int[0], _created);
             var progression = new MutableProgression { Level = 3 };
             controller.Construct(new NullEnemyTargetProvider(), new FakeSkillPublisher(), new DefaultSkillDataProvider(new GameDataStore()), progression,
                 startingSkills: new EmptySkills());
@@ -147,8 +133,8 @@ namespace Game.Tests
             public IReadOnlyList<int> GetSkillIds() => new int[0];
         }
 
-        [Test(Description = "HasPrefab은 prefabEntries의 연결 여부를 알려 준다")]
-        public void HasPrefab_ReflectsPrefabEntries()
+        [Test(Description = "HasPrefab은 SkillAssetTable의 프리팹 연결 여부를 알려 준다")]
+        public void HasPrefab_ReflectsAssetTable()
         {
             Assert.IsTrue(_controller.HasPrefab(1));
             Assert.IsFalse(_controller.HasPrefab(99));

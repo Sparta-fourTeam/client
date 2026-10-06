@@ -38,7 +38,7 @@ namespace Game.Core
 
         int ISkillStatus.Id => data.id;
 
-        string ISkillStatus.IconKey => data.iconKey;
+        string ISkillStatus.AssetKey => data.assetKey;
 
         /// <summary>0이면 발사 가능, 1이면 방금 발사. 강화로 쿨타임이 줄어든 직후에도 1을 넘지 않게 자른다</summary>
         public float CooldownRatio => Stats.Cast.Cooldown <= 0f ? 0f : Mathf.Clamp01(cooldownTimer / Stats.Cast.Cooldown);

@@ -81,6 +81,7 @@ namespace Game.Tests
             return new TestSkill(new SkillData
             {
                 id = id,
+                assetKey = "test_" + id,
                 maxLevel = 15,
                 baseStats = new SkillBaseStats { cast = { baseDamage = 10, cooldown = 2, projectileCount = 1 } },
                 upgrades = new System.Collections.Generic.List<SkillUpgradeOption> { option }
@@ -297,7 +298,7 @@ namespace Game.Tests
             var b = new SkillUpgradeOption { id = "b", maxPickCount = 1, effects = new System.Collections.Generic.List<EffectDef>() };
             var data = new[] { new SkillData
             {
-                id = 1, maxLevel = 15, baseStats = new SkillBaseStats(),
+                id = 1, assetKey = "a", maxLevel = 15, baseStats = new SkillBaseStats(),
                 upgrades = new System.Collections.Generic.List<SkillUpgradeOption> { a, b }
             } };
             a.requiredCardIds = new[] { "missing" };
@@ -321,8 +322,20 @@ namespace Game.Tests
         [Test]
         public void Catalog_RejectsDuplicateCardIdsAcrossWeapons()
         {
-            const string json = "[{\"id\":1,\"maxLevel\":1,\"baseStats\":{},\"upgrades\":[{\"id\":\"same\",\"effects\":[]}]},{\"id\":2,\"maxLevel\":1,\"baseStats\":{},\"upgrades\":[{\"id\":\"same\",\"effects\":[]}]}]";
+            const string json = "[{\"id\":1,\"assetKey\":\"a\",\"maxLevel\":1,\"baseStats\":{},\"upgrades\":[{\"id\":\"same\",\"effects\":[]}]},{\"id\":2,\"assetKey\":\"b\",\"maxLevel\":1,\"baseStats\":{},\"upgrades\":[{\"id\":\"same\",\"effects\":[]}]}]";
             Assert.Throws<InvalidOperationException>(() => GameDataStore.ParseSkills(json));
+        }
+
+        [Test(Description = "assetKey는 프리팹과 아이콘을 찾는 키라 비어 있거나 다른 스킬과 겹치면 거부한다")]
+        public void Catalog_RejectsMissingOrDuplicateAssetKey()
+        {
+            const string missing = "[{\"id\":1,\"maxLevel\":1,\"baseStats\":{},\"upgrades\":[]}]";
+            const string duplicate = "[{\"id\":1,\"assetKey\":\"same\",\"maxLevel\":1,\"baseStats\":{},\"upgrades\":[]},{\"id\":2,\"assetKey\":\"same\",\"maxLevel\":1,\"baseStats\":{},\"upgrades\":[]}]";
+            const string valid = "[{\"id\":1,\"assetKey\":\"a\",\"maxLevel\":1,\"baseStats\":{},\"upgrades\":[]},{\"id\":2,\"assetKey\":\"b\",\"maxLevel\":1,\"baseStats\":{},\"upgrades\":[]}]";
+
+            Assert.AreEqual(2, GameDataStore.ParseSkills(valid).Count);
+            StringAssert.Contains("assetKey", Assert.Throws<InvalidOperationException>(() => GameDataStore.ParseSkills(missing)).Message);
+            StringAssert.Contains("assetKey", Assert.Throws<InvalidOperationException>(() => GameDataStore.ParseSkills(duplicate)).Message);
         }
     }
 }
