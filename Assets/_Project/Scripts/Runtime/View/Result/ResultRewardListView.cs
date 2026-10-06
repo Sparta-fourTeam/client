@@ -34,6 +34,7 @@ namespace Game.View
 
         public void Show(IReadOnlyList<ResultRewardItem> items)
         {
+            EnsureSlots(items.Count);
             for (int i = 0; i < _slots.Length; i++)
             {
                 bool has = i < items.Count;
@@ -53,6 +54,32 @@ namespace Game.View
             }
 
             gameObject.SetActive(items.Count > 0);
+        }
+
+        /// <summary>보상이 슬롯보다 많으면 마지막 슬롯을 복제해 늘린다. 항목이 조용히 잘리지 않게 한다</summary>
+        private void EnsureSlots(int count)
+        {
+            if (count <= _slots.Length || _slots.Length == 0)
+            {
+                return;
+            }
+
+            var template = _slots[_slots.Length - 1].Root;
+            var grown = new Slot[count];
+            Array.Copy(_slots, grown, _slots.Length);
+            for (int i = _slots.Length; i < count; i++)
+            {
+                var root = Instantiate(template, template.transform.parent);
+                root.name = $"Slot{i + 1}";
+                grown[i] = new Slot
+                {
+                    Root = root,
+                    Icon = root.transform.Find("Icon").GetComponent<Image>(),
+                    Count = root.transform.Find("Count").GetComponent<TMP_Text>()
+                };
+            }
+
+            _slots = grown;
         }
     }
 }
