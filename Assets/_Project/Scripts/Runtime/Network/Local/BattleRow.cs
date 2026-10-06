@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using Game.Core;
 
 namespace Game.Network
 {
@@ -14,5 +16,6 @@ namespace Game.Network
         public string status;
 
         public int rewardGold;
+        public List<ItemAmount> rewardItems = new();
     }
 }

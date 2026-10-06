@@ -1,6 +1,6 @@
 # 아이템 계약
 
-#148의 공통 계약이다. 골드·에너지는 재화, 스킬별·장비별 마법북은 아이템으로 관리한다. 콘텐츠 정의는 `ItemDefinition`, 마법북의 강화 비용·드랍·보상·소유량은 `ItemAmount`를 사용한다. Local 지급 API는 구현했으며 드랍 확률과 획득 방식은 후속 기능에서 정한다.
+#148의 공통 계약이다. 골드·에너지는 재화, 스킬별·장비별 마법북은 아이템으로 관리한다. 콘텐츠 정의는 `ItemDefinition`, 마법북의 강화 비용·드랍·보상·소유량은 `ItemAmount`를 사용한다. Local 보상 API의 아이템 지급을 구현했으며 몬스터 드랍 확률과 획득 방식은 후속 기능에서 정한다.
 
 ## 식별과 수량
 
@@ -52,27 +52,32 @@
 
 새 재화는 필요해질 때 저장과 스냅샷에 필드를 추가한다. `PlayerProfile.Gold`, `EnergyStored`, `EnergyUpdatedAt` 조회와 기존 응답 필드 위치는 유지한다.
 
-조회는 `PlayerProfile.ItemQuantity(itemId)`를 사용한다. 스냅샷 적용은 기존처럼 전체 교체다. 전투 중 획득 내역은 영구 소유량과 별도이며, #150에서 관리한다. 정의 존재 여부, 중복 지급 방지 및 저장 반영은 아래 Local 지급 API가 담당하고, #149에서 드랍 흐름과 연결한다.
+조회는 `PlayerProfile.ItemQuantity(itemId)`를 사용한다. 스냅샷 적용은 기존처럼 전체 교체다. 전투 중 획득 내역은 영구 소유량과 별도이며, #150에서 관리한다. 소유량 반영은 기존 보상 API 내부에서 처리하고, #149에서 몬스터 드랍 흐름과 연결한다.
 
-## Local 지급 API
+## 보상 API의 아이템 지급
 
-`IItemApi.Grant(items, idempotencyKey)`를 `LocalItemApi`로 구현하고 Root 스코프에 등록했다. 반환값은 지급 반영 후 최신 `PlayerSnapshot`이다. 호출자는 응답을 `PlayerProfile.Apply`에 전달해 캐시를 갱신한다.
+아이템 지급을 위한 별도 공개 API는 두지 않는다. `IPlayerApi.GetMe()`는 저장된 소유량을 조회하고, 실제 지급은 기존 보상 처리 안에서 수행한다.
 
-```csharp
-var snapshot = await itemApi.Grant(new[]
+- `IStageApi.ClaimRatingReward(stageId)`: 아직 받지 않은 별 등급의 골드·마법북을 함께 지급하고 최신 `PlayerSnapshot`을 반환한다. `claimedRating`으로 중복 수령을 막으며 이미 받은 보상을 다시 요청하면 기존처럼 `NO_REWARD`다.
+- `IBattleApi.SubmitResult(request)`: 클리어 골드와 마법북을 확정·저장하고 `SubmitResultResponse.rewardGold`, `rewardItems`로 반환한다. 전투 기록에 처음 확정된 아이템 목록도 보관하므로 재실행·재제출·테이블 변경 후에도 같은 `battleId`에는 같은 결과를 반환하며 재지급하지 않는다.
+- 골드는 기존 지갑, 마법북은 `LocalSave.items`에 저장한다. 전체 검증·계산이 성공한 뒤 보상과 수령 상태를 같은 세이브에 저장한다.
+- `LocalItemRewards`는 두 Local API가 공유하는 내부 검증·합산 함수다. 별도 DI 등록이나 아이템 지급 원장은 없다.
+- 알려진 Items ID와 양수 수량만 받으며 같은 ID는 합산한다. 잘못된 보상은 `INVALID_ITEM_REWARD`, 없는 ID는 `UNKNOWN_DATA_ID`, 수량 초과는 `ITEM_QUANTITY_OVERFLOW`로 거절한다.
+
+Stage 테이블의 `ClearItems`는 클리어 마법북, `RatingItemRewards`는 등급별 1회성 마법북 목록이다. 누락되거나 빈 목록이면 아이템 보상 없이 기존 골드 동작을 유지한다. 설정 형식 예시:
+
+```json
 {
-    new ItemAmount { itemId = ItemIds.ArrowBook, quantity = 2 },
-    new ItemAmount { itemId = ItemIds.WeaponBook, quantity = 1 }
-}, "battle-123:drop-456");
-profile.Apply(snapshot);
+  "ClearItems": [ { "itemId": "book.arrow", "quantity": 2 } ],
+  "RatingItemRewards": [
+    [ { "itemId": "book.weapon", "quantity": 1 } ],
+    [],
+    []
+  ]
+}
 ```
 
-- Items 테이블에 있는 ID와 양수 수량만 받는다. 골드·에너지는 지급 목록에 포함할 수 없다.
-- 한 요청 안의 같은 ID는 수량을 합산한다. 모든 검증과 소유량 계산이 성공한 뒤 한 번 저장하므로 거절된 요청의 일부만 지급하지 않는다.
-- `LocalSave.itemGrants`에 지급 키와 정규화된 요청 내용을 저장한다. 재실행 후에도 같은 키·같은 내용은 재지급하지 않고 최신 스냅샷을 반환한다. 목록 순서나 같은 ID의 분할 방식은 중복 판단에 영향을 주지 않는다.
-- 같은 키로 다른 지급 내역을 보내면 거절한다. 요청 키는 아이템 지급 작업 안에서 고유해야 하며, 골드 변동용 `ledger`와 분리한다.
-- Local 거절 코드는 `INVALID_REQUEST`, `UNKNOWN_DATA_ID`, `IDEMPOTENCY_CONFLICT`, `ITEM_QUANTITY_OVERFLOW`다. 신규 지급 API와 오류 코드는 Local 구현 계약이며 서버 명세 확정을 뜻하지 않는다.
-- 이 API는 드랍 시점이나 전투 결과를 결정하지 않는다. 서버 구현은 서버가 검증·확정한 지급 내역을 사용하도록 별도 계약으로 연결한다.
+위 수량은 설정 예시이며 현재 Stages 콘텐츠에 임의 보상 수량을 추가하지 않았다. 실제 보상량은 콘텐츠 정의에서 결정한다. 결과 제출 응답의 아이템 필드는 Local 구현 계약이며 서버 명세 확정을 뜻하지 않는다. 몬스터별 드랍의 검증·전투 결과 연동은 #149에서 추가한다.
 
 ## 스테이지 조회·집계
 
@@ -80,7 +85,7 @@ profile.Apply(snapshot);
 
 - 전투 시작·재시작·전환 시 `Begin(stageId, obtainableItemIds)`을 호출한다. 같은 스테이지라도 누적 내역을 비우고 가능 목록을 교체한다.
 - 가능 목록은 중복 ID를 제거하고 호출자가 가진 목록과 분리해서 보관한다. 실제 획득 내역과는 독립적이다.
-- 지급 모듈이 획득을 확정한 뒤 `RecordAcquired(itemId, quantity)`로 양수 수량을 기록한다. 같은 아이템은 합산한다. 중복 지급 방지는 #149의 지급 모듈 책임이다.
+- 획득 처리에서 확정한 뒤 `RecordAcquired(itemId, quantity)`로 양수 수량을 기록한다. 같은 아이템은 합산한다. 사망·획득 이벤트 중복 방지는 #149의 획득 처리에서 담당한다.
 - 획득 내역 조회는 복사본을 반환한다. UI나 결과 요청이 DTO를 수정해도 캐시의 집계 값은 변하지 않는다.
 - 영구 소유량, 골드, 지급 API는 캐시에서 변경하지 않는다.
 
@@ -88,8 +93,8 @@ profile.Apply(snapshot);
 
 ## 후속 구현 경계
 
-- #149: 마법북 드랍 테이블은 정의 및 `ItemAmount`를 재사용하고 Local 지급에는 `IItemApi`를 사용한다. 골드 지급은 기존 재화 API를 사용한다. 지급 확정 시점과 실패·포기 정책은 드랍 연결 전에 결정한다.
+- #149: 마법북 드랍 테이블은 정의 및 `ItemAmount`를 재사용한다. 지급은 기존 보상 처리 안에서 확정하며 몬스터별 드랍 검증과 실패·포기 정책은 드랍 연결에서 정의한다.
 - #150: 획득 가능 목록은 아이템 ID 목록, 실제 획득 내역은 `ItemAmount` 목록으로 구분한다. 집계 결과는 ID당 한 행이다.
 - #151: 정의의 이름과 아이콘 키를 사용한다. 실제 아이콘 조회 테이블은 UI 연결 시 구성한다.
 - Items 테이블은 `GameDataStore.TableNames`에 포함되어 버전·원문 조회에서도 제공한다. 정의의 필수 값은 `ItemDefinition.Validate()`로 확인한다. 강화 대상과 실제 아이콘 에셋 참조 검증은 해당 기능 연결 때 추가한다.
-- 결과 제출 DTO의 확장은 지급 시점과 서버 계약이 결정된 뒤 별도 계약 변경으로 처리한다. 현재 골드 지급·강화 동작은 그대로다.
+- 전투 제출 응답에 `rewardItems`를 추가했다. 기존 골드 지급·강화 동작은 유지한다. 서버 연결과 몬스터 드랍 요청의 검증 계약은 별도 확정한다.
