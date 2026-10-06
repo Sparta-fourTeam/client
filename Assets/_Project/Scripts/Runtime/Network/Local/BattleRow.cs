@@ -16,6 +16,9 @@ namespace Game.Network
         public string status;
 
         public int rewardGold;
+        public int rewardExp, clearRating;
+        /// <summary>0은 기존 클리어 보상 전투, 1은 20웨이브 누적 보상 전투.</summary>
+        public int rewardRuleVersion;
         public List<ItemAmount> rewardItems = new();
     }
 }

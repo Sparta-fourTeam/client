@@ -80,7 +80,7 @@ namespace Game.Tests
             _store.Flush(save);
             var start = _api.StartBattle(3, 1).GetAwaiter().GetResult();
 
-            _api.SubmitResult(new SubmitResultRequest { battleId = start.battleId, cleared = true, wallHpPercent = 100 })
+            _api.SubmitResult(new SubmitResultRequest { battleId = start.battleId, cleared = true, completedWaves = 20, reachedWave = 20, wallHpPercent = 100 })
                 .GetAwaiter().GetResult();
 
             Assert.IsFalse(_store.Load().stageProgress.Exists(p => p.stageId == 4));
@@ -100,7 +100,7 @@ namespace Game.Tests
         {
             SeedEnergy(10);
             var start = _api.StartBattle(1, 1).GetAwaiter().GetResult();
-            var request = new SubmitResultRequest { battleId = start.battleId, cleared = true, wallHpPercent = 100 };
+            var request = new SubmitResultRequest { battleId = start.battleId, cleared = true, completedWaves = 20, reachedWave = 20, wallHpPercent = 100 };
             _api.FailNextSubmits = 2;
 
             for (int i = 0; i < 2; i++)
@@ -117,8 +117,8 @@ namespace Game.Tests
             var result = _api.SubmitResult(request).GetAwaiter().GetResult();
 
             Assert.IsTrue(result.cleared);
-            Assert.AreEqual(100, result.rewardGold);
-            Assert.AreEqual(100, _store.Load().wallet.gold);
+            Assert.AreEqual(125, result.rewardGold);
+            Assert.AreEqual(125, _store.Load().wallet.gold);
         }
 
         [Test(Description = "제출 실패 스위치가 꺼져 있으면 평소처럼 성공한다")]
@@ -133,25 +133,25 @@ namespace Game.Tests
             Assert.IsFalse(result.cleared);
         }
 
-        [Test(Description = "벽 체력 100%로 클리어하면 ClearGold를 지급하고 rating 3, 다음 스테이지 진행도를 만든다")]
+        [Test(Description = "벽 체력 100%로 클리어하면 누적 보상을 지급하고 rating 3, 다음 스테이지 진행도를 만든다")]
         public void SubmitResult_ClearedAtFullWallHp_GrantsGoldAndTopRatingAndUnlocksNextStage()
         {
             SeedEnergy(10);
             var start = _api.StartBattle(1, 1).GetAwaiter().GetResult();
 
-            var result = _api.SubmitResult(new SubmitResultRequest { battleId = start.battleId, cleared = true, wallHpPercent = 100 })
+            var result = _api.SubmitResult(new SubmitResultRequest { battleId = start.battleId, cleared = true, completedWaves = 20, reachedWave = 20, wallHpPercent = 100 })
                 .GetAwaiter().GetResult();
 
             Assert.IsTrue(result.cleared);
-            Assert.AreEqual(100, result.rewardGold); // Stage 1 ClearGold
+            Assert.AreEqual(125, result.rewardGold); // 기본 25 + 20웨이브 × 5
             var save = _store.Load();
-            Assert.AreEqual(100, save.wallet.gold);
+            Assert.AreEqual(125, save.wallet.gold);
             Assert.AreEqual(3, save.stageProgress.Find(p => p.stageId == 1).clearRating);
             Assert.IsTrue(save.stageProgress.Exists(p => p.stageId == 2));
         }
 
-        [Test(Description = "실패 제출은 골드를 지급하지 않고 clearRating도 바꾸지 않는다")]
-        public void SubmitResult_Failed_GrantsNoGoldAndKeepsRating()
+        [Test(Description = "실패 제출은 시작 보상을 지급하고 clearRating은 바꾸지 않는다")]
+        public void SubmitResult_Failed_GrantsStartRewardAndKeepsRating()
         {
             SeedEnergy(10);
             var start = _api.StartBattle(1, 1).GetAwaiter().GetResult();
@@ -160,7 +160,7 @@ namespace Game.Tests
                 .GetAwaiter().GetResult();
 
             Assert.IsFalse(result.cleared);
-            Assert.AreEqual(0, result.rewardGold);
+            Assert.AreEqual(25, result.rewardGold);
             Assert.AreEqual(0, _store.Load().stageProgress.Find(p => p.stageId == 1).clearRating);
         }
 
@@ -169,13 +169,13 @@ namespace Game.Tests
         {
             SeedEnergy(10);
             var start = _api.StartBattle(1, 1).GetAwaiter().GetResult();
-            var req = new SubmitResultRequest { battleId = start.battleId, cleared = true, wallHpPercent = 100 };
+            var req = new SubmitResultRequest { battleId = start.battleId, cleared = true, completedWaves = 20, reachedWave = 20, wallHpPercent = 100 };
             _api.SubmitResult(req).GetAwaiter().GetResult();
 
             var second = _api.SubmitResult(req).GetAwaiter().GetResult();
 
-            Assert.AreEqual(100, second.rewardGold);
-            Assert.AreEqual(100, _store.Load().wallet.gold); // 두 번 지급되지 않음
+            Assert.AreEqual(125, second.rewardGold);
+            Assert.AreEqual(125, _store.Load().wallet.gold); // 두 번 지급되지 않음
         }
     }
 }
