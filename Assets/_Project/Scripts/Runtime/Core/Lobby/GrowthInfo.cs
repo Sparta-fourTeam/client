@@ -9,11 +9,15 @@ namespace Game.Core
         public string Current { get; }
         public string Next { get; }
 
-        public StatLine(string label, string current, string next = null)
+        /// <summary>다음 레벨에서 오르는 양 (예: "+127.32"). null이면 증가량을 표시하지 않는다</summary>
+        public string Increase { get; }
+
+        public StatLine(string label, string current, string next = null, string increase = null)
         {
             Label = label;
             Current = current;
             Next = next;
+            Increase = increase;
         }
     }
 
@@ -43,14 +47,24 @@ namespace Game.Core
         public int UnlockLevel;
         public bool IsUnlocked;
 
-        /// <summary>강화 전 → 후 능력치</summary>
+        /// <summary>현재 능력치와 다음 레벨 증가량</summary>
         public IReadOnlyList<StatLine> Stats;
 
         /// <summary>다음 레벨로 강화하는 비용 (엽전, 인법서)</summary>
         public int CoinCost;
         public int BookCost;
 
+        /// <summary>레벨별 보상. 달성 여부는 LevelReward.Level <= Level로 판단한다</summary>
+        public IReadOnlyList<LevelReward> LevelRewards;
+
         public bool IsMaxLevel => Level >= MaxLevel;
+    }
+
+    /// <summary>영구 강화 레벨에 도달하면 얻는 것 한 줄 (예: 1 "[폭풍 집결] 선택지 잠금해제")</summary>
+    public sealed class LevelReward
+    {
+        public int Level;
+        public string Text;
     }
 
     /// <summary>장비 칸 하나의 표시용 정보 (캐릭터 화면 장비 칸, 장비 강화 팝업)</summary>

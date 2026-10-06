@@ -86,6 +86,8 @@ namespace Game.Core
             var list = new List<SkillInfo>();
             foreach (var n in open)
             {
+                int attack = Attack(n.attack, n.level);
+                float cooldown = Cooldown(n.cooldown, n.level);
                 list.Add(new SkillInfo
                 {
                     Id = n.id,
@@ -97,12 +99,12 @@ namespace Game.Core
                     IsUnlocked = true,
                     Stats = new[]
                     {
-                        new StatLine("공격력", Attack(n.attack, n.level).ToString(), Attack(n.attack, n.level + 1).ToString()),
-                        new StatLine("쿨타임", $"{Cooldown(n.cooldown, n.level):0.##}초", $"{Cooldown(n.cooldown, n.level + 1):0.##}초"),
-                        new StatLine("기술 레벨", n.level.ToString(), (n.level + 1).ToString()),
+                        new StatLine("공격력", attack.ToString(), increase: $"+{Attack(n.attack, n.level + 1) - attack}"),
+                        new StatLine("쿨타임", $"{cooldown:0.##}초", increase: $"{Cooldown(n.cooldown, n.level + 1) - cooldown:0.##}초"),
                     },
                     CoinCost = 100 + n.level * 50,
                     BookCost = 1 + n.level / 3,
+                    LevelRewards = CreateRewards(n.name),
                 });
             }
 
@@ -117,8 +119,29 @@ namespace Game.Core
                     UnlockLevel = unlockLevel,
                     IsUnlocked = unlockLevel <= PlayerLevel,
                     Stats = new StatLine[0],
+                    LevelRewards = new LevelReward[0],
                 });
             }
+            return list;
+        }
+
+        // 임시: 데이터 시트의 영구 레벨 구간(5/9/13/17/21)은 카드 해금·변형, 나머지는 공격력 증가로 채운다
+        // TODO(data): #142 계약이 확정되면 Upgrades 데이터에서 읽는다
+        private static List<LevelReward> CreateRewards(string skillName)
+        {
+            var list = new List<LevelReward>();
+            for (int level = 1; level <= SkillMaxLevel; level++)
+            {
+                string text = level switch
+                {
+                    1 => $"[{skillName} 강화] 선택지 잠금해제",
+                    5 or 13 or 21 => "새 강화 선택지 잠금해제",
+                    9 or 17 => "강화 선택지가 (+)로 바뀝니다",
+                    _ => $"{skillName} 공격력 +8%",
+                };
+                list.Add(new LevelReward { Level = level, Text = text });
+            }
+
             return list;
         }
 
