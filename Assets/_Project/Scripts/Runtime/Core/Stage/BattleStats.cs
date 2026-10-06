@@ -15,6 +15,7 @@ namespace Game.Core
         private readonly ISubscriber<WallHpChanged> _wallHpChanged;
 
         private IDisposable _subscriptions;
+        private readonly HashSet<int> _deadEnemies = new();
 
         public int Kills { get; private set; }
         public int ReachedWave { get; private set; }
@@ -38,7 +39,7 @@ namespace Game.Core
         public void Initialize()
         {
             DisposableBagBuilder bag = DisposableBag.CreateBuilder();
-            _enemyDiedSubscriber.Subscribe(_ => OnEnemyDied()).AddTo(bag);
+            _enemyDiedSubscriber.Subscribe(OnEnemyDied).AddTo(bag);
             _waveGaugeChangedSubscriber.Subscribe(OnWaveGaugeChanged).AddTo(bag);
             _stageEndedSubscriber.Subscribe(_ => IsEnded = true).AddTo(bag);
             _wallHpChanged.Subscribe(e => WallHpPercent = e.Max <= 0 ? 0 : e.Current * 100 / e.Max).AddTo(bag);
@@ -71,13 +72,14 @@ namespace Game.Core
             _subscriptions?.Dispose();
         }
 
-        private void OnEnemyDied()
+        private void OnEnemyDied(EnemyDied message)
         {
             if (IsEnded)
             {
                 return;
             }
 
+            if (message.EnemyId > 0 && !_deadEnemies.Add(message.EnemyId)) { return; }
             Kills++;
         }
 
