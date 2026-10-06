@@ -13,25 +13,24 @@ namespace Game.View
         [SerializeField] private Button _resumeButton;
         [SerializeField] private Button _abandonButton;
 
-        [Header("획득 가능 (이 스테이지에서 받을 수 있는 최대 보상)")]
+        [Header("획득 가능 (지금 포기하거나 져도 받게 되는 확보 보상)")]
         [SerializeField] private ResultRewardListView _obtainableList;
         [SerializeField] private ItemIconTable _itemIcons;
 
         private StageManager _stageManager;
         private GameDataStore _data;
-        private StageRewardBalance _balance;
-        private bool _obtainableShown;
+        private StageRewardTracker _rewards;
 
         [Inject]
         public void Construct(
             StageManager stageManager,
             IBufferedSubscriber<StageStateChanged> stateChanged,
             GameDataStore data,
-            StageRewardBalance balance)
+            StageRewardTracker rewards)
         {
             _stageManager = stageManager;
             _data = data;
-            _balance = balance;
+            _rewards = rewards;
             Track(stateChanged.Subscribe(OnStateChanged));
         }
 
@@ -55,17 +54,16 @@ namespace Game.View
             _panel.SetActive(paused);
         }
 
-        /// <summary>스테이지가 같으면 목록도 같으므로 처음 열 때 한 번만 만든다</summary>
+        /// <summary>완료한 웨이브까지 확보한 보상이다. 웨이브가 끝날 때마다 달라지므로 열 때마다 다시 만든다</summary>
         private void ShowObtainable()
         {
-            if (_obtainableShown || _obtainableList == null)
+            if (_obtainableList == null || _rewards.Rewards == null)
             {
                 return;
             }
 
-            var maximum = StageRewardRules.Maximum(_balance);
-            _obtainableList.Show(RewardRows.Build(_itemIcons, _data, maximum.Coin, maximum.Exp, maximum.Items));
-            _obtainableShown = true;
+            var secured = _rewards.Rewards;
+            _obtainableList.Show(RewardRows.Build(_itemIcons, _data, secured.Coin, secured.Exp, secured.Items));
         }
     }
 }
