@@ -51,26 +51,49 @@ MonoBehaviour:
     ProjectilePrefab: {fileID: 6940759657125676971, guid: b21e1b571797a984abd123376e5056e5, type: 3}
     MonsterId: 1
     AttackType: 1
+    SplitMonsterId: 3
+    SplitCount: 2
+    SpawnOnly: 0
   - Type: 0
     Prefab: {fileID: 4685488075804649445, guid: eedef41ae584e7948b908250bd9a7241, type: 3}
     ProjectilePrefab: {fileID: 0}
     MonsterId: 2
     AttackType: 0
+    SplitMonsterId: 0
+    SplitCount: 0
+    SpawnOnly: 0
   - Type: 1
     Prefab: {fileID: 6311776197841859623, guid: a73362f167b46e84bbef04c82c95a1fc, type: 3}
     ProjectilePrefab: {fileID: 6940759657125676971, guid: b21e1b571797a984abd123376e5056e5, type: 3}
     MonsterId: 11
     AttackType: 1
+    SplitMonsterId: 0
+    SplitCount: 0
+    SpawnOnly: 0
   - Type: 1
     Prefab: {fileID: 4685488075804649445, guid: 3e4124bbebca72048b38a59d202ee1c4, type: 3}
     ProjectilePrefab: {fileID: 0}
     MonsterId: 12
     AttackType: 0
+    SplitMonsterId: 0
+    SplitCount: 0
+    SpawnOnly: 0
   - Type: 2
     Prefab: {fileID: 7187176536582799020, guid: 1954ba4f587d1d646819481aecf0ede5, type: 3}
     ProjectilePrefab: {fileID: 0}
     MonsterId: 100
     AttackType: 0
+    SplitMonsterId: 0
+    SplitCount: 0
+    SpawnOnly: 0
+  - Type: 0
+    Prefab: {fileID: 7401961765522277195, guid: 6b025b157f4128248ad0dde0d5fe6318, type: 3}
+    ProjectilePrefab: {fileID: 0}
+    MonsterId: 3
+    AttackType: 0
+    SplitMonsterId: 0
+    SplitCount: 0
+    SpawnOnly: 1
 --- !u!114 &1027409405871136764
 MonoBehaviour:
   m_ObjectHideFlags: 0
