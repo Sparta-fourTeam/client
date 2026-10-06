@@ -9,7 +9,7 @@ namespace Game.Core
     /// <summary>Resources/MockData의 테이블 JSON을 읽어 도메인 모델 테이블로 만든다</summary>
     public sealed class GameDataStore
     {
-        private static readonly string[] TableNames = { "Monsters", "Stages", "Upgrades", "Energy", "GeneralCards", "Skills", "Items" };
+        private static readonly string[] TableNames = { "Monsters", "Stages", "Upgrades", "Energy", "GeneralCards", "Skills", "Items", "StageRewards" };
         private readonly Dictionary<string, string> _rawJson;
 
         public Dictionary<string, int> Revisions { get; }
@@ -17,6 +17,7 @@ namespace Game.Core
         public Table<int, StageDefinition> Stages { get; }
         public Table<string, UpgradeDefinition> Upgrades { get; }
         public Table<string, ItemDefinition> Items { get; }
+        public Table<int, StageRewardBalance> StageRewards { get; }
         public EnergyConfig Energy { get; }
 
         /// <summary>스킬이 아닌 카드(방벽 회복 등). 스킬 카드는 Skills의 upgrades에 있다</summary>
@@ -57,6 +58,20 @@ namespace Game.Core
             var items = ParseIndexed<string, ItemDefinition>("Items", d => d.Id);
             foreach (var item in items.Values) { item.Validate(); }
             Items = new Table<string, ItemDefinition>(items);
+            var rewards = ParseIndexed<int, StageRewardBalance>("StageRewards", d => d.StageId);
+            foreach (var balance in rewards.Values)
+            {
+                balance.Validate();
+                if (!Stages.Contains(balance.StageId)) { throw new InvalidOperationException("보상의 스테이지가 없습니다."); }
+                if (balance.SkillMaterial != ItemIds.RandomSkillMaterial) { Items.GetOrThrow(balance.SkillMaterial); }
+                foreach (var item in balance.Wave4EquipmentMaterials) { Items.GetOrThrow(item.itemId); }
+            }
+            foreach (var stage in stages.Values)
+            {
+                if (!rewards.ContainsKey(stage.Id)) { throw new InvalidOperationException($"StageRewards {stage.Id}: 보상 밸런스가 없습니다."); }
+            }
+            Items.GetOrThrow(ItemIds.GemChest);
+            StageRewards = new Table<int, StageRewardBalance>(rewards);
             Energy = JsonConvert.DeserializeObject<EnergyConfig>(_rawJson["Energy"]);
 
             var generalCards = ParseIndexed<string, GeneralCardDefinition>("GeneralCards", d => d.Id).Values.ToList();
