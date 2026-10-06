@@ -193,6 +193,7 @@ namespace Game.Core
 
         private async UniTask OnStageEnded(bool cleared)
         {
+            if (State is StageState.Submitting or StageState.Finished) { return; }
             ChangeState(StageState.Submitting);
 
             _pendingRequest = new SubmitResultRequest
@@ -227,6 +228,7 @@ namespace Game.Core
         /// <summary>요청을 보낸다. 일시적 실패와 네트워크 실패는 autoRetries번까지 자동으로 다시 보낸다</summary>
         private async UniTask Submit(int autoRetries)
         {
+            var request = _pendingRequest;
             _submitting = true;
             try
             {
@@ -236,7 +238,7 @@ namespace Game.Core
                 {
                     try
                     {
-                        response = await _battleApi.SubmitResult(_pendingRequest);
+                        response = await _battleApi.SubmitResult(request);
                         sent = true;
                     }
                     catch (ApiException e) when (e.Kind == ApiErrorKind.Rejected)
