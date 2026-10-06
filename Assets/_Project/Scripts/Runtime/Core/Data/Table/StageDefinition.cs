@@ -47,9 +47,9 @@ namespace Game.Core
                 throw new InvalidOperationException($"Stages {Id}: Spawn 간격이 잘못되었습니다 (0 < IntervalMin <= IntervalMax, Cooldown >= 0)");
             }
 
-            if (Waves == null || Waves.Count == 0)
+            if (Waves == null || Waves.Count != StageRewardRules.WaveCount)
             {
-                throw new InvalidOperationException($"Stages {Id}: 웨이브가 하나도 없습니다");
+                throw new InvalidOperationException($"Stages {Id}: 모든 스테이지는 {StageRewardRules.WaveCount}웨이브입니다");
             }
 
             foreach (var wave in Waves)
