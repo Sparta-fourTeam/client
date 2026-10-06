@@ -16,7 +16,7 @@ namespace Game.View
         private IGrowthCatalog _catalog;
         private PlayerProfile _profile;
 
-        // TODO(data): 강화 후 다시 그리려면 UpgradeChanged(추가 예정) 구독
+        // TODO(data): 실제 구매가 붙으면 Upgraded 이벤트 대신 UpgradeChanged(추가 예정) 구독
         [Inject]
         public void Construct(IGrowthCatalog catalog, PlayerProfile profile)
         {
@@ -27,6 +27,14 @@ namespace Game.View
         private void Awake()
         {
             _panel.SetActive(false);
+            // 팝업에서 레벨업하면 칸의 레벨 표시를 다시 그린다
+            _upgradePopup.Upgraded += Refresh;
+        }
+
+        protected override void OnDestroy()
+        {
+            _upgradePopup.Upgraded -= Refresh;
+            base.OnDestroy();
         }
 
         public void SetVisible(bool visible)
