@@ -15,7 +15,7 @@ namespace Game.Core
             Coin = coin; Exp = exp;
             var rows = items.ToList();
             SkillMaterial = rows.Where(item => item.itemId == ItemIds.RandomSkillMaterial || ItemIds.SkillMaterials.Contains(item.itemId)).Sum(item => (long)item.quantity);
-            EquipmentMaterial = rows.Where(item => ItemIds.EquipmentMaterials.Contains(item.itemId)).Sum(item => (long)item.quantity);
+            EquipmentMaterial = rows.Where(item => item.itemId == ItemIds.RandomEquipmentMaterial || ItemIds.EquipmentMaterials.Contains(item.itemId)).Sum(item => (long)item.quantity);
             GemChest = rows.Where(item => item.itemId == ItemIds.GemChest).Sum(item => (long)item.quantity);
         }
     }

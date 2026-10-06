@@ -15,6 +15,9 @@ namespace Game.Core
         public List<ItemAmount> Wave4EquipmentMaterials = new();
         public int Wave5GemChestCount, Wave6CoinBonus;
 
+        public bool UsesRandomSkillMaterial => SkillMaterial == ItemIds.RandomSkillMaterial;
+        public bool UsesRandomEquipmentMaterial => Wave4EquipmentMaterials.Exists(item => item.itemId == ItemIds.RandomEquipmentMaterial && item.quantity > 0);
+
         public void Validate()
         {
             if (StageId <= 0 || BaseExp < 0 || ThreeStarBonusExp < 0 || Wave3SkillMaterialBonusAmount < 0
@@ -25,11 +28,9 @@ namespace Game.Core
             var ids = new HashSet<string>();
             foreach (var item in Wave4EquipmentMaterials)
             {
-                if (item == null || item.quantity < 0 || !ItemIds.EquipmentMaterials.Contains(item.itemId) || !ids.Add(item.itemId))
-                { throw new InvalidOperationException("장비재료는 종류별 비음수 수량으로 설정합니다."); }
+                if (item == null || item.quantity < 0 || (item.itemId != ItemIds.RandomEquipmentMaterial && !ItemIds.EquipmentMaterials.Contains(item.itemId)) || !ids.Add(item.itemId))
+                { throw new InvalidOperationException("장비재료는 중복 없는 종류별 비음수 수량으로 설정합니다."); }
             }
-            if (ids.Count != ItemIds.EquipmentMaterials.Count)
-            { throw new InvalidOperationException("모든 장비재료 종류의 수량을 설정해야 합니다."); }
         }
     }
 }

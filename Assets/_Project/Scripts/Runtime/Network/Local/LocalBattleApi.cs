@@ -12,6 +12,8 @@ namespace Game.Network
         private readonly GameDataStore _data;
         /// <summary>해금 담당 코드가 최신 후보 목록 조회를 연결한다. 미연결 상태에서 랜덤 재료는 지급하지 않는다.</summary>
         public Func<IEnumerable<int>> UnlockedSkillIds { get; set; }
+        /// <summary>열린 장비의 TargetId 목록. 랜덤 장비재료도 같은 방식으로 연결한다.</summary>
+        public Func<IEnumerable<string>> UnlockedEquipmentIds { get; set; }
         public Func<int, int, int[]> MaterialDistribution { get; set; }
 
         public int FailNextSubmits { get; set; }
@@ -32,8 +34,11 @@ namespace Game.Network
             {
                 throw new ApiException(ApiErrorKind.Rejected, "STAGE_LOCKED");
             }
-            if (_data.StageRewards.GetOrThrow(stageId).SkillMaterial == ItemIds.RandomSkillMaterial && UnlockedSkillIds == null)
+            var rewardBalance = _data.StageRewards.GetOrThrow(stageId);
+            if (rewardBalance.UsesRandomSkillMaterial && UnlockedSkillIds == null)
             { throw new ApiException(ApiErrorKind.Rejected, "SKILL_UNLOCK_SOURCE_NOT_READY"); }
+            if (rewardBalance.UsesRandomEquipmentMaterial && UnlockedEquipmentIds == null)
+            { throw new ApiException(ApiErrorKind.Rejected, "EQUIPMENT_UNLOCK_SOURCE_NOT_READY"); }
 
             var (current, _) = EnergyRule.At(save.wallet.energyStored,
                 EnergyRule.ParseUpdatedAt(save.wallet.energyUpdatedAt), DateTime.UtcNow, _data.Energy);
@@ -111,8 +116,8 @@ namespace Game.Network
                     req.completedWaves, req.cleared, rating);
                 reward = calculated.Coin;
                 rewardExp = calculated.Exp;
-                rewards = SkillMaterialResolver.Resolve(calculated.Items, UnlockedSkillIds?.Invoke(), _data,
-                    battle.seed, MaterialDistribution);
+                rewards = RandomMaterialResolver.Resolve(calculated.Items, UnlockedSkillIds?.Invoke(),
+                    UnlockedEquipmentIds?.Invoke(), _data, battle.seed, MaterialDistribution);
             }
             int totalGold, totalExp;
             try { totalGold = checked(save.wallet.gold + reward); totalExp = checked(save.exp + rewardExp); }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Game.Core;
 using NUnit.Framework;
@@ -59,18 +60,38 @@ namespace Game.Tests
         { Assert.Throws<ArgumentException>(() => StageRewardRules.Calculate(Balance(), completed, clear, rating)); }
 
         [Test]
-        public void RandomMaterial_SelectsOnlyUnlocked_MaximumTwoTypes_AndConservesQuantity()
+        public void RandomSkillMaterial_PicksFromUnlockedWithReplacement_AndSplitsEvenly()
         {
             var data = new GameDataStore();
-            var rewards = new[] { new ItemAmount { itemId = ItemIds.RandomSkillMaterial, quantity = 50 } };
-            for (int seed = 1; seed <= 100; seed++)
+            var rewards = new[] { new ItemAmount { itemId = ItemIds.RandomSkillMaterial, quantity = 51 } };
+            var allowed = new[] { ItemIds.ArrowBook, ItemIds.FireballBook, ItemIds.LightningBook };
+            var sawSame = false;
+            var sawDifferent = false;
+            for (int seed = 1; seed <= 200; seed++)
             {
-                var resolved = SkillMaterialResolver.Resolve(rewards, new[] { 1, 2, 3, 1, 999 }, data, seed);
-                Assert.AreEqual(2, resolved.Count);
-                Assert.AreEqual(50, resolved.Sum(item => item.quantity));
-                Assert.AreEqual(2, resolved.Select(item => item.itemId).Distinct().Count());
-                Assert.IsTrue(resolved.All(item => new[] { ItemIds.ArrowBook, ItemIds.FireballBook, ItemIds.LightningBook }.Contains(item.itemId)));
+                var resolved = RandomMaterialResolver.Resolve(rewards, new[] { 1, 2, 3, 1, 999 }, null, data, seed);
+                Assert.AreEqual(51, resolved.Sum(item => item.quantity));
+                Assert.IsTrue(resolved.All(item => allowed.Contains(item.itemId)));
+                if (resolved.Count == 1) { sawSame = true; Assert.AreEqual(51, resolved[0].quantity); }
+                else { sawDifferent = true; CollectionAssert.AreEquivalent(new[] { 26, 25 }, resolved.Select(item => item.quantity)); }
             }
+            Assert.IsTrue(sawSame && sawDifferent, "같은 재료가 두 번 뽑히는 경우와 서로 다른 두 재료가 뽑히는 경우가 모두 나와야 합니다.");
+        }
+
+        [Test]
+        public void RandomEquipmentMaterial_PicksOnlyUnlockedEquipment()
+        {
+            var data = new GameDataStore();
+            var rewards = new[] { new ItemAmount { itemId = ItemIds.RandomEquipmentMaterial, quantity = 1 } };
+            var unlocked = new[] { data.Items.GetOrThrow(ItemIds.WeaponBook).TargetId, data.Items.GetOrThrow(ItemIds.HatBook).TargetId };
+            for (int seed = 1; seed <= 50; seed++)
+            {
+                var resolved = RandomMaterialResolver.Resolve(rewards, null, unlocked, data, seed);
+                Assert.AreEqual(1, resolved.Count);
+                Assert.AreEqual(1, resolved[0].quantity);
+                Assert.IsTrue(resolved[0].itemId == ItemIds.WeaponBook || resolved[0].itemId == ItemIds.HatBook);
+            }
+            Assert.Throws<ApiException>(() => RandomMaterialResolver.Resolve(rewards, new[] { 1 }, Array.Empty<string>(), data, 1));
         }
 
         [Test]
@@ -78,17 +99,34 @@ namespace Game.Tests
         {
             var data = new GameDataStore();
             var fixedReward = new ItemAmount { itemId = ItemIds.ArrowBook, quantity = 30 };
-            var fixedResult = SkillMaterialResolver.Resolve(new[] { fixedReward }, Array.Empty<int>(), data, 1,
+            var fixedResult = RandomMaterialResolver.Resolve(new[] { fixedReward }, Array.Empty<int>(), null, data, 1,
                 (_, _) => throw new Exception("고정 재료에서는 호출하면 안 됩니다"));
             Assert.AreEqual(30, fixedResult[0].quantity);
             var random = new[] { new ItemAmount { itemId = ItemIds.RandomSkillMaterial, quantity = 50 } };
-            var custom = SkillMaterialResolver.Resolve(random, new[] { 1, 2 }, data, 1, (_, _) => new[] { 20, 30 });
-            CollectionAssert.AreEqual(new[] { 20, 30 }, custom.Select(item => item.quantity));
-            Assert.Throws<ApiException>(() => SkillMaterialResolver.Resolve(random, Array.Empty<int>(), data, 1));
-            Assert.Throws<ApiException>(() => SkillMaterialResolver.Resolve(random, new[] { 1, 2 }, data, 1, (_, _) => new[] { 10, 10 }));
-            var single = SkillMaterialResolver.Resolve(random, new[] { 2 }, data, 1);
+            int calledQuantity = 0, calledCount = 0;
+            var custom = RandomMaterialResolver.Resolve(random, new[] { 1, 2 }, null, data, 1,
+                (quantity, count) => { calledQuantity = quantity; calledCount = count; return new[] { 20, 30 }; });
+            Assert.AreEqual((50, 2), (calledQuantity, calledCount));
+            Assert.AreEqual(50, custom.Sum(item => item.quantity));
+            Assert.Throws<ApiException>(() => RandomMaterialResolver.Resolve(random, Array.Empty<int>(), null, data, 1));
+            Assert.Throws<ApiException>(() => RandomMaterialResolver.Resolve(random, new[] { 1, 2 }, null, data, 1, (_, _) => new[] { 10, 10 }));
+            var single = RandomMaterialResolver.Resolve(random, new[] { 2 }, null, data, 1);
             Assert.AreEqual(ItemIds.FireballBook, single[0].itemId);
             Assert.AreEqual(50, single[0].quantity);
+        }
+
+        [Test]
+        public void EquipmentMaterialList_AllowsFixedOrRandomEntries_ButNotUnknownOrDuplicate()
+        {
+            var balance = Balance();
+            balance.Wave4EquipmentMaterials = new List<ItemAmount> { new() { itemId = ItemIds.RandomEquipmentMaterial, quantity = 1 } };
+            Assert.DoesNotThrow(balance.Validate);
+            Assert.IsTrue(balance.UsesRandomEquipmentMaterial);
+            balance.Wave4EquipmentMaterials = new List<ItemAmount> { new() { itemId = ItemIds.ArrowBook, quantity = 1 } };
+            Assert.Throws<InvalidOperationException>(balance.Validate);
+            balance.Wave4EquipmentMaterials = new List<ItemAmount>
+            { new() { itemId = ItemIds.WeaponBook, quantity = 1 }, new() { itemId = ItemIds.WeaponBook, quantity = 1 } };
+            Assert.Throws<InvalidOperationException>(balance.Validate);
         }
     }
 }
