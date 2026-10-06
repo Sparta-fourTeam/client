@@ -22,6 +22,7 @@ namespace Game.Core
         private readonly CardDeck _deck;
         private readonly IPublisher<SubmitRejected> _submitRejected;
         private readonly IPublisher<SubmitFailed> _submitFailed;
+        private readonly StageRewardTracker _rewards;
 
         /// <summary>일시적 실패와 네트워크 실패 때 자동으로 다시 보내는 횟수 (docs/flows.md)</summary>
         public const int AutoRetryCount = 3;
@@ -56,7 +57,7 @@ namespace Game.Core
             ISubscriber<WaveCompleted> waveCompleted,
             CardDeck deck,
             IPublisher<SubmitRejected> submitRejected,
-            IPublisher<SubmitFailed> submitFailed)
+            IPublisher<SubmitFailed> submitFailed, StageRewardTracker rewards = null)
         {
             _stateChanged = stateChanged;
             _stageEnded = stageEnded;
@@ -69,6 +70,7 @@ namespace Game.Core
             _deck = deck;
             _submitRejected = submitRejected;
             _submitFailed = submitFailed;
+            _rewards = rewards;
         }
 
         public void Start()
@@ -194,6 +196,7 @@ namespace Game.Core
         private async UniTask OnStageEnded(bool cleared)
         {
             if (State is StageState.Submitting or StageState.Finished) { return; }
+            _rewards?.Stop();
             ChangeState(StageState.Submitting);
 
             _pendingRequest = new SubmitResultRequest
@@ -201,6 +204,7 @@ namespace Game.Core
                 battleId = _battleId,
                 cleared = cleared,
                 reachedWave = _stats.ReachedWave,
+                completedWaves = _rewards?.CompletedWaves ?? 0,
                 kills = _stats.Kills,
                 playTime = _clock.ElapsedSeconds,
                 buildLog = _stats.BuildLog,
@@ -276,7 +280,8 @@ namespace Game.Core
                 }
 
                 _pendingRequest = null;
-                _result.Publish(new StageResult(response.cleared, _stats.Kills, _stats.ReachedWave, _clock.ElapsedSeconds, response.rewardGold));
+                _result.Publish(new StageResult(response.cleared, request.kills, request.reachedWave, request.playTime,
+                    response.rewardGold, response.rewardItems, response.rewardExp, response.clearRating));
                 ChangeState(StageState.Finished);
             }
             finally
