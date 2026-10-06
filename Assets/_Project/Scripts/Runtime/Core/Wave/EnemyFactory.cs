@@ -35,7 +35,7 @@ namespace Game.Core
             // EnemyType마다 엔트리 최소 1개 있는지 체크
             foreach (EnemyType type in System.Enum.GetValues(typeof(EnemyType)))
             {
-                if (!_enemyPrefabEntries.Exists(e => e.Type == type))
+                if (!_enemyPrefabEntries.Exists(e => e.Type == type && !e.SpawnOnly))
                 {
                     Debug.LogError($"[EnemyFactory] EnemyType.{type} 엔트리가 없습니다.", this);
                 }
@@ -76,11 +76,23 @@ namespace Game.Core
         public EnemyModel Create(Vector2 spawnPosition, EnemyType type)
         {
             var entry = _table.GetRandomEntry(type, _randomProvider);
+            return Build(entry, spawnPosition, isSummoned: false);
+        }
+
+        public EnemyModel CreateByMonsterId(int monsterId, Vector2 spawnPosition)
+        {
+            var entry = _table.GetEntryByMonsterId(monsterId);
+            return Build(entry, spawnPosition, isSummoned: true);
+        }
+
+        private EnemyModel Build(EnemyPrefabEntry entry, Vector2 spawnPosition, bool isSummoned)
+        {
             var monster = _data.Monsters.GetOrThrow(entry.MonsterId);
             var enemy = new EnemyModel(
-                ++_nextEnemyId, spawnPosition, monster.Speed, type, monster.Hp,
+                ++_nextEnemyId, spawnPosition, monster.Speed, entry.Type, monster.Hp,
                 entry.CreateAttackStats(monster),
-                _hpChangedPublisher, _diedPublisher);
+                _hpChangedPublisher, _diedPublisher,
+                entry.CreatePassives(), isSummoned);
 
             var view = Object.Instantiate(entry.Prefab, spawnPosition, Quaternion.identity);
             view.Bind(enemy, entry.ProjectilePrefab, _hpChangedSubscriber, _diedSubscriber);

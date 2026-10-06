@@ -20,6 +20,9 @@ namespace Game.Core
         // 필드에 있는 적
         // 죽은 적은 다음 Tick에 제거, EnemyDied는 EnemyModel이 발행
         private readonly List<EnemyModel> _activeEnemies = new();
+
+        // 분열·소환 요청. 죽는 순간(스킬 처리나 TickCombat 안)에는 목록을 건드리지 않고 다음 Advance 맨 앞에서 만든다
+        private readonly Queue<EnemySpawnRequest> _pendingSpawns = new();
         private readonly Wall _wall;
         private readonly EnemyProjectileSystem _projectiles;
 
@@ -81,6 +84,7 @@ namespace Game.Core
         // 스폰 로직
         public void Advance(float deltaTime)
         {
+            FlushSpawnRequests();
             TickCombat(deltaTime);
 
             if (deltaTime > 0f)
@@ -147,7 +151,8 @@ namespace Game.Core
 
         private void CheckAllEnemiesCleared()
         {
-            if (!_finalSpawnDone || _allClearPublished)
+            // 아직 만들지 않은 분열체가 있으면 클리어가 아니다
+            if (!_finalSpawnDone || _allClearPublished || _pendingSpawns.Count > 0)
             {
                 return;
             }
@@ -192,8 +197,28 @@ namespace Game.Core
             var spawnPosition = new Vector2(spawnX, spawnY);
             var enemy = _enemyViewFactory.Create(spawnPosition, PickEnemyType());
 
-            _activeEnemies.Add(enemy);
+            Track(enemy);
             _spawnedCountInOnceSpawn++;
+        }
+
+        private void Track(EnemyModel enemy)
+        {
+            _activeEnemies.Add(enemy);
+            enemy.SpawnRequested += OnSpawnRequested;
+        }
+
+        private void OnSpawnRequested(EnemySpawnRequest request)
+        {
+            _pendingSpawns.Enqueue(request);
+        }
+
+        private void FlushSpawnRequests()
+        {
+            while (_pendingSpawns.Count > 0)
+            {
+                var request = _pendingSpawns.Dequeue();
+                Track(_enemyViewFactory.CreateByMonsterId(request.MonsterId, request.Position));
+            }
         }
 
         private float RollSpawnInterval()
@@ -209,6 +234,7 @@ namespace Game.Core
                 var enemy = _activeEnemies[i];
                 if (enemy.IsDead)
                 {
+                    enemy.SpawnRequested -= OnSpawnRequested;
                     _activeEnemies.RemoveAt(i);
                     continue;
                 }

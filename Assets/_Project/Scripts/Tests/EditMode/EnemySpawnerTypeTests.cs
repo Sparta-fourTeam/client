@@ -41,6 +41,9 @@ namespace Game.Tests
                     new FakePublisher<EnemyHpChanged>(), new FakePublisher<EnemyDied>());
             }
 
+            public EnemyModel CreateByMonsterId(int monsterId, Vector2 spawnPosition) =>
+                throw new NotSupportedException("이 테스트는 분열을 쓰지 않는다");
+
             public int Count(EnemyType type) => Types.FindAll(t => t == type).Count;
         }
 

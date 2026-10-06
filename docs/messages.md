@@ -40,6 +40,8 @@
 
 로비 메시지(`WalletChanged`, `EnergyChanged`, `UpgradeChanged`, `ProgressChanged`, `LobbyRequestFailed`)는 새 파일 `Core/Messages/LobbyMessages.cs`에 둔다.
 
+`EnemyDied.IsSummoned`가 true이면 분열·소환으로 생긴 적이다. 웨이브 마릿수에 포함되지 않으므로 `WaveProgress`는 웨이브 게이지에 세지 않는다. `BattleStats`의 처치 수에는 센다.
+
 ## 구독처 확인: MessagePipe Diagnostics
 
 플레이 중에 **Window → MessagePipe Diagnostics**를 열면 지금 살아 있는 구독이 구독한 위치(클래스와 줄)별로 묶여서 보인다.

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Game.Core.Defense;
 using Game.Core.Messages;
 using MessagePipe;
@@ -226,13 +227,25 @@ namespace Game.Core
 
         public event Action<EnemyProjectileModel> ProjectileFired; // 원거리 투사체 생성 용
         public event Action Attacked; // 공격이 나간 순간 (근접/원거리 공통, 공격 모션 재생 용)
+        public event Action<EnemySpawnRequest> SpawnRequested; // 분열·소환 등 새 적 생성 요청 (만드는 일은 EnemySpawner)
+
+        private readonly IReadOnlyList<IPassive> _passives;
+        private readonly bool _isSummoned;
+
+        public void RequestSpawn(EnemySpawnRequest request) => SpawnRequested?.Invoke(request);
 
         // 스폰 위치, 이동 속도, 타입 지정해서 몬스터 생성
+        // isSummoned: 분열·소환으로 생긴 적. 사망이 웨이브 게이지에 세어지지 않는다
         public EnemyModel(int id, Vector2 spawnPosition, float speed, EnemyType type, int maxHp,
             EnemyAttackStats attack,
             IPublisher<EnemyHpChanged> hpChangedPublisher,
-            IPublisher<EnemyDied> diedPublisher)
+            IPublisher<EnemyDied> diedPublisher,
+            IReadOnlyList<IPassive> passives = null,
+            bool isSummoned = false)
         {
+            _passives = passives;
+            _isSummoned = isSummoned;
+
             if (maxHp <= 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(maxHp), "적 체력은 1 이상이어야 합니다.");
@@ -317,8 +330,16 @@ namespace Game.Core
                 areaSlows.Clear();
                 StunRemaining = SlowRemaining = VulnerabilityRemaining = 0;
                 slowRatio = VulnerabilityRatio = 0;
-                _diedPublisher.Publish(new EnemyDied(Id));
+                _diedPublisher.Publish(new EnemyDied(Id, _isSummoned));
                 deathExplosion?.Invoke(Position);
+
+                if (_passives != null)
+                {
+                    foreach (var passive in _passives)
+                    {
+                        passive.OnDied(this);
+                    }
+                }
             }
         }
     }

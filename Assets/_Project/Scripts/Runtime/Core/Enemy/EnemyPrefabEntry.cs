@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Game.Core
@@ -17,6 +18,20 @@ namespace Game.Core
 
         [Header("공격 방식")]
         public AttackType AttackType;
+
+        [Header("분열 (슬라임)")]
+        [Tooltip("죽을 때 만들 몬스터의 Monsters ID. 0이면 분열하지 않는다")]
+        public int SplitMonsterId;
+        public int SplitCount;
+
+        [Header("생성 방식")]
+        [Tooltip("켜면 웨이브 스폰의 무작위 선택에서 빼고, 분열·소환 요청으로만 만든다")]
+        public bool SpawnOnly;
+
+        public IReadOnlyList<IPassive> CreatePassives() =>
+            SplitMonsterId > 0 && SplitCount > 0
+                ? new IPassive[] { new SplitOnDeath(SplitMonsterId, SplitCount) }
+                : null;
 
         public EnemyAttackStats CreateAttackStats(MonsterDefinition monster) =>
             new EnemyAttackStats(AttackType, monster.Damage, monster.AttackInterval, monster.AttackRange, monster.ProjectileSpeed);

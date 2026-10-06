@@ -59,6 +59,16 @@ namespace Game.Tests
 
                 return LastCreatedEnemy;
             }
+
+            public EnemyModel CreateByMonsterId(int monsterId, Vector2 spawnPosition)
+            {
+                CreateCallCount++;
+                LastCreatedEnemy = new EnemyModel(++_nextId, spawnPosition, _speed, EnemyType.Normal, _maxHp, _attack,
+                    HpChanged, Died, null, true);
+                Created.Add(LastCreatedEnemy);
+
+                return LastCreatedEnemy;
+            }
         }
 
         private class FakeRandomProvider : IRandomProvider
