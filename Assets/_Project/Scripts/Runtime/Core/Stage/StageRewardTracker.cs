@@ -40,8 +40,7 @@ namespace Game.Core
         private void Refresh()
         {
             Rewards = StageRewardRules.Calculate(_balance, CompletedWaves, false, 0);
-            _cache.Begin(_balance.StageId, _cache.ObtainableItemIds);
-            foreach (var item in Rewards.Items) { _cache.RecordAcquired(item.itemId, item.quantity); }
+            _cache.SetAcquired(Rewards.Items);
         }
 
         public void Stop() => _stopped = true;
