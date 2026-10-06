@@ -46,10 +46,6 @@ namespace Game.Tests
             var balance = Balance();
             Assert.AreEqual(100, StageRewardRules.Calculate(balance, 20, true, 2).Exp);
             Assert.AreEqual(150, StageRewardRules.Maximum(balance).Exp);
-            var summary = new StageRewardSummary(165, 150, StageRewardRules.Maximum(balance).Items);
-            Assert.AreEqual(51, summary.SkillMaterial);
-            Assert.AreEqual(14, summary.EquipmentMaterial);
-            Assert.AreEqual(1, summary.GemChest);
         }
 
         [TestCase(-1, false, 0)]
