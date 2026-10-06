@@ -31,6 +31,16 @@ namespace Game.Tests
         }
 
         private static ItemAmount Book(string id, int quantity) => new() { itemId = id, quantity = quantity };
+        // 업데이트 전에 발급한 전투의 기존 보상·재제출 계약을 검증한다.
+        private StartBattleResponse StartLegacyBattle(LocalBattleApi api)
+        {
+            var issued = api.StartBattle(1, 1).GetAwaiter().GetResult();
+            var save = _store.Load();
+            save.battles.Find(row => row.battleKey == issued.battleId).rewardRuleVersion = 0;
+            _store.Flush(save);
+            return issued;
+        }
+
         private StageDefinition Stage => _data.Stages.GetOrThrow(1);
 
         private void SetRating(int rating)
@@ -72,7 +82,7 @@ namespace Game.Tests
         {
             Stage.ClearItems = new() { Book(ItemIds.ArrowBook, 2), Book(ItemIds.WeaponBook, 1), Book(ItemIds.ArrowBook, 3) };
             var api = new LocalBattleApi(_store, _data);
-            var issued = api.StartBattle(1, 1).GetAwaiter().GetResult();
+            var issued = StartLegacyBattle(api);
             var request = new SubmitResultRequest { battleId = issued.battleId, cleared = true, wallHpPercent = 100 };
             var result = api.SubmitResult(request).GetAwaiter().GetResult();
             Assert.AreEqual(100, result.rewardGold);
@@ -97,7 +107,7 @@ namespace Game.Tests
             save.items.Add(Book(ItemIds.ArrowBook, 5));
             _store.Flush(save);
             var api = new LocalBattleApi(_store, _data);
-            var issued = api.StartBattle(1, 1).GetAwaiter().GetResult();
+            var issued = StartLegacyBattle(api);
             var result = api.SubmitResult(new SubmitResultRequest { battleId = issued.battleId, cleared = false })
                 .GetAwaiter().GetResult();
             Assert.IsEmpty(result.rewardItems);
@@ -125,7 +135,7 @@ namespace Game.Tests
         {
             Stage.ClearItems = new() { Book(ItemIds.ArrowBook, quantity) };
             var api = new LocalBattleApi(_store, _data);
-            var issued = api.StartBattle(1, 1).GetAwaiter().GetResult();
+            var issued = StartLegacyBattle(api);
             var before = File.ReadAllText(_path);
             var error = Assert.Throws<ApiException>(() => api.SubmitResult(new SubmitResultRequest
             { battleId = issued.battleId, cleared = true }).GetAwaiter().GetResult());
