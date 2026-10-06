@@ -18,7 +18,7 @@ namespace Game.Core
         private readonly StageContext _stageContext;
         private readonly BattleStats _stats;
         private readonly StageClock _clock;
-        private readonly ISubscriber<WaveGaugeFilled> _gaugeFilled;
+        private readonly ISubscriber<WaveCompleted> _waveCompleted;
         private readonly CardDeck _deck;
         private readonly IPublisher<SubmitRejected> _submitRejected;
         private readonly IPublisher<SubmitFailed> _submitFailed;
@@ -53,7 +53,7 @@ namespace Game.Core
             StageContext stageContext,
             BattleStats stats,
             StageClock clock,
-            ISubscriber<WaveGaugeFilled> gaugeFilled,
+            ISubscriber<WaveCompleted> waveCompleted,
             CardDeck deck,
             IPublisher<SubmitRejected> submitRejected,
             IPublisher<SubmitFailed> submitFailed)
@@ -65,7 +65,7 @@ namespace Game.Core
             _stageContext = stageContext;
             _stats = stats;
             _clock = clock;
-            _gaugeFilled = gaugeFilled;
+            _waveCompleted = waveCompleted;
             _deck = deck;
             _submitRejected = submitRejected;
             _submitFailed = submitFailed;
@@ -75,7 +75,7 @@ namespace Game.Core
         {
             var bag = DisposableBag.CreateBuilder();
             _stageEnded.Subscribe(e => OnStageEnded(e.Outcome == StageOutcome.Clear).Forget(Debug.LogException)).AddTo(bag);
-            _gaugeFilled.Subscribe(OnGaugeFilled).AddTo(bag);
+            _waveCompleted.Subscribe(OnWaveCompleted).AddTo(bag);
             _subscription = bag.Build();
 
             // 전투는 Lobby의 BattleLauncher가 이미 발급받아 StageContext에 채워뒀다 — 여기선 꺼내 쓰기만 한다
@@ -129,7 +129,7 @@ namespace Game.Core
         }
 
         /// <summary>마지막이 아닌 웨이브가 끝나면 카드 3장을 제시하고 CardSelect로 전환한다. 적 이동·스폰도 timeScale로 함께 멈춘다</summary>
-        private void OnGaugeFilled(WaveGaugeFilled e)
+        private void OnWaveCompleted(WaveCompleted e)
         {
             if (e.IsFinalWave || State != StageState.Playing)
             {

@@ -9,7 +9,7 @@ namespace Game.Core.Stage
     public sealed class WaveManager : IInitializable, IDisposable
     {
         private readonly IPublisher<WaveStarted> _waveStartedPublisher;
-        private readonly ISubscriber<WaveGaugeFilled> _waveGaugeFilledSubscriber;
+        private readonly ISubscriber<WaveCompleted> _waveCompletedSubscriber;
 
         private readonly IReadOnlyList<WaveDefinition> _waves; // 진행할 웨이브들의 목록 (스테이지 테이블)
 
@@ -18,18 +18,18 @@ namespace Game.Core.Stage
 
         public WaveManager(
             IPublisher<WaveStarted> waveStartedPublisher,
-            ISubscriber<WaveGaugeFilled> waveGaugeFilledSubscriber,
+            ISubscriber<WaveCompleted> waveCompletedSubscriber,
             StageDefinition stage)
         {
             _waveStartedPublisher = waveStartedPublisher;
-            _waveGaugeFilledSubscriber = waveGaugeFilledSubscriber;
+            _waveCompletedSubscriber = waveCompletedSubscriber;
             _waves = stage.Waves;
         }
 
         public void Initialize()
         {
             DisposableBagBuilder bag = DisposableBag.CreateBuilder();
-            _waveGaugeFilledSubscriber.Subscribe(OnWaveGaugeFilled).AddTo(bag);
+            _waveCompletedSubscriber.Subscribe(OnWaveCompleted).AddTo(bag);
             _subscriptions = bag.Build();
 
             StartWave(_currentWaveIndex);
@@ -40,10 +40,10 @@ namespace Game.Core.Stage
             _subscriptions?.Dispose();
         }
 
-        // 웨이브 게이지 찼을때
-        private void OnWaveGaugeFilled(WaveGaugeFilled message)
+        // 현재 웨이브 완료 시 다음 웨이브를 시작한다.
+        private void OnWaveCompleted(WaveCompleted message)
         {
-            if (message.IsFinalWave)
+            if (message.IsFinalWave || message.WaveIndex != _currentWaveIndex + 1)
             {
                 return;
             }

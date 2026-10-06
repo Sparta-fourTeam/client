@@ -42,7 +42,7 @@ namespace Game.Tests
         }
 
         private IPublisher<StageEnded> _stageEnded;
-        private IPublisher<WaveGaugeFilled> _gaugeFilled;
+        private IPublisher<WaveCompleted> _waveCompleted;
         private ISubscriber<StageStateChanged> _stateChanged;
         private ISubscriber<StageResult> _resultSubscriber;
         private ISubscriber<SubmitRejected> _rejectedSubscriber;
@@ -76,14 +76,14 @@ namespace Game.Tests
             builder.AddMessageBroker<StageResult>();
             builder.AddMessageBroker<SubmitRejected>();
             builder.AddMessageBroker<SubmitFailed>();
-            builder.AddMessageBroker<WaveGaugeFilled>();
+            builder.AddMessageBroker<WaveCompleted>();
             builder.AddMessageBroker<EnemyDied>();
             builder.AddMessageBroker<WaveGaugeChanged>();
             builder.AddMessageBroker<WallHpChanged>();
             IServiceProvider provider = builder.BuildServiceProvider();
 
             _stageEnded = provider.GetRequiredService<IPublisher<StageEnded>>();
-            _gaugeFilled = provider.GetRequiredService<IPublisher<WaveGaugeFilled>>();
+            _waveCompleted = provider.GetRequiredService<IPublisher<WaveCompleted>>();
             _stateChanged = provider.GetRequiredService<ISubscriber<StageStateChanged>>();
             _resultSubscriber = provider.GetRequiredService<ISubscriber<StageResult>>();
             _rejectedSubscriber = provider.GetRequiredService<ISubscriber<SubmitRejected>>();
@@ -122,7 +122,7 @@ namespace Game.Tests
                 context,
                 _stats,
                 _clock,
-                provider.GetRequiredService<ISubscriber<WaveGaugeFilled>>(),
+                provider.GetRequiredService<ISubscriber<WaveCompleted>>(),
                 new CardDeck(_skills, null, new List<GeneralCardDefinition>(), new UnityRandomProvider()),
                 provider.GetRequiredService<IPublisher<SubmitRejected>>(),
                 provider.GetRequiredService<IPublisher<SubmitFailed>>());
@@ -147,7 +147,7 @@ namespace Game.Tests
 
         private void FillGauge(bool isFinalWave)
         {
-            _gaugeFilled.Publish(new WaveGaugeFilled(isFinalWave));
+            _waveCompleted.Publish(new WaveCompleted(isFinalWave ? 20 : 1, isFinalWave));
         }
 
         [Test(Description = "Start하면 Playing으로 전환되고 상태 변경이 발행된다")]
