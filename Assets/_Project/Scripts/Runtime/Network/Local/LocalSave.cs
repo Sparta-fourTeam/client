@@ -9,6 +9,7 @@ namespace Game.Network
     public class LocalSave
     {
         public WalletRow wallet = new();
+        public int exp;
         public List<StageProgressRow> stageProgress = new() { new StageProgressRow { stageId = 1, clearRating = 0 } };
         public List<UpgradeRow> upgrades = new();
         public List<BattleRow> battles = new();

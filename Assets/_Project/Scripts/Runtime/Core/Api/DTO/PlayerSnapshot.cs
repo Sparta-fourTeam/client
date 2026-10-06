@@ -8,6 +8,7 @@ namespace Game.Core
     public class PlayerSnapshot
     {
         public int gold;
+        public int exp;
         public int energyStored;
         public string energyUpdatedAt;
         public List<StageProgressRow> stageProgress;

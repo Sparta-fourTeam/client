@@ -17,6 +17,7 @@ namespace Game.Core
         }
 
         public int Gold => _snapshot.gold;
+        public int Exp => _snapshot.exp;
         public int ItemQuantity(string itemId) => _snapshot.items.Find(item => item.itemId == itemId)?.quantity ?? 0;
         public int EnergyStored => _snapshot.energyStored;
 

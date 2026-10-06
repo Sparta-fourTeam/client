@@ -364,6 +364,7 @@ namespace Game.Editor
             profile.Apply(new PlayerSnapshot
             {
                 gold = current.gold,
+                exp = current.exp,
                 energyStored = energy,
                 energyUpdatedAt = System.DateTime.UtcNow.ToString("O"),
                 stageProgress = current.stageProgress,

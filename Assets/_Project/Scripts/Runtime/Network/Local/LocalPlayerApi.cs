@@ -19,6 +19,7 @@ namespace Game.Network
         internal static PlayerSnapshot ToSnapshot(LocalSave save) => new()
         {
             gold = save.wallet.gold,
+            exp = save.exp,
             energyStored = save.wallet.energyStored,
             energyUpdatedAt = save.wallet.energyUpdatedAt,
             stageProgress = save.stageProgress,
