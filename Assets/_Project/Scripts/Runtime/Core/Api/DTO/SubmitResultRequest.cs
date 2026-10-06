@@ -10,6 +10,7 @@ namespace Game.Core
         public string battleId;
         public bool cleared;
         public int reachedWave, kills;
+        public int completedWaves;
         public float playTime;
         public List<string> buildLog;
         public string createdAt;
