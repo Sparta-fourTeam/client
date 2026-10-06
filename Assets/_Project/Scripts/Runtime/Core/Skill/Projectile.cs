@@ -57,6 +57,19 @@ namespace Game.Core
             reactions.Raise(AttackEvent.Start, new AttackContext(settings.StartPos, direction));
         }
 
+        /// <summary>선분 from→to 위에서 point에 가장 가까운 지점의 위치 비율(0~1)을 돌려준다. 선분이 점이면 0</summary>
+        public static float ClosestPointRatio(Vector2 from, Vector2 to, Vector2 point)
+        {
+            Vector2 segment = to - from;
+            float lengthSqr = segment.sqrMagnitude;
+            if (lengthSqr <= Mathf.Epsilon)
+            {
+                return 0f;
+            }
+
+            return Mathf.Clamp01(Vector2.Dot(point - from, segment) / lengthSqr);
+        }
+
         private void Update()
         {
             Tick(Time.deltaTime);

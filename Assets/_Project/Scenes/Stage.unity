@@ -1929,6 +1929,14 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1672440838887796704, guid: 6e68198728ace4313b314fddb193ff9b, type: 3}
+      propertyPath: m_fontColor32.rgba
+      value: 4281545523
+      objectReference: {fileID: 0}
+    - target: {fileID: 4731597680942777315, guid: 6e68198728ace4313b314fddb193ff9b, type: 3}
+      propertyPath: m_BlockingMask.m_Bits
+      value: 823
+      objectReference: {fileID: 0}
     - target: {fileID: 5068699427622817576, guid: 6e68198728ace4313b314fddb193ff9b, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
