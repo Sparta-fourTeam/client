@@ -72,7 +72,10 @@ namespace Game.Core
         private static bool PositiveFinite(float value) => value > 0 && !float.IsNaN(value) && !float.IsInfinity(value);
         public void ApplyStun(float duration)
         {
-            if (!IsDead && PositiveFinite(duration)) { StunRemaining = Math.Max(StunRemaining, duration); }
+            if (!IsDead && !IsImmuneTo(StatusImmunity.Stun) && PositiveFinite(duration))
+            {
+                StunRemaining = Math.Max(StunRemaining, duration);
+            }
         }
         public void ApplySlow(float ratio, float duration)
         {
@@ -231,6 +234,9 @@ namespace Game.Core
 
         private readonly IReadOnlyList<IPassive> _passives;
         private readonly bool _isSummoned;
+        private readonly StatusImmunity _immunities;
+
+        public bool IsImmuneTo(StatusImmunity status) => (_immunities & status) != 0;
 
         public void RequestSpawn(EnemySpawnRequest request) => SpawnRequested?.Invoke(request);
 
@@ -241,10 +247,12 @@ namespace Game.Core
             IPublisher<EnemyHpChanged> hpChangedPublisher,
             IPublisher<EnemyDied> diedPublisher,
             IReadOnlyList<IPassive> passives = null,
-            bool isSummoned = false)
+            bool isSummoned = false,
+            StatusImmunity immunities = StatusImmunity.None)
         {
             _passives = passives;
             _isSummoned = isSummoned;
+            _immunities = immunities;
 
             if (maxHp <= 0)
             {

@@ -1,0 +1,12 @@
+using System;
+
+namespace Game.Core
+{
+    /// <summary>몬스터가 걸리지 않는 상태이상. 효과를 구현할 때마다 항목을 늘린다</summary>
+    [Flags]
+    public enum StatusImmunity
+    {
+        None = 0,
+        Stun = 1 << 0,
+    }
+}

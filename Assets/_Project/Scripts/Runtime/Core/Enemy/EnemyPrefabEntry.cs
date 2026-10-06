@@ -24,6 +24,10 @@ namespace Game.Core
         public int SplitMonsterId;
         public int SplitCount;
 
+        [Header("면역 (오니)")]
+        [Tooltip("걸리지 않는 상태이상")]
+        public StatusImmunity Immunities;
+
         [Header("생성 방식")]
         [Tooltip("켜면 웨이브 스폰의 무작위 선택에서 빼고, 분열·소환 요청으로만 만든다")]
         public bool SpawnOnly;
