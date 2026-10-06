@@ -140,7 +140,7 @@
         ]
       },
       {
-        "id": "kunai_pierce",
+        "id": "arrow_pierce",
         "name": "관통 강화",
         "desc": "공격력 +30% / 관통력 +1",
         "maxPickCount": 2,
@@ -160,7 +160,7 @@
         ]
       },
       {
-        "id": "kunai_explosion",
+        "id": "arrow_explosion",
         "name": "폭발 화살",
         "desc": "폭발 효과 추가",
         "maxPickCount": 1,
@@ -176,12 +176,12 @@
         ],
         "exclusions": [
           {
-            "cardId": "kunai_shock"
+            "cardId": "arrow_shock"
           }
         ]
       },
       {
-        "id": "kunai_explosion_damage",
+        "id": "arrow_explosion_damage",
         "name": "폭발 강화",
         "desc": "폭발 공격력 +80%",
         "maxPickCount": 2,
@@ -192,12 +192,12 @@
           }
         ],
         "requiredCardIds": [
-          "kunai_explosion"
+          "arrow_explosion"
         ],
         "requiredWeaponIds": []
       },
       {
-        "id": "kunai_explosion_radius",
+        "id": "arrow_explosion_radius",
         "name": "폭발 확산",
         "desc": "폭발 범위 +80%",
         "maxPickCount": 1,
@@ -208,12 +208,12 @@
           }
         ],
         "requiredCardIds": [
-          "kunai_explosion_damage"
+          "arrow_explosion_damage"
         ],
         "requiredWeaponIds": []
       },
       {
-        "id": "kunai_shock",
+        "id": "arrow_shock",
         "name": "충격 화살",
         "desc": "밀침 +15%",
         "maxPickCount": 1,
@@ -230,12 +230,12 @@
         "enabled": true,
         "exclusions": [
           {
-            "cardId": "kunai_explosion"
+            "cardId": "arrow_explosion"
           }
         ]
       },
       {
-        "id": "kunai_spread",
+        "id": "arrow_spread",
         "name": "확산 화살",
         "desc": "명중 시 보조 화살 2개 발사",
         "maxPickCount": 1,
@@ -258,7 +258,7 @@
         "minPermanentLevel": 0
       },
       {
-        "id": "kunai_barrage",
+        "id": "arrow_barrage",
         "name": "화살 난사",
         "desc": "명중 시 보조 화살 4개 추가 발사",
         "maxPickCount": 1,
@@ -270,12 +270,12 @@
           }
         ],
         "requiredCardIds": [
-          "kunai_spread"
+          "arrow_spread"
         ],
         "minPermanentLevel": 0
       },
       {
-        "id": "kunai_aux_damage",
+        "id": "arrow_aux_damage",
         "name": "보조 화살 강화",
         "desc": "보조 화살 공격력 +100%",
         "maxPickCount": 1,
@@ -287,12 +287,12 @@
           }
         ],
         "requiredCardIds": [
-          "kunai_spread"
+          "arrow_spread"
         ],
         "minPermanentLevel": 0
       },
       {
-        "id": "kunai_amplify",
+        "id": "arrow_amplify",
         "name": "화살 증폭",
         "desc": "화살/보조 화살 공격력 +100%",
         "maxPickCount": 1,
@@ -303,12 +303,12 @@
           }
         ],
         "requiredCardIds": [
-          "kunai_spread"
+          "arrow_spread"
         ],
         "minPermanentLevel": 13
       },
       {
-        "id": "kunai_thunder",
+        "id": "arrow_thunder",
         "name": "뇌전 화살",
         "desc": "마비 추가 / 투척 속도 +100%",
         "maxPickCount": 1,
@@ -324,11 +324,11 @@
         ],
         "requiredCardIds": [
           "arrow_light",
-          "kunai_shock"
+          "arrow_shock"
         ]
       },
       {
-        "id": "kunai_quick",
+        "id": "arrow_quick",
         "name": "쾌속 투척",
         "desc": "공격력 -10% / 쿨타임 -20%",
         "maxPickCount": 1,
@@ -343,11 +343,11 @@
           }
         ],
         "requiredCardIds": [
-          "kunai_thunder"
+          "arrow_thunder"
         ]
       },
       {
-        "id": "kunai_rod",
+        "id": "arrow_rod",
         "name": "피뢰침",
         "desc": "본체 적중 시 소형 벼락 1회",
         "maxPickCount": 1,
@@ -358,11 +358,11 @@
           }
         ],
         "requiredCardIds": [
-          "kunai_quick"
+          "arrow_quick"
         ]
       },
       {
-        "id": "kunai_aux_rod",
+        "id": "arrow_aux_rod",
         "name": "보조 피뢰침",
         "desc": "보조 적중 시 소형 벼락 1회",
         "maxPickCount": 1,
@@ -374,12 +374,12 @@
           }
         ],
         "requiredCardIds": [
-          "kunai_spread",
-          "kunai_rod"
+          "arrow_spread",
+          "arrow_rod"
         ]
       },
       {
-        "id": "kunai_aux_explosion",
+        "id": "arrow_aux_explosion",
         "name": "추가 폭발",
         "desc": "보조 화살 폭발 효과 추가",
         "maxPickCount": 1,
@@ -394,12 +394,12 @@
           }
         ],
         "requiredCardIds": [
-          "kunai_explosion",
-          "kunai_spread"
+          "arrow_explosion",
+          "arrow_spread"
         ]
       },
       {
-        "id": "kunai_flame",
+        "id": "arrow_flame",
         "name": "화염 화살",
         "desc": "점화 추가 (6초 지속)",
         "maxPickCount": 1,
@@ -414,8 +414,29 @@
           }
         ],
         "requiredCardIds": [
-          "kunai_explosion",
+          "arrow_explosion",
           "arrow_sharp"
+        ]
+      },
+      {
+        "id": "arrow_neutral_1",
+        "name": "무속성 증폭 · Ⅰ",
+        "desc": "화살과 에너지 빔 공격력 +50%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 50
+          }
+        ],
+        "enabled": true,
+        "sharedId": "shared_arrow_energy_damage",
+        "affectedWeaponIds": [
+          1,
+          16
+        ],
+        "requiredWeaponIds": [
+          16
         ]
       }
     ]
@@ -464,7 +485,7 @@
         ],
         "exclusions": [
           {
-            "cardId": "fireball_enbakutsu",
+            "cardId": "fireball_phoenix",
             "belowPermanentLevel": 25
           }
         ]
@@ -476,9 +497,9 @@
         "maxPickCount": 1,
         "requiredCardCounts": [
           {
-            "weaponId": 0,
             "cardId": "fireball_burst",
-            "count": 2
+            "count": 2,
+            "skillId": 0
           }
         ],
         "effects": [
@@ -506,7 +527,7 @@
         ],
         "exclusions": [
           {
-            "cardId": "fireball_enbakutsu",
+            "cardId": "fireball_phoenix",
             "belowPermanentLevel": 25
           }
         ]
@@ -646,7 +667,7 @@
         ]
       },
       {
-        "id": "fireball_enbakutsu",
+        "id": "fireball_phoenix",
         "name": "불사조 불꽃",
         "desc": "불사조 불꽃로 형태 변화 / 관통력 +2",
         "maxPickCount": 1,
@@ -951,13 +972,34 @@
             "value": 400
           }
         ]
+      },
+      {
+        "id": "lightning_neutral",
+        "name": "뇌속성 증폭",
+        "desc": "벼락과 연쇄 번개 공격력 +80%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 80
+          }
+        ],
+        "enabled": true,
+        "sharedId": "shared_lightning_chain_damage",
+        "affectedWeaponIds": [
+          3,
+          18
+        ],
+        "requiredWeaponIds": [
+          18
+        ]
       }
     ]
   },
   {
     "id": 4,
     "name": "서리 결정",
-    "assetKey": "weapon_ice",
+    "assetKey": "weapon_frost_crystal",
     "castType": 0,
     "maxLevel": 15,
     "progressionId": null,
@@ -985,7 +1027,7 @@
     },
     "upgrades": [
       {
-        "id": "ice_repeat",
+        "id": "frost_crystal_repeat",
         "name": "서리 결정 연발",
         "desc": "추가 시전 +1 / 공격력 -20%",
         "maxPickCount": 2,
@@ -1001,7 +1043,7 @@
         ],
         "exclusions": [
           {
-            "cardId": "ice_volley"
+            "cardId": "frost_crystal_volley"
           }
         ],
         "variants": [
@@ -1019,7 +1061,7 @@
         ]
       },
       {
-        "id": "ice_damage",
+        "id": "frost_crystal_damage",
         "name": "서리 결정 피해 증폭",
         "desc": "공격력 +60%",
         "maxPickCount": 3,
@@ -1031,7 +1073,7 @@
         ]
       },
       {
-        "id": "ice_extreme",
+        "id": "frost_crystal_extreme",
         "name": "극한의 서리 결정",
         "desc": "공격력 +30% / 빙결 2초",
         "maxPickCount": 1,
@@ -1047,7 +1089,7 @@
         ]
       },
       {
-        "id": "ice_pierce",
+        "id": "frost_crystal_pierce",
         "name": "서리 결정 관통",
         "desc": "공격력 +30% / 관통력 +2",
         "maxPickCount": 3,
@@ -1063,7 +1105,7 @@
         ]
       },
       {
-        "id": "ice_heavy",
+        "id": "frost_crystal_heavy",
         "name": "헤비 서리 결정",
         "desc": "공격력 +50% / 비행 속도 -30% / 관통력 +1",
         "maxPickCount": 1,
@@ -1082,11 +1124,11 @@
           }
         ],
         "requiredCardIds": [
-          "ice_pierce"
+          "frost_crystal_pierce"
         ]
       },
       {
-        "id": "ice_volley",
+        "id": "frost_crystal_volley",
         "name": "서리 결정 일제 사격",
         "desc": "발사 수 +1 / 공격력 -40%",
         "maxPickCount": 1,
@@ -1101,17 +1143,17 @@
           }
         ],
         "requiredCardIds": [
-          "ice_extreme"
+          "frost_crystal_extreme"
         ],
         "minPermanentLevel": 13,
         "exclusions": [
           {
-            "cardId": "ice_pierce"
+            "cardId": "frost_crystal_pierce"
           }
         ]
       },
       {
-        "id": "ice_split",
+        "id": "frost_crystal_split",
         "name": "서리 결정 분열",
         "desc": "명중 시 소형 서리 결정 3개로 분열",
         "maxPickCount": 1,
@@ -1147,7 +1189,7 @@
         "requiredCardIds": []
       },
       {
-        "id": "ice_shard_damage",
+        "id": "frost_crystal_shard_damage",
         "name": "얼음 조각 피해 증폭",
         "desc": "소형 서리 결정 공격력 +80%",
         "maxPickCount": 1,
@@ -1160,11 +1202,11 @@
         ],
         "enabled": true,
         "requiredCardIds": [
-          "ice_split"
+          "frost_crystal_split"
         ]
       },
       {
-        "id": "ice_impact",
+        "id": "frost_crystal_impact",
         "name": "서리 결정 충격",
         "desc": "밀침 +200% / 관통력 +2",
         "maxPickCount": 1,
@@ -1182,7 +1224,7 @@
         "requiredCardIds": []
       },
       {
-        "id": "ice_frostbite",
+        "id": "frost_crystal_frostbite",
         "name": "사무치는 냉기",
         "desc": "동상 10초 / 최대 5회 중첩",
         "maxPickCount": 1,
@@ -1194,12 +1236,12 @@
         ],
         "enabled": true,
         "requiredCardIds": [
-          "ice_pierce",
-          "ice_extreme"
+          "frost_crystal_pierce",
+          "frost_crystal_extreme"
         ]
       },
       {
-        "id": "ice_shard_frostbite",
+        "id": "frost_crystal_shard_frostbite",
         "name": "스며드는 냉기",
         "desc": "소형 서리 결정 동상 추가",
         "maxPickCount": 1,
@@ -1212,12 +1254,12 @@
         ],
         "enabled": true,
         "requiredCardIds": [
-          "ice_split",
-          "ice_frostbite"
+          "frost_crystal_split",
+          "frost_crystal_frostbite"
         ]
       },
       {
-        "id": "ice_triangle",
+        "id": "frost_crystal_triangle",
         "name": "삼중 서리 결정",
         "desc": "삼각→일반→소형 서리 결정 분열 / 강화 효과 유지",
         "maxPickCount": 1,
@@ -1246,9 +1288,9 @@
         ],
         "enabled": true,
         "requiredCardIds": [
-          "ice_pierce",
-          "ice_extreme",
-          "ice_damage"
+          "frost_crystal_pierce",
+          "frost_crystal_extreme",
+          "frost_crystal_damage"
         ]
       }
     ]
@@ -1501,8 +1543,8 @@
   },
   {
     "id": 6,
-    "name": "서리 감옥",
-    "assetKey": "weapon_frost_prison",
+    "name": "냉기 지대",
+    "assetKey": "weapon_cold_zone",
     "castType": 2,
     "maxLevel": 10,
     "progressionId": null,
@@ -1528,7 +1570,7 @@
     },
     "upgrades": [
       {
-        "id": "frost_prison_cast",
+        "id": "cold_zone_cast",
         "name": "연쇄 서리 폭발",
         "desc": "추가 시전 +1",
         "maxPickCount": 2,
@@ -1540,7 +1582,7 @@
         ]
       },
       {
-        "id": "frost_prison_damage",
+        "id": "cold_zone_damage",
         "name": "서리 피해 증폭",
         "desc": "공격력 +60%",
         "maxPickCount": 3,
@@ -1552,7 +1594,7 @@
         ]
       },
       {
-        "id": "frost_prison_extreme",
+        "id": "cold_zone_extreme",
         "name": "극한 서리",
         "desc": "공격력 +30% / 빙결 2초",
         "maxPickCount": 1,
@@ -1568,7 +1610,7 @@
         ]
       },
       {
-        "id": "frost_prison_core",
+        "id": "cold_zone_core",
         "name": "빙결핵",
         "desc": "중심부 1회 추가 공격",
         "maxPickCount": 1,
@@ -1576,11 +1618,11 @@
         "enabled": false,
         "disabledReason": "중심부 추가 공격(영역 중심 타격)이 구현되지 않았다",
         "requiredCardIds": [
-          "frost_prison_extreme"
+          "cold_zone_extreme"
         ]
       },
       {
-        "id": "frost_prison_zero",
+        "id": "cold_zone_zero",
         "name": "절대 영도",
         "desc": "중심부 빙결 지속 2배",
         "maxPickCount": 1,
@@ -1588,11 +1630,11 @@
         "enabled": false,
         "disabledReason": "빙결핵(중심부 추가 공격)이 구현되지 않았다",
         "requiredCardIds": [
-          "frost_prison_core"
+          "cold_zone_core"
         ]
       },
       {
-        "id": "frost_prison_expand",
+        "id": "cold_zone_expand",
         "name": "서리 확장",
         "desc": "범위 +100%",
         "maxPickCount": 1,
@@ -1603,11 +1645,11 @@
           }
         ],
         "requiredCardIds": [
-          "frost_prison_damage"
+          "cold_zone_damage"
         ]
       },
       {
-        "id": "frost_prison_shatter",
+        "id": "cold_zone_shatter",
         "name": "얼음 결정 파열",
         "desc": "종료 시 소형 서리 결정 2개로 분열",
         "maxPickCount": 1,
@@ -1625,9 +1667,9 @@
         ]
       },
       {
-        "id": "frost_prison_polish",
+        "id": "cold_zone_polish",
         "name": "빙속성 연마",
-        "desc": "서리 감옥과 서리 결정 쿨타임 -25%",
+        "desc": "냉기 지대과 서리 결정 쿨타임 -25%",
         "maxPickCount": 1,
         "effects": [],
         "enabled": false,
@@ -1638,7 +1680,7 @@
         "minPermanentLevel": 21
       },
       {
-        "id": "frost_prison_bitter",
+        "id": "cold_zone_bitter",
         "name": "매서운 서리",
         "desc": "빙결 지속 동안 매초 최대 HP 1% 피해",
         "maxPickCount": 1,
@@ -1651,9 +1693,9 @@
         "minPermanentLevel": 13,
         "requiredCardCounts": [
           {
-            "cardId": "ice_extreme",
-            "weaponId": 4,
-            "count": 1
+            "cardId": "frost_crystal_extreme",
+            "count": 1,
+            "skillId": 4
           }
         ]
       }
@@ -1661,7 +1703,7 @@
   },
   {
     "id": 7,
-    "name": "번개 구름",
+    "name": "전기 구름",
     "assetKey": "weapon_lightning_cloud",
     "castType": 2,
     "maxLevel": 10,
@@ -1687,7 +1729,7 @@
     "upgrades": [
       {
         "id": "lightning_cloud_expand",
-        "name": "번개 구름 확장",
+        "name": "전기 구름 확장",
         "desc": "범위 +50%",
         "maxPickCount": 1,
         "effects": [
@@ -1699,7 +1741,7 @@
       },
       {
         "id": "lightning_cloud_duration",
-        "name": "번개 구름 지속",
+        "name": "전기 구름 지속",
         "desc": "지속시간 +60%",
         "maxPickCount": 3,
         "effects": [
@@ -1711,7 +1753,7 @@
       },
       {
         "id": "lightning_cloud_speed",
-        "name": "번개 구름 가속",
+        "name": "전기 구름 가속",
         "desc": "공격력 +40% / 이동 속도 +20%",
         "maxPickCount": 2,
         "effects": [
@@ -1727,7 +1769,7 @@
       },
       {
         "id": "lightning_cloud_damage",
-        "name": "번개 구름 피해 증폭",
+        "name": "전기 구름 피해 증폭",
         "desc": "공격력 +60%",
         "maxPickCount": 3,
         "effects": [
@@ -1739,7 +1781,7 @@
       },
       {
         "id": "lightning_cloud_voltage",
-        "name": "고전압 번개 구름",
+        "name": "고전압 전기 구름",
         "desc": "마비 지속 +2초",
         "maxPickCount": 1,
         "effects": [
@@ -1781,7 +1823,7 @@
       },
       {
         "id": "lightning_cloud_split",
-        "name": "번개 구름 분열",
+        "name": "전기 구름 분열",
         "desc": "종료 시 2개로 분열",
         "maxPickCount": 1,
         "effects": [],
@@ -1820,8 +1862,10 @@
         "maxPickCount": 1,
         "effects": [],
         "enabled": false,
-        "disabledReason": "연쇄 번개가 구현되지 않았고 추가 공격의 발동 시점과 피해가 원문에 없다",
-        "requiredWeaponIds": [],
+        "disabledReason": "연쇄 번개는 구현됨. 추가 전기 공격의 발동 시점·피해 계수·대상 선정 규칙이 미확정이라 효과 연결을 보류한다",
+        "requiredWeaponIds": [
+          18
+        ],
         "requiredCardIds": [
           "lightning_cloud_speed",
           "lightning_cloud_damage"
@@ -1855,8 +1899,8 @@
   },
   {
     "id": 12,
-    "name": "일반 얼음창",
-    "assetKey": "weapon_ice_spear",
+    "name": "일반 서리 결정",
+    "assetKey": "weapon_frost_crystal_aux",
     "castType": 0,
     "maxLevel": 1,
     "progressionId": null,
@@ -1952,8 +1996,8 @@
   },
   {
     "id": 16,
-    "name": "태양 광선",
-    "assetKey": "weapon_sun_beam",
+    "name": "에너지 빔",
+    "assetKey": "weapon_energy_beam",
     "castType": 3,
     "maxLevel": 13,
     "progressionId": null,
@@ -1979,7 +2023,7 @@
     },
     "upgrades": [
       {
-        "id": "sun_beam_overload",
+        "id": "energy_beam_overload",
         "name": "광선 과부하",
         "desc": "공격 횟수 +100% / 쿨타임 +50%",
         "maxPickCount": 1,
@@ -1995,8 +2039,8 @@
         ]
       },
       {
-        "id": "sun_beam_amplify",
-        "name": "태양광 증폭",
+        "id": "energy_beam_amplify",
+        "name": "에너지 빔 증폭",
         "desc": "공격력 +60%",
         "maxPickCount": 3,
         "effects": [
@@ -2007,7 +2051,7 @@
         ]
       },
       {
-        "id": "sun_beam_stable",
+        "id": "energy_beam_stable",
         "name": "안정된 광선",
         "desc": "공격 횟수 +5",
         "maxPickCount": 2,
@@ -2019,7 +2063,7 @@
         ]
       },
       {
-        "id": "sun_beam_split",
+        "id": "energy_beam_split",
         "name": "분열 광선",
         "desc": "받는 피해 +25% / 5초(중첩 불가)",
         "maxPickCount": 1,
@@ -2035,7 +2079,7 @@
         ]
       },
       {
-        "id": "sun_beam_dazzle",
+        "id": "energy_beam_dazzle",
         "name": "화려한 광선",
         "desc": "5% 확률 기절 1초",
         "maxPickCount": 1,
@@ -2051,7 +2095,7 @@
         ]
       },
       {
-        "id": "sun_beam_weaken",
+        "id": "energy_beam_weaken",
         "name": "쇠약 광선",
         "desc": "피격 시 이동 속도 -80% 1초",
         "maxPickCount": 1,
@@ -2063,17 +2107,17 @@
         ]
       },
       {
-        "id": "sun_beam_judgement",
-        "name": "필살기 · 태양의 심판",
-        "desc": "1회용 / 태양 광선 영구 레벨 비례 공격력",
+        "id": "energy_beam_judgement",
+        "name": "필살기 · 에너지 방출",
+        "desc": "1회용 / 에너지 빔 영구 레벨 비례 공격력",
         "maxPickCount": 1,
         "effects": [],
         "enabled": false,
         "disabledReason": "필살기의 공격력 계수, 1회용 초기화 범위, 영구 레벨 연결 규칙이 원문에 없다"
       },
       {
-        "id": "sun_beam_spread",
-        "name": "태양광 확산",
+        "id": "energy_beam_spread",
+        "name": "에너지 빔 확산",
         "desc": "범위 +150%",
         "maxPickCount": 1,
         "effects": [
@@ -2083,11 +2127,11 @@
           }
         ],
         "requiredCardIds": [
-          "sun_beam_amplify"
+          "energy_beam_amplify"
         ]
       },
       {
-        "id": "sun_beam_fire",
+        "id": "energy_beam_fire",
         "name": "광선 발사",
         "desc": "시전 시 보조 광선 시전",
         "maxPickCount": 1,
@@ -2102,52 +2146,71 @@
           }
         ],
         "requiredCardIds": [
-          "sun_beam_overload",
-          "sun_beam_amplify"
+          "energy_beam_overload",
+          "energy_beam_amplify"
+        ],
+        "exclusions": [
+          {
+            "cardId": "energy_beam_barrage"
+          }
         ]
       },
       {
-        "id": "sun_beam_positron",
+        "id": "energy_beam_positron",
         "name": "양전자포",
-        "desc": "태양 광선을 양전자포로 변환",
+        "desc": "에너지 빔을 양전자포로 변환",
         "maxPickCount": 1,
         "effects": [],
         "enabled": false,
         "disabledReason": "변환 후 피해·범위·지속 상세가 원문에 없다",
         "requiredCardIds": [
-          "sun_beam_overload",
-          "sun_beam_spread"
+          "energy_beam_overload",
+          "energy_beam_spread"
         ]
       },
       {
-        "id": "sun_beam_barrage",
+        "id": "energy_beam_barrage",
         "name": "광선 난사",
-        "desc": "전장에 태양 광선 여러 개 난사(개당 공격력 -50%)",
+        "desc": "전장에 에너지 빔 여러 개 난사(개당 공격력 -50%)",
         "maxPickCount": 1,
         "effects": [],
         "enabled": false,
         "disabledReason": "광선 개수와 배치가 원문에 없다",
         "requiredCardIds": [
-          "sun_beam_overload",
-          "sun_beam_spread",
-          "sun_beam_weaken"
+          "energy_beam_overload",
+          "energy_beam_spread",
+          "energy_beam_weaken"
         ],
-        "minPermanentLevel": 17
-      },
-      {
-        "id": "sun_beam_neutral_1",
-        "name": "무속성 증폭 · Ⅰ",
-        "desc": "화살과 태양 광선 공격력 +50%",
-        "maxPickCount": 1,
-        "effects": [],
-        "enabled": false,
-        "disabledReason": "두 스킬의 습득 수가 함께 늘고 증폭 횟수를 공유하는 공유 카드가 연결되지 않았다",
-        "requiredWeaponIds": [
-          1
+        "minPermanentLevel": 17,
+        "exclusions": [
+          {
+            "cardId": "energy_beam_fire"
+          }
         ]
       },
       {
-        "id": "sun_beam_freeze",
+        "id": "energy_beam_neutral_1",
+        "name": "무속성 증폭 · Ⅰ",
+        "desc": "화살과 에너지 빔 공격력 +50%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 50
+          }
+        ],
+        "enabled": true,
+        "requiredWeaponIds": [
+          1
+        ],
+        "sharedId": "shared_arrow_energy_damage",
+        "affectedWeaponIds": [
+          1,
+          16
+        ]
+      },
+      {
+        "id": "energy_beam_freeze",
         "name": "빙결 광선",
         "desc": "빙결 0.5초 추가",
         "maxPickCount": 1,
@@ -2162,20 +2225,20 @@
         ]
       },
       {
-        "id": "sun_beam_neutral_3",
+        "id": "energy_beam_neutral_3",
         "name": "무속성 증폭 · Ⅲ",
-        "desc": "태양 광선과 달빛 광선 공격력 +60%",
+        "desc": "에너지 빔과 집중 광선 공격력 +60%",
         "maxPickCount": 1,
         "effects": [],
         "enabled": false,
-        "disabledReason": "달빛 광선이 구현되지 않았고 공유 카드가 연결되지 않았다"
+        "disabledReason": "집중 광선이 구현되지 않았고 공유 카드가 연결되지 않았다"
       }
     ]
   },
   {
     "id": 17,
-    "name": "보조 태양 광선",
-    "assetKey": "weapon_sun_beam_aux",
+    "name": "보조 에너지 빔",
+    "assetKey": "weapon_energy_beam_aux",
     "castType": 3,
     "maxLevel": 1,
     "progressionId": null,
@@ -2363,11 +2426,20 @@
         "name": "뇌속성 증폭",
         "desc": "벼락과 연쇄 번개 공격력 +80%",
         "maxPickCount": 1,
-        "effects": [],
-        "enabled": false,
-        "disabledReason": "두 스킬의 습득 수가 함께 늘고 증폭 횟수를 공유하는 공유 카드가 연결되지 않았다",
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 80
+          }
+        ],
+        "enabled": true,
         "requiredWeaponIds": [
           3
+        ],
+        "sharedId": "shared_lightning_chain_damage",
+        "affectedWeaponIds": [
+          3,
+          18
         ]
       }
     ]

@@ -65,11 +65,11 @@ namespace Game.Tests
         public void TriangleIce_RequiresAllThreeCardsAndEnablesActualForm()
         {
             var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 4);
-            var triangle = data.upgrades.Find(c => c.id == "ice_triangle");
+            var triangle = data.upgrades.Find(c => c.id == "frost_crystal_triangle");
             var state = new State(); state.Levels[4] = 1;
-            state.Counts[(4, "ice_pierce")] = 1; state.Counts[(4, "ice_extreme")] = 1;
+            state.Counts[(4, "frost_crystal_pierce")] = 1; state.Counts[(4, "frost_crystal_extreme")] = 1;
             Assert.IsFalse(UpgradeEligibility.CanAcquire(triangle, 4, state));
-            state.Counts[(4, "ice_damage")] = 1;
+            state.Counts[(4, "frost_crystal_damage")] = 1;
             Assert.IsTrue(UpgradeEligibility.CanAcquire(triangle, 4, state));
             var go = new UnityEngine.GameObject("TriangleCardTest");
             try
@@ -135,9 +135,9 @@ namespace Game.Tests
         [Test]
         public void KunaiAmplification_RequiresPermanent13AndAllowsOneSelection()
         {
-            var option = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 1).upgrades.Find(c => c.id == "kunai_amplify");
+            var option = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 1).upgrades.Find(c => c.id == "arrow_amplify");
             var state = Owned();
-            state.Counts[(1, "kunai_spread")] = 1;
+            state.Counts[(1, "arrow_spread")] = 1;
             state.PermanentLevels[1] = 12;
             Assert.IsFalse(UpgradeEligibility.CanAcquire(option, 1, state));
             state.PermanentLevels[1] = 13;
@@ -151,26 +151,26 @@ namespace Game.Tests
         {
             var cards = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 1).upgrades;
             var state = Owned();
-            var shock = cards.Find(c => c.id == "kunai_shock");
+            var shock = cards.Find(c => c.id == "arrow_shock");
             Assert.IsFalse(UpgradeEligibility.CanAcquire(shock, 1, state));
             state.Levels[3] = 1;
             Assert.IsTrue(UpgradeEligibility.CanAcquire(shock, 1, state));
-            state.Counts[(1, "kunai_explosion")] = 1;
+            state.Counts[(1, "arrow_explosion")] = 1;
             Assert.IsFalse(UpgradeEligibility.CanAcquire(shock, 1, state));
-            state.Counts.Remove((1, "kunai_explosion"));
-            state.Counts[(1, "kunai_shock")] = 1;
-            var thunder = cards.Find(c => c.id == "kunai_thunder");
+            state.Counts.Remove((1, "arrow_explosion"));
+            state.Counts[(1, "arrow_shock")] = 1;
+            var thunder = cards.Find(c => c.id == "arrow_thunder");
             Assert.IsFalse(UpgradeEligibility.CanAcquire(thunder, 1, state));
             state.Counts[(1, "arrow_light")] = 1;
             Assert.IsTrue(UpgradeEligibility.CanAcquire(thunder, 1, state));
-            var rod = cards.Find(c => c.id == "kunai_rod");
+            var rod = cards.Find(c => c.id == "arrow_rod");
             Assert.IsFalse(UpgradeEligibility.CanAcquire(rod, 1, state));
-            state.Counts[(1, "kunai_quick")] = 1;
+            state.Counts[(1, "arrow_quick")] = 1;
             Assert.IsTrue(UpgradeEligibility.CanAcquire(rod, 1, state));
-            var auxiliary = cards.Find(c => c.id == "kunai_aux_rod");
-            state.Counts[(1, "kunai_rod")] = 1;
+            var auxiliary = cards.Find(c => c.id == "arrow_aux_rod");
+            state.Counts[(1, "arrow_rod")] = 1;
             Assert.IsFalse(UpgradeEligibility.CanAcquire(auxiliary, 1, state));
-            state.Counts[(1, "kunai_spread")] = 1;
+            state.Counts[(1, "arrow_spread")] = 1;
             Assert.IsTrue(UpgradeEligibility.CanAcquire(auxiliary, 1, state));
         }
 
@@ -179,8 +179,8 @@ namespace Game.Tests
         {
             var catalog = new DefaultSkillDataProvider(new GameDataStore()).LoadAll();
             var state = Owned();
-            var flame = catalog.Find(w => w.id == 1).upgrades.Find(c => c.id == "kunai_flame");
-            state.Counts[(1, "kunai_explosion")] = 1;
+            var flame = catalog.Find(w => w.id == 1).upgrades.Find(c => c.id == "arrow_flame");
+            state.Counts[(1, "arrow_explosion")] = 1;
             Assert.IsFalse(UpgradeEligibility.CanAcquire(flame, 1, state));
             state.Counts[(1, "arrow_sharp")] = 1;
             Assert.IsTrue(UpgradeEligibility.CanAcquire(flame, 1, state));
@@ -209,7 +209,7 @@ namespace Game.Tests
         public void Enbakutsu_UnlocksAt13AndRepeatRestrictionEndsAt25()
         {
             var cards = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 2).upgrades;
-            var enbakutsu = cards.Find(c => c.id == "fireball_enbakutsu");
+            var enbakutsu = cards.Find(c => c.id == "fireball_phoenix");
             var repeat = cards.Find(c => c.id == "fireball_burst");
             var state = Owned(); state.Levels[2] = 1;
             state.Counts[(2, "fireball_impact_damage")] = 1;
@@ -223,7 +223,7 @@ namespace Game.Tests
             Assert.IsFalse(UpgradeEligibility.CanAcquire(enbakutsu, 2, state));
             state.PermanentLevels[2] = 25;
             Assert.IsTrue(UpgradeEligibility.CanAcquire(enbakutsu, 2, state));
-            state.Counts[(2, "fireball_enbakutsu")] = 1;
+            state.Counts[(2, "fireball_phoenix")] = 1;
             state.PermanentLevels[2] = 24;
             Assert.IsFalse(UpgradeEligibility.CanAcquire(repeat, 2, state));
             state.PermanentLevels[2] = 25;

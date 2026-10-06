@@ -88,6 +88,33 @@ namespace Game.Tests
             });
         }
 
+        [TestCase(1, 16, "arrow_neutral_1", "energy_beam_neutral_1", 1.5f)]
+        [TestCase(3, 18, "lightning_neutral", "chain_lightning_neutral", 1.8f)]
+        public void ShippedSharedCards_UpdateBothSkillsAndCannotBeSelectedTwice(
+            int firstId, int secondId, string firstCardId, string secondCardId, float multiplier)
+        {
+            var catalog = new DefaultSkillDataProvider(new GameDataStore()).LoadAll();
+            var first = new TestSkill(catalog.Find(s => s.id == firstId));
+            var second = new TestSkill(catalog.Find(s => s.id == secondId));
+            var firstCard = first.Data.upgrades.Find(c => c.id == firstCardId);
+            var secondCard = second.Data.upgrades.Find(c => c.id == secondCardId);
+            var skills = new SkillBase[] { first, second };
+            var firstDamage = first.CurrentStats.Cast.Damage;
+            var secondDamage = second.CurrentStats.Cast.Damage;
+            Assert.IsTrue(firstCard.enabled);
+            Assert.IsTrue(secondCard.enabled);
+            Assert.IsFalse(SkillUpgradeTransaction.TryApply(first, firstCard, new[] { first }, 0));
+            Assert.AreEqual(0, first.UpgradeCount);
+            Assert.IsTrue(SkillUpgradeTransaction.TryApply(first, firstCard, skills, 0));
+            Assert.AreEqual(firstDamage * multiplier, first.CurrentStats.Cast.Damage, .0001f);
+            Assert.AreEqual(secondDamage * multiplier, second.CurrentStats.Cast.Damage, .0001f);
+            Assert.AreEqual(1, first.UpgradeCount);
+            Assert.AreEqual(1, second.UpgradeCount);
+            Assert.AreEqual(1, first.GetAcquiredCount(firstCardId));
+            Assert.AreEqual(1, second.GetAcquiredCount(secondCardId));
+            Assert.IsFalse(SkillUpgradeTransaction.TryApply(second, secondCard, skills, 0));
+        }
+
         [TestCase("damage")]
         [TestCase("attackSpeed")]
         public void SharedUpgrade_AppliesBothAndSharesCounterAcrossOppositeChoice(string type)

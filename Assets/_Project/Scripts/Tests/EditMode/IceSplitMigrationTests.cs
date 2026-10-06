@@ -27,7 +27,7 @@ namespace Game.Tests
         public void SplitCard_ShootsThreeShardsAtOtherEnemiesAtHalfDamageTimesShardBonus()
         {
             var ice = world.Create(IceId);
-            world.Take(ice, "ice_split", "ice_shard_damage");
+            world.Take(ice, "frost_crystal_split", "frost_crystal_shard_damage");
             var hit = world.AddEnemy(0, 0);
             var a = world.AddEnemy(4, 0); var b = world.AddEnemy(0, 5); var c = world.AddEnemy(-6, 0);
 
@@ -50,7 +50,7 @@ namespace Game.Tests
         public void ShardsDoNotSplitAgain()
         {
             var ice = world.Create(IceId);
-            world.Take(ice, "ice_split");
+            world.Take(ice, "frost_crystal_split");
             var hit = world.AddEnemy(0, 0);
             world.AddEnemy(4, 0);
             CatalogWorld.Hit(ice.Config.Reactions, hit);
@@ -64,7 +64,7 @@ namespace Game.Tests
         public void ShardFrostbiteCard_AppliesToShardsOnly()
         {
             var ice = world.Create(IceId);
-            world.Take(ice, "ice_split", "ice_shard_frostbite");
+            world.Take(ice, "frost_crystal_split", "frost_crystal_shard_frostbite");
             var hit = world.AddEnemy(0, 0);
             world.AddEnemy(4, 0);
             CatalogWorld.Hit(ice.Config.Reactions, hit);
@@ -77,7 +77,7 @@ namespace Game.Tests
         public void Triangle_ShootsThreeNormalSpearsInheritingParentStatsAtHalfDamage()
         {
             var ice = world.Create(IceId);
-            world.Take(ice, "ice_extreme", "ice_frostbite", "ice_triangle");
+            world.Take(ice, "frost_crystal_extreme", "frost_crystal_frostbite", "frost_crystal_triangle");
             var hit = world.AddEnemy(0, 0);
             world.AddEnemy(4, 0); world.AddEnemy(0, 5); world.AddEnemy(-6, 0);
 
@@ -101,8 +101,8 @@ namespace Game.Tests
         public void TriangleThenSplit_NormalsSplitIntoSmallShards_InEitherCardOrder(bool splitFirst)
         {
             var ice = world.Create(IceId);
-            if (splitFirst) { world.Take(ice, "ice_split", "ice_shard_damage", "ice_triangle"); }
-            else { world.Take(ice, "ice_triangle", "ice_split", "ice_shard_damage"); }
+            if (splitFirst) { world.Take(ice, "frost_crystal_split", "frost_crystal_shard_damage", "frost_crystal_triangle"); }
+            else { world.Take(ice, "frost_crystal_triangle", "frost_crystal_split", "frost_crystal_shard_damage"); }
             var hit = world.AddEnemy(0, 0);
             var second = world.AddEnemy(4, 0); world.AddEnemy(0, 5); world.AddEnemy(-6, 0);
 
@@ -124,7 +124,7 @@ namespace Game.Tests
         public void TriangleWithoutSplitCard_NormalsDoNotSplit()
         {
             var ice = world.Create(IceId);
-            world.Take(ice, "ice_triangle");
+            world.Take(ice, "frost_crystal_triangle");
             var hit = world.AddEnemy(0, 0);
             var second = world.AddEnemy(4, 0); world.AddEnemy(0, 5);
             CatalogWorld.Hit(ice.Config.Reactions, hit);

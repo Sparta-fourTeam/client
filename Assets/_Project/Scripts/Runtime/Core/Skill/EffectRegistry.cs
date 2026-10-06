@@ -135,7 +135,7 @@ namespace Game.Core
             Add("fieldDamageFlat", Plain, Hitscan, (s, v) => s[Stat.FieldFlatDamage] += v, Positive);
             Add("fieldDamageMultiplier", Plain, Hitscan, (s, v) => s[Stat.FieldDamageMultiplier] *= Factor(v), Positive);
 
-            // 영역: 서리 감옥처럼 자리에 머무는 공격만 쓴다.
+            // 영역: 냉기 지대처럼 자리에 머무는 공격만 쓴다.
             Add("areaRadius", Plain, Area, (s, v) => s[Stat.AreaRadius] *= Factor(v), Positive);
             Add("areaDuration", Plain, Area, (s, v) => s[Stat.AreaDuration] *= Factor(v), Positive);
             Add("areaMoveSpeed", Plain, Area, (s, v) => s[Stat.AreaMoveSpeed] *= Factor(v), Positive);

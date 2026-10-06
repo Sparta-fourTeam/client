@@ -12,7 +12,7 @@ using Object = UnityEngine.Object;
 
 namespace Game.Tests
 {
-    /// <summary>영역 공격(서리 감옥): 영역 동작, 전략, 카드 효과, 자식 스킬 시전</summary>
+    /// <summary>영역 공격(냉기 지대): 영역 동작, 전략, 카드 효과, 자식 스킬 시전</summary>
     public sealed class AreaSkillTests
     {
         private const string FrostPrisonPrefab = "Assets/_Project/Prefabs/Skills/FrostPrison.prefab";
@@ -157,8 +157,8 @@ namespace Game.Tests
             var data = FrostPrison();
             var start = SkillConfig.FromDefinition(data);
             var builder = new SkillConfigBuilder(start);
-            Assert.IsTrue(builder.TryApplyCatalog(data.upgrades.Find(c => c.id == "frost_prison_expand").effects));
-            Assert.IsTrue(builder.TryApplyCatalog(data.upgrades.Find(c => c.id == "frost_prison_cast").effects));
+            Assert.IsTrue(builder.TryApplyCatalog(data.upgrades.Find(c => c.id == "cold_zone_expand").effects));
+            Assert.IsTrue(builder.TryApplyCatalog(data.upgrades.Find(c => c.id == "cold_zone_cast").effects));
             var stats = builder.Build().Stats;
             Assert.AreEqual(start.Stats.Area.Radius * 2, stats.Area.Radius, .001f);
             Assert.AreEqual(2, stats.Cast.Count);
@@ -173,7 +173,7 @@ namespace Game.Tests
             var caster = CreateCaster(data, provider, out _);
             var fake = new FakeCaster();
             caster.UseChildCaster(fake);
-            Assert.IsTrue(caster.LevelUp(data.upgrades.Find(c => c.id == "frost_prison_shatter")));
+            Assert.IsTrue(caster.LevelUp(data.upgrades.Find(c => c.id == "cold_zone_shatter")));
 
             typeof(SkillCaster).GetMethod("OnFire", Flags).Invoke(caster, null);
             var zone = Zones().Single();
@@ -211,7 +211,7 @@ namespace Game.Tests
             try
             {
                 caster.UseChildCaster(children);
-                Assert.IsTrue(caster.LevelUp(data.upgrades.Find(c => c.id == "frost_prison_shatter")));
+                Assert.IsTrue(caster.LevelUp(data.upgrades.Find(c => c.id == "cold_zone_shatter")));
                 typeof(SkillCaster).GetMethod("OnFire", Flags).Invoke(caster, null);
                 Assert.AreEqual(0, ActiveProjectiles().Count, "영역이 유지되는 동안에는 얼음창이 없다");
                 Tick(Zones().Single(), 10f);
@@ -230,7 +230,7 @@ namespace Game.Tests
         {
             var data = FrostPrison();
             var caster = CreateCaster(data, new Provider(), out _);
-            Assert.IsFalse(caster.LevelUp(data.upgrades.Find(c => c.id == "frost_prison_shatter")),
+            Assert.IsFalse(caster.LevelUp(data.upgrades.Find(c => c.id == "cold_zone_shatter")),
                 "시전기가 연결되지 않으면 조용히 무시하지 않고 실패한다");
         }
 
@@ -278,7 +278,7 @@ namespace Game.Tests
             Assert.AreEqual(10, config.Stats.Cast.Damage, "원본 설정은 바뀌지 않는다");
         }
 
-        // ── 번개 구름: 이동, 끌어당김, 적중 시 확률 자식 시전 ─────────────
+        // ── 전기 구름: 이동, 끌어당김, 적중 시 확률 자식 시전 ─────────────
 
         private const int LightningCloudId = 7;
         private const int LightningId = 3;

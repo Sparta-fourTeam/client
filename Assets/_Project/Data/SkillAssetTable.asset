@@ -28,7 +28,7 @@ MonoBehaviour:
     hudIcon: {fileID: -2878529133878831360, guid: 2cf05a8ded9e77d4eae2dea037db079e, type: 3}
     newCardIcon: {fileID: -7630160406200261039, guid: 2cf05a8ded9e77d4eae2dea037db079e, type: 3}
     upgradeCardIcon: {fileID: 6229257388046850901, guid: 2cf05a8ded9e77d4eae2dea037db079e, type: 3}
-  - key: weapon_ice
+  - key: weapon_frost_crystal
     prefab: {fileID: 898466977149368188, guid: d7935ccce6302b94f8eb4729673ed2bd, type: 3}
     hudIcon: {fileID: 240244169675946729, guid: 2cf05a8ded9e77d4eae2dea037db079e, type: 3}
     newCardIcon: {fileID: -8647948609961382094, guid: 2cf05a8ded9e77d4eae2dea037db079e, type: 3}
@@ -38,7 +38,7 @@ MonoBehaviour:
     hudIcon: {fileID: 240244169675946729, guid: 2cf05a8ded9e77d4eae2dea037db079e, type: 3}
     newCardIcon: {fileID: -8647948609961382094, guid: 2cf05a8ded9e77d4eae2dea037db079e, type: 3}
     upgradeCardIcon: {fileID: -4326262013424500140, guid: 2cf05a8ded9e77d4eae2dea037db079e, type: 3}
-  - key: weapon_frost_prison
+  - key: weapon_cold_zone
     prefab: {fileID: 1250824655994611127, guid: 64576d935a589492995081ed15480d68, type: 3}
     hudIcon: {fileID: 240244169675946729, guid: 2cf05a8ded9e77d4eae2dea037db079e, type: 3}
     newCardIcon: {fileID: -8647948609961382094, guid: 2cf05a8ded9e77d4eae2dea037db079e, type: 3}
@@ -53,7 +53,7 @@ MonoBehaviour:
     hudIcon: {fileID: 0}
     newCardIcon: {fileID: 0}
     upgradeCardIcon: {fileID: 0}
-  - key: weapon_ice_spear
+  - key: weapon_frost_crystal_aux
     prefab: {fileID: 898466977149368188, guid: d7935ccce6302b94f8eb4729673ed2bd, type: 3}
     hudIcon: {fileID: 0}
     newCardIcon: {fileID: 0}
@@ -73,12 +73,12 @@ MonoBehaviour:
     hudIcon: {fileID: 0}
     newCardIcon: {fileID: 0}
     upgradeCardIcon: {fileID: 0}
-  - key: weapon_sun_beam
+  - key: weapon_energy_beam
     prefab: {fileID: 2980857046471916804, guid: 4eea5613b65644f77bb087f873ceca9b, type: 3}
     hudIcon: {fileID: 3254138636239939185, guid: 2cf05a8ded9e77d4eae2dea037db079e, type: 3}
     newCardIcon: {fileID: 6408189739897901983, guid: 2cf05a8ded9e77d4eae2dea037db079e, type: 3}
     upgradeCardIcon: {fileID: 3264308230041917409, guid: 2cf05a8ded9e77d4eae2dea037db079e, type: 3}
-  - key: weapon_sun_beam_aux
+  - key: weapon_energy_beam_aux
     prefab: {fileID: 2980857046471916804, guid: 4eea5613b65644f77bb087f873ceca9b, type: 3}
     hudIcon: {fileID: 0}
     newCardIcon: {fileID: 0}

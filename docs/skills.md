@@ -99,7 +99,7 @@ flowchart TD
 | `sharedId`, `affectedWeaponIds` | 두 스킬이 같은 선택 횟수를 공유하는 강화. 양쪽 스킬을 함께 올린다 |
 | `enabled`, `disabledReason` | false면 후보에서 빼고, 샌드박스에는 사유를 보여 준다 |
 
-조건은 한 방향으로만 건다. 얼음창 연발→일제 사격→관통처럼 제외 조건을 양방향으로 바꾸면 선택 가능한 순서가 사라진다.
+조건은 한 방향으로만 건다. 서리 결정 연발→일제 사격→관통처럼 제외 조건을 양방향으로 바꾸면 선택 가능한 순서가 사라진다.
 
 ### 효과 (`effects`의 항목, `EffectDef`)
 
@@ -134,8 +134,8 @@ flowchart TD
 |---|---|---|---|
 | 0 Projectile | `ProjectileStrategy` | `Projectile` | 날아가 맞춘다. 경로(`projectilePath`), 관통, 폭발, 점화 |
 | 1 Hitscan | `HitscanStrategy` | `HitscanEffect` | 대상 위치에 즉시 타격. 벼락, 전자기장 |
-| 2 Area | `AreaStrategy` | `AreaZone` | 위치에 머무는 범위. 이동, 끌어당김, 펄스 피해 (서리 감옥, 번개 구름) |
-| 3 Beam | `BeamStrategy` | `AreaZone` | 지속하며 닿는 모든 적을 공격하는 선 (태양 광선) |
+| 2 Area | `AreaStrategy` | `AreaZone` | 위치에 머무는 범위. 이동, 끌어당김, 펄스 피해 (냉기 지대, 전기 구름) |
+| 3 Beam | `BeamStrategy` | `AreaZone` | 지속하며 닿는 모든 적을 공격하는 선 (에너지 빔) |
 | 4 Chain | `ChainStrategy` | `ChainBolt` | 여러 적을 연쇄로 튕기며 공격 (연쇄 번개) |
 
 **에셋 표 규칙**: 스킬의 프리팹, HUD 아이콘, 카드 아이콘은 `SkillAssetTable`의 항목 하나(`key` = 스킬의 `assetKey`)에 모은다. 항목은 `prefab`, `hudIcon`, `newCardIcon`(새 스킬 카드), `upgradeCardIcon`(강화 카드)을 가진다. 카드마다가 아니라 스킬마다 아이콘 두 장이다. 자식 전용 스킬은 `prefab`만 있으면 된다. 표에는 기본 아이콘(`hudFallback`, `cardFallback`)이 있어 아이콘이 비어 있으면 기본 아이콘이 나온다. 스킬이 아닌 일반 카드는 `IconKey`를 같은 표의 `key`로 쓰고 `upgradeCardIcon`을 쓴다.
@@ -271,6 +271,6 @@ python3 docs/ninjutsu/validate_requirements.py
 - `castType`과 `projectilePath`는 JSON에 **숫자**로 적는다(위 표 참고). enum 중간에 값을 끼우면 데이터의 숫자가 밀려 엉뚱한 종류가 되므로, 값은 항상 끝에 더한다. `form`처럼 이름으로 바꾸는 것이 개선 후보다.
 - 변형(`form`)은 스킬 전용 이름이 든 enum이라 새 변형마다 코드를 고쳐야 한다. 문자열 키와 프리팹의 `키 → 스프라이트` 표로 바꾸는 것이 개선 후보다.
 - 전자기장(벼락의 부가 효과)은 아직 코드로 남아 있다. 영역 스킬로 옮기려면 영역의 감속, 고정 피해 분리, 펄스 간격 맞춤이 먼저 필요하다.
-- 새 스킬의 아이콘과 프리팹 일부(서리 감옥, 번개 구름, 태양 광선, 연쇄 번개)는 임시 연결이다.
+- 새 스킬의 아이콘과 프리팹 일부(냉기 지대, 전기 구름, 에너지 빔, 연쇄 번개)는 임시 연결이다.
 - 카드 ID, `progressionId`, enum 숫자를 바꾸면 `Skills.json`, 테스트, `requirements.json`, `validate_requirements.py`, `LocalUpgradeApi`를 함께 고쳐야 한다. `assetKey`를 바꾸면 `SkillAssetTable`의 `key`도 같이 고친다(에셋이라 테스트가 불일치를 알려 준다).
 - 한 PR에 enum 재배열, JSON 변환, 테스트 수정이 겹치면 리뷰가 어렵다. 커밋을 나눈다.

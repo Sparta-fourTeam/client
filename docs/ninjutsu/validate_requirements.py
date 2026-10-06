@@ -70,14 +70,14 @@ visited = set()
 for node in cards:
     visit(node, set(), visited)
 
-ice = {c['name']: c for c in cards.values() if c['skillId'] == 'ice_spear'}
-assert ice['얼음창 연발+']['exclusions'][0]['selectedCardId'] == ice['얼음창 일제 사격']['id']
-assert ice['얼음창 일제 사격']['exclusions'][0]['selectedCardId'] == ice['얼음창 관통']['id']
-assert not ice['얼음창 관통']['exclusions'], 'Do not turn acquisition order into mutual exclusion'
+ice = {c['name']: c for c in cards.values() if c['skillId'] == 'frost_crystal'}
+assert ice['서리 결정 연발+']['exclusions'][0]['selectedCardId'] == ice['서리 결정 일제 사격']['id']
+assert ice['서리 결정 일제 사격']['exclusions'][0]['selectedCardId'] == ice['서리 결정 관통']['id']
+assert not ice['서리 결정 관통']['exclusions'], 'Do not turn acquisition order into mutual exclusion'
 assert all(s['maxLevelMeaning'] == 'maximum-successful-battle-upgrades-excluding-initial-acquisition' for s in skills.values())
 expected_variants = {
-    'kunai.01': (9, -20, 0), 'kunai.06': (17, -30, 10),
-    'fireball.04': (9, -30, 0), 'ice_spear.01': (5, -20, 0),
+    'arrow.01': (9, -20, 0), 'arrow.06': (17, -30, 10),
+    'fireball.04': (9, -30, 0), 'frost_crystal.01': (5, -20, 0),
     'lightning.02': (9, -20, 0), 'log.02': (5, -20, 0)
 }
 assert {c['id'] for c in cards.values() if 'levelVariant' in c} == set(expected_variants)

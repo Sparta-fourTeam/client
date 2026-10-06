@@ -9,7 +9,7 @@ using Object = UnityEngine.Object;
 
 namespace Game.Tests
 {
-    /// <summary>광선(태양 광선): 선 모양 판정, 공격 횟수, 겨눈 적 추적, 카드 효과, 자식 광선</summary>
+    /// <summary>광선(에너지 빔): 선 모양 판정, 공격 횟수, 겨눈 적 추적, 카드 효과, 자식 광선</summary>
     public sealed class BeamSkillTests
     {
         private const int SunBeamId = 16;
@@ -112,7 +112,7 @@ namespace Game.Tests
             foreach (var d in directions) { Assert.AreEqual(0f, Vector3.Angle(Vector3.up, d), .5f); }
         }
 
-        // ── 태양 광선 카탈로그 ────────────────────────────────────────
+        // ── 에너지 빔 카탈로그 ────────────────────────────────────────
 
         private static List<AreaZone> Zones() => Object.FindObjectsByType<AreaZone>(FindObjectsSortMode.None)
             .Where(z => z.gameObject.scene.IsValid() && z.gameObject.activeInHierarchy).ToList();
@@ -145,7 +145,7 @@ namespace Game.Tests
         public void Cards_OverloadDoublesPulsesAndRaisesCooldown_StableAddsFlatPulses_SpreadWidensBeam()
         {
             var start = SkillConfig.FromDefinition(new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == SunBeamId)).Stats;
-            var beam = SunBeam("sun_beam_overload", "sun_beam_stable", "sun_beam_amplify", "sun_beam_spread");
+            var beam = SunBeam("energy_beam_overload", "energy_beam_stable", "energy_beam_amplify", "energy_beam_spread");
             var stats = beam.Stats;
             Assert.AreEqual((start.Beam.Pulses * 2) + 5, stats.Beam.Pulses, .001f, "공격 횟수 +100% 뒤 +5");
             Assert.AreEqual(start.Cast.Cooldown * 1.5f, stats.Cast.Cooldown, .001f, "쿨타임 +50%");
@@ -156,7 +156,7 @@ namespace Game.Tests
         [Test]
         public void Cards_StatusEffectsReachBeamTargets()
         {
-            var beam = SunBeam("sun_beam_split", "sun_beam_dazzle", "sun_beam_weaken", "sun_beam_freeze");
+            var beam = SunBeam("energy_beam_split", "energy_beam_dazzle", "energy_beam_weaken", "energy_beam_freeze");
             var aim = world.AddEnemy(4, 0);
             typeof(SkillCaster).GetMethod("OnFire", Flags).Invoke(beam, null);
             var zone = Zones().Single();
@@ -173,7 +173,7 @@ namespace Game.Tests
         [Test]
         public void DazzleCard_StunsWithFivePercentChance()
         {
-            var beam = SunBeam("sun_beam_dazzle");
+            var beam = SunBeam("energy_beam_dazzle");
             world.AddEnemy(4, 0);
             var config = beam.Config.Stats.Status;
             Assert.AreEqual(.05f, config.StunChance, .0001f);
@@ -183,20 +183,20 @@ namespace Game.Tests
         [Test]
         public void FireCard_CastsAnAuxiliaryBeamAtTheStartOfTheMainBeam()
         {
-            var beam = SunBeam("sun_beam_overload", "sun_beam_amplify", "sun_beam_fire");
+            var beam = SunBeam("energy_beam_overload", "energy_beam_amplify", "energy_beam_fire");
             world.AddEnemy(4, 0);
             typeof(SkillCaster).GetMethod("OnFire", Flags).Invoke(beam, null);
             Assert.AreEqual(2, Zones().Count, "본 광선과 보조 광선이 함께 나간다");
         }
 
         [Test]
-        public void ShippedCatalog_SunBeamHasFiveDisabledCardsWithReasons()
+        public void ShippedCatalog_SunBeamHasFourDisabledCardsWithReasons()
         {
             var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == SunBeamId);
             var disabled = data.upgrades.Where(c => !c.enabled).ToList();
-            Assert.AreEqual(5, disabled.Count);
+            Assert.AreEqual(4, disabled.Count);
             foreach (var card in disabled) { Assert.IsNotEmpty(card.disabledReason, card.id); }
-            CollectionAssert.AreEqual(new[] { 4 }, data.upgrades.Find(c => c.id == "sun_beam_freeze").requiredWeaponIds);
+            CollectionAssert.AreEqual(new[] { 4 }, data.upgrades.Find(c => c.id == "energy_beam_freeze").requiredWeaponIds);
         }
 
         [Test]

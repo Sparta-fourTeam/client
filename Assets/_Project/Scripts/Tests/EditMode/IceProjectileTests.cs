@@ -289,7 +289,7 @@ namespace Game.Tests
                 var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 2);
                 var weapon = Casters.Projectile(data, prefab, prefab.transform, new Provider());
                 weapon.UseChildCaster(new NoopChildCaster());
-                foreach (var id in new[] { "fireball_impact_damage", "fireball_explosion_damage", "fireball_explosion_radius", "fireball_flames", "fireball_enbakutsu" })
+                foreach (var id in new[] { "fireball_impact_damage", "fireball_explosion_damage", "fireball_explosion_radius", "fireball_flames", "fireball_phoenix" })
                 {
                     Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == id), 13));
                 }

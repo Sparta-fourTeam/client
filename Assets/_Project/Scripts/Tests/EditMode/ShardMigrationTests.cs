@@ -24,7 +24,7 @@ namespace Game.Tests
         {
             world = new CatalogWorld(data => data[1].baseStats.cast.baseDamage = 100);
             var arrow = world.Create(1);
-            world.Take(arrow, "arrow_sharp", "kunai_spread", "kunai_barrage", "kunai_aux_damage");
+            world.Take(arrow, "arrow_sharp", "arrow_spread", "arrow_barrage", "arrow_aux_damage");
             var hit = world.AddEnemy(0, 0);
             for (int i = 1; i <= 7; i++) { world.AddEnemy(i * 2, i % 2 * 3); }
 
@@ -46,10 +46,10 @@ namespace Game.Tests
         {
             world = new CatalogWorld(data => data[1].baseStats.cast.baseDamage = 100);
             var arrow = world.Create(1);
-            world.Take(arrow, "arrow_sharp", "kunai_spread", "kunai_aux_damage");
+            world.Take(arrow, "arrow_sharp", "arrow_spread", "arrow_aux_damage");
             var hit = world.AddEnemy(0, 0);
             world.AddEnemy(4, 0); world.AddEnemy(0, 5);
-            world.Take(arrow, "kunai_amplify");
+            world.Take(arrow, "arrow_amplify");
 
             CatalogWorld.Hit(arrow.Config.Reactions, hit);
             var damage = arrow.Stats.Cast.Damage;
@@ -62,8 +62,8 @@ namespace Game.Tests
         {
             world = new CatalogWorld(data => data[1].baseStats.cast.baseDamage = 100);
             var arrow = world.Create(1);
-            world.Take(arrow, "kunai_explosion", "kunai_spread");
-            if (withCard) { world.Take(arrow, "kunai_aux_explosion"); }
+            world.Take(arrow, "arrow_explosion", "arrow_spread");
+            if (withCard) { world.Take(arrow, "arrow_aux_explosion"); }
             var hit = world.AddEnemy(0, 0);
             world.AddEnemy(6, 0); world.AddEnemy(0, 6);
             CatalogWorld.Hit(arrow.Config.Reactions, hit);

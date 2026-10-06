@@ -3,7 +3,7 @@ using UnityEngine.Pool;
 
 namespace Game.Core
 {
-    /// <summary>대상 위치에 영역을 깔고 지속 시간 동안 주기마다 피해와 상태이상을 건다 (서리 감옥 등).</summary>
+    /// <summary>대상 위치에 영역을 깔고 지속 시간 동안 주기마다 피해와 상태이상을 건다 (냉기 지대 등).</summary>
     public sealed class AreaStrategy : IAttackStrategy
     {
         private readonly SkillObjectPool<AreaZone> ownedPool;

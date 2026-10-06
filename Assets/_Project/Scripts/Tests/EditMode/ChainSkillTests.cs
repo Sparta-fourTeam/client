@@ -220,11 +220,11 @@ namespace Game.Tests
         }
 
         [Test]
-        public void ShippedCatalog_ChainLightningHasThreeDisabledCardsWithReasons()
+        public void ShippedCatalog_ChainLightningHasTwoDisabledCardsWithReasons()
         {
             var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == ChainLightningId);
             var disabled = data.upgrades.Where(c => !c.enabled).ToList();
-            Assert.AreEqual(3, disabled.Count);
+            Assert.AreEqual(2, disabled.Count);
             foreach (var card in disabled) { Assert.IsNotEmpty(card.disabledReason, card.id); }
             Assert.AreEqual(17, data.upgrades.Find(c => c.id == "chain_lightning_conduction").minPermanentLevel);
         }
