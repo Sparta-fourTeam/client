@@ -2,9 +2,9 @@
   {
     "StageId": 1,
     "SkillMaterial": "book.arrow",
-    "BaseExp": 0,
+    "BaseExp": 15,
     "ThreeStarBonusExp": 0,
-    "Wave3SkillMaterialBonusAmount": 0,
+    "Wave3SkillMaterialBonusAmount": 24,
     "Wave4EquipmentMaterials": [
       {
         "itemId": "book.hat",
@@ -35,15 +35,15 @@
         "quantity": 0
       }
     ],
-    "Wave5GemChestCount": 0,
-    "Wave6CoinBonus": 0
+    "Wave5GemChestCount": 1,
+    "Wave6CoinBonus": 25
   },
   {
     "StageId": 2,
     "SkillMaterial": "material.skill.random",
-    "BaseExp": 0,
+    "BaseExp": 15,
     "ThreeStarBonusExp": 0,
-    "Wave3SkillMaterialBonusAmount": 0,
+    "Wave3SkillMaterialBonusAmount": 25,
     "Wave4EquipmentMaterials": [
       {
         "itemId": "book.hat",
@@ -74,15 +74,15 @@
         "quantity": 0
       }
     ],
-    "Wave5GemChestCount": 0,
-    "Wave6CoinBonus": 0
+    "Wave5GemChestCount": 1,
+    "Wave6CoinBonus": 25
   },
   {
     "StageId": 3,
     "SkillMaterial": "material.skill.random",
-    "BaseExp": 0,
+    "BaseExp": 15,
     "ThreeStarBonusExp": 0,
-    "Wave3SkillMaterialBonusAmount": 0,
+    "Wave3SkillMaterialBonusAmount": 26,
     "Wave4EquipmentMaterials": [
       {
         "itemId": "book.hat",
@@ -113,7 +113,7 @@
         "quantity": 0
       }
     ],
-    "Wave5GemChestCount": 0,
-    "Wave6CoinBonus": 0
+    "Wave5GemChestCount": 1,
+    "Wave6CoinBonus": 25
   }
 ]
