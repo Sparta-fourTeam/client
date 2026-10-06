@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Game.Core;
@@ -103,6 +104,23 @@ namespace Game.Tests
             before = File.ReadAllText(_path);
             Assert.Throws<ApiException>(() => _api.SubmitResult(new SubmitResultRequest { battleId = issued.battleId }).GetAwaiter().GetResult());
             Assert.AreEqual(before, File.ReadAllText(_path));
+        }
+
+        [Test]
+        public void RandomEquipmentReward_NeedsUnlockSourceAndPaysOnlyUnlockedEquipment()
+        {
+            _data.StageRewards.GetOrThrow(1).Wave4EquipmentMaterials = new List<ItemAmount>
+            { new() { itemId = ItemIds.RandomEquipmentMaterial, quantity = 1 } };
+            var before = File.ReadAllText(_path);
+            var error = Assert.Throws<ApiException>(() => _api.StartBattle(1, 1).GetAwaiter().GetResult());
+            Assert.AreEqual("EQUIPMENT_UNLOCK_SOURCE_NOT_READY", error.Code);
+            Assert.AreEqual(before, File.ReadAllText(_path));
+            _api.UnlockedEquipmentIds = () => new[] { _data.Items.GetOrThrow(ItemIds.RingBook).TargetId };
+            var issued = _api.StartBattle(1, 1).GetAwaiter().GetResult();
+            var result = _api.SubmitResult(new SubmitResultRequest { battleId = issued.battleId, completedWaves = 4, reachedWave = 5 })
+                .GetAwaiter().GetResult();
+            Assert.AreEqual(1, result.rewardItems.Where(item => item.itemId == ItemIds.RingBook).Sum(item => item.quantity));
+            Assert.IsFalse(result.rewardItems.Exists(item => item.itemId == ItemIds.RandomEquipmentMaterial));
         }
 
         [TestCase(-1, false)]

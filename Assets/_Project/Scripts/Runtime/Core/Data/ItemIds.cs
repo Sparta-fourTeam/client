@@ -4,6 +4,7 @@ namespace Game.Core
     public static class ItemIds
     {
         public const string RandomSkillMaterial = "material.skill.random";
+        public const string RandomEquipmentMaterial = "material.equipment.random";
         public const string GemChest = "chest.gem";
         public const string ArrowBook = "book.arrow";
         public const string FireballBook = "book.fireball";
