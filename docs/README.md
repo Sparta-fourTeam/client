@@ -9,6 +9,7 @@
 | [flows.md](flows.md) | 스테이지 생명주기, 실패와 복구, 스킬 선택, 상태 머신 |
 | [conventions.md](conventions.md) | 코딩 규칙 |
 | [skills.md](skills.md) | 스킬 시스템 구조, 데이터 형식, 스킬·카드 추가 절차 |
+| [enemy.md](enemy.md) | Enemy 데이터 흐름, 기존 동작과 상태이상, 새 Enemy 추가 절차, 요마표 갱신안 |
 | [ninjutsu/](ninjutsu/README.md) | 스킬 원문 요구사항, 확정·보류 결정, 구현 이력, 카드별 대응표 |
 | [qa-v0.0.1.md](qa-v0.0.1.md) | 기존 Android QA와 발견된 이슈 |
 
