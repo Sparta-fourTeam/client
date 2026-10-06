@@ -97,6 +97,7 @@ namespace Game.Network
             if (battle.rewardRuleVersion == 0)
             {
                 // 업데이트 전에 발급한 전투만 기존 지급 규칙으로 마무리한다.
+                // TODO: 규칙 도입 전 전투가 모두 정산되면 이 분기와 StageDefinition.ClearGold·ClearItems를 제거한다.
                 reward = req.cleared ? stage.ClearGold : 0;
                 rewards = req.cleared ? stage.ClearItems : null;
             }
@@ -127,7 +128,7 @@ namespace Game.Network
 
             if (req.cleared)
             {
-                ApplyClearRating(save, battle.stageId, req.wallHpPercent, _data.Stages);
+                ApplyClearRating(save, battle.stageId, rating, _data.Stages);
             }
 
             _store.Flush(save);
@@ -135,10 +136,8 @@ namespace Game.Network
             { cleared = req.cleared, rewardGold = reward, rewardExp = rewardExp, clearRating = rating, rewardItems = itemRewards });
         }
 
-        private static void ApplyClearRating(LocalSave save, int stageId, int wallHpPercent, Table<int, StageDefinition> stages)
+        private static void ApplyClearRating(LocalSave save, int stageId, int rating, Table<int, StageDefinition> stages)
         {
-            int rating = wallHpPercent >= 100 ? 3 : wallHpPercent >= 50 ? 2 : 1;
-
             var progress = save.stageProgress.Find(p => p.stageId == stageId);
             if (progress != null && rating > progress.clearRating)
             {
