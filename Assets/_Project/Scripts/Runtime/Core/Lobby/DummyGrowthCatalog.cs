@@ -34,7 +34,7 @@ namespace Game.Core
         // 원작 장비 6종 + 왼쪽 칸 1개. 칸은 캐릭터 레벨 2~8에서 하나씩 열린다
         private List<EquipInfo> CreateEquips()
         {
-            string[] names = { "모자", "상의", "신발", "단검", "반지", "넥타이", "사원증" };
+            string[] names = { "모자", "상의", "신발", "무기", "반지", "넥타이", "사원증" };
             int[] levels = { 2, 8, 0, 0, 0, 0, 1 };
             var list = new List<EquipInfo>();
             for (int i = 0; i < names.Length; i++)
