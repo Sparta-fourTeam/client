@@ -17,10 +17,17 @@ namespace Game.View
 
         [SerializeField] private Sprite _coin;
         [SerializeField] private Sprite _exp;
+        [SerializeField] private Sprite _randomSkillMaterial;
+        [SerializeField] private Sprite _randomEquipmentMaterial;
         [SerializeField] private Entry[] _items = Array.Empty<Entry>();
 
         public Sprite Coin => _coin;
         public Sprite Exp => _exp;
+
+        /// <summary>일시정지 창의 "?" 랜덤 재료 아이콘. 결과 팝업에서는 이미 뽑힌 재료만 나오므로 쓰지 않는다</summary>
+        public Sprite GetRandom(string itemId) =>
+            itemId == Game.Core.ItemIds.RandomSkillMaterial ? _randomSkillMaterial
+            : itemId == Game.Core.ItemIds.RandomEquipmentMaterial ? _randomEquipmentMaterial : null;
 
         public Sprite Get(string iconKey)
         {

@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Game.Core;
 using Game.Core.Messages;
@@ -64,44 +63,10 @@ namespace Game.View
             _waveText.text = result.ReachedWave > 0 ? $"도달 웨이브\n{result.ReachedWave}" : "도달 웨이브\n-";
             _timeText.text = $"플레이 시간\n{FormatTime(result.PlayTime)}";
             _bubbleText.text = result.Cleared ? ClearBubble : FailBubble;
-            ShowRewards(result);
+            _rewardList.Show(RewardRows.Build(_itemIcons, _data, result.RewardGold, result.RewardExp, result.RewardItems));
             _starsView.SetCount(result.ClearRating);
             _lobbyButton.interactable = true;
             _panel.SetActive(true);
-        }
-
-        /// <summary>코인은 항상, EXP는 받았을 때만 보여준다. 재료는 받은 종류별로 지급 순서대로 나열하고 보석상자를 맨 끝에 둔다</summary>
-        private void ShowRewards(StageResult result)
-        {
-            var rows = new List<ResultRewardItem> { new(_itemIcons != null ? _itemIcons.Coin : null, result.RewardGold) };
-            if (result.RewardExp > 0)
-            {
-                rows.Add(new ResultRewardItem(_itemIcons != null ? _itemIcons.Exp : null, result.RewardExp));
-            }
-
-            foreach (var item in result.RewardItems)
-            {
-                if (item.itemId != ItemIds.GemChest)
-                {
-                    rows.Add(ToRow(item));
-                }
-            }
-
-            foreach (var item in result.RewardItems)
-            {
-                if (item.itemId == ItemIds.GemChest)
-                {
-                    rows.Add(ToRow(item));
-                }
-            }
-
-            _rewardList.Show(rows);
-        }
-
-        private ResultRewardItem ToRow(ItemAmount item)
-        {
-            var iconKey = _data.Items.Contains(item.itemId) ? _data.Items.GetOrThrow(item.itemId).IconKey : null;
-            return new ResultRewardItem(_itemIcons != null ? _itemIcons.Get(iconKey) : null, item.quantity);
         }
 
         private void OnLobbyClicked()
