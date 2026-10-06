@@ -92,7 +92,7 @@ namespace Game.Core
                 ++_nextEnemyId, spawnPosition, monster.Speed, entry.Type, monster.Hp,
                 entry.CreateAttackStats(monster),
                 _hpChangedPublisher, _diedPublisher,
-                entry.CreatePassives(), isSummoned, entry.Immunities);
+                PassiveBuilder.BuildPassives(monster), isSummoned, PassiveBuilder.BuildImmunities(monster));
 
             var view = Object.Instantiate(entry.Prefab, spawnPosition, Quaternion.identity);
             view.Bind(enemy, entry.ProjectilePrefab, _hpChangedSubscriber, _diedSubscriber);

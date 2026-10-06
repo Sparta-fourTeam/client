@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Game.Core
 {
@@ -17,6 +18,9 @@ namespace Game.Core
 
         public bool IsBoss;
 
+        /// <summary>이 몬스터가 가진 패시브. 없으면 비어 있다</summary>
+        public List<PassiveDefinition> Passives = new List<PassiveDefinition>();
+
         public void Validate()
         {
             if (Hp <= 0)
@@ -32,6 +36,16 @@ namespace Game.Core
             if (Damage < 0 || AttackRange < 0f || Speed < 0f || ProjectileSpeed < 0f)
             {
                 throw new InvalidOperationException($"Monsters {Id}: Damage, Speed, AttackRange, ProjectileSpeed는 음수일 수 없습니다");
+            }
+
+            foreach (var passive in Passives ?? new List<PassiveDefinition>())
+            {
+                if (passive == null)
+                {
+                    throw new InvalidOperationException($"Monsters {Id}: Passives에 null 항목이 있습니다");
+                }
+
+                passive.Validate(Id);
             }
         }
     }

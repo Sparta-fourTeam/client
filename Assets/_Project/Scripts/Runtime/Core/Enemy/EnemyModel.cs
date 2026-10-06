@@ -240,6 +240,20 @@ namespace Game.Core
 
         public void RequestSpawn(EnemySpawnRequest request) => SpawnRequested?.Invoke(request);
 
+        // 패시브의 시간 흐름. 빙결·마비·기절 중에는 멈춘다
+        public void TickPassives(float deltaTime)
+        {
+            if (_passives == null || IsDead || IsFrozen || IsParalyzed || IsStunned || deltaTime <= 0f)
+            {
+                return;
+            }
+
+            foreach (var passive in _passives)
+            {
+                passive.OnTick(this, deltaTime);
+            }
+        }
+
         // 스폰 위치, 이동 속도, 타입 지정해서 몬스터 생성
         // isSummoned: 분열·소환으로 생긴 적. 사망이 웨이브 게이지에 세어지지 않는다
         public EnemyModel(int id, Vector2 spawnPosition, float speed, EnemyType type, int maxHp,

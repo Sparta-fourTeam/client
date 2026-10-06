@@ -44,6 +44,8 @@ namespace Game.Core
                 monster.Validate();
             }
 
+            ValidatePassiveReferences(monsters);
+
             var stages = ParseIndexed<int, StageDefinition>("Stages", d => d.Id);
             foreach (var stage in stages.Values)
             {
@@ -72,6 +74,22 @@ namespace Game.Core
         }
 
         public string RawJson(string name) => _rawJson[name];
+
+        /// <summary>분열·소환 패시브가 가리키는 몬스터가 모두 있어야 한다</summary>
+        public static void ValidatePassiveReferences(IReadOnlyDictionary<int, MonsterDefinition> monsters)
+        {
+            foreach (var monster in monsters.Values)
+            {
+                foreach (var passive in monster.Passives ?? new List<PassiveDefinition>())
+                {
+                    bool refersToMonster = passive.Kind == PassiveKind.SplitOnDeath || passive.Kind == PassiveKind.SummonPeriodic;
+                    if (refersToMonster && !monsters.ContainsKey(passive.MonsterId))
+                    {
+                        throw new InvalidOperationException($"Monsters {monster.Id}: {passive.Kind}이 없는 몬스터를 가리킵니다: {passive.MonsterId}");
+                    }
+                }
+            }
+        }
 
         /// <summary>스킬 정의 목록. 호출마다 새 객체를 만들고 카탈로그 검증을 통과해야 돌려준다</summary>
         public List<SkillData> LoadSkills() => ParseSkills(_rawJson["Skills"]);
