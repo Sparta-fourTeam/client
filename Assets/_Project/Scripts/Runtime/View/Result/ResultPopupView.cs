@@ -27,10 +27,11 @@ namespace Game.View
         [SerializeField] private Sprite _goldIcon;
         [SerializeField] private TMP_Text _rewardSummary;
 
-        // 아직 데이터가 없어 채우지 않는다. 별점은 _starsView.SetCount(n), 무기별 피해량은 _damageList.Show(rows)를
-        // OnStageResult에서 부르면 된다. 호출하기 전에는 두 영역이 꺼져 있다
-        [Header("데이터 연결 전 (StageResult에 아직 없음)")]
         [SerializeField] private ResultStarsView _starsView;
+
+        // 아직 데이터가 없어 채우지 않는다. 무기별 피해량은 _damageList.Show(rows)를 OnStageResult에서 부르면 된다.
+        // 호출하기 전에는 영역이 꺼져 있다
+        [Header("데이터 연결 전 (StageResult에 아직 없음)")]
         [SerializeField] private ResultDamageListView _damageList;
 
         private const string ClearBubble = "어때요? 이 정도쯤이야!";
