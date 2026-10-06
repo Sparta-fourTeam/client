@@ -53,6 +53,7 @@ MonoBehaviour:
     AttackType: 1
     SplitMonsterId: 3
     SplitCount: 2
+    Immunities: 0
     SpawnOnly: 0
   - Type: 0
     Prefab: {fileID: 4685488075804649445, guid: eedef41ae584e7948b908250bd9a7241, type: 3}
@@ -61,6 +62,7 @@ MonoBehaviour:
     AttackType: 0
     SplitMonsterId: 0
     SplitCount: 0
+    Immunities: 0
     SpawnOnly: 0
   - Type: 1
     Prefab: {fileID: 6311776197841859623, guid: a73362f167b46e84bbef04c82c95a1fc, type: 3}
@@ -69,6 +71,7 @@ MonoBehaviour:
     AttackType: 1
     SplitMonsterId: 0
     SplitCount: 0
+    Immunities: 0
     SpawnOnly: 0
   - Type: 1
     Prefab: {fileID: 4685488075804649445, guid: 3e4124bbebca72048b38a59d202ee1c4, type: 3}
@@ -77,6 +80,7 @@ MonoBehaviour:
     AttackType: 0
     SplitMonsterId: 0
     SplitCount: 0
+    Immunities: 0
     SpawnOnly: 0
   - Type: 2
     Prefab: {fileID: 7187176536582799020, guid: 1954ba4f587d1d646819481aecf0ede5, type: 3}
@@ -85,6 +89,7 @@ MonoBehaviour:
     AttackType: 0
     SplitMonsterId: 0
     SplitCount: 0
+    Immunities: 0
     SpawnOnly: 0
   - Type: 0
     Prefab: {fileID: 7401961765522277195, guid: 6b025b157f4128248ad0dde0d5fe6318, type: 3}
@@ -93,7 +98,17 @@ MonoBehaviour:
     AttackType: 0
     SplitMonsterId: 0
     SplitCount: 0
+    Immunities: 0
     SpawnOnly: 1
+  - Type: 0
+    Prefab: {fileID: 7187176536582799020, guid: 2616906272397a1449bb548d39ba47dc, type: 3}
+    ProjectilePrefab: {fileID: 0}
+    MonsterId: 4
+    AttackType: 0
+    SplitMonsterId: 0
+    SplitCount: 0
+    Immunities: 1
+    SpawnOnly: 0
 --- !u!114 &1027409405871136764
 MonoBehaviour:
   m_ObjectHideFlags: 0
