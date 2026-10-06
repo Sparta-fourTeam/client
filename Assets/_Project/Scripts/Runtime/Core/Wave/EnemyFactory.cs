@@ -19,6 +19,7 @@ namespace Game.Core
         private ISubscriber<EnemyHpChanged> _hpChangedSubscriber;
         private ISubscriber<EnemyDied> _diedSubscriber;
         private IRandomProvider _randomProvider;
+        private GameDataStore _data;
 
         private int _nextEnemyId;
 
@@ -35,7 +36,9 @@ namespace Game.Core
             foreach (EnemyType type in System.Enum.GetValues(typeof(EnemyType)))
             {
                 if (!_enemyPrefabEntries.Exists(e => e.Type == type))
+                {
                     Debug.LogError($"[EnemyFactory] EnemyType.{type} 엔트리가 없습니다.", this);
+                }
             }
         }
 
@@ -45,7 +48,8 @@ namespace Game.Core
             IPublisher<EnemyDied> diedPublisher,
             ISubscriber<EnemyHpChanged> hpchangedSubscriber,
             ISubscriber<EnemyDied> diedSubscriber,
-            IRandomProvider randomProvider
+            IRandomProvider randomProvider,
+            GameDataStore data
             )
         {
             _hpChangedPublisher = hpChangedPublisher;
@@ -53,18 +57,33 @@ namespace Game.Core
             _hpChangedSubscriber = hpchangedSubscriber;
             _diedSubscriber = diedSubscriber;
             _randomProvider = randomProvider;
+            _data = data;
+
+            // 프리팹 엔트리가 가리키는 몬스터 행이 모두 있어야 한다
+            foreach (var entry in _enemyPrefabEntries)
+            {
+                if (!_data.Monsters.Contains(entry.MonsterId))
+                {
+                    Debug.LogError($"[EnemyFactory] EnemyType.{entry.Type}: Monsters 테이블에 MonsterId {entry.MonsterId}가 없습니다.", this);
+                }
+                else if (entry.AttackType == AttackType.Ranged && _data.Monsters.GetOrThrow(entry.MonsterId).ProjectileSpeed <= 0f)
+                {
+                    Debug.LogError($"[EnemyFactory] EnemyType.{entry.Type}: 원거리인데 MonsterId {entry.MonsterId}의 ProjectileSpeed가 0입니다.", this);
+                }
+            }
         }
 
         public EnemyModel Create(Vector2 spawnPosition, EnemyType type)
         {
             var entry = _table.GetRandomEntry(type, _randomProvider);
+            var monster = _data.Monsters.GetOrThrow(entry.MonsterId);
             var enemy = new EnemyModel(
-                ++_nextEnemyId, spawnPosition, entry.Speed, type, entry.MaxHp,
-                entry.CreateAttackStats(),
+                ++_nextEnemyId, spawnPosition, monster.Speed, type, monster.Hp,
+                entry.CreateAttackStats(monster),
                 _hpChangedPublisher, _diedPublisher);
 
             var view = Object.Instantiate(entry.Prefab, spawnPosition, Quaternion.identity);
-            view.Bind(enemy, entry.ProjectilePrefab,_hpChangedSubscriber, _diedSubscriber);
+            view.Bind(enemy, entry.ProjectilePrefab, _hpChangedSubscriber, _diedSubscriber);
 
             return enemy;
         }
@@ -75,15 +94,14 @@ namespace Game.Core
             string name = $"EnemyType.{entry.Type}";
 
             if (entry.Prefab == null)
+            {
                 Debug.LogError($"[EnemyFactory] {name}: Prefab이 없습니다.", this);
-            if (entry.MaxHp <= 0)
-                Debug.LogError($"[EnemyFactory] {name}: MaxHp는 1 이상이어야 합니다.", this);
-            if (entry.AttackInterval <= 0f)
-                Debug.LogError($"[EnemyFactory] {name}: AttackInterval은 0보다 커야 합니다.", this);
-            if (entry.AttackRange < 0f)
-                Debug.LogError($"[EnemyFactory] {name}: AttackRange는 음수일 수 없습니다.", this);
+            }
+
             if (entry.AttackType == AttackType.Ranged && entry.ProjectilePrefab == null)
+            {
                 Debug.LogError($"[EnemyFactory] {name}: 원거리인데 ProjectilePrefab이 없습니다.", this);
+            }
         }
     }
 }

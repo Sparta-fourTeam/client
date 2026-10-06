@@ -1,0 +1,18 @@
+using Game.Core;
+
+namespace Game.Sandbox
+{
+    /// <summary>모든 스킬에 같은 영구 레벨을 돌려준다. 영구 레벨에 따라 바뀌는 카드 변형((+) 명칭, 해금 조건)을 슬라이더로 시험하려고 progressionId와 무관하게 적용한다.</summary>
+    public sealed class SandboxProgression : IWeaponProgression
+    {
+        public int Level { get; set; }
+
+        public int GetLevel(string progressionId) => Level;
+    }
+
+    /// <summary>샌드박스는 빈 상태에서 시작한다. 시험할 스킬은 패널에서 고른다.</summary>
+    public sealed class NoStartingSkills : IStartingSkills
+    {
+        public System.Collections.Generic.IReadOnlyList<int> GetSkillIds() => System.Array.Empty<int>();
+    }
+}

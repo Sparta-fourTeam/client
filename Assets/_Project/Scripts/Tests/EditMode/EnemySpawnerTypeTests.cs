@@ -124,7 +124,7 @@ namespace Game.Tests
             _createdObjects.Add(wallGo);
             wallGo.transform.position = new Vector3(0f, -100f, 0f);
             var wall = wallGo.AddComponent<Wall>();
-            wall.Construct(new FakeWallPublisher<WallHpChanged>(), new FakeWallPublisher<WallDestroyed>());
+            wall.Construct(new FakeWallPublisher<WallHpChanged>(), new FakeWallPublisher<WallDestroyed>(), null);
             wall.Initialize(100);
 
             var areaGo = new GameObject("SpawnArea");

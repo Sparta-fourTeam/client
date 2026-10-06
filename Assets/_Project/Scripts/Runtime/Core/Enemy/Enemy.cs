@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Game.Core
 {
-    public class Enemy : MonoBehaviour
+    public class Enemy : MonoBehaviour, IParalyzableTarget
     {
         private static readonly int MovingHash = Animator.StringToHash("Moving");
         private static readonly int HitHash = Animator.StringToHash("Hit");
@@ -53,6 +53,10 @@ namespace Game.Core
             {
                 _hitFlash = gameObject.AddComponent<HitFlash>();
             }
+
+            var statuses = GetComponent<EnemyStatusEffects>();
+            if (statuses == null) { statuses = gameObject.AddComponent<EnemyStatusEffects>(); }
+            statuses.Bind(enemyModel);
 
             var bag = DisposableBag.CreateBuilder();
             hpChanged.Subscribe(OnHpChanged).AddTo(bag);
@@ -169,6 +173,11 @@ namespace Game.Core
 
             _subscriptions?.Dispose();
         }
+
+        public bool IsDead => _enemyModel == null || _enemyModel.IsDead;
+        public IEnemyTarget Target => _enemyModel;
+
+        public void ApplyParalysis(float duration) => _enemyModel?.ApplyParalysis(duration);
 
         public void TakeDamage(int damage)
         {

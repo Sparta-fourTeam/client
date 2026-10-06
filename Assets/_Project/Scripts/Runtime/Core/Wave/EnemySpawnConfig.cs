@@ -20,5 +20,8 @@ namespace Game.Core
             SpawnCooldown = spawnCooldown;
             EliteSpawnChance = Mathf.Clamp01(eliteSpawnChance);
         }
+
+        public static EnemySpawnConfig From(SpawnDefinition spawn) =>
+            new EnemySpawnConfig(spawn.IntervalMin, spawn.IntervalMax, spawn.Cooldown, spawn.EliteChance);
     }
 }

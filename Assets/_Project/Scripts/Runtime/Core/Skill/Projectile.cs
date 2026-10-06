@@ -9,28 +9,52 @@ namespace Game.Core
     {
         /// <summary>적에게 맞았을 때 맞은 자리에 생성하는 임팩트(선택). 임팩트 프리팹이 스스로 사라지게 만든다 (파티클 Stop Action을 Destroy로)</summary>
         [SerializeField] private GameObject impactPrefab;
+        [SerializeField] private ProjectileVisual.FormSprite[] formSprites;
+        [SerializeField] private GameObject baseVisual;
+
+        private ProjectileVisual visual;
+        public void SetVisualForm(SkillForm form)
+        {
+            visual ??= new ProjectileVisual(gameObject, formSprites, baseVisual);
+            visual.SetForm(form);
+        }
+        private void OnDestroy() => visual?.Dispose();
 
         private IObjectPool<Projectile> pool;
         private Vector3 direction;
-        private float damage;
         private float speed;
         private float lifetime;
+        private float elapsed;
+        private AttackReactions hitReactions;
+        private System.Func<float> randomValue;
+        private AttackReactions reactions;
+        private bool released;
+        private IEnemyTarget ignoredTarget;
         private IEnemyTargetProvider targetProvider;
+        private readonly ProjectileHitLedger hitLedger = new();
         private readonly List<IEnemyTarget> hitBuffer = new List<IEnemyTarget>(HitCandidateCount);
         // 적 스프라이트가 레퍼런스 크기로 줄어든 것(슬라임 가로 약 0.6, 콜라이더 반지름 약 0.3)에 맞춘 값. 이전에는 1.4짜리 적에 맞춘 0.7이었다
-        private const float HitRadius = 0.3f;
+        private float hitRadius = 0.3f;
         private const int HitCandidateCount = 4;
 
-        public void Init(IObjectPool<Projectile> pool, Vector3 startPos, Vector3 direction, float damage, float speed, float lifetime, IEnemyTargetProvider targetProvider)
+        public void Init(IObjectPool<Projectile> pool, ProjectileSpawnSettings settings)
         {
+            hitRadius = Mathf.Max(0, settings.CollisionRadius);
+            ignoredTarget = settings.IgnoredTarget;
             this.pool = pool;
-            transform.position = startPos;
-            this.direction = direction.normalized;
-            this.damage = damage;
-            this.speed = speed;
-            this.lifetime = lifetime;
-            this.targetProvider = targetProvider;
+            transform.position = settings.StartPos;
+            direction = settings.Direction.normalized;
+            speed = settings.Speed;
+            lifetime = settings.Lifetime;
+            elapsed = 0;
+            targetProvider = settings.TargetProvider;
+            hitReactions = settings.HitReactions ?? AttackReactions.Empty;
+            randomValue = settings.RandomValue ?? (() => Random.value);
+            reactions = settings.Reactions ?? AttackReactions.Empty;
+            released = false;
+            hitLedger.Reset(settings.PierceCount);
             ApplyDirectionRoration();
+            reactions.Raise(AttackEvent.Start, new AttackContext(settings.StartPos, direction));
         }
 
         /// <summary>선분 from→to 위에서 point에 가장 가까운 지점의 위치 비율(0~1)을 돌려준다. 선분이 점이면 0</summary>
@@ -48,55 +72,76 @@ namespace Game.Core
 
         private void Update()
         {
-            Vector2 previous = transform.position;
-            transform.position += direction * speed * Time.deltaTime;
+            Tick(Time.deltaTime);
+        }
 
-            lifetime -= Time.deltaTime;
+        internal void Tick(float deltaTime)
+        {
+            if (released) { return; }
+            Vector2 start = transform.position;
+            transform.position += direction * speed * deltaTime;
+            Vector2 end = transform.position;
+
+            float activeDelta = Mathf.Min(deltaTime, Mathf.Max(0, lifetime));
+            lifetime -= deltaTime;
+            elapsed += activeDelta;
+            reactions.Raise(AttackEvent.Tick, new AttackContext(end, direction, deltaTime: activeDelta, elapsed: elapsed));
             if (lifetime <= 0)
             {
+                released = true;
+                reactions.Raise(AttackEvent.Expired, new AttackContext(end, direction, elapsed: elapsed));
                 pool.Release(this);
                 return;
             }
 
-            // 프레임이 낮으면 한 프레임에 판정 지름보다 멀리 가서 적을 통과하므로, 끝점이 아니라 이번 프레임에 지나온 구간 전체로 맞았는지 본다
-            Vector2 current = transform.position;
-            targetProvider.GetNearest((previous + current) * 0.5f, HitCandidateCount, hitBuffer);
+            // 전체 이동 구간을 검사하므로 끝점에서 가까운 4체로 제한하지 않는다.
+            targetProvider.GetNearest(start, int.MaxValue, hitBuffer);
+            hitBuffer.Sort((a, b) => SegmentFraction(start, end, a.Position).CompareTo(SegmentFraction(start, end, b.Position)));
 
-            float hitRadiusSqr = HitRadius * HitRadius;
-            IEnemyTarget firstHit = null;
-            float firstHitRatio = float.MaxValue;
+            float hitRadiusSqr = hitRadius * hitRadius;
             foreach (var candidate in hitBuffer)
             {
-                float ratio = ClosestPointRatio(previous, current, candidate.Position);
-                Vector2 closest = Vector2.Lerp(previous, current, ratio);
-                if ((closest - candidate.Position).sqrMagnitude > hitRadiusSqr)
+                float fraction = SegmentFraction(start, end, candidate.Position);
+                Vector2 hitPosition = Vector2.Lerp(start, end, fraction);
+                if ((hitPosition - candidate.Position).sqrMagnitude > hitRadiusSqr)
                 {
                     continue;
                 }
 
-                // 한 프레임에 여러 적이 걸리면 먼저 지나친 적을 맞힌다
-                if (ratio < firstHitRatio)
+                if (candidate is EnemyModel enemy && enemy.IsDead) { continue; }
+                if (ReferenceEquals(candidate, ignoredTarget)) { continue; }
+                if (!hitLedger.TryHit(candidate)) { continue; }
+                hitReactions.Raise(AttackEvent.Hit, new AttackContext(hitPosition, direction, candidate, randomValue));
+                SpawnImpact(hitPosition);
+                var context = new AttackContext(hitPosition, direction, candidate);
+                reactions.Raise(AttackEvent.Hit, context);
+                if (candidate is EnemyModel killed && killed.IsDead) { reactions.Raise(AttackEvent.Kill, context); }
+                if (hitLedger.Exhausted)
                 {
-                    firstHit = candidate;
-                    firstHitRatio = ratio;
+                    Release();
+                    break;
                 }
-            }
-
-            if (firstHit != null)
-            {
-                Vector2 hitPoint = Vector2.Lerp(previous, current, firstHitRatio);
-                transform.position = new Vector3(hitPoint.x, hitPoint.y, transform.position.z);
-                firstHit.TakeDamage((int)damage);
-                SpawnImpact();
-                pool.Release(this);
             }
         }
 
-        private void SpawnImpact()
+        private void Release()
+        {
+            released = true;
+            pool.Release(this);
+        }
+
+        private static float SegmentFraction(Vector2 start, Vector2 end, Vector2 point)
+        {
+            Vector2 segment = end - start;
+            float lengthSquared = segment.sqrMagnitude;
+            return lengthSquared > 0 ? Mathf.Clamp01(Vector2.Dot(point - start, segment) / lengthSquared) : 0;
+        }
+
+        private void SpawnImpact(Vector2 position)
         {
             if (impactPrefab != null)
             {
-                Instantiate(impactPrefab, transform.position, Quaternion.identity);
+                Instantiate(impactPrefab, position, Quaternion.identity);
             }
         }
 

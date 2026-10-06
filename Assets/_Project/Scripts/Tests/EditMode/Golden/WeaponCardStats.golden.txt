@@ -1,0 +1,132 @@
+1/arrow_multishot@0: Cast.Damage=8; Cast.ProjectileCount=2; Explosion.Damage=8
+1/arrow_multishot@9: Cast.ProjectileCount=2
+1/arrow_sharp@0: Cast.Damage=16; Explosion.Damage=16
+1/arrow_light@0: Cast.Damage=12.5; Explosion.Damage=12.5; Projectile.Speed=25
+1/arrow_burst@0: Cast.Count=2; Cast.Damage=7; Explosion.Damage=7
+1/arrow_burst@17: Cast.Count=2; Cast.Damage=11; Explosion.Damage=11
+1/arrow_rapid@0: Cast.Cooldown=0.9
+1/arrow_pierce@0: Cast.Damage=13; Explosion.Damage=13; Projectile.PierceCount=1
+1/arrow_explosion@0: Explosion.Radius=0.8
+1/arrow_explosion_damage@0: Explosion.Damage=18
+1/arrow_explosion_radius@0: (변화 없음)
+1/arrow_shock@0: Projectile.KnockbackDistance=0.23
+1/arrow_spread@0: (변화 없음)
+1/arrow_barrage@0: (변화 없음)
+1/arrow_aux_damage@0: (변화 없음)
+1/arrow_amplify@0: Cast.Damage=20; Explosion.Damage=20
+1/arrow_thunder@0: Projectile.Speed=40; Status.ParalysisDuration=1
+1/arrow_quick@0: Cast.Cooldown=0.8; Cast.Damage=9; Explosion.Damage=9
+1/arrow_rod@0: Lightning.StrikeRatio=0.5
+1/arrow_aux_rod@0: (변화 없음)
+1/arrow_aux_explosion@0: (변화 없음)
+1/arrow_flame@0: Burn.DamageRatio=0.099999994; Burn.Duration=6
+1/arrow_neutral_1@0: Cast.Damage=15; Explosion.Damage=15
+1/ALL@0: Burn.DamageRatio=0.099999994; Burn.Duration=6; Cast.Cooldown=0.719999969; Cast.Count=2; Cast.Damage=130.830338; Cast.ProjectileCount=3; Explosion.Damage=423.890259; Explosion.Radius=1.43999994; Lightning.StrikeRatio=0.5; Projectile.KnockbackDistance=0.23; Projectile.PierceCount=2; Projectile.Speed=62.5; Status.ParalysisDuration=1
+2/fireball_burst@0: Cast.Count=2
+2/fireball_burst_ii@0: Cast.Count=3; Cast.Damage=8.4; Explosion.Damage=8.4
+2/fireball_burst_ii@9: Cast.Count=3
+2/fireball_explosion_damage@0: Explosion.Damage=21.5999985
+2/fireball_explosion_radius@0: Explosion.Radius=1.43999994
+2/fireball_burn@0: Burn.DamageRatio=0.099999994; Burn.Duration=6
+2/fireball_inferno@0: Burn.MaxHpRatio=0.03
+2/fireball_spreading_burn@0: Burn.DeathExplosion=true
+2/fireball_impact_damage@0: Cast.Damage=21.5999985
+2/fireball_training@0: Cast.Cooldown=1.62; Cast.Damage=14.4000006; Explosion.Damage=14.4000006
+2/fireball_flames@0: (변화 없음)
+2/fireball_phoenix@0: Cast.Form=Enbakutsu; Projectile.PierceCount=2
+2/ALL@0: Burn.DamageRatio=0.099999994; Burn.DeathExplosion=true; Burn.Duration=6; Burn.MaxHpRatio=0.03; Cast.Cooldown=1.62; Cast.Count=5; Cast.Damage=58.7865562; Cast.Form=Enbakutsu; Explosion.Damage=58.7865562; Explosion.Radius=1.43999994; Projectile.PierceCount=2
+3/lightning_damage@0: Cast.Damage=45; Explosion.Damage=45
+3/lightning_burst@0: Cast.Count=2; Cast.Damage=20; Explosion.Damage=20
+3/lightning_burst@9: Cast.Count=2
+3/lightning_storm@0: Explosion.Radius=0.8
+3/lightning_storm_damage@0: Explosion.Damage=45
+3/lightning_storm_radius@0: (변화 없음)
+3/lightning_voltage@0: Cast.Damage=32.5; Explosion.Damage=32.5; Status.ParalysisDuration=2.5
+3/lightning_split@0: (변화 없음)
+3/lightning_particle_voltage@0: (변화 없음)
+3/lightning_sanction@0: Cast.Damage=62.5; Explosion.Damage=62.5; Lightning.KillRatio=0.5
+3/lightning_judgement@0: Cast.Damage=75; Cast.Form=JudgementThunder; Explosion.Damage=75
+3/lightning_field@0: Field.Duration=3
+3/lightning_field_stable@0: Field.Duration=2; Field.FlatDamage=50
+3/lightning_field_voltage@0: Field.DamageMultiplier=5
+3/lightning_neutral@0: Cast.Damage=45; Explosion.Damage=45
+3/ALL@0: Cast.Count=4; Cast.Damage=1310.10046; Cast.Form=JudgementThunder; Explosion.Damage=2358.18066; Explosion.Radius=1.43999994; Field.DamageMultiplier=5; Field.Duration=5; Field.FlatDamage=50; Lightning.KillRatio=0.5; Status.ParalysisDuration=2.5
+4/frost_crystal_repeat@0: Cast.Count=2; Cast.Damage=8
+4/frost_crystal_repeat@5: Cast.Count=2
+4/frost_crystal_damage@0: Cast.Damage=16
+4/frost_crystal_extreme@0: Cast.Damage=13; Status.FreezeDuration=2
+4/frost_crystal_pierce@0: Cast.Damage=13; Projectile.PierceCount=2
+4/frost_crystal_heavy@0: Cast.Damage=15; Projectile.PierceCount=1; Projectile.Speed=14
+4/frost_crystal_volley@0: Cast.Damage=6; Cast.ProjectileCount=2
+4/frost_crystal_split@0: (변화 없음)
+4/frost_crystal_shard_damage@0: (변화 없음)
+4/frost_crystal_impact@0: Projectile.KnockbackDistance=0.6; Projectile.PierceCount=2
+4/frost_crystal_frostbite@0: Status.FrostbiteRatio=0.099999994
+4/frost_crystal_shard_frostbite@0: (변화 없음)
+4/frost_crystal_triangle@0: Cast.Form=TriangleIce
+4/ALL@0: Cast.Count=3; Cast.Damage=67.38385; Cast.Form=TriangleIce; Cast.ProjectileCount=2; Projectile.KnockbackDistance=0.6; Projectile.PierceCount=9; Projectile.Speed=14; Status.FreezeDuration=2; Status.FrostbiteRatio=0.099999994
+5/log_damage@0: Cast.Damage=16; Explosion.Damage=16
+5/log_repeat@0: Cast.Count=2; Cast.Damage=8; Explosion.Damage=8
+5/log_repeat@5: Cast.Count=2
+5/log_size@0: Projectile.SizeMultiplier=1.6
+5/log_speed@0: Cast.Cooldown=0.75; Projectile.Speed=5.6
+5/log_impact@0: Projectile.KnockbackDistance=0.35; Status.StunDuration=1
+5/log_weight@0: Status.SlowDuration=6
+5/log_wound@0: Status.VulnerabilityDuration=6; Status.VulnerabilityRatio=0.199999988
+5/log_large@0: Cast.Damage=16; Cast.Form=LargeLog; Explosion.Damage=16; Projectile.KnockbackDistance=0.320000023; Projectile.SizeMultiplier=1.6
+5/log_fire@0: Burn.DamageRatio=0.099999994; Burn.Duration=6; Cast.Form=FireLog
+5/log_reserve@0: Cast.ReserveCount=3
+5/ALL@0: Burn.DamageRatio=0.099999994; Burn.Duration=6; Cast.Cooldown=0.75; Cast.Count=3; Cast.Damage=26.2144012; Cast.Form=FireLog; Cast.ReserveCount=3; Explosion.Damage=26.2144012; Projectile.KnockbackDistance=0.56; Projectile.SizeMultiplier=2.56000018; Projectile.Speed=5.6; Status.SlowDuration=6; Status.StunDuration=1; Status.VulnerabilityDuration=6; Status.VulnerabilityRatio=0.199999988
+6/cold_zone_cast@0: Cast.Count=2
+6/cold_zone_damage@0: Cast.Damage=12.8
+6/cold_zone_extreme@0: Cast.Damage=10.4; Status.FreezeDuration=2
+6/cold_zone_core@0: (변화 없음)
+6/cold_zone_zero@0: (변화 없음)
+6/cold_zone_expand@0: Area.Radius=3
+6/cold_zone_shatter@0: (변화 없음)
+6/cold_zone_polish@0: (변화 없음)
+6/cold_zone_bitter@0: (변화 없음)
+6/ALL@0: Area.Radius=3; Cast.Count=3; Cast.Damage=42.5984; Status.FreezeDuration=2
+7/lightning_cloud_expand@0: Area.Radius=1.80000007
+7/lightning_cloud_duration@0: Area.Duration=6.4
+7/lightning_cloud_speed@0: Area.MoveSpeed=0.960000038; Cast.Damage=8.4
+7/lightning_cloud_damage@0: Cast.Damage=9.6
+7/lightning_cloud_voltage@0: Status.ParalysisDuration=2
+7/lightning_cloud_magnet@0: Area.Pull=0.3125; Cast.Damage=8.4
+7/lightning_cloud_singularity@0: (변화 없음)
+7/lightning_cloud_split@0: (변화 없음)
+7/lightning_cloud_guide@0: (변화 없음)
+7/lightning_cloud_storm@0: (변화 없음)
+7/ALL@0: Area.Duration=16.384; Area.MoveSpeed=1.15200007; Area.Pull=0.3125; Area.Radius=1.80000007; Cast.Damage=67.43655; Status.ParalysisDuration=2
+8/ALL@0: (변화 없음)
+12/ALL@0: (변화 없음)
+13/ALL@0: (변화 없음)
+14/ALL@0: (변화 없음)
+15/ALL@0: (변화 없음)
+16/energy_beam_overload@0: Beam.Pulses=8; Cast.Cooldown=9
+16/energy_beam_amplify@0: Cast.Damage=8
+16/energy_beam_stable@0: Beam.Pulses=9
+16/energy_beam_split@0: Status.VulnerabilityDuration=5; Status.VulnerabilityRatio=0.25
+16/energy_beam_dazzle@0: Status.StunChance=0.049999997; Status.StunDuration=1
+16/energy_beam_weaken@0: Status.SlowDuration=1
+16/energy_beam_judgement@0: (변화 없음)
+16/energy_beam_spread@0: Beam.Width=2
+16/energy_beam_fire@0: (변화 없음)
+16/energy_beam_positron@0: (변화 없음)
+16/energy_beam_barrage@0: (변화 없음)
+16/energy_beam_neutral_1@0: Cast.Damage=7.5
+16/energy_beam_freeze@0: Status.FreezeDuration=0.5
+16/energy_beam_neutral_3@0: (변화 없음)
+16/ALL@0: Beam.Pulses=18; Beam.Width=2; Cast.Cooldown=9; Cast.Damage=30.7200012; Status.FreezeDuration=0.5; Status.SlowDuration=1; Status.StunChance=0.049999997; Status.StunDuration=1; Status.VulnerabilityDuration=5; Status.VulnerabilityRatio=0.25
+17/ALL@0: (변화 없음)
+18/chain_lightning_cross@0: Cast.Count=2
+18/chain_lightning_continuous@0: Cast.Damage=15.5999994; Chain.Bounces=5; Explosion.Damage=7.79999971
+18/chain_lightning_voltage@0: Cast.Damage=15.5999994; Explosion.Damage=7.79999971; Status.ParalysisDuration=1
+18/chain_lightning_amplify@0: Cast.Damage=19.2; Explosion.Damage=9.6
+18/chain_lightning_ion_burst@0: Explosion.Radius=0.8
+18/chain_lightning_resonance@0: (변화 없음)
+18/chain_lightning_ion_spread@0: (변화 없음)
+18/chain_lightning_ion_voltage@0: (변화 없음)
+18/chain_lightning_conduction@0: Cast.Damage=4.8; Chain.PathWidth=0.6; Explosion.Damage=2.4
+18/chain_lightning_neutral@0: Cast.Damage=21.5999985; Explosion.Damage=10.7999992
+18/ALL@0: Cast.Count=3; Cast.Damage=63.172348; Chain.Bounces=9; Chain.PathWidth=0.6; Explosion.Damage=31.586174; Explosion.Radius=1.6; Status.ParalysisDuration=1

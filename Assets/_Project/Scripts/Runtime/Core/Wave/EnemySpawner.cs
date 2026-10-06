@@ -223,6 +223,7 @@ namespace Game.Core
                 {
                     enemy.Move(deltaTime);
                 }
+                enemy.TickStatus(deltaTime);
             }
 
             // 투사체 처리

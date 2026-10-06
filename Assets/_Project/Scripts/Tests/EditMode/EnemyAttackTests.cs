@@ -20,7 +20,8 @@ namespace Game.Tests
         }
 
         private const int WallMaxHp = 100;
-        private const float Speed = EnemyProjectileSystem.ProjectileSpeed;
+        private const float ProjectileSpeed = 8f;
+        private const float Speed = ProjectileSpeed;
 
         private GameObject _wallGo;
         private Wall _wall;
@@ -34,7 +35,7 @@ namespace Game.Tests
             _wallGo.transform.position = Vector3.zero; // AttackLineY = 0 (_attackLineOffset 기본값 0)
             _wall = _wallGo.AddComponent<Wall>();
             _wallDestroyed = new FakePublisher<WallDestroyed>();
-            _wall.Construct(new FakePublisher<WallHpChanged>(), _wallDestroyed);
+            _wall.Construct(new FakePublisher<WallHpChanged>(), _wallDestroyed, null);
             _wall.Initialize(WallMaxHp); // EditMode에서는 Start가 호출되지 않음
 
             _projectiles = new EnemyProjectileSystem();
@@ -52,7 +53,7 @@ namespace Game.Tests
             float x = 0f, float speed = 5f, int maxHp = 10)
         {
             return new EnemyModel(1, new Vector2(x, y), speed, EnemyType.Normal, maxHp,
-                new EnemyAttackStats(type, damage, interval, range),
+                new EnemyAttackStats(type, damage, interval, range, type == AttackType.Ranged ? ProjectileSpeed : 0f),
                 new FakePublisher<EnemyHpChanged>(), new FakePublisher<EnemyDied>());
         }
 
@@ -321,7 +322,7 @@ namespace Game.Tests
         [Test]
         public void ProjectileSystem_Fire_AddsActiveProjectile()
         {
-            var projectile = _projectiles.Fire(new Vector2(0f, 4f), 10);
+            var projectile = _projectiles.Fire(new Vector2(0f, 4f), 10, ProjectileSpeed);
 
             Assert.IsNotNull(projectile);
             Assert.AreEqual(1, _projectiles.ActiveCount);
@@ -331,7 +332,7 @@ namespace Game.Tests
         [Test]
         public void ProjectileSystem_RemovesProjectileAfterHit()
         {
-            _projectiles.Fire(new Vector2(0f, 4f), 10);
+            _projectiles.Fire(new Vector2(0f, 4f), 10, ProjectileSpeed);
 
             _projectiles.Tick(0.25f, _wall); // 4 → 2, 아직 비행 중
             Assert.AreEqual(1, _projectiles.ActiveCount);
@@ -344,8 +345,8 @@ namespace Game.Tests
         [Test]
         public void ProjectileSystem_MultipleProjectiles_SumDamage()
         {
-            _projectiles.Fire(new Vector2(0f, 4f), 10);
-            _projectiles.Fire(new Vector2(3f, 8f), 5);
+            _projectiles.Fire(new Vector2(0f, 4f), 10, ProjectileSpeed);
+            _projectiles.Fire(new Vector2(3f, 8f), 5, ProjectileSpeed);
 
             _projectiles.Tick(1f, _wall); // 둘 다 명중
 
@@ -358,7 +359,7 @@ namespace Game.Tests
         {
             _wall.Initialize(10);
             _wall.TakeDamage(10); // 벽 파괴
-            _projectiles.Fire(new Vector2(0f, 4f), 10);
+            _projectiles.Fire(new Vector2(0f, 4f), 10, ProjectileSpeed);
 
             _projectiles.Tick(1f, _wall);
 

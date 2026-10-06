@@ -6,6 +6,10 @@ end_of_line = lf
 insert_final_newline = true
 trim_trailing_whitespace = true
 
+# Unity가 직접 쓰는 YAML은 빈 값 뒤에 공백을 남긴다(`m_Name: `). IDE가 저장할 때 지우면 Unity가 다시 저장할 때마다 변경이 생긴다.
+[*.{unity,prefab,mat,asset,meta,anim,controller,overrideController,mask,lighting}]
+trim_trailing_whitespace = false
+
 [*.cs]
 indent_style = space
 indent_size = 4

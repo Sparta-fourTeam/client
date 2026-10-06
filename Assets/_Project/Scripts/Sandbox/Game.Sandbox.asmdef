@@ -1,0 +1,22 @@
+{
+    "name": "Game.Sandbox",
+    "rootNamespace": "Game.Sandbox",
+    "references": [
+        "Game.Core",
+        "MessagePipe",
+        "MessagePipe.VContainer",
+        "UniTask",
+        "VContainer"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_EDITOR || DEVELOPMENT_BUILD"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

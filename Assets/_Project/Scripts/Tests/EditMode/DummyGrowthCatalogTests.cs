@@ -14,7 +14,7 @@ namespace Game.Tests
             _catalog = new DummyGrowthCatalog();
         }
 
-        [Test(Description = "장비 칸은 닌자 화면 칸 수(오른쪽 6 + 왼쪽 1)와 같고, 칸 번호가 순서대로다")]
+        [Test(Description = "장비 칸은 캐릭터 화면 칸 수(오른쪽 6 + 왼쪽 1)와 같고, 칸 번호가 순서대로다")]
         public void Equips_MatchScreenSlots()
         {
             Assert.AreEqual(7, _catalog.Equips.Count);
@@ -25,11 +25,11 @@ namespace Game.Tests
         }
 
         [Test(Description = "장비 칸은 캐릭터 레벨에 맞춰 열린다")]
-        public void Equips_UnlockByShinobiLevel()
+        public void Equips_UnlockByCharacterLevel()
         {
             foreach (EquipInfo equip in _catalog.Equips)
             {
-                if (equip.UnlockLevel <= _catalog.Shinobi.Level)
+                if (equip.UnlockLevel <= _catalog.Character.Level)
                 {
                     Assert.IsTrue(equip.IsUnlocked, equip.Name);
                 }
@@ -45,27 +45,27 @@ namespace Game.Tests
             }
         }
 
-        [Test(Description = "열린 인술은 강화 전후 능력치와 비용이 있고, 능력치 줄은 팝업 줄 수(3)를 넘지 않는다")]
-        public void UnlockedNinpos_HaveStatsAndCost()
+        [Test(Description = "열린 스킬은 강화 전후 능력치와 비용이 있고, 능력치 줄은 팝업 줄 수(3)를 넘지 않는다")]
+        public void UnlockedSkills_HaveStatsAndCost()
         {
-            foreach (NinpoInfo ninpo in _catalog.Ninpos)
+            foreach (SkillInfo skill in _catalog.Skills)
             {
-                if (!ninpo.IsUnlocked)
+                if (!skill.IsUnlocked)
                 {
                     continue;
                 }
 
-                Assert.That(ninpo.Stats.Count, Is.InRange(1, 3), ninpo.Name);
-                Assert.Greater(ninpo.CoinCost, 0, ninpo.Name);
-                Assert.Greater(ninpo.BookCost, 0, ninpo.Name);
-                Assert.Less(ninpo.Level, ninpo.MaxLevel, ninpo.Name);
+                Assert.That(skill.Stats.Count, Is.InRange(1, 3), skill.Name);
+                Assert.Greater(skill.CoinCost, 0, skill.Name);
+                Assert.Greater(skill.BookCost, 0, skill.Name);
+                Assert.Less(skill.Level, skill.MaxLevel, skill.Name);
             }
         }
 
-        [Test(Description = "인술 칸은 화면 칸 수(18)를 넘지 않는다")]
-        public void Ninpos_FitScreen()
+        [Test(Description = "스킬 칸은 화면 칸 수(18)를 넘지 않는다")]
+        public void Skills_FitScreen()
         {
-            Assert.LessOrEqual(_catalog.Ninpos.Count, 18);
+            Assert.LessOrEqual(_catalog.Skills.Count, 18);
         }
     }
 }

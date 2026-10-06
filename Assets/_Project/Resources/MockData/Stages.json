@@ -1,5 +1,32 @@
 [
-  { "Id": 1, "ClearGold": 100, "RatingRewards": [20, 50, 100] },
-  { "Id": 2, "ClearGold": 150, "RatingRewards": [30, 75, 150] },
-  { "Id": 3, "ClearGold": 300, "RatingRewards": [60, 150, 300] }
+  {
+    "Id": 1, "ClearGold": 100, "RatingRewards": [20, 50, 100],
+    "WallHp": 100,
+    "Spawn": { "IntervalMin": 0.1, "IntervalMax": 0.5, "Cooldown": 3, "EliteChance": 0.2 },
+    "Waves": [
+      {"EnemyCount": 5, "MaxEliteCount": 0, "MaxBossCount": 0},
+      {"EnemyCount": 8, "MaxEliteCount": 2, "MaxBossCount": 0},
+      {"EnemyCount": 10, "MaxEliteCount": 0, "MaxBossCount": 1}
+    ]
+  },
+  {
+    "Id": 2, "ClearGold": 150, "RatingRewards": [30, 75, 150],
+    "WallHp": 100,
+    "Spawn": { "IntervalMin": 0.1, "IntervalMax": 0.5, "Cooldown": 3, "EliteChance": 0.2 },
+    "Waves": [
+      {"EnemyCount": 5, "MaxEliteCount": 0, "MaxBossCount": 0},
+      {"EnemyCount": 8, "MaxEliteCount": 2, "MaxBossCount": 0},
+      {"EnemyCount": 10, "MaxEliteCount": 0, "MaxBossCount": 1}
+    ]
+  },
+  {
+    "Id": 3, "ClearGold": 300, "RatingRewards": [60, 150, 300],
+    "WallHp": 100,
+    "Spawn": { "IntervalMin": 0.1, "IntervalMax": 0.5, "Cooldown": 3, "EliteChance": 0.2 },
+    "Waves": [
+      {"EnemyCount": 5, "MaxEliteCount": 0, "MaxBossCount": 0},
+      {"EnemyCount": 8, "MaxEliteCount": 2, "MaxBossCount": 0},
+      {"EnemyCount": 10, "MaxEliteCount": 0, "MaxBossCount": 1}
+    ]
+  }
 ]

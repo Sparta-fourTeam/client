@@ -1,6 +1,8 @@
+using Game.Core;
 using Game.Core.Messages;
 using MessagePipe;
 using UnityEngine;
+using UnityEngine.Serialization;
 using VContainer;
 
 namespace Game.View
@@ -9,7 +11,8 @@ namespace Game.View
     public sealed class SkillHudView : HudView
     {
         [SerializeField] private SkillSlotView[] _slots;
-        [SerializeField] private SkillIconTable _iconTable;
+        [FormerlySerializedAs("_iconTable")]
+        [SerializeField] private SkillAssetTable _assets;
 
         [Inject]
         public void Construct(IBufferedSubscriber<SkillChanged> skillChanged)
@@ -27,7 +30,7 @@ namespace Game.View
                 if (i < count)
                 {
                     var status = message.Skills[i];
-                    _slots[i].Bind(status, _iconTable != null ? _iconTable.Find(status.IconKey) : null);
+                    _slots[i].Bind(status, _assets != null ? _assets.GetHudIcon(status.AssetKey) : null);
                 }
                 else
                 {

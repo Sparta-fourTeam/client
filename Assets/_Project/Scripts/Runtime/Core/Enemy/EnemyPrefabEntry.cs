@@ -11,16 +11,14 @@ namespace Game.Core
         public Enemy Prefab;
         public EnemyProjectile ProjectilePrefab; // 원거리만
 
-        [Header("적 체력 및 속도")]
-        public float Speed; // 해당 프리팹의 이동 속도
-        public int MaxHp;
+        [Header("스탯")]
+        [Tooltip("Monsters 테이블의 행 ID. 체력, 속도, 공격 값은 테이블에서 온다")]
+        public int MonsterId;
 
-        [Header("적 공격 관련")]
+        [Header("공격 방식")]
         public AttackType AttackType;
-        public int Damage;
-        public float AttackInterval;
-        public float AttackRange;
 
-        public EnemyAttackStats CreateAttackStats() => new EnemyAttackStats(AttackType, Damage, AttackInterval, AttackRange);
+        public EnemyAttackStats CreateAttackStats(MonsterDefinition monster) =>
+            new EnemyAttackStats(AttackType, monster.Damage, monster.AttackInterval, monster.AttackRange, monster.ProjectileSpeed);
     }
 }

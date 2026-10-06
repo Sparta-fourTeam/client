@@ -73,6 +73,7 @@ flowchart TD
 - Core가 바깥 기능을 써야 하면 인터페이스는 Core, 구현은 바깥에 둔다 (`IBattleApi`처럼). 씬 전환도 같은 규칙이라 인터페이스는 `Core/Navigation`, 구현(`SceneLoader`, Root 스코프 등록)은 Boot다
 - 새 기능은 새 어셈블리가 아니라 기존 계층 안의 폴더로 만든다
 - 새 어셈블리는 에디터 전용 코드, 외부 SDK, 개발용 툴처럼 성격이 다른 코드가 생길 때만 E가 만든다
+- `Game.Sandbox`는 개발용 툴(스킬 샌드박스)이라 따로 둔 어셈블리다. 에디터와 개발 빌드에서만 컴파일되고(`defineConstraints`), Core와 MessagePipe, VContainer만 참조한다. 어느 계층도 이 어셈블리를 참조하지 않는다(테스트만 예외)
 
 ### 백엔드 전환
 

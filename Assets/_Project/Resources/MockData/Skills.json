@@ -1,0 +1,2447 @@
+[
+  {
+    "id": 1,
+    "name": "화살",
+    "assetKey": "weapon_arrow",
+    "castType": 0,
+    "maxLevel": 15,
+    "progressionId": "shuriken",
+    "baseStats": {
+      "cast": {
+        "cooldown": 1,
+        "baseDamage": 10,
+        "range": 22,
+        "projectileCount": 1,
+        "castCount": 1,
+        "castInterval": 0.1
+      },
+      "projectile": {
+        "speed": 20,
+        "pierceCount": 0,
+        "knockbackDistance": 0.2
+      },
+      "status": {
+        "paralysisChance": 1,
+        "freezeChance": 1,
+        "frostbiteChance": 1,
+        "burnChance": 1
+      },
+      "explosion": {
+        "damageRatio": 1
+      }
+    },
+    "upgrades": [
+      {
+        "id": "arrow_multishot",
+        "name": "화살 일제 사격",
+        "desc": "발사 수 +1 / 공격력 -20%",
+        "maxPickCount": 2,
+        "effects": [
+          {
+            "kind": "projectileCount",
+            "value": 1
+          },
+          {
+            "kind": "damage",
+            "value": -20
+          }
+        ],
+        "variants": [
+          {
+            "minPermanentLevel": 9,
+            "name": "화살 일제 사격(+)",
+            "desc": "발사 수 +1",
+            "effects": [
+              {
+                "kind": "projectileCount",
+                "value": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "arrow_sharp",
+        "name": "화살 강화",
+        "desc": "공격력 +60%",
+        "maxPickCount": 3,
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 60
+          }
+        ]
+      },
+      {
+        "id": "arrow_light",
+        "name": "화살 가속",
+        "desc": "공격력 +25% / 투척 속도 +25%",
+        "maxPickCount": 2,
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 25
+          },
+          {
+            "kind": "projectileSpeed",
+            "value": 25
+          }
+        ]
+      },
+      {
+        "id": "arrow_burst",
+        "name": "연발 화살",
+        "desc": "시전 수 +1 / 공격력 -30%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "castCount",
+            "value": 1
+          },
+          {
+            "kind": "damage",
+            "value": -30
+          }
+        ],
+        "requiredCardIds": [
+          "arrow_sharp"
+        ],
+        "variants": [
+          {
+            "minPermanentLevel": 17,
+            "name": "연발 화살(+)",
+            "desc": "시전 수 +1 / 공격력 +10%",
+            "effects": [
+              {
+                "kind": "castCount",
+                "value": 1
+              },
+              {
+                "kind": "damage",
+                "value": 10
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "arrow_rapid",
+        "name": "화살 수련",
+        "desc": "쿨타임 -10%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "attackSpeed",
+            "value": 10
+          }
+        ],
+        "requiredCardIds": [
+          "arrow_burst"
+        ]
+      },
+      {
+        "id": "arrow_pierce",
+        "name": "관통 강화",
+        "desc": "공격력 +30% / 관통력 +1",
+        "maxPickCount": 2,
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 30
+          },
+          {
+            "kind": "pierceCount",
+            "value": 1
+          }
+        ],
+        "enabled": true,
+        "requiredWeaponIds": [
+          4
+        ]
+      },
+      {
+        "id": "arrow_explosion",
+        "name": "폭발 화살",
+        "desc": "폭발 효과 추가",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "enableExplosion",
+            "value": 0.8
+          }
+        ],
+        "requiredCardIds": [],
+        "requiredWeaponIds": [
+          2
+        ],
+        "exclusions": [
+          {
+            "cardId": "arrow_shock"
+          }
+        ]
+      },
+      {
+        "id": "arrow_explosion_damage",
+        "name": "폭발 강화",
+        "desc": "폭발 공격력 +80%",
+        "maxPickCount": 2,
+        "effects": [
+          {
+            "kind": "explosionDamage",
+            "value": 80
+          }
+        ],
+        "requiredCardIds": [
+          "arrow_explosion"
+        ],
+        "requiredWeaponIds": []
+      },
+      {
+        "id": "arrow_explosion_radius",
+        "name": "폭발 확산",
+        "desc": "폭발 범위 +80%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "explosionRadius",
+            "value": 80
+          }
+        ],
+        "requiredCardIds": [
+          "arrow_explosion_damage"
+        ],
+        "requiredWeaponIds": []
+      },
+      {
+        "id": "arrow_shock",
+        "name": "충격 화살",
+        "desc": "밀침 +15%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "knockback",
+            "value": 15
+          }
+        ],
+        "requiredCardIds": [],
+        "requiredWeaponIds": [
+          3
+        ],
+        "enabled": true,
+        "exclusions": [
+          {
+            "cardId": "arrow_explosion"
+          }
+        ]
+      },
+      {
+        "id": "arrow_spread",
+        "name": "확산 화살",
+        "desc": "명중 시 보조 화살 2개 발사",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "onEvent",
+            "trigger": "Hit",
+            "skillId": 13,
+            "count": 2,
+            "excludeHit": true,
+            "inherit": {
+              "damage": 0.5,
+              "projectileSpeed": 1
+            }
+          }
+        ],
+        "requiredCardIds": [
+          "arrow_sharp"
+        ],
+        "minPermanentLevel": 0
+      },
+      {
+        "id": "arrow_barrage",
+        "name": "화살 난사",
+        "desc": "명중 시 보조 화살 4개 추가 발사",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "projectileCount",
+            "value": 4,
+            "target": 13
+          }
+        ],
+        "requiredCardIds": [
+          "arrow_spread"
+        ],
+        "minPermanentLevel": 0
+      },
+      {
+        "id": "arrow_aux_damage",
+        "name": "보조 화살 강화",
+        "desc": "보조 화살 공격력 +100%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 100,
+            "target": 13
+          }
+        ],
+        "requiredCardIds": [
+          "arrow_spread"
+        ],
+        "minPermanentLevel": 0
+      },
+      {
+        "id": "arrow_amplify",
+        "name": "화살 증폭",
+        "desc": "화살/보조 화살 공격력 +100%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 100
+          }
+        ],
+        "requiredCardIds": [
+          "arrow_spread"
+        ],
+        "minPermanentLevel": 13
+      },
+      {
+        "id": "arrow_thunder",
+        "name": "뇌전 화살",
+        "desc": "마비 추가 / 투척 속도 +100%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "paralysis",
+            "value": 1
+          },
+          {
+            "kind": "projectileSpeed",
+            "value": 100
+          }
+        ],
+        "requiredCardIds": [
+          "arrow_light",
+          "arrow_shock"
+        ]
+      },
+      {
+        "id": "arrow_quick",
+        "name": "쾌속 투척",
+        "desc": "공격력 -10% / 쿨타임 -20%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "damage",
+            "value": -10
+          },
+          {
+            "kind": "attackSpeed",
+            "value": 20
+          }
+        ],
+        "requiredCardIds": [
+          "arrow_thunder"
+        ]
+      },
+      {
+        "id": "arrow_rod",
+        "name": "피뢰침",
+        "desc": "본체 적중 시 소형 벼락 1회",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "lightningStrike",
+            "value": 50
+          }
+        ],
+        "requiredCardIds": [
+          "arrow_quick"
+        ]
+      },
+      {
+        "id": "arrow_aux_rod",
+        "name": "보조 피뢰침",
+        "desc": "보조 적중 시 소형 벼락 1회",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "lightningStrike",
+            "value": 50,
+            "target": 13
+          }
+        ],
+        "requiredCardIds": [
+          "arrow_spread",
+          "arrow_rod"
+        ]
+      },
+      {
+        "id": "arrow_aux_explosion",
+        "name": "추가 폭발",
+        "desc": "보조 화살 폭발 효과 추가",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "inherit",
+            "skillId": 13,
+            "inherit": {
+              "explosionRadius": 1,
+              "explosionDamage": 0.5
+            }
+          }
+        ],
+        "requiredCardIds": [
+          "arrow_explosion",
+          "arrow_spread"
+        ]
+      },
+      {
+        "id": "arrow_flame",
+        "name": "화염 화살",
+        "desc": "점화 추가 (6초 지속)",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "burnDuration",
+            "value": 6
+          },
+          {
+            "kind": "burnRatio",
+            "value": 10
+          }
+        ],
+        "requiredCardIds": [
+          "arrow_explosion",
+          "arrow_sharp"
+        ]
+      },
+      {
+        "id": "arrow_neutral_1",
+        "name": "무속성 증폭 · Ⅰ",
+        "desc": "화살과 에너지 빔 공격력 +50%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 50
+          }
+        ],
+        "enabled": true,
+        "sharedId": "shared_arrow_energy_damage",
+        "affectedWeaponIds": [
+          1,
+          16
+        ],
+        "requiredWeaponIds": [
+          16
+        ]
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "name": "화염구",
+    "assetKey": "weapon_fireball",
+    "castType": 0,
+    "maxLevel": 14,
+    "progressionId": "fireball",
+    "baseStats": {
+      "cast": {
+        "cooldown": 1.8,
+        "baseDamage": 12,
+        "range": 20,
+        "projectileCount": 1,
+        "castCount": 1,
+        "castInterval": 0.1
+      },
+      "projectile": {
+        "speed": 16
+      },
+      "status": {
+        "freezeChance": 1,
+        "frostbiteChance": 1,
+        "burnChance": 1,
+        "paralysisChance": 1
+      },
+      "explosion": {
+        "radius": 0.8,
+        "damageRatio": 1
+      }
+    },
+    "upgrades": [
+      {
+        "id": "fireball_burst",
+        "name": "연속 화염구",
+        "desc": "추가 시전 +1",
+        "maxPickCount": 2,
+        "effects": [
+          {
+            "kind": "castCount",
+            "value": 1
+          }
+        ],
+        "exclusions": [
+          {
+            "cardId": "fireball_phoenix",
+            "belowPermanentLevel": 25
+          }
+        ]
+      },
+      {
+        "id": "fireball_burst_ii",
+        "name": "연속 화염구Ⅱ",
+        "desc": "추가 시전 +2 / 공격력 -30%",
+        "maxPickCount": 1,
+        "requiredCardCounts": [
+          {
+            "cardId": "fireball_burst",
+            "count": 2,
+            "skillId": 0
+          }
+        ],
+        "effects": [
+          {
+            "kind": "castCount",
+            "value": 2
+          },
+          {
+            "kind": "damage",
+            "value": -30
+          }
+        ],
+        "variants": [
+          {
+            "minPermanentLevel": 9,
+            "name": "연속 화염구(+)Ⅱ",
+            "desc": "추가 시전 +2",
+            "effects": [
+              {
+                "kind": "castCount",
+                "value": 2
+              }
+            ]
+          }
+        ],
+        "exclusions": [
+          {
+            "cardId": "fireball_phoenix",
+            "belowPermanentLevel": 25
+          }
+        ]
+      },
+      {
+        "id": "fireball_explosion_damage",
+        "name": "폭발 강화",
+        "desc": "폭발 공격력 +80%",
+        "maxPickCount": 3,
+        "effects": [
+          {
+            "kind": "explosionDamage",
+            "value": 80
+          }
+        ],
+        "requiredCardIds": []
+      },
+      {
+        "id": "fireball_explosion_radius",
+        "name": "폭발 화염구",
+        "desc": "폭발 범위 +80%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "explosionRadius",
+            "value": 80
+          }
+        ],
+        "requiredCardIds": [
+          "fireball_explosion_damage"
+        ]
+      },
+      {
+        "id": "fireball_burn",
+        "name": "화염구 점화",
+        "desc": "점화 추가 (6초 지속)",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "burnDuration",
+            "value": 6
+          },
+          {
+            "kind": "burnRatio",
+            "value": 10
+          }
+        ],
+        "requiredCardIds": [
+          "fireball_explosion_damage"
+        ]
+      },
+      {
+        "id": "fireball_inferno",
+        "name": "업화",
+        "desc": "점화 주기마다 최대 HP 3% 피해 추가",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "burnMaxHp",
+            "value": 3
+          }
+        ],
+        "requiredCardIds": [
+          "fireball_burn"
+        ],
+        "minPermanentLevel": 0
+      },
+      {
+        "id": "fireball_spreading_burn",
+        "name": "번지는 화염",
+        "desc": "점화 대상 사망 시 폭발",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "burnDeathExplosion",
+            "value": 1
+          }
+        ],
+        "requiredCardIds": [
+          "fireball_burn"
+        ],
+        "minPermanentLevel": 5
+      },
+      {
+        "id": "fireball_impact_damage",
+        "name": "충격 강화",
+        "desc": "충격 공격력 +80%",
+        "maxPickCount": 3,
+        "effects": [
+          {
+            "kind": "impactDamage",
+            "value": 80
+          }
+        ]
+      },
+      {
+        "id": "fireball_training",
+        "name": "화염구 수련",
+        "desc": "공격력 +20% / 쿨타임 -10%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 20
+          },
+          {
+            "kind": "attackSpeed",
+            "value": 10
+          }
+        ],
+        "requiredCardIds": [
+          "fireball_impact_damage",
+          "fireball_explosion_radius"
+        ]
+      },
+      {
+        "id": "fireball_flames",
+        "name": "불꽃",
+        "desc": "폭발 후 불꽃 3개 시전",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "onEvent",
+            "trigger": "Hit",
+            "skillId": 14,
+            "count": 3,
+            "excludeHit": true,
+            "inherit": {
+              "damage": 0.5,
+              "projectileSpeed": 1
+            }
+          }
+        ],
+        "requiredCardIds": [
+          "fireball_impact_damage",
+          "fireball_explosion_damage"
+        ]
+      },
+      {
+        "id": "fireball_phoenix",
+        "name": "불사조 불꽃",
+        "desc": "불사조 불꽃로 형태 변화 / 관통력 +2",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "form",
+            "form": "Enbakutsu"
+          },
+          {
+            "kind": "pierceCount",
+            "value": 2
+          }
+        ],
+        "requiredCardIds": [
+          "fireball_impact_damage",
+          "fireball_explosion_radius"
+        ],
+        "minPermanentLevel": 13,
+        "exclusions": [
+          {
+            "cardId": "fireball_burst",
+            "belowPermanentLevel": 25
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "name": "벼락",
+    "assetKey": "weapon_lightning",
+    "castType": 1,
+    "maxLevel": 14,
+    "progressionId": "lightning",
+    "baseStats": {
+      "cast": {
+        "cooldown": 2.5,
+        "baseDamage": 25,
+        "range": 20,
+        "projectileCount": 1,
+        "castCount": 1,
+        "castInterval": 0.1
+      },
+      "projectile": {
+        "speed": 14
+      },
+      "status": {
+        "freezeChance": 1,
+        "frostbiteChance": 1,
+        "burnChance": 1,
+        "paralysisChance": 1,
+        "paralysisDuration": 1
+      },
+      "explosion": {
+        "damageRatio": 1
+      },
+      "field": {
+        "damageRatio": 0.1,
+        "radius": 0.8,
+        "slowRatio": 0.3
+      }
+    },
+    "upgrades": [
+      {
+        "id": "lightning_damage",
+        "name": "벼락 피해 증폭",
+        "desc": "공격력 +80%",
+        "maxPickCount": 3,
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 80
+          }
+        ]
+      },
+      {
+        "id": "lightning_burst",
+        "name": "연속 벼락",
+        "desc": "시전 수 +1 / 공격력 -20%",
+        "maxPickCount": 3,
+        "effects": [
+          {
+            "kind": "castCount",
+            "value": 1
+          },
+          {
+            "kind": "damage",
+            "value": -20
+          }
+        ],
+        "variants": [
+          {
+            "minPermanentLevel": 9,
+            "name": "연속 벼락(+)",
+            "desc": "시전 수 +1",
+            "effects": [
+              {
+                "kind": "castCount",
+                "value": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "lightning_storm",
+        "name": "자기 폭풍",
+        "desc": "자기 폭풍",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "enableExplosion",
+            "value": 0.8
+          }
+        ],
+        "requiredCardIds": [],
+        "requiredWeaponIds": []
+      },
+      {
+        "id": "lightning_storm_damage",
+        "name": "자기 폭풍 피해 증폭",
+        "desc": "폭발 공격력 +80%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "explosionDamage",
+            "value": 80
+          }
+        ],
+        "requiredCardIds": [
+          "lightning_storm"
+        ],
+        "requiredWeaponIds": []
+      },
+      {
+        "id": "lightning_storm_radius",
+        "name": "자기 폭풍 확장",
+        "desc": "폭발 범위 +80%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "explosionRadius",
+            "value": 80
+          }
+        ],
+        "requiredCardIds": [
+          "lightning_storm_damage"
+        ],
+        "requiredWeaponIds": []
+      },
+      {
+        "id": "lightning_voltage",
+        "name": "고전압 벼락",
+        "desc": "공격력 +30% / 마비 지속 시간 +1.5초",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 30
+          },
+          {
+            "kind": "paralysisDuration",
+            "value": 1.5
+          }
+        ]
+      },
+      {
+        "id": "lightning_split",
+        "name": "전자 분열",
+        "desc": "공격 대상 주위로 번개 구체 6개 발사",
+        "maxPickCount": 1,
+        "requiredCardIds": [
+          "lightning_voltage",
+          "lightning_damage"
+        ],
+        "effects": [
+          {
+            "kind": "onEvent",
+            "trigger": "Impact",
+            "skillId": 15,
+            "count": 6,
+            "excludeHit": true,
+            "inherit": {
+              "damage": 0.5,
+              "paralysisChance": 1
+            }
+          }
+        ]
+      },
+      {
+        "id": "lightning_particle_voltage",
+        "name": "고전압 입자",
+        "desc": "번개 구체 공격력 +40% / 마비 0.5초",
+        "maxPickCount": 1,
+        "requiredCardIds": [
+          "lightning_split"
+        ],
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 40,
+            "target": 15
+          },
+          {
+            "kind": "paralysis",
+            "value": 0.5,
+            "target": 15
+          }
+        ]
+      },
+      {
+        "id": "lightning_sanction",
+        "name": "뇌전 제재",
+        "desc": "공격력 +150% / 적 처치 시 소형 벼락 1회 시전",
+        "maxPickCount": 1,
+        "minPermanentLevel": 5,
+        "requiredCardIds": [
+          "lightning_damage"
+        ],
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 150
+          },
+          {
+            "kind": "killLightning",
+            "value": 50
+          }
+        ]
+      },
+      {
+        "id": "lightning_judgement",
+        "name": "폭풍의 격노",
+        "desc": "폭풍의 격노으로 강화 / 공격력 +200%",
+        "maxPickCount": 1,
+        "minPermanentLevel": 13,
+        "requiredCardIds": [
+          "lightning_voltage",
+          "lightning_sanction"
+        ],
+        "exclusions": [
+          {
+            "cardId": "lightning_storm"
+          }
+        ],
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 200
+          },
+          {
+            "kind": "form",
+            "form": "JudgementThunder"
+          }
+        ]
+      },
+      {
+        "id": "lightning_field",
+        "name": "전자기장",
+        "desc": "전자기장 생성 / 범위 내 이동속도 30% 감소",
+        "maxPickCount": 1,
+        "requiredCardIds": [
+          "lightning_storm"
+        ],
+        "effects": [
+          {
+            "kind": "fieldDuration",
+            "value": 3
+          }
+        ]
+      },
+      {
+        "id": "lightning_field_stable",
+        "name": "안정된 전장",
+        "desc": "전자기장 공격력 +50 / 지속 시간 +2초",
+        "maxPickCount": 1,
+        "requiredCardIds": [
+          "lightning_field"
+        ],
+        "effects": [
+          {
+            "kind": "fieldDamageFlat",
+            "value": 50
+          },
+          {
+            "kind": "fieldDuration",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "id": "lightning_field_voltage",
+        "name": "고전압 전장",
+        "desc": "전자기장 공격력 +400%",
+        "maxPickCount": 1,
+        "requiredCardIds": [
+          "lightning_field"
+        ],
+        "effects": [
+          {
+            "kind": "fieldDamageMultiplier",
+            "value": 400
+          }
+        ]
+      },
+      {
+        "id": "lightning_neutral",
+        "name": "뇌속성 증폭",
+        "desc": "벼락과 연쇄 번개 공격력 +80%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 80
+          }
+        ],
+        "enabled": true,
+        "sharedId": "shared_lightning_chain_damage",
+        "affectedWeaponIds": [
+          3,
+          18
+        ],
+        "requiredWeaponIds": [
+          18
+        ]
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "name": "서리 결정",
+    "assetKey": "weapon_frost_crystal",
+    "castType": 0,
+    "maxLevel": 15,
+    "progressionId": null,
+    "prototypeBalanceSourceId": 1,
+    "baseStats": {
+      "cast": {
+        "cooldown": 1,
+        "baseDamage": 10,
+        "range": 22,
+        "projectileCount": 1,
+        "castCount": 1,
+        "castInterval": 0.1
+      },
+      "projectile": {
+        "speed": 20,
+        "pierceCount": 0,
+        "knockbackDistance": 0.2
+      },
+      "status": {
+        "freezeChance": 1,
+        "frostbiteChance": 1,
+        "burnChance": 1,
+        "paralysisChance": 1
+      }
+    },
+    "upgrades": [
+      {
+        "id": "frost_crystal_repeat",
+        "name": "서리 결정 연발",
+        "desc": "추가 시전 +1 / 공격력 -20%",
+        "maxPickCount": 2,
+        "effects": [
+          {
+            "kind": "castCount",
+            "value": 1
+          },
+          {
+            "kind": "damage",
+            "value": -20
+          }
+        ],
+        "exclusions": [
+          {
+            "cardId": "frost_crystal_volley"
+          }
+        ],
+        "variants": [
+          {
+            "minPermanentLevel": 5,
+            "name": "서리 결정 연발(+)",
+            "desc": "추가 시전 +1",
+            "effects": [
+              {
+                "kind": "castCount",
+                "value": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "frost_crystal_damage",
+        "name": "서리 결정 피해 증폭",
+        "desc": "공격력 +60%",
+        "maxPickCount": 3,
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 60
+          }
+        ]
+      },
+      {
+        "id": "frost_crystal_extreme",
+        "name": "극한의 서리 결정",
+        "desc": "공격력 +30% / 빙결 2초",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 30
+          },
+          {
+            "kind": "freezeDuration",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "id": "frost_crystal_pierce",
+        "name": "서리 결정 관통",
+        "desc": "공격력 +30% / 관통력 +2",
+        "maxPickCount": 3,
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 30
+          },
+          {
+            "kind": "pierceCount",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "id": "frost_crystal_heavy",
+        "name": "헤비 서리 결정",
+        "desc": "공격력 +50% / 비행 속도 -30% / 관통력 +1",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 50
+          },
+          {
+            "kind": "projectileSpeed",
+            "value": -30
+          },
+          {
+            "kind": "pierceCount",
+            "value": 1
+          }
+        ],
+        "requiredCardIds": [
+          "frost_crystal_pierce"
+        ]
+      },
+      {
+        "id": "frost_crystal_volley",
+        "name": "서리 결정 일제 사격",
+        "desc": "발사 수 +1 / 공격력 -40%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "projectileCount",
+            "value": 1
+          },
+          {
+            "kind": "damage",
+            "value": -40
+          }
+        ],
+        "requiredCardIds": [
+          "frost_crystal_extreme"
+        ],
+        "minPermanentLevel": 13,
+        "exclusions": [
+          {
+            "cardId": "frost_crystal_pierce"
+          }
+        ]
+      },
+      {
+        "id": "frost_crystal_split",
+        "name": "서리 결정 분열",
+        "desc": "명중 시 소형 서리 결정 3개로 분열",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "onEvent",
+            "trigger": "Hit",
+            "skillId": 8,
+            "count": 3,
+            "excludeHit": true,
+            "onlyForm": "Default",
+            "inherit": {
+              "damage": 0.5,
+              "projectileSpeed": 1,
+              "frostbiteChance": 1
+            }
+          },
+          {
+            "kind": "onEvent",
+            "trigger": "Hit",
+            "skillId": 8,
+            "count": 3,
+            "excludeHit": true,
+            "target": 12,
+            "inherit": {
+              "damage": 0.5,
+              "projectileSpeed": 1,
+              "frostbiteChance": 1
+            }
+          }
+        ],
+        "enabled": true,
+        "requiredCardIds": []
+      },
+      {
+        "id": "frost_crystal_shard_damage",
+        "name": "얼음 조각 피해 증폭",
+        "desc": "소형 서리 결정 공격력 +80%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 80,
+            "target": 8
+          }
+        ],
+        "enabled": true,
+        "requiredCardIds": [
+          "frost_crystal_split"
+        ]
+      },
+      {
+        "id": "frost_crystal_impact",
+        "name": "서리 결정 충격",
+        "desc": "밀침 +200% / 관통력 +2",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "knockback",
+            "value": 200
+          },
+          {
+            "kind": "pierceCount",
+            "value": 2
+          }
+        ],
+        "enabled": true,
+        "requiredCardIds": []
+      },
+      {
+        "id": "frost_crystal_frostbite",
+        "name": "사무치는 냉기",
+        "desc": "동상 10초 / 최대 5회 중첩",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "frostbite",
+            "value": 10
+          }
+        ],
+        "enabled": true,
+        "requiredCardIds": [
+          "frost_crystal_pierce",
+          "frost_crystal_extreme"
+        ]
+      },
+      {
+        "id": "frost_crystal_shard_frostbite",
+        "name": "스며드는 냉기",
+        "desc": "소형 서리 결정 동상 추가",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "frostbite",
+            "value": 10,
+            "target": 8
+          }
+        ],
+        "enabled": true,
+        "requiredCardIds": [
+          "frost_crystal_split",
+          "frost_crystal_frostbite"
+        ]
+      },
+      {
+        "id": "frost_crystal_triangle",
+        "name": "삼중 서리 결정",
+        "desc": "삼각→일반→소형 서리 결정 분열 / 강화 효과 유지",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "form",
+            "form": "TriangleIce"
+          },
+          {
+            "kind": "onEvent",
+            "trigger": "Hit",
+            "skillId": 12,
+            "count": 3,
+            "excludeHit": true,
+            "inherit": {
+              "damage": 0.5,
+              "projectileSpeed": 1,
+              "pierceCount": 1,
+              "freezeDuration": 1,
+              "freezeChance": 1,
+              "knockbackDistance": 1,
+              "frostbiteRatio": 1,
+              "frostbiteChance": 1
+            }
+          }
+        ],
+        "enabled": true,
+        "requiredCardIds": [
+          "frost_crystal_pierce",
+          "frost_crystal_extreme",
+          "frost_crystal_damage"
+        ]
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "name": "나무뿌리",
+    "assetKey": "weapon_log",
+    "castType": 0,
+    "maxLevel": 10,
+    "progressionId": null,
+    "prototypeBalanceSourceId": 1,
+    "baseStats": {
+      "cast": {
+        "cooldown": 1,
+        "baseDamage": 10,
+        "range": 22,
+        "projectileCount": 1,
+        "castCount": 1,
+        "castInterval": 0.1
+      },
+      "projectile": {
+        "speed": 4,
+        "pierceCount": 0,
+        "knockbackDistance": 0.2
+      },
+      "reserve": {
+        "distance": 1,
+        "cooldown": 10,
+        "interval": 0.1
+      },
+      "status": {
+        "paralysisChance": 1,
+        "freezeChance": 1,
+        "frostbiteChance": 1,
+        "burnChance": 1,
+        "stunChance": 0.1,
+        "slowRatio": 0.3,
+        "slowDuration": 2
+      },
+      "explosion": {
+        "damageRatio": 1
+      }
+    },
+    "upgrades": [
+      {
+        "id": "log_damage",
+        "name": "나무뿌리 피해 증폭",
+        "desc": "공격력 +60%",
+        "maxPickCount": 2,
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 60
+          }
+        ]
+      },
+      {
+        "id": "log_repeat",
+        "name": "연발 나무뿌리",
+        "desc": "추가 시전 +1 / 공격력 -20%",
+        "maxPickCount": 2,
+        "requiredCardIds": [
+          "log_damage"
+        ],
+        "effects": [
+          {
+            "kind": "castCount",
+            "value": 1
+          },
+          {
+            "kind": "damage",
+            "value": -20
+          }
+        ],
+        "variants": [
+          {
+            "minPermanentLevel": 5,
+            "name": "연발 나무뿌리+",
+            "desc": "추가 시전 +1",
+            "effects": [
+              {
+                "kind": "castCount",
+                "value": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "log_size",
+        "name": "크기 증가",
+        "desc": "크기 +60%",
+        "maxPickCount": 1,
+        "requiredCardIds": [
+          "log_damage"
+        ],
+        "effects": [
+          {
+            "kind": "projectileSize",
+            "value": 60
+          }
+        ]
+      },
+      {
+        "id": "log_speed",
+        "name": "속도 증가",
+        "desc": "굴러가는 속도 +40% / 쿨타임 -25%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "projectileSpeed",
+            "value": 40
+          },
+          {
+            "kind": "attackSpeed",
+            "value": 25
+          }
+        ]
+      },
+      {
+        "id": "log_impact",
+        "name": "충격 나무뿌리",
+        "desc": "밀침 +75% / 10% 확률로 기절 1초",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "knockback",
+            "value": 75
+          },
+          {
+            "kind": "stunDuration",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "id": "log_weight",
+        "name": "중량 증가",
+        "desc": "감속 지속 시간 +4초",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "slowDuration",
+            "value": 4
+          }
+        ]
+      },
+      {
+        "id": "log_wound",
+        "name": "상처 악화",
+        "desc": "피격된 적가 받는 피해 +20% (6초)",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "vulnerabilityRatio",
+            "value": 20
+          },
+          {
+            "kind": "vulnerabilityDuration",
+            "value": 6
+          }
+        ]
+      },
+      {
+        "id": "log_large",
+        "name": "대형 나무뿌리",
+        "desc": "공격력·크기·밀침 +60%",
+        "maxPickCount": 1,
+        "requiredCardIds": [
+          "log_size",
+          "log_impact",
+          "log_weight"
+        ],
+        "exclusions": [
+          {
+            "cardId": "log_fire"
+          }
+        ],
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 60
+          },
+          {
+            "kind": "projectileSize",
+            "value": 60
+          },
+          {
+            "kind": "knockback",
+            "value": 60
+          },
+          {
+            "kind": "form",
+            "form": "LargeLog"
+          }
+        ]
+      },
+      {
+        "id": "log_fire",
+        "name": "불타는 뿌리",
+        "desc": "불타는 나무뿌리로 변화 / 직격 시 점화",
+        "maxPickCount": 1,
+        "minPermanentLevel": 9,
+        "requiredCardIds": [
+          "log_size",
+          "log_damage"
+        ],
+        "requiredWeaponIds": [
+          2
+        ],
+        "exclusions": [
+          {
+            "cardId": "log_large"
+          }
+        ],
+        "effects": [
+          {
+            "kind": "burnDuration",
+            "value": 6
+          },
+          {
+            "kind": "burnRatio",
+            "value": 10
+          },
+          {
+            "kind": "form",
+            "form": "FireLog"
+          }
+        ]
+      },
+      {
+        "id": "log_reserve",
+        "name": "예비 나무뿌리",
+        "desc": "방벽 접근 시 0.1초 간격으로 3회 추가 시전 (재발동 10초)",
+        "maxPickCount": 1,
+        "minPermanentLevel": 13,
+        "requiredCardIds": [
+          "log_weight"
+        ],
+        "effects": [
+          {
+            "kind": "reserveCasts",
+            "value": 3
+          }
+        ]
+      }
+    ],
+    "projectilePath": 1
+  },
+  {
+    "id": 6,
+    "name": "냉기 지대",
+    "assetKey": "weapon_cold_zone",
+    "castType": 2,
+    "maxLevel": 10,
+    "progressionId": null,
+    "prototypeBalanceSourceId": 4,
+    "baseStats": {
+      "cast": {
+        "cooldown": 5,
+        "baseDamage": 8,
+        "range": 14,
+        "projectileCount": 1,
+        "castCount": 1,
+        "castInterval": 0.1
+      },
+      "status": {
+        "slowDuration": 1,
+        "slowRatio": 0.4
+      },
+      "area": {
+        "radius": 1.5,
+        "duration": 3,
+        "pulseInterval": 0.5
+      }
+    },
+    "upgrades": [
+      {
+        "id": "cold_zone_cast",
+        "name": "연쇄 서리 폭발",
+        "desc": "추가 시전 +1",
+        "maxPickCount": 2,
+        "effects": [
+          {
+            "kind": "castCount",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "id": "cold_zone_damage",
+        "name": "서리 피해 증폭",
+        "desc": "공격력 +60%",
+        "maxPickCount": 3,
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 60
+          }
+        ]
+      },
+      {
+        "id": "cold_zone_extreme",
+        "name": "극한 서리",
+        "desc": "공격력 +30% / 빙결 2초",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 30
+          },
+          {
+            "kind": "freezeDuration",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "id": "cold_zone_core",
+        "name": "빙결핵",
+        "desc": "중심부 1회 추가 공격",
+        "maxPickCount": 1,
+        "effects": [],
+        "enabled": false,
+        "disabledReason": "중심부 추가 공격(영역 중심 타격)이 구현되지 않았다",
+        "requiredCardIds": [
+          "cold_zone_extreme"
+        ]
+      },
+      {
+        "id": "cold_zone_zero",
+        "name": "절대 영도",
+        "desc": "중심부 빙결 지속 2배",
+        "maxPickCount": 1,
+        "effects": [],
+        "enabled": false,
+        "disabledReason": "빙결핵(중심부 추가 공격)이 구현되지 않았다",
+        "requiredCardIds": [
+          "cold_zone_core"
+        ]
+      },
+      {
+        "id": "cold_zone_expand",
+        "name": "서리 확장",
+        "desc": "범위 +100%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "areaRadius",
+            "value": 100
+          }
+        ],
+        "requiredCardIds": [
+          "cold_zone_damage"
+        ]
+      },
+      {
+        "id": "cold_zone_shatter",
+        "name": "얼음 결정 파열",
+        "desc": "종료 시 소형 서리 결정 2개로 분열",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "onEvent",
+            "trigger": "Expired",
+            "skillId": 4,
+            "count": 2,
+            "damageScale": 0.5
+          }
+        ],
+        "requiredWeaponIds": [
+          4
+        ]
+      },
+      {
+        "id": "cold_zone_polish",
+        "name": "빙속성 연마",
+        "desc": "냉기 지대과 서리 결정 쿨타임 -25%",
+        "maxPickCount": 1,
+        "effects": [],
+        "enabled": false,
+        "disabledReason": "두 스킬의 습득 수가 함께 늘고 증폭 횟수를 공유하는 공유 카드가 연결되지 않았다",
+        "requiredWeaponIds": [
+          4
+        ],
+        "minPermanentLevel": 21
+      },
+      {
+        "id": "cold_zone_bitter",
+        "name": "매서운 서리",
+        "desc": "빙결 지속 동안 매초 최대 HP 1% 피해",
+        "maxPickCount": 1,
+        "effects": [],
+        "enabled": false,
+        "disabledReason": "빙결 중 최대 HP 비례 지속 피해가 구현되지 않았다",
+        "requiredWeaponIds": [
+          4
+        ],
+        "minPermanentLevel": 13,
+        "requiredCardCounts": [
+          {
+            "cardId": "frost_crystal_extreme",
+            "count": 1,
+            "skillId": 4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "name": "전기 구름",
+    "assetKey": "weapon_lightning_cloud",
+    "castType": 2,
+    "maxLevel": 10,
+    "progressionId": null,
+    "prototypeBalanceSourceId": 3,
+    "baseStats": {
+      "cast": {
+        "cooldown": 6,
+        "baseDamage": 6,
+        "range": 14,
+        "projectileCount": 1,
+        "castCount": 1,
+        "castInterval": 0.1
+      },
+      "area": {
+        "radius": 1.2,
+        "duration": 4,
+        "pulseInterval": 0.5,
+        "moveSpeed": 0.8,
+        "pull": 0.25
+      }
+    },
+    "upgrades": [
+      {
+        "id": "lightning_cloud_expand",
+        "name": "전기 구름 확장",
+        "desc": "범위 +50%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "areaRadius",
+            "value": 50
+          }
+        ]
+      },
+      {
+        "id": "lightning_cloud_duration",
+        "name": "전기 구름 지속",
+        "desc": "지속시간 +60%",
+        "maxPickCount": 3,
+        "effects": [
+          {
+            "kind": "areaDuration",
+            "value": 60
+          }
+        ]
+      },
+      {
+        "id": "lightning_cloud_speed",
+        "name": "전기 구름 가속",
+        "desc": "공격력 +40% / 이동 속도 +20%",
+        "maxPickCount": 2,
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 40
+          },
+          {
+            "kind": "areaMoveSpeed",
+            "value": 20
+          }
+        ]
+      },
+      {
+        "id": "lightning_cloud_damage",
+        "name": "전기 구름 피해 증폭",
+        "desc": "공격력 +60%",
+        "maxPickCount": 3,
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 60
+          }
+        ]
+      },
+      {
+        "id": "lightning_cloud_voltage",
+        "name": "고전압 전기 구름",
+        "desc": "마비 지속 +2초",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "paralysisDuration",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "id": "lightning_cloud_magnet",
+        "name": "전자력 구름",
+        "desc": "공격력 +40% / 끌어당기는 힘 +25%(임시)",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 40
+          },
+          {
+            "kind": "areaPull",
+            "value": 25
+          }
+        ]
+      },
+      {
+        "id": "lightning_cloud_singularity",
+        "name": "특이점",
+        "desc": "종료 시 블랙홀 1개 생성",
+        "maxPickCount": 1,
+        "effects": [],
+        "enabled": false,
+        "disabledReason": "블랙홀의 동작과 수치가 원문에 없다",
+        "requiredCardIds": [
+          "lightning_cloud_expand",
+          "lightning_cloud_duration"
+        ],
+        "minPermanentLevel": 21
+      },
+      {
+        "id": "lightning_cloud_split",
+        "name": "전기 구름 분열",
+        "desc": "종료 시 2개로 분열",
+        "maxPickCount": 1,
+        "effects": [],
+        "enabled": false,
+        "disabledReason": "분열 구름의 지속·재분열·피해 규칙이 원문에 없다. 자기 자신을 자식으로 시전하면 순환이라 별도 자식 스킬이 필요하다",
+        "requiredCardIds": [
+          "lightning_cloud_duration",
+          "lightning_cloud_damage"
+        ]
+      },
+      {
+        "id": "lightning_cloud_guide",
+        "name": "번개 유도",
+        "desc": "적중 시 5% 확률로 벼락 시전",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "onEvent",
+            "trigger": "Hit",
+            "skillId": 3,
+            "chance": 0.05
+          }
+        ],
+        "requiredWeaponIds": [
+          3
+        ],
+        "requiredCardIds": [
+          "lightning_cloud_damage"
+        ],
+        "minPermanentLevel": 13
+      },
+      {
+        "id": "lightning_cloud_storm",
+        "name": "폭풍 특이점",
+        "desc": "주변 마물 1체에게 추가 전기 공격",
+        "maxPickCount": 1,
+        "effects": [],
+        "enabled": false,
+        "disabledReason": "연쇄 번개는 구현됨. 추가 전기 공격의 발동 시점·피해 계수·대상 선정 규칙이 미확정이라 효과 연결을 보류한다",
+        "requiredWeaponIds": [
+          18
+        ],
+        "requiredCardIds": [
+          "lightning_cloud_speed",
+          "lightning_cloud_damage"
+        ]
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "name": "얼음 조각",
+    "assetKey": "weapon_ice_shard",
+    "castType": 0,
+    "maxLevel": 1,
+    "progressionId": null,
+    "prototypeBalanceSourceId": 4,
+    "childOnly": true,
+    "baseStats": {
+      "cast": {
+        "cooldown": 1,
+        "baseDamage": 1,
+        "range": 22,
+        "projectileCount": 1,
+        "castCount": 1,
+        "castInterval": 0.1
+      },
+      "projectile": {
+        "speed": 20
+      }
+    },
+    "upgrades": []
+  },
+  {
+    "id": 12,
+    "name": "일반 서리 결정",
+    "assetKey": "weapon_frost_crystal_aux",
+    "castType": 0,
+    "maxLevel": 1,
+    "progressionId": null,
+    "prototypeBalanceSourceId": 4,
+    "childOnly": true,
+    "baseStats": {
+      "cast": {
+        "cooldown": 1,
+        "baseDamage": 1,
+        "range": 22,
+        "projectileCount": 1,
+        "castCount": 1,
+        "castInterval": 0.1
+      },
+      "projectile": {
+        "speed": 20
+      }
+    },
+    "upgrades": []
+  },
+  {
+    "id": 13,
+    "name": "화살 조각",
+    "assetKey": "weapon_arrow_shard",
+    "castType": 0,
+    "maxLevel": 1,
+    "progressionId": null,
+    "prototypeBalanceSourceId": 1,
+    "childOnly": true,
+    "baseStats": {
+      "cast": {
+        "cooldown": 1,
+        "baseDamage": 1,
+        "range": 22,
+        "projectileCount": 1,
+        "castCount": 1,
+        "castInterval": 0.1
+      },
+      "projectile": {
+        "speed": 20
+      }
+    },
+    "upgrades": []
+  },
+  {
+    "id": 14,
+    "name": "불꽃 조각",
+    "assetKey": "weapon_fireball_shard",
+    "castType": 0,
+    "maxLevel": 1,
+    "progressionId": null,
+    "prototypeBalanceSourceId": 1,
+    "childOnly": true,
+    "baseStats": {
+      "cast": {
+        "cooldown": 1,
+        "baseDamage": 1,
+        "range": 20,
+        "projectileCount": 1,
+        "castCount": 1,
+        "castInterval": 0.1
+      },
+      "projectile": {
+        "speed": 16
+      }
+    },
+    "upgrades": []
+  },
+  {
+    "id": 15,
+    "name": "전기 구체",
+    "assetKey": "weapon_lightning_orb",
+    "castType": 0,
+    "maxLevel": 1,
+    "progressionId": null,
+    "prototypeBalanceSourceId": 1,
+    "childOnly": true,
+    "baseStats": {
+      "cast": {
+        "cooldown": 1,
+        "baseDamage": 1,
+        "range": 20,
+        "projectileCount": 1,
+        "castCount": 1,
+        "castInterval": 0.1
+      },
+      "projectile": {
+        "speed": 10
+      }
+    },
+    "upgrades": [],
+    "projectilePath": 2
+  },
+  {
+    "id": 16,
+    "name": "에너지 빔",
+    "assetKey": "weapon_energy_beam",
+    "castType": 3,
+    "maxLevel": 13,
+    "progressionId": null,
+    "prototypeBalanceSourceId": 3,
+    "baseStats": {
+      "cast": {
+        "cooldown": 6,
+        "baseDamage": 5,
+        "range": 16,
+        "projectileCount": 1,
+        "castCount": 1,
+        "castInterval": 0.1
+      },
+      "status": {
+        "slowRatio": 0.8
+      },
+      "beam": {
+        "length": 16,
+        "width": 0.8,
+        "duration": 2,
+        "pulses": 4
+      }
+    },
+    "upgrades": [
+      {
+        "id": "energy_beam_overload",
+        "name": "광선 과부하",
+        "desc": "공격 횟수 +100% / 쿨타임 +50%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "beamPulses",
+            "value": 100
+          },
+          {
+            "kind": "attackSpeed",
+            "value": -50
+          }
+        ]
+      },
+      {
+        "id": "energy_beam_amplify",
+        "name": "에너지 빔 증폭",
+        "desc": "공격력 +60%",
+        "maxPickCount": 3,
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 60
+          }
+        ]
+      },
+      {
+        "id": "energy_beam_stable",
+        "name": "안정된 광선",
+        "desc": "공격 횟수 +5",
+        "maxPickCount": 2,
+        "effects": [
+          {
+            "kind": "beamPulsesFlat",
+            "value": 5
+          }
+        ]
+      },
+      {
+        "id": "energy_beam_split",
+        "name": "분열 광선",
+        "desc": "받는 피해 +25% / 5초(중첩 불가)",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "vulnerabilityRatio",
+            "value": 25
+          },
+          {
+            "kind": "vulnerabilityDuration",
+            "value": 5
+          }
+        ]
+      },
+      {
+        "id": "energy_beam_dazzle",
+        "name": "화려한 광선",
+        "desc": "5% 확률 기절 1초",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "stunChance",
+            "value": 5
+          },
+          {
+            "kind": "stunDuration",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "id": "energy_beam_weaken",
+        "name": "쇠약 광선",
+        "desc": "피격 시 이동 속도 -80% 1초",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "slowDuration",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "id": "energy_beam_judgement",
+        "name": "필살기 · 에너지 방출",
+        "desc": "1회용 / 에너지 빔 영구 레벨 비례 공격력",
+        "maxPickCount": 1,
+        "effects": [],
+        "enabled": false,
+        "disabledReason": "필살기의 공격력 계수, 1회용 초기화 범위, 영구 레벨 연결 규칙이 원문에 없다"
+      },
+      {
+        "id": "energy_beam_spread",
+        "name": "에너지 빔 확산",
+        "desc": "범위 +150%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "beamWidth",
+            "value": 150
+          }
+        ],
+        "requiredCardIds": [
+          "energy_beam_amplify"
+        ]
+      },
+      {
+        "id": "energy_beam_fire",
+        "name": "광선 발사",
+        "desc": "시전 시 보조 광선 시전",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "onEvent",
+            "trigger": "Start",
+            "skillId": 17,
+            "inherit": {
+              "damage": 0.5
+            }
+          }
+        ],
+        "requiredCardIds": [
+          "energy_beam_overload",
+          "energy_beam_amplify"
+        ],
+        "exclusions": [
+          {
+            "cardId": "energy_beam_barrage"
+          }
+        ]
+      },
+      {
+        "id": "energy_beam_positron",
+        "name": "양전자포",
+        "desc": "에너지 빔을 양전자포로 변환",
+        "maxPickCount": 1,
+        "effects": [],
+        "enabled": false,
+        "disabledReason": "변환 후 피해·범위·지속 상세가 원문에 없다",
+        "requiredCardIds": [
+          "energy_beam_overload",
+          "energy_beam_spread"
+        ]
+      },
+      {
+        "id": "energy_beam_barrage",
+        "name": "광선 난사",
+        "desc": "전장에 에너지 빔 여러 개 난사(개당 공격력 -50%)",
+        "maxPickCount": 1,
+        "effects": [],
+        "enabled": false,
+        "disabledReason": "광선 개수와 배치가 원문에 없다",
+        "requiredCardIds": [
+          "energy_beam_overload",
+          "energy_beam_spread",
+          "energy_beam_weaken"
+        ],
+        "minPermanentLevel": 17,
+        "exclusions": [
+          {
+            "cardId": "energy_beam_fire"
+          }
+        ]
+      },
+      {
+        "id": "energy_beam_neutral_1",
+        "name": "무속성 증폭 · Ⅰ",
+        "desc": "화살과 에너지 빔 공격력 +50%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 50
+          }
+        ],
+        "enabled": true,
+        "requiredWeaponIds": [
+          1
+        ],
+        "sharedId": "shared_arrow_energy_damage",
+        "affectedWeaponIds": [
+          1,
+          16
+        ]
+      },
+      {
+        "id": "energy_beam_freeze",
+        "name": "빙결 광선",
+        "desc": "빙결 0.5초 추가",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "freezeDuration",
+            "value": 0.5
+          }
+        ],
+        "requiredWeaponIds": [
+          4
+        ]
+      },
+      {
+        "id": "energy_beam_neutral_3",
+        "name": "무속성 증폭 · Ⅲ",
+        "desc": "에너지 빔과 집중 광선 공격력 +60%",
+        "maxPickCount": 1,
+        "effects": [],
+        "enabled": false,
+        "disabledReason": "집중 광선이 구현되지 않았고 공유 카드가 연결되지 않았다"
+      }
+    ]
+  },
+  {
+    "id": 17,
+    "name": "보조 에너지 빔",
+    "assetKey": "weapon_energy_beam_aux",
+    "castType": 3,
+    "maxLevel": 1,
+    "progressionId": null,
+    "prototypeBalanceSourceId": 3,
+    "childOnly": true,
+    "baseStats": {
+      "cast": {
+        "cooldown": 1,
+        "baseDamage": 1,
+        "range": 16,
+        "projectileCount": 1,
+        "castCount": 1,
+        "castInterval": 0.1
+      },
+      "beam": {
+        "length": 16,
+        "width": 0.5,
+        "duration": 1,
+        "pulses": 2
+      }
+    },
+    "upgrades": []
+  },
+  {
+    "id": 18,
+    "name": "연쇄 번개",
+    "assetKey": "weapon_chain_lightning",
+    "castType": 4,
+    "maxLevel": 11,
+    "progressionId": null,
+    "prototypeBalanceSourceId": 3,
+    "baseStats": {
+      "cast": {
+        "cooldown": 3,
+        "baseDamage": 12,
+        "range": 14,
+        "projectileCount": 1,
+        "castCount": 1,
+        "castInterval": 0.1
+      },
+      "explosion": {
+        "damageRatio": 0.5
+      },
+      "chain": {
+        "bounces": 3,
+        "jumpRange": 4,
+        "hopInterval": 0.08
+      }
+    },
+    "upgrades": [
+      {
+        "id": "chain_lightning_cross",
+        "name": "교차 번개+",
+        "desc": "추가 시전 +1",
+        "maxPickCount": 2,
+        "effects": [
+          {
+            "kind": "castCount",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "id": "chain_lightning_continuous",
+        "name": "번개 연속",
+        "desc": "공격력 +30% / 반사 +2",
+        "maxPickCount": 3,
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 30
+          },
+          {
+            "kind": "chainBounces",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "id": "chain_lightning_voltage",
+        "name": "고전압 전격",
+        "desc": "공격력 +30% / 마비 1초",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 30
+          },
+          {
+            "kind": "paralysis",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "id": "chain_lightning_amplify",
+        "name": "번개 피해 증폭",
+        "desc": "공격력 +60%",
+        "maxPickCount": 2,
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 60
+          }
+        ]
+      },
+      {
+        "id": "chain_lightning_ion_burst",
+        "name": "이온 폭파",
+        "desc": "반사마다 폭발 피해",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "enableExplosion",
+            "value": 0.8
+          }
+        ],
+        "requiredCardIds": [
+          "chain_lightning_voltage"
+        ]
+      },
+      {
+        "id": "chain_lightning_resonance",
+        "name": "교감 전격",
+        "desc": "마비 대상 피격 시 좁은 범위의 무작위 대상에 전기 공격",
+        "maxPickCount": 1,
+        "effects": [],
+        "enabled": false,
+        "disabledReason": "원문 표현이 불명확하고 범위·피해 수치가 없다",
+        "requiredCardIds": [
+          "chain_lightning_voltage"
+        ]
+      },
+      {
+        "id": "chain_lightning_ion_spread",
+        "name": "이온 확산",
+        "desc": "폭발 범위 +100%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "explosionRadius",
+            "value": 100
+          }
+        ],
+        "requiredCardIds": [
+          "chain_lightning_ion_burst"
+        ]
+      },
+      {
+        "id": "chain_lightning_ion_voltage",
+        "name": "이온 전압",
+        "desc": "폭발 공격력 +40% / 마비 1초 추가",
+        "maxPickCount": 1,
+        "effects": [],
+        "enabled": false,
+        "disabledReason": "폭발에 마비를 거는 규칙이 원문에 없다",
+        "requiredCardIds": [
+          "chain_lightning_ion_burst"
+        ]
+      },
+      {
+        "id": "chain_lightning_conduction",
+        "name": "전류전도",
+        "desc": "공격력 -60% / 경로상의 마물에 피해",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "damage",
+            "value": -60
+          },
+          {
+            "kind": "chainPath",
+            "value": 0.6
+          }
+        ],
+        "requiredCardIds": [
+          "chain_lightning_continuous",
+          "chain_lightning_voltage",
+          "chain_lightning_amplify"
+        ],
+        "minPermanentLevel": 17
+      },
+      {
+        "id": "chain_lightning_neutral",
+        "name": "뇌속성 증폭",
+        "desc": "벼락과 연쇄 번개 공격력 +80%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 80
+          }
+        ],
+        "enabled": true,
+        "requiredWeaponIds": [
+          3
+        ],
+        "sharedId": "shared_lightning_chain_damage",
+        "affectedWeaponIds": [
+          3,
+          18
+        ]
+      }
+    ]
+  }
+]

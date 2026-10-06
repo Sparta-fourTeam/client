@@ -3,13 +3,13 @@ using System.Collections.Generic;
 namespace Game.Core
 {
     /// <summary>IGrowthCatalog의 하드코딩 구현. 화면 확인용 임시 값이다.
-    /// TODO(data): 인술은 Upgrades.json + PlayerProfile.UpgradeLevel, 캐릭터·장비는 데이터와 API가 생기면 실제 구현으로 교체</summary>
+    /// TODO(data): 스킬은 Upgrades.json + PlayerProfile.UpgradeLevel, 캐릭터·장비는 데이터와 API가 생기면 실제 구현으로 교체</summary>
     public sealed class DummyGrowthCatalog : IGrowthCatalog
     {
         private const int PlayerLevel = 3;
-        private const int NinpoMaxLevel = 30;
+        private const int SkillMaxLevel = 30;
 
-        public ShinobiInfo Shinobi { get; } = new ShinobiInfo
+        public CharacterInfo Character { get; } = new CharacterInfo
         {
             Name = "캐릭터",
             Rank = "신입 직원",
@@ -18,9 +18,9 @@ namespace Game.Core
         };
 
         public IReadOnlyList<EquipInfo> Equips { get; }
-        public IReadOnlyList<NinpoInfo> Ninpos { get; }
+        public IReadOnlyList<SkillInfo> Skills { get; }
 
-        public int NinpoBooks => 2;
+        public int SkillBooks => 2;
         public int EquipBooks => 4;
         public int Gems => 550;
         public int Tickets => 0;
@@ -28,7 +28,7 @@ namespace Game.Core
         public DummyGrowthCatalog()
         {
             Equips = CreateEquips();
-            Ninpos = CreateNinpos();
+            Skills = CreateSkills();
         }
 
         // 원작 장비 6종 + 왼쪽 칸 1개. 칸은 캐릭터 레벨 2~8에서 하나씩 열린다
@@ -40,7 +40,7 @@ namespace Game.Core
             for (int i = 0; i < names.Length; i++)
             {
                 int unlockLevel = i + 2;
-                bool unlocked = unlockLevel <= Shinobi.Level || i == names.Length - 1;
+                bool unlocked = unlockLevel <= Character.Level || i == names.Length - 1;
                 list.Add(new EquipInfo
                 {
                     Slot = i,
@@ -71,7 +71,7 @@ namespace Game.Core
         }
 
         // 6개는 열려 있고, 나머지는 플레이어 레벨 4부터 하나씩 열린다
-        private List<NinpoInfo> CreateNinpos()
+        private List<SkillInfo> CreateSkills()
         {
             (string id, string name, string desc, int level, int attack, float cooldown)[] open =
             {
@@ -83,16 +83,16 @@ namespace Game.Core
                 ("flash", "섬광", "앞쪽 적을 꿰뚫는 빛줄기를 쏜다", 0, 12, 3.0f),
             };
 
-            var list = new List<NinpoInfo>();
+            var list = new List<SkillInfo>();
             foreach (var n in open)
             {
-                list.Add(new NinpoInfo
+                list.Add(new SkillInfo
                 {
                     Id = n.id,
                     Name = n.name,
                     Description = n.desc,
                     Level = n.level,
-                    MaxLevel = NinpoMaxLevel,
+                    MaxLevel = SkillMaxLevel,
                     UnlockLevel = 1,
                     IsUnlocked = true,
                     Stats = new[]
@@ -108,12 +108,12 @@ namespace Game.Core
 
             for (int unlockLevel = 4; unlockLevel <= 15; unlockLevel++)
             {
-                list.Add(new NinpoInfo
+                list.Add(new SkillInfo
                 {
                     Id = "locked" + unlockLevel,
                     Name = "???",
                     Description = string.Empty,
-                    MaxLevel = NinpoMaxLevel,
+                    MaxLevel = SkillMaxLevel,
                     UnlockLevel = unlockLevel,
                     IsUnlocked = unlockLevel <= PlayerLevel,
                     Stats = new StatLine[0],

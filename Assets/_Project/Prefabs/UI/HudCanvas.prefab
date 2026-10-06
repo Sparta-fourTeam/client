@@ -298,7 +298,7 @@ MonoBehaviour:
   - {fileID: 2302907467704754213}
   - {fileID: 2697790957378458564}
   - {fileID: 2658914685979952787}
-  _iconTable: {fileID: 11400000, guid: 75190ccc43df54ff1b4338180f902d06, type: 2}
+  _assets: {fileID: 11400000, guid: cc930aa35823f4e5a857c88730f82b00, type: 2}
 --- !u!1 &859697154384046371
 GameObject:
   m_ObjectHideFlags: 0
@@ -620,7 +620,7 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
+    rgba: 4281545523
   m_fontColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
@@ -3745,77 +3745,9 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 4439765720107700867}
     m_Modifications:
-    - target: {fileID: 6133185119685656052, guid: 56bf8d5c14d693d4a890a9de367b0f2b, type: 3}
-      propertyPath: buttonImage
-      value: 
-      objectReference: {fileID: 5021882668760080625}
-    - target: {fileID: 6133185119685656052, guid: 56bf8d5c14d693d4a890a9de367b0f2b, type: 3}
-      propertyPath: _buttonimages.Array.size
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 6133185119685656052, guid: 56bf8d5c14d693d4a890a9de367b0f2b, type: 3}
-      propertyPath: '_buttonimages.Array.data[0]'
-      value: 
-      objectReference: {fileID: -8308856544462651630, guid: 590aec5eefbe91b46afa8b1d85d55ecd, type: 3}
-    - target: {fileID: 6133185119685656052, guid: 56bf8d5c14d693d4a890a9de367b0f2b, type: 3}
-      propertyPath: '_buttonimages.Array.data[1]'
-      value: 
-      objectReference: {fileID: -1464785530653518859, guid: 590aec5eefbe91b46afa8b1d85d55ecd, type: 3}
-    - target: {fileID: 6366738395734973684, guid: 56bf8d5c14d693d4a890a9de367b0f2b, type: 3}
-      propertyPath: m_Type
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6366738395734973684, guid: 56bf8d5c14d693d4a890a9de367b0f2b, type: 3}
-      propertyPath: m_Sprite
-      value: 
-      objectReference: {fileID: 7075163658482500186, guid: 590aec5eefbe91b46afa8b1d85d55ecd, type: 3}
-    - target: {fileID: 6366738395734973684, guid: 56bf8d5c14d693d4a890a9de367b0f2b, type: 3}
-      propertyPath: m_Color.b
-      value: 0.745283
-      objectReference: {fileID: 0}
-    - target: {fileID: 6366738395734973684, guid: 56bf8d5c14d693d4a890a9de367b0f2b, type: 3}
-      propertyPath: m_Color.g
-      value: 0.745283
-      objectReference: {fileID: 0}
-    - target: {fileID: 6366738395734973684, guid: 56bf8d5c14d693d4a890a9de367b0f2b, type: 3}
-      propertyPath: m_Color.r
-      value: 0.745283
-      objectReference: {fileID: 0}
-    - target: {fileID: 7570046398551612609, guid: 56bf8d5c14d693d4a890a9de367b0f2b, type: 3}
-      propertyPath: m_Type
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7570046398551612609, guid: 56bf8d5c14d693d4a890a9de367b0f2b, type: 3}
-      propertyPath: m_Sprite
-      value: 
-      objectReference: {fileID: -8308856544462651630, guid: 590aec5eefbe91b46afa8b1d85d55ecd, type: 3}
-    - target: {fileID: 7570046398551612609, guid: 56bf8d5c14d693d4a890a9de367b0f2b, type: 3}
-      propertyPath: m_Color.b
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7570046398551612609, guid: 56bf8d5c14d693d4a890a9de367b0f2b, type: 3}
-      propertyPath: m_Color.g
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7570046398551612609, guid: 56bf8d5c14d693d4a890a9de367b0f2b, type: 3}
-      propertyPath: m_Color.r
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7631602537158393214, guid: 56bf8d5c14d693d4a890a9de367b0f2b, type: 3}
-      propertyPath: m_TextStyleHashCode
-      value: -1183493901
-      objectReference: {fileID: 0}
-    - target: {fileID: 8440513754591912124, guid: 56bf8d5c14d693d4a890a9de367b0f2b, type: 3}
-      propertyPath: m_TextStyleHashCode
-      value: -1183493901
-      objectReference: {fileID: 0}
     - target: {fileID: 8761041663258074451, guid: 56bf8d5c14d693d4a890a9de367b0f2b, type: 3}
       propertyPath: m_Name
       value: StageControls
-      objectReference: {fileID: 0}
-    - target: {fileID: 8761041663258074451, guid: 56bf8d5c14d693d4a890a9de367b0f2b, type: 3}
-      propertyPath: m_IsActive
-      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 9131577263205229486, guid: 56bf8d5c14d693d4a890a9de367b0f2b, type: 3}
       propertyPath: m_Pivot.x
@@ -3898,22 +3830,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects:
-    - {fileID: 180366358416071802, guid: 56bf8d5c14d693d4a890a9de367b0f2b, type: 3}
+    m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 56bf8d5c14d693d4a890a9de367b0f2b, type: 3}
---- !u!114 &5021882668760080625 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 7570046398551612609, guid: 56bf8d5c14d693d4a890a9de367b0f2b, type: 3}
-  m_PrefabInstance: {fileID: 3224430794982718512}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
 --- !u!224 &5910582649611083678 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 9131577263205229486, guid: 56bf8d5c14d693d4a890a9de367b0f2b, type: 3}

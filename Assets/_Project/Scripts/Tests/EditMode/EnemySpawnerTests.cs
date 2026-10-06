@@ -140,7 +140,7 @@ namespace Game.Tests
             go.transform.position = new Vector3(0f, lineY, 0f); // _attackLineOffset 기본값 0 → AttackLineY == lineY
 
             var wall = go.AddComponent<Wall>();
-            wall.Construct(new FakeWallPublisher<WallHpChanged>(), new FakeWallPublisher<WallDestroyed>());
+            wall.Construct(new FakeWallPublisher<WallHpChanged>(), new FakeWallPublisher<WallDestroyed>(), null);
             wall.Initialize(maxHp); // EditMode에서는 Start가 호출되지 않음
             return wall;
         }
@@ -532,7 +532,7 @@ namespace Game.Tests
         {
             var wall = CreateTestWall(-10f);
             var projectiles = new EnemyProjectileSystem();
-            var ranged = new EnemyAttackStats(AttackType.Ranged, 10, 1f, 4f); // 사거리 4 → y -6에서 공격
+            var ranged = new EnemyAttackStats(AttackType.Ranged, 10, 1f, 4f, 8f); // 사거리 4 → y -6에서 공격
             var factory = new FakeEnemyViewFactory(7f, attack: ranged);       // 1초에 7 → y 1 → -6
             var spawner = CreateSpawner(factory, out var waveStarted, out _, wall: wall, projectiles: projectiles);
             StartWave(waveStarted, enemyCount: 1);
