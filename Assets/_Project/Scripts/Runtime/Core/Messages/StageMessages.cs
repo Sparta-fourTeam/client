@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using System.Linq;
+
 namespace Game.Core.Messages
 {
     public readonly struct StageStateChanged
@@ -35,14 +38,22 @@ namespace Game.Core.Messages
         public int ReachedWave { get; }
         public float PlayTime { get; }
         public int RewardGold { get; }
+        public int RewardExp { get; }
+        public int ClearRating { get; }
+        public IReadOnlyList<ItemAmount> RewardItems { get; }
 
-        public StageResult(bool cleared, int kills, int reachedWave, float playTime, int rewardGold)
+        public StageResult(bool cleared, int kills, int reachedWave, float playTime, int rewardGold,
+            IEnumerable<ItemAmount> rewardItems = null, int rewardExp = 0, int clearRating = 0)
         {
             Cleared = cleared;
             Kills = kills;
             ReachedWave = reachedWave;
             PlayTime = playTime;
             RewardGold = rewardGold;
+            RewardExp = rewardExp;
+            ClearRating = clearRating;
+            RewardItems = (rewardItems ?? Enumerable.Empty<ItemAmount>())
+                .Select(item => new ItemAmount { itemId = item.itemId, quantity = item.quantity }).ToList().AsReadOnly();
         }
     }
 

@@ -24,6 +24,9 @@ namespace Game.Boot
             builder.RegisterEntryPoint<StageClock>().AsSelf();
             builder.RegisterEntryPoint<StageManager>().AsSelf();
             builder.RegisterEntryPoint<StageJudge>();
+            builder.Register(resolver => resolver.Resolve<GameDataStore>().StageRewards.GetOrThrow(resolver.Resolve<StageDefinition>().Id), Lifetime.Scoped);
+            builder.Register<StageItemCache>(Lifetime.Scoped).AsSelf().As<IStageItemInfo>();
+            builder.RegisterEntryPoint<StageRewardTracker>().AsSelf();
             // BattleStats는 WaveProgress보다 먼저 EnemyDied를 구독해야 스테이지를 끝내는 마지막 처치까지 센다 (순서 변경 금지)
             builder.RegisterEntryPoint<BattleStats>().AsSelf();
             builder.RegisterEntryPoint<WaveProgress>();
