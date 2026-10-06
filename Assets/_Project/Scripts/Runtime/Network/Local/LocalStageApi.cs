@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Game.Core;
 
@@ -31,11 +32,18 @@ namespace Game.Network
 
             var stage = _data.Stages.GetOrThrow(stageId);
             int total = 0;
+            var itemRewards = new List<ItemAmount>();
             for (int rating = progress.claimedRating + 1; rating <= progress.clearRating; rating++)
             {
                 total += stage.RatingRewards[rating - 1];
+                if (stage.RatingItemRewards != null && stage.RatingItemRewards.Count >= rating
+                    && stage.RatingItemRewards[rating - 1] != null)
+                {
+                    itemRewards.AddRange(stage.RatingItemRewards[rating - 1]);
+                }
             }
 
+            LocalItemRewards.Apply(save, itemRewards, _data);
             progress.claimedRating = progress.clearRating;
             save.wallet.gold += total;
             _store.Flush(save);

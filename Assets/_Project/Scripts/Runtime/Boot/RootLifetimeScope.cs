@@ -30,8 +30,6 @@ namespace Game.Boot
             // TODO(server): Recover(Ad) 항상 거절 중 — 예: 광고 SDK 콜백에서 Recover(EnergySource.Ad, adTxId) 호출
             builder.Register<IEnergyApi, LocalEnergyApi>(Lifetime.Singleton);
             builder.Register<IStageApi, LocalStageApi>(Lifetime.Singleton);
-            // Local 지급용 계약. 서버 전환 시 클라이언트가 지급 내역을 임의로 확정하지 않도록 별도 서버 계약으로 교체한다.
-            builder.Register<IItemApi, LocalItemApi>(Lifetime.Singleton);
 
             builder.Register<StageContext>(Lifetime.Singleton);
             builder.RegisterInstance<ITransitionCurtain>(curtain);

@@ -75,7 +75,8 @@ namespace Game.Network
                 return UniTask.FromResult(new SubmitResultResponse
                 {
                     cleared = battle.status == "Cleared",
-                    rewardGold = battle.rewardGold
+                    rewardGold = battle.rewardGold,
+                    rewardItems = battle.rewardItems ?? new()
                 });
             }
 
@@ -83,8 +84,10 @@ namespace Game.Network
 
             // 참가(실패) 보상은 테이블에 없다 — 클리어했을 때만 ClearGold를 지급한다
             int reward = req.cleared ? stage.ClearGold : 0;
+            var itemRewards = LocalItemRewards.Apply(save, req.cleared ? stage.ClearItems : null, _data);
             battle.status = req.cleared ? "Cleared" : "Failed";
             battle.rewardGold = reward;
+            battle.rewardItems = itemRewards;
             save.wallet.gold += reward;
 
             if (req.cleared)
@@ -93,7 +96,8 @@ namespace Game.Network
             }
 
             _store.Flush(save);
-            return UniTask.FromResult(new SubmitResultResponse { cleared = req.cleared, rewardGold = reward });
+            return UniTask.FromResult(new SubmitResultResponse
+            { cleared = req.cleared, rewardGold = reward, rewardItems = itemRewards });
         }
 
         private static void ApplyClearRating(LocalSave save, int stageId, int wallHpPercent, Table<int, StageDefinition> stages)
