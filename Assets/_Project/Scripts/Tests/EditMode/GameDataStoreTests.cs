@@ -20,6 +20,18 @@ namespace Game.Tests
             Assert.AreEqual(5, store.Energy.Cost);
         }
 
+        [Test]
+        public void Items_AreAvailableToLocalApiAndExcludeCurrencies()
+        {
+            var store = new GameDataStore();
+            Assert.AreEqual("1", store.Items.GetOrThrow(ItemIds.ArrowBook).TargetId);
+            Assert.AreEqual("무기 마법북", store.Items.GetOrThrow(ItemIds.WeaponBook).Name);
+            Assert.IsTrue(store.Revisions.ContainsKey("Items"));
+            Assert.IsNotEmpty(store.RawJson("Items"));
+            Assert.IsFalse(store.Items.Contains("gold"));
+            Assert.IsFalse(store.Items.Contains("coin"));
+        }
+
         [Test(Description = "UpgradeDefinition.CostAt은 1부터 시작하는 레벨로 LevelCosts를 찾는다")]
         public void UpgradeDefinition_CostAt_UsesOneBasedLevel()
         {

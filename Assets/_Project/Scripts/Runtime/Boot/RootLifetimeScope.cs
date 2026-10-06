@@ -20,7 +20,7 @@ namespace Game.Boot
             builder.Register<LocalSaveStore>(Lifetime.Singleton);
             builder.Register<PlayerProfile>(Lifetime.Singleton);
 
-            // 서버가 붙으면 이 7줄만 Http*Api로 교체하면 된다
+            // 서버가 붙으면 이 API 등록을 Http*Api로 교체한다
             builder.Register<IAuthApi, LocalAuthApi>(Lifetime.Singleton);
             // TODO(server): 호출부 없음 — 예: BootFlow에서 GetVersions() 비교 후 GetTable()로 갱신
             builder.Register<IDataApi, LocalDataApi>(Lifetime.Singleton);
@@ -30,6 +30,8 @@ namespace Game.Boot
             // TODO(server): Recover(Ad) 항상 거절 중 — 예: 광고 SDK 콜백에서 Recover(EnergySource.Ad, adTxId) 호출
             builder.Register<IEnergyApi, LocalEnergyApi>(Lifetime.Singleton);
             builder.Register<IStageApi, LocalStageApi>(Lifetime.Singleton);
+            // Local 지급용 계약. 서버 전환 시 클라이언트가 지급 내역을 임의로 확정하지 않도록 별도 서버 계약으로 교체한다.
+            builder.Register<IItemApi, LocalItemApi>(Lifetime.Singleton);
 
             builder.Register<StageContext>(Lifetime.Singleton);
             builder.RegisterInstance<ITransitionCurtain>(curtain);

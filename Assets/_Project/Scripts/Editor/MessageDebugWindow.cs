@@ -368,6 +368,7 @@ namespace Game.Editor
                 energyUpdatedAt = System.DateTime.UtcNow.ToString("O"),
                 stageProgress = current.stageProgress,
                 upgrades = current.upgrades,
+                items = current.items,
             });
             Debug.Log($"[MessageDebugger] PlayerProfile 에너지 = {energy}");
         }

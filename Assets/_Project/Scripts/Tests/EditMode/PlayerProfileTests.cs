@@ -60,10 +60,13 @@ namespace Game.Tests
         {
             var profile = NewProfile();
 
-            profile.Apply(new PlayerSnapshot { stageProgress = null, upgrades = null });
+            profile.Apply(new PlayerSnapshot { stageProgress = null, upgrades = null, items = null });
 
             Assert.AreEqual(0, profile.UpgradeLevel("atk"));
             Assert.IsFalse(profile.IsStageCleared(1));
+            Assert.AreEqual(0, profile.Gold);
+            Assert.AreEqual(0, profile.EnergyStored);
+            Assert.AreEqual(0, profile.ItemQuantity("book.arrow"));
         }
     }
 }

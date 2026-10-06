@@ -9,13 +9,14 @@ namespace Game.Core
     /// <summary>Resources/MockData의 테이블 JSON을 읽어 도메인 모델 테이블로 만든다</summary>
     public sealed class GameDataStore
     {
-        private static readonly string[] TableNames = { "Monsters", "Stages", "Upgrades", "Energy", "GeneralCards", "Skills" };
+        private static readonly string[] TableNames = { "Monsters", "Stages", "Upgrades", "Energy", "GeneralCards", "Skills", "Items" };
         private readonly Dictionary<string, string> _rawJson;
 
         public Dictionary<string, int> Revisions { get; }
         public Table<int, MonsterDefinition> Monsters { get; }
         public Table<int, StageDefinition> Stages { get; }
         public Table<string, UpgradeDefinition> Upgrades { get; }
+        public Table<string, ItemDefinition> Items { get; }
         public EnergyConfig Energy { get; }
 
         /// <summary>스킬이 아닌 카드(방벽 회복 등). 스킬 카드는 Skills의 upgrades에 있다</summary>
@@ -53,6 +54,9 @@ namespace Game.Core
             Monsters = new Table<int, MonsterDefinition>(monsters);
             Stages = new Table<int, StageDefinition>(stages);
             Upgrades = new Table<string, UpgradeDefinition>(ParseIndexed<string, UpgradeDefinition>("Upgrades", d => d.UpgradeId));
+            var items = ParseIndexed<string, ItemDefinition>("Items", d => d.Id);
+            foreach (var item in items.Values) { item.Validate(); }
+            Items = new Table<string, ItemDefinition>(items);
             Energy = JsonConvert.DeserializeObject<EnergyConfig>(_rawJson["Energy"]);
 
             var generalCards = ParseIndexed<string, GeneralCardDefinition>("GeneralCards", d => d.Id).Values.ToList();
