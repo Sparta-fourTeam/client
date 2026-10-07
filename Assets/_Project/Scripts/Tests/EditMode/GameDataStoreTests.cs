@@ -94,7 +94,7 @@ namespace Game.Tests
         private static StageDefinition ValidStage()
         {
             var stage = JsonConvert.DeserializeObject<StageDefinition>(
-            "{\"Id\":1,\"WallHp\":100,\"Spawn\":{\"IntervalMin\":0.1,\"IntervalMax\":0.5,\"Cooldown\":3,\"EliteChance\":0.2},"
+            "{\"Id\":1,\"MonsterIds\":[1,2],\"WallHp\":100,\"Spawn\":{\"IntervalMin\":0.1,\"IntervalMax\":0.5,\"Cooldown\":3,\"EliteChance\":0.2},"
             + "\"Waves\":[{\"EnemyCount\":5,\"MaxEliteCount\":0,\"MaxBossCount\":0}]}");
             stage.Waves = Enumerable.Range(0, 20).Select(_ => new WaveDefinition { EnemyCount = 5 }).ToList();
             return stage;
@@ -124,6 +124,14 @@ namespace Game.Tests
             var reversedInterval = ValidStage();
             reversedInterval.Spawn.IntervalMin = 1f;
             Assert.Throws<InvalidOperationException>(() => reversedInterval.Validate());
+
+            var noMonsters = ValidStage();
+            noMonsters.MonsterIds.Clear();
+            Assert.Throws<InvalidOperationException>(() => noMonsters.Validate());
+
+            var duplicateMonsters = ValidStage();
+            duplicateMonsters.MonsterIds = new() { 1, 1 };
+            Assert.Throws<InvalidOperationException>(() => duplicateMonsters.Validate());
         }
 
         [Test]

@@ -52,6 +52,14 @@ namespace Game.Core
                 stage.Validate();
             }
 
+            foreach (var stage in stages.Values)
+            {
+                foreach (var monsterId in stage.MonsterIds)
+                {
+                    if (!monsters.ContainsKey(monsterId)) { throw new InvalidOperationException($"Stages {stage.Id}: MonsterIds의 몬스터 {monsterId}이(가) Monsters에 없습니다"); }
+                }
+            }
+
             Monsters = new Table<int, MonsterDefinition>(monsters);
             Stages = new Table<int, StageDefinition>(stages);
             Upgrades = new Table<string, UpgradeDefinition>(ParseIndexed<string, UpgradeDefinition>("Upgrades", d => d.UpgradeId));
@@ -104,6 +112,10 @@ namespace Game.Core
             SkillCatalogValidator.Validate(weapons);
             return weapons;
         }
+
+        /// <summary>stageId 스테이지에 등장하는 몬스터. 스테이지 정의의 MonsterIds 순서를 따르고, 없는 stageId는 첫 스테이지로 본다</summary>
+        public IReadOnlyList<MonsterDefinition> StageMonsters(int stageId) =>
+            StageOrFirst(stageId).MonsterIds.Select(id => Monsters.GetOrThrow(id)).ToList();
 
         /// <summary>stageId의 스테이지. 없으면(0 포함) 첫 번째 스테이지를 돌려준다</summary>
         public StageDefinition StageOrFirst(int stageId) =>
