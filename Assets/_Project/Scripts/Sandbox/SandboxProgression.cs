@@ -10,6 +10,12 @@ namespace Game.Sandbox
         public int GetLevel(string progressionId) => Level;
     }
 
+    /// <summary>샌드박스는 모든 스킬을 시험하는 곳이라 해금 레벨과 상관없이 전부 열린 것으로 본다. 스테이지 씬은 플레이어 레벨(ProfileSkillUnlock)을 따른다.</summary>
+    public sealed class AllSkillsUnlocked : ISkillUnlock
+    {
+        public bool IsUnlocked(SkillData skill) => true;
+    }
+
     /// <summary>샌드박스는 빈 상태에서 시작한다. 시험할 스킬은 패널에서 고른다.</summary>
     public sealed class NoStartingSkills : IStartingSkills
     {
