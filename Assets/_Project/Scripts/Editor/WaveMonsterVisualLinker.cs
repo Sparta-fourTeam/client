@@ -29,6 +29,11 @@ namespace Game.Editor
             ("Oni", "Horned_Animated", false),
             ("Spider", "Spider_Animated", false),
             ("Spider_Mini", "Spider_Animated", false),
+            ("ArmoredCrab", "ArmoredCrab_Animated", false),
+            ("BrainSpider", "BrainSpider_Animated", false),
+            ("EyeJelly", "EyeJelly_Animated", false),
+            ("Ghost", "Ghost_Animated", false),
+            ("Golem", "Golem_Animated", false),
         };
 
         [MenuItem("Tools/Monster/Link Visuals To Wave Prefabs")]
