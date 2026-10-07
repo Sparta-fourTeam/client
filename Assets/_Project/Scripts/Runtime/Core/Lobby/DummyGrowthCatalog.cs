@@ -4,12 +4,20 @@ using System.Collections.Generic;
 namespace Game.Core
 {
     /// <summary>IGrowthCatalog의 하드코딩 구현. 화면 확인용 임시 값이다.
-    /// TODO(data): 스킬은 Upgrades.json + PlayerProfile.UpgradeLevel, 캐릭터·장비는 데이터와 API가 생기면 실제 구현으로 교체</summary>
+    /// TODO(data): 스킬은 Upgrades.json + PlayerProfile.UpgradeLevel, 캐릭터는 데이터와 API가 생기면 실제 구현으로 교체 (장비는 이미 Upgrades 테이블에서 만든다)</summary>
     public sealed class DummyGrowthCatalog : IGrowthCatalog, IDisposable
     {
         private const int SkillMaxLevel = 30;
 
+        // 장비 칸 순서(오른쪽 2열 6칸 → 왼쪽 1칸)와 표시 이름. 이름은 클라이언트 표시용이다
+        private static readonly (string upgradeId, string name)[] EquipSlots =
+        {
+            ("equipment.hat", "모자"), ("equipment.top", "상의"), ("equipment.shoes", "신발"), ("equipment.weapon", "무기"),
+            ("equipment.ring", "반지"), ("equipment.tie", "넥타이"), ("equipment.employee_id", "사원증"),
+        };
+
         private readonly PlayerProfile _profile;
+        private readonly GameDataStore _data;
 
         public CharacterInfo Character { get; } = new CharacterInfo
         {
@@ -18,19 +26,19 @@ namespace Game.Core
             Power = 120,
         };
 
-        public IReadOnlyList<EquipInfo> Equips { get; }
+        /// <summary>장비는 Upgrades 테이블과 PlayerProfile에서 만든다. 강화나 레벨 변화가 바로 보이도록 읽을 때마다 새로 만든다</summary>
+        public IReadOnlyList<EquipInfo> Equips => CreateEquips();
         public IReadOnlyList<SkillInfo> Skills { get; }
 
         public int SkillBooks => 2;
-        public int EquipBooks => 4;
         public int Gems => 550;
         public int Tickets => 0;
 
         /// <summary>해금 판정은 PlayerProfile의 플레이어 레벨을 따른다. 프로필이 갱신되면(전투 보상 EXP로 레벨이 오른 뒤 등) 해금 여부를 다시 계산한다</summary>
-        public DummyGrowthCatalog(PlayerProfile profile)
+        public DummyGrowthCatalog(PlayerProfile profile, GameDataStore data)
         {
             _profile = profile;
-            Equips = CreateEquips();
+            _data = data;
             Skills = CreateSkills();
             RefreshUnlocks();
             _profile.Changed += OnProfileChanged;
@@ -43,55 +51,54 @@ namespace Game.Core
 
         private void OnProfileChanged(PlayerProfile _) => RefreshUnlocks();
 
-        // 장비 칸·스킬 칸의 해금은 플레이어 레벨로 정한다(캐릭터에는 레벨이 없다). 마지막 장비 칸(왼쪽 1칸)은 처음부터 열려 있다
+        // 스킬 칸의 해금은 플레이어 레벨로 정한다(캐릭터에는 레벨이 없다). 장비 칸은 Equips를 읽을 때마다 계산한다
         private void RefreshUnlocks()
         {
             int level = _profile.Level;
-            foreach (var equip in Equips)
-            {
-                equip.IsUnlocked = equip.Slot == Equips.Count - 1 || equip.UnlockLevel <= level;
-            }
-
             foreach (var skill in Skills)
             {
                 skill.IsUnlocked = skill.UnlockLevel <= level;
             }
         }
 
-        // 원작 장비 6종 + 왼쪽 칸 1개. 칸은 플레이어 레벨 2~8에서 하나씩 열린다
         private List<EquipInfo> CreateEquips()
         {
-            string[] names = { "모자", "상의", "신발", "무기", "반지", "넥타이", "사원증" };
-            int[] levels = { 2, 8, 0, 0, 0, 0, 1 };
             var list = new List<EquipInfo>();
-            for (int i = 0; i < names.Length; i++)
+            for (int i = 0; i < EquipSlots.Length; i++)
             {
-                int unlockLevel = i + 2;
+                var (upgradeId, name) = EquipSlots[i];
+                var def = _data.Upgrades.GetOrThrow(upgradeId);
+                int level = _profile.UpgradeLevel(upgradeId);
+                bool isMax = level >= def.MaxLevel;
+                int next = level + 1;
+
+                var effects = new List<EquipEffect>();
+                foreach (var effect in def.Effects)
+                {
+                    effects.Add(new EquipEffect(EquipEffectText.Format(effect, level, isMax)));
+                }
+
                 list.Add(new EquipInfo
                 {
                     Slot = i,
-                    Name = names[i],
-                    Level = levels[i],
-                    UnlockLevel = unlockLevel,
+                    UpgradeId = upgradeId,
+                    Name = name,
+                    Level = level,
+                    MaxLevel = def.MaxLevel,
+                    UnlockLevel = def.UnlockLevel,
+                    IsUnlocked = _profile.Level >= def.UnlockLevel,
                     Stats = new[]
                     {
-                        new StatLine("공격력", (levels[i] * 2).ToString()),
-                        new StatLine("장비 레벨", levels[i].ToString()),
+                        new StatLine("장비 레벨", $"{level} / {def.MaxLevel}"),
+                        new StatLine("해금 레벨", def.UnlockLevel.ToString()),
                     },
-                    Effects = i == 1
-                        ? new[]
-                        {
-                            new EquipEffect("[기술력] 단검 대미지 18% ▲"),
-                            new EquipEffect("[화력] 화염탄 대미지 10% ▲"),
-                            new EquipEffect("[집중력] 방벽 내구도 30% 미만일 때 대미지 60% ▲"),
-                            new EquipEffect("[전력] 벼락 대미지 9% ▲", isActive: false),
-                            new EquipEffect("[기술력] 단검 투척 대미지 6% ▲, 관통력 +1"),
-                        }
-                        : new[] { new EquipEffect("[기술력] 단검 대미지 5% ▲") },
-                    CoinCost = 100 + levels[i] * 15,
-                    BookCost = 1 + levels[i],
+                    Effects = effects,
+                    CoinCost = isMax ? 0 : def.CostAt(next),
+                    MaterialItemId = def.MaterialItemId,
+                    MaterialCost = isMax || !def.UsesMaterial ? 0 : def.MaterialAt(next),
                 });
             }
+
             return list;
         }
 
