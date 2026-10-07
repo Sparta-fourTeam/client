@@ -9,7 +9,9 @@
 | [flows.md](flows.md) | 스테이지 생명주기, 실패와 복구, 스킬 선택, 상태 머신 |
 | [conventions.md](conventions.md) | 코딩 규칙 |
 | [skills.md](skills.md) | 스킬 시스템 구조, 데이터 형식, 스킬·카드 추가 절차 |
+| [enemy.md](enemy.md) | 몬스터 구조, 데이터 흐름, 새 몬스터 추가 절차, `Monsters.json` 필드와 패시브 목록 |
 | [enemy-design.md](enemy-design.md) | Enemy 구조 설계: 기본 규칙과 시스템 경계, 피해 파이프라인, 패시브, 작업 순서 |
+| [monsters-contract.md](monsters-contract.md) | 몬스터·스킬 데이터의 서버 계약: 클라이언트가 읽는 방식, 결정 사항, 시트 컬럼 |
 | [items.md](items.md) | 아이템 종류, 식별·수량 및 소유량 저장 계약 |
 | [ninjutsu/](ninjutsu/README.md) | 스킬 원문 요구사항, 확정·보류 결정, 구현 이력, 카드별 대응표 |
 | [qa-v0.0.1.md](qa-v0.0.1.md) | 기존 Android QA와 발견된 이슈 |
