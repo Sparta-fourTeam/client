@@ -1,3 +1,10 @@
 [
-  { "UpgradeId": "atk", "MaxLevel": 3, "LevelCosts": [100, 250, 500] }
+  {"UpgradeId": "atk", "MaxLevel": 3, "LevelCosts": [100, 250, 500]},
+  {"UpgradeId": "equipment.hat", "MaxLevel": 10, "UnlockLevel": 2, "LevelCosts": [100, 115, 130, 145, 160, 175, 190, 205, 220, 235], "MaterialItemId": "book.hat", "MaterialCosts": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "Effects": [{"Kind": "skillDamagePercent", "ValuePerLevel": 5}]},
+  {"UpgradeId": "equipment.top", "MaxLevel": 10, "UnlockLevel": 3, "LevelCosts": [100, 115, 130, 145, 160, 175, 190, 205, 220, 235], "MaterialItemId": "book.top", "MaterialCosts": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "Effects": [{"Kind": "skillDamagePercent", "ValuePerLevel": 5}]},
+  {"UpgradeId": "equipment.shoes", "MaxLevel": 10, "UnlockLevel": 4, "LevelCosts": [100, 115, 130, 145, 160, 175, 190, 205, 220, 235], "MaterialItemId": "book.shoes", "MaterialCosts": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "Effects": [{"Kind": "skillDamagePercent", "ValuePerLevel": 5}]},
+  {"UpgradeId": "equipment.weapon", "MaxLevel": 10, "UnlockLevel": 5, "LevelCosts": [100, 115, 130, 145, 160, 175, 190, 205, 220, 235], "MaterialItemId": "book.weapon", "MaterialCosts": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "Effects": [{"Kind": "skillDamagePercent", "ValuePerLevel": 5}]},
+  {"UpgradeId": "equipment.ring", "MaxLevel": 10, "UnlockLevel": 6, "LevelCosts": [100, 115, 130, 145, 160, 175, 190, 205, 220, 235], "MaterialItemId": "book.ring", "MaterialCosts": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "Effects": [{"Kind": "skillDamagePercent", "ValuePerLevel": 5}]},
+  {"UpgradeId": "equipment.tie", "MaxLevel": 10, "UnlockLevel": 7, "LevelCosts": [100, 115, 130, 145, 160, 175, 190, 205, 220, 235], "MaterialItemId": "book.tie", "MaterialCosts": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "Effects": [{"Kind": "skillDamagePercent", "ValuePerLevel": 5}]},
+  {"UpgradeId": "equipment.employee_id", "MaxLevel": 10, "UnlockLevel": 1, "LevelCosts": [100, 115, 130, 145, 160, 175, 190, 205, 220, 235], "MaterialItemId": "book.employee_id", "MaterialCosts": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "Effects": [{"Kind": "skillDamagePercent", "ValuePerLevel": 5}]}
 ]

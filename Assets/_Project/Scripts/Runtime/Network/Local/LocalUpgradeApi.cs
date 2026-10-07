@@ -3,7 +3,8 @@ using Game.Core;
 
 namespace Game.Network
 {
-    /// <summary>업그레이드 구매를 로컬 저장소에 반영하는 Mock 구현. idempotencyKey로 연타를 막는다</summary>
+    /// <summary>업그레이드 구매를 로컬 저장소에 반영하는 Mock 구현. 장비 강화와 스킬 강화가 같이 쓴다. idempotencyKey로 연타를 막는다.
+    /// 거절 순서: 해금 전 → 최대 레벨 → 코인 부족 → 재료 부족. 거절되면 아무것도 바뀌지 않는다</summary>
     public sealed class LocalUpgradeApi : IUpgradeApi
     {
         private readonly LocalSaveStore _store;
@@ -24,6 +25,11 @@ namespace Game.Network
             }
 
             var def = _data.Upgrades.GetOrThrow(upgradeId);
+            if (_data.PlayerLevels.At(save.exp).level < def.UnlockLevel)
+            {
+                throw new ApiException(ApiErrorKind.Rejected, "LOCKED");
+            }
+
             var row = save.upgrades.Find(u => u.upgradeId == upgradeId);
             int level = row?.level ?? 0;
             if (level >= def.MaxLevel)
@@ -35,6 +41,12 @@ namespace Game.Network
             if (save.wallet.gold < cost)
             {
                 throw new ApiException(ApiErrorKind.Rejected, "INSUFFICIENT_GOLD");
+            }
+
+            // 재료 소모가 실패하면 예외로 끝나고, 아직 아무것도 바꾸지 않았으므로 저장하지 않는다
+            if (def.UsesMaterial)
+            {
+                LocalItemSpend.Spend(save, def.MaterialItemId, def.MaterialAt(level + 1));
             }
 
             save.wallet.gold -= cost;
