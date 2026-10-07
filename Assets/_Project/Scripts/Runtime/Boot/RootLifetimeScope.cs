@@ -1,4 +1,3 @@
-using System.Linq;
 using Game.Core;
 using Game.Network;
 using Game.View;
@@ -37,16 +36,13 @@ namespace Game.Boot
             builder.Register<ISceneNavigator, SceneLoader>(Lifetime.Singleton);
             builder.RegisterEntryPoint<BootFlow>();
 
-            // 랜덤 재료는 열린 재료 중에서 뽑는다. 장비는 플레이어 레벨이 UnlockLevel 이상이면 열린다(EquipmentUnlockRule).
-            // TODO(unlock): 스킬은 해금 판단 방식이 정해지면 이 임시 연결을 교체한다. 지금은 모든 스킬을 열린 것으로 본다.
+            // 랜덤 재료는 열린 재료 중에서 뽑는다. 장비와 스킬은 플레이어 레벨이 해금 레벨 이상이면 열린다(EquipmentUnlockRule, SkillUnlockRule).
             builder.RegisterBuildCallback(c =>
             {
                 var battleApi = c.Resolve<LocalBattleApi>();
                 var data = c.Resolve<GameDataStore>();
                 var store = c.Resolve<LocalSaveStore>();
-                battleApi.UnlockedSkillIds = () => ItemIds.SkillMaterials
-                    .Select(id => int.TryParse(data.Items.GetOrThrow(id).TargetId, out var skillId) ? skillId : 0)
-                    .Where(skillId => skillId > 0).ToList();
+                battleApi.UnlockedSkillIds = () => SkillUnlockRule.UnlockedSkillIds(data, store.Load().exp);
                 battleApi.UnlockedEquipmentIds = () => EquipmentUnlockRule.UnlockedTargetIds(data, store.Load().exp);
             });
 

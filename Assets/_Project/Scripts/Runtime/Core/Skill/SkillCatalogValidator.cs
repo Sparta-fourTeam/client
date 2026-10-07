@@ -19,7 +19,7 @@ namespace Game.Core
             foreach (var weapon in weapons)
             {
                 if (weapon == null || !ids.Add(weapon.id) || weapon.baseStats == null
-                    || weapon.maxLevel < 1 || weapon.upgrades == null)
+                    || weapon.maxLevel < 1 || weapon.upgrades == null || weapon.unlockLevel < 1)
                 {
                     throw new InvalidOperationException("무기 정의 또는 ID가 잘못되었습니다.");
                 }
