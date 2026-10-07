@@ -40,4 +40,4 @@ repos:
         entry: dotnet format ProjectNova.sln --no-restore --include
         language: system
         files: ^Assets/.*\.cs$
-        exclude: ^Assets/.*(\.Generated\.cs|/Plugins/|/ThirdParty/)$
+        exclude: ^Assets/(.*/)?(Plugins|ThirdParty)/|\.Generated\.cs$
