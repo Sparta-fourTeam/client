@@ -147,8 +147,58 @@ namespace Game.Tests
 
                 Assert.That(skill.Stats.Count, Is.InRange(1, 3), skill.Name);
                 Assert.Greater(skill.CoinCost, 0, skill.Name);
-                Assert.Greater(skill.BookCost, 0, skill.Name);
+                Assert.Greater(skill.MaterialCost, 0, skill.Name);
                 Assert.Less(skill.Level, skill.MaxLevel, skill.Name);
+            }
+        }
+
+        [Test(Description = "강화 데이터가 있는 스킬은 Upgrades 테이블과 프로필에서 레벨·비용·마법북을 가져오고, 강화하면 다음 레벨 비용으로 바뀐다")]
+        public void Skills_ReflectUpgradeLevelAndCost()
+        {
+            var def = _data.Upgrades.GetOrThrow("shuriken");
+            var shuriken = _catalog.Skills.First(s => s.Id == "shuriken");
+            Assert.AreEqual("shuriken", shuriken.UpgradeId);
+            Assert.AreEqual(0, shuriken.Level);
+            Assert.AreEqual(def.MaxLevel, shuriken.MaxLevel);
+            Assert.AreEqual(def.CostAt(1), shuriken.CoinCost);
+            Assert.AreEqual(def.MaterialAt(1), shuriken.MaterialCost);
+            Assert.AreEqual(def.MaterialItemId, shuriken.MaterialItemId);
+
+            _profile.Apply(new PlayerSnapshot { upgrades = new() { new UpgradeRow { upgradeId = "shuriken", level = 2 } } });
+
+            Assert.AreEqual(2, shuriken.Level);
+            Assert.AreEqual(def.CostAt(3), shuriken.CoinCost);
+            Assert.AreEqual(def.MaterialAt(3), shuriken.MaterialCost);
+        }
+
+        [Test(Description = "최대 레벨의 스킬은 다음 비용이 0이고 최대 레벨로 표시된다")]
+        public void Skills_AtMaxLevel_HaveNoNextCost()
+        {
+            var def = _data.Upgrades.GetOrThrow("shuriken");
+            _profile.Apply(new PlayerSnapshot { upgrades = new() { new UpgradeRow { upgradeId = "shuriken", level = def.MaxLevel } } });
+
+            var shuriken = _catalog.Skills.First(s => s.Id == "shuriken");
+
+            Assert.IsTrue(shuriken.IsMaxLevel);
+            Assert.AreEqual(0, shuriken.CoinCost);
+            Assert.AreEqual(0, shuriken.MaterialCost);
+        }
+
+        [Test(Description = "강화 데이터가 없는 스킬은 업그레이드 ID가 없어 강화할 수 없다")]
+        public void Skills_WithoutUpgradeData_HaveNoUpgradeId()
+        {
+            Assert.IsNull(_catalog.Skills.First(s => s.Id == "frost").UpgradeId);
+        }
+
+        [Test(Description = "스킬 강화 재료는 그 스킬 전용 마법북이다 (업그레이드 ID = Skills의 progressionId, 마법북 TargetId = 스킬 ID)")]
+        public void SkillUpgrades_UseOwnSkillBook()
+        {
+            foreach (var skill in _data.LoadSkills().Where(s => !string.IsNullOrEmpty(s.progressionId) && _data.Upgrades.Contains(s.progressionId)))
+            {
+                var def = _data.Upgrades.GetOrThrow(skill.progressionId);
+
+                Assert.IsTrue(def.UsesMaterial, skill.progressionId);
+                Assert.AreEqual(skill.id.ToString(), _data.Items.GetOrThrow(def.MaterialItemId).TargetId, skill.progressionId);
             }
         }
 
