@@ -58,11 +58,12 @@ Enemy (MonoBehaviour)            위치, 이동 적용, 밀치기 적용, 연출
 ### 기본 규칙
 - 모든 적은 HP, 속도, 근접 또는 원거리 공격을 가진다.
 - 소환체의 사망은 웨이브 게이지에 세지 않고(`EnemyDied.IsSummoned`) 전투 통계에는 센다.
-- 연속 공격(한 번의 공격에 여러 발)은 공격 패턴 옵션이다. 미구현.
+- 연속 공격(한 번의 공격에 여러 발)은 `Monsters.json`의 `BurstCount`(생략하면 1)와 `BurstInterval`(초)이다. 첫 타격은 공격 간격이 되면 나가고 나머지는 `BurstInterval`마다 나간다. 연속 공격은 한 번의 공격 간격 안에 끝나야 한다(`AttackInterval > BurstInterval * (BurstCount - 1)`). 기절·빙결·마비 중에는 멈춘다. 근접은 타격마다 벽을 때리고 원거리는 타격마다 투사체를 쏜다.
 
 ### 상태이상 (`EnemyStatus`)
 - 있는 것: 빙결, 마비, 기절, 감속, 범위 감속, 취약, 점화, 동상. 기절 면역은 구현됨.
-- 필요한 것: 점화, 마비, 빙결 면역, 밀치기 저항, 점화 지속시간 배율. 밀치기 저항은 비율(0~1)만 둔다. 별도의 면역 단계는 없고 1이 면역이다.
+- 면역 종류는 `Stun`, `Burn`, `Paralysis`, `Freeze`다. `Passives`의 `Immunity`의 `Statuses`에 이름으로 적는다(대소문자 구분 없음, 숫자는 거부). `EnemyStatus`의 `Apply*` 입구에서 막는다.
+- 효과의 크기는 `Passives`의 `Modifier`로 바꾼다. `Target`은 `KnockbackDistance`(밀치기 거리)와 `BurnDuration`(점화 지속시간), `Multiplier`는 받는 효과에 곱하는 배수다(0.5면 절반, 0이면 무효, 4면 4배). 같은 대상이 여러 개면 곱한다. 예: `{"Kind": "Modifier", "Target": "BurnDuration", "Multiplier": 4}`. 밀치기 저항에 별도의 면역 단계는 없고 `Multiplier` 0이 면역이다. `Modifier`는 패시브 객체가 아니라 `EffectModifiers` 값으로 모델에 들어간다.
 - **동적 면역**: 방어막 보유 중, 체력 조건 발동 중, 확률 면역처럼 조건부이거나 일시적인 면역을 지원한다. 정적 플래그(`StatusImmunity`, 데이터에서 생성)에 더해 출처별로 등록/해제하는 면역 목록을 둔다(`areaSlows`와 같은 방식). 확률 면역은 `OnStatusApply` 훅에서 판정한다.
 
 ### 패시브 (`IPassive`)
@@ -91,7 +92,7 @@ Enemy (MonoBehaviour)            위치, 이동 적용, 밀치기 적용, 연출
 - 소환 요청은 큐로 받아 다음 `Advance`에서 만든다(`TickCombat` 중 목록 변경 방지). 대기 중인 요청이 있으면 클리어를 발행하지 않는다.
 - 소환체 종류는 `MonsterId`로 지정하고 총 소환 수 상한(`MaxTotal`)이 있다.
 - **소환체는 부모와 다른 몬스터다.** `Spawn`의 `MonsterId`가 자기 자신이면 거부한다.
-- **연쇄 소환은 허용하지 않는다.** `Spawn`이 가리키는 몬스터는 `Spawn` 패시브를 가질 수 없다. 둘 다 `GameDataStore`의 패시브 참조 검증에서 거부한다.
+- **연쇄 소환은 허용하지 않는다.** `Spawn`이 가리키는 몬스터는 `Spawn` 패시브를 가질 수 없다. 둘 다 `GameDataStore`의 패시브 참조 검증에서 거부한다(구현됨, 서로 소환하는 순환도 같은 규칙으로 막힌다).
 
 ### 연출 (View)
 - 위치, 이동, 밀치기, 애니메이션, 피격 플래시, 상태이상 이펙트는 `Enemy`가 맡는다.
@@ -107,7 +108,8 @@ Enemy (MonoBehaviour)            위치, 이동 적용, 밀치기 적용, 연출
 | 2c | `Enemy`가 모델을 직접 소유, 이벤트 정리 | 완료(2b와 함께). `EnemySpawner`와 팩토리, 샌드박스, 스킬 대상이 `Enemy`를 쓴다 |
 | 3 | 스킬 계약: `SkillData.element`, `DamageSource`, `DamageInfo`, `TakeDamage(DamageInfo)` 오버로드, 충격 구분, 관통 차단 확인점 | 완료. 스킬 시스템을 건드리는 공유 계약이라 별도 작은 PR로 올린다 |
 | 4 | 피해 파이프라인과 `DamageProfile` | 완료. 패시브 훅(`OnBeforeDamage`, `OnDamaged`)은 5단계에서 이 파이프라인에 붙는다 |
-| 5 | 훅 확장과 패시브, 상태이상 확장(면역 종류, 밀치기 저항, 점화 배율), 연속 공격 | 4 이후 |
+| 5a | 상태이상 확장(면역 종류, 밀치기 저항, 점화 배율), 연속 공격, 연쇄 소환 금지 검증 | 완료(#219). 피해 훅이 필요 없어 3·4단계와 독립 |
+| 5b | 패시브 훅(`OnBeforeDamage`, `OnDamaged`, `OnStatusApply`)과 방어막, 회피, 회복, 이속 증가, 동적 면역 | 4 이후(#220) |
 | 6 | 몬스터 21종 데이터, 프리팹, `WaveMonsterVisualLinker`, 표시 테이블 | 5 이후 |
 | 7 | 문서 갱신, 시트 컬럼 반영, 서버 계약 | 서버 계약: 알 수 없는 `Kind`의 처리 정책, 필드 이름 규칙(`Monsters`는 PascalCase, `Skills`는 camelCase) |
 
