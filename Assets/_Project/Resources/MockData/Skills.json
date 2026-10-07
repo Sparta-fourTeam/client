@@ -1,6 +1,7 @@
 [
   {
     "id": 1,
+    "unlockLevel": 1,
     "name": "화살",
     "assetKey": "weapon_arrow",
     "castType": 0,
@@ -443,6 +444,7 @@
   },
   {
     "id": 2,
+    "unlockLevel": 2,
     "name": "화염구",
     "assetKey": "weapon_fireball",
     "castType": 0,
@@ -697,6 +699,7 @@
   },
   {
     "id": 3,
+    "unlockLevel": 3,
     "name": "벼락",
     "assetKey": "weapon_lightning",
     "castType": 1,
@@ -998,6 +1001,7 @@
   },
   {
     "id": 4,
+    "unlockLevel": 4,
     "name": "서리 결정",
     "assetKey": "weapon_frost_crystal",
     "castType": 0,
@@ -1297,6 +1301,7 @@
   },
   {
     "id": 5,
+    "unlockLevel": 5,
     "name": "나무뿌리",
     "assetKey": "weapon_log",
     "castType": 0,
@@ -1543,6 +1548,7 @@
   },
   {
     "id": 6,
+    "unlockLevel": 6,
     "name": "냉기 지대",
     "assetKey": "weapon_cold_zone",
     "castType": 2,
@@ -1703,6 +1709,7 @@
   },
   {
     "id": 7,
+    "unlockLevel": 7,
     "name": "전기 구름",
     "assetKey": "weapon_lightning_cloud",
     "castType": 2,
@@ -1996,6 +2003,7 @@
   },
   {
     "id": 16,
+    "unlockLevel": 8,
     "name": "에너지 빔",
     "assetKey": "weapon_energy_beam",
     "castType": 3,
@@ -2264,6 +2272,7 @@
   },
   {
     "id": 18,
+    "unlockLevel": 9,
     "name": "연쇄 번개",
     "assetKey": "weapon_chain_lightning",
     "castType": 4,
