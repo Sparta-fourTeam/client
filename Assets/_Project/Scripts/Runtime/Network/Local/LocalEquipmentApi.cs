@@ -4,7 +4,7 @@ using Game.Core;
 namespace Game.Network
 {
     /// <summary>장비 강화를 로컬 저장소에 반영하는 Mock 구현. idempotencyKey로 연타를 막는다.
-    /// 거절 순서: 해금 전 → 최대 레벨 → 코인 부족 → 마법북 부족. 거절되면 아무것도 바뀌지 않는다</summary>
+    /// 거절 순서: 해금 전 → 최대 레벨 → 코인 부족 → 재료 부족. 거절되면 아무것도 바뀌지 않는다</summary>
     public sealed class LocalEquipmentApi : IEquipmentApi
     {
         private readonly LocalSaveStore _store;
@@ -43,8 +43,8 @@ namespace Game.Network
                 throw new ApiException(ApiErrorKind.Rejected, "INSUFFICIENT_GOLD");
             }
 
-            // 마법북 소모가 실패하면 예외로 끝나고, 아직 아무것도 바꾸지 않았으므로 저장하지 않는다
-            LocalItemSpend.Spend(save, def.BookItemId, def.BookAt(level + 1));
+            // 재료 소모가 실패하면 예외로 끝나고, 아직 아무것도 바꾸지 않았으므로 저장하지 않는다
+            LocalItemSpend.Spend(save, def.MaterialItemId, def.MaterialAt(level + 1));
             save.wallet.gold -= coin;
             save.ledger.Add(new LedgerRow { idempotencyKey = idempotencyKey, amount = -coin, sourceType = "EQUIPMENT_UPGRADE", sourceId = equipmentId });
             if (row == null)

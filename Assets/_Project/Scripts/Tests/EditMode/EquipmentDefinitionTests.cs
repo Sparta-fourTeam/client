@@ -9,35 +9,35 @@ namespace Game.Tests
         private static EquipmentDefinition Valid() => new()
         {
             Id = "equipment.hat",
-            BookItemId = ItemIds.HatBook,
+            MaterialItemId = ItemIds.HatBook,
             UnlockLevel = 2,
             MaxLevel = 3,
             CoinCosts = new[] { 100, 115, 130 },
-            BookCosts = new[] { 1, 2, 3 },
+            MaterialCosts = new[] { 1, 2, 3 },
         };
 
-        [Test(Description = "MockData의 장비 테이블은 로드와 검증을 통과하고, 장비마다 대응하는 마법북이 있다")]
-        public void Store_LoadsEquipment_WithMatchingBooks()
+        [Test(Description = "MockData의 장비 테이블은 로드와 검증을 통과하고, 장비마다 대응하는 재료 아이템이 있다")]
+        public void Store_LoadsEquipment_WithMatchingMaterials()
         {
             var store = new GameDataStore();
 
-            foreach (string bookId in ItemIds.EquipmentMaterials)
+            foreach (string materialId in ItemIds.EquipmentMaterials)
             {
-                string equipmentId = store.Items.GetOrThrow(bookId).TargetId;
-                Assert.AreEqual(bookId, store.Equipment.GetOrThrow(equipmentId).BookItemId, equipmentId);
+                string equipmentId = store.Items.GetOrThrow(materialId).TargetId;
+                Assert.AreEqual(materialId, store.Equipment.GetOrThrow(equipmentId).MaterialItemId, equipmentId);
             }
 
             Assert.IsTrue(store.Revisions.ContainsKey("Equipment"));
         }
 
-        [Test(Description = "도달 레벨별 코인·마법북 비용을 돌려준다 (첫 강화는 1레벨 비용)")]
+        [Test(Description = "도달 레벨별 코인·재료 비용을 돌려준다 (첫 강화는 1레벨 비용)")]
         public void CostAt_ReturnsCostToReachLevel()
         {
             var def = Valid();
 
             Assert.AreEqual(100, def.CoinAt(1));
             Assert.AreEqual(130, def.CoinAt(3));
-            Assert.AreEqual(2, def.BookAt(2));
+            Assert.AreEqual(2, def.MaterialAt(2));
         }
 
         [Test(Description = "올바른 정의는 통과한다")]
@@ -51,13 +51,13 @@ namespace Game.Tests
         {
             var shortCosts = Valid(); shortCosts.CoinCosts = new[] { 100 };
             var zeroCoin = Valid(); zeroCoin.CoinCosts = new[] { 100, 0, 130 };
-            var zeroBook = Valid(); zeroBook.BookCosts = new[] { 1, 2, 0 };
+            var zeroMaterial = Valid(); zeroMaterial.MaterialCosts = new[] { 1, 2, 0 };
             var noUnlock = Valid(); noUnlock.UnlockLevel = 0;
             var noMax = Valid(); noMax.MaxLevel = 0;
-            var noBook = Valid(); noBook.BookItemId = " ";
+            var noMaterial = Valid(); noMaterial.MaterialItemId = " ";
             var noKind = Valid(); noKind.Effects.Add(new EquipmentEffectDefinition { Kind = "" });
 
-            foreach (var bad in new[] { shortCosts, zeroCoin, zeroBook, noUnlock, noMax, noBook, noKind })
+            foreach (var bad in new[] { shortCosts, zeroCoin, zeroMaterial, noUnlock, noMax, noMaterial, noKind })
             {
                 Assert.Throws<InvalidOperationException>(() => bad.Validate());
             }

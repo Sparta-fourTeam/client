@@ -17,28 +17,28 @@ namespace Game.Core
     {
         public string Id;
 
-        /// <summary>이 장비를 강화할 때 소모하는 마법북 아이템 ID (Items 테이블의 TargetId가 이 장비 ID인 마법북)</summary>
-        public string BookItemId;
+        /// <summary>이 장비를 강화할 때 소모하는 재료 아이템 ID (Items 테이블에서 TargetId가 이 장비 ID인 아이템)</summary>
+        public string MaterialItemId;
 
         /// <summary>이 플레이어 레벨부터 강화할 수 있다</summary>
         public int UnlockLevel;
 
         public int MaxLevel;
 
-        /// <summary>level(1부터)에 도달하기 위한 코인·마법북 비용. 첫 강화(레벨 0 → 1)는 index 0이다</summary>
+        /// <summary>level(1부터)에 도달하기 위한 코인·재료 비용. 첫 강화(레벨 0 → 1)는 index 0이다</summary>
         public int[] CoinCosts;
-        public int[] BookCosts;
+        public int[] MaterialCosts;
 
         public List<EquipmentEffectDefinition> Effects = new();
 
         public int CoinAt(int level) => CoinCosts[level - 1];
-        public int BookAt(int level) => BookCosts[level - 1];
+        public int MaterialAt(int level) => MaterialCosts[level - 1];
 
         public void Validate()
         {
-            if (string.IsNullOrWhiteSpace(Id) || string.IsNullOrWhiteSpace(BookItemId))
+            if (string.IsNullOrWhiteSpace(Id) || string.IsNullOrWhiteSpace(MaterialItemId))
             {
-                throw new InvalidOperationException("Equipment: Id와 BookItemId가 필요합니다");
+                throw new InvalidOperationException("Equipment: Id와 MaterialItemId가 필요합니다");
             }
 
             if (UnlockLevel < 1 || MaxLevel < 1)
@@ -46,9 +46,9 @@ namespace Game.Core
                 throw new InvalidOperationException($"Equipment {Id}: UnlockLevel과 MaxLevel은 1 이상이어야 합니다");
             }
 
-            if (CoinCosts == null || BookCosts == null || CoinCosts.Length != MaxLevel || BookCosts.Length != MaxLevel)
+            if (CoinCosts == null || MaterialCosts == null || CoinCosts.Length != MaxLevel || MaterialCosts.Length != MaxLevel)
             {
-                throw new InvalidOperationException($"Equipment {Id}: CoinCosts와 BookCosts는 MaxLevel({MaxLevel})개여야 합니다");
+                throw new InvalidOperationException($"Equipment {Id}: CoinCosts와 MaterialCosts는 MaxLevel({MaxLevel})개여야 합니다");
             }
 
             foreach (int cost in CoinCosts)
@@ -56,9 +56,9 @@ namespace Game.Core
                 if (cost <= 0) { throw new InvalidOperationException($"Equipment {Id}: 코인 비용은 양수여야 합니다"); }
             }
 
-            foreach (int cost in BookCosts)
+            foreach (int cost in MaterialCosts)
             {
-                if (cost <= 0) { throw new InvalidOperationException($"Equipment {Id}: 마법북 비용은 양수여야 합니다"); }
+                if (cost <= 0) { throw new InvalidOperationException($"Equipment {Id}: 재료 비용은 양수여야 합니다"); }
             }
 
             foreach (var effect in Effects)
