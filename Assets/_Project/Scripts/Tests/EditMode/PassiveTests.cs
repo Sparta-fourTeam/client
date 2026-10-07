@@ -82,6 +82,18 @@ namespace Game.Tests
             Assert.Throws<InvalidOperationException>(() => Monster(badTrigger).Validate());
         }
 
+        [Test(Description = "Trigger는 이름으로만 받는다. 숫자나 빈 값은 거부한다")]
+        public void Validate_RejectsNumericOrEmptyTrigger()
+        {
+            var numeric = Split();
+            numeric.Trigger = "1";
+            var empty = Split();
+            empty.Trigger = "";
+
+            Assert.Throws<InvalidOperationException>(() => Monster(numeric).Validate());
+            Assert.Throws<InvalidOperationException>(() => Monster(empty).Validate());
+        }
+
         [Test(Description = "OnDeath는 주기와 총량 없이도 유효하다")]
         public void Validate_OnDeathNeedsNoInterval()
         {
