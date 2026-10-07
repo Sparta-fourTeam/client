@@ -15,6 +15,7 @@ namespace Game.View
     public sealed class ResultPopupView : HudView
     {
         [SerializeField] private GameObject _panel;
+        [SerializeField] private PopupTransition _transition;
         [SerializeField] private TMP_Text _titleText;
         [SerializeField] private TMP_Text _stageText;
         [SerializeField] private TMP_Text _killsText;
@@ -77,7 +78,7 @@ namespace Game.View
                     status => _skillAssets != null ? _skillAssets.GetHudIcon(status.AssetKey) : null));
             }
             _lobbyButton.interactable = true;
-            _panel.SetActive(true);
+            PopupPanel.Set(_panel, _transition, true);
         }
 
         private void OnLobbyClicked()

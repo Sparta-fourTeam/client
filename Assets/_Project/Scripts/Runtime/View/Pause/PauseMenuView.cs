@@ -11,6 +11,7 @@ namespace Game.View
     public sealed class PauseMenuView : HudView
     {
         [SerializeField] private GameObject _panel;
+        [SerializeField] private PopupTransition _transition;
         [SerializeField] private Button _resumeButton;
         [SerializeField] private Button _closeButton;
         [SerializeField] private TMP_Text _titleText;
@@ -68,7 +69,7 @@ namespace Game.View
                 ShowObtainable();
             }
 
-            _panel.SetActive(paused);
+            PopupPanel.Set(_panel, _transition, paused);
         }
 
         /// <summary>"제 N 관문". Stage 씬을 바로 열어 StageId가 없으면 첫 스테이지로 본다</summary>
