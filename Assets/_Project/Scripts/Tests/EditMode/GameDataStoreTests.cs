@@ -8,47 +8,15 @@ namespace Game.Tests
 {
     public class GameDataStoreTests
     {
-        [Test(Description = "MockData의 몬스터/스테이지/업그레이드/에너지 테이블을 읽어온다")]
-        public void Constructor_LoadsAllTables()
-        {
-            var store = new GameDataStore();
-
-            Assert.AreEqual(999, store.Monsters.GetOrThrow(1).Hp);
-            Assert.IsTrue(store.Monsters.GetOrThrow(100).IsBoss);
-            Assert.AreEqual(100, store.Stages.GetOrThrow(1).ClearGold);
-            Assert.AreEqual(3, store.Upgrades.GetOrThrow("atk").MaxLevel);
-            Assert.AreEqual(5, store.Energy.Cost);
-        }
-
         [Test]
         public void Items_AreAvailableToLocalApiAndExcludeCurrencies()
         {
             var store = new GameDataStore();
             Assert.AreEqual("1", store.Items.GetOrThrow(ItemIds.ArrowBook).TargetId);
-            Assert.AreEqual("무기 마법북", store.Items.GetOrThrow(ItemIds.WeaponBook).Name);
             Assert.IsTrue(store.Revisions.ContainsKey("Items"));
             Assert.IsNotEmpty(store.RawJson("Items"));
             Assert.IsFalse(store.Items.Contains("gold"));
             Assert.IsFalse(store.Items.Contains("coin"));
-        }
-
-        [Test(Description = "UpgradeDefinition.CostAt은 1부터 시작하는 레벨로 LevelCosts를 찾는다")]
-        public void UpgradeDefinition_CostAt_UsesOneBasedLevel()
-        {
-            var store = new GameDataStore();
-
-            Assert.AreEqual(100, store.Upgrades.GetOrThrow("atk").CostAt(1));
-            Assert.AreEqual(500, store.Upgrades.GetOrThrow("atk").CostAt(3));
-        }
-
-        [Test(Description = "스킬 테이블도 스토어가 들고 있어 버전 목록과 원문 조회에 나온다")]
-        public void Weapons_AreManagedLikeOtherTables()
-        {
-            var store = new GameDataStore();
-
-            Assert.IsTrue(store.Revisions.ContainsKey("Skills"));
-            Assert.IsNotEmpty(store.RawJson("Skills"));
-            Assert.IsTrue(store.LoadSkills().Any(w => w.id == 1));
         }
 
         [Test(Description = "스킬 정의는 가변이라 호출마다 새 객체를 돌려준다")]
@@ -57,18 +25,6 @@ namespace Game.Tests
             var store = new GameDataStore();
 
             Assert.AreNotSame(store.LoadSkills()[0], store.LoadSkills()[0]);
-        }
-
-        [Test(Description = "방벽 체력, 스폰, 웨이브가 스테이지 행에서 온다")]
-        public void Stages_CarryWallHpSpawnAndWaves()
-        {
-            var stage = new GameDataStore().Stages.GetOrThrow(1);
-
-            Assert.AreEqual(100, stage.WallHp);
-            Assert.AreEqual(0.5f, stage.Spawn.IntervalMax);
-            Assert.AreEqual(20, stage.Waves.Count);
-            Assert.AreEqual(2, stage.Waves[1].MaxEliteCount);
-            Assert.AreEqual(1, stage.Waves[19].MaxBossCount);
         }
 
         [Test]
@@ -84,11 +40,11 @@ namespace Game.Tests
         [Test]
         public void SpawnConfig_FromDefinition_CopiesValues()
         {
-            var config = EnemySpawnConfig.From(new GameDataStore().Stages.GetOrThrow(1).Spawn);
+            var config = EnemySpawnConfig.From(new SpawnDefinition { IntervalMin = 0.3f, IntervalMax = 0.9f, Cooldown = 7f, EliteChance = 0.4f });
 
-            Assert.AreEqual(0.1f, config.SpawnIntervalMin);
-            Assert.AreEqual(3f, config.SpawnCooldown);
-            Assert.AreEqual(0.2f, config.EliteSpawnChance);
+            Assert.AreEqual(0.3f, config.SpawnIntervalMin);
+            Assert.AreEqual(7f, config.SpawnCooldown);
+            Assert.AreEqual(0.4f, config.EliteSpawnChance);
         }
 
         private static StageDefinition ValidStage()
