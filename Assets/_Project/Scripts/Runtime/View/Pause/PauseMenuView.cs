@@ -17,20 +17,27 @@ namespace Game.View
         [SerializeField] private ResultRewardListView _obtainableList;
         [SerializeField] private ItemIconTable _itemIcons;
 
+        [Header("등장 요마 (현재 스테이지의 몬스터)")]
+        [SerializeField] private StageMonsterListView _monsterList;
+        [SerializeField] private MonsterDisplayTable _monsterDisplay;
+
         private StageManager _stageManager;
         private GameDataStore _data;
         private StageRewardTracker _rewards;
+        private StageContext _stageContext;
 
         [Inject]
         public void Construct(
             StageManager stageManager,
             IBufferedSubscriber<StageStateChanged> stateChanged,
             GameDataStore data,
-            StageRewardTracker rewards)
+            StageRewardTracker rewards,
+            StageContext stageContext)
         {
             _stageManager = stageManager;
             _data = data;
             _rewards = rewards;
+            _stageContext = stageContext;
             Track(stateChanged.Subscribe(OnStateChanged));
         }
 
@@ -48,10 +55,22 @@ namespace Game.View
             bool paused = message.State == StageState.Paused;
             if (paused)
             {
+                ShowMonsters();
                 ShowObtainable();
             }
 
             _panel.SetActive(paused);
+        }
+
+        /// <summary>현재 스테이지의 등장 몬스터. 열 때마다 다시 만들어 재시작·스테이지 전환 뒤에도 이전 정보가 남지 않는다</summary>
+        private void ShowMonsters()
+        {
+            if (_monsterList == null)
+            {
+                return;
+            }
+
+            _monsterList.Show(MonsterRows.Build(_monsterDisplay, _data, _stageContext.StageId));
         }
 
         /// <summary>완료한 웨이브까지 확보한 보상이다. 웨이브가 끝날 때마다 달라지므로 열 때마다 다시 만든다</summary>
