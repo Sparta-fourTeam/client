@@ -7,7 +7,7 @@ namespace Game.Core
     public sealed class PlayerProfile
     {
         private readonly GameDataStore _data;
-        private PlayerSnapshot _snapshot = new PlayerSnapshot { stageProgress = new(), upgrades = new(), items = new() };
+        private PlayerSnapshot _snapshot = new PlayerSnapshot { stageProgress = new(), upgrades = new(), items = new(), equipments = new() };
 
         public event Action<PlayerProfile> Changed;
 
@@ -35,6 +35,8 @@ namespace Game.Core
 
         public EnergyConfig EnergyConfig => _data.Energy;
 
+        /// <summary>장비의 강화 레벨. 강화한 적이 없으면 0</summary>
+        public int EquipmentLevel(string equipmentId) => _snapshot.equipments.Find(e => e.equipmentId == equipmentId)?.level ?? 0;
         public int UpgradeLevel(string id) => _snapshot.upgrades.Find(u => u.upgradeId == id)?.level ?? 0;
         public bool IsStageCleared(int stageId) => _snapshot.stageProgress.Find(s => s.stageId == stageId)?.IsCleared ?? false;
         public bool HasUnclaimedReward(int stageId) => _snapshot.stageProgress.Find(s => s.stageId == stageId)?.HasUnclaimedReward ?? false;
@@ -45,6 +47,7 @@ namespace Game.Core
             snap.stageProgress ??= new();
             snap.upgrades ??= new();
             snap.items ??= new();
+            snap.equipments ??= new();
             _snapshot = snap;
             Changed?.Invoke(this);
         }

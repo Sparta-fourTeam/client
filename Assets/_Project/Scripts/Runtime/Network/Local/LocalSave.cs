@@ -12,6 +12,8 @@ namespace Game.Network
         public int exp;
         public List<StageProgressRow> stageProgress = new() { new StageProgressRow { stageId = 1, clearRating = 0 } };
         public List<UpgradeRow> upgrades = new();
+        /// <summary>장비 강화 레벨. 기존 저장 파일에서 누락된 equipments는 빈 목록이다.</summary>
+        public List<EquipmentRow> equipments = new();
         public List<BattleRow> battles = new();
         public List<LedgerRow> ledger = new();
         /// <summary>마법북 소유량. 기존 저장 파일에서 누락된 items는 빈 목록이다.</summary>
