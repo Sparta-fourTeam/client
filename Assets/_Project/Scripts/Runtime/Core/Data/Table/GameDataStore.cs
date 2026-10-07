@@ -11,6 +11,7 @@ namespace Game.Core
     {
         private static readonly string[] TableNames = { "Monsters", "Stages", "Upgrades", "Energy", "GeneralCards", "Skills", "Items", "StageRewards", "PlayerLevels" };
         private readonly Dictionary<string, string> _rawJson;
+        private readonly Dictionary<string, int> _skillUnlockLevels;
 
         public Dictionary<string, int> Revisions { get; }
         public Table<int, MonsterDefinition> Monsters { get; }
@@ -103,13 +104,18 @@ namespace Game.Core
 
             FirstStageId = stages.Keys.First();
             // 스킬은 정의 객체가 가변이라 호출마다 새로 읽는다. 여기서는 부팅 때 잘못된 데이터를 바로 잡는다
-            LoadSkills();
+            var skills = LoadSkills();
+            _skillUnlockLevels = UpgradeUnlockRule.SkillUnlockLevels(skills);
+            foreach (var upgrade in upgrades.Values) { UpgradeUnlockRule.Validate(upgrade, _skillUnlockLevels); }
 
             // TODO(server): 전부 1 고정 — 예: 빌드에 포함된 테이블 버전 메타데이터로 교체
             Revisions = TableNames.ToDictionary(n => n, _ => 1);
         }
 
         public string RawJson(string name) => _rawJson[name];
+
+        /// <summary>강화의 해금 플레이어 레벨. 스킬 강화는 스킬이 열리는 레벨(SkillData.unlockLevel)을, 그 외는 행의 UnlockLevel을 쓴다</summary>
+        public int UnlockLevelOf(UpgradeDefinition def) => UpgradeUnlockRule.LevelOf(def, _skillUnlockLevels);
 
         /// <summary>스킬 정의 목록. 호출마다 새 객체를 만들고 카탈로그 검증을 통과해야 돌려준다</summary>
         public List<SkillData> LoadSkills() => ParseSkills(_rawJson["Skills"]);

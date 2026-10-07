@@ -25,7 +25,7 @@ namespace Game.Network
             }
 
             var def = _data.Upgrades.GetOrThrow(upgradeId);
-            if (_data.PlayerLevels.At(save.exp).level < def.UnlockLevel)
+            if (_data.PlayerLevels.At(save.exp).level < _data.UnlockLevelOf(def))
             {
                 throw new ApiException(ApiErrorKind.Rejected, "LOCKED");
             }
