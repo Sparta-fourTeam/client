@@ -66,7 +66,7 @@ namespace Game.Core
                 float nearestDistance = range * range;
                 foreach (var candidate in candidates)
                 {
-                    if (candidate == null || candidate is EnemyModel model && model.IsDead) { continue; }
+                    if (candidate == null || candidate.IsDead) { continue; }
                     float distance = (candidate.Position - position).sqrMagnitude;
                     if (distance <= nearestDistance) { nearest = candidate; nearestDistance = distance; }
                 }

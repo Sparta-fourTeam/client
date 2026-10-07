@@ -33,12 +33,23 @@ namespace Game.Tests
 
             public readonly List<EnemyType> Types = new();
 
-            public EnemyModel Create(Vector2 spawnPosition, EnemyType type)
+            // 등급별 몬스터 Id: 일반 1, 엘리트 2, 보스 3
+            public const int NormalId = 1, EliteId = 2, BossId = 3;
+
+            public static EnemyRoster Roster() => new EnemyRoster(new[]
             {
+                new MonsterDefinition { Id = NormalId, Hp = 10, AttackInterval = 1f },
+                new MonsterDefinition { Id = EliteId, Hp = 10, AttackInterval = 1f, IsElite = true },
+                new MonsterDefinition { Id = BossId, Hp = 10, AttackInterval = 1f, IsBoss = true },
+            });
+
+            public Enemy Create(int monsterId, Vector2 spawnPosition, bool isSummoned = false)
+            {
+                var type = monsterId == BossId ? EnemyType.Boss : monsterId == EliteId ? EnemyType.Elite : EnemyType.Normal;
                 Types.Add(type);
                 // 속도 0: 움직이지 않아 벽 사거리에 들어가지 않음
-                return new EnemyModel(++_nextId, spawnPosition, 0f, type, 10, Attack,
-                    new FakePublisher<EnemyHpChanged>(), new FakePublisher<EnemyDied>());
+                return TestEnemy.Create(new EnemyModel(++_nextId, 0f, type, 10, Attack,
+                    new FakePublisher<EnemyHpChanged>(), new FakePublisher<EnemyDied>()), spawnPosition);
             }
 
             public int Count(EnemyType type) => Types.FindAll(t => t == type).Count;
@@ -143,7 +154,7 @@ namespace Game.Tests
             _allCleared = new FakePublisher<AllEnemiesCleared>();
 
             var spawner = new EnemySpawner(
-                _factory, config, spawnArea, _random,
+                _factory, TypeRecordingFactory.Roster(), config, spawnArea, _random,
                 _waveStarted, _allCleared,
                 wall, new EnemyProjectileSystem());
             spawner.Initialize();

@@ -11,6 +11,7 @@ namespace Game.Core
     public class EnemySpawner : IInitializable, IDisposable, ITickable, IEnemyTargetProvider
     {
         private readonly IEnemyFactory _enemyViewFactory;
+        private readonly EnemyRoster _roster;
         private readonly EnemySpawnConfig _enemySpawnConfig;
         private readonly SpawnArea _spawnArea;
         private readonly IRandomProvider _randomProvider;
@@ -19,7 +20,10 @@ namespace Game.Core
 
         // 필드에 있는 적
         // 죽은 적은 다음 Tick에 제거, EnemyDied는 EnemyModel이 발행
-        private readonly List<EnemyModel> _activeEnemies = new();
+        private readonly List<Enemy> _activeEnemies = new();
+
+        // 분열·소환 요청. 죽는 순간(스킬 처리나 TickCombat 안)에는 목록을 건드리지 않고 다음 Advance 맨 앞에서 만든다
+        private readonly Queue<EnemySpawnRequest> _pendingSpawns = new();
         private readonly Wall _wall;
         private readonly EnemyProjectileSystem _projectiles;
 
@@ -42,6 +46,7 @@ namespace Game.Core
 
         public EnemySpawner(
             IEnemyFactory enemyViewFactory,
+            EnemyRoster roster,
             EnemySpawnConfig enemySpawnConfig,
             SpawnArea spawnArea,
             IRandomProvider randomProvider,
@@ -51,6 +56,7 @@ namespace Game.Core
             EnemyProjectileSystem projectiles)
         {
             _enemyViewFactory = enemyViewFactory;
+            _roster = roster;
             _enemySpawnConfig = enemySpawnConfig;
             _spawnArea = spawnArea;
             _randomProvider = randomProvider;
@@ -81,6 +87,7 @@ namespace Game.Core
         // 스폰 로직
         public void Advance(float deltaTime)
         {
+            FlushSpawnRequests();
             TickCombat(deltaTime);
 
             if (deltaTime > 0f)
@@ -147,7 +154,8 @@ namespace Game.Core
 
         private void CheckAllEnemiesCleared()
         {
-            if (!_finalSpawnDone || _allClearPublished)
+            // 아직 만들지 않은 분열체가 있으면 클리어가 아니다
+            if (!_finalSpawnDone || _allClearPublished || _pendingSpawns.Count > 0)
             {
                 return;
             }
@@ -182,7 +190,7 @@ namespace Game.Core
         }
 
 
-        // PickEnemyType으로 타입을 고르고 위치는 SpawnArea의 현재 범위에서 매번 새로 뽑는다
+        // PickEnemyType으로 등급을 고르고, 스테이지에 나오는 그 등급의 몬스터 중에서 하나를 뽑는다. 위치는 SpawnArea의 현재 범위에서 매번 새로 뽑는다
         private void Spawn()
         {
             var min = _spawnArea.Min;
@@ -190,10 +198,31 @@ namespace Game.Core
             var spawnX = _randomProvider.Range(min.x, max.x);
             var spawnY = _randomProvider.Range(min.y, max.y);
             var spawnPosition = new Vector2(spawnX, spawnY);
-            var enemy = _enemyViewFactory.Create(spawnPosition, PickEnemyType());
+            var monster = _roster.Pick(PickEnemyType(), _randomProvider);
+            var enemy = _enemyViewFactory.Create(monster.Id, spawnPosition);
 
-            _activeEnemies.Add(enemy);
+            Track(enemy);
             _spawnedCountInOnceSpawn++;
+        }
+
+        private void Track(Enemy enemy)
+        {
+            _activeEnemies.Add(enemy);
+            enemy.SpawnRequested += OnSpawnRequested;
+        }
+
+        private void OnSpawnRequested(EnemySpawnRequest request)
+        {
+            _pendingSpawns.Enqueue(request);
+        }
+
+        private void FlushSpawnRequests()
+        {
+            while (_pendingSpawns.Count > 0)
+            {
+                var request = _pendingSpawns.Dequeue();
+                Track(_enemyViewFactory.Create(request.MonsterId, request.Position, isSummoned: true));
+            }
         }
 
         private float RollSpawnInterval()
@@ -209,21 +238,13 @@ namespace Game.Core
                 var enemy = _activeEnemies[i];
                 if (enemy.IsDead)
                 {
+                    enemy.SpawnRequested -= OnSpawnRequested;
                     _activeEnemies.RemoveAt(i);
                     continue;
                 }
 
-                // 사거리 안이면 공격
-                // 밖이면 벽 쪽으로 이동
-                if (enemy.IsInAttackRange(_wall))
-                {
-                    enemy.Attack(deltaTime, _wall, _projectiles);
-                }
-                else
-                {
-                    enemy.Move(deltaTime);
-                }
-                enemy.TickStatus(deltaTime);
+                // 사거리 안이면 공격, 밖이면 벽 쪽으로 이동, 상태이상과 패시브 시간 진행
+                enemy.Tick(deltaTime, _wall, _projectiles);
             }
 
             // 투사체 처리

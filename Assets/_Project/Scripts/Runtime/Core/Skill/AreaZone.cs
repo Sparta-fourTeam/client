@@ -128,7 +128,7 @@ namespace Game.Core
         // 겨눈 적이 살아 있으면 광선이 그 적을 따라간다. 죽으면 마지막 방향을 유지한다.
         private void TrackAim()
         {
-            if (aim == null || aim is EnemyModel model && model.IsDead) { return; }
+            if (aim == null || aim.IsDead) { return; }
             Vector2 toAim = aim.Position - (Vector2)transform.position;
             if (toAim.sqrMagnitude > 0) { beamDirection = toAim.normalized; }
         }
@@ -166,7 +166,7 @@ namespace Game.Core
             moveTarget = null;
             foreach (var target in candidates)
             {
-                if (target == null || target is EnemyModel dead && dead.IsDead) { continue; }
+                if (target == null || target.IsDead) { continue; }
                 float distanceSquared = (target.Position - center).sqrMagnitude;
                 if (IsLine)
                 {
@@ -184,7 +184,7 @@ namespace Game.Core
                 var context = new AttackContext(target.Position, Direction, target, randomValue);
                 hitReactions.Raise(AttackEvent.Hit, context);
                 reactions.Raise(AttackEvent.Hit, context);
-                if (target is EnemyModel killed && killed.IsDead) { reactions.Raise(AttackEvent.Kill, context); }
+                if (target.IsDead) { reactions.Raise(AttackEvent.Kill, context); }
             }
         }
     }

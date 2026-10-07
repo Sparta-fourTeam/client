@@ -9,7 +9,7 @@ namespace Game.Tests
     public class EnemyStatusEffectsTests
     {
         private sealed class Publisher<T> : IPublisher<T> { public void Publish(T message) { } }
-        private static EnemyModel Model() => new EnemyModel(1, Vector2.zero, 0, EnemyType.Normal, 10000,
+        private static EnemyModel Model() => new EnemyModel(1, 0, EnemyType.Normal, 10000,
             new EnemyAttackStats(AttackType.Melee, 1, 1, 0), new Publisher<EnemyHpChanged>(), new Publisher<EnemyDied>());
         private static void Sync(EnemyStatusEffects view) => typeof(EnemyStatusEffects).GetMethod("Sync",
             System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).Invoke(view, null);

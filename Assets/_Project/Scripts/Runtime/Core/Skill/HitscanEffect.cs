@@ -86,12 +86,12 @@ namespace Game.Core
             // Secondary lightning hits only its chosen target and has no inherited callbacks.
             if (directTarget != null)
             {
-                if (!(directTarget is EnemyModel model && model.IsDead))
+                if (!directTarget.IsDead)
                 {
                     directTarget.TakeDamage(Mathf.Max(1, (int)damage));
                     var context = new AttackContext(transform.position, Vector3.zero, directTarget);
                     reactions.Raise(AttackEvent.Hit, context);
-                    if (directTarget is EnemyModel killed && killed.IsDead) { reactions.Raise(AttackEvent.Kill, context); }
+                    if (directTarget.IsDead) { reactions.Raise(AttackEvent.Kill, context); }
                 }
                 return;
             }
@@ -104,7 +104,7 @@ namespace Game.Core
                 {
                     Vector2 position = enemy.transform.position;
                     enemy.TakeDamage((int)damage);
-                    var context = new AttackContext(position, Vector3.zero, enemy.Target);
+                    var context = new AttackContext(position, Vector3.zero, enemy);
                     reactions.Raise(AttackEvent.Hit, context);
                     if (enemy.IsDead) { reactions.Raise(AttackEvent.Kill, context); }
                 }

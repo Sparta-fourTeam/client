@@ -1,6 +1,6 @@
 [
   {
-    "Id": 1, "MonsterIds": [1, 2], "ClearGold": 100, "RatingRewards": [20, 50, 100],
+    "Id": 1, "MonsterIds": [1, 2, 4, 5], "ClearGold": 100, "RatingRewards": [20, 50, 100],
     "WallHp": 100,
     "Spawn": { "IntervalMin": 0.1, "IntervalMax": 0.5, "Cooldown": 3, "EliteChance": 0.2 },
     "Waves": [
@@ -27,7 +27,7 @@
     ]
   },
   {
-    "Id": 2, "MonsterIds": [1, 2, 11, 12], "ClearGold": 150, "RatingRewards": [30, 75, 150],
+    "Id": 2, "MonsterIds": [1, 2, 11, 12, 4, 5], "ClearGold": 150, "RatingRewards": [30, 75, 150],
     "WallHp": 100,
     "Spawn": { "IntervalMin": 0.1, "IntervalMax": 0.5, "Cooldown": 3, "EliteChance": 0.2 },
     "Waves": [
@@ -54,7 +54,7 @@
     ]
   },
   {
-    "Id": 3, "MonsterIds": [100, 1, 2, 11, 12], "ClearGold": 300, "RatingRewards": [60, 150, 300],
+    "Id": 3, "MonsterIds": [100, 1, 2, 11, 12, 4, 5], "ClearGold": 300, "RatingRewards": [60, 150, 300],
     "WallHp": 100,
     "Spawn": { "IntervalMin": 0.1, "IntervalMax": 0.5, "Cooldown": 3, "EliteChance": 0.2 },
     "Waves": [

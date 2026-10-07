@@ -26,6 +26,9 @@ namespace Game.Editor
             ("Bat", "Bat_Animated", false),
             ("Elite_Bat", "Bat_Animated", true),
             ("Skeleton", "Skeleton_Animated", false),
+            ("Oni", "Horned_Animated", false),
+            ("Spider", "Spider_Animated", false),
+            ("Spider_Mini", "Spider_Animated", false),
         };
 
         [MenuItem("Tools/Monster/Link Visuals To Wave Prefabs")]

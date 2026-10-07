@@ -34,7 +34,13 @@ namespace Game.Core
         {
             DisposableBagBuilder bag = DisposableBag.CreateBuilder();
             _waveStartedSubscriber.Subscribe(OnWaveStarted).AddTo(bag);
-            _enemyDiedSubscriber.Subscribe(_ => OnEnemyDied()).AddTo(bag);
+            _enemyDiedSubscriber.Subscribe(message =>
+            {
+                if (!message.IsSummoned)
+                {
+                    OnEnemyDied();
+                }
+            }).AddTo(bag);
             _subscriptions = bag.Build();
         }
 

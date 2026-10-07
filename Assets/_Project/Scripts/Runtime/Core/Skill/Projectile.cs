@@ -111,14 +111,14 @@ namespace Game.Core
                     continue;
                 }
 
-                if (candidate is EnemyModel enemy && enemy.IsDead) { continue; }
+                if (candidate.IsDead) { continue; }
                 if (ReferenceEquals(candidate, ignoredTarget)) { continue; }
                 if (!hitLedger.TryHit(candidate)) { continue; }
                 hitReactions.Raise(AttackEvent.Hit, new AttackContext(hitPosition, direction, candidate, randomValue));
                 SpawnImpact(hitPosition);
                 var context = new AttackContext(hitPosition, direction, candidate);
                 reactions.Raise(AttackEvent.Hit, context);
-                if (candidate is EnemyModel killed && killed.IsDead) { reactions.Raise(AttackEvent.Kill, context); }
+                if (candidate.IsDead) { reactions.Raise(AttackEvent.Kill, context); }
                 if (hitLedger.Exhausted)
                 {
                     Release();

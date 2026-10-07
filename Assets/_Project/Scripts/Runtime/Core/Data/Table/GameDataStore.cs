@@ -48,6 +48,8 @@ namespace Game.Core
                 monster.Validate();
             }
 
+            ValidatePassiveReferences(monsters);
+
             var stages = ParseIndexed<int, StageDefinition>("Stages", d => d.Id);
             foreach (var stage in stages.Values)
             {
@@ -113,6 +115,22 @@ namespace Game.Core
         }
 
         public string RawJson(string name) => _rawJson[name];
+
+        /// <summary>분열·소환 패시브가 가리키는 몬스터가 모두 있어야 한다</summary>
+        public static void ValidatePassiveReferences(IReadOnlyDictionary<int, MonsterDefinition> monsters)
+        {
+            foreach (var monster in monsters.Values)
+            {
+                foreach (var passive in monster.Passives ?? new List<PassiveDefinition>())
+                {
+                    bool refersToMonster = passive.Kind == PassiveKind.Spawn;
+                    if (refersToMonster && !monsters.ContainsKey(passive.MonsterId))
+                    {
+                        throw new InvalidOperationException($"Monsters {monster.Id}: {passive.Kind}이 없는 몬스터를 가리킵니다: {passive.MonsterId}");
+                    }
+                }
+            }
+        }
 
         /// <summary>강화의 해금 플레이어 레벨. 스킬 강화는 스킬이 열리는 레벨(SkillData.unlockLevel)을, 그 외는 행의 UnlockLevel을 쓴다</summary>
         public int UnlockLevelOf(UpgradeDefinition def) => UpgradeUnlockRule.LevelOf(def, _skillUnlockLevels);

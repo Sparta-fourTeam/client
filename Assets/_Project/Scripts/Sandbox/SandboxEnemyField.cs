@@ -9,7 +9,7 @@ using VContainer;
 
 namespace Game.Sandbox
 {
-    /// <summary>샌드박스의 적. 실제 Enemy 프리팹과 EnemyModel을 쓰므로(Hitscan은 충돌체와 Enemy 컴포넌트로 판정한다) 게임과 같은 대상이 된다.
+    /// <summary>샌드박스의 적. 실제 Enemy 프리팹을 쓰므로(Hitscan은 충돌체와 Enemy 컴포넌트로 판정한다) 게임과 같은 대상이 된다.
     /// 기본은 제자리의 샌드백이고, 이동 모드를 켜면 EnemySpawner처럼 벽을 향해 내려온다. 적의 공격은 피해가 0이다.</summary>
     public sealed class SandboxEnemyField : MonoBehaviour, IEnemyTargetProvider
     {
@@ -17,7 +17,7 @@ namespace Game.Sandbox
 
         private sealed class Entry
         {
-            public EnemyModel Model;
+            public Enemy Enemy;
             public Vector2 Spawn;
             public int Hp;
             public EnemyType Type;
@@ -44,8 +44,8 @@ namespace Game.Sandbox
         public bool Respawn { get; set; } = true;
         public float Speed { get => defaultSpeed; set => defaultSpeed = Mathf.Max(0, value); }
         public long TotalDamage { get; private set; }
-        public int AliveCount { get { int n = 0; foreach (var e in entries) { if (!e.Model.IsDead) { n++; } } return n; } }
-        public IReadOnlyList<EnemyModel> Models { get { var list = new List<EnemyModel>(); foreach (var e in entries) { list.Add(e.Model); } return list; } }
+        public int AliveCount { get { int n = 0; foreach (var e in entries) { if (!e.Enemy.IsDead) { n++; } } return n; } }
+        public IReadOnlyList<Enemy> Enemies { get { var list = new List<Enemy>(); foreach (var e in entries) { list.Add(e.Enemy); } return list; } }
 
         [Inject]
         public void Construct(IPublisher<EnemyHpChanged> hpPublisher, IPublisher<EnemyDied> diedPublisher,
@@ -87,25 +87,41 @@ namespace Game.Sandbox
             recentDamage.Clear();
         }
 
-        public EnemyModel Spawn(Vector2 position, int hp, EnemyType type = EnemyType.Normal)
+        public Enemy Spawn(Vector2 position, int hp, EnemyType type = EnemyType.Normal)
         {
-            var model = Create(position, hp, type);
-            entries.Add(new Entry { Model = model, Spawn = position, Hp = hp, Type = type });
-            return model;
+            var enemy = Create(position, hp, type);
+            entries.Add(new Entry { Enemy = enemy, Spawn = position, Hp = hp, Type = type });
+            return enemy;
         }
 
-        private EnemyModel Create(Vector2 position, int hp, EnemyType type)
+        private Enemy Create(Vector2 position, int hp, EnemyType type)
         {
             int id = ++nextId;
             var attack = new EnemyAttackStats(AttackType.Melee, 0, 1f, attackRange);
-            var model = new EnemyModel(id, position, defaultSpeed, type, Mathf.Max(1, hp), attack, hpPublisher, diedPublisher);
+            var model = new EnemyModel(id, defaultSpeed, type, Mathf.Max(1, hp), attack, hpPublisher, diedPublisher);
             lastHp[id] = model.MaxHp;
+
             if (enemyPrefab != null)
             {
                 var view = Instantiate(enemyPrefab, position, Quaternion.identity, transform);
                 view.Bind(model, null, hpSubscriber, diedSubscriber);
+                return view;
             }
-            return model;
+
+            // 프리팹이 없어도 위치와 대상 역할을 하는 Enemy가 있어야 한다. 화면 반응(사망 연출 등)은 없다
+            var go = new GameObject("SandboxEnemy");
+            go.transform.SetParent(transform);
+            go.transform.position = position;
+            var bare = go.AddComponent<Enemy>();
+            bare.Attach(model, null);
+            return bare;
+        }
+
+        // 프리팹이 있으면 Enemy가 사망 연출 뒤 스스로 사라진다. 프리팹이 없는 맨 Enemy는 여기서 치운다
+        private void Discard(Enemy enemy)
+        {
+            if (enemyPrefab != null || enemy == null) { return; }
+            if (Application.isPlaying) { Destroy(enemy.gameObject); } else { DestroyImmediate(enemy.gameObject); }
         }
 
         public void SpawnPattern(Pattern pattern, int count, int hp, Vector2 center)
@@ -127,8 +143,9 @@ namespace Game.Sandbox
             foreach (var entry in entries)
             {
                 // 뷰를 지우려면 죽여야 하지만, 샌드박스 정리는 피해 집계에 넣지 않는다.
-                if (!entry.Model.IsDead) { entry.Model.TakeDamage(entry.Model.MaxHp); }
+                if (!entry.Enemy.IsDead) { entry.Enemy.TakeDamage(entry.Enemy.Model.MaxHp); }
             }
+            foreach (var entry in entries) { Discard(entry.Enemy); }
             entries.Clear();
             lastHp.Clear();
             ResetDamage();
@@ -139,7 +156,7 @@ namespace Game.Sandbox
             results.Clear();
             foreach (var entry in entries)
             {
-                if (!entry.Model.IsDead) { results.Add(entry.Model); }
+                if (!entry.Enemy.IsDead) { results.Add(entry.Enemy); }
             }
             results.Sort((a, b) => (a.Position - from).sqrMagnitude.CompareTo((b.Position - from).sqrMagnitude));
             if (results.Count > count) { results.RemoveRange(count, results.Count - count); }
@@ -154,17 +171,18 @@ namespace Game.Sandbox
             for (int i = entries.Count - 1; i >= 0; i--)
             {
                 var entry = entries[i];
-                var model = entry.Model;
-                if (!model.IsDead)
+                var enemy = entry.Enemy;
+                if (!enemy.IsDead)
                 {
-                    bool arrived = wall != null && model.IsInAttackRange(wall);
-                    if (Moving && !arrived) { model.Move(deltaTime); }
-                    model.TickStatus(deltaTime);
+                    bool arrived = wall != null && enemy.IsInAttackRange(wall);
+                    if (Moving && !arrived) { enemy.Move(deltaTime); }
+                    enemy.TickStatus(deltaTime);
                 }
-                if (!model.IsDead) { continue; }
+                if (!enemy.IsDead) { continue; }
                 entries.RemoveAt(i);
-                lastHp.Remove(model.Id);
-                if (Respawn) { entries.Add(new Entry { Model = Create(entry.Spawn, entry.Hp, entry.Type), Spawn = entry.Spawn, Hp = entry.Hp, Type = entry.Type }); }
+                lastHp.Remove(enemy.Id);
+                Discard(enemy);
+                if (Respawn) { entries.Add(new Entry { Enemy = Create(entry.Spawn, entry.Hp, entry.Type), Spawn = entry.Spawn, Hp = entry.Hp, Type = entry.Type }); }
             }
         }
     }

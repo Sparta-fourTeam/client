@@ -62,7 +62,7 @@ namespace Game.Core
                 elapsed = Math.Max(0, elapsed - 1);
                 foreach (var target in occupants)
                 {
-                    if (target is EnemyModel model && model.IsDead) { continue; }
+                    if (target.IsDead) { continue; }
                     target.TakeDamage(Mathf.Max(1, (int)damage));
                 }
             }
@@ -79,7 +79,7 @@ namespace Game.Core
             var current = new HashSet<IAreaSlowTarget>();
             foreach (var target in candidates)
             {
-                if (target == null || target is EnemyModel model && model.IsDead) { continue; }
+                if (target == null || target.IsDead) { continue; }
                 float distanceSquared = (target.Position - (Vector2)transform.position).sqrMagnitude;
                 float radiusSquared = radius * radius;
                 if ((distanceSquared > radiusSquared && !Mathf.Approximately(distanceSquared, radiusSquared))

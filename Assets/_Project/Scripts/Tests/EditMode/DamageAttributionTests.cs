@@ -36,9 +36,9 @@ namespace Game.Tests
             public void Publish(T message) { }
         }
 
-        private static EnemyModel Enemy(int hp) =>
-            new(1, Vector2.zero, 0f, EnemyType.Normal, hp, new EnemyAttackStats(AttackType.Melee, 10, 1f, 0f),
-                new Publisher<EnemyHpChanged>(), new Publisher<EnemyDied>());
+        private static Game.Core.Enemy Enemy(int hp) =>
+            TestEnemy.Create(new EnemyModel(1, 0f, EnemyType.Normal, hp, new EnemyAttackStats(AttackType.Melee, 10, 1f, 0f),
+                new Publisher<EnemyHpChanged>(), new Publisher<EnemyDied>()));
 
         [Test(Description = "범위를 열면 현재 스킬이 바뀌고 닫으면 이전 값으로 돌아간다 (중첩 포함)")]
         public void Scopes_NestAndRestore()

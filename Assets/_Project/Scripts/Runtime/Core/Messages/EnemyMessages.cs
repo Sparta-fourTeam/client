@@ -4,9 +4,13 @@ namespace Game.Core.Messages
     {
         public int EnemyId { get; }
 
-        public EnemyDied(int enemyId)
+        /// <summary>true면 분열·소환으로 생긴 적이다. 웨이브 마릿수에 포함되지 않아 웨이브 게이지에 세지 않는다</summary>
+        public bool IsSummoned { get; }
+
+        public EnemyDied(int enemyId, bool isSummoned = false)
         {
             EnemyId = enemyId;
+            IsSummoned = isSummoned;
         }
     }
 
