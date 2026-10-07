@@ -7,6 +7,7 @@ namespace Game.Core
     {
         public const string Spawn = "Spawn";
         public const string Immunity = "Immunity";
+        public const string Modifier = "Modifier";
     }
 
     /// <summary>몬스터 행에 붙는 패시브 한 개. Kind마다 쓰는 값이 다르고 안 쓰는 값은 비워 둔다</summary>
@@ -33,6 +34,12 @@ namespace Game.Core
         /// <summary>면역인 상태이상 이름 (StatusImmunity)</summary>
         public string[] Statuses;
 
+        /// <summary>Modifier: 효과의 크기를 바꿀 대상 (ModifierTarget: KnockbackDistance, BurnDuration)</summary>
+        public string Target;
+
+        /// <summary>Modifier: 받는 효과에 곱하는 배수. 0.5면 절반, 0이면 무효, 4면 4배. 같은 대상이 여러 개면 곱한다</summary>
+        public float? Multiplier;
+
         public void Validate(int ownerId)
         {
             switch (Kind)
@@ -54,9 +61,20 @@ namespace Game.Core
                     }
 
                     break;
+                case PassiveKind.Modifier:
+                    Require(TryParseTarget(out _), ownerId, $"알 수 없는 Target입니다: {Target}");
+                    Require(Multiplier.HasValue && Multiplier.Value >= 0f && !float.IsNaN(Multiplier.Value) && !float.IsInfinity(Multiplier.Value),
+                        ownerId, "Multiplier는 0 이상의 숫자여야 합니다");
+                    break;
                 default:
                     throw new InvalidOperationException($"Monsters {ownerId}: 알 수 없는 패시브 Kind입니다: {Kind}");
             }
+        }
+
+        public ModifierTarget ToModifierTarget()
+        {
+            TryParseTarget(out var target);
+            return target;
         }
 
         public SpawnTrigger ToSpawnTrigger()
@@ -81,8 +99,20 @@ namespace Game.Core
         private bool TryParseTrigger(out SpawnTrigger trigger) =>
             Enum.TryParse(Trigger, true, out trigger) && Enum.IsDefined(typeof(SpawnTrigger), trigger);
 
-        private static bool TryParseStatus(string name, out StatusImmunity status) =>
-            Enum.TryParse(name, true, out status) && status != StatusImmunity.None;
+        private bool TryParseTarget(out ModifierTarget target)
+        {
+            target = default;
+            return !string.IsNullOrEmpty(Target) && !char.IsDigit(Target[0])
+                && Enum.TryParse(Target, true, out target) && Enum.IsDefined(typeof(ModifierTarget), target);
+        }
+
+        // 이름으로만 받는다. 숫자나 여러 개를 합친 값(예: "3")은 거부한다
+        private static bool TryParseStatus(string name, out StatusImmunity status)
+        {
+            status = StatusImmunity.None;
+            return !string.IsNullOrEmpty(name) && !char.IsDigit(name[0])
+                && Enum.TryParse(name, true, out status) && status != StatusImmunity.None && Enum.IsDefined(typeof(StatusImmunity), status);
+        }
 
         private static void Require(bool condition, int ownerId, string message)
         {

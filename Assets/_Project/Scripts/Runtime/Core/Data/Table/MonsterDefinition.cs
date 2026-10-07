@@ -18,6 +18,12 @@ namespace Game.Core
 
         public bool IsBoss;
 
+        /// <summary>공격 한 번에 연달아 나가는 횟수. 1이면 연속 공격이 아니다(생략하면 1)</summary>
+        public int BurstCount = 1;
+
+        /// <summary>연속 공격에서 다음 타격까지의 간격(초). BurstCount가 2 이상일 때 필요하다</summary>
+        public float BurstInterval;
+
         /// <summary>엘리트 등급. 웨이브가 정한 엘리트 수만큼 스테이지의 엘리트 몬스터 중에서 나온다</summary>
         public bool IsElite;
 
@@ -57,6 +63,16 @@ namespace Game.Core
             if (AttackInterval <= 0f)
             {
                 throw new InvalidOperationException($"Monsters {Id}: AttackInterval은 0보다 커야 합니다");
+            }
+
+            if (BurstCount < 1)
+            {
+                throw new InvalidOperationException($"Monsters {Id}: BurstCount는 1 이상이어야 합니다");
+            }
+
+            if (BurstCount > 1 && (BurstInterval <= 0f || AttackInterval <= BurstInterval * (BurstCount - 1)))
+            {
+                throw new InvalidOperationException($"Monsters {Id}: BurstInterval은 0보다 크고 연속 공격이 AttackInterval 안에 끝나야 합니다");
             }
 
             if (Damage < 0 || AttackRange < 0f || Speed < 0f || ProjectileSpeed < 0f)

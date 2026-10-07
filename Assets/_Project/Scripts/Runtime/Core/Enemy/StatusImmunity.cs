@@ -8,5 +8,8 @@ namespace Game.Core
     {
         None = 0,
         Stun = 1 << 0,
+        Burn = 1 << 1,
+        Paralysis = 1 << 2,
+        Freeze = 1 << 3,
     }
 }
