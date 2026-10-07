@@ -74,16 +74,18 @@ Enemy (MonoBehaviour)            위치, 이동 적용, 밀치기 적용, 연출
 - 데이터는 `Monsters.json`의 `Passives` 목록(`Kind` + 값)이고, `PassiveBuilder`가 `Kind`로 객체를 만든다. 상태를 가진 패시브라 호출마다 새 객체를 만든다.
 
 ### 속성과 시전 형태 (`DamageProfile`)
-- **스킬이 속성을 가진다.** `SkillData.element`를 추가한다(무/화/빙/풍/뇌/토). 자식 스킬(`childOnly`)은 부모의 속성을 상속한다.
-- 약점/저항은 속성별 비율(±50~200%)이다. 100% 저항은 무효다.
-- **지상 공격 면역은 토속성 저항 100%로 표현한다.** 별도의 지상/공중 태그를 만들지 않는다.
-- **투사체 감쇠는 시전 형태(`castType`)별 비율로 표현한다.** `castType`은 이미 있다(0 Projectile, 1 Hitscan, 2 Area, 3 Beam, 4 Chain).
-- 약점 키는 속성만 쓴다. 특정 스킬 단위 약점은 두지 않는다.
+- **스킬이 속성을 가진다.** `SkillData.element`(0 Neutral, 1 Fire, 2 Ice, 3 Wind, 4 Lightning, 5 Earth)가 `Skills.json`에 있다. 생략하면 무속성이다. 속성과 시전 형태는 `DamageAttribution` 범위의 `DamageSource`로 피해까지 따라가므로, 가장 바깥 스킬이 이겨서 자식 스킬(`childOnly`)의 피해는 부모의 속성과 `castType`을 이어받는다.
+- 약점/저항은 `Monsters.json`의 `Resists`(속성 이름 → 비율)다. 약점은 양수(받는 피해 +50% = 0.5), 저항은 음수(-70% = -0.7), -1은 무효다. 키는 `Neutral`, `Fire`, `Ice`, `Wind`, `Lightning`, `Earth`이고 대소문자를 구분한다.
+- **지상 공격 면역은 토속성 저항 100%(`"Earth": -1`)로 표현한다.** 별도의 지상/공중 태그를 만들지 않는다.
+- **투사체 감쇠는 시전 형태별 비율로 표현한다.** `Monsters.json`의 `CastResists`(`Projectile`, `Hitscan`, `Area`, `Beam`, `Chain` → 비율)다. 예: `"CastResists": {"Projectile": -0.7}`.
+- 속성과 시전 형태의 배율은 곱하고, 줄어도 무효(-1)가 아니면 최소 1은 들어간다. 약점 키는 속성만 쓴다. 특정 스킬 단위 약점은 두지 않는다.
+- `DamageProfile`은 스킬에서 나온 피해(`DamageInfo.SkillId != 0`)에만 적용한다. 점화·동상 같은 상태이상 지속 피해는 속성 계산을 받지 않는다.
 
 ### 투사체 차단
 - 투사체의 **직접 충격 피해만 면역**이다. 폭발, 상태이상, 자식 스킬 등 나머지 리액션은 모두 실행되고 그 피해는 면역이 아니다.
 - **관통을 막는다.** 투사체는 이 적에서 소멸한다.
-- 직접 피해는 `DamageReaction`(`AttackReactions.cs`)이 `TakeDamage`를 호출하는 곳이다. `DamageInfo`에 충격 여부를 실어 구분한다. 관통은 `ProjectileHitLedger`가 남은 명중 수를 세는 곳에서 "이 대상이 관통을 막는가"를 확인한다.
+- 직접 피해는 `DamageReaction`(빌더의 `Damage`)과 Hitscan의 직접 타격이 내며 `DamageInfo.IsImpact`로 표시한다. 폭발, 추가 번개, 장판 피해는 충격이 아니다. 관통은 `Projectile`이 적중 뒤 `IEnemyTarget.BlocksPierce`를 확인해 `ProjectileHitLedger.Exhaust()`로 남은 관통을 없앤다.
+- 몬스터 데이터는 `Monsters.json`의 `BlocksProjectile: true`다. 막는 것은 `CastType == Projectile`이고 `IsImpact`인 피해뿐이다(Hitscan의 직접 타격은 막지 않는다).
 
 ### 스폰/소환
 - 소환 요청은 큐로 받아 다음 `Advance`에서 만든다(`TickCombat` 중 목록 변경 방지). 대기 중인 요청이 있으면 클리어를 발행하지 않는다.
@@ -103,8 +105,8 @@ Enemy (MonoBehaviour)            위치, 이동 적용, 밀치기 적용, 연출
 | 2a | `EnemyStatus` 분리 | 완료. 동작 불변 |
 | 2b | 위치와 이동을 `Enemy`로 이전 | 완료. 테스트는 `TestEnemy.Create(model, position)`로 `Enemy`를 만든다 |
 | 2c | `Enemy`가 모델을 직접 소유, 이벤트 정리 | 완료(2b와 함께). `EnemySpawner`와 팩토리, 샌드박스, 스킬 대상이 `Enemy`를 쓴다 |
-| 3 | 스킬 계약: `SkillData.element`, `AttackContext`, `DamageInfo`, `TakeDamage(DamageInfo)` 오버로드, 충격 구분, 관통 차단 확인점 | 스킬 시스템을 건드리는 공유 계약이라 별도 작은 PR. 2와 병렬 가능 |
-| 4 | 피해 파이프라인과 `DamageProfile` | 2, 3 이후 |
+| 3 | 스킬 계약: `SkillData.element`, `DamageSource`, `DamageInfo`, `TakeDamage(DamageInfo)` 오버로드, 충격 구분, 관통 차단 확인점 | 완료. 스킬 시스템을 건드리는 공유 계약이라 별도 작은 PR로 올린다 |
+| 4 | 피해 파이프라인과 `DamageProfile` | 완료. 패시브 훅(`OnBeforeDamage`, `OnDamaged`)은 5단계에서 이 파이프라인에 붙는다 |
 | 5 | 훅 확장과 패시브, 상태이상 확장(면역 종류, 밀치기 저항, 점화 배율), 연속 공격 | 4 이후 |
 | 6 | 몬스터 21종 데이터, 프리팹, `WaveMonsterVisualLinker`, 표시 테이블 | 5 이후 |
 | 7 | 문서 갱신, 시트 컬럼 반영, 서버 계약 | 서버 계약: 알 수 없는 `Kind`의 처리 정책, 필드 이름 규칙(`Monsters`는 PascalCase, `Skills`는 camelCase) |

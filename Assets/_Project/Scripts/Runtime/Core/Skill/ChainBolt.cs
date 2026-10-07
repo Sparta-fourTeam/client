@@ -44,14 +44,14 @@ namespace Game.Core
         private int remaining;
         private float sinceHop;
         private bool started, released;
-        private int sourceSkill;   // 이 번개를 만든 스킬 (피해 집계용)
+        private Game.Core.Combat.DamageSource sourceSkill;   // 이 번개를 만든 스킬 (피해 집계와 속성 전달용)
 
         /// <param name="origin">번개가 나가는 위치(시전자)</param>
         /// <param name="first">첫 대상</param>
         public void Init(IObjectPool<ChainBolt> pool, IEnemyTargetProvider provider, Vector2 origin, IEnemyTarget first,
             ChainSettings settings, AttackReactions hitReactions, AttackReactions reactions, Func<float> randomValue = null)
         {
-            sourceSkill = Game.Core.Combat.DamageAttribution.Current;
+            sourceSkill = Game.Core.Combat.DamageAttribution.CurrentSource;
             this.pool = pool;
             this.provider = provider;
             this.settings = settings;

@@ -58,7 +58,7 @@ namespace Game.Core
         private readonly List<IEnemyTarget> candidates = new();
 
         private bool IsLine => length > 0;
-        private int sourceSkill;   // 이 장판을 만든 스킬 (피해 집계용)
+        private Game.Core.Combat.DamageSource sourceSkill;   // 이 장판을 만든 스킬 (피해 집계와 속성 전달용)
 
         /// <param name="hitReactions">펄스마다 범위 안의 적에게 거는 피해·상태이상</param>
         /// <param name="reactions">강화 카드가 덧붙인 반응(시작·틱·적중·처치·소멸)</param>
@@ -66,7 +66,7 @@ namespace Game.Core
         public void Init(IObjectPool<AreaZone> pool, IEnemyTargetProvider provider, Vector2 position, AreaSettings settings,
             AttackReactions hitReactions, AttackReactions reactions, Func<float> randomValue = null, IEnemyTarget aimTarget = null)
         {
-            sourceSkill = Game.Core.Combat.DamageAttribution.Current;
+            sourceSkill = Game.Core.Combat.DamageAttribution.CurrentSource;
             this.pool = pool;
             this.provider = provider;
             radius = Mathf.Max(0, settings.Radius);

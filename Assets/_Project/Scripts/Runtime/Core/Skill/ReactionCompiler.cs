@@ -16,7 +16,8 @@ namespace Game.Core
             return this;
         }
 
-        public HitReactionBuilder Damage(float damage) => Add(new DamageReaction(damage));
+        /// <summary>공격이 적중해 주는 직접 피해(충격)</summary>
+        public HitReactionBuilder Damage(float damage) => Add(new DamageReaction(damage, isImpact: true));
 
         public HitReactionBuilder Freeze(float duration, float chance = 1) =>
             duration > 0 ? Add(new StatusReaction<IFreezableTarget>(chance, (t, _) => t.ApplyFreeze(duration))) : this;

@@ -21,6 +21,16 @@ namespace Game.Core
         /// <summary>엘리트 등급. 웨이브가 정한 엘리트 수만큼 스테이지의 엘리트 몬스터 중에서 나온다</summary>
         public bool IsElite;
 
+        /// <summary>속성별 받는 피해의 가감. 키는 Element 이름(Neutral, Fire, Ice, Wind, Lightning, Earth), 값은 약점 +, 저항 -, -1은 무효다.
+        /// 예: {"Fire": 0.5}는 화속성 피해를 50% 더 받는다. 비우면 속성에 따른 변화가 없다</summary>
+        public Dictionary<string, float> Resists = new Dictionary<string, float>();
+
+        /// <summary>시전 형태별 받는 피해의 가감. 키는 CastType 이름(Projectile, Hitscan, Area, Beam, Chain). 예: {"Projectile": -0.7}은 투사체 피해를 70% 덜 받는다</summary>
+        public Dictionary<string, float> CastResists = new Dictionary<string, float>();
+
+        /// <summary>켜면 투사체의 직접 충격 피해를 무효로 하고 관통을 막는다. 폭발, 상태이상 같은 부가 반응은 그대로 걸린다</summary>
+        public bool BlocksProjectile;
+
         /// <summary>이 몬스터가 가진 패시브. 없으면 비어 있다</summary>
         public List<PassiveDefinition> Passives = new List<PassiveDefinition>();
 
@@ -32,6 +42,8 @@ namespace Game.Core
 
         public void Validate()
         {
+            DamageProfile.From(this);
+
             if (IsBoss && IsElite)
             {
                 throw new InvalidOperationException($"Monsters {Id}: IsBoss와 IsElite를 함께 켤 수 없습니다");

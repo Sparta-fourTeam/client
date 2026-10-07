@@ -48,7 +48,8 @@ namespace Game.Core
                 ++_nextEnemyId, monster.Speed, monster.GetEnemyType(), monster.Hp,
                 new EnemyAttackStats(monster.GetAttackType(), monster.Damage, monster.AttackInterval, monster.AttackRange, monster.ProjectileSpeed),
                 _hpChangedPublisher, _diedPublisher,
-                PassiveBuilder.BuildPassives(monster), isSummoned, PassiveBuilder.BuildImmunities(monster));
+                PassiveBuilder.BuildPassives(monster), isSummoned, PassiveBuilder.BuildImmunities(monster),
+                DamageProfile.From(monster));
 
             view.Bind(model, assets.projectilePrefab, _hpChangedSubscriber, _diedSubscriber);
 

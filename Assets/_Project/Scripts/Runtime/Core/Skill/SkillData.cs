@@ -21,6 +21,10 @@ namespace Game.Core
         /// <summary>SkillAssetTable에서 이 스킬의 프리팹과 아이콘을 찾는 키. 스킬마다 유일해야 한다</summary>
         public string assetKey;
         public CastType castType;
+
+        /// <summary>속성(무·화·빙·풍·뇌·토). 숫자: 0 Neutral, 1 Fire, 2 Ice, 3 Wind, 4 Lightning, 5 Earth. 적의 약점·저항이 이 값을 본다. 생략하면 무속성이다.
+        /// 자식 스킬의 피해는 가장 바깥 스킬(부모)의 속성을 이어받는다</summary>
+        public Element element;
         public ProjectilePath projectilePath;
         public SkillBaseStats baseStats;
         /// <summary>다른 스킬의 효과로만 시전되는 스킬. 새 스킬 카드로 제시하지 않는다</summary>
@@ -30,5 +34,8 @@ namespace Game.Core
         public int maxLevel;
         // PlayerProfile의 영구 성장 ID. 미매핑 스킬은 null이며 영구 레벨 0으로 처리.
         public string progressionId;
+
+        /// <summary>이 스킬이 낸 피해에 붙는 출처(ID, 속성, 시전 형태)</summary>
+        public Game.Core.Combat.DamageSource ToDamageSource() => new Game.Core.Combat.DamageSource(id, element, castType);
     }
 }

@@ -36,11 +36,11 @@ namespace Game.Core
 
 
 
-        private int sourceSkill;   // 이 타격을 만든 스킬 (피해 집계용)
+        private Game.Core.Combat.DamageSource sourceSkill;   // 이 타격을 만든 스킬 (피해 집계와 속성 전달용)
 
         public void Init(IObjectPool<HitscanEffect> pool, Vector3 position, float damage, IEnemyTarget directTarget = null, AttackReactions reactions = null, IEnemyTarget sourceTarget = null)
         {
-            sourceSkill = Game.Core.Combat.DamageAttribution.Current;
+            sourceSkill = Game.Core.Combat.DamageAttribution.CurrentSource;
             this.pool = pool;
             transform.position = position;
             this.damage = damage;
@@ -88,7 +88,7 @@ namespace Game.Core
             {
                 if (!directTarget.IsDead)
                 {
-                    directTarget.TakeDamage(Mathf.Max(1, (int)damage));
+                    directTarget.TakeDamage(Game.Core.Combat.DamageInfo.FromCurrent(Mathf.Max(1, (int)damage), isImpact: true));
                     var context = new AttackContext(transform.position, Vector3.zero, directTarget);
                     reactions.Raise(AttackEvent.Hit, context);
                     if (directTarget.IsDead) { reactions.Raise(AttackEvent.Kill, context); }
@@ -103,7 +103,7 @@ namespace Game.Core
                 if (hit.TryGetComponent(out Enemy enemy) && !enemy.IsDead && damaged.Add(enemy))
                 {
                     Vector2 position = enemy.transform.position;
-                    enemy.TakeDamage((int)damage);
+                    enemy.TakeDamage(Game.Core.Combat.DamageInfo.FromCurrent((int)damage, isImpact: true));
                     var context = new AttackContext(position, Vector3.zero, enemy);
                     reactions.Raise(AttackEvent.Hit, context);
                     if (enemy.IsDead) { reactions.Raise(AttackEvent.Kill, context); }

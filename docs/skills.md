@@ -62,6 +62,7 @@ flowchart TD
 | `name`, `desc` | 이름과 설명 |
 | `assetKey` | `SkillAssetTable`에서 프리팹과 아이콘을 찾는 키. 관례는 `weapon_이름`. **스킬마다 유일해야** 하고 비어 있으면 검증이 거부한다(4절) |
 | `castType` | 공격 종류. **숫자**: 0 Projectile, 1 Hitscan, 2 Area, 3 Beam, 4 Chain |
+| `element` | 속성. **숫자**: 0 Neutral(무), 1 Fire(화), 2 Ice(빙), 3 Wind(풍), 4 Lightning(뇌), 5 Earth(토). 생략하면 무속성이다. 적의 약점·저항이 이 값을 본다. 자식 스킬(`childOnly`)의 피해는 가장 바깥 스킬(부모)의 속성과 `castType`을 이어받는다 |
 | `projectilePath` | 투사체 경로. **숫자**: 0 Aimed(가장 가까운 적), 1 RollingLane(대상 줄을 따라 굴러감), 2 Radial(발 수만큼 사방으로) |
 | `baseStats` | 기본 수치. 필요한 묶음만 적는다(아래) |
 | `upgrades` | 이 스킬의 카드 목록 |
