@@ -1369,6 +1369,8 @@ GameObject:
   - component: {fileID: 239620067136346607}
   - component: {fileID: 3070522305966678222}
   - component: {fileID: 4876761352013557223}
+  - component: {fileID: 556948513666073827}
+  - component: {fileID: 183048334310471072}
   m_Layer: 5
   m_Name: Panel
   m_TagString: Untagged
@@ -1434,6 +1436,34 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!225 &556948513666073827
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3318694645103849633}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
+--- !u!114 &183048334310471072
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3318694645103849633}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d01169d586848c3b53bfb18d3dfd4f8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.PopupTransition
+  _window: {fileID: 5148328666730783929}
+  _showSeconds: 0.18
+  _hideSeconds: 0.12
+  _hiddenScale: 0.92
 --- !u!1 &4025762466263860899
 GameObject:
   m_ObjectHideFlags: 0
@@ -4311,6 +4341,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Game.View::Game.View.EquipUpgradePopupView
   _panel: {fileID: 3318694645103849633}
+  _transition: {fileID: 183048334310471072}
   _closeButton: {fileID: 4819622157644275751}
   _upgradeButton: {fileID: 1009411020158865390}
   _nameText: {fileID: 6466188812527407547}

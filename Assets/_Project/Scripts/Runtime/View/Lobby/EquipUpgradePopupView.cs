@@ -15,6 +15,7 @@ namespace Game.View
     public sealed class EquipUpgradePopupView : HudView
     {
         [SerializeField] private GameObject _panel;
+        [SerializeField] private PopupTransition _transition;
         [SerializeField] private Button _closeButton;
         [SerializeField] private Button _upgradeButton;
         [SerializeField] private TMP_Text _nameText, _levelText, _coinText;
@@ -44,14 +45,14 @@ namespace Game.View
         private void Awake()
         {
             _panel.SetActive(false);
-            _closeButton.onClick.AddListener(() => _panel.SetActive(false));
+            _closeButton.onClick.AddListener(() => PopupPanel.Set(_panel, _transition, false));
             _upgradeButton.onClick.AddListener(() => UpgradeAsync().Forget(Debug.LogException));
         }
 
         public void Open(int slot)
         {
             _slot = slot;
-            _panel.SetActive(true);
+            PopupPanel.Set(_panel, _transition, true);
             Refresh();
         }
 

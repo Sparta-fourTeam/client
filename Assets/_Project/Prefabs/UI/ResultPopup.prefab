@@ -3199,6 +3199,8 @@ GameObject:
   - component: {fileID: 7775866361484122372}
   - component: {fileID: 1064050593941067241}
   - component: {fileID: 740110487786827108}
+  - component: {fileID: 4517012466409761440}
+  - component: {fileID: 8901867132920185348}
   m_Layer: 5
   m_Name: Panel
   m_TagString: Untagged
@@ -3266,6 +3268,34 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!225 &4517012466409761440
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2848526806052667031}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
+--- !u!114 &8901867132920185348
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2848526806052667031}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d01169d586848c3b53bfb18d3dfd4f8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.PopupTransition
+  _window: {fileID: 0}
+  _showSeconds: 0.18
+  _hideSeconds: 0.12
+  _hiddenScale: 0.92
 --- !u!1 &3197433908861989329
 GameObject:
   m_ObjectHideFlags: 0
@@ -3993,6 +4023,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Game.View::Game.View.ResultPopupView
   _panel: {fileID: 2848526806052667031}
+  _transition: {fileID: 8901867132920185348}
   _titleText: {fileID: 845475230242824887}
   _stageText: {fileID: 7048774172704793599}
   _killsText: {fileID: 4558036380784211812}
