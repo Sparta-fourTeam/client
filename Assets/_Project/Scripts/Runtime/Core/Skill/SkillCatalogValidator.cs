@@ -31,6 +31,10 @@ namespace Game.Core
                 {
                     throw new InvalidOperationException($"무기 '{weapon.name}'의 공격 종류 {weapon.castType}에 등록된 공격 전략이 없습니다.");
                 }
+                if (!Enum.IsDefined(typeof(Element), weapon.element))
+                {
+                    throw new InvalidOperationException($"스킬 '{weapon.name}'의 속성 {(int)weapon.element}이(가) 올바르지 않습니다 (0~5).");
+                }
 
                 foreach (var option in weapon.upgrades)
                 {

@@ -1,4 +1,5 @@
 using System;
+using Game.Core.Combat;
 using Game.Core.Defense;
 using Game.Core.Messages;
 using MessagePipe;
@@ -250,6 +251,12 @@ namespace Game.Core
         public void TakeDamage(int damage)
         {
             _enemyModel.TakeDamage(damage);
+        }
+
+        // 속성과 시전 형태를 가진 피해. 속성에 따른 계산은 피해 파이프라인(4단계)에서 이 자리에 붙는다
+        public void TakeDamage(DamageInfo info)
+        {
+            _enemyModel.TakeDamage(info.Amount);
         }
 
         public void ApplyParalysis(float duration) => _enemyModel?.ApplyParalysis(duration);

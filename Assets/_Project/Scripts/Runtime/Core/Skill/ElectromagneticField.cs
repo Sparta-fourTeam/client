@@ -15,13 +15,13 @@ namespace Game.Core
         private readonly HashSet<IEnemyTarget> occupants = new();
         private readonly HashSet<IAreaSlowTarget> slowed = new();
         private bool released;
-        private int sourceSkill;   // 이 전자기장을 만든 스킬 (피해 집계용)
+        private Game.Core.Combat.DamageSource sourceSkill;   // 이 전자기장을 만든 스킬 (피해 집계와 속성 전달용)
         private GameObject visual;
 
         public void Init(IObjectPool<ElectromagneticField> pool, IEnemyTargetProvider provider, Vector2 position,
             float radius, float damage, float duration, float slowRatio)
         {
-            sourceSkill = Game.Core.Combat.DamageAttribution.Current;
+            sourceSkill = Game.Core.Combat.DamageAttribution.CurrentSource;
             ClearSlows();
             this.pool = pool; this.provider = provider;
             this.radius = radius; this.damage = damage; this.slowRatio = slowRatio;
@@ -63,7 +63,7 @@ namespace Game.Core
                 foreach (var target in occupants)
                 {
                     if (target.IsDead) { continue; }
-                    target.TakeDamage(Mathf.Max(1, (int)damage));
+                    target.TakeDamage(Game.Core.Combat.DamageInfo.FromCurrent(Mathf.Max(1, (int)damage)));
                 }
             }
             if (remaining <= 0)

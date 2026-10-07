@@ -23,7 +23,7 @@ namespace Game.Core
                     continue;
                 }
 
-                target.TakeDamage(Mathf.Max(1, (int)damage));
+                target.TakeDamage(Game.Core.Combat.DamageInfo.FromCurrent(Mathf.Max(1, (int)damage)));
                 onHit?.Invoke(target);
             }
             return hit.Count;

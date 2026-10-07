@@ -29,7 +29,7 @@ namespace Game.Core
         private System.Func<float> randomValue;
         private AttackReactions reactions;
         private bool released;
-        private int sourceSkill;   // 이 투사체를 만든 스킬 (피해 집계용)
+        private Game.Core.Combat.DamageSource sourceSkill;   // 이 투사체를 만든 스킬 (피해 집계와 속성 전달용)
         private IEnemyTarget ignoredTarget;
         private IEnemyTargetProvider targetProvider;
         private readonly ProjectileHitLedger hitLedger = new();
@@ -40,7 +40,7 @@ namespace Game.Core
 
         public void Init(IObjectPool<Projectile> pool, ProjectileSpawnSettings settings)
         {
-            sourceSkill = Game.Core.Combat.DamageAttribution.Current;
+            sourceSkill = Game.Core.Combat.DamageAttribution.CurrentSource;
             hitRadius = Mathf.Max(0, settings.CollisionRadius);
             ignoredTarget = settings.IgnoredTarget;
             this.pool = pool;
@@ -119,6 +119,7 @@ namespace Game.Core
                 var context = new AttackContext(hitPosition, direction, candidate);
                 reactions.Raise(AttackEvent.Hit, context);
                 if (candidate.IsDead) { reactions.Raise(AttackEvent.Kill, context); }
+                if (candidate.BlocksPierce) { hitLedger.Exhaust(); }
                 if (hitLedger.Exhausted)
                 {
                     Release();

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Game.Core.Combat;
 using Game.Core.Defense;
 using Game.Core.Messages;
 using MessagePipe;
@@ -78,6 +79,10 @@ namespace Game.Core
 
         private readonly IReadOnlyList<IPassive> _passives;
         private readonly bool _isSummoned;
+        private readonly DamageProfile _profile;
+
+        /// <summary>투사체가 이 적에 맞으면 관통하지 못하고 멈춘다 (투사체 차단)</summary>
+        public bool BlocksPierce => _profile.BlocksProjectile;
 
         public void RequestSpawn(int monsterId, Vector2 offset) => SpawnRequested?.Invoke(monsterId, offset);
 
@@ -103,7 +108,8 @@ namespace Game.Core
             IPublisher<EnemyDied> diedPublisher,
             IReadOnlyList<IPassive> passives = null,
             bool isSummoned = false,
-            StatusImmunity immunities = StatusImmunity.None)
+            StatusImmunity immunities = StatusImmunity.None,
+            DamageProfile damageProfile = null)
         {
             if (maxHp <= 0)
             {
@@ -112,6 +118,7 @@ namespace Game.Core
 
             _passives = passives;
             _isSummoned = isSummoned;
+            _profile = damageProfile ?? DamageProfile.None;
             _status = new EnemyStatus(maxHp, immunities, () => IsDead, TakeDamage);
 
             Id = id;
@@ -161,9 +168,19 @@ namespace Game.Core
             }
         }
 
-        public void TakeDamage(int amount)
+        // 스킬 밖의 피해(상태이상 지속 피해, 샌드박스 정리 등)는 속성 계산을 받지 않는다
+        public void TakeDamage(int amount) => TakeDamage(new DamageInfo(amount));
+
+        // 피해 파이프라인: 속성·시전 형태 저항(DamageProfile) → 취약 배율 → HP 차감
+        public void TakeDamage(DamageInfo info)
         {
-            if (IsDead || amount <= 0)
+            if (IsDead || info.Amount <= 0)
+            {
+                return;
+            }
+
+            int amount = _profile.Apply(info);
+            if (amount <= 0)
             {
                 return;
             }

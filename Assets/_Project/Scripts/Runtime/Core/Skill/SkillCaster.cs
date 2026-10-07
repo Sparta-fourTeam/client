@@ -24,13 +24,13 @@ namespace Game.Core
 
         protected override void OnTickExtra(float deltaTime)
         {
-            using var scope = Game.Core.Combat.DamageAttribution.BeginOutermost(Data.id);
+            using var scope = Game.Core.Combat.DamageAttribution.BeginOutermost(Data.ToDamageSource());
             Strategy.Tick(Config, environment, deltaTime);
         }
 
         protected override void OnFire()
         {
-            using var scope = Game.Core.Combat.DamageAttribution.BeginOutermost(Data.id);
+            using var scope = Game.Core.Combat.DamageAttribution.BeginOutermost(Data.ToDamageSource());
             Strategy.Fire(Config, environment);
         }
 
@@ -41,14 +41,14 @@ namespace Game.Core
         /// <param name="direction">부모가 날아온 방향. 조준할 다른 적이 없을 때 이 방향 기준 부채꼴로 쏜다</param>
         public void FireAt(Vector3 position, System.Func<SkillConfig, SkillConfig> resolve, IEnemyTarget exclude = null, Vector3 direction = default)
         {
-            using var scope = Game.Core.Combat.DamageAttribution.BeginOutermost(Data.id);
+            using var scope = Game.Core.Combat.DamageAttribution.BeginOutermost(Data.ToDamageSource());
             Strategy.Fire(resolve(Config), environment.At(position, exclude, direction));
         }
 
         /// <param name="damageScale">이번 시전의 피해 배율. 1이면 현재 설정 그대로다</param>
         public void FireAt(Vector3 position, float damageScale = 1)
         {
-            using var scope = Game.Core.Combat.DamageAttribution.BeginOutermost(Data.id);
+            using var scope = Game.Core.Combat.DamageAttribution.BeginOutermost(Data.ToDamageSource());
             Strategy.Fire(Mathf.Approximately(damageScale, 1) ? Config : Config.WithDamageScale(damageScale), environment.At(position));
         }
     }

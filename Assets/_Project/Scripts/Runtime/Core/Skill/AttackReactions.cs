@@ -97,8 +97,16 @@ namespace Game.Core
     public sealed class DamageReaction : IAttackReaction
     {
         private readonly int damage;
-        public DamageReaction(float damage, bool minimumOne = false) => this.damage = minimumOne ? Mathf.Max(1, (int)damage) : (int)damage;
-        public void Execute(AttackContext context) => context.Target?.TakeDamage(damage);
+        private readonly bool isImpact;
+
+        /// <param name="isImpact">공격이 대상에 닿아 주는 직접 피해면 true. 추가 번개 같은 부가 반응의 피해는 false</param>
+        public DamageReaction(float damage, bool minimumOne = false, bool isImpact = false)
+        {
+            this.damage = minimumOne ? Mathf.Max(1, (int)damage) : (int)damage;
+            this.isImpact = isImpact;
+        }
+
+        public void Execute(AttackContext context) => context.Target?.TakeDamage(Game.Core.Combat.DamageInfo.FromCurrent(damage, isImpact));
     }
 
     public sealed class StatusReaction<TTarget> : IAttackReaction where TTarget : class
