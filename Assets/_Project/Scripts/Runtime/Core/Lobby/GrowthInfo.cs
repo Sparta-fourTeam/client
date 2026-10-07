@@ -34,10 +34,13 @@ namespace Game.Core
         }
     }
 
-    /// <summary>스킬 하나의 표시용 정보 (스킬 화면 칸, 스킬 강화 팝업)</summary>
+    /// <summary>스킬 하나의 표시용 정보 (스킬 화면 칸, 스킬 강화 팝업). 영구 강화가 정의된 스킬은 레벨·비용이 Upgrades 테이블과 PlayerProfile에서 온다</summary>
     public sealed class SkillInfo
     {
         public string Id;
+
+        /// <summary>강화 API에 넘기는 업그레이드 ID (스킬의 progressionId, 예: shuriken). null이면 아직 강화 데이터가 없는 스킬이다</summary>
+        public string UpgradeId;
         public string Name;
         public string Description;
         public int Level;
@@ -50,9 +53,10 @@ namespace Game.Core
         /// <summary>현재 능력치와 다음 레벨 증가량</summary>
         public IReadOnlyList<StatLine> Stats;
 
-        /// <summary>다음 레벨로 강화하는 비용 (엽전, 인법서)</summary>
+        /// <summary>다음 레벨로 강화하는 비용: 코인과 재료(스킬 마법북 아이템 ID, 수량). 최대 레벨이면 쓰지 않는다</summary>
         public int CoinCost;
-        public int BookCost;
+        public string MaterialItemId;
+        public int MaterialCost;
 
         /// <summary>레벨별 보상. 달성 여부는 LevelReward.Level <= Level로 판단한다</summary>
         public IReadOnlyList<LevelReward> LevelRewards;
