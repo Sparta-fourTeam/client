@@ -44,11 +44,11 @@ Enemy (MonoBehaviour)            위치, 이동 적용, 밀치기 적용, 연출
 
 모든 피해(점화와 동상의 틱 피해 포함)는 `DamageInfo`(양, 속성, 시전 형태, 충격 여부)로 아래 순서를 지난다.
 
-1. 패시브 `OnBeforeDamage`: 무적, 회피, 방어막 (피해를 0으로 만들거나 줄인다)
+1. 패시브 `OnBeforeDamage`: 무적, 회피, 방어막 (피해를 0으로 만들거나 줄인다). 목록 순서대로 이어서 줄이고, 앞에서 막히면 뒤는 부르지 않는다
 2. `DamageProfile`: 속성 저항, 시전 형태 감쇠, 투사체 충격 면역
 3. `EnemyStatus`: 취약 배율
 4. HP 차감
-5. 패시브 `OnDamaged`: 회복, 이속 증가
+5. 패시브 `OnDamaged`: 회복, 이속 증가 (살아남았을 때만. 막힌 피해와 죽은 피해는 부르지 않는다)
 6. 사망이면 패시브 `OnDied`
 
 기존 `TakeDamage(int)`는 무속성 오버로드로 남겨 호출부와 테스트를 보존한다.
@@ -62,16 +62,23 @@ Enemy (MonoBehaviour)            위치, 이동 적용, 밀치기 적용, 연출
 
 ### 상태이상 (`EnemyStatus`)
 - 있는 것: 빙결, 마비, 기절, 감속, 범위 감속, 취약, 점화, 동상. 기절 면역은 구현됨.
-- 면역 종류는 `Stun`, `Burn`, `Paralysis`, `Freeze`다. `Passives`의 `Immunity`의 `Statuses`에 이름으로 적는다(대소문자 구분 없음, 숫자는 거부). `EnemyStatus`의 `Apply*` 입구에서 막는다.
+- 면역 종류는 `Stun`, `Burn`, `Paralysis`, `Freeze`, `Slow`, `Frostbite`, `Vulnerability`이고 `AllDebuffs`는 이 전부다. `Passives`의 `Immunity`의 `Statuses`에 이름으로 적는다(대소문자 구분 없음, 숫자는 거부). `EnemyStatus`의 `Apply*` 입구에서 막는다.
 - 효과의 크기는 `Passives`의 `Modifier`로 바꾼다. `Target`은 `KnockbackDistance`(밀치기 거리)와 `BurnDuration`(점화 지속시간), `Multiplier`는 받는 효과에 곱하는 배수다(0.5면 절반, 0이면 무효, 4면 4배). 같은 대상이 여러 개면 곱한다. 예: `{"Kind": "Modifier", "Target": "BurnDuration", "Multiplier": 4}`. 밀치기 저항에 별도의 면역 단계는 없고 `Multiplier` 0이 면역이다. `Modifier`는 패시브 객체가 아니라 `EffectModifiers` 값으로 모델에 들어간다.
-- **동적 면역**: 방어막 보유 중, 체력 조건 발동 중, 확률 면역처럼 조건부이거나 일시적인 면역을 지원한다. 정적 플래그(`StatusImmunity`, 데이터에서 생성)에 더해 출처별로 등록/해제하는 면역 목록을 둔다(`areaSlows`와 같은 방식). 확률 면역은 `OnStatusApply` 훅에서 판정한다.
+- **동적 면역**(구현됨): 방어막 보유 중, 체력 조건 발동 중처럼 조건부이거나 일시적인 면역은 `EnemyStatus.GrantImmunity(source, flags, duration)`로 출처별로 걸었다 푼다(`duration`이 0이면 직접 풀 때까지, 아니면 시간이 지나면 자동으로 풀린다). 처음부터 있는 면역(`Immunity` 패시브)과 합쳐서 본다. 확률 면역(카라카사)은 `OnStatusApply` 훅 대신 회피가 성공할 때 0.1초짜리 `AllDebuffs` 면역을 거는 방식으로 풀어서 그 훅은 만들지 않았다.
+- 이동 속도 배율도 출처별이다(`AddSpeedBoost(source, multiplier, duration)`). 감속(`MovementMultiplier`)과 따로 곱해서 `MoveSpeed`가 된다.
 
 ### 패시브 (`IPassive`)
-- 훅: `OnTick`, `OnBeforeDamage`, `OnDamaged`, `OnDied`, `OnStatusApply`. 구현된 것은 `OnTick`, `OnDied`.
-- 구현됨: `Spawn`(`Trigger` = `OnDeath` 분열, `Interval` 주기 소환).
-- 필요한 것: 방어막(N회 방어, 확률형 임시 방어막), 회피, 체력 조건 회복과 무적, 피격 시 회복/재생, 이속 증가(일정 시간, 피격 시, 체력 조건).
-- **체력 조건 패시브와 방어막은 1회성이다.** 발동했는지 여부 플래그 하나만 가진다. 재발동과 재생성은 없다.
-- 일부 패시브는 피해의 속성을 보고 반응한다(예: 특정 속성에 피격 시 재생). `OnDamaged`가 `DamageInfo`를 받는다.
+- 훅: `OnSpawn`(생성 직후 한 번), `OnTick`, `OnBeforeDamage`, `OnDamaged`, `OnDied`. 피해 훅은 `DamageInfo`를 받는다. 상태이상 지속 피해(스킬 밖)도 `OnBeforeDamage`로 오니 스킬 피해만 보려면 `info.IsFromSkill`로 거른다. 한 번의 공격에서 "적중"은 `IsImpact`(직접 피해) 하나다. 폭발이나 장판 같은 부가 피해는 적중으로 세지 않는다.
+- `Spawn`(`Trigger` = `OnDeath` 분열, `Interval` 주기 소환)
+- `Shield`: `Trigger`(`Start` 처음부터, `OnHit` 맞은 뒤 `Chance` 확률로), `Hits`(막는 적중 횟수), `Duration`(0이면 횟수를 다 막을 때까지, 아니면 이 시간 뒤에도 사라짐), `Statuses`(켜져 있는 동안 걸리지 않는 상태이상, 선택). 켜져 있는 동안 스킬 피해는 부가 피해까지 막고 적중만 횟수에 센다. 상태이상 지속 피해는 막지 않는다. 한 번만 켜진다.
+- `Evade`: `Chance`. 적중(`IsImpact`)을 확률로 피한다. 피하면 같은 공격의 부가 피해와 상태이상도 0.1초간 막는다. 지속 피해는 피하지 않는다.
+- `LowHp`: `HpRatio`(이하가 되면 발동), `Duration`(효과가 켜져 있는 시간), 효과 `HealRatio`(그 시간 동안 최대 체력의 비율만큼 나눠서 회복), `Invulnerable`(지속 피해까지 모두 막음), `SpeedMultiplier`, `Statuses`. 효과가 하나도 없으면 거부한다. 한 번만 발동한다. 기절·빙결·마비 중에는 시간이 흐르지 않는다.
+- `HealOnHit`: 적중에 맞을 때마다 `Chance` 확률로 `HealRatio`(최대 체력의 비율, 최소 1)만큼 회복하고 `SpeedMultiplier`배 이속이 `Duration`초 동안 된다(다시 맞으면 갱신). `Element`를 정하면 그 속성에만 반응한다.
+- `SpeedBoost`: `Interval`마다 `Duration`초 동안 `SpeedMultiplier`배 이속(주기 가속).
+- 확률을 쓰는 패시브(`Chance`가 1보다 작음)는 `IRandomProvider`가 필요하다. `PassiveBuilder.BuildPassives(monster, random)`가 받고, `EnemyFactory`가 주입받은 랜덤을 넘긴다.
+- **방어막과 체력 조건 패시브는 1회성이다.** 한 번 켜지면 다시 켜지지 않는다.
+- 회복은 `EnemyModel.Heal`로 한다. `EnemyHpChanged`를 발행하지만 `Enemy`는 체력이 줄 때만 피격 플래시와 피격 모션을 낸다.
+- 방어막이 켜져 있는 동안의 밀치기 저항 상승(누리카베)은 아직 없다. 밀치기 배수(`Modifier`)는 처음부터 고정이라 켜짐/꺼짐에 따라 바꿀 수 없다.
 - 데이터는 `Monsters.json`의 `Passives` 목록(`Kind` + 값)이고, `PassiveBuilder`가 `Kind`로 객체를 만든다. 상태를 가진 패시브라 호출마다 새 객체를 만든다.
 
 ### 속성과 시전 형태 (`DamageProfile`)
@@ -109,7 +116,7 @@ Enemy (MonoBehaviour)            위치, 이동 적용, 밀치기 적용, 연출
 | 3 | 스킬 계약: `SkillData.element`, `DamageSource`, `DamageInfo`, `TakeDamage(DamageInfo)` 오버로드, 충격 구분, 관통 차단 확인점 | 완료. 스킬 시스템을 건드리는 공유 계약이라 별도 작은 PR로 올린다 |
 | 4 | 피해 파이프라인과 `DamageProfile` | 완료. 패시브 훅(`OnBeforeDamage`, `OnDamaged`)은 5단계에서 이 파이프라인에 붙는다 |
 | 5a | 상태이상 확장(면역 종류, 밀치기 저항, 점화 배율), 연속 공격, 연쇄 소환 금지 검증 | 완료(#219). 피해 훅이 필요 없어 3·4단계와 독립 |
-| 5b | 패시브 훅(`OnBeforeDamage`, `OnDamaged`, `OnStatusApply`)과 방어막, 회피, 회복, 이속 증가, 동적 면역 | 4 이후(#220) |
+| 5b | 패시브 훅(`OnBeforeDamage`, `OnDamaged`, `OnSpawn`)과 방어막, 회피, 체력 조건 발동, 피격 시 회복·가속, 주기 가속, 동적 면역 | 완료(#220). 몬스터 데이터에는 아직 쓰지 않는다(6단계) |
 | 6 | 몬스터 21종 데이터, 프리팹, `WaveMonsterVisualLinker`, 표시 테이블 | 5 이후 |
 | 7 | 문서 갱신, 시트 컬럼 반영, 서버 계약 | 서버 계약: 알 수 없는 `Kind`의 처리 정책, 필드 이름 규칙(`Monsters`는 PascalCase, `Skills`는 camelCase) |
 
