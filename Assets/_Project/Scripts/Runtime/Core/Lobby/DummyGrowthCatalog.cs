@@ -31,6 +31,7 @@ namespace Game.Core
 
         private readonly PlayerProfile _profile;
         private readonly GameDataStore _data;
+        private readonly Dictionary<string, SkillData> _skillData = new(StringComparer.Ordinal); // progressionId → 스킬 정의 (능력치 계산용)
 
         public CharacterInfo Character { get; } = new CharacterInfo
         {
@@ -52,6 +53,12 @@ namespace Game.Core
         {
             _profile = profile;
             _data = data;
+            // 스킬 정의는 읽을 때마다 파싱·검증하므로 한 번만 읽어 둔다. 같은 progressionId를 여러 스킬이 쓰면 앞의 것을 쓴다
+            foreach (var skill in data.LoadSkills())
+            {
+                if (!string.IsNullOrEmpty(skill.progressionId)) { _skillData.TryAdd(skill.progressionId, skill); }
+            }
+
             Skills = CreateSkills();
             RefreshSkills();
             _profile.Changed += OnProfileChanged;
@@ -178,10 +185,27 @@ namespace Game.Core
             skill.CoinCost = isMax ? 0 : def.CostAt(next);
             skill.MaterialItemId = def.MaterialItemId;
             skill.MaterialCost = isMax || !def.UsesMaterial ? 0 : def.MaterialAt(next);
-            skill.Stats = CreateStats(display, level);
+            skill.Stats = _skillData.TryGetValue(def.UpgradeId, out var data)
+                ? CreateUpgradeStats(def, data, level, isMax)
+                : CreateStats(display, level);
         }
 
-        // 능력치 증가 수치는 아직 데이터가 없어 임시 공식을 쓴다. TODO(data): #142 수치 확정·#144 전투 반영 때 Upgrades의 Effects로 바꾼다
+        // 강화 데이터가 있는 스킬의 능력치: 전투와 같은 계산(Skills.json 기본 스탯 + 영구 강화 효과)으로 현재 값과 다음 레벨 증가량을 만든다.
+        // 증가량이 없는 줄(예: 피해만 오르는 강화의 쿨타임)은 증가 표시를 하지 않는다
+        private static StatLine[] CreateUpgradeStats(UpgradeDefinition def, SkillData data, int level, bool isMax)
+        {
+            var current = PermanentSkillEffect.Apply(data, PermanentSkillEffect.At(def, level)).Stats.Cast;
+            var next = isMax ? current : PermanentSkillEffect.Apply(data, PermanentSkillEffect.At(def, level + 1)).Stats.Cast;
+            float damageUp = next.Damage - current.Damage;
+            float cooldownDown = next.Cooldown - current.Cooldown;
+            return new[]
+            {
+                new StatLine("공격력", $"{current.Damage:0.#}", increase: damageUp > 0.001f ? $"+{damageUp:0.#}" : null),
+                new StatLine("쿨타임", $"{current.Cooldown:0.##}초", increase: cooldownDown < -0.001f ? $"{cooldownDown:0.##}초" : null),
+            };
+        }
+
+        // 강화 데이터가 없는 스킬은 화면 확인용 임시 공식을 쓴다. TODO(data): 그 스킬의 강화 행이 생기면 CreateUpgradeStats로 옮겨 간다
         private static StatLine[] CreateStats((string id, string name, string desc, int level, int attack, float cooldown) n, int level)
         {
             int attack = Attack(n.attack, level);

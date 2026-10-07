@@ -20,9 +20,10 @@ namespace Game.Core
         private IBufferedPublisher<SkillChanged> skillChanged;
         private ChildSkillCaster childCaster;
         private ISkillUnlock skillUnlock;
+        private IPermanentSkillEffects permanentEffects;
 
         [Inject]
-        public void Construct(IEnemyTargetProvider targetProvider, IBufferedPublisher<SkillChanged> skillChanged, ISkillDataProvider dataProvider, IWeaponProgression progression = null, Game.Core.Defense.Wall wall = null, IStartingSkills startingSkills = null, ISkillUnlock skillUnlock = null)
+        public void Construct(IEnemyTargetProvider targetProvider, IBufferedPublisher<SkillChanged> skillChanged, ISkillDataProvider dataProvider, IWeaponProgression progression = null, Game.Core.Defense.Wall wall = null, IStartingSkills startingSkills = null, ISkillUnlock skillUnlock = null, IPermanentSkillEffects permanentEffects = null)
         {
             this.startingSkills = startingSkills ?? new DefaultStartingSkills();
             this.targetProvider = targetProvider;
@@ -31,7 +32,12 @@ namespace Game.Core
             this.progression = progression;
             this.wall = wall;
             this.skillUnlock = skillUnlock;
+            this.permanentEffects = permanentEffects;
         }
+
+        // 스킬의 기본 설정에 영구 강화 효과를 적용한다. 판 안의 카드 강화는 이 설정 위에 쌓인다 (영구 강화가 없으면 기본 설정 그대로)
+        private SkillConfig CreateConfig(SkillData data) =>
+            PermanentSkillEffect.Apply(data, permanentEffects?.For(data.progressionId));
 
         private void Start()
         {
@@ -54,7 +60,7 @@ namespace Game.Core
                 Debug.LogWarning($"[SkillController] 자식 스킬 skillId={skillId}의 데이터 또는 프리팹이 없어 시전하지 못합니다 (SkillAssetTable의 assetKey 확인).");
                 return null;
             }
-            var child = SkillFactory.Create(data, prefab, transform, targetProvider, wall);
+            var child = SkillFactory.Create(data, prefab, transform, targetProvider, wall, CreateConfig(data));
             child.UseChildCaster(childCaster);
             return child;
         }
@@ -84,7 +90,8 @@ namespace Game.Core
                 return false;
             }
 
-            var weapon = SkillFactory.Create(data, prefab, transform, targetProvider, wall);
+            var weapon = SkillFactory.Create(data, prefab, transform, targetProvider, wall, CreateConfig(data));
+            Debug.Log($"[영구강화] {data.progressionId} Lv.{progression?.GetLevel(data.progressionId) ?? 0} → 피해 {weapon.Config.Stats.Cast.Damage} (기본 {data.baseStats.cast.baseDamage})");
             weapon.UseChildCaster(childCaster);
             skills.Add(weapon);
             PublishSkills();
