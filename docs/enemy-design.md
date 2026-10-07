@@ -29,12 +29,15 @@ Enemy (MonoBehaviour)            위치, 이동 적용, 밀치기 적용, 연출
 
 ### 위치와 이동
 
-위치의 단일 출처는 `Enemy`(Transform)다. 물리, 충돌, 애니메이션 이동이 들어와도 구조가 바뀌지 않게 하기 위해서다.
+위치의 단일 출처는 `Enemy`(Transform)다. 물리, 충돌, 애니메이션 이동이 들어와도 구조가 바뀌지 않게 하기 위해서다. 구현됐다.
 
-- 모델은 "얼마나 빨리, 움직일 수 있는가"(`CurrentSpeed`, `CanMove`)만 정하고 `Enemy`가 그대로 적용한다.
-- 밀치기: 모델이 저항을 반영한 거리를 계산해 이벤트로 알리고, 적용은 `Enemy`가 한다.
-- 소환 요청(`EnemySpawnRequest`)은 절대 위치가 아니라 상대 오프셋을 담는다. `Enemy`가 자기 위치를 더해 `EnemySpawner`에 넘긴다.
-- 스킬이 읽는 `IEnemyTarget.Position`은 `Enemy`가 구현한다. 스킬 코드는 바뀌지 않는다.
+- 모델은 "얼마나 빨리 움직이는가"(`MoveSpeed`, 감속 반영이고 죽었거나 빙결·마비·기절이면 0)만 정하고 `Enemy`가 그대로 적용한다(`Enemy.Move`). 사거리 판정과 공격은 위치를 인자로 받는다(`EnemyModel.IsInAttackRange(position, wall)`, `Attack(dt, position, wall, projectiles)`).
+- 밀치기: 모델이 거리를 정하고(`ResolveKnockback`) 적용은 `Enemy`가 한다. 저항 비율은 5단계에서 이 자리에 넣는다.
+- 소환 요청: 모델은 부모 기준 오프셋(`RequestSpawn(monsterId, offset)`)을 알리고, `Enemy`가 자기 위치를 더한 `EnemySpawnRequest`를 `EnemySpawner`에 넘긴다.
+- 점화 사망 폭발: 모델이 `DeathExplosionRequested`로 알리면 `Enemy`가 자기 위치로 콜백을 부른다.
+- `Enemy`가 `IEnemyTarget`과 상태이상 대상 인터페이스(`IFreezableTarget` 등)를 구현해 모델에 위임한다. `EnemySpawner`, `IEnemyFactory`, 스킬 대상은 모두 `Enemy`를 직접 쓴다(`EnemyModel`을 직접 다루지 않는다).
+- `IEnemyTarget.IsDead`는 기본 구현(항상 false)을 둔 인터페이스 멤버다. 스킬 코드는 구체 타입을 검사하지 않고 `target.IsDead`로 죽은 대상을 건너뛴다.
+- 오브젝트가 파괴된 뒤에도 남은 참조(스킬 효과 등)가 위치를 읽을 수 있게 `Enemy.Position`은 마지막 위치를 돌려준다.
 - [architecture.md](architecture.md)의 규칙과 맞다: 로직은 뷰를 모르고, 뷰는 로직을 직접 호출하며, 위치처럼 매 프레임 바뀌는 값은 뷰가 가진다.
 
 ## 3. 피해 파이프라인
@@ -97,9 +100,9 @@ Enemy (MonoBehaviour)            위치, 이동 적용, 밀치기 적용, 연출
 | 단계 | 내용 | 비고 |
 |---|---|---|
 | 1 | 이 문서 확정 | |
-| 2a | `EnemyStatus` 분리 | 동작 불변. `EnemyModel`이 기존 `I*Target`을 위임 구현 |
-| 2b | 위치와 이동을 `Enemy`로 이전 | 동작 불변. 테스트 헬퍼 정리 |
-| 2c | `Enemy`가 모델을 직접 소유, 이벤트 정리 | 동작 불변 |
+| 2a | `EnemyStatus` 분리 | 완료. 동작 불변 |
+| 2b | 위치와 이동을 `Enemy`로 이전 | 완료. 테스트는 `TestEnemy.Create(model, position)`로 `Enemy`를 만든다 |
+| 2c | `Enemy`가 모델을 직접 소유, 이벤트 정리 | 완료(2b와 함께). `EnemySpawner`와 팩토리, 샌드박스, 스킬 대상이 `Enemy`를 쓴다 |
 | 3 | 스킬 계약: `SkillData.element`, `AttackContext`, `DamageInfo`, `TakeDamage(DamageInfo)` 오버로드, 충격 구분, 관통 차단 확인점 | 스킬 시스템을 건드리는 공유 계약이라 별도 작은 PR. 2와 병렬 가능 |
 | 4 | 피해 파이프라인과 `DamageProfile` | 2, 3 이후 |
 | 5 | 훅 확장과 패시브, 상태이상 확장(면역 종류, 밀치기 저항, 점화 배율), 연속 공격 | 4 이후 |
