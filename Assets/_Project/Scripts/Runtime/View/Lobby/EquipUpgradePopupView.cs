@@ -1,46 +1,63 @@
+using System;
+using Cysharp.Threading.Tasks;
 using Game.Core;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 using VContainer;
 
 namespace Game.View
 {
-    /// <summary>장비 강화 팝업. IGrowthCatalog의 장비 정보로 능력치·장식품 효과·비용을 채운다. 강화·장착 해제는 아직 미완성 안내</summary>
+    /// <summary>장비 강화 팝업. IGrowthCatalog의 장비 정보로 레벨·효과·비용을 채우고, 강화 버튼으로 IUpgradeApi를 부른다.
+    /// 코인이나 재료가 모자라면 비용이 빨갛게 보이고 버튼이 눌리지 않으며, 최대 레벨이면 비용 대신 "최대 레벨"을 보여준다.
+    /// 장비에는 장착·해제가 없고 강화만 있다</summary>
     public sealed class EquipUpgradePopupView : HudView
     {
         [SerializeField] private GameObject _panel;
         [SerializeField] private Button _closeButton;
         [SerializeField] private Button _upgradeButton;
-        [SerializeField] private Button _unequipAllButton;
-        [SerializeField] private TMP_Text _nameText, _levelText, _coinText, _bookText;
+        [SerializeField] private TMP_Text _nameText, _levelText, _coinText;
+        [FormerlySerializedAs("_bookText")]
+        [SerializeField] private TMP_Text _materialText;
+        [SerializeField] private TMP_Text _materialNameText;
+        [SerializeField] private GameObject _cost, _maxLevel;
         [SerializeField] private StatRowView[] _statRows;
         [SerializeField] private EquipEffectRowView[] _effectRows;
-        [SerializeField] private ComingSoonToastView _toast;
 
         private IGrowthCatalog _catalog;
         private PlayerProfile _profile;
+        private GameDataStore _data;
+        private IUpgradeApi _upgradeApi;
+        private int _slot;
+        private bool _busy;
 
         [Inject]
-        public void Construct(IGrowthCatalog catalog, PlayerProfile profile)
+        public void Construct(IGrowthCatalog catalog, PlayerProfile profile, GameDataStore data, IUpgradeApi upgradeApi)
         {
             _catalog = catalog;
             _profile = profile;
+            _data = data;
+            _upgradeApi = upgradeApi;
         }
 
         private void Awake()
         {
             _panel.SetActive(false);
             _closeButton.onClick.AddListener(() => _panel.SetActive(false));
-            // TODO(data): 장비 강화·장착 해제 API가 생기면 교체
-            _upgradeButton.onClick.AddListener(_toast.Show);
-            _unequipAllButton.onClick.AddListener(_toast.Show);
+            _upgradeButton.onClick.AddListener(() => UpgradeAsync().Forget(Debug.LogException));
         }
 
         public void Open(int slot)
         {
+            _slot = slot;
             _panel.SetActive(true);
-            EquipInfo info = _catalog.Equips[slot];
+            Refresh();
+        }
+
+        private void Refresh()
+        {
+            EquipInfo info = _catalog.Equips[_slot];
 
             _nameText.text = info.Name;
             _levelText.text = $"Lv.{info.Level}";
@@ -68,8 +85,53 @@ namespace Game.View
                 }
             }
 
-            _coinText.text = CostFormat.HaveNeed(_profile.Gold, info.CoinCost);
-            _bookText.text = CostFormat.HaveNeed(_catalog.EquipBooks, info.BookCost);
+            // 최대 레벨에는 다음 비용이 없으므로 비용 칸과 강화 버튼을 숨기고 "최대 레벨"을 띄운다
+            bool isMax = info.IsMaxLevel;
+            _cost.SetActive(!isMax);
+            _maxLevel.SetActive(isMax);
+            _upgradeButton.gameObject.SetActive(!isMax);
+            if (isMax)
+            {
+                return;
+            }
+
+            int coin = _profile.Gold;
+            int material = _profile.ItemQuantity(info.MaterialItemId);
+            _coinText.text = CostFormat.HaveNeed(coin, info.CoinCost);
+            _materialText.text = CostFormat.HaveNeed(material, info.MaterialCost);
+            _materialNameText.text = _data.Items.GetOrThrow(info.MaterialItemId).Name;
+            _upgradeButton.interactable = !_busy && info.IsUnlocked && coin >= info.CoinCost && material >= info.MaterialCost;
+        }
+
+        private async UniTask UpgradeAsync()
+        {
+            if (_busy)
+            {
+                return;
+            }
+
+            // 연타로 두 번 요청하지 않게 응답이 올 때까지 막는다. 매 요청마다 새 키를 쓴다
+            _busy = true;
+            _upgradeButton.interactable = false;
+            string upgradeId = _catalog.Equips[_slot].UpgradeId;
+            try
+            {
+                var snapshot = await _upgradeApi.Purchase(upgradeId, Guid.NewGuid().ToString("N"));
+                _profile.Apply(snapshot);
+            }
+            catch (ApiException ex)
+            {
+                // 버튼이 막혀 있어 보통은 오지 않는다(다른 곳에서 재화가 바뀐 경우 등). 최신 상태로 다시 그린다
+                Debug.LogWarning($"장비 강화 거절: {ex.Code}");
+            }
+            finally
+            {
+                _busy = false;
+                if (_panel.activeSelf)
+                {
+                    Refresh();
+                }
+            }
         }
     }
 }

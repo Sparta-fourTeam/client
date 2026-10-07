@@ -16,12 +16,34 @@ namespace Game.View
         [SerializeField] private EquipUpgradePopupView _equipPopup;
 
         private IGrowthCatalog _catalog;
+        private PlayerProfile _profile;
 
         // TODO(data): 장비 강화·캐릭터 변경 후 다시 그리려면 관련 메시지(추가 예정) 구독
         [Inject]
-        public void Construct(IGrowthCatalog catalog)
+        public void Construct(IGrowthCatalog catalog, PlayerProfile profile)
         {
             _catalog = catalog;
+            _profile = profile;
+            _profile.Changed += OnProfileChanged;
+        }
+
+        protected override void OnDestroy()
+        {
+            if (_profile != null)
+            {
+                _profile.Changed -= OnProfileChanged;
+            }
+
+            base.OnDestroy();
+        }
+
+        // 화면이 열려 있는 동안 프로필이 바뀌면(장비 강화 등) 장비 칸의 레벨·잠금을 다시 그린다
+        private void OnProfileChanged(PlayerProfile _)
+        {
+            if (_panel.activeSelf)
+            {
+                Refresh();
+            }
         }
 
         private void Awake()

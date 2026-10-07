@@ -16,7 +16,7 @@ namespace Game.Tests
         {
             _data = new GameDataStore();
             _profile = new PlayerProfile(_data);
-            _catalog = new DummyGrowthCatalog(_profile);
+            _catalog = new DummyGrowthCatalog(_profile, _data);
         }
 
         // 레벨 level에 막 도달하는 누적 경험치
@@ -75,14 +75,55 @@ namespace Game.Tests
             Assert.IsFalse(_catalog.Skills.First(s => s.UnlockLevel == 4).IsUnlocked);
         }
 
-        [Test(Description = "Dispose한 뒤에는 프로필이 바뀌어도 카탈로그가 갱신되지 않는다")]
+        [Test(Description = "Dispose한 뒤에는 프로필이 바뀌어도 스킬 칸의 해금이 갱신되지 않는다")]
         public void Dispose_StopsFollowingProfile()
         {
+            var locked = _catalog.Skills.First(s => s.UnlockLevel == 4);
             _catalog.Dispose();
 
             _profile.Apply(new PlayerSnapshot { exp = ExpFor(5) });
 
-            Assert.IsFalse(_catalog.Equips[0].IsUnlocked);
+            Assert.IsFalse(locked.IsUnlocked);
+        }
+
+        [Test(Description = "장비 레벨과 비용은 Upgrades 테이블과 프로필에서 오고, 강화하면 다음 레벨 비용으로 바뀐다")]
+        public void Equips_ReflectUpgradeLevelAndCost()
+        {
+            var def = _data.Upgrades.GetOrThrow("equipment.hat");
+            _profile.Apply(new PlayerSnapshot { exp = ExpFor(5) });
+            Assert.AreEqual(0, _catalog.Equips[0].Level);
+            Assert.AreEqual(def.CostAt(1), _catalog.Equips[0].CoinCost);
+            Assert.AreEqual(def.MaterialAt(1), _catalog.Equips[0].MaterialCost);
+
+            _profile.Apply(new PlayerSnapshot { exp = ExpFor(5), upgrades = new() { new UpgradeRow { upgradeId = "equipment.hat", level = 2 } } });
+
+            Assert.AreEqual(2, _catalog.Equips[0].Level);
+            Assert.AreEqual(def.CostAt(3), _catalog.Equips[0].CoinCost);
+            Assert.AreEqual(def.MaterialAt(3), _catalog.Equips[0].MaterialCost);
+            Assert.AreEqual(def.MaterialItemId, _catalog.Equips[0].MaterialItemId);
+        }
+
+        [Test(Description = "최대 레벨의 장비는 다음 비용이 0이고 최대 레벨로 표시된다")]
+        public void Equips_AtMaxLevel_HaveNoNextCost()
+        {
+            var def = _data.Upgrades.GetOrThrow("equipment.hat");
+            _profile.Apply(new PlayerSnapshot { exp = ExpFor(5), upgrades = new() { new UpgradeRow { upgradeId = "equipment.hat", level = def.MaxLevel } } });
+
+            var hat = _catalog.Equips[0];
+
+            Assert.IsTrue(hat.IsMaxLevel);
+            Assert.AreEqual(0, hat.CoinCost);
+            Assert.AreEqual(0, hat.MaterialCost);
+        }
+
+        [Test(Description = "장비 효과는 현재 레벨의 효과량과 다음 레벨 증가량을 보여준다 (최대 레벨은 증가량 없음)")]
+        public void Equips_EffectTextShowsCurrentAndNext()
+        {
+            var effect = new UpgradeStatEffect { Kind = "skillDamagePercent", ValuePerLevel = 5 };
+
+            Assert.AreEqual("[기술력] 스킬 대미지 15% ▲ (+5%)", EquipEffectText.Format(effect, 3, false));
+            Assert.AreEqual("[기술력] 스킬 대미지 50% ▲", EquipEffectText.Format(effect, 10, true));
+            Assert.AreEqual("unknownKind 6 ▲ (+2)", EquipEffectText.Format(new UpgradeStatEffect { Kind = "unknownKind", ValuePerLevel = 2 }, 3, false));
         }
 
         [Test(Description = "장식품 효과는 팝업 줄 수(5)를 넘지 않는다")]
