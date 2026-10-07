@@ -64,7 +64,7 @@ namespace Game.View
             _timeText.text = $"플레이 시간\n{FormatTime(result.PlayTime)}";
             _bubbleText.text = result.Cleared ? ClearBubble : FailBubble;
             _rewardList.Show(RewardRows.Build(_itemIcons, _data, result.RewardGold, result.RewardExp, result.RewardItems));
-            _starsView.SetCount(result.ClearRating);
+            _starsView.Show(result.Cleared, result.ClearRating);
             _lobbyButton.interactable = true;
             _panel.SetActive(true);
         }
