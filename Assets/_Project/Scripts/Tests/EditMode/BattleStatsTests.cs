@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Game.Core;
 using Game.Core.Messages;
 using MessagePipe;
@@ -137,6 +138,40 @@ namespace Game.Tests
             _stats.RecordCard("weapon_2");
 
             CollectionAssert.AreEqual(new[] { "arrow_sharp", "weapon_2" }, _stats.BuildLog);
+        }
+
+        [Test(Description = "스킬별 피해량을 쌓고 피해량이 큰 순서(같으면 스킬 ID 순)로 돌려준다")]
+        public void SkillDamage_AccumulatesAndRanks()
+        {
+            using (Game.Core.Combat.DamageAttribution.Begin(2)) { Game.Core.Combat.DamageAttribution.Report(30); }
+            using (Game.Core.Combat.DamageAttribution.Begin(1)) { Game.Core.Combat.DamageAttribution.Report(10); }
+            using (Game.Core.Combat.DamageAttribution.Begin(2)) { Game.Core.Combat.DamageAttribution.Report(20); }
+            using (Game.Core.Combat.DamageAttribution.Begin(3)) { Game.Core.Combat.DamageAttribution.Report(10); }
+
+            var ranking = _stats.SkillDamageRanking();
+
+            CollectionAssert.AreEqual(new[] { 2, 1, 3 }, ranking.Select(r => r.SkillId).ToList());
+            CollectionAssert.AreEqual(new[] { 50, 10, 10 }, ranking.Select(r => r.Damage).ToList());
+        }
+
+        [Test(Description = "스테이지가 끝난 뒤의 피해는 집계하지 않는다")]
+        public void SkillDamage_IgnoredAfterStageEnded()
+        {
+            EndStage();
+
+            using (Game.Core.Combat.DamageAttribution.Begin(1)) { Game.Core.Combat.DamageAttribution.Report(10); }
+
+            Assert.IsEmpty(_stats.SkillDamageRanking());
+        }
+
+        [Test(Description = "Dispose하면 피해 알림 구독을 풀어서 이후 피해가 쌓이지 않는다")]
+        public void SkillDamage_StopsAfterDispose()
+        {
+            _stats.Dispose();
+
+            using (Game.Core.Combat.DamageAttribution.Begin(1)) { Game.Core.Combat.DamageAttribution.Report(10); }
+
+            Assert.IsEmpty(_stats.SkillDamageRanking());
         }
     }
 }

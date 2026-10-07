@@ -8,9 +8,12 @@ namespace Game.Core
     public class PlayerSnapshot
     {
         public int gold;
+        public int exp;
         public int energyStored;
         public string energyUpdatedAt;
         public List<StageProgressRow> stageProgress;
         public List<UpgradeRow> upgrades;
+        /// <summary>스킬별·장비별 마법북 소유량. itemId당 한 행이며, 없는 아이템의 소유량은 0이다.</summary>
+        public List<ItemAmount> items;
     }
 }

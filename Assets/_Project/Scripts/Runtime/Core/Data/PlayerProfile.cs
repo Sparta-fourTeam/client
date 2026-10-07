@@ -7,7 +7,7 @@ namespace Game.Core
     public sealed class PlayerProfile
     {
         private readonly GameDataStore _data;
-        private PlayerSnapshot _snapshot = new PlayerSnapshot { stageProgress = new(), upgrades = new() };
+        private PlayerSnapshot _snapshot = new PlayerSnapshot { stageProgress = new(), upgrades = new(), items = new() };
 
         public event Action<PlayerProfile> Changed;
 
@@ -17,6 +17,17 @@ namespace Game.Core
         }
 
         public int Gold => _snapshot.gold;
+        public int Exp => _snapshot.exp;
+        public int Level => _data.PlayerLevels.At(_snapshot.exp).level;
+        /// <summary>현재 레벨 안에서 쌓은 경험치</summary>
+        public int ExpIntoLevel => _data.PlayerLevels.At(_snapshot.exp).expIntoLevel;
+        /// <summary>다음 레벨까지 필요한 경험치 (만렙이면 0)</summary>
+        public int ExpRequiredForNext => _data.PlayerLevels.RequiredToNext(Level);
+        public bool IsMaxLevel => ExpRequiredForNext == 0;
+
+        /// <summary>현재 레벨 안에서의 진행률 0~1. 만렙이면 1</summary>
+        public float LevelProgress => IsMaxLevel ? 1f : (float)ExpIntoLevel / ExpRequiredForNext;
+        public int ItemQuantity(string itemId) => _snapshot.items.Find(item => item.itemId == itemId)?.quantity ?? 0;
         public int EnergyStored => _snapshot.energyStored;
 
         /// <summary>energyUpdatedAt을 UTC로 해석한다. Apply 전(값 없음)에는 DateTime.UtcNow를 반환한다</summary>
@@ -33,6 +44,7 @@ namespace Game.Core
         {
             snap.stageProgress ??= new();
             snap.upgrades ??= new();
+            snap.items ??= new();
             _snapshot = snap;
             Changed?.Invoke(this);
         }

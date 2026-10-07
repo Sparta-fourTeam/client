@@ -44,12 +44,14 @@ namespace Game.Core
         private int remaining;
         private float sinceHop;
         private bool started, released;
+        private int sourceSkill;   // 이 번개를 만든 스킬 (피해 집계용)
 
         /// <param name="origin">번개가 나가는 위치(시전자)</param>
         /// <param name="first">첫 대상</param>
         public void Init(IObjectPool<ChainBolt> pool, IEnemyTargetProvider provider, Vector2 origin, IEnemyTarget first,
             ChainSettings settings, AttackReactions hitReactions, AttackReactions reactions, Func<float> randomValue = null)
         {
+            sourceSkill = Game.Core.Combat.DamageAttribution.Current;
             this.pool = pool;
             this.provider = provider;
             this.settings = settings;
@@ -74,6 +76,7 @@ namespace Game.Core
 
         internal void Tick(float deltaTime)
         {
+            using var scope = Game.Core.Combat.DamageAttribution.Begin(sourceSkill);
             if (released || pool == null) { return; }
             if (deltaTime < 0 || float.IsNaN(deltaTime) || float.IsInfinity(deltaTime)) { throw new ArgumentOutOfRangeException(nameof(deltaTime)); }
             if (!started)

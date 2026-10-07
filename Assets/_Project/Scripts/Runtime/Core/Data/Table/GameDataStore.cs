@@ -9,14 +9,18 @@ namespace Game.Core
     /// <summary>Resources/MockData의 테이블 JSON을 읽어 도메인 모델 테이블로 만든다</summary>
     public sealed class GameDataStore
     {
-        private static readonly string[] TableNames = { "Monsters", "Stages", "Upgrades", "Energy", "GeneralCards", "Skills" };
+        private static readonly string[] TableNames = { "Monsters", "Stages", "Upgrades", "Energy", "GeneralCards", "Skills", "Items", "StageRewards", "PlayerLevels" };
         private readonly Dictionary<string, string> _rawJson;
+        private readonly Dictionary<string, int> _skillUnlockLevels;
 
         public Dictionary<string, int> Revisions { get; }
         public Table<int, MonsterDefinition> Monsters { get; }
         public Table<int, StageDefinition> Stages { get; }
         public Table<string, UpgradeDefinition> Upgrades { get; }
+        public Table<string, ItemDefinition> Items { get; }
+        public Table<int, StageRewardBalance> StageRewards { get; }
         public EnergyConfig Energy { get; }
+        public PlayerLevelTable PlayerLevels { get; }
 
         /// <summary>스킬이 아닌 카드(방벽 회복 등). 스킬 카드는 Skills의 upgrades에 있다</summary>
         public IReadOnlyList<GeneralCardDefinition> GeneralCards { get; }
@@ -52,10 +56,45 @@ namespace Game.Core
                 stage.Validate();
             }
 
+            foreach (var stage in stages.Values)
+            {
+                foreach (var monsterId in stage.MonsterIds)
+                {
+                    if (!monsters.ContainsKey(monsterId)) { throw new InvalidOperationException($"Stages {stage.Id}: MonsterIds의 몬스터 {monsterId}이(가) Monsters에 없습니다"); }
+                }
+            }
+
             Monsters = new Table<int, MonsterDefinition>(monsters);
             Stages = new Table<int, StageDefinition>(stages);
-            Upgrades = new Table<string, UpgradeDefinition>(ParseIndexed<string, UpgradeDefinition>("Upgrades", d => d.UpgradeId));
+            var upgrades = ParseIndexed<string, UpgradeDefinition>("Upgrades", d => d.UpgradeId);
+            Upgrades = new Table<string, UpgradeDefinition>(upgrades);
+            var items = ParseIndexed<string, ItemDefinition>("Items", d => d.Id);
+            foreach (var item in items.Values) { item.Validate(); }
+            Items = new Table<string, ItemDefinition>(items);
+            foreach (var upgrade in upgrades.Values)
+            {
+                upgrade.Validate();
+                if (upgrade.UsesMaterial) { Items.GetOrThrow(upgrade.MaterialItemId); }
+            }
+            var rewards = ParseIndexed<int, StageRewardBalance>("StageRewards", d => d.StageId);
+            foreach (var balance in rewards.Values)
+            {
+                balance.Validate();
+                if (!Stages.Contains(balance.StageId)) { throw new InvalidOperationException("보상의 스테이지가 없습니다."); }
+                if (balance.SkillMaterial != ItemIds.RandomSkillMaterial) { Items.GetOrThrow(balance.SkillMaterial); }
+                foreach (var item in balance.Wave4EquipmentMaterials)
+                {
+                    if (item.itemId != ItemIds.RandomEquipmentMaterial) { Items.GetOrThrow(item.itemId); }
+                }
+            }
+            foreach (var stage in stages.Values)
+            {
+                if (!rewards.ContainsKey(stage.Id)) { throw new InvalidOperationException($"StageRewards {stage.Id}: 보상 밸런스가 없습니다."); }
+            }
+            Items.GetOrThrow(ItemIds.GemChest);
+            StageRewards = new Table<int, StageRewardBalance>(rewards);
             Energy = JsonConvert.DeserializeObject<EnergyConfig>(_rawJson["Energy"]);
+            PlayerLevels = new PlayerLevelTable(JsonConvert.DeserializeObject<List<PlayerLevelRow>>(_rawJson["PlayerLevels"]));
 
             var generalCards = ParseIndexed<string, GeneralCardDefinition>("GeneralCards", d => d.Id).Values.ToList();
             foreach (var card in generalCards)
@@ -67,7 +106,9 @@ namespace Game.Core
 
             FirstStageId = stages.Keys.First();
             // 스킬은 정의 객체가 가변이라 호출마다 새로 읽는다. 여기서는 부팅 때 잘못된 데이터를 바로 잡는다
-            LoadSkills();
+            var skills = LoadSkills();
+            _skillUnlockLevels = UpgradeUnlockRule.SkillUnlockLevels(skills);
+            foreach (var upgrade in upgrades.Values) { UpgradeUnlockRule.Validate(upgrade, _skillUnlockLevels); }
 
             // TODO(server): 전부 1 고정 — 예: 빌드에 포함된 테이블 버전 메타데이터로 교체
             Revisions = TableNames.ToDictionary(n => n, _ => 1);
@@ -91,6 +132,9 @@ namespace Game.Core
             }
         }
 
+        /// <summary>강화의 해금 플레이어 레벨. 스킬 강화는 스킬이 열리는 레벨(SkillData.unlockLevel)을, 그 외는 행의 UnlockLevel을 쓴다</summary>
+        public int UnlockLevelOf(UpgradeDefinition def) => UpgradeUnlockRule.LevelOf(def, _skillUnlockLevels);
+
         /// <summary>스킬 정의 목록. 호출마다 새 객체를 만들고 카탈로그 검증을 통과해야 돌려준다</summary>
         public List<SkillData> LoadSkills() => ParseSkills(_rawJson["Skills"]);
 
@@ -100,6 +144,10 @@ namespace Game.Core
             SkillCatalogValidator.Validate(weapons);
             return weapons;
         }
+
+        /// <summary>stageId 스테이지에 등장하는 몬스터. 스테이지 정의의 MonsterIds 순서를 따르고, 없는 stageId는 첫 스테이지로 본다</summary>
+        public IReadOnlyList<MonsterDefinition> StageMonsters(int stageId) =>
+            StageOrFirst(stageId).MonsterIds.Select(id => Monsters.GetOrThrow(id)).ToList();
 
         /// <summary>stageId의 스테이지. 없으면(0 포함) 첫 번째 스테이지를 돌려준다</summary>
         public StageDefinition StageOrFirst(int stageId) =>

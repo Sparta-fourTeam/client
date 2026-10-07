@@ -169,7 +169,10 @@ namespace Game.Core
             }
 
             int appliedDamage = _status.AmplifyDamage(amount);
+            int hpBefore = Hp;
             Hp = Math.Max(0, Hp - appliedDamage);
+            // 실제로 깎인 체력만 스킬 몫으로 알린다 (남은 체력보다 큰 과잉 피해는 뺀다)
+            Game.Core.Combat.DamageAttribution.Report(hpBefore - Hp);
             _hpChangedPublisher.Publish(new EnemyHpChanged(Id, Hp, MaxHp));
 
             if (Hp == 0)

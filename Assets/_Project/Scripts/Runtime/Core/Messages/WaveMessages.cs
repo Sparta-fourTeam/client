@@ -1,12 +1,13 @@
 namespace Game.Core.Messages
 {
-    //WaveProgress 발행
-    public readonly struct WaveGaugeFilled
+    public readonly struct WaveCompleted
     {
+        public int WaveIndex { get; }
         public bool IsFinalWave { get; }
 
-        public WaveGaugeFilled(bool isFinalWave)
+        public WaveCompleted(int waveIndex, bool isFinalWave)
         {
+            WaveIndex = waveIndex;
             IsFinalWave = isFinalWave;
         }
     }
@@ -21,7 +22,7 @@ namespace Game.Core.Messages
         public int MaxEliteCount { get; }
         public int MaxBossCount { get; }
 
-        public WaveStarted(int waveIndex, int enemyCount, bool isFinalWave, 
+        public WaveStarted(int waveIndex, int enemyCount, bool isFinalWave,
                             int maxEliteCount = 0, int maxBossCount = 0)
         {
             WaveIndex = waveIndex;

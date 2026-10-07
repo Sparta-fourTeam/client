@@ -11,7 +11,7 @@ namespace Game.Core
         private readonly ISubscriber<WaveStarted> _waveStartedSubscriber;
         private readonly ISubscriber<EnemyDied> _enemyDiedSubscriber;
         private readonly IBufferedPublisher<WaveGaugeChanged> _gaugeChangedPublisher;
-        private readonly IPublisher<WaveGaugeFilled> _gaugeFilledPublisher;
+        private readonly IPublisher<WaveCompleted> _waveCompletedPublisher;
 
         private readonly Queue<WaveStarted> _waves = new Queue<WaveStarted>();
 
@@ -22,12 +22,12 @@ namespace Game.Core
             ISubscriber<WaveStarted> waveStartedSubscriber,
             ISubscriber<EnemyDied> enemyDiedSubscriber,
             IBufferedPublisher<WaveGaugeChanged> gaugeChangedPublisher,
-            IPublisher<WaveGaugeFilled> gaugeFilledPublisher)
+            IPublisher<WaveCompleted> waveCompletedPublisher)
         {
             _waveStartedSubscriber = waveStartedSubscriber;
             _enemyDiedSubscriber = enemyDiedSubscriber;
             _gaugeChangedPublisher = gaugeChangedPublisher;
-            _gaugeFilledPublisher = gaugeFilledPublisher;
+            _waveCompletedPublisher = waveCompletedPublisher;
         }
 
         public void Initialize()
@@ -85,7 +85,7 @@ namespace Game.Core
 
             _waves.Dequeue();
             _kills = 0;
-            _gaugeFilledPublisher.Publish(new WaveGaugeFilled(current.IsFinalWave));
+            _waveCompletedPublisher.Publish(new WaveCompleted(current.WaveIndex, current.IsFinalWave));
 
             // 이미 시작된 다음 웨이브가 있으면 그 크기로 0부터 다시
             if (_waves.Count > 0)

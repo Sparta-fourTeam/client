@@ -11,7 +11,7 @@ namespace Game.Tests
     public sealed class WaveManagerTests
     {
         private IServiceProvider _provider;
-        private IPublisher<WaveGaugeFilled> _gaugeFilled;
+        private IPublisher<WaveCompleted> _waveCompleted;
         private List<WaveStarted> _started;
         private IDisposable _capture;
         private WaveManager _manager;
@@ -22,10 +22,10 @@ namespace Game.Tests
             var builder = new BuiltinContainerBuilder();
             builder.AddMessagePipe();
             builder.AddMessageBroker<WaveStarted>();
-            builder.AddMessageBroker<WaveGaugeFilled>();
+            builder.AddMessageBroker<WaveCompleted>();
             _provider = builder.BuildServiceProvider();
 
-            _gaugeFilled = _provider.GetRequiredService<IPublisher<WaveGaugeFilled>>();
+            _waveCompleted = _provider.GetRequiredService<IPublisher<WaveCompleted>>();
             _started = new List<WaveStarted>();
             _capture = _provider.GetRequiredService<ISubscriber<WaveStarted>>().Subscribe(_started.Add);
 
@@ -40,7 +40,7 @@ namespace Game.Tests
             };
             _manager = new WaveManager(
                 _provider.GetRequiredService<IPublisher<WaveStarted>>(),
-                _provider.GetRequiredService<ISubscriber<WaveGaugeFilled>>(),
+                _provider.GetRequiredService<ISubscriber<WaveCompleted>>(),
                 stage);
             _manager.Initialize();
         }
@@ -62,10 +62,10 @@ namespace Game.Tests
         }
 
         [Test]
-        public void GaugeFilled_AdvancesThroughWavesAndMarksLastAsFinal()
+        public void WaveCompleted_AdvancesThroughWavesAndMarksLastAsFinal()
         {
-            _gaugeFilled.Publish(new WaveGaugeFilled(false));
-            _gaugeFilled.Publish(new WaveGaugeFilled(false));
+            _waveCompleted.Publish(new WaveCompleted(1, false));
+            _waveCompleted.Publish(new WaveCompleted(2, false));
 
             Assert.AreEqual(3, _started.Count);
             Assert.AreEqual(8, _started[1].EnemyCount);
@@ -76,13 +76,23 @@ namespace Game.Tests
         }
 
         [Test]
-        public void GaugeFilled_AfterFinalWave_StartsNothingMore()
+        public void WaveCompleted_AfterFinalWave_StartsNothingMore()
         {
-            _gaugeFilled.Publish(new WaveGaugeFilled(false));
-            _gaugeFilled.Publish(new WaveGaugeFilled(false));
-            _gaugeFilled.Publish(new WaveGaugeFilled(true));
+            _waveCompleted.Publish(new WaveCompleted(1, false));
+            _waveCompleted.Publish(new WaveCompleted(2, false));
+            _waveCompleted.Publish(new WaveCompleted(3, true));
 
             Assert.AreEqual(3, _started.Count);
+        }
+
+        [Test]
+        public void WaveCompleted_DuplicateOrOutOfOrder_DoesNotAdvance()
+        {
+            _waveCompleted.Publish(new WaveCompleted(2, false));
+            Assert.AreEqual(1, _started.Count);
+            _waveCompleted.Publish(new WaveCompleted(1, false));
+            _waveCompleted.Publish(new WaveCompleted(1, false));
+            Assert.AreEqual(2, _started.Count);
         }
     }
 }

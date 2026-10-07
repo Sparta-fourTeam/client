@@ -29,6 +29,7 @@ namespace Game.Core
         private System.Func<float> randomValue;
         private AttackReactions reactions;
         private bool released;
+        private int sourceSkill;   // 이 투사체를 만든 스킬 (피해 집계용)
         private IEnemyTarget ignoredTarget;
         private IEnemyTargetProvider targetProvider;
         private readonly ProjectileHitLedger hitLedger = new();
@@ -39,6 +40,7 @@ namespace Game.Core
 
         public void Init(IObjectPool<Projectile> pool, ProjectileSpawnSettings settings)
         {
+            sourceSkill = Game.Core.Combat.DamageAttribution.Current;
             hitRadius = Mathf.Max(0, settings.CollisionRadius);
             ignoredTarget = settings.IgnoredTarget;
             this.pool = pool;
@@ -77,6 +79,7 @@ namespace Game.Core
 
         internal void Tick(float deltaTime)
         {
+            using var scope = Game.Core.Combat.DamageAttribution.Begin(sourceSkill);
             if (released) { return; }
             Vector2 start = transform.position;
             transform.position += direction * speed * deltaTime;

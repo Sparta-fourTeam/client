@@ -1,0 +1,47 @@
+[
+  {
+    "StageId": 1,
+    "SkillMaterial": "book.arrow",
+    "BaseExp": 15,
+    "ThreeStarBonusExp": 15,
+    "Wave3SkillMaterialBonusAmount": 24,
+    "Wave4EquipmentMaterials": [
+      {
+        "itemId": "book.weapon",
+        "quantity": 1
+      }
+    ],
+    "Wave5GemChestCount": 1,
+    "Wave6CoinBonus": 25
+  },
+  {
+    "StageId": 2,
+    "SkillMaterial": "material.skill.random",
+    "BaseExp": 15,
+    "ThreeStarBonusExp": 15,
+    "Wave3SkillMaterialBonusAmount": 25,
+    "Wave4EquipmentMaterials": [
+      {
+        "itemId": "material.equipment.random",
+        "quantity": 1
+      }
+    ],
+    "Wave5GemChestCount": 1,
+    "Wave6CoinBonus": 25
+  },
+  {
+    "StageId": 3,
+    "SkillMaterial": "material.skill.random",
+    "BaseExp": 15,
+    "ThreeStarBonusExp": 15,
+    "Wave3SkillMaterialBonusAmount": 26,
+    "Wave4EquipmentMaterials": [
+      {
+        "itemId": "material.equipment.random",
+        "quantity": 1
+      }
+    ],
+    "Wave5GemChestCount": 1,
+    "Wave6CoinBonus": 25
+  }
+]

@@ -15,11 +15,13 @@ namespace Game.Core
         private readonly HashSet<IEnemyTarget> occupants = new();
         private readonly HashSet<IAreaSlowTarget> slowed = new();
         private bool released;
+        private int sourceSkill;   // 이 전자기장을 만든 스킬 (피해 집계용)
         private GameObject visual;
 
         public void Init(IObjectPool<ElectromagneticField> pool, IEnemyTargetProvider provider, Vector2 position,
             float radius, float damage, float duration, float slowRatio)
         {
+            sourceSkill = Game.Core.Combat.DamageAttribution.Current;
             ClearSlows();
             this.pool = pool; this.provider = provider;
             this.radius = radius; this.damage = damage; this.slowRatio = slowRatio;
@@ -49,6 +51,7 @@ namespace Game.Core
 
         internal void Tick(float deltaTime)
         {
+            using var scope = Game.Core.Combat.DamageAttribution.Begin(sourceSkill);
             if (released || pool == null) { return; }
             if (deltaTime < 0 || float.IsNaN(deltaTime) || float.IsInfinity(deltaTime)) { throw new ArgumentOutOfRangeException(nameof(deltaTime)); }
             RefreshOccupants();

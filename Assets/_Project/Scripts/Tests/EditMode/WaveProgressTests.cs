@@ -14,7 +14,7 @@ namespace Game.Tests
         private IPublisher<WaveStarted> _waveStarted;
         private IPublisher<EnemyDied> _enemyDied;
         private List<WaveGaugeChanged> _changed;
-        private List<WaveGaugeFilled> _filled;
+        private List<WaveCompleted> _filled;
         private IDisposable _captures;
         private WaveProgress _progress;
 
@@ -26,7 +26,7 @@ namespace Game.Tests
             builder.AddMessageBroker<WaveStarted>();
             builder.AddMessageBroker<EnemyDied>();
             builder.AddMessageBroker<WaveGaugeChanged>();
-            builder.AddMessageBroker<WaveGaugeFilled>();
+            builder.AddMessageBroker<WaveCompleted>();
             _provider = builder.BuildServiceProvider();
 
             _waveStarted = _provider.GetRequiredService<IPublisher<WaveStarted>>();
@@ -34,17 +34,17 @@ namespace Game.Tests
 
             // 일반 구독자로 받는다 (Buffered 구독은 struct 기본값이 먼저 와서 셈이 섞인다)
             _changed = new List<WaveGaugeChanged>();
-            _filled = new List<WaveGaugeFilled>();
+            _filled = new List<WaveCompleted>();
             DisposableBagBuilder bag = DisposableBag.CreateBuilder();
             _provider.GetRequiredService<ISubscriber<WaveGaugeChanged>>().Subscribe(m => _changed.Add(m)).AddTo(bag);
-            _provider.GetRequiredService<ISubscriber<WaveGaugeFilled>>().Subscribe(m => _filled.Add(m)).AddTo(bag);
+            _provider.GetRequiredService<ISubscriber<WaveCompleted>>().Subscribe(m => _filled.Add(m)).AddTo(bag);
             _captures = bag.Build();
 
             _progress = new WaveProgress(
                 _provider.GetRequiredService<ISubscriber<WaveStarted>>(),
                 _provider.GetRequiredService<ISubscriber<EnemyDied>>(),
                 _provider.GetRequiredService<IBufferedPublisher<WaveGaugeChanged>>(),
-                _provider.GetRequiredService<IPublisher<WaveGaugeFilled>>());
+                _provider.GetRequiredService<IPublisher<WaveCompleted>>());
             _progress.Initialize();
         }
 
@@ -105,12 +105,13 @@ namespace Game.Tests
         [Test(Description = "웨이브의 몬스터를 모두 잡으면 게이지 가득 메시지를 1번 발행한다")]
         public void AllEnemiesKilled_PublishesFilledOnce()
         {
-            StartWave(3);
+            StartWave(3, waveIndex: 1);
 
             KillEnemies(3);
 
             Assert.AreEqual(1, _filled.Count);
             Assert.IsFalse(_filled[0].IsFinalWave);
+            Assert.AreEqual(1, _filled[0].WaveIndex);
             Assert.AreEqual(3, _changed.Last().Current);
         }
 
@@ -154,14 +155,16 @@ namespace Game.Tests
         [Test(Description = "어느 웨이브 적이든 처치는 시작된 순서대로 게이지를 채운다")]
         public void Kills_FillWavesInOrder()
         {
-            StartWave(2);
-            StartWave(3, isFinalWave: true);
+            StartWave(2, waveIndex: 1);
+            StartWave(3, isFinalWave: true, waveIndex: 2);
 
             KillEnemies(5);
 
             Assert.AreEqual(2, _filled.Count);
             Assert.IsFalse(_filled[0].IsFinalWave);
+            Assert.AreEqual(1, _filled[0].WaveIndex);
             Assert.IsTrue(_filled[1].IsFinalWave);
+            Assert.AreEqual(2, _filled[1].WaveIndex);
         }
 
         [Test(Description = "시작된 웨이브가 없을 때 죽은 적은 세지 않는다")]

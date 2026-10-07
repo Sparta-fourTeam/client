@@ -10,6 +10,7 @@
 | [conventions.md](conventions.md) | 코딩 규칙 |
 | [skills.md](skills.md) | 스킬 시스템 구조, 데이터 형식, 스킬·카드 추가 절차 |
 | [enemy-design.md](enemy-design.md) | Enemy 구조 설계: 기본 규칙과 시스템 경계, 피해 파이프라인, 패시브, 작업 순서 |
+| [items.md](items.md) | 아이템 종류, 식별·수량 및 소유량 저장 계약 |
 | [ninjutsu/](ninjutsu/README.md) | 스킬 원문 요구사항, 확정·보류 결정, 구현 이력, 카드별 대응표 |
 | [qa-v0.0.1.md](qa-v0.0.1.md) | 기존 Android QA와 발견된 이슈 |
 

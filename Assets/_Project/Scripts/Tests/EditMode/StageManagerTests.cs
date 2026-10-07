@@ -23,6 +23,9 @@ namespace Game.Tests
             /// <summary>0보다 크면 이 횟수만큼만 ToThrow를 던지고 그 뒤로는 성공한다</summary>
             public int ThrowCount = int.MaxValue;
 
+            /// <summary>클리어 응답에 담을 별점</summary>
+            public int ClearRating = 2;
+
             public UniTask<StartBattleResponse> StartBattle(int stageId, int dataRevision)
             {
                 throw new NotSupportedException();
@@ -37,12 +40,13 @@ namespace Game.Tests
                     throw ToThrow;
                 }
 
-                return UniTask.FromResult(new SubmitResultResponse { cleared = req.cleared, rewardGold = 100 });
+                return UniTask.FromResult(new SubmitResultResponse
+                { cleared = req.cleared, rewardGold = 100, clearRating = req.cleared ? ClearRating : 0 });
             }
         }
 
         private IPublisher<StageEnded> _stageEnded;
-        private IPublisher<WaveGaugeFilled> _gaugeFilled;
+        private IPublisher<WaveCompleted> _waveCompleted;
         private ISubscriber<StageStateChanged> _stateChanged;
         private ISubscriber<StageResult> _resultSubscriber;
         private ISubscriber<SubmitRejected> _rejectedSubscriber;
@@ -76,14 +80,14 @@ namespace Game.Tests
             builder.AddMessageBroker<StageResult>();
             builder.AddMessageBroker<SubmitRejected>();
             builder.AddMessageBroker<SubmitFailed>();
-            builder.AddMessageBroker<WaveGaugeFilled>();
+            builder.AddMessageBroker<WaveCompleted>();
             builder.AddMessageBroker<EnemyDied>();
             builder.AddMessageBroker<WaveGaugeChanged>();
             builder.AddMessageBroker<WallHpChanged>();
             IServiceProvider provider = builder.BuildServiceProvider();
 
             _stageEnded = provider.GetRequiredService<IPublisher<StageEnded>>();
-            _gaugeFilled = provider.GetRequiredService<IPublisher<WaveGaugeFilled>>();
+            _waveCompleted = provider.GetRequiredService<IPublisher<WaveCompleted>>();
             _stateChanged = provider.GetRequiredService<ISubscriber<StageStateChanged>>();
             _resultSubscriber = provider.GetRequiredService<ISubscriber<StageResult>>();
             _rejectedSubscriber = provider.GetRequiredService<ISubscriber<SubmitRejected>>();
@@ -122,7 +126,7 @@ namespace Game.Tests
                 context,
                 _stats,
                 _clock,
-                provider.GetRequiredService<ISubscriber<WaveGaugeFilled>>(),
+                provider.GetRequiredService<ISubscriber<WaveCompleted>>(),
                 new CardDeck(_skills, null, new List<GeneralCardDefinition>(), new UnityRandomProvider()),
                 provider.GetRequiredService<IPublisher<SubmitRejected>>(),
                 provider.GetRequiredService<IPublisher<SubmitFailed>>());
@@ -147,7 +151,7 @@ namespace Game.Tests
 
         private void FillGauge(bool isFinalWave)
         {
-            _gaugeFilled.Publish(new WaveGaugeFilled(isFinalWave));
+            _waveCompleted.Publish(new WaveCompleted(isFinalWave ? 20 : 1, isFinalWave));
         }
 
         [Test(Description = "Start하면 Playing으로 전환되고 상태 변경이 발행된다")]
@@ -262,6 +266,38 @@ namespace Game.Tests
             Assert.AreEqual(100, _results[0].RewardGold);
             CollectionAssert.AreEqual(
                 new[] { StageState.Playing, StageState.Submitting, StageState.Finished }, _states);
+        }
+
+        [Test(Description = "클리어하면 제출 응답의 별점이 StageResult로 전달되고, 실패하면 별점은 0이다")]
+        public void StageResult_CarriesClearRating()
+        {
+            _api.ClearRating = 3;
+            _stageEnded.Publish(new StageEnded(StageOutcome.Clear));
+            Assert.AreEqual(3, _results[0].ClearRating);
+
+            TearDown();
+            SetUp();
+            _stageEnded.Publish(new StageEnded(StageOutcome.Fail));
+            Assert.IsFalse(_results[0].Cleared);
+            Assert.AreEqual(0, _results[0].ClearRating);
+        }
+
+        [Test(Description = "StageResult에 스킬별 피해량이 피해량 순서로 담긴다")]
+        public void StageResult_CarriesSkillDamageRanking()
+        {
+            _stats.Initialize();   // 이 픽스처의 다른 테스트는 구독이 필요 없어 기본으로는 초기화하지 않는다
+            try
+            {
+                using (Game.Core.Combat.DamageAttribution.Begin(5)) { Game.Core.Combat.DamageAttribution.Report(40); }
+                using (Game.Core.Combat.DamageAttribution.Begin(2)) { Game.Core.Combat.DamageAttribution.Report(90); }
+
+                _stageEnded.Publish(new StageEnded(StageOutcome.Clear));
+
+                Assert.AreEqual(2, _results[0].SkillDamages.Count);
+                Assert.AreEqual((2, 90), (_results[0].SkillDamages[0].SkillId, _results[0].SkillDamages[0].Damage));
+                Assert.AreEqual((5, 40), (_results[0].SkillDamages[1].SkillId, _results[0].SkillDamages[1].Damage));
+            }
+            finally { _stats.Dispose(); }
         }
 
         [Test(Description = "결과 제출이 거절되면 SubmitRejected만 발행한다. 안내를 보여주고 로비로 보내는 것은 구독하는 뷰의 몫이다")]

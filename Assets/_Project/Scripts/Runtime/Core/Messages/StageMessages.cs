@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using System.Linq;
+
 namespace Game.Core.Messages
 {
     public readonly struct StageStateChanged
@@ -27,6 +30,19 @@ namespace Game.Core.Messages
         }
     }
 
+    /// <summary>이번 판에서 한 스킬이 준 누적 피해량 (실제로 깎인 체력 기준, 자식 스킬 피해 포함)</summary>
+    public readonly struct SkillDamage
+    {
+        public int SkillId { get; }
+        public int Damage { get; }
+
+        public SkillDamage(int skillId, int damage)
+        {
+            SkillId = skillId;
+            Damage = damage;
+        }
+    }
+
     /// <summary>결과 제출까지 끝난 뒤 결과 UI(ResultPopup 등)가 구독하는 최종 결과</summary>
     public readonly struct StageResult
     {
@@ -35,14 +51,27 @@ namespace Game.Core.Messages
         public int ReachedWave { get; }
         public float PlayTime { get; }
         public int RewardGold { get; }
+        public int RewardExp { get; }
+        public int ClearRating { get; }
+        public IReadOnlyList<ItemAmount> RewardItems { get; }
 
-        public StageResult(bool cleared, int kills, int reachedWave, float playTime, int rewardGold)
+        /// <summary>스킬별 누적 피해량. 피해량이 큰 순서다</summary>
+        public IReadOnlyList<SkillDamage> SkillDamages { get; }
+
+        public StageResult(bool cleared, int kills, int reachedWave, float playTime, int rewardGold,
+            IEnumerable<ItemAmount> rewardItems = null, int rewardExp = 0, int clearRating = 0,
+            IEnumerable<SkillDamage> skillDamages = null)
         {
             Cleared = cleared;
             Kills = kills;
             ReachedWave = reachedWave;
             PlayTime = playTime;
             RewardGold = rewardGold;
+            RewardExp = rewardExp;
+            ClearRating = clearRating;
+            SkillDamages = (skillDamages ?? Enumerable.Empty<SkillDamage>()).ToList().AsReadOnly();
+            RewardItems = (rewardItems ?? Enumerable.Empty<ItemAmount>())
+                .Select(item => new ItemAmount { itemId = item.itemId, quantity = item.quantity }).ToList().AsReadOnly();
         }
     }
 

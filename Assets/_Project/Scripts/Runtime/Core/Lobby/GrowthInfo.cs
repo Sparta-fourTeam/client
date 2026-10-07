@@ -9,11 +9,15 @@ namespace Game.Core
         public string Current { get; }
         public string Next { get; }
 
-        public StatLine(string label, string current, string next = null)
+        /// <summary>다음 레벨에서 오르는 양 (예: "+127.32"). null이면 증가량을 표시하지 않는다</summary>
+        public string Increase { get; }
+
+        public StatLine(string label, string current, string next = null, string increase = null)
         {
             Label = label;
             Current = current;
             Next = next;
+            Increase = increase;
         }
     }
 
@@ -30,10 +34,13 @@ namespace Game.Core
         }
     }
 
-    /// <summary>스킬 하나의 표시용 정보 (스킬 화면 칸, 스킬 강화 팝업)</summary>
+    /// <summary>스킬 하나의 표시용 정보 (스킬 화면 칸, 스킬 강화 팝업). 영구 강화가 정의된 스킬은 레벨·비용이 Upgrades 테이블과 PlayerProfile에서 온다</summary>
     public sealed class SkillInfo
     {
         public string Id;
+
+        /// <summary>강화 API에 넘기는 업그레이드 ID (스킬의 progressionId, 예: shuriken). null이면 아직 강화 데이터가 없는 스킬이다</summary>
+        public string UpgradeId;
         public string Name;
         public string Description;
         public int Level;
@@ -43,33 +50,51 @@ namespace Game.Core
         public int UnlockLevel;
         public bool IsUnlocked;
 
-        /// <summary>강화 전 → 후 능력치</summary>
+        /// <summary>현재 능력치와 다음 레벨 증가량</summary>
         public IReadOnlyList<StatLine> Stats;
 
-        /// <summary>다음 레벨로 강화하는 비용 (엽전, 인법서)</summary>
+        /// <summary>다음 레벨로 강화하는 비용: 코인과 재료(스킬 마법북 아이템 ID, 수량). 최대 레벨이면 쓰지 않는다</summary>
         public int CoinCost;
-        public int BookCost;
+        public string MaterialItemId;
+        public int MaterialCost;
+
+        /// <summary>레벨별 보상. 달성 여부는 LevelReward.Level <= Level로 판단한다</summary>
+        public IReadOnlyList<LevelReward> LevelRewards;
 
         public bool IsMaxLevel => Level >= MaxLevel;
     }
 
-    /// <summary>장비 칸 하나의 표시용 정보 (캐릭터 화면 장비 칸, 장비 강화 팝업)</summary>
+    /// <summary>영구 강화 레벨에 도달하면 얻는 것 한 줄 (예: 1 "[폭풍 집결] 선택지 잠금해제")</summary>
+    public sealed class LevelReward
+    {
+        public int Level;
+        public string Text;
+    }
+
+    /// <summary>장비 칸 하나의 표시용 정보 (캐릭터 화면 장비 칸, 장비 강화 팝업). 레벨·비용·해금은 Upgrades 테이블과 PlayerProfile에서 온다</summary>
     public sealed class EquipInfo
     {
         public int Slot;
+
+        /// <summary>강화 API에 넘기는 업그레이드 ID (예: equipment.hat)</summary>
+        public string UpgradeId;
         public string Name;
         public int Level;
+        public int MaxLevel;
 
-        /// <summary>칸 해금에 필요한 캐릭터 레벨</summary>
+        /// <summary>칸 해금에 필요한 플레이어 레벨</summary>
         public int UnlockLevel;
         public bool IsUnlocked;
 
         public IReadOnlyList<StatLine> Stats;
         public IReadOnlyList<EquipEffect> Effects;
 
-        /// <summary>다음 레벨로 강화하는 비용 (엽전, 강화서)</summary>
+        public bool IsMaxLevel => Level >= MaxLevel;
+
+        /// <summary>다음 레벨로 강화하는 비용: 코인과 재료(아이템 ID, 수량). 최대 레벨이면 쓰지 않는다</summary>
         public int CoinCost;
-        public int BookCost;
+        public string MaterialItemId;
+        public int MaterialCost;
     }
 
     /// <summary>캐릭터 화면 위쪽에 표시하는 캐릭터 정보</summary>
@@ -77,7 +102,6 @@ namespace Game.Core
     {
         public string Name;
         public string Rank;
-        public int Level;
         public int Power;
     }
 }

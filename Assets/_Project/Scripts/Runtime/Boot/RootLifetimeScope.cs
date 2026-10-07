@@ -20,12 +20,12 @@ namespace Game.Boot
             builder.Register<LocalSaveStore>(Lifetime.Singleton);
             builder.Register<PlayerProfile>(Lifetime.Singleton);
 
-            // 서버가 붙으면 이 7줄만 Http*Api로 교체하면 된다
+            // 서버가 붙으면 이 API 등록을 Http*Api로 교체한다
             builder.Register<IAuthApi, LocalAuthApi>(Lifetime.Singleton);
             // TODO(server): 호출부 없음 — 예: BootFlow에서 GetVersions() 비교 후 GetTable()로 갱신
             builder.Register<IDataApi, LocalDataApi>(Lifetime.Singleton);
             builder.Register<IPlayerApi, LocalPlayerApi>(Lifetime.Singleton);
-            builder.Register<IBattleApi, LocalBattleApi>(Lifetime.Singleton).As<ISubmitFaultSwitch>();
+            builder.Register<IBattleApi, LocalBattleApi>(Lifetime.Singleton).AsSelf().As<ISubmitFaultSwitch>();
             builder.Register<IUpgradeApi, LocalUpgradeApi>(Lifetime.Singleton);
             // TODO(server): Recover(Ad) 항상 거절 중 — 예: 광고 SDK 콜백에서 Recover(EnergySource.Ad, adTxId) 호출
             builder.Register<IEnergyApi, LocalEnergyApi>(Lifetime.Singleton);
@@ -35,6 +35,16 @@ namespace Game.Boot
             builder.RegisterInstance<ITransitionCurtain>(curtain);
             builder.Register<ISceneNavigator, SceneLoader>(Lifetime.Singleton);
             builder.RegisterEntryPoint<BootFlow>();
+
+            // 랜덤 재료는 열린 재료 중에서 뽑는다. 장비와 스킬은 플레이어 레벨이 해금 레벨 이상이면 열린다(EquipmentUnlockRule, SkillUnlockRule).
+            builder.RegisterBuildCallback(c =>
+            {
+                var battleApi = c.Resolve<LocalBattleApi>();
+                var data = c.Resolve<GameDataStore>();
+                var store = c.Resolve<LocalSaveStore>();
+                battleApi.UnlockedSkillIds = () => SkillUnlockRule.UnlockedSkillIds(data, store.Load().exp);
+                battleApi.UnlockedEquipmentIds = () => EquipmentUnlockRule.UnlockedTargetIds(data, store.Load().exp);
+            });
 
             // 진단 창(Diagnostics window) 및 전역 기능을 활성화하기 위해 GlobalMessagePipe를 설정합니다.
             builder.RegisterBuildCallback(c => GlobalMessagePipe.SetProvider(c.AsServiceProvider()));

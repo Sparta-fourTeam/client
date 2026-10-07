@@ -16,12 +16,31 @@ namespace Game.View
         private IGrowthCatalog _catalog;
         private PlayerProfile _profile;
 
-        // TODO(data): 강화 후 다시 그리려면 UpgradeChanged(추가 예정) 구독
         [Inject]
         public void Construct(IGrowthCatalog catalog, PlayerProfile profile)
         {
             _catalog = catalog;
             _profile = profile;
+            _profile.Changed += OnProfileChanged;
+        }
+
+        protected override void OnDestroy()
+        {
+            if (_profile != null)
+            {
+                _profile.Changed -= OnProfileChanged;
+            }
+
+            base.OnDestroy();
+        }
+
+        // 화면이 열려 있는 동안 프로필이 바뀌면(스킬 강화 등) 칸의 레벨·잠금과 골드 표시를 다시 그린다
+        private void OnProfileChanged(PlayerProfile _)
+        {
+            if (_panel.activeSelf)
+            {
+                Refresh();
+            }
         }
 
         private void Awake()

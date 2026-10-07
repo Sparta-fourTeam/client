@@ -18,10 +18,11 @@ namespace Game.Core
         private readonly StageContext _stageContext;
         private readonly BattleStats _stats;
         private readonly StageClock _clock;
-        private readonly ISubscriber<WaveGaugeFilled> _gaugeFilled;
+        private readonly ISubscriber<WaveCompleted> _waveCompleted;
         private readonly CardDeck _deck;
         private readonly IPublisher<SubmitRejected> _submitRejected;
         private readonly IPublisher<SubmitFailed> _submitFailed;
+        private readonly StageRewardTracker _rewards;
 
         /// <summary>일시적 실패와 네트워크 실패 때 자동으로 다시 보내는 횟수 (docs/flows.md)</summary>
         public const int AutoRetryCount = 3;
@@ -53,10 +54,10 @@ namespace Game.Core
             StageContext stageContext,
             BattleStats stats,
             StageClock clock,
-            ISubscriber<WaveGaugeFilled> gaugeFilled,
+            ISubscriber<WaveCompleted> waveCompleted,
             CardDeck deck,
             IPublisher<SubmitRejected> submitRejected,
-            IPublisher<SubmitFailed> submitFailed)
+            IPublisher<SubmitFailed> submitFailed, StageRewardTracker rewards = null)
         {
             _stateChanged = stateChanged;
             _stageEnded = stageEnded;
@@ -65,17 +66,18 @@ namespace Game.Core
             _stageContext = stageContext;
             _stats = stats;
             _clock = clock;
-            _gaugeFilled = gaugeFilled;
+            _waveCompleted = waveCompleted;
             _deck = deck;
             _submitRejected = submitRejected;
             _submitFailed = submitFailed;
+            _rewards = rewards;
         }
 
         public void Start()
         {
             var bag = DisposableBag.CreateBuilder();
             _stageEnded.Subscribe(e => OnStageEnded(e.Outcome == StageOutcome.Clear).Forget(Debug.LogException)).AddTo(bag);
-            _gaugeFilled.Subscribe(OnGaugeFilled).AddTo(bag);
+            _waveCompleted.Subscribe(OnWaveCompleted).AddTo(bag);
             _subscription = bag.Build();
 
             // 전투는 Lobby의 BattleLauncher가 이미 발급받아 StageContext에 채워뒀다 — 여기선 꺼내 쓰기만 한다
@@ -129,7 +131,7 @@ namespace Game.Core
         }
 
         /// <summary>마지막이 아닌 웨이브가 끝나면 카드 3장을 제시하고 CardSelect로 전환한다. 적 이동·스폰도 timeScale로 함께 멈춘다</summary>
-        private void OnGaugeFilled(WaveGaugeFilled e)
+        private void OnWaveCompleted(WaveCompleted e)
         {
             if (e.IsFinalWave || State != StageState.Playing)
             {
@@ -193,6 +195,8 @@ namespace Game.Core
 
         private async UniTask OnStageEnded(bool cleared)
         {
+            if (State is StageState.Submitting or StageState.Finished) { return; }
+            _rewards?.Stop();
             ChangeState(StageState.Submitting);
 
             _pendingRequest = new SubmitResultRequest
@@ -200,6 +204,7 @@ namespace Game.Core
                 battleId = _battleId,
                 cleared = cleared,
                 reachedWave = _stats.ReachedWave,
+                completedWaves = _rewards?.CompletedWaves ?? 0,
                 kills = _stats.Kills,
                 playTime = _clock.ElapsedSeconds,
                 buildLog = _stats.BuildLog,
@@ -227,6 +232,7 @@ namespace Game.Core
         /// <summary>요청을 보낸다. 일시적 실패와 네트워크 실패는 autoRetries번까지 자동으로 다시 보낸다</summary>
         private async UniTask Submit(int autoRetries)
         {
+            var request = _pendingRequest;
             _submitting = true;
             try
             {
@@ -236,7 +242,7 @@ namespace Game.Core
                 {
                     try
                     {
-                        response = await _battleApi.SubmitResult(_pendingRequest);
+                        response = await _battleApi.SubmitResult(request);
                         sent = true;
                     }
                     catch (ApiException e) when (e.Kind == ApiErrorKind.Rejected)
@@ -274,7 +280,9 @@ namespace Game.Core
                 }
 
                 _pendingRequest = null;
-                _result.Publish(new StageResult(response.cleared, _stats.Kills, _stats.ReachedWave, _clock.ElapsedSeconds, response.rewardGold));
+                _result.Publish(new StageResult(response.cleared, request.kills, request.reachedWave, request.playTime,
+                    response.rewardGold, response.rewardItems, response.rewardExp, response.clearRating,
+                    _stats.SkillDamageRanking()));
                 ChangeState(StageState.Finished);
             }
             finally
