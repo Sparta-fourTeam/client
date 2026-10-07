@@ -29,146 +29,35 @@ namespace Game.Core
         public int MaxHp { get; }
         public int Hp { get; private set; }
         public bool IsDead => Hp <= 0;
-        public float FreezeRemaining { get; private set; }
-        public bool IsFrozen => FreezeRemaining > 0;
-        public float ParalysisRemaining { get; private set; }
-        public bool IsParalyzed => ParalysisRemaining > 0;
-        public void ApplyParalysis(float duration)
-        {
-            if (IsDead || duration <= 0 || float.IsNaN(duration) || float.IsInfinity(duration))
-            {
-                return;
-            }
 
-            ParalysisRemaining = Math.Max(ParalysisRemaining, duration);
-        }
+        // 상태이상은 EnemyStatus가 맡고, 아래 멤버는 기존 접점(I*Target, 뷰, 테스트)을 유지하려고 위임한다
+        private readonly EnemyStatus _status;
 
-        private readonly System.Collections.Generic.Dictionary<object, float> areaSlows = new();
-        public float MovementMultiplier
-        {
-            get
-            {
-                float strongest = SlowRemaining > 0 ? slowRatio : 0;
-                foreach (var ratio in areaSlows.Values) { strongest = Math.Max(strongest, ratio); }
-                return 1 - strongest;
-            }
-        }
-        public void SetAreaSlow(object source, float ratio)
-        {
-            if (source == null || IsDead || ratio <= 0 || ratio >= 1 || float.IsNaN(ratio) || float.IsInfinity(ratio)) { return; }
-            areaSlows[source] = ratio;
-        }
-        public void RemoveAreaSlow(object source)
-        {
-            if (source != null) { areaSlows.Remove(source); }
-        }
+        public float FreezeRemaining => _status.FreezeRemaining;
+        public bool IsFrozen => _status.IsFrozen;
+        public float ParalysisRemaining => _status.ParalysisRemaining;
+        public bool IsParalyzed => _status.IsParalyzed;
+        public float StunRemaining => _status.StunRemaining;
+        public bool IsStunned => _status.IsStunned;
+        public float SlowRemaining => _status.SlowRemaining;
+        public float VulnerabilityRemaining => _status.VulnerabilityRemaining;
+        public float VulnerabilityRatio => _status.VulnerabilityRatio;
+        public float BurnRemaining => _status.BurnRemaining;
+        public int FrostbiteStacks => _status.FrostbiteStacks;
+        public float MovementMultiplier => _status.MovementMultiplier;
+        public bool IsImmuneTo(StatusImmunity status) => _status.IsImmuneTo(status);
 
-        public float StunRemaining { get; private set; }
-        public bool IsStunned => StunRemaining > 0;
-        public float SlowRemaining { get; private set; }
-        private float slowRatio;
-        public float VulnerabilityRemaining { get; private set; }
-        public float VulnerabilityRatio { get; private set; }
-        private static bool PositiveFinite(float value) => value > 0 && !float.IsNaN(value) && !float.IsInfinity(value);
-        public void ApplyStun(float duration)
-        {
-            if (!IsDead && !IsImmuneTo(StatusImmunity.Stun) && PositiveFinite(duration))
-            {
-                StunRemaining = Math.Max(StunRemaining, duration);
-            }
-        }
-        public void ApplySlow(float ratio, float duration)
-        {
-            if (IsDead || !PositiveFinite(ratio) || ratio >= 1 || !PositiveFinite(duration)) { return; }
-            slowRatio = Math.Max(slowRatio, ratio); SlowRemaining = Math.Max(SlowRemaining, duration);
-        }
-        public void ApplyVulnerability(float ratio, float duration)
-        {
-            if (IsDead || !PositiveFinite(ratio) || !PositiveFinite(duration)) { return; }
-            VulnerabilityRatio = Math.Max(VulnerabilityRatio, ratio);
-            VulnerabilityRemaining = Math.Max(VulnerabilityRemaining, duration);
-        }
-
-        public float BurnRemaining { get; private set; }
-        private float burnDamage;
-        private float burnElapsed;
-        private float burnMaxHpRatio;
-        private Action<Vector2> burnOnDeath;
+        public void ApplyParalysis(float duration) => _status.ApplyParalysis(duration);
+        public void SetAreaSlow(object source, float ratio) => _status.SetAreaSlow(source, ratio);
+        public void RemoveAreaSlow(object source) => _status.RemoveAreaSlow(source);
+        public void ApplyStun(float duration) => _status.ApplyStun(duration);
+        public void ApplySlow(float ratio, float duration) => _status.ApplySlow(ratio, duration);
+        public void ApplyVulnerability(float ratio, float duration) => _status.ApplyVulnerability(ratio, duration);
         public void ApplyBurn(float damagePerSecond, float duration, float maxHpRatio = 0, Action<Vector2> onDeath = null)
-        {
-            if (IsDead || damagePerSecond <= 0 || duration <= 0
-                || float.IsNaN(damagePerSecond) || float.IsInfinity(damagePerSecond)
-                || float.IsNaN(duration) || float.IsInfinity(duration)
-                || maxHpRatio < 0 || float.IsNaN(maxHpRatio) || float.IsInfinity(maxHpRatio))
-            {
-                return;
-            }
-
-            if (BurnRemaining <= 0)
-            {
-                ClearBurn();
-            }
-
-            BurnRemaining = Math.Max(BurnRemaining, duration);
-            burnDamage = Math.Max(burnDamage, damagePerSecond);
-            burnMaxHpRatio = Math.Max(burnMaxHpRatio, maxHpRatio);
-            if (onDeath != null)
-            {
-                burnOnDeath = onDeath;
-            }
-        }
-
-        private void ClearBurn()
-        {
-            BurnRemaining = 0; burnElapsed = 0; burnDamage = 0;
-            burnMaxHpRatio = 0; burnOnDeath = null;
-        }
-
-        private void TickBurn(float deltaTime)
-        {
-            if (IsDead) { ClearBurn(); return; }
-            if (BurnRemaining <= 0)
-            {
-                return;
-            }
-
-            burnElapsed += Math.Min(deltaTime, BurnRemaining);
-            float remaining = Math.Max(0, BurnRemaining - deltaTime);
-            while (burnElapsed >= 1 && !IsDead)
-            {
-                burnElapsed -= 1;
-                TakeDamage(Math.Max(1, (int)(burnDamage + Math.Round(MaxHp * (double)burnMaxHpRatio, 4))));
-            }
-            BurnRemaining = remaining;
-            if (BurnRemaining <= 0 || IsDead)
-            {
-                ClearBurn();
-            }
-        }
-
-        private sealed class FrostbiteStack
-        {
-            public float Damage;
-            public float Remaining = 10;
-            public float Elapsed;
-        }
-        private readonly System.Collections.Generic.List<FrostbiteStack> frostbite = new();
-        public int FrostbiteStacks => frostbite.Count;
-
-        public void ApplyFrostbite(float damagePerSecond)
-        {
-            if (IsDead || damagePerSecond <= 0 || float.IsNaN(damagePerSecond) || float.IsInfinity(damagePerSecond))
-            {
-                return;
-            }
-
-            if (frostbite.Count >= 5)
-            {
-                frostbite.RemoveAt(0);
-            }
-
-            frostbite.Add(new FrostbiteStack { Damage = damagePerSecond });
-        }
+            => _status.ApplyBurn(damagePerSecond, duration, maxHpRatio, onDeath);
+        public void ApplyFrostbite(float damagePerSecond) => _status.ApplyFrostbite(damagePerSecond);
+        public void ApplyFreeze(float duration) => _status.ApplyFreeze(duration);
+        public void TickStatus(float deltaTime) => _status.Tick(deltaTime);
 
         public void ApplyKnockback(Vector2 direction, float distance)
         {
@@ -182,68 +71,19 @@ namespace Game.Core
             Position += direction.normalized * distance;
         }
 
-        public void ApplyFreeze(float duration)
-        {
-            if (IsDead || duration <= 0 || float.IsNaN(duration) || float.IsInfinity(duration)) { return; }
-            FreezeRemaining = Math.Max(FreezeRemaining, duration);
-        }
-
-        public void TickStatus(float deltaTime)
-        {
-            if (deltaTime <= 0 || float.IsNaN(deltaTime) || float.IsInfinity(deltaTime)) { return; }
-            if (VulnerabilityRemaining > 0 && deltaTime > VulnerabilityRemaining)
-            {
-                float active = VulnerabilityRemaining;
-                TickStatusSlice(active); TickStatusSlice(deltaTime - active);
-            }
-            else { TickStatusSlice(deltaTime); }
-        }
-
-        private void TickStatusSlice(float deltaTime)
-        {
-            StunRemaining = Math.Max(0, StunRemaining - deltaTime);
-            SlowRemaining = Math.Max(0, SlowRemaining - deltaTime);
-            if (SlowRemaining <= 0) { slowRatio = 0; }
-            FreezeRemaining = Math.Max(0, FreezeRemaining - deltaTime);
-            ParalysisRemaining = Math.Max(0, ParalysisRemaining - deltaTime);
-            TickBurn(deltaTime);
-            if (IsDead) { frostbite.Clear(); return; }
-            foreach (var stack in frostbite)
-            {
-                float activeTime = Math.Min(deltaTime, stack.Remaining);
-                stack.Elapsed += activeTime;
-                stack.Remaining -= activeTime;
-                while (stack.Elapsed >= 1 && !IsDead)
-                {
-                    stack.Elapsed -= 1;
-                    TakeDamage(Math.Max(1, (int)stack.Damage));
-                }
-            }
-            frostbite.RemoveAll(stack => stack.Remaining <= 0);
-            VulnerabilityRemaining = Math.Max(0, VulnerabilityRemaining - deltaTime);
-            if (VulnerabilityRemaining <= 0) { VulnerabilityRatio = 0; }
-            if (IsDead)
-            {
-                frostbite.Clear();
-            }
-        }
-
         public event Action<EnemyProjectileModel> ProjectileFired; // 원거리 투사체 생성 용
         public event Action Attacked; // 공격이 나간 순간 (근접/원거리 공통, 공격 모션 재생 용)
         public event Action<EnemySpawnRequest> SpawnRequested; // 분열·소환 등 새 적 생성 요청 (만드는 일은 EnemySpawner)
 
         private readonly IReadOnlyList<IPassive> _passives;
         private readonly bool _isSummoned;
-        private readonly StatusImmunity _immunities;
-
-        public bool IsImmuneTo(StatusImmunity status) => (_immunities & status) != 0;
 
         public void RequestSpawn(EnemySpawnRequest request) => SpawnRequested?.Invoke(request);
 
         // 패시브의 시간 흐름. 빙결·마비·기절 중에는 멈춘다
         public void TickPassives(float deltaTime)
         {
-            if (_passives == null || IsDead || IsFrozen || IsParalyzed || IsStunned || deltaTime <= 0f)
+            if (_passives == null || IsDead || _status.IsDisabled || deltaTime <= 0f)
             {
                 return;
             }
@@ -264,14 +104,14 @@ namespace Game.Core
             bool isSummoned = false,
             StatusImmunity immunities = StatusImmunity.None)
         {
-            _passives = passives;
-            _isSummoned = isSummoned;
-            _immunities = immunities;
-
             if (maxHp <= 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(maxHp), "적 체력은 1 이상이어야 합니다.");
             }
+
+            _passives = passives;
+            _isSummoned = isSummoned;
+            _status = new EnemyStatus(maxHp, immunities, () => IsDead, TakeDamage);
 
             Id = id;
             Position = spawnPosition;
@@ -288,7 +128,7 @@ namespace Game.Core
         // 매 프레임 speed만큼 이동
         public void Move(float deltaTime)
         {
-            if (IsDead || IsFrozen || IsParalyzed || IsStunned)
+            if (IsDead || _status.IsDisabled)
             {
                 return;
             }
@@ -304,7 +144,7 @@ namespace Game.Core
 
         public void Attack(float deltaTime, Wall wall, EnemyProjectileSystem projectiles)
         {
-            if (IsDead || IsFrozen || IsParalyzed || IsStunned || wall.IsDestroyed)
+            if (IsDead || _status.IsDisabled || wall.IsDestroyed)
             {
                 return;
             }
@@ -336,22 +176,13 @@ namespace Game.Core
                 return;
             }
 
-            int appliedDamage = amount;
-            if (VulnerabilityRemaining > 0)
-            {
-                double amplified = Math.Floor(Math.Round(amount * (1d + VulnerabilityRatio), 4));
-                appliedDamage = (int)Math.Min(int.MaxValue, amplified);
-            }
+            int appliedDamage = _status.AmplifyDamage(amount);
             Hp = Math.Max(0, Hp - appliedDamage);
             _hpChangedPublisher.Publish(new EnemyHpChanged(Id, Hp, MaxHp));
 
             if (Hp == 0)
             {
-                var deathExplosion = BurnRemaining > 0 ? burnOnDeath : null;
-                ClearBurn();
-                areaSlows.Clear();
-                StunRemaining = SlowRemaining = VulnerabilityRemaining = 0;
-                slowRatio = VulnerabilityRatio = 0;
+                var deathExplosion = _status.ClearOnDeath();
                 _diedPublisher.Publish(new EnemyDied(Id, _isSummoned));
                 deathExplosion?.Invoke(Position);
 
