@@ -80,8 +80,8 @@ namespace Game.Core
             foreach (var def in equipment.Values)
             {
                 def.Validate();
-                var book = Items.GetOrThrow(def.BookItemId);
-                if (book.TargetId != def.Id) { throw new InvalidOperationException($"Equipment {def.Id}: 마법북 {def.BookItemId}의 TargetId가 이 장비가 아닙니다"); }
+                var book = Items.GetOrThrow(def.MaterialItemId);
+                if (book.TargetId != def.Id) { throw new InvalidOperationException($"Equipment {def.Id}: 재료 {def.MaterialItemId}의 TargetId가 이 장비가 아닙니다"); }
             }
             Equipment = new Table<string, EquipmentDefinition>(equipment);
             StageRewards = new Table<int, StageRewardBalance>(rewards);
