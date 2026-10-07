@@ -37,26 +37,18 @@ namespace Game.Tests
             }
         }
 
-        [Test(Description = "장비 칸은 캐릭터 레벨에 맞춰 열린다")]
-        public void Equips_UnlockByCharacterLevel()
+        [Test(Description = "장비 칸은 플레이어 레벨에 맞춰 열린다")]
+        public void Equips_UnlockByPlayerLevel()
         {
+            _profile.Apply(new PlayerSnapshot { exp = ExpFor(5) });
+
             foreach (EquipInfo equip in _catalog.Equips)
             {
-                if (equip.UnlockLevel <= _catalog.Character.Level)
+                if (equip.UnlockLevel <= _profile.Level)
                 {
                     Assert.IsTrue(equip.IsUnlocked, equip.Name);
                 }
             }
-        }
-
-        [Test(Description = "캐릭터 레벨은 플레이어 프로필 레벨을 따르고, 프로필이 갱신되면 같이 바뀐다")]
-        public void CharacterLevel_FollowsProfile()
-        {
-            Assert.AreEqual(1, _catalog.Character.Level);
-
-            _profile.Apply(new PlayerSnapshot { exp = ExpFor(5) });
-
-            Assert.AreEqual(5, _catalog.Character.Level);
         }
 
         [Test(Description = "장비·스킬 칸의 해금 여부가 프로필 레벨에 맞춰 다시 계산된다 (레벨 1: 잠김, 5: 해당 레벨까지 열림)")]
@@ -90,7 +82,7 @@ namespace Game.Tests
 
             _profile.Apply(new PlayerSnapshot { exp = ExpFor(5) });
 
-            Assert.AreEqual(1, _catalog.Character.Level);
+            Assert.IsFalse(_catalog.Equips[0].IsUnlocked);
         }
 
         [Test(Description = "장식품 효과는 팝업 줄 수(5)를 넘지 않는다")]
