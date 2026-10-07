@@ -13,6 +13,9 @@ namespace Game.Core
     {
         public int id;
         public string name;
+
+        /// <summary>이 플레이어 레벨부터 열린다. 랜덤 스킬 재료는 열린 스킬의 재료에서만 뽑는다. 값을 쓰지 않으면 처음부터 열려 있다</summary>
+        public int unlockLevel = 1;
         public string desc;
 
         /// <summary>SkillAssetTable에서 이 스킬의 프리팹과 아이콘을 찾는 키. 스킬마다 유일해야 한다</summary>
@@ -27,8 +30,5 @@ namespace Game.Core
         public int maxLevel;
         // PlayerProfile의 영구 성장 ID. 미매핑 스킬은 null이며 영구 레벨 0으로 처리.
         public string progressionId;
-        // 새 스킬의 기본 수치 자료가 없을 때 사용한 기존 프로토타입 ID.
-        public int prototypeBalanceSourceId;
-
     }
 }
