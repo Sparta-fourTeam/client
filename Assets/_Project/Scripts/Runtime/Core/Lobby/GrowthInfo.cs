@@ -91,7 +91,6 @@ namespace Game.Core
     {
         public string Name;
         public string Rank;
-        public int Level;
         public int Power;
     }
 }

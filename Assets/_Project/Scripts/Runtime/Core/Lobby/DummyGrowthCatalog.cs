@@ -15,7 +15,6 @@ namespace Game.Core
         {
             Name = "캐릭터",
             Rank = "신입 직원",
-            Level = 1,
             Power = 120,
         };
 
@@ -44,11 +43,10 @@ namespace Game.Core
 
         private void OnProfileChanged(PlayerProfile _) => RefreshUnlocks();
 
-        // 캐릭터 레벨·장비 칸·스킬 칸의 해금은 모두 플레이어 레벨 하나로 정한다. 마지막 장비 칸(왼쪽 1칸)은 처음부터 열려 있다
+        // 장비 칸·스킬 칸의 해금은 플레이어 레벨로 정한다(캐릭터에는 레벨이 없다). 마지막 장비 칸(왼쪽 1칸)은 처음부터 열려 있다
         private void RefreshUnlocks()
         {
             int level = _profile.Level;
-            Character.Level = level;
             foreach (var equip in Equips)
             {
                 equip.IsUnlocked = equip.Slot == Equips.Count - 1 || equip.UnlockLevel <= level;
