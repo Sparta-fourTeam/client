@@ -28,6 +28,7 @@ namespace Game.Boot
             builder.Register<IPlayerApi, LocalPlayerApi>(Lifetime.Singleton);
             builder.Register<IBattleApi, LocalBattleApi>(Lifetime.Singleton).AsSelf().As<ISubmitFaultSwitch>();
             builder.Register<IUpgradeApi, LocalUpgradeApi>(Lifetime.Singleton);
+            builder.Register<IEquipmentApi, LocalEquipmentApi>(Lifetime.Singleton);
             // TODO(server): Recover(Ad) 항상 거절 중 — 예: 광고 SDK 콜백에서 Recover(EnergySource.Ad, adTxId) 호출
             builder.Register<IEnergyApi, LocalEnergyApi>(Lifetime.Singleton);
             builder.Register<IStageApi, LocalStageApi>(Lifetime.Singleton);
