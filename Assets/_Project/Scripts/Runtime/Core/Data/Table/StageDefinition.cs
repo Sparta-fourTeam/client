@@ -19,6 +19,9 @@ namespace Game.Core
         /// <summary>rating 1~3의 1회성 마법북 보상 (index 0 = rating 1). 미설정 등급은 아이템 보상 없음.</summary>
         public List<List<ItemAmount>> RatingItemRewards = new();
 
+        /// <summary>이 스테이지에 등장하는 몬스터의 ID (Monsters 테이블). 일시정지 창의 "등장 요마"가 이 순서대로 보여준다</summary>
+        public List<int> MonsterIds = new();
+
         public int WallHp;
         public SpawnDefinition Spawn;
 
@@ -35,6 +38,11 @@ namespace Game.Core
                     throw new InvalidOperationException($"Stages {Id}: 아이템 등급 보상은 최대 3단계입니다");
                 }
                 foreach (var rewards in RatingItemRewards) { ValidateItemRewards(rewards); }
+            }
+
+            if (MonsterIds == null || MonsterIds.Count == 0 || MonsterIds.Count != new HashSet<int>(MonsterIds).Count)
+            {
+                throw new InvalidOperationException($"Stages {Id}: MonsterIds는 비어 있지 않고 중복이 없어야 합니다");
             }
 
             if (WallHp <= 0)
