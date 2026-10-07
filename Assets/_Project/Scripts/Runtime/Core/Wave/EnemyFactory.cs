@@ -16,6 +16,7 @@ namespace Game.Core
         private ISubscriber<EnemyHpChanged> _hpChangedSubscriber;
         private ISubscriber<EnemyDied> _diedSubscriber;
         private GameDataStore _data;
+        private IRandomProvider _random;
 
         private int _nextEnemyId;
 
@@ -25,7 +26,8 @@ namespace Game.Core
             IPublisher<EnemyDied> diedPublisher,
             ISubscriber<EnemyHpChanged> hpchangedSubscriber,
             ISubscriber<EnemyDied> diedSubscriber,
-            GameDataStore data
+            GameDataStore data,
+            IRandomProvider random
             )
         {
             _hpChangedPublisher = hpChangedPublisher;
@@ -33,6 +35,7 @@ namespace Game.Core
             _hpChangedSubscriber = hpchangedSubscriber;
             _diedSubscriber = diedSubscriber;
             _data = data;
+            _random = random;
 
             ValidateAssets();
         }
@@ -49,7 +52,7 @@ namespace Game.Core
                 new EnemyAttackStats(monster.GetAttackType(), monster.Damage, monster.AttackInterval, monster.AttackRange, monster.ProjectileSpeed,
                     monster.BurstCount, monster.BurstInterval),
                 _hpChangedPublisher, _diedPublisher,
-                PassiveBuilder.BuildPassives(monster), isSummoned, PassiveBuilder.BuildImmunities(monster),
+                PassiveBuilder.BuildPassives(monster, _random), isSummoned, PassiveBuilder.BuildImmunities(monster),
                 DamageProfile.From(monster), PassiveBuilder.BuildModifiers(monster));
 
             view.Bind(model, assets.projectilePrefab, _hpChangedSubscriber, _diedSubscriber);

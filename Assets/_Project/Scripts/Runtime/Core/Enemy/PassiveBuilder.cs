@@ -6,7 +6,8 @@ namespace Game.Core
     /// <summary>몬스터 행의 Passives 정의로 패시브 객체와 면역을 만든다. 상태가 있는 패시브라 호출마다 새로 만든다</summary>
     public static class PassiveBuilder
     {
-        public static IReadOnlyList<IPassive> BuildPassives(MonsterDefinition monster)
+        /// <param name="random">확률로 발동하는 패시브(회피, 확률 방어막, 확률 회복)가 쓰는 랜덤. 확률 1인 패시브만 있으면 비워도 된다</param>
+        public static IReadOnlyList<IPassive> BuildPassives(MonsterDefinition monster, IRandomProvider random = null)
         {
             if (monster.Passives == null || monster.Passives.Count == 0)
             {
@@ -26,6 +27,24 @@ namespace Game.Core
                         break; // 면역은 객체가 아니라 BuildImmunities가 플래그로 만든다
                     case PassiveKind.Modifier:
                         break; // 효과 배수는 객체가 아니라 BuildModifiers가 값으로 만든다
+                    case PassiveKind.Shield:
+                        passives.Add(new ShieldPassive(definition.ToShieldTrigger(), definition.Hits, definition.Duration,
+                            definition.ToImmunities(), definition.Chance, random));
+                        break;
+                    case PassiveKind.Evade:
+                        passives.Add(new EvadePassive(definition.Chance, random));
+                        break;
+                    case PassiveKind.LowHp:
+                        passives.Add(new LowHpPassive(definition.HpRatio, definition.Duration, definition.HealRatio,
+                            definition.Invulnerable, definition.SpeedMultiplier, definition.ToImmunities()));
+                        break;
+                    case PassiveKind.HealOnHit:
+                        passives.Add(new HealOnHitPassive(definition.HealRatio, definition.SpeedMultiplier, definition.Duration,
+                            definition.ToElement(), definition.Chance, random));
+                        break;
+                    case PassiveKind.SpeedBoost:
+                        passives.Add(new SpeedBoostPassive(definition.Interval, definition.Duration, definition.SpeedMultiplier));
+                        break;
                     default:
                         throw new InvalidOperationException($"Monsters {monster.Id}: 알 수 없는 패시브 Kind입니다: {definition.Kind}");
                 }
