@@ -9,7 +9,7 @@ namespace Game.Core
     /// <summary>Resources/MockData의 테이블 JSON을 읽어 도메인 모델 테이블로 만든다</summary>
     public sealed class GameDataStore
     {
-        private static readonly string[] TableNames = { "Monsters", "Stages", "Upgrades", "Energy", "GeneralCards", "Skills", "Items", "StageRewards", "PlayerLevels" };
+        private static readonly string[] TableNames = { "Monsters", "Stages", "Upgrades", "Energy", "GeneralCards", "Skills", "Items", "StageRewards", "PlayerLevels", "Equipment" };
         private readonly Dictionary<string, string> _rawJson;
 
         public Dictionary<string, int> Revisions { get; }
@@ -19,6 +19,7 @@ namespace Game.Core
         public Table<string, ItemDefinition> Items { get; }
         public Table<int, StageRewardBalance> StageRewards { get; }
         public EnergyConfig Energy { get; }
+        public Table<string, EquipmentDefinition> Equipment { get; }
         public PlayerLevelTable PlayerLevels { get; }
 
         /// <summary>스킬이 아닌 카드(방벽 회복 등). 스킬 카드는 Skills의 upgrades에 있다</summary>
@@ -75,6 +76,14 @@ namespace Game.Core
                 if (!rewards.ContainsKey(stage.Id)) { throw new InvalidOperationException($"StageRewards {stage.Id}: 보상 밸런스가 없습니다."); }
             }
             Items.GetOrThrow(ItemIds.GemChest);
+            var equipment = ParseIndexed<string, EquipmentDefinition>("Equipment", d => d.Id);
+            foreach (var def in equipment.Values)
+            {
+                def.Validate();
+                var book = Items.GetOrThrow(def.BookItemId);
+                if (book.TargetId != def.Id) { throw new InvalidOperationException($"Equipment {def.Id}: 마법북 {def.BookItemId}의 TargetId가 이 장비가 아닙니다"); }
+            }
+            Equipment = new Table<string, EquipmentDefinition>(equipment);
             StageRewards = new Table<int, StageRewardBalance>(rewards);
             Energy = JsonConvert.DeserializeObject<EnergyConfig>(_rawJson["Energy"]);
             PlayerLevels = new PlayerLevelTable(JsonConvert.DeserializeObject<List<PlayerLevelRow>>(_rawJson["PlayerLevels"]));
