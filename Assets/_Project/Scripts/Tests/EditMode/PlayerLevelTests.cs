@@ -81,5 +81,22 @@ namespace Game.Tests
             Assert.AreEqual(20, profile.ExpIntoLevel);
             Assert.AreEqual(data.PlayerLevels.RequiredToNext(3), profile.ExpRequiredForNext);
         }
+
+        [Test(Description = "레벨 진행률은 현재 레벨 안의 비율이고, 만렙에서는 1이며 MAX로 판정한다")]
+        public void Profile_LevelProgressAndMax()
+        {
+            var data = new GameDataStore();
+            var profile = new PlayerProfile(data);
+            int half = data.PlayerLevels.RequiredToNext(1) / 2;
+
+            profile.Apply(new PlayerSnapshot { exp = half });
+            Assert.AreEqual((float)half / data.PlayerLevels.RequiredToNext(1), profile.LevelProgress, 0.0001f);
+            Assert.IsFalse(profile.IsMaxLevel);
+
+            profile.Apply(new PlayerSnapshot { exp = int.MaxValue });
+            Assert.IsTrue(profile.IsMaxLevel);
+            Assert.AreEqual(1f, profile.LevelProgress);
+            Assert.AreEqual(data.PlayerLevels.MaxLevel, profile.Level);
+        }
     }
 }
