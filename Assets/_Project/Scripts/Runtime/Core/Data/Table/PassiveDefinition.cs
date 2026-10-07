@@ -198,8 +198,12 @@ namespace Game.Core
             return flags;
         }
 
-        private bool TryParseSpawnTrigger(out SpawnTrigger trigger) =>
-            Enum.TryParse(Trigger, true, out trigger) && Enum.IsDefined(typeof(SpawnTrigger), trigger);
+        private bool TryParseSpawnTrigger(out SpawnTrigger trigger)
+        {
+            trigger = default;
+            return !string.IsNullOrEmpty(Trigger) && !char.IsDigit(Trigger[0])
+                && Enum.TryParse(Trigger, true, out trigger) && Enum.IsDefined(typeof(SpawnTrigger), trigger);
+        }
 
         private bool TryParseShieldTrigger(out ShieldTrigger trigger)
         {
