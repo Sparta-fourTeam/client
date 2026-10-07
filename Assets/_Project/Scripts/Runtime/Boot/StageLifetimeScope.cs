@@ -22,6 +22,7 @@ namespace Game.Boot
             builder.Register<CardDeck>(Lifetime.Scoped);
             builder.Register<ISkillDataProvider, DefaultSkillDataProvider>(Lifetime.Scoped);
             builder.Register<IWeaponProgression, ProfileWeaponProgression>(Lifetime.Scoped);
+            builder.Register<IPermanentSkillEffects, ProfilePermanentSkillEffects>(Lifetime.Scoped);
             builder.Register<IStartingSkills, DefaultStartingSkills>(Lifetime.Scoped);
             builder.Register<ISkillUnlock, ProfileSkillUnlock>(Lifetime.Scoped);
             builder.RegisterEntryPoint<StageClock>().AsSelf();

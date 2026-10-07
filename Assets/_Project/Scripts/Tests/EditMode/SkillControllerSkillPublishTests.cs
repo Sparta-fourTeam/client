@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Game.Core;
 using Game.Core.Messages;
@@ -131,6 +132,46 @@ namespace Game.Tests
         private sealed class EmptySkills : IStartingSkills
         {
             public IReadOnlyList<int> GetSkillIds() => new int[0];
+        }
+
+        private sealed class FixedPermanentEffects : IPermanentSkillEffects
+        {
+            private readonly string progressionId;
+            private readonly EffectDef[] effects;
+            public FixedPermanentEffects(string progressionId, params EffectDef[] effects)
+            {
+                this.progressionId = progressionId;
+                this.effects = effects;
+            }
+            public IReadOnlyList<EffectDef> For(string id) => id == progressionId ? effects : new EffectDef[0];
+        }
+
+        [Test(Description = "영구 강화 효과는 스킬을 얻을 때 기본 스탯에 적용되고, 판 안의 카드 강화는 그 위에 쌓인다")]
+        public void AddWeapon_AppliesPermanentEffectsUnderCardUpgrades()
+        {
+            var player = new GameObject("PlayerPermanentEffects");
+            _created.Add(player);
+            var controller = player.AddComponent<SkillController>();
+            TestSkillAssets.Attach(controller, new[] { 1, 2 }, _created);
+            const BindingFlags Private = BindingFlags.NonPublic | BindingFlags.Instance;
+            var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll();
+            var raised = data.Find(w => w.id == 1);
+            var plain = data.Find(w => w.id == 2);
+            controller.Construct(new NullEnemyTargetProvider(), new FakeSkillPublisher(), new DefaultSkillDataProvider(new GameDataStore()),
+                startingSkills: new FixedStartingSkills(1, 2),
+                permanentEffects: new FixedPermanentEffects(raised.progressionId, new EffectDef { kind = "damage", value = 40 }));
+            typeof(SkillController).GetMethod("Start", Private).Invoke(controller, null);
+
+            SkillStats StatsOf(int id) => (SkillStats)typeof(SkillBase).GetField("stats", Private).GetValue(controller.Skills.First(s => s.Data.id == id));
+            Assert.AreEqual(raised.baseStats.cast.baseDamage * 1.4f, StatsOf(1).Cast.Damage, 0.001f);
+            Assert.AreEqual(plain.baseStats.cast.baseDamage, StatsOf(2).Cast.Damage, 0.001f, "다른 스킬에는 적용되지 않는다");
+
+            var card = controller.GetRandomUpgradeChoices(100).Find(c => !c.IsNewWeapon && c.skill.Data.id == 1
+                && c.Option.effects.Count == 1 && c.Option.effects[0].kind == "damage");
+            Assume.That(card, Is.Not.Null, "쿠나이에 피해만 올리는 카드가 있어야 확인할 수 있다");
+            Assert.IsTrue(controller.ApplyUpgradeChoice(card));
+            float expected = raised.baseStats.cast.baseDamage * 1.4f * (1 + card.Option.effects[0].value * .01f);
+            Assert.AreEqual(expected, StatsOf(1).Cast.Damage, 0.001f);
         }
 
         [Test(Description = "HasPrefab은 SkillAssetTable의 프리팹 연결 여부를 알려 준다")]

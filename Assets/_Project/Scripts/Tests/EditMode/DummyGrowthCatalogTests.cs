@@ -184,6 +184,22 @@ namespace Game.Tests
             Assert.AreEqual(0, shuriken.MaterialCost);
         }
 
+        [Test(Description = "강화 데이터가 있는 스킬의 공격력은 전투와 같은 계산(기본 스탯 + 영구 강화 효과)으로 보여준다")]
+        public void Skills_StatsMatchBattleConfig()
+        {
+            var def = _data.Upgrades.GetOrThrow("shuriken");
+            var data = _data.LoadSkills().First(s => s.progressionId == "shuriken");
+            string AttackAt(int level) => $"{PermanentSkillEffect.Apply(data, PermanentSkillEffect.At(def, level)).Stats.Cast.Damage:0.#}";
+            var shuriken = _catalog.Skills.First(s => s.Id == "shuriken");
+
+            Assert.AreEqual(AttackAt(0), shuriken.Stats[0].Current);
+
+            _profile.Apply(new PlayerSnapshot { upgrades = new() { new UpgradeRow { upgradeId = "shuriken", level = 5 } } });
+
+            Assert.AreEqual(AttackAt(5), shuriken.Stats[0].Current);
+            Assert.AreNotEqual(AttackAt(0), AttackAt(5), "Upgrades 데이터에 공격력 효과가 있어야 한다");
+        }
+
         [Test(Description = "강화 데이터가 없는 스킬은 업그레이드 ID가 없어 강화할 수 없다")]
         public void Skills_WithoutUpgradeData_HaveNoUpgradeId()
         {

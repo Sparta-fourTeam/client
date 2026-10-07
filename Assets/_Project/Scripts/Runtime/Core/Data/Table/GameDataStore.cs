@@ -108,7 +108,11 @@ namespace Game.Core
             // 스킬은 정의 객체가 가변이라 호출마다 새로 읽는다. 여기서는 부팅 때 잘못된 데이터를 바로 잡는다
             var skills = LoadSkills();
             _skillUnlockLevels = UpgradeUnlockRule.SkillUnlockLevels(skills);
-            foreach (var upgrade in upgrades.Values) { UpgradeUnlockRule.Validate(upgrade, _skillUnlockLevels); }
+            foreach (var upgrade in upgrades.Values)
+            {
+                UpgradeUnlockRule.Validate(upgrade, _skillUnlockLevels);
+                PermanentSkillEffect.Validate(upgrade, skills);
+            }
 
             // TODO(server): 전부 1 고정 — 예: 빌드에 포함된 테이블 버전 메타데이터로 교체
             Revisions = TableNames.ToDictionary(n => n, _ => 1);
