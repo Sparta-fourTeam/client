@@ -116,7 +116,7 @@ namespace Game.Core
 
         public string RawJson(string name) => _rawJson[name];
 
-        /// <summary>분열·소환 패시브가 가리키는 몬스터가 모두 있어야 한다</summary>
+        /// <summary>분열·소환 패시브가 가리키는 몬스터가 있어야 하고, 자기 자신이거나 다시 소환하는 몬스터면 안 된다</summary>
         public static void ValidatePassiveReferences(IReadOnlyDictionary<int, MonsterDefinition> monsters)
         {
             foreach (var monster in monsters.Values)
@@ -124,9 +124,26 @@ namespace Game.Core
                 foreach (var passive in monster.Passives ?? new List<PassiveDefinition>())
                 {
                     bool refersToMonster = passive.Kind == PassiveKind.Spawn;
-                    if (refersToMonster && !monsters.ContainsKey(passive.MonsterId))
+                    if (!refersToMonster)
+                    {
+                        continue;
+                    }
+
+                    if (!monsters.TryGetValue(passive.MonsterId, out var target))
                     {
                         throw new InvalidOperationException($"Monsters {monster.Id}: {passive.Kind}이 없는 몬스터를 가리킵니다: {passive.MonsterId}");
+                    }
+
+                    if (target.Id == monster.Id)
+                    {
+                        throw new InvalidOperationException($"Monsters {monster.Id}: {passive.Kind}이 자기 자신을 가리킵니다");
+                    }
+
+                    // 연쇄 소환 금지: 소환·분열로 나오는 몬스터는 다시 소환·분열하지 않는다
+                    if ((target.Passives ?? new List<PassiveDefinition>()).Exists(p => p != null && p.Kind == PassiveKind.Spawn))
+                    {
+                        throw new InvalidOperationException(
+                            $"Monsters {monster.Id}: 소환 대상 {target.Id}이(가) 다시 {PassiveKind.Spawn} 패시브를 가집니다 (연쇄 소환 금지)");
                     }
                 }
             }

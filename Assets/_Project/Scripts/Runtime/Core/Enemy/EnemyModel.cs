@@ -20,6 +20,8 @@ namespace Game.Core
         private readonly IPublisher<EnemyDied> _diedPublisher;
 
         private float _attackTimer; // 공격 시간, 적 별로 공격 시작한 시간이 다르니까
+        private int _burstRemaining; // 연속 공격에서 아직 나가지 않은 타격 수
+        private float _burstTimer; // 연속 공격에서 마지막 타격 뒤 흐른 시간
 
         public EnemyType Type => _type;
 
@@ -69,7 +71,7 @@ namespace Game.Core
                 return Vector2.zero;
             }
 
-            return direction.normalized * distance;
+            return direction.normalized * (distance * _modifiers.KnockbackMultiplier);
         }
 
         public event Action<EnemyProjectileModel> ProjectileFired; // 원거리 투사체 생성 용
@@ -80,6 +82,7 @@ namespace Game.Core
         private readonly IReadOnlyList<IPassive> _passives;
         private readonly bool _isSummoned;
         private readonly DamageProfile _profile;
+        private readonly EffectModifiers _modifiers;
 
         /// <summary>투사체가 이 적에 맞으면 관통하지 못하고 멈춘다 (투사체 차단)</summary>
         public bool BlocksPierce => _profile.BlocksProjectile;
@@ -109,7 +112,8 @@ namespace Game.Core
             IReadOnlyList<IPassive> passives = null,
             bool isSummoned = false,
             StatusImmunity immunities = StatusImmunity.None,
-            DamageProfile damageProfile = null)
+            DamageProfile damageProfile = null,
+            EffectModifiers modifiers = null)
         {
             if (maxHp <= 0)
             {
@@ -119,7 +123,8 @@ namespace Game.Core
             _passives = passives;
             _isSummoned = isSummoned;
             _profile = damageProfile ?? DamageProfile.None;
-            _status = new EnemyStatus(maxHp, immunities, () => IsDead, TakeDamage);
+            _modifiers = modifiers ?? EffectModifiers.None;
+            _status = new EnemyStatus(maxHp, immunities, () => IsDead, TakeDamage, _modifiers.BurnDurationMultiplier);
 
             Id = id;
             _speed = speed;
@@ -148,6 +153,18 @@ namespace Game.Core
                 return;
             }
 
+            // 연속 공격: 첫 타격 뒤 BurstInterval마다 남은 타격을 낸다
+            if (_burstRemaining > 0)
+            {
+                _burstTimer += deltaTime;
+                while (_burstRemaining > 0 && _burstTimer >= _attack.BurstInterval)
+                {
+                    _burstTimer -= _attack.BurstInterval;
+                    _burstRemaining--;
+                    Strike(position, wall, projectiles);
+                }
+            }
+
             _attackTimer += deltaTime;
             if (_attackTimer < _attack.Interval)
             {
@@ -155,6 +172,14 @@ namespace Game.Core
             }
 
             _attackTimer -= _attack.Interval;
+            Strike(position, wall, projectiles);
+            _burstRemaining = _attack.BurstCount - 1;
+            _burstTimer = 0f;
+        }
+
+        // 타격 한 번: 근접은 벽을 때리고 원거리는 투사체를 쏜다
+        private void Strike(Vector2 position, Wall wall, EnemyProjectileSystem projectiles)
+        {
             Attacked?.Invoke();
 
             if (_attack.Type == AttackType.Melee)

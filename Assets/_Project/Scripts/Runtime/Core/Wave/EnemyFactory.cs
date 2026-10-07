@@ -46,10 +46,11 @@ namespace Game.Core
             var view = Object.Instantiate(assets.prefab, spawnPosition, Quaternion.identity);
             var model = new EnemyModel(
                 ++_nextEnemyId, monster.Speed, monster.GetEnemyType(), monster.Hp,
-                new EnemyAttackStats(monster.GetAttackType(), monster.Damage, monster.AttackInterval, monster.AttackRange, monster.ProjectileSpeed),
+                new EnemyAttackStats(monster.GetAttackType(), monster.Damage, monster.AttackInterval, monster.AttackRange, monster.ProjectileSpeed,
+                    monster.BurstCount, monster.BurstInterval),
                 _hpChangedPublisher, _diedPublisher,
                 PassiveBuilder.BuildPassives(monster), isSummoned, PassiveBuilder.BuildImmunities(monster),
-                DamageProfile.From(monster));
+                DamageProfile.From(monster), PassiveBuilder.BuildModifiers(monster));
 
             view.Bind(model, assets.projectilePrefab, _hpChangedSubscriber, _diedSubscriber);
 

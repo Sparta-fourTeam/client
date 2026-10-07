@@ -11,9 +11,12 @@ namespace Game.Core
         private readonly StatusImmunity _immunities;
         private readonly Func<bool> _isDead;
         private readonly Action<int> _dealDamage;
+        private readonly float _burnDurationMultiplier;
 
-        public EnemyStatus(int maxHp, StatusImmunity immunities, Func<bool> isDead, Action<int> dealDamage)
+        public EnemyStatus(int maxHp, StatusImmunity immunities, Func<bool> isDead, Action<int> dealDamage,
+            float burnDurationMultiplier = 1f)
         {
+            _burnDurationMultiplier = burnDurationMultiplier;
             _maxHp = maxHp;
             _immunities = immunities;
             _isDead = isDead;
@@ -54,7 +57,7 @@ namespace Game.Core
 
         public void ApplyParalysis(float duration)
         {
-            if (IsDead || duration <= 0 || float.IsNaN(duration) || float.IsInfinity(duration))
+            if (IsDead || IsImmuneTo(StatusImmunity.Paralysis) || duration <= 0 || float.IsNaN(duration) || float.IsInfinity(duration))
             {
                 return;
             }
@@ -96,7 +99,7 @@ namespace Game.Core
 
         public void ApplyFreeze(float duration)
         {
-            if (IsDead || duration <= 0 || float.IsNaN(duration) || float.IsInfinity(duration)) { return; }
+            if (IsDead || IsImmuneTo(StatusImmunity.Freeze) || duration <= 0 || float.IsNaN(duration) || float.IsInfinity(duration)) { return; }
             FreezeRemaining = Math.Max(FreezeRemaining, duration);
         }
 
@@ -131,7 +134,13 @@ namespace Game.Core
 
         public void ApplyBurn(float damagePerSecond, float duration, float maxHpRatio = 0, Action<Vector2> onDeath = null)
         {
-            if (IsDead || damagePerSecond <= 0 || duration <= 0
+            if (IsDead || IsImmuneTo(StatusImmunity.Burn))
+            {
+                return;
+            }
+
+            duration *= _burnDurationMultiplier;
+            if (damagePerSecond <= 0 || duration <= 0
                 || float.IsNaN(damagePerSecond) || float.IsInfinity(damagePerSecond)
                 || float.IsNaN(duration) || float.IsInfinity(duration)
                 || maxHpRatio < 0 || float.IsNaN(maxHpRatio) || float.IsInfinity(maxHpRatio))

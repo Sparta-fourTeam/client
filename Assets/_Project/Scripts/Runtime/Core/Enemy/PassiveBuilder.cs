@@ -24,12 +24,42 @@ namespace Game.Core
                         break;
                     case PassiveKind.Immunity:
                         break; // 면역은 객체가 아니라 BuildImmunities가 플래그로 만든다
+                    case PassiveKind.Modifier:
+                        break; // 효과 배수는 객체가 아니라 BuildModifiers가 값으로 만든다
                     default:
                         throw new InvalidOperationException($"Monsters {monster.Id}: 알 수 없는 패시브 Kind입니다: {definition.Kind}");
                 }
             }
 
             return passives.Count > 0 ? passives : null;
+        }
+
+        /// <summary>Modifier 패시브들을 효과 배수로 합친다. 같은 대상이 여러 개면 곱한다. 없으면 EffectModifiers.None</summary>
+        public static EffectModifiers BuildModifiers(MonsterDefinition monster)
+        {
+            float knockback = 1f;
+            float burnDuration = 1f;
+            bool any = false;
+            foreach (var definition in monster.Passives ?? new List<PassiveDefinition>())
+            {
+                if (definition.Kind != PassiveKind.Modifier)
+                {
+                    continue;
+                }
+
+                any = true;
+                switch (definition.ToModifierTarget())
+                {
+                    case ModifierTarget.KnockbackDistance:
+                        knockback *= definition.Multiplier.Value;
+                        break;
+                    case ModifierTarget.BurnDuration:
+                        burnDuration *= definition.Multiplier.Value;
+                        break;
+                }
+            }
+
+            return any ? new EffectModifiers(knockback, burnDuration) : EffectModifiers.None;
         }
 
         public static StatusImmunity BuildImmunities(MonsterDefinition monster)
