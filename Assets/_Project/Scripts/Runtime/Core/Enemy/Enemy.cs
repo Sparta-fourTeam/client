@@ -25,6 +25,7 @@ namespace Game.Core
         private IDisposable _subscriptions;
         private HitFlash _hitFlash;
         private Vector3 _previousPosition; // 이동 애니메이션 판정용
+        private int _lastHp; // EnemyHpChanged가 체력 감소(피격)인지 회복인지 가리는 기준
         private Vector2 _lastPosition; // 오브젝트가 파괴된 뒤에도 남은 참조가 읽을 마지막 위치
         private bool _destroyed;
 
@@ -50,6 +51,7 @@ namespace Game.Core
         {
             _enemyModel = enemyModel;
             _projectilePrefab = projectilePrefab;
+            _lastHp = enemyModel.Hp;
             _previousPosition = transform.position;
             _lastPosition = transform.position;
             _enemyModel.ProjectileFired += OnProjectileFired;
@@ -175,7 +177,14 @@ namespace Game.Core
                 return;
             }
 
-            // EnemyHpChanged는 데미지를 받을 때만 발행된다
+            // 체력이 늘었다면(회복) 피격 연출은 없다
+            bool damaged = message.Current < _lastHp;
+            _lastHp = message.Current;
+            if (!damaged)
+            {
+                return;
+            }
+
             _hitFlash.Flash();
 
             if (_hasHit && message.Current > 0)

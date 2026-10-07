@@ -244,7 +244,8 @@ namespace Game.Tests
             public IPublisher<EnemyHpChanged> HpPublisher;
         }
 
-        private Fixture CreateBoundEnemy(int id, Color spriteColor)
+        // preDamage: Bind하기 전에 먼저 받은 피해(체력이 줄어든 상태로 시작하는 적)
+        private Fixture CreateBoundEnemy(int id, Color spriteColor, int preDamage = 0)
         {
             var builder = new BuiltinContainerBuilder();
             builder.AddMessagePipe();
@@ -256,6 +257,11 @@ namespace Game.Tests
 
             var model = new EnemyModel(id, 0f, EnemyType.Normal, 10,
                 new EnemyAttackStats(AttackType.Melee, 10, 1f, 0f), hpPublisher, diedPublisher);
+
+            if (preDamage > 0)
+            {
+                model.TakeDamage(preDamage);
+            }
 
             var go = NewObject("EnemyView");
             var sr = AddRenderer(go, spriteColor, "OriginalMat");
@@ -284,6 +290,28 @@ namespace Game.Tests
 
             Assert.AreEqual("SpriteHitFlash", green.Sprite.sharedMaterial.name);
             Assert.AreEqual(1f, AmountOf(green.Sprite), 0.0001f);
+        }
+
+        [Test(Description = "체력이 회복될 때는 피격 플래시를 내지 않는다")]
+        public void Heal_DoesNotFlash()
+        {
+            var f = CreateBoundEnemy(1, Color.white, preDamage: 5);
+
+            f.Model.Heal(3);
+
+            Assert.AreEqual("OriginalMat", f.Sprite.sharedMaterial.name);
+            Assert.IsFalse(f.Sprite.HasPropertyBlock());
+        }
+
+        [Test(Description = "회복한 뒤에 다시 맞으면 플래시한다")]
+        public void DamageAfterHeal_StillFlashes()
+        {
+            var f = CreateBoundEnemy(1, Color.white, preDamage: 5);
+
+            f.Model.Heal(3);
+            f.Model.TakeDamage(1);
+
+            Assert.AreEqual("SpriteHitFlash", f.Sprite.sharedMaterial.name);
         }
 
         [Test(Description = "다른 적의 피격 메시지에는 반응하지 않는다")]

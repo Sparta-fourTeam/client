@@ -32,6 +32,9 @@ namespace Game.Core
         public int Hp { get; private set; }
         public bool IsDead => Hp <= 0;
 
+        /// <summary>남은 체력 비율(0~1)</summary>
+        public float HpRatio => (float)Hp / MaxHp;
+
         // 상태이상은 EnemyStatus가 맡고, 아래 멤버는 기존 접점(I*Target, 뷰, 테스트)을 유지하려고 위임한다
         private readonly EnemyStatus _status;
 
@@ -48,6 +51,12 @@ namespace Game.Core
         public int FrostbiteStacks => _status.FrostbiteStacks;
         public float MovementMultiplier => _status.MovementMultiplier;
         public bool IsImmuneTo(StatusImmunity status) => _status.IsImmuneTo(status);
+
+        // 패시브가 효과를 걸었다 푸는 입구. source는 건 패시브(같은 source가 다시 걸면 바뀐다)
+        public void GrantImmunity(object source, StatusImmunity flags, float duration = 0f) => _status.GrantImmunity(source, flags, duration);
+        public void RevokeImmunity(object source) => _status.RevokeImmunity(source);
+        public void AddSpeedBoost(object source, float multiplier, float duration = 0f) => _status.AddSpeedBoost(source, multiplier, duration);
+        public void RemoveSpeedBoost(object source) => _status.RemoveSpeedBoost(source);
 
         public void ApplyParalysis(float duration) => _status.ApplyParalysis(duration);
         public void SetAreaSlow(object source, float ratio) => _status.SetAreaSlow(source, ratio);
@@ -135,10 +144,19 @@ namespace Game.Core
             _hpChangedPublisher = hpChangedPublisher;
             _diedPublisher = diedPublisher;
             _attack = attack;
+
+            // 모든 값이 정해진 뒤에 패시브가 효과를 걸 수 있다
+            if (_passives != null)
+            {
+                foreach (var passive in _passives)
+                {
+                    passive.OnSpawn(this);
+                }
+            }
         }
 
         // 지금 이동해야 하는 속도(감속 반영). 죽었거나 빙결·마비·기절 중이면 0. 실제 이동은 Enemy가 한다
-        public float MoveSpeed => IsDead || _status.IsDisabled ? 0f : _speed * MovementMultiplier;
+        public float MoveSpeed => IsDead || _status.IsDisabled ? 0f : _speed * MovementMultiplier * _status.SpeedBoostMultiplier;
 
         public bool IsInAttackRange(Vector2 position, Wall wall)
         {
@@ -204,7 +222,21 @@ namespace Game.Core
                 return;
             }
 
-            int amount = _profile.Apply(info);
+            // 패시브가 먼저 피해를 줄이거나 막을 수 있다(방어막, 회피, 무적)
+            int amount = info.Amount;
+            if (_passives != null)
+            {
+                foreach (var passive in _passives)
+                {
+                    amount = passive.OnBeforeDamage(this, info, amount);
+                    if (amount <= 0)
+                    {
+                        return;
+                    }
+                }
+            }
+
+            amount = _profile.Apply(info.WithAmount(amount));
             if (amount <= 0)
             {
                 return;
@@ -233,7 +265,29 @@ namespace Game.Core
                         passive.OnDied(this);
                     }
                 }
+
+                return;
             }
+
+            if (_passives != null)
+            {
+                foreach (var passive in _passives)
+                {
+                    passive.OnDamaged(this, info, hpBefore - Hp);
+                }
+            }
+        }
+
+        /// <summary>체력을 회복한다(최대 체력까지). 회복도 EnemyHpChanged로 알리지만 피격 연출은 체력이 줄 때만 나온다</summary>
+        public void Heal(int amount)
+        {
+            if (IsDead || amount <= 0 || Hp >= MaxHp)
+            {
+                return;
+            }
+
+            Hp = Math.Min(MaxHp, Hp + amount);
+            _hpChangedPublisher.Publish(new EnemyHpChanged(Id, Hp, MaxHp));
         }
     }
 }

@@ -13,6 +13,24 @@ namespace Game.Core
         private readonly Action<int> _dealDamage;
         private readonly float _burnDurationMultiplier;
 
+        // 패시브가 출처별로 걸었다 푸는 면역과 이속 배율. duration이 0이면 직접 풀 때까지 유지된다
+        private sealed class ImmunityGrant
+        {
+            public object Source;
+            public StatusImmunity Flags;
+            public float Remaining;
+        }
+
+        private sealed class SpeedBoost
+        {
+            public object Source;
+            public float Multiplier;
+            public float Remaining;
+        }
+
+        private readonly List<ImmunityGrant> _grants = new();
+        private readonly List<SpeedBoost> _boosts = new();
+
         public EnemyStatus(int maxHp, StatusImmunity immunities, Func<bool> isDead, Action<int> dealDamage,
             float burnDurationMultiplier = 1f)
         {
@@ -27,7 +45,62 @@ namespace Game.Core
 
         private static bool PositiveFinite(float value) => value > 0 && !float.IsNaN(value) && !float.IsInfinity(value);
 
-        public bool IsImmuneTo(StatusImmunity status) => (_immunities & status) != 0;
+        public bool IsImmuneTo(StatusImmunity status)
+        {
+            if ((_immunities & status) != 0)
+            {
+                return true;
+            }
+
+            foreach (var grant in _grants)
+            {
+                if ((grant.Flags & status) != 0)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>source가 flags의 상태이상에 걸리지 않게 한다. 같은 source가 다시 걸면 바뀐다. duration이 0이면 RevokeImmunity로 풀 때까지 유지한다</summary>
+        public void GrantImmunity(object source, StatusImmunity flags, float duration = 0f)
+        {
+            if (source == null || flags == StatusImmunity.None || IsDead || duration < 0f || float.IsNaN(duration) || float.IsInfinity(duration))
+            {
+                return;
+            }
+
+            RevokeImmunity(source);
+            _grants.Add(new ImmunityGrant { Source = source, Flags = flags, Remaining = duration });
+        }
+
+        public void RevokeImmunity(object source) => _grants.RemoveAll(grant => grant.Source == source);
+
+        /// <summary>패시브가 건 이속 배율의 곱. 감속(MovementMultiplier)과 따로 둔다. 없으면 1</summary>
+        public float SpeedBoostMultiplier
+        {
+            get
+            {
+                float product = 1f;
+                foreach (var boost in _boosts) { product *= boost.Multiplier; }
+                return product;
+            }
+        }
+
+        /// <summary>source가 이동 속도에 multiplier를 곱한다. 같은 source가 다시 걸면 바뀐다(지속시간 갱신). duration이 0이면 RemoveSpeedBoost로 풀 때까지 유지한다</summary>
+        public void AddSpeedBoost(object source, float multiplier, float duration = 0f)
+        {
+            if (source == null || IsDead || !PositiveFinite(multiplier) || duration < 0f || float.IsNaN(duration) || float.IsInfinity(duration))
+            {
+                return;
+            }
+
+            RemoveSpeedBoost(source);
+            _boosts.Add(new SpeedBoost { Source = source, Multiplier = multiplier, Remaining = duration });
+        }
+
+        public void RemoveSpeedBoost(object source) => _boosts.RemoveAll(boost => boost.Source == source);
 
         // 빙결·마비·기절 중에는 이동, 공격, 패시브 시간이 멈춘다
         public bool IsDisabled => IsFrozen || IsParalyzed || IsStunned;
@@ -67,7 +140,7 @@ namespace Game.Core
 
         public void SetAreaSlow(object source, float ratio)
         {
-            if (source == null || IsDead || ratio <= 0 || ratio >= 1 || float.IsNaN(ratio) || float.IsInfinity(ratio)) { return; }
+            if (source == null || IsDead || IsImmuneTo(StatusImmunity.Slow) || ratio <= 0 || ratio >= 1 || float.IsNaN(ratio) || float.IsInfinity(ratio)) { return; }
             areaSlows[source] = ratio;
         }
 
@@ -86,13 +159,13 @@ namespace Game.Core
 
         public void ApplySlow(float ratio, float duration)
         {
-            if (IsDead || !PositiveFinite(ratio) || ratio >= 1 || !PositiveFinite(duration)) { return; }
+            if (IsDead || IsImmuneTo(StatusImmunity.Slow) || !PositiveFinite(ratio) || ratio >= 1 || !PositiveFinite(duration)) { return; }
             slowRatio = Math.Max(slowRatio, ratio); SlowRemaining = Math.Max(SlowRemaining, duration);
         }
 
         public void ApplyVulnerability(float ratio, float duration)
         {
-            if (IsDead || !PositiveFinite(ratio) || !PositiveFinite(duration)) { return; }
+            if (IsDead || IsImmuneTo(StatusImmunity.Vulnerability) || !PositiveFinite(ratio) || !PositiveFinite(duration)) { return; }
             VulnerabilityRatio = Math.Max(VulnerabilityRatio, ratio);
             VulnerabilityRemaining = Math.Max(VulnerabilityRemaining, duration);
         }
@@ -123,6 +196,8 @@ namespace Game.Core
             areaSlows.Clear();
             StunRemaining = SlowRemaining = VulnerabilityRemaining = 0;
             slowRatio = VulnerabilityRatio = 0;
+            _grants.Clear();
+            _boosts.Clear();
             return deathExplosion;
         }
 
@@ -202,7 +277,7 @@ namespace Game.Core
 
         public void ApplyFrostbite(float damagePerSecond)
         {
-            if (IsDead || damagePerSecond <= 0 || float.IsNaN(damagePerSecond) || float.IsInfinity(damagePerSecond))
+            if (IsDead || IsImmuneTo(StatusImmunity.Frostbite) || damagePerSecond <= 0 || float.IsNaN(damagePerSecond) || float.IsInfinity(damagePerSecond))
             {
                 return;
             }
@@ -224,6 +299,30 @@ namespace Game.Core
                 TickSlice(active); TickSlice(deltaTime - active);
             }
             else { TickSlice(deltaTime); }
+
+            ExpireTimedEffects(deltaTime);
+        }
+
+        // 시간제로 건 면역과 이속 배율을 줄이고 끝난 것을 푼다
+        private void ExpireTimedEffects(float deltaTime)
+        {
+            for (int i = _grants.Count - 1; i >= 0; i--)
+            {
+                var grant = _grants[i];
+                if (grant.Remaining > 0f && (grant.Remaining -= deltaTime) <= 0f)
+                {
+                    _grants.RemoveAt(i);
+                }
+            }
+
+            for (int i = _boosts.Count - 1; i >= 0; i--)
+            {
+                var boost = _boosts[i];
+                if (boost.Remaining > 0f && (boost.Remaining -= deltaTime) <= 0f)
+                {
+                    _boosts.RemoveAt(i);
+                }
+            }
         }
 
         private void TickSlice(float deltaTime)

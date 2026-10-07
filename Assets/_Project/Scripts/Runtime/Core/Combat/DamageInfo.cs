@@ -26,6 +26,9 @@ namespace Game.Core.Combat
             IsImpact = isImpact;
         }
 
+        /// <summary>피해량만 바꾼 복사본. 피해 파이프라인의 훅이 피해를 줄일 때 쓴다</summary>
+        public DamageInfo WithAmount(int amount) => new DamageInfo(amount, SkillId, Element, CastType, IsImpact);
+
         /// <summary>지금 시전 중인 스킬(DamageAttribution 범위)의 속성과 시전 형태로 피해를 만든다. 스킬 밖이면 스킬 정보가 없는 피해가 된다</summary>
         public static DamageInfo FromCurrent(int amount, bool isImpact = false)
         {
