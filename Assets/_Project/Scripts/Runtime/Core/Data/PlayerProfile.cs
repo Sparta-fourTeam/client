@@ -18,6 +18,11 @@ namespace Game.Core
 
         public int Gold => _snapshot.gold;
         public int Exp => _snapshot.exp;
+        public int Level => _data.PlayerLevels.At(_snapshot.exp).level;
+        /// <summary>현재 레벨 안에서 쌓은 경험치</summary>
+        public int ExpIntoLevel => _data.PlayerLevels.At(_snapshot.exp).expIntoLevel;
+        /// <summary>다음 레벨까지 필요한 경험치 (만렙이면 0)</summary>
+        public int ExpRequiredForNext => _data.PlayerLevels.RequiredToNext(Level);
         public int ItemQuantity(string itemId) => _snapshot.items.Find(item => item.itemId == itemId)?.quantity ?? 0;
         public int EnergyStored => _snapshot.energyStored;
 
