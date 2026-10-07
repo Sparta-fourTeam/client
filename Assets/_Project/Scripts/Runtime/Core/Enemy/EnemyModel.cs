@@ -7,10 +7,10 @@ using UnityEngine;
 
 namespace Game.Core
 {
-    public class EnemyModel : IEnemyTarget, IFreezableTarget, IKnockbackTarget, IFrostbiteTarget, IParalyzableTarget, IBurnableTarget, IAreaSlowTarget, IStunnableTarget, ISlowableTarget, IVulnerableTarget
+    // 적 한 마리의 규칙(HP, 속도, 공격, 상태이상, 패시브). 위치를 모른다: 위치와 이동은 Enemy(Transform)가 맡고,
+    // 위치가 필요한 계산은 호출하는 쪽이 position을 넘긴다
+    public class EnemyModel
     {
-        // 아래쪽 방향으로 이동.
-        private static readonly Vector2 _moveDirection = Vector2.down;
         private readonly float _speed; // 적 이동 속도
         private readonly EnemyType _type; // 적 타입
         private readonly EnemyAttackStats _attack; // 공격 값
@@ -20,7 +20,6 @@ namespace Game.Core
 
         private float _attackTimer; // 공격 시간, 적 별로 공격 시작한 시간이 다르니까
 
-        public Vector2 Position { get; private set; }
         public EnemyType Type => _type;
 
         public AttackType AttackType => _attack.Type;
@@ -59,26 +58,28 @@ namespace Game.Core
         public void ApplyFreeze(float duration) => _status.ApplyFreeze(duration);
         public void TickStatus(float deltaTime) => _status.Tick(deltaTime);
 
-        public void ApplyKnockback(Vector2 direction, float distance)
+        // 밀치기로 실제 움직일 거리. 적용(위치 이동)은 Enemy가 한다
+        public Vector2 ResolveKnockback(Vector2 direction, float distance)
         {
             if (IsDead || distance <= 0 || float.IsNaN(distance) || float.IsInfinity(distance)
                 || float.IsNaN(direction.x) || float.IsNaN(direction.y)
                 || float.IsInfinity(direction.x) || float.IsInfinity(direction.y))
             {
-                return;
+                return Vector2.zero;
             }
 
-            Position += direction.normalized * distance;
+            return direction.normalized * distance;
         }
 
         public event Action<EnemyProjectileModel> ProjectileFired; // 원거리 투사체 생성 용
         public event Action Attacked; // 공격이 나간 순간 (근접/원거리 공통, 공격 모션 재생 용)
-        public event Action<EnemySpawnRequest> SpawnRequested; // 분열·소환 등 새 적 생성 요청 (만드는 일은 EnemySpawner)
+        public event Action<int, Vector2> SpawnRequested; // 분열·소환 요청 (몬스터 Id, 이 적 기준 오프셋). 위치를 더하는 건 Enemy, 만드는 일은 EnemySpawner
+        public event Action<Action<Vector2>> DeathExplosionRequested; // 점화 중 사망 폭발 (Enemy가 자기 위치로 호출한다)
 
         private readonly IReadOnlyList<IPassive> _passives;
         private readonly bool _isSummoned;
 
-        public void RequestSpawn(EnemySpawnRequest request) => SpawnRequested?.Invoke(request);
+        public void RequestSpawn(int monsterId, Vector2 offset) => SpawnRequested?.Invoke(monsterId, offset);
 
         // 패시브의 시간 흐름. 빙결·마비·기절 중에는 멈춘다
         public void TickPassives(float deltaTime)
@@ -94,9 +95,9 @@ namespace Game.Core
             }
         }
 
-        // 스폰 위치, 이동 속도, 타입 지정해서 몬스터 생성
+        // 이동 속도, 타입 지정해서 몬스터 생성
         // isSummoned: 분열·소환으로 생긴 적. 사망이 웨이브 게이지에 세어지지 않는다
-        public EnemyModel(int id, Vector2 spawnPosition, float speed, EnemyType type, int maxHp,
+        public EnemyModel(int id, float speed, EnemyType type, int maxHp,
             EnemyAttackStats attack,
             IPublisher<EnemyHpChanged> hpChangedPublisher,
             IPublisher<EnemyDied> diedPublisher,
@@ -114,7 +115,6 @@ namespace Game.Core
             _status = new EnemyStatus(maxHp, immunities, () => IsDead, TakeDamage);
 
             Id = id;
-            Position = spawnPosition;
             _speed = speed;
             _type = type;
 
@@ -125,24 +125,16 @@ namespace Game.Core
             _attack = attack;
         }
 
-        // 매 프레임 speed만큼 이동
-        public void Move(float deltaTime)
-        {
-            if (IsDead || _status.IsDisabled)
-            {
-                return;
-            }
+        // 지금 이동해야 하는 속도(감속 반영). 죽었거나 빙결·마비·기절 중이면 0. 실제 이동은 Enemy가 한다
+        public float MoveSpeed => IsDead || _status.IsDisabled ? 0f : _speed * MovementMultiplier;
 
-            Position += _moveDirection * (_speed * MovementMultiplier * deltaTime);
+        public bool IsInAttackRange(Vector2 position, Wall wall)
+        {
+            return position.y - wall.AttackLineY <= _attack.Range;
         }
 
-        public bool IsInAttackRange(Wall wall)
-        {
-            return Position.y - wall.AttackLineY <= _attack.Range;
-        }
-
-
-        public void Attack(float deltaTime, Wall wall, EnemyProjectileSystem projectiles)
+        // position: 이 적의 현재 위치 (근접은 벽을 때리고, 원거리는 여기서 투사체를 쏜다)
+        public void Attack(float deltaTime, Vector2 position, Wall wall, EnemyProjectileSystem projectiles)
         {
             if (IsDead || _status.IsDisabled || wall.IsDestroyed)
             {
@@ -164,7 +156,7 @@ namespace Game.Core
             }
             else
             {
-                var projectile = projectiles.Fire(Position, _attack.Damage, _attack.ProjectileSpeed);
+                var projectile = projectiles.Fire(position, _attack.Damage, _attack.ProjectileSpeed);
                 ProjectileFired?.Invoke(projectile);
             }
         }
@@ -184,7 +176,10 @@ namespace Game.Core
             {
                 var deathExplosion = _status.ClearOnDeath();
                 _diedPublisher.Publish(new EnemyDied(Id, _isSummoned));
-                deathExplosion?.Invoke(Position);
+                if (deathExplosion != null)
+                {
+                    DeathExplosionRequested?.Invoke(deathExplosion);
+                }
 
                 if (_passives != null)
                 {

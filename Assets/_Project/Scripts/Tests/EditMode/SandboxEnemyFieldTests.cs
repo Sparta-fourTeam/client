@@ -76,7 +76,7 @@ namespace Game.Tests
             var model = field.Spawn(Vector2.zero, 1000);
             model.ApplyBurn(50, 3);
             field.Advance(1f);
-            Assert.Less(model.Hp, 1000, "화상은 제자리 샌드백에도 걸린다");
+            Assert.Less(model.Model.Hp, 1000, "화상은 제자리 샌드백에도 걸린다");
         }
 
         [Test]
@@ -103,10 +103,10 @@ namespace Game.Tests
             first.TakeDamage(100);
             field.Advance(.1f);
             Assert.AreEqual(1, field.AliveCount);
-            var again = field.Models.Single();
+            var again = field.Enemies.Single();
             Assert.AreNotSame(first, again);
             Assert.AreEqual(new Vector2(2, 3), again.Position);
-            Assert.AreEqual(100, again.Hp);
+            Assert.AreEqual(100, again.Model.Hp);
         }
 
         [Test]
@@ -117,7 +117,7 @@ namespace Game.Tests
             model.TakeDamage(100);
             field.Advance(.1f);
             Assert.AreEqual(0, field.AliveCount);
-            Assert.AreEqual(0, field.Models.Count);
+            Assert.AreEqual(0, field.Enemies.Count);
         }
 
         [Test]
@@ -149,14 +149,14 @@ namespace Game.Tests
         public void SpawnPattern_CreatesRequestedCountAroundTheCenter()
         {
             field.SpawnPattern(SandboxEnemyField.Pattern.Line, 5, 100, new Vector2(0, 2));
-            var xs = field.Models.Select(m => m.Position.x).OrderBy(x => x).ToList();
+            var xs = field.Enemies.Select(m => m.Position.x).OrderBy(x => x).ToList();
             Assert.AreEqual(5, xs.Count);
             Assert.AreEqual(-2f, xs[0], .001f);
             Assert.AreEqual(2f, xs[4], .001f);
             field.Clear();
             field.SpawnPattern(SandboxEnemyField.Pattern.Cluster, 7, 100, Vector2.zero);
             Assert.AreEqual(7, field.AliveCount);
-            Assert.IsTrue(field.Models.All(m => m.Position.magnitude <= .9f + .001f));
+            Assert.IsTrue(field.Enemies.All(m => m.Position.magnitude <= .9f + .001f));
         }
 
         [Test]

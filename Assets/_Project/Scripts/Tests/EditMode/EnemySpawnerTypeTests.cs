@@ -33,15 +33,15 @@ namespace Game.Tests
 
             public readonly List<EnemyType> Types = new();
 
-            public EnemyModel Create(Vector2 spawnPosition, EnemyType type)
+            public Enemy Create(Vector2 spawnPosition, EnemyType type)
             {
                 Types.Add(type);
                 // 속도 0: 움직이지 않아 벽 사거리에 들어가지 않음
-                return new EnemyModel(++_nextId, spawnPosition, 0f, type, 10, Attack,
-                    new FakePublisher<EnemyHpChanged>(), new FakePublisher<EnemyDied>());
+                return TestEnemy.Create(new EnemyModel(++_nextId, 0f, type, 10, Attack,
+                    new FakePublisher<EnemyHpChanged>(), new FakePublisher<EnemyDied>()), spawnPosition);
             }
 
-            public EnemyModel CreateByMonsterId(int monsterId, Vector2 spawnPosition) =>
+            public Enemy CreateByMonsterId(int monsterId, Vector2 spawnPosition) =>
                 throw new NotSupportedException("이 테스트는 분열을 쓰지 않는다");
 
             public int Count(EnemyType type) => Types.FindAll(t => t == type).Count;

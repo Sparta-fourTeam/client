@@ -79,7 +79,7 @@ namespace Game.Core
             if (!started)
             {
                 started = true;
-                if (current == null || current is EnemyModel dead && dead.IsDead) { Finish(); return; }
+                if (current == null || current.IsDead) { Finish(); return; }
                 Arrive(current, first: true);
             }
             sinceHop += deltaTime;
@@ -107,7 +107,7 @@ namespace Game.Core
             float bestSquared = settings.JumpRange * settings.JumpRange;
             foreach (var candidate in candidates)
             {
-                if (candidate == null || visited.Contains(candidate) || candidate is EnemyModel model && model.IsDead) { continue; }
+                if (candidate == null || visited.Contains(candidate) || candidate.IsDead) { continue; }
                 float distanceSquared = (candidate.Position - position).sqrMagnitude;
                 if (distanceSquared <= bestSquared) { best = candidate; bestSquared = distanceSquared; }
             }
@@ -125,7 +125,7 @@ namespace Game.Core
             var onPath = new List<IEnemyTarget>();
             foreach (var candidate in candidates)
             {
-                if (candidate == null || visited.Contains(candidate) || candidate.Position == to || candidate is EnemyModel model && model.IsDead) { continue; }
+                if (candidate == null || visited.Contains(candidate) || candidate.Position == to || candidate.IsDead) { continue; }
                 float t = Mathf.Clamp01(Vector2.Dot(candidate.Position - from, segment) / lengthSquared);
                 if ((candidate.Position - (from + segment * t)).sqrMagnitude <= halfWidthSquared) { onPath.Add(candidate); }
             }
@@ -135,7 +135,7 @@ namespace Game.Core
                 var context = new AttackContext(target.Position, direction, target, randomValue);
                 hitReactions.Raise(AttackEvent.Hit, context);
                 reactions.Raise(AttackEvent.Hit, context);
-                if (target is EnemyModel killed && killed.IsDead) { reactions.Raise(AttackEvent.Kill, context); }
+                if (target.IsDead) { reactions.Raise(AttackEvent.Kill, context); }
             }
         }
 
@@ -156,7 +156,7 @@ namespace Game.Core
                 hitReactions.Raise(AttackEvent.Bounce, context);
                 reactions.Raise(AttackEvent.Bounce, context);
             }
-            if (target is EnemyModel killed && killed.IsDead) { reactions.Raise(AttackEvent.Kill, context); }
+            if (target.IsDead) { reactions.Raise(AttackEvent.Kill, context); }
         }
 
         private void RefreshLine()

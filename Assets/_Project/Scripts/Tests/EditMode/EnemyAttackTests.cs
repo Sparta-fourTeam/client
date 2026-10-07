@@ -47,14 +47,15 @@ namespace Game.Tests
             Object.DestroyImmediate(_wallGo);
         }
 
-        private static EnemyModel CreateEnemy(
+        private static Enemy CreateEnemy(
             float y, AttackType type = AttackType.Melee,
             int damage = 10, float interval = 1f, float range = 0f,
             float x = 0f, float speed = 5f, int maxHp = 10)
         {
-            return new EnemyModel(1, new Vector2(x, y), speed, EnemyType.Normal, maxHp,
+            var model = new EnemyModel(1, speed, EnemyType.Normal, maxHp,
                 new EnemyAttackStats(type, damage, interval, range, type == AttackType.Ranged ? ProjectileSpeed : 0f),
                 new FakePublisher<EnemyHpChanged>(), new FakePublisher<EnemyDied>());
+            return TestEnemy.Create(model, new Vector2(x, y));
         }
 
         // ───────── 공격 값 검증 ─────────
@@ -161,7 +162,7 @@ namespace Game.Tests
         {
             var enemy = CreateEnemy(y: 0f);
             int fired = 0;
-            enemy.ProjectileFired += _ => fired++;
+            enemy.Model.ProjectileFired += _ => fired++;
 
             enemy.Attack(1f, _wall, _projectiles);
 
@@ -202,7 +203,7 @@ namespace Game.Tests
         {
             var enemy = CreateEnemy(y: 4f, AttackType.Ranged, damage: 10, interval: 1f, range: 4f);
             EnemyProjectileModel fired = null;
-            enemy.ProjectileFired += p => fired = p;
+            enemy.Model.ProjectileFired += p => fired = p;
 
             enemy.Attack(1f, _wall, _projectiles);
 
@@ -230,7 +231,7 @@ namespace Game.Tests
         {
             var enemy = CreateEnemy(y: 4f, AttackType.Ranged, damage: 10, interval: 1f, range: 4f);
             int fired = 0;
-            enemy.ProjectileFired += _ => fired++;
+            enemy.Model.ProjectileFired += _ => fired++;
 
             enemy.Attack(0.5f, _wall, _projectiles); // 간격 전
             enemy.Attack(0.5f, _wall, _projectiles); // 1발

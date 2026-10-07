@@ -36,10 +36,11 @@ namespace Game.Tests
         private static PassiveDefinition Immune(params string[] statuses) =>
             new PassiveDefinition { Kind = PassiveKind.Immunity, Statuses = statuses };
 
-        private static EnemyModel Create(Vector2 position, params IPassive[] passives)
+        private static Enemy Create(Vector2 position, params IPassive[] passives)
         {
-            return new EnemyModel(1, position, 0f, EnemyType.Normal, 10, Attack,
+            var model = new EnemyModel(1, 0f, EnemyType.Normal, 10, Attack,
                 new Recorder<EnemyHpChanged>(), new Recorder<EnemyDied>(), passives);
+            return TestEnemy.Create(model, position);
         }
 
         // ───────── 정의 검증 ─────────
@@ -192,10 +193,10 @@ namespace Game.Tests
             var requests = new List<EnemySpawnRequest>();
             enemy.SpawnRequested += requests.Add;
 
-            enemy.TickPassives(4.9f);
+            enemy.Model.TickPassives(4.9f);
             Assert.IsEmpty(requests);
 
-            enemy.TickPassives(0.2f);
+            enemy.Model.TickPassives(0.2f);
 
             Assert.AreEqual(2, requests.Count);
             Assert.AreEqual(6, requests[0].MonsterId);
@@ -212,7 +213,7 @@ namespace Game.Tests
 
             for (int i = 0; i < 6; i++)
             {
-                enemy.TickPassives(1f);
+                enemy.Model.TickPassives(1f);
             }
 
             Assert.AreEqual(3, requests.Count); // 2 + (남은 1)
@@ -226,11 +227,11 @@ namespace Game.Tests
             enemy.SpawnRequested += requests.Add;
 
             enemy.ApplyStun(5f);
-            enemy.TickPassives(3f);
+            enemy.Model.TickPassives(3f);
             Assert.IsEmpty(requests);
 
             enemy.TickStatus(5f); // 기절이 풀린다
-            enemy.TickPassives(1f);
+            enemy.Model.TickPassives(1f);
             Assert.AreEqual(1, requests.Count);
         }
 
@@ -242,7 +243,7 @@ namespace Game.Tests
             enemy.SpawnRequested += requests.Add;
 
             enemy.TakeDamage(10);
-            enemy.TickPassives(5f);
+            enemy.Model.TickPassives(5f);
 
             Assert.IsEmpty(requests);
         }
@@ -262,7 +263,7 @@ namespace Game.Tests
             var requests = new List<EnemySpawnRequest>();
             enemy.SpawnRequested += requests.Add;
 
-            enemy.TickPassives(100f);
+            enemy.Model.TickPassives(100f);
 
             Assert.IsEmpty(requests);
         }

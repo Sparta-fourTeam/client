@@ -73,23 +73,23 @@ namespace Game.Tests
 
             public readonly Recorder<EnemyHpChanged> HpChanged = new();
             public readonly Recorder<EnemyDied> Died = new();
-            public readonly List<EnemyModel> Parents = new();
-            public readonly List<EnemyModel> Children = new();
+            public readonly List<Enemy> Parents = new();
+            public readonly List<Enemy> Children = new();
             public readonly List<int> RequestedIds = new();
 
-            public EnemyModel Create(Vector2 spawnPosition, EnemyType type)
+            public Enemy Create(Vector2 spawnPosition, EnemyType type)
             {
-                var parent = new EnemyModel(++_nextId, spawnPosition, 0f, type, 10, Attack, HpChanged, Died,
-                    new IPassive[] { new SpawnPassive(SpawnTrigger.OnDeath, ChildMonsterId, 2) });
+                var parent = TestEnemy.Create(new EnemyModel(++_nextId, 0f, type, 10, Attack, HpChanged, Died,
+                    new IPassive[] { new SpawnPassive(SpawnTrigger.OnDeath, ChildMonsterId, 2) }), spawnPosition);
                 Parents.Add(parent);
                 return parent;
             }
 
-            public EnemyModel CreateByMonsterId(int monsterId, Vector2 spawnPosition)
+            public Enemy CreateByMonsterId(int monsterId, Vector2 spawnPosition)
             {
                 RequestedIds.Add(monsterId);
-                var child = new EnemyModel(++_nextId, spawnPosition, 0f, EnemyType.Normal, 10, Attack, HpChanged, Died,
-                    null, isSummoned: true);
+                var child = TestEnemy.Create(new EnemyModel(++_nextId, 0f, EnemyType.Normal, 10, Attack, HpChanged, Died,
+                    null, isSummoned: true), spawnPosition);
                 Children.Add(child);
                 return child;
             }
@@ -110,11 +110,12 @@ namespace Game.Tests
             _created.Clear();
         }
 
-        private static EnemyModel CreateSplitter(Vector2 position, int count = 2, EnemyType type = EnemyType.Normal)
+        private static Enemy CreateSplitter(Vector2 position, int count = 2, EnemyType type = EnemyType.Normal)
         {
-            return new EnemyModel(1, position, 0f, type, 10, Attack,
+            var model = new EnemyModel(1, 0f, type, 10, Attack,
                 new Recorder<EnemyHpChanged>(), new Recorder<EnemyDied>(),
                 new IPassive[] { new SpawnPassive(SpawnTrigger.OnDeath, ChildMonsterId, count) });
+            return TestEnemy.Create(model, position);
         }
 
         private EnemySpawner CreateSpawner(SplitFactory factory, out FakeSubscriber<WaveStarted> waveStarted,
@@ -202,8 +203,8 @@ namespace Game.Tests
         public void DiedMessage_MarksSummonedEnemies()
         {
             var died = new Recorder<EnemyDied>();
-            var normal = new EnemyModel(1, Vector2.zero, 0f, EnemyType.Normal, 1, Attack, new Recorder<EnemyHpChanged>(), died);
-            var summoned = new EnemyModel(2, Vector2.zero, 0f, EnemyType.Normal, 1, Attack, new Recorder<EnemyHpChanged>(), died,
+            var normal = new EnemyModel(1, 0f, EnemyType.Normal, 1, Attack, new Recorder<EnemyHpChanged>(), died);
+            var summoned = new EnemyModel(2, 0f, EnemyType.Normal, 1, Attack, new Recorder<EnemyHpChanged>(), died,
                 null, isSummoned: true);
 
             normal.TakeDamage(1);

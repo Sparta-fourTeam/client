@@ -38,7 +38,7 @@ namespace Game.Core
             environment.Targets.GetNearest(new Vector2(origin.x, wall.AttackLineY), int.MaxValue, candidates);
             foreach (var candidate in candidates)
             {
-                if (candidate == null || candidate is EnemyModel model && model.IsDead) { continue; }
+                if (candidate == null || candidate.IsDead) { continue; }
                 if (candidate.Position.y <= wall.AttackLineY + cast.ReserveDistance
                     && (candidate.Position - (Vector2)origin).sqrMagnitude <= config.Attack.Range * config.Attack.Range)
                 { nearby = true; break; }

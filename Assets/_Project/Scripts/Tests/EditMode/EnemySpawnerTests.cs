@@ -34,8 +34,8 @@ namespace Game.Tests
             private int _nextId;
 
             public int CreateCallCount;
-            public EnemyModel LastCreatedEnemy;
-            public readonly List<EnemyModel> Created = new();
+            public Enemy LastCreatedEnemy;
+            public readonly List<Enemy> Created = new();
             public readonly FakePublisher<EnemyHpChanged> HpChanged = new();
             public readonly FakePublisher<EnemyDied> Died = new();
 
@@ -49,22 +49,24 @@ namespace Game.Tests
                 _attack = attack ?? TestAttack;
             }
 
-            public EnemyModel Create(Vector2 spawnPosition, EnemyType type)
+            public Enemy Create(Vector2 spawnPosition, EnemyType type)
             {
                 var position = PositionOverrides.Count > 0 ? PositionOverrides.Dequeue() : spawnPosition;
 
                 CreateCallCount++;
-                LastCreatedEnemy = new EnemyModel(++_nextId, position, _speed, type, _maxHp, _attack, HpChanged, Died);
+                LastCreatedEnemy = TestEnemy.Create(
+                    new EnemyModel(++_nextId, _speed, type, _maxHp, _attack, HpChanged, Died), position);
                 Created.Add(LastCreatedEnemy);
 
                 return LastCreatedEnemy;
             }
 
-            public EnemyModel CreateByMonsterId(int monsterId, Vector2 spawnPosition)
+            public Enemy CreateByMonsterId(int monsterId, Vector2 spawnPosition)
             {
                 CreateCallCount++;
-                LastCreatedEnemy = new EnemyModel(++_nextId, spawnPosition, _speed, EnemyType.Normal, _maxHp, _attack,
-                    HpChanged, Died, null, true);
+                LastCreatedEnemy = TestEnemy.Create(
+                    new EnemyModel(++_nextId, _speed, EnemyType.Normal, _maxHp, _attack, HpChanged, Died, null, true),
+                    spawnPosition);
                 Created.Add(LastCreatedEnemy);
 
                 return LastCreatedEnemy;
@@ -171,10 +173,10 @@ namespace Game.Tests
         }
 
         // 스포너와 무관하게 쓰는 더미 적
-        private static EnemyModel CreateStandaloneEnemy()
+        private static Enemy CreateStandaloneEnemy()
         {
-            return new EnemyModel(0, Vector2.zero, 0f, EnemyType.Normal, 10, TestAttack,
-                new FakePublisher<EnemyHpChanged>(), new FakePublisher<EnemyDied>());
+            return TestEnemy.Create(new EnemyModel(0, 0f, EnemyType.Normal, 10, TestAttack,
+                new FakePublisher<EnemyHpChanged>(), new FakePublisher<EnemyDied>()));
         }
 
         private EnemySpawner CreateSpawner(
@@ -549,7 +551,7 @@ namespace Game.Tests
 
             int fired = 0;
             spawner.Advance(1f); // 스폰
-            factory.LastCreatedEnemy.ProjectileFired += _ => fired++;
+            factory.LastCreatedEnemy.Model.ProjectileFired += _ => fired++;
 
             spawner.Advance(1f); // 이동 → -6
             Assert.IsTrue(factory.LastCreatedEnemy.IsInAttackRange(wall));

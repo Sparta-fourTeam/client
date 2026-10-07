@@ -73,31 +73,31 @@ namespace Game.Core
             }
         }
 
-        public EnemyModel Create(Vector2 spawnPosition, EnemyType type)
+        public Enemy Create(Vector2 spawnPosition, EnemyType type)
         {
             var entry = _table.GetRandomEntry(type, _randomProvider);
             return Build(entry, spawnPosition, isSummoned: false);
         }
 
-        public EnemyModel CreateByMonsterId(int monsterId, Vector2 spawnPosition)
+        public Enemy CreateByMonsterId(int monsterId, Vector2 spawnPosition)
         {
             var entry = _table.GetEntryByMonsterId(monsterId);
             return Build(entry, spawnPosition, isSummoned: true);
         }
 
-        private EnemyModel Build(EnemyPrefabEntry entry, Vector2 spawnPosition, bool isSummoned)
+        private Enemy Build(EnemyPrefabEntry entry, Vector2 spawnPosition, bool isSummoned)
         {
             var monster = _data.Monsters.GetOrThrow(entry.MonsterId);
-            var enemy = new EnemyModel(
-                ++_nextEnemyId, spawnPosition, monster.Speed, entry.Type, monster.Hp,
+            var model = new EnemyModel(
+                ++_nextEnemyId, monster.Speed, entry.Type, monster.Hp,
                 entry.CreateAttackStats(monster),
                 _hpChangedPublisher, _diedPublisher,
                 PassiveBuilder.BuildPassives(monster), isSummoned, PassiveBuilder.BuildImmunities(monster));
 
             var view = Object.Instantiate(entry.Prefab, spawnPosition, Quaternion.identity);
-            view.Bind(enemy, entry.ProjectilePrefab, _hpChangedSubscriber, _diedSubscriber);
+            view.Bind(model, entry.ProjectilePrefab, _hpChangedSubscriber, _diedSubscriber);
 
-            return enemy;
+            return view;
         }
 
         // 인스펙터 엔트리 검사

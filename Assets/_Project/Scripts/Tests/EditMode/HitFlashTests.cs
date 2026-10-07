@@ -254,7 +254,7 @@ namespace Game.Tests
             var hpPublisher = provider.GetRequiredService<IPublisher<EnemyHpChanged>>();
             var diedPublisher = provider.GetRequiredService<IPublisher<EnemyDied>>();
 
-            var model = new EnemyModel(id, Vector2.zero, 0f, EnemyType.Normal, 10,
+            var model = new EnemyModel(id, 0f, EnemyType.Normal, 10,
                 new EnemyAttackStats(AttackType.Melee, 10, 1f, 0f), hpPublisher, diedPublisher);
 
             var go = NewObject("EnemyView");

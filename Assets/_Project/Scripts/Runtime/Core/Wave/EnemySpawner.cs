@@ -19,7 +19,7 @@ namespace Game.Core
 
         // 필드에 있는 적
         // 죽은 적은 다음 Tick에 제거, EnemyDied는 EnemyModel이 발행
-        private readonly List<EnemyModel> _activeEnemies = new();
+        private readonly List<Enemy> _activeEnemies = new();
 
         // 분열·소환 요청. 죽는 순간(스킬 처리나 TickCombat 안)에는 목록을 건드리지 않고 다음 Advance 맨 앞에서 만든다
         private readonly Queue<EnemySpawnRequest> _pendingSpawns = new();
@@ -201,7 +201,7 @@ namespace Game.Core
             _spawnedCountInOnceSpawn++;
         }
 
-        private void Track(EnemyModel enemy)
+        private void Track(Enemy enemy)
         {
             _activeEnemies.Add(enemy);
             enemy.SpawnRequested += OnSpawnRequested;
@@ -239,18 +239,8 @@ namespace Game.Core
                     continue;
                 }
 
-                // 사거리 안이면 공격
-                // 밖이면 벽 쪽으로 이동
-                if (enemy.IsInAttackRange(_wall))
-                {
-                    enemy.Attack(deltaTime, _wall, _projectiles);
-                }
-                else
-                {
-                    enemy.Move(deltaTime);
-                }
-                enemy.TickStatus(deltaTime);
-                enemy.TickPassives(deltaTime);
+                // 사거리 안이면 공격, 밖이면 벽 쪽으로 이동, 상태이상과 패시브 시간 진행
+                enemy.Tick(deltaTime, _wall, _projectiles);
             }
 
             // 투사체 처리
