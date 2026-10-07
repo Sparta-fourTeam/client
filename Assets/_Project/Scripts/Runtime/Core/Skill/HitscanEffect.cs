@@ -36,9 +36,11 @@ namespace Game.Core
 
 
 
+        private int sourceSkill;   // 이 타격을 만든 스킬 (피해 집계용)
+
         public void Init(IObjectPool<HitscanEffect> pool, Vector3 position, float damage, IEnemyTarget directTarget = null, AttackReactions reactions = null, IEnemyTarget sourceTarget = null)
         {
-
+            sourceSkill = Game.Core.Combat.DamageAttribution.Current;
             this.pool = pool;
             transform.position = position;
             this.damage = damage;
@@ -53,6 +55,7 @@ namespace Game.Core
 
         private void Update()
         {
+            using var scope = Game.Core.Combat.DamageAttribution.Begin(sourceSkill);
             if (pool == null || released)
             {
                 return;

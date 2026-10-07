@@ -16,6 +16,7 @@ namespace Game.Core
 
         private IDisposable _subscriptions;
         private readonly HashSet<int> _deadEnemies = new();
+        private readonly Dictionary<int, long> _skillDamage = new();
 
         public int Kills { get; private set; }
         public int ReachedWave { get; private set; }
@@ -44,6 +45,23 @@ namespace Game.Core
             _stageEndedSubscriber.Subscribe(_ => IsEnded = true).AddTo(bag);
             _wallHpChanged.Subscribe(e => WallHpPercent = e.Max <= 0 ? 0 : e.Current * 100 / e.Max).AddTo(bag);
             _subscriptions = bag.Build();
+            Combat.DamageAttribution.Dealt += OnDamageDealt;
+        }
+
+        /// <summary>스킬별 누적 피해량을 피해량이 큰 순서로 돌려준다 (같으면 스킬 ID 순). int 범위를 넘으면 int.MaxValue로 자른다</summary>
+        public List<SkillDamage> SkillDamageRanking()
+        {
+            var list = new List<SkillDamage>();
+            foreach (var pair in _skillDamage) { list.Add(new SkillDamage(pair.Key, (int)Math.Min(int.MaxValue, pair.Value))); }
+            list.Sort((a, b) => a.Damage != b.Damage ? b.Damage.CompareTo(a.Damage) : a.SkillId.CompareTo(b.SkillId));
+            return list;
+        }
+
+        private void OnDamageDealt(int skillId, int damage)
+        {
+            if (IsEnded) { return; }
+            _skillDamage.TryGetValue(skillId, out var total);
+            _skillDamage[skillId] = total + damage;
         }
 
         // 일시정지(timeScale 0) 중에는 deltaTime이 0이라 시간이 멈춘다
@@ -69,6 +87,7 @@ namespace Game.Core
 
         public void Dispose()
         {
+            Combat.DamageAttribution.Dealt -= OnDamageDealt;
             _subscriptions?.Dispose();
         }
 
