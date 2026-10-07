@@ -19,9 +19,10 @@ namespace Game.Core
         private IEnemyTargetProvider targetProvider;
         private IBufferedPublisher<SkillChanged> skillChanged;
         private ChildSkillCaster childCaster;
+        private ISkillUnlock skillUnlock;
 
         [Inject]
-        public void Construct(IEnemyTargetProvider targetProvider, IBufferedPublisher<SkillChanged> skillChanged, ISkillDataProvider dataProvider, IWeaponProgression progression = null, Game.Core.Defense.Wall wall = null, IStartingSkills startingSkills = null)
+        public void Construct(IEnemyTargetProvider targetProvider, IBufferedPublisher<SkillChanged> skillChanged, ISkillDataProvider dataProvider, IWeaponProgression progression = null, Game.Core.Defense.Wall wall = null, IStartingSkills startingSkills = null, ISkillUnlock skillUnlock = null)
         {
             this.startingSkills = startingSkills ?? new DefaultStartingSkills();
             this.targetProvider = targetProvider;
@@ -29,6 +30,7 @@ namespace Game.Core
             this.dataProvider = dataProvider;
             this.progression = progression;
             this.wall = wall;
+            this.skillUnlock = skillUnlock;
         }
 
         private void Start()
@@ -121,7 +123,7 @@ namespace Game.Core
         }
 
         private SkillUpgradeChoices Choices => new SkillUpgradeChoices(skills, dataTable.Values, this,
-            HasPrefab);
+            HasPrefab, skillUnlock == null ? null : skillUnlock.IsUnlocked);
 
         public List<UpgradeChoice> GetRandomUpgradeChoices(int count) =>
             Choices.Select(count, upperBound => Random.Range(0, upperBound));

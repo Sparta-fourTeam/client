@@ -25,14 +25,18 @@ namespace Game.Core
         private readonly IEnumerable<SkillData> catalog;
         private readonly IUpgradeState state;
         private readonly Func<int, bool> hasPrefab;
+        private readonly Func<SkillData, bool> isUnlocked;
 
+        /// <param name="isUnlocked">새 스킬 카드로 내놓을 수 있는(열린) 스킬인지. null이면 모든 스킬이 열린 것으로 본다.
+        /// 이미 가진 스킬의 강화 카드는 이 조건과 상관없다</param>
         public SkillUpgradeChoices(IReadOnlyList<SkillBase> skills, IEnumerable<SkillData> catalog,
-            IUpgradeState state, Func<int, bool> hasPrefab)
+            IUpgradeState state, Func<int, bool> hasPrefab, Func<SkillData, bool> isUnlocked = null)
         {
             this.skills = skills;
             this.catalog = catalog;
             this.state = state;
             this.hasPrefab = hasPrefab;
+            this.isUnlocked = isUnlocked;
         }
 
         public List<UpgradeChoice> Select(int count, Func<int, int> nextIndex)
@@ -71,7 +75,8 @@ namespace Game.Core
             }
             foreach (var data in catalog)
             {
-                if (!data.childOnly && state.GetWeaponLevel(data.id) == 0 && hasPrefab(data.id))
+                if (!data.childOnly && state.GetWeaponLevel(data.id) == 0 && hasPrefab(data.id)
+                    && (isUnlocked == null || isUnlocked(data)))
                 {
                     candidates.Add(new UpgradeChoice { IsNewWeapon = true, newSkillData = data });
                 }
