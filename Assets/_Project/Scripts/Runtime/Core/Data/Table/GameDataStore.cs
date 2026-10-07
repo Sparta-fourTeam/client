@@ -82,7 +82,7 @@ namespace Game.Core
             {
                 foreach (var passive in monster.Passives ?? new List<PassiveDefinition>())
                 {
-                    bool refersToMonster = passive.Kind == PassiveKind.SplitOnDeath || passive.Kind == PassiveKind.SummonPeriodic;
+                    bool refersToMonster = passive.Kind == PassiveKind.Spawn;
                     if (refersToMonster && !monsters.ContainsKey(passive.MonsterId))
                     {
                         throw new InvalidOperationException($"Monsters {monster.Id}: {passive.Kind}이 없는 몬스터를 가리킵니다: {passive.MonsterId}");

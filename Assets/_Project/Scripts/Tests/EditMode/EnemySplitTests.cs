@@ -10,7 +10,7 @@ using Object = UnityEngine.Object;
 
 namespace Game.Tests
 {
-    // 슬라임 분열: SplitOnDeath 패시브와 EnemySpawner가 분열체를 만드는 흐름
+    // 슬라임 분열: SpawnPassive(OnDeath)와 EnemySpawner가 분열체를 만드는 흐름
     public sealed class EnemySplitTests
     {
         private const int ChildMonsterId = 99;
@@ -80,7 +80,7 @@ namespace Game.Tests
             public EnemyModel Create(Vector2 spawnPosition, EnemyType type)
             {
                 var parent = new EnemyModel(++_nextId, spawnPosition, 0f, type, 10, Attack, HpChanged, Died,
-                    new IPassive[] { new SplitOnDeath(ChildMonsterId, 2) });
+                    new IPassive[] { new SpawnPassive(SpawnTrigger.OnDeath, ChildMonsterId, 2) });
                 Parents.Add(parent);
                 return parent;
             }
@@ -114,7 +114,7 @@ namespace Game.Tests
         {
             return new EnemyModel(1, position, 0f, type, 10, Attack,
                 new Recorder<EnemyHpChanged>(), new Recorder<EnemyDied>(),
-                new IPassive[] { new SplitOnDeath(ChildMonsterId, count) });
+                new IPassive[] { new SpawnPassive(SpawnTrigger.OnDeath, ChildMonsterId, count) });
         }
 
         private EnemySpawner CreateSpawner(SplitFactory factory, out FakeSubscriber<WaveStarted> waveStarted,
@@ -147,7 +147,7 @@ namespace Game.Tests
             return spawner;
         }
 
-        // ───────── SplitOnDeath ─────────
+        // ───────── SpawnPassive (OnDeath) ─────────
 
         [Test(Description = "치명상이 아닌 피해에는 분열을 요청하지 않는다")]
         public void NonLethalDamage_DoesNotRequestSpawn()
@@ -193,9 +193,9 @@ namespace Game.Tests
         }
 
         [Test(Description = "분열 수는 1 이상이어야 한다")]
-        public void SplitOnDeath_RejectsNonPositiveCount()
+        public void SpawnPassive_RejectsNonPositiveCount()
         {
-            Assert.Throws<ArgumentOutOfRangeException>(() => new SplitOnDeath(ChildMonsterId, 0));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new SpawnPassive(SpawnTrigger.OnDeath, ChildMonsterId, 0));
         }
 
         [Test(Description = "일반 적의 사망 메시지는 웨이브에 세고, 분열체는 세지 않는다")]

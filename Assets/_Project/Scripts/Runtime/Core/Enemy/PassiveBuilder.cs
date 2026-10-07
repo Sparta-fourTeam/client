@@ -18,11 +18,9 @@ namespace Game.Core
             {
                 switch (definition.Kind)
                 {
-                    case PassiveKind.SplitOnDeath:
-                        passives.Add(new SplitOnDeath(definition.MonsterId, definition.Count));
-                        break;
-                    case PassiveKind.SummonPeriodic:
-                        passives.Add(new SummonPeriodic(definition.MonsterId, definition.Count, definition.Interval, definition.MaxTotal));
+                    case PassiveKind.Spawn:
+                        passives.Add(new SpawnPassive(definition.ToSpawnTrigger(), definition.MonsterId, definition.Count,
+                            definition.Interval, definition.MaxTotal));
                         break;
                     case PassiveKind.Immunity:
                         break; // 면역은 객체가 아니라 BuildImmunities가 플래그로 만든다

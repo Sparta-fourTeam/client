@@ -5,8 +5,7 @@ namespace Game.Core
     /// <summary>패시브 종류 키. Monsters.json의 Passives[].Kind에 쓴다</summary>
     public static class PassiveKind
     {
-        public const string SplitOnDeath = "SplitOnDeath";
-        public const string SummonPeriodic = "SummonPeriodic";
+        public const string Spawn = "Spawn";
         public const string Immunity = "Immunity";
     }
 
@@ -16,16 +15,19 @@ namespace Game.Core
     {
         public string Kind;
 
-        /// <summary>분열·소환으로 나오는 몬스터 (Monsters.Id)</summary>
+        /// <summary>Spawn: 만들어 달라고 요청하는 때 (OnDeath, Interval)</summary>
+        public string Trigger;
+
+        /// <summary>Spawn: 만들 몬스터 (Monsters.Id)</summary>
         public int MonsterId;
 
-        /// <summary>분열·소환 수</summary>
+        /// <summary>Spawn: 한 번에 만드는 수</summary>
         public int Count;
 
-        /// <summary>소환 주기(초)</summary>
+        /// <summary>Spawn(Interval): 주기(초)</summary>
         public float Interval;
 
-        /// <summary>한 마리가 소환할 수 있는 총 수</summary>
+        /// <summary>Spawn(Interval): 한 마리가 만들 수 있는 총 수</summary>
         public int MaxTotal;
 
         /// <summary>면역인 상태이상 이름 (StatusImmunity)</summary>
@@ -35,12 +37,14 @@ namespace Game.Core
         {
             switch (Kind)
             {
-                case PassiveKind.SplitOnDeath:
-                    Require(MonsterId > 0 && Count >= 1, ownerId, "MonsterId는 1 이상, Count는 1 이상이어야 합니다");
-                    break;
-                case PassiveKind.SummonPeriodic:
-                    Require(MonsterId > 0 && Count >= 1 && Interval > 0f && MaxTotal >= 1, ownerId,
-                        "MonsterId, Count, MaxTotal은 1 이상, Interval은 0보다 커야 합니다");
+                case PassiveKind.Spawn:
+                    Require(TryParseTrigger(out var trigger), ownerId, $"알 수 없는 Trigger입니다: {Trigger}");
+                    Require(MonsterId > 0 && Count >= 1, ownerId, "MonsterId와 Count는 1 이상이어야 합니다");
+                    if (trigger == SpawnTrigger.Interval)
+                    {
+                        Require(Interval > 0f && MaxTotal >= 1, ownerId, "Interval은 0보다 크고 MaxTotal은 1 이상이어야 합니다");
+                    }
+
                     break;
                 case PassiveKind.Immunity:
                     Require(Statuses != null && Statuses.Length > 0, ownerId, "Statuses가 비어 있습니다");
@@ -55,6 +59,12 @@ namespace Game.Core
             }
         }
 
+        public SpawnTrigger ToSpawnTrigger()
+        {
+            TryParseTrigger(out var trigger);
+            return trigger;
+        }
+
         /// <summary>Statuses 이름을 StatusImmunity 플래그로 합친다</summary>
         public StatusImmunity ToImmunities()
         {
@@ -67,6 +77,9 @@ namespace Game.Core
 
             return flags;
         }
+
+        private bool TryParseTrigger(out SpawnTrigger trigger) =>
+            Enum.TryParse(Trigger, true, out trigger) && Enum.IsDefined(typeof(SpawnTrigger), trigger);
 
         private static bool TryParseStatus(string name, out StatusImmunity status) =>
             Enum.TryParse(name, true, out status) && status != StatusImmunity.None;

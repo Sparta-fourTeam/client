@@ -28,10 +28,10 @@ namespace Game.Tests
         }
 
         private static PassiveDefinition Split(int monsterId = 3, int count = 2) =>
-            new PassiveDefinition { Kind = PassiveKind.SplitOnDeath, MonsterId = monsterId, Count = count };
+            new PassiveDefinition { Kind = PassiveKind.Spawn, Trigger = "OnDeath", MonsterId = monsterId, Count = count };
 
         private static PassiveDefinition Summon(int monsterId = 6, int count = 2, float interval = 5f, int maxTotal = 4) =>
-            new PassiveDefinition { Kind = PassiveKind.SummonPeriodic, MonsterId = monsterId, Count = count, Interval = interval, MaxTotal = maxTotal };
+            new PassiveDefinition { Kind = PassiveKind.Spawn, Trigger = "Interval", MonsterId = monsterId, Count = count, Interval = interval, MaxTotal = maxTotal };
 
         private static PassiveDefinition Immune(params string[] statuses) =>
             new PassiveDefinition { Kind = PassiveKind.Immunity, Statuses = statuses };
@@ -67,6 +67,28 @@ namespace Game.Tests
             var monster = Monster(new PassiveDefinition { Kind = "Fly" });
 
             Assert.Throws<InvalidOperationException>(() => monster.Validate());
+        }
+
+        [Test(Description = "Spawn의 Trigger는 OnDeath나 Interval이어야 한다")]
+        public void Validate_RejectsUnknownTrigger()
+        {
+            var noTrigger = Split();
+            noTrigger.Trigger = null;
+            var badTrigger = Split();
+            badTrigger.Trigger = "OnHit";
+
+            Assert.Throws<InvalidOperationException>(() => Monster(noTrigger).Validate());
+            Assert.Throws<InvalidOperationException>(() => Monster(badTrigger).Validate());
+        }
+
+        [Test(Description = "OnDeath는 주기와 총량 없이도 유효하다")]
+        public void Validate_OnDeathNeedsNoInterval()
+        {
+            var onDeath = Split();
+            onDeath.Interval = 0f;
+            onDeath.MaxTotal = 0;
+
+            Assert.DoesNotThrow(() => Monster(onDeath).Validate());
         }
 
         [Test(Description = "분열 수와 소환 값은 범위를 지켜야 한다")]
@@ -115,13 +137,15 @@ namespace Game.Tests
 
             var slime = store.Monsters.GetOrThrow(1);
             Assert.AreEqual(1, slime.Passives.Count);
-            Assert.AreEqual(PassiveKind.SplitOnDeath, slime.Passives[0].Kind);
+            Assert.AreEqual(PassiveKind.Spawn, slime.Passives[0].Kind);
+            Assert.AreEqual("OnDeath", slime.Passives[0].Trigger);
 
             var oni = store.Monsters.GetOrThrow(4);
             Assert.AreEqual(StatusImmunity.Stun, PassiveBuilder.BuildImmunities(oni));
 
             var spiderLord = store.Monsters.GetOrThrow(5);
-            Assert.AreEqual(PassiveKind.SummonPeriodic, spiderLord.Passives[0].Kind);
+            Assert.AreEqual(PassiveKind.Spawn, spiderLord.Passives[0].Kind);
+            Assert.AreEqual("Interval", spiderLord.Passives[0].Trigger);
         }
 
         // ───────── PassiveBuilder ─────────
@@ -134,8 +158,8 @@ namespace Game.Tests
             var passives = PassiveBuilder.BuildPassives(monster);
 
             Assert.AreEqual(2, passives.Count);
-            Assert.IsInstanceOf<SplitOnDeath>(passives[0]);
-            Assert.IsInstanceOf<SummonPeriodic>(passives[1]);
+            Assert.IsInstanceOf<SpawnPassive>(passives[0]);
+            Assert.IsInstanceOf<SpawnPassive>(passives[1]);
             Assert.AreEqual(StatusImmunity.Stun, PassiveBuilder.BuildImmunities(monster));
         }
 
@@ -159,12 +183,12 @@ namespace Game.Tests
             Assert.AreNotSame(first[0], second[0]);
         }
 
-        // ───────── SummonPeriodic ─────────
+        // ───────── SpawnPassive (Interval) ─────────
 
         [Test(Description = "주기가 지나면 count마리를 가로로 벌려 요청하고 주기가 지나기 전에는 요청하지 않는다")]
         public void Summon_RequestsAfterInterval()
         {
-            var enemy = Create(new Vector2(2f, 4f), new SummonPeriodic(6, 2, interval: 5f, maxTotal: 10));
+            var enemy = Create(new Vector2(2f, 4f), new SpawnPassive(SpawnTrigger.Interval, 6, 2, interval: 5f, maxTotal: 10));
             var requests = new List<EnemySpawnRequest>();
             enemy.SpawnRequested += requests.Add;
 
@@ -182,7 +206,7 @@ namespace Game.Tests
         [Test(Description = "총량 상한까지만 소환하고 더 이상 요청하지 않는다")]
         public void Summon_StopsAtMaxTotal()
         {
-            var enemy = Create(Vector2.zero, new SummonPeriodic(6, 2, interval: 1f, maxTotal: 3));
+            var enemy = Create(Vector2.zero, new SpawnPassive(SpawnTrigger.Interval, 6, 2, interval: 1f, maxTotal: 3));
             var requests = new List<EnemySpawnRequest>();
             enemy.SpawnRequested += requests.Add;
 
@@ -197,7 +221,7 @@ namespace Game.Tests
         [Test(Description = "기절·빙결·마비 중에는 소환 시간이 흐르지 않는다")]
         public void Summon_PausedWhileDisabled()
         {
-            var enemy = Create(Vector2.zero, new SummonPeriodic(6, 1, interval: 1f, maxTotal: 5));
+            var enemy = Create(Vector2.zero, new SpawnPassive(SpawnTrigger.Interval, 6, 1, interval: 1f, maxTotal: 5));
             var requests = new List<EnemySpawnRequest>();
             enemy.SpawnRequested += requests.Add;
 
@@ -213,7 +237,7 @@ namespace Game.Tests
         [Test(Description = "죽은 몬스터는 소환하지 않는다")]
         public void Summon_NotWhenDead()
         {
-            var enemy = Create(Vector2.zero, new SummonPeriodic(6, 1, interval: 1f, maxTotal: 5));
+            var enemy = Create(Vector2.zero, new SpawnPassive(SpawnTrigger.Interval, 6, 1, interval: 1f, maxTotal: 5));
             var requests = new List<EnemySpawnRequest>();
             enemy.SpawnRequested += requests.Add;
 
@@ -226,9 +250,33 @@ namespace Game.Tests
         [Test(Description = "소환 값이 잘못되면 생성 때 거부한다")]
         public void Summon_RejectsInvalidArguments()
         {
-            Assert.Throws<ArgumentOutOfRangeException>(() => new SummonPeriodic(6, 0, 1f, 1));
-            Assert.Throws<ArgumentOutOfRangeException>(() => new SummonPeriodic(6, 1, 0f, 1));
-            Assert.Throws<ArgumentOutOfRangeException>(() => new SummonPeriodic(6, 1, 1f, 0));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new SpawnPassive(SpawnTrigger.Interval, 6, 0, 1f, 1));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new SpawnPassive(SpawnTrigger.Interval, 6, 1, 0f, 1));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new SpawnPassive(SpawnTrigger.Interval, 6, 1, 1f, 0));
+        }
+
+        [Test(Description = "OnDeath 트리거는 주기를 요구하지 않고 시간이 흘러도 요청하지 않는다")]
+        public void OnDeath_IgnoresTicks()
+        {
+            var enemy = Create(Vector2.zero, new SpawnPassive(SpawnTrigger.OnDeath, 3, 2));
+            var requests = new List<EnemySpawnRequest>();
+            enemy.SpawnRequested += requests.Add;
+
+            enemy.TickPassives(100f);
+
+            Assert.IsEmpty(requests);
+        }
+
+        [Test(Description = "Interval 트리거는 죽을 때 요청하지 않는다")]
+        public void Interval_IgnoresDeath()
+        {
+            var enemy = Create(Vector2.zero, new SpawnPassive(SpawnTrigger.Interval, 6, 1, interval: 5f, maxTotal: 2));
+            var requests = new List<EnemySpawnRequest>();
+            enemy.SpawnRequested += requests.Add;
+
+            enemy.TakeDamage(10);
+
+            Assert.IsEmpty(requests);
         }
     }
 }
