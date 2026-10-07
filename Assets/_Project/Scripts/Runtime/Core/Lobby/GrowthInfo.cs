@@ -67,23 +67,30 @@ namespace Game.Core
         public string Text;
     }
 
-    /// <summary>장비 칸 하나의 표시용 정보 (캐릭터 화면 장비 칸, 장비 강화 팝업)</summary>
+    /// <summary>장비 칸 하나의 표시용 정보 (캐릭터 화면 장비 칸, 장비 강화 팝업). 레벨·비용·해금은 Upgrades 테이블과 PlayerProfile에서 온다</summary>
     public sealed class EquipInfo
     {
         public int Slot;
+
+        /// <summary>강화 API에 넘기는 업그레이드 ID (예: equipment.hat)</summary>
+        public string UpgradeId;
         public string Name;
         public int Level;
+        public int MaxLevel;
 
-        /// <summary>칸 해금에 필요한 캐릭터 레벨</summary>
+        /// <summary>칸 해금에 필요한 플레이어 레벨</summary>
         public int UnlockLevel;
         public bool IsUnlocked;
 
         public IReadOnlyList<StatLine> Stats;
         public IReadOnlyList<EquipEffect> Effects;
 
-        /// <summary>다음 레벨로 강화하는 비용 (엽전, 강화서)</summary>
+        public bool IsMaxLevel => Level >= MaxLevel;
+
+        /// <summary>다음 레벨로 강화하는 비용: 코인과 재료(아이템 ID, 수량). 최대 레벨이면 쓰지 않는다</summary>
         public int CoinCost;
-        public int BookCost;
+        public string MaterialItemId;
+        public int MaterialCost;
     }
 
     /// <summary>캐릭터 화면 위쪽에 표시하는 캐릭터 정보</summary>

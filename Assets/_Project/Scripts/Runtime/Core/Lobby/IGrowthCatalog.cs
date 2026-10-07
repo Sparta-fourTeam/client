@@ -16,7 +16,6 @@ namespace Game.Core
         IReadOnlyList<SkillInfo> Skills { get; }
 
         int SkillBooks { get; }
-        int EquipBooks { get; }
         int Gems { get; }
         int Tickets { get; }
     }
