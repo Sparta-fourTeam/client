@@ -23,6 +23,9 @@ namespace Game.Tests
             /// <summary>0보다 크면 이 횟수만큼만 ToThrow를 던지고 그 뒤로는 성공한다</summary>
             public int ThrowCount = int.MaxValue;
 
+            /// <summary>클리어 응답에 담을 별점</summary>
+            public int ClearRating = 2;
+
             public UniTask<StartBattleResponse> StartBattle(int stageId, int dataRevision)
             {
                 throw new NotSupportedException();
@@ -37,7 +40,8 @@ namespace Game.Tests
                     throw ToThrow;
                 }
 
-                return UniTask.FromResult(new SubmitResultResponse { cleared = req.cleared, rewardGold = 100 });
+                return UniTask.FromResult(new SubmitResultResponse
+                { cleared = req.cleared, rewardGold = 100, clearRating = req.cleared ? ClearRating : 0 });
             }
         }
 
@@ -262,6 +266,20 @@ namespace Game.Tests
             Assert.AreEqual(100, _results[0].RewardGold);
             CollectionAssert.AreEqual(
                 new[] { StageState.Playing, StageState.Submitting, StageState.Finished }, _states);
+        }
+
+        [Test(Description = "클리어하면 제출 응답의 별점이 StageResult로 전달되고, 실패하면 별점은 0이다")]
+        public void StageResult_CarriesClearRating()
+        {
+            _api.ClearRating = 3;
+            _stageEnded.Publish(new StageEnded(StageOutcome.Clear));
+            Assert.AreEqual(3, _results[0].ClearRating);
+
+            TearDown();
+            SetUp();
+            _stageEnded.Publish(new StageEnded(StageOutcome.Fail));
+            Assert.IsFalse(_results[0].Cleared);
+            Assert.AreEqual(0, _results[0].ClearRating);
         }
 
         [Test(Description = "StageResult에 스킬별 피해량이 피해량 순서로 담긴다")]
