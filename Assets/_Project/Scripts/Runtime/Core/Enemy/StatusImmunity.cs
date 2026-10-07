@@ -11,5 +11,11 @@ namespace Game.Core
         Burn = 1 << 1,
         Paralysis = 1 << 2,
         Freeze = 1 << 3,
+        Slow = 1 << 4,
+        Frostbite = 1 << 5,
+        Vulnerability = 1 << 6,
+
+        /// <summary>모든 디버프(위의 상태이상 전부)</summary>
+        AllDebuffs = Stun | Burn | Paralysis | Freeze | Slow | Frostbite | Vulnerability,
     }
 }
