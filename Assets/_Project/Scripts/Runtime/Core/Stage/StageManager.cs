@@ -281,7 +281,8 @@ namespace Game.Core
 
                 _pendingRequest = null;
                 _result.Publish(new StageResult(response.cleared, request.kills, request.reachedWave, request.playTime,
-                    response.rewardGold, response.rewardItems, response.rewardExp, response.clearRating));
+                    response.rewardGold, response.rewardItems, response.rewardExp, response.clearRating,
+                    _stats.SkillDamageRanking()));
                 ChangeState(StageState.Finished);
             }
             finally

@@ -264,6 +264,24 @@ namespace Game.Tests
                 new[] { StageState.Playing, StageState.Submitting, StageState.Finished }, _states);
         }
 
+        [Test(Description = "StageResult에 스킬별 피해량이 피해량 순서로 담긴다")]
+        public void StageResult_CarriesSkillDamageRanking()
+        {
+            _stats.Initialize();   // 이 픽스처의 다른 테스트는 구독이 필요 없어 기본으로는 초기화하지 않는다
+            try
+            {
+                using (Game.Core.Combat.DamageAttribution.Begin(5)) { Game.Core.Combat.DamageAttribution.Report(40); }
+                using (Game.Core.Combat.DamageAttribution.Begin(2)) { Game.Core.Combat.DamageAttribution.Report(90); }
+
+                _stageEnded.Publish(new StageEnded(StageOutcome.Clear));
+
+                Assert.AreEqual(2, _results[0].SkillDamages.Count);
+                Assert.AreEqual((2, 90), (_results[0].SkillDamages[0].SkillId, _results[0].SkillDamages[0].Damage));
+                Assert.AreEqual((5, 40), (_results[0].SkillDamages[1].SkillId, _results[0].SkillDamages[1].Damage));
+            }
+            finally { _stats.Dispose(); }
+        }
+
         [Test(Description = "결과 제출이 거절되면 SubmitRejected만 발행한다. 안내를 보여주고 로비로 보내는 것은 구독하는 뷰의 몫이다")]
         public void StageEnded_Rejected_PublishesAndWaitsForNotice()
         {

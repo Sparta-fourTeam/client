@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Game.Core;
 using Game.Core.Messages;
@@ -28,10 +29,12 @@ namespace Game.View
 
         [SerializeField] private ResultStarsView _starsView;
 
-        // 아직 데이터가 없어 채우지 않는다. 무기별 피해량은 _damageList.Show(rows)를 OnStageResult에서 부르면 된다.
-        // 호출하기 전에는 영역이 꺼져 있다
-        [Header("데이터 연결 전 (StageResult에 아직 없음)")]
+
+        // 스킬별 피해량은 StageResult.SkillDamages로 온다. 보유 스킬(SkillChanged)의 레벨과 SkillAssetTable의 아이콘으로 줄을 만든다.
+        // 목록이 비면 영역이 꺼진다
+        [Header("인법 피해량")]
         [SerializeField] private ResultDamageListView _damageList;
+        [SerializeField] private SkillAssetTable _skillAssets;
 
         private const string ClearBubble = "어때요? 이 정도쯤이야!";
         private const string FailBubble = "으으... 다음엔 꼭...!";
@@ -39,10 +42,13 @@ namespace Game.View
         private StageContext _stageContext;
         private ISceneNavigator _navigator;
         private GameDataStore _data;
+        private IReadOnlyList<ISkillStatus> _ownedSkills;
 
         [Inject]
-        public void Construct(ISubscriber<StageResult> stageResult, StageContext stageContext, ISceneNavigator navigator, GameDataStore data)
+        public void Construct(ISubscriber<StageResult> stageResult, StageContext stageContext, ISceneNavigator navigator, GameDataStore data,
+            IBufferedSubscriber<SkillChanged> skillChanged)
         {
+            Track(skillChanged.Subscribe(message => _ownedSkills = message.Skills));
             _stageContext = stageContext;
             _data = data;
             _navigator = navigator;
@@ -65,6 +71,11 @@ namespace Game.View
             _bubbleText.text = result.Cleared ? ClearBubble : FailBubble;
             _rewardList.Show(RewardRows.Build(_itemIcons, _data, result.RewardGold, result.RewardExp, result.RewardItems));
             _starsView.SetCount(result.ClearRating);
+            if (_damageList != null)
+            {
+                _damageList.Show(SkillDamageRows.Build(result.SkillDamages, _ownedSkills,
+                    status => _skillAssets != null ? _skillAssets.GetHudIcon(status.AssetKey) : null));
+            }
             _lobbyButton.interactable = true;
             _panel.SetActive(true);
         }
