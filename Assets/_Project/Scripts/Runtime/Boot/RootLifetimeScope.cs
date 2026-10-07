@@ -37,17 +37,17 @@ namespace Game.Boot
             builder.Register<ISceneNavigator, SceneLoader>(Lifetime.Singleton);
             builder.RegisterEntryPoint<BootFlow>();
 
-            // TODO(unlock): 해금 판단 방식(플레이어 레벨 또는 스킬 잠금 여부)이 정해지면 이 임시 연결을 교체한다.
-            // 지금은 랜덤 재료 보상을 받는 스테이지를 플레이할 수 있도록 모든 스킬·장비를 열린 것으로 본다.
+            // 랜덤 재료는 열린 재료 중에서 뽑는다. 장비는 플레이어 레벨이 UnlockLevel 이상이면 열린다(EquipmentUnlockRule).
+            // TODO(unlock): 스킬은 해금 판단 방식이 정해지면 이 임시 연결을 교체한다. 지금은 모든 스킬을 열린 것으로 본다.
             builder.RegisterBuildCallback(c =>
             {
                 var battleApi = c.Resolve<LocalBattleApi>();
                 var data = c.Resolve<GameDataStore>();
+                var store = c.Resolve<LocalSaveStore>();
                 battleApi.UnlockedSkillIds = () => ItemIds.SkillMaterials
                     .Select(id => int.TryParse(data.Items.GetOrThrow(id).TargetId, out var skillId) ? skillId : 0)
                     .Where(skillId => skillId > 0).ToList();
-                battleApi.UnlockedEquipmentIds = () => ItemIds.EquipmentMaterials
-                    .Select(id => data.Items.GetOrThrow(id).TargetId).ToList();
+                battleApi.UnlockedEquipmentIds = () => EquipmentUnlockRule.UnlockedTargetIds(data, store.Load().exp);
             });
 
             // 진단 창(Diagnostics window) 및 전역 기능을 활성화하기 위해 GlobalMessagePipe를 설정합니다.
