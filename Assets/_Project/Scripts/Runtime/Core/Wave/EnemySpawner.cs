@@ -11,6 +11,7 @@ namespace Game.Core
     public class EnemySpawner : IInitializable, IDisposable, ITickable, IEnemyTargetProvider
     {
         private readonly IEnemyFactory _enemyViewFactory;
+        private readonly EnemyRoster _roster;
         private readonly EnemySpawnConfig _enemySpawnConfig;
         private readonly SpawnArea _spawnArea;
         private readonly IRandomProvider _randomProvider;
@@ -45,6 +46,7 @@ namespace Game.Core
 
         public EnemySpawner(
             IEnemyFactory enemyViewFactory,
+            EnemyRoster roster,
             EnemySpawnConfig enemySpawnConfig,
             SpawnArea spawnArea,
             IRandomProvider randomProvider,
@@ -54,6 +56,7 @@ namespace Game.Core
             EnemyProjectileSystem projectiles)
         {
             _enemyViewFactory = enemyViewFactory;
+            _roster = roster;
             _enemySpawnConfig = enemySpawnConfig;
             _spawnArea = spawnArea;
             _randomProvider = randomProvider;
@@ -187,7 +190,7 @@ namespace Game.Core
         }
 
 
-        // PickEnemyType으로 타입을 고르고 위치는 SpawnArea의 현재 범위에서 매번 새로 뽑는다
+        // PickEnemyType으로 등급을 고르고, 스테이지에 나오는 그 등급의 몬스터 중에서 하나를 뽑는다. 위치는 SpawnArea의 현재 범위에서 매번 새로 뽑는다
         private void Spawn()
         {
             var min = _spawnArea.Min;
@@ -195,7 +198,8 @@ namespace Game.Core
             var spawnX = _randomProvider.Range(min.x, max.x);
             var spawnY = _randomProvider.Range(min.y, max.y);
             var spawnPosition = new Vector2(spawnX, spawnY);
-            var enemy = _enemyViewFactory.Create(spawnPosition, PickEnemyType());
+            var monster = _roster.Pick(PickEnemyType(), _randomProvider);
+            var enemy = _enemyViewFactory.Create(monster.Id, spawnPosition);
 
             Track(enemy);
             _spawnedCountInOnceSpawn++;
@@ -217,7 +221,7 @@ namespace Game.Core
             while (_pendingSpawns.Count > 0)
             {
                 var request = _pendingSpawns.Dequeue();
-                Track(_enemyViewFactory.CreateByMonsterId(request.MonsterId, request.Position));
+                Track(_enemyViewFactory.Create(request.MonsterId, request.Position, isSummoned: true));
             }
         }
 

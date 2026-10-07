@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Game.Core.Messages;
 using MessagePipe;
 using UnityEngine;
@@ -8,39 +7,17 @@ namespace Game.Core
 {
     public class EnemyFactory : MonoBehaviour, IEnemyFactory
     {
-        // 인스펙터에서 EnemyType 별 프리팹, 속도 매핑을 채움
+        // 몬스터 Id로 프리팹을 찾는 표. 항목별 설정은 이 표에 있고 팩토리에는 표 하나만 연결한다
         [SerializeField]
-        private List<EnemyPrefabEntry> _enemyPrefabEntries;
-
-        private EnemyPrefabTable _table;
+        private MonsterAssetTable _assets;
 
         private IPublisher<EnemyHpChanged> _hpChangedPublisher;
         private IPublisher<EnemyDied> _diedPublisher;
         private ISubscriber<EnemyHpChanged> _hpChangedSubscriber;
         private ISubscriber<EnemyDied> _diedSubscriber;
-        private IRandomProvider _randomProvider;
         private GameDataStore _data;
 
         private int _nextEnemyId;
-
-        private void Awake()
-        {
-            _table = new EnemyPrefabTable(_enemyPrefabEntries);
-
-            foreach (var entry in _enemyPrefabEntries)
-            {
-                ValidateEntry(entry);
-            }
-
-            // EnemyType마다 엔트리 최소 1개 있는지 체크
-            foreach (EnemyType type in System.Enum.GetValues(typeof(EnemyType)))
-            {
-                if (!_enemyPrefabEntries.Exists(e => e.Type == type && !e.SpawnOnly))
-                {
-                    Debug.LogError($"[EnemyFactory] EnemyType.{type} 엔트리가 없습니다.", this);
-                }
-            }
-        }
 
         [Inject]
         public void Construct(
@@ -48,7 +25,6 @@ namespace Game.Core
             IPublisher<EnemyDied> diedPublisher,
             ISubscriber<EnemyHpChanged> hpchangedSubscriber,
             ISubscriber<EnemyDied> diedSubscriber,
-            IRandomProvider randomProvider,
             GameDataStore data
             )
         {
@@ -56,63 +32,59 @@ namespace Game.Core
             _diedPublisher = diedPublisher;
             _hpChangedSubscriber = hpchangedSubscriber;
             _diedSubscriber = diedSubscriber;
-            _randomProvider = randomProvider;
             _data = data;
 
-            // 프리팹 엔트리가 가리키는 몬스터 행이 모두 있어야 한다
-            foreach (var entry in _enemyPrefabEntries)
-            {
-                if (!_data.Monsters.Contains(entry.MonsterId))
-                {
-                    Debug.LogError($"[EnemyFactory] EnemyType.{entry.Type}: Monsters 테이블에 MonsterId {entry.MonsterId}가 없습니다.", this);
-                }
-                else if (entry.AttackType == AttackType.Ranged && _data.Monsters.GetOrThrow(entry.MonsterId).ProjectileSpeed <= 0f)
-                {
-                    Debug.LogError($"[EnemyFactory] EnemyType.{entry.Type}: 원거리인데 MonsterId {entry.MonsterId}의 ProjectileSpeed가 0입니다.", this);
-                }
-            }
+            ValidateAssets();
         }
 
-        public Enemy Create(Vector2 spawnPosition, EnemyType type)
+        public Enemy Create(int monsterId, Vector2 spawnPosition, bool isSummoned = false)
         {
-            var entry = _table.GetRandomEntry(type, _randomProvider);
-            return Build(entry, spawnPosition, isSummoned: false);
-        }
+            var monster = _data.Monsters.GetOrThrow(monsterId);
+            var assets = _assets.GetOrThrow(monsterId);
 
-        public Enemy CreateByMonsterId(int monsterId, Vector2 spawnPosition)
-        {
-            var entry = _table.GetEntryByMonsterId(monsterId);
-            return Build(entry, spawnPosition, isSummoned: true);
-        }
-
-        private Enemy Build(EnemyPrefabEntry entry, Vector2 spawnPosition, bool isSummoned)
-        {
-            var monster = _data.Monsters.GetOrThrow(entry.MonsterId);
+            // 뷰가 위치를 가지므로 먼저 만든다
+            var view = Object.Instantiate(assets.prefab, spawnPosition, Quaternion.identity);
             var model = new EnemyModel(
-                ++_nextEnemyId, monster.Speed, entry.Type, monster.Hp,
-                entry.CreateAttackStats(monster),
+                ++_nextEnemyId, monster.Speed, monster.GetEnemyType(), monster.Hp,
+                new EnemyAttackStats(monster.GetAttackType(), monster.Damage, monster.AttackInterval, monster.AttackRange, monster.ProjectileSpeed),
                 _hpChangedPublisher, _diedPublisher,
                 PassiveBuilder.BuildPassives(monster), isSummoned, PassiveBuilder.BuildImmunities(monster));
 
-            var view = Object.Instantiate(entry.Prefab, spawnPosition, Quaternion.identity);
-            view.Bind(model, entry.ProjectilePrefab, _hpChangedSubscriber, _diedSubscriber);
+            view.Bind(model, assets.projectilePrefab, _hpChangedSubscriber, _diedSubscriber);
 
             return view;
         }
 
-        // 인스펙터 엔트리 검사
-        private void ValidateEntry(EnemyPrefabEntry entry)
+        // 표의 항목이 가리키는 몬스터 행과 프리팹이 제대로 있는지 검사
+        private void ValidateAssets()
         {
-            string name = $"EnemyType.{entry.Type}";
-
-            if (entry.Prefab == null)
+            if (_assets == null)
             {
-                Debug.LogError($"[EnemyFactory] {name}: Prefab이 없습니다.", this);
+                Debug.LogError("[EnemyFactory] MonsterAssetTable이 연결되지 않았습니다.", this);
+                return;
             }
 
-            if (entry.AttackType == AttackType.Ranged && entry.ProjectilePrefab == null)
+            foreach (var pair in _assets.Entries)
             {
-                Debug.LogError($"[EnemyFactory] {name}: 원거리인데 ProjectilePrefab이 없습니다.", this);
+                int monsterId = pair.Key;
+                var entry = pair.Value;
+                string name = $"MonsterId {monsterId}";
+
+                if (!_data.Monsters.Contains(monsterId))
+                {
+                    Debug.LogError($"[EnemyFactory] {name}: Monsters 테이블에 없는 몬스터입니다.", this);
+                    continue;
+                }
+
+                if (entry.prefab == null)
+                {
+                    Debug.LogError($"[EnemyFactory] {name}: prefab이 없습니다.", this);
+                }
+
+                if (_data.Monsters.GetOrThrow(monsterId).GetAttackType() == AttackType.Ranged && entry.projectilePrefab == null)
+                {
+                    Debug.LogError($"[EnemyFactory] {name}: 원거리인데 projectilePrefab이 없습니다.", this);
+                }
             }
         }
     }

@@ -77,16 +77,16 @@ namespace Game.Tests
             public readonly List<Enemy> Children = new();
             public readonly List<int> RequestedIds = new();
 
-            public Enemy Create(Vector2 spawnPosition, EnemyType type)
+            public Enemy Create(int monsterId, Vector2 spawnPosition, bool isSummoned = false)
             {
-                var parent = TestEnemy.Create(new EnemyModel(++_nextId, 0f, type, 10, Attack, HpChanged, Died,
-                    new IPassive[] { new SpawnPassive(SpawnTrigger.OnDeath, ChildMonsterId, 2) }), spawnPosition);
-                Parents.Add(parent);
-                return parent;
-            }
+                if (!isSummoned)
+                {
+                    var parent = TestEnemy.Create(new EnemyModel(++_nextId, 0f, EnemyType.Normal, 10, Attack, HpChanged, Died,
+                        new IPassive[] { new SpawnPassive(SpawnTrigger.OnDeath, ChildMonsterId, 2) }), spawnPosition);
+                    Parents.Add(parent);
+                    return parent;
+                }
 
-            public Enemy CreateByMonsterId(int monsterId, Vector2 spawnPosition)
-            {
                 RequestedIds.Add(monsterId);
                 var child = TestEnemy.Create(new EnemyModel(++_nextId, 0f, EnemyType.Normal, 10, Attack, HpChanged, Died,
                     null, isSummoned: true), spawnPosition);
@@ -137,6 +137,7 @@ namespace Game.Tests
 
             var spawner = new EnemySpawner(
                 factory,
+                new EnemyRoster(new[] { new MonsterDefinition { Id = 1, Hp = 10, AttackInterval = 1f } }),
                 new EnemySpawnConfig(spawnIntervalMin: 0.1f, spawnIntervalMax: 0.5f, spawnCooldown: 3f),
                 area,
                 new FixedRandom(),

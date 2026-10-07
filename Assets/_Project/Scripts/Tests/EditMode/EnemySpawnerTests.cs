@@ -49,24 +49,14 @@ namespace Game.Tests
                 _attack = attack ?? TestAttack;
             }
 
-            public Enemy Create(Vector2 spawnPosition, EnemyType type)
+            public Enemy Create(int monsterId, Vector2 spawnPosition, bool isSummoned = false)
             {
                 var position = PositionOverrides.Count > 0 ? PositionOverrides.Dequeue() : spawnPosition;
 
                 CreateCallCount++;
                 LastCreatedEnemy = TestEnemy.Create(
-                    new EnemyModel(++_nextId, _speed, type, _maxHp, _attack, HpChanged, Died), position);
-                Created.Add(LastCreatedEnemy);
-
-                return LastCreatedEnemy;
-            }
-
-            public Enemy CreateByMonsterId(int monsterId, Vector2 spawnPosition)
-            {
-                CreateCallCount++;
-                LastCreatedEnemy = TestEnemy.Create(
-                    new EnemyModel(++_nextId, _speed, EnemyType.Normal, _maxHp, _attack, HpChanged, Died, null, true),
-                    spawnPosition);
+                    new EnemyModel(++_nextId, _speed, EnemyType.Normal, _maxHp, _attack, HpChanged, Died, null, isSummoned),
+                    position);
                 Created.Add(LastCreatedEnemy);
 
                 return LastCreatedEnemy;
@@ -179,6 +169,10 @@ namespace Game.Tests
                 new FakePublisher<EnemyHpChanged>(), new FakePublisher<EnemyDied>()));
         }
 
+        // 일반 등급 몬스터 하나만 나오는 스테이지
+        private static EnemyRoster TestRoster() =>
+            new EnemyRoster(new[] { new MonsterDefinition { Id = 1, Hp = 10, AttackInterval = 1f } });
+
         private EnemySpawner CreateSpawner(
             FakeEnemyViewFactory factory,
             out FakeSubscriber<WaveStarted> waveStarted,
@@ -193,6 +187,7 @@ namespace Game.Tests
 
             var spawner = new EnemySpawner(
                 factory,
+                TestRoster(),
                 CreateTestWaveData(),
                 spawnArea ?? CreateTestSpawnArea(),
                 random ?? new FakeRandomProvider(1f),
