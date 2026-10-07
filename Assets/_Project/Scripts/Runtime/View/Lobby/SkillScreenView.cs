@@ -16,25 +16,36 @@ namespace Game.View
         private IGrowthCatalog _catalog;
         private PlayerProfile _profile;
 
-        // TODO(data): 실제 구매가 붙으면 Upgraded 이벤트 대신 UpgradeChanged(추가 예정) 구독
         [Inject]
         public void Construct(IGrowthCatalog catalog, PlayerProfile profile)
         {
             _catalog = catalog;
             _profile = profile;
+            _profile.Changed += OnProfileChanged;
+        }
+
+        protected override void OnDestroy()
+        {
+            if (_profile != null)
+            {
+                _profile.Changed -= OnProfileChanged;
+            }
+
+            base.OnDestroy();
+        }
+
+        // 화면이 열려 있는 동안 프로필이 바뀌면(스킬 강화 등) 칸의 레벨·잠금과 골드 표시를 다시 그린다
+        private void OnProfileChanged(PlayerProfile _)
+        {
+            if (_panel.activeSelf)
+            {
+                Refresh();
+            }
         }
 
         private void Awake()
         {
             _panel.SetActive(false);
-            // 팝업에서 레벨업하면 칸의 레벨 표시를 다시 그린다
-            _upgradePopup.Upgraded += Refresh;
-        }
-
-        protected override void OnDestroy()
-        {
-            _upgradePopup.Upgraded -= Refresh;
-            base.OnDestroy();
         }
 
         public void SetVisible(bool visible)
