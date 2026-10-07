@@ -21,6 +21,7 @@ namespace Game.Boot
             builder.Register<ISkillDataProvider, DefaultSkillDataProvider>(Lifetime.Scoped);
             builder.Register<IWeaponProgression, ProfileWeaponProgression>(Lifetime.Scoped);
             builder.Register<IStartingSkills, DefaultStartingSkills>(Lifetime.Scoped);
+            builder.Register<ISkillUnlock, ProfileSkillUnlock>(Lifetime.Scoped);
             builder.RegisterEntryPoint<StageClock>().AsSelf();
             builder.RegisterEntryPoint<StageManager>().AsSelf();
             builder.RegisterEntryPoint<StageJudge>();
