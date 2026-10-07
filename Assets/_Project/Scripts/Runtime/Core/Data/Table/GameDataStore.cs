@@ -55,10 +55,16 @@ namespace Game.Core
 
             Monsters = new Table<int, MonsterDefinition>(monsters);
             Stages = new Table<int, StageDefinition>(stages);
-            Upgrades = new Table<string, UpgradeDefinition>(ParseIndexed<string, UpgradeDefinition>("Upgrades", d => d.UpgradeId));
+            var upgrades = ParseIndexed<string, UpgradeDefinition>("Upgrades", d => d.UpgradeId);
+            Upgrades = new Table<string, UpgradeDefinition>(upgrades);
             var items = ParseIndexed<string, ItemDefinition>("Items", d => d.Id);
             foreach (var item in items.Values) { item.Validate(); }
             Items = new Table<string, ItemDefinition>(items);
+            foreach (var upgrade in upgrades.Values)
+            {
+                upgrade.Validate();
+                if (upgrade.UsesMaterial) { Items.GetOrThrow(upgrade.MaterialItemId); }
+            }
             var rewards = ParseIndexed<int, StageRewardBalance>("StageRewards", d => d.StageId);
             foreach (var balance in rewards.Values)
             {
