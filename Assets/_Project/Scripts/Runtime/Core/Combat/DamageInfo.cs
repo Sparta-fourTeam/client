@@ -11,6 +11,9 @@ namespace Game.Core.Combat
         public Element Element { get; }
         public CastType CastType { get; }
 
+        /// <summary>스킬에서 나온 피해인가. 상태이상 지속 피해 같은 스킬 밖의 피해는 속성 계산을 받지 않는다</summary>
+        public bool IsFromSkill => SkillId != 0;
+
         /// <summary>공격이 대상에 닿아 주는 직접 피해. 폭발, 추가 번개, 장판 피해 같은 부가 반응의 피해는 아니다</summary>
         public bool IsImpact { get; }
 

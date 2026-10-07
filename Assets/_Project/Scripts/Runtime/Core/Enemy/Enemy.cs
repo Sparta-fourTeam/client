@@ -253,11 +253,14 @@ namespace Game.Core
             _enemyModel.TakeDamage(damage);
         }
 
-        // 속성과 시전 형태를 가진 피해. 속성에 따른 계산은 피해 파이프라인(4단계)에서 이 자리에 붙는다
+        // 속성과 시전 형태를 가진 피해. 모델의 피해 파이프라인이 속성·시전 형태 저항을 계산한다
         public void TakeDamage(DamageInfo info)
         {
-            _enemyModel.TakeDamage(info.Amount);
+            _enemyModel.TakeDamage(info);
         }
+
+        // 투사체 차단 몬스터에 맞은 투사체는 관통하지 못한다
+        public bool BlocksPierce => _enemyModel != null && _enemyModel.BlocksPierce;
 
         public void ApplyParalysis(float duration) => _enemyModel?.ApplyParalysis(duration);
         public void ApplyFreeze(float duration) => _enemyModel.ApplyFreeze(duration);
