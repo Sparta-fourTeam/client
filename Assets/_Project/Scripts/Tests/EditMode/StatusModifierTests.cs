@@ -230,8 +230,14 @@ namespace Game.Tests
         {
             var store = new GameDataStore();
 
-            Assert.AreEqual(StatusImmunity.Stun, PassiveBuilder.BuildImmunities(store.Monsters.GetOrThrow(4)));
-            Assert.AreSame(EffectModifiers.None, PassiveBuilder.BuildModifiers(store.Monsters.GetOrThrow(4)));
+            // 오니: 기절 면역, 밀치기 저항(절반만 밀린다). 점화 배수는 그대로다
+            var oni = store.Monsters.GetOrThrow(4);
+            Assert.AreEqual(StatusImmunity.Stun, PassiveBuilder.BuildImmunities(oni));
+            Assert.AreEqual(0.5f, PassiveBuilder.BuildModifiers(oni).KnockbackMultiplier, 0.0001f);
+            Assert.AreEqual(1f, PassiveBuilder.BuildModifiers(oni).BurnDurationMultiplier, 0.0001f);
+
+            // 효과 배수가 없는 몬스터는 변화가 없다
+            Assert.AreSame(EffectModifiers.None, PassiveBuilder.BuildModifiers(store.Monsters.GetOrThrow(2)));
         }
     }
 }
