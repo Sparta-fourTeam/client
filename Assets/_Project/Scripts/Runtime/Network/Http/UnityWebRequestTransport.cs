@@ -13,6 +13,9 @@ namespace Game.Network
     {
         public async UniTask<HttpResponseData> Send(HttpRequestData request, float timeoutSeconds, CancellationToken cancellationToken)
         {
+            // SendWebRequest()를 부르는 순간 전송이 시작되므로, 이미 취소된 요청은 서버에 닿기 전에 여기서 끝낸다
+            cancellationToken.ThrowIfCancellationRequested();
+
             using var web = new UnityWebRequest(request.Url, request.Verb.ToString().ToUpperInvariant());
             web.downloadHandler = new DownloadHandlerBuffer();
             web.timeout = Mathf.CeilToInt(timeoutSeconds);
