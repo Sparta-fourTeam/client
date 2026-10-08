@@ -16,8 +16,8 @@ namespace Game.Core
         // 장비 칸 순서(오른쪽 2열 6칸 → 왼쪽 1칸)와 표시 이름. 이름은 클라이언트 표시용이다
         private static readonly (string upgradeId, string name)[] EquipSlots =
         {
-            ("equipment.hat", "모자"), ("equipment.top", "상의"), ("equipment.shoes", "신발"), ("equipment.weapon", "무기"),
-            ("equipment.ring", "반지"), ("equipment.tie", "넥타이"), ("equipment.employee_id", "사원증"),
+            ("equipment.hat", "후드"), ("equipment.top", "로브"), ("equipment.shoes", "장화"), ("equipment.weapon", "무기"),
+            ("equipment.ring", "뼈 반지"), ("equipment.tie", "해골 목걸이"), ("equipment.employee_id", "인장"),
         };
 
         private readonly PlayerProfile _profile;

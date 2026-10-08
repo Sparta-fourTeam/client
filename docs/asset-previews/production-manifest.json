@@ -1,0 +1,882 @@
+[
+  {
+    "key": "Player",
+    "category": "Characters",
+    "path": "Assets/_Project/Sprites/Generated/Characters/Player.png",
+    "guid": "cc1d84e0bbda7ff40b2c2634dceb0e1f",
+    "width": 208,
+    "height": 176,
+    "source": "existing PSD composite",
+    "sha256": "0332b8fc98a13ffcb21f6d666a15d3a29f3c3433447e6d40a20d8eb3cab30491"
+  },
+  {
+    "key": "MonsterShadow",
+    "category": "Common",
+    "path": "Assets/_Project/Sprites/Generated/Common/MonsterShadow.png",
+    "guid": "f85598d5a25537c4a9a5594ea7c49b28",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "e4f5595ed07922e1db6141c5ea3379286711362c4dc327f062ffe935ac61db0a"
+  },
+  {
+    "key": "SkillCircleFrame",
+    "category": "Common",
+    "path": "Assets/_Project/Sprites/Generated/Common/SkillCircleFrame.png",
+    "guid": "0fe2263dcc181e04f9f9511c4097bfae",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "d4f8b7626ceeb478a9b3060c956fb87a71bf962c8d693b54184c57c0ee8ec41f"
+  },
+  {
+    "key": "ArrowProjectile",
+    "category": "Effects",
+    "path": "Assets/_Project/Sprites/Generated/Effects/ArrowProjectile.png",
+    "guid": "982adcbbc352b1e4788003bfeb3d05d6",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "39a2f184cdb21e6daa8b81477f2c72ac9af9b2ed9d7132fdd47fec89ce55b0c4"
+  },
+  {
+    "key": "ChalkStroke",
+    "category": "Effects",
+    "path": "Assets/_Project/Sprites/Generated/Effects/ChalkStroke.png",
+    "guid": "d3d61b076cbcf3d4788ae17fe5265e76",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "8d332ded9315b2cd79cf06b14232d27a30ddbd479a22601a201b6ef5de9a9355"
+  },
+  {
+    "key": "ColdZoneGround",
+    "category": "Effects",
+    "path": "Assets/_Project/Sprites/Generated/Effects/ColdZoneGround.png",
+    "guid": "a3b65b033e9ddc8408cfffeeaa876b52",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "b23d7d93c0ef278df3a224e4f549a07eb3da9a9b05b4b0b445fbc7121763ba25"
+  },
+  {
+    "key": "DustPuff",
+    "category": "Effects",
+    "path": "Assets/_Project/Sprites/Generated/Effects/DustPuff.png",
+    "guid": "a6f86dd5cbd11fe4785320c21d0f1162",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "dc19241673a5b3cc662bf20b18cfec720edecd56cacc83c066693d3e1f76a747"
+  },
+  {
+    "key": "EnergyBeamBody",
+    "category": "Effects",
+    "path": "Assets/_Project/Sprites/Generated/Effects/EnergyBeamBody.png",
+    "guid": "7ccecb00de2ffaf42b4966fe3f93a0b0",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "0d6f6f07667055543ac2d0ba418e615eba6f2362de0a0593fcac4ca227142a38"
+  },
+  {
+    "key": "EyeJellyCross",
+    "category": "Effects",
+    "path": "Assets/_Project/Sprites/Generated/Effects/EyeJellyCross.png",
+    "guid": "ba88f1d0436af23498a76fd3281e252a",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "491c1393114273057b6c6bb8c00336965de9b08b4abdb19ae60bb44131722627"
+  },
+  {
+    "key": "FlameDab",
+    "category": "Effects",
+    "path": "Assets/_Project/Sprites/Generated/Effects/FlameDab.png",
+    "guid": "9c538e622fe49ab43bbcdac7e6ad5c83",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "d3222218f2467924834be1874382776acd25e044b937fa30b59d7f91fad38f71"
+  },
+  {
+    "key": "IceChip",
+    "category": "Effects",
+    "path": "Assets/_Project/Sprites/Generated/Effects/IceChip.png",
+    "guid": "7a10ec54dc20fc64b9db0c0b9db97101",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "47a3203e59c60c7a2721325fe74b1a79cdea86d32a5b268f6f137058e354b88e"
+  },
+  {
+    "key": "LightningCloudBody",
+    "category": "Effects",
+    "path": "Assets/_Project/Sprites/Generated/Effects/LightningCloudBody.png",
+    "guid": "adbd149f55735d641b37969c7e2e466f",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "050ce7b6daf75ef8595f312cfe9445e32bcc38a81f8e4c9f62225eb0b8add0a1"
+  },
+  {
+    "key": "LightningStroke",
+    "category": "Effects",
+    "path": "Assets/_Project/Sprites/Generated/Effects/LightningStroke.png",
+    "guid": "9b5d4be449e562b4c97b37bd5d54f8b6",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "95964923a4bfa314f8ce719116e08442b70481f42d9b627bd87b856e832b6295"
+  },
+  {
+    "key": "SlimeProjectile",
+    "category": "Effects",
+    "path": "Assets/_Project/Sprites/Generated/Effects/SlimeProjectile.png",
+    "guid": "0a82e00d7fd12a54d94714afc8890a06",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "efdc17f21c4bfc2c4357c6e3270a5daf2a296882fa3c86e37c999db96797afdf"
+  },
+  {
+    "key": "WoodCrumb",
+    "category": "Effects",
+    "path": "Assets/_Project/Sprites/Generated/Effects/WoodCrumb.png",
+    "guid": "03e012257c0288f4da75454ef14043b0",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "b44d64abe161e808a7b8cc49ef418b7b58af828465b873313e5b09e7794d381a"
+  },
+  {
+    "key": "ElectricFrames3x3",
+    "category": "EffectTextures",
+    "path": "Assets/_Project/Sprites/Generated/EffectTextures/ElectricFrames3x3.png",
+    "guid": "ba0399fd09904854ab0c8e2abba67dcf",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "9a4183d6029079a5022c725234d7196e51e2fb20140ab72f866306ab65bec1fc"
+  },
+  {
+    "key": "FxBeam",
+    "category": "EffectTextures",
+    "path": "Assets/_Project/Sprites/Generated/EffectTextures/FxBeam.png",
+    "guid": "7db184ce8cde9ea449abb2a7c3a53f5b",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "352d02fc4eaa4cfbaba916719a10280d28ec165cdbc757bbd03156e964f98da7"
+  },
+  {
+    "key": "FxHole",
+    "category": "EffectTextures",
+    "path": "Assets/_Project/Sprites/Generated/EffectTextures/FxHole.png",
+    "guid": "b70dfef848d63c44881706452484f80f",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "1c63f0fe1ca738db3f428a7e57cdc4df2766859f13a0782f023c827f3a2f796e"
+  },
+  {
+    "key": "FxRing",
+    "category": "EffectTextures",
+    "path": "Assets/_Project/Sprites/Generated/EffectTextures/FxRing.png",
+    "guid": "8ce47adffaf77df4093fc912fa87126b",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "abfbd1cd04c22c3defd6526db278f68d46857ab29c13f8cafc0f41eb4af7eb2a"
+  },
+  {
+    "key": "FxSoft",
+    "category": "EffectTextures",
+    "path": "Assets/_Project/Sprites/Generated/EffectTextures/FxSoft.png",
+    "guid": "02ea40f2972855a48ba11b15373dd004",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "9c6a89be1d963fda010935a61163b313eb5785775c2db2b27810b0f0ab5c15e3"
+  },
+  {
+    "key": "FxSparkle",
+    "category": "EffectTextures",
+    "path": "Assets/_Project/Sprites/Generated/EffectTextures/FxSparkle.png",
+    "guid": "b0b599d7e8c4bb641bed49b07ec03b4b",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "f84d9e3d5467376080116c2807231a2037e66b9c56a57de33582fc06d0762250"
+  },
+  {
+    "key": "FxSpiral",
+    "category": "EffectTextures",
+    "path": "Assets/_Project/Sprites/Generated/EffectTextures/FxSpiral.png",
+    "guid": "55d494c0806cb5844a11286bb5e462a9",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "a03b4c533581c5b2954d65b9119f6f5dd9b7712c7491b6f061bbd4376dc494e0"
+  },
+  {
+    "key": "FxStreak",
+    "category": "EffectTextures",
+    "path": "Assets/_Project/Sprites/Generated/EffectTextures/FxStreak.png",
+    "guid": "1bed254f65e807b44970ca01b95ea377",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "5da9a058f8519219ad77901efee51f3aba08adfc1a2018db18e7c0c57a3d7670"
+  },
+  {
+    "key": "LightningFrames",
+    "category": "EffectTextures",
+    "path": "Assets/_Project/Sprites/Generated/EffectTextures/LightningFrames.png",
+    "guid": "3e65562b9bc062045bc7eeacacc3a6a9",
+    "width": 2172,
+    "height": 724,
+    "source": "built-in image_gen",
+    "sha256": "836c2bc58043148d9f162f85f5170cf39db3d11308aac5c89c89a525816cdce5"
+  },
+  {
+    "key": "BoneRing",
+    "category": "Equipment",
+    "path": "Assets/_Project/Sprites/Generated/Equipment/BoneRing.png",
+    "guid": "509cc25c0ce186849b620df95ca8132e",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "13ee2196948059d351ff1f6e906a21744c4846190436a08bb961b26fa29869bf"
+  },
+  {
+    "key": "Boots",
+    "category": "Equipment",
+    "path": "Assets/_Project/Sprites/Generated/Equipment/Boots.png",
+    "guid": "df545d3cb60349b4f9696771147638a6",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "2d701cf4d29f55eff84cececee2a44604d8618902940e7e1b561ff299309cc99"
+  },
+  {
+    "key": "Hood",
+    "category": "Equipment",
+    "path": "Assets/_Project/Sprites/Generated/Equipment/Hood.png",
+    "guid": "f6403261763f18945a0ae5cfde328de1",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "12b9b19f9a8bb78047698993a6e8d2bfc83f5abc4f30183aa455ea70b9dafb58"
+  },
+  {
+    "key": "Robe",
+    "category": "Equipment",
+    "path": "Assets/_Project/Sprites/Generated/Equipment/Robe.png",
+    "guid": "2d20137d968c47a469e5e912d75bbc16",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "4f7b782bf6fbbfa1b43f51b0a5ca8280a4a74e39ce559139dfaf5959fc561b28"
+  },
+  {
+    "key": "Seal",
+    "category": "Equipment",
+    "path": "Assets/_Project/Sprites/Generated/Equipment/Seal.png",
+    "guid": "8730d4b9a3070d8499696820cbb9017d",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "e7a275ba71c79d63c72a1cbbb2c46a00527d7f5abbb8346600b25f9ecdc45f3f"
+  },
+  {
+    "key": "SkullNecklace",
+    "category": "Equipment",
+    "path": "Assets/_Project/Sprites/Generated/Equipment/SkullNecklace.png",
+    "guid": "eccb17345f76d954d9ac8555f2a05446",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "c90eb6a2b386c75fb5b6b04d26ac23b40ab8835fdea0e3d535adfac601f9e517"
+  },
+  {
+    "key": "Staff",
+    "category": "Equipment",
+    "path": "Assets/_Project/Sprites/Generated/Equipment/Staff.png",
+    "guid": "ce3bfe10cb554b5496aff1c08c194778",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "50c47e367b4efe66284c446e5a53448c68495f40f4f56d6c42c2383c1ea2332c"
+  },
+  {
+    "key": "ArrowBook",
+    "category": "Items",
+    "path": "Assets/_Project/Sprites/Generated/Items/ArrowBook.png",
+    "guid": "8ec4784bbf47c594e8d87e345ea27a20",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "16c953e4a061e44d2cf364f92ce8afc9c7443667b4b0b6165c2403516e4fb584"
+  },
+  {
+    "key": "BoneRingScroll",
+    "category": "Items",
+    "path": "Assets/_Project/Sprites/Generated/Items/BoneRingScroll.png",
+    "guid": "3a68c6e79095ee44088406cfcff1bdd2",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "519d6847552c5fda5b40d40c71aaefafcb72a78c09f01b492078f51d68bc0373"
+  },
+  {
+    "key": "BootsScroll",
+    "category": "Items",
+    "path": "Assets/_Project/Sprites/Generated/Items/BootsScroll.png",
+    "guid": "0320d06b5b6368d4aba7a2e0d4ee96db",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "330974e5ea82b8465d569123f303650cbb2b883ae4dff56185f0b8048b2c716e"
+  },
+  {
+    "key": "ChainLightningBook",
+    "category": "Items",
+    "path": "Assets/_Project/Sprites/Generated/Items/ChainLightningBook.png",
+    "guid": "e40e93b3ceb130541b81a7b4da073849",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "83b1771af956c246d8e0c0d8ee04b3f3b1556ffa66accc5f486b6e39b08fc3d5"
+  },
+  {
+    "key": "ChestClosed",
+    "category": "Items",
+    "path": "Assets/_Project/Sprites/Generated/Items/ChestClosed.png",
+    "guid": "2e34ea80788f0b04d8a5d271be97061b",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "91f973a1c9a66481f1e27f1cc2ffd9e7d77999bd6d71abb4b895d3b23dd909d2"
+  },
+  {
+    "key": "ChestOpen",
+    "category": "Items",
+    "path": "Assets/_Project/Sprites/Generated/Items/ChestOpen.png",
+    "guid": "9a48231ff2926d844acf3666c8746fee",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "8491d5f629a2287b3e446dd7364786087977370440fde3cb27718fb806186963"
+  },
+  {
+    "key": "Coin",
+    "category": "Items",
+    "path": "Assets/_Project/Sprites/Generated/Items/Coin.png",
+    "guid": "d86c1ffe64598e440ab97e282f9ca7c8",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "20dbe577a9a5ff1b36a3813bd32def1748cfe7ebe90655a6069e7811f9e4d843"
+  },
+  {
+    "key": "ColdZoneBook",
+    "category": "Items",
+    "path": "Assets/_Project/Sprites/Generated/Items/ColdZoneBook.png",
+    "guid": "6c8780618f2fbb942a5711dc422dd2ef",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "9a34766a6242ac5c0002e6c5f1ee6adbda20da39c03225d89294091803a174fa"
+  },
+  {
+    "key": "EnergyBeamBook",
+    "category": "Items",
+    "path": "Assets/_Project/Sprites/Generated/Items/EnergyBeamBook.png",
+    "guid": "e5cfc3d3e2d42c74a8e3e2ad82faa211",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "1075d6d3df278083449b8c7cf71e01ebe97f842d358e4cb8a207845c56790edc"
+  },
+  {
+    "key": "Experience",
+    "category": "Items",
+    "path": "Assets/_Project/Sprites/Generated/Items/Experience.png",
+    "guid": "2634858161ecab54caab42caf73931cc",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "92482ba55a3553eb09b9c0cddc8356ff40982735251b62196bb9f267c296da92"
+  },
+  {
+    "key": "FireballBook",
+    "category": "Items",
+    "path": "Assets/_Project/Sprites/Generated/Items/FireballBook.png",
+    "guid": "8d9e37e448bbc6f4ea211e3c55e21eee",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "edeb5193344071463e0087ebf0746fd676a39c7b72d57bc1241d0846e857c341"
+  },
+  {
+    "key": "FrostCrystalBook",
+    "category": "Items",
+    "path": "Assets/_Project/Sprites/Generated/Items/FrostCrystalBook.png",
+    "guid": "4f2193f8b70948faa79f003e7d38c326",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "97d9229eef320961f509d2e5f2c44de15ed4e0c179115e95bbfe63acfb718ebf"
+  },
+  {
+    "key": "Gem",
+    "category": "Items",
+    "path": "Assets/_Project/Sprites/Generated/Items/Gem.png",
+    "guid": "c16426e877e5dc64bb26c437be13181c",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "d061ece175408316866b6d67bffe1b3a7c08af15c2c62ad1329e9d7e52b68ae7"
+  },
+  {
+    "key": "GemChest",
+    "category": "Items",
+    "path": "Assets/_Project/Sprites/Generated/Items/GemChest.png",
+    "guid": "629ab21936b9eeb4cbac8748204d400c",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "4dc848455f807f141f830f9a25fc1d40fe5734a09fc0c85d2b309f665957878b"
+  },
+  {
+    "key": "Heart",
+    "category": "Items",
+    "path": "Assets/_Project/Sprites/Generated/Items/Heart.png",
+    "guid": "03671b8931d2b7f4aabd3a4605c7f671",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "db4372461662bb8d232ce07332503a40c719993db072e07fda1b2998303c0837"
+  },
+  {
+    "key": "HeartBundle",
+    "category": "Items",
+    "path": "Assets/_Project/Sprites/Generated/Items/HeartBundle.png",
+    "guid": "800bd90a2e61f9c47a4415a1630fa473",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "1e2f13c631e34a00bf6fefab7f9bcb80374d0579b6e30d52d3ef1d5344b32b8f"
+  },
+  {
+    "key": "HoodScroll",
+    "category": "Items",
+    "path": "Assets/_Project/Sprites/Generated/Items/HoodScroll.png",
+    "guid": "7fb1e87863474ee8a64590924e0beb52",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "f3cd795a2170bd6935c662a4bce796aa2da1f7640d0ed5aa48aedd074ec42e1b"
+  },
+  {
+    "key": "LightningBook",
+    "category": "Items",
+    "path": "Assets/_Project/Sprites/Generated/Items/LightningBook.png",
+    "guid": "705fd12290d91624ebd3af12a917a8d7",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "35ce17db674248267844d50ffbe868320945da23b06cb44a325d0188fb473380"
+  },
+  {
+    "key": "LightningCloudBook",
+    "category": "Items",
+    "path": "Assets/_Project/Sprites/Generated/Items/LightningCloudBook.png",
+    "guid": "06c3eed95b7e22b43b15beef9039340b",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "0790e7e81083f9163f33825ebc811be538ed9fedfb6b84de94b72af877b2972c"
+  },
+  {
+    "key": "LogBook",
+    "category": "Items",
+    "path": "Assets/_Project/Sprites/Generated/Items/LogBook.png",
+    "guid": "304d9baa3b00fe249a83d89df9934e9a",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "74b88ee26d03015e67b10e28555008baaca3d61dd70a66ad473b1087fad1b412"
+  },
+  {
+    "key": "RandomEquipmentMaterial",
+    "category": "Items",
+    "path": "Assets/_Project/Sprites/Generated/Items/RandomEquipmentMaterial.png",
+    "guid": "36483939a31116b49bf8239910d34cae",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "18cc7512f8c8d83a43913ae61beecdfe260e7df55a3399e70bf56c94a2d3007a"
+  },
+  {
+    "key": "RandomSkillMaterial",
+    "category": "Items",
+    "path": "Assets/_Project/Sprites/Generated/Items/RandomSkillMaterial.png",
+    "guid": "ad1afc19c01168949bd55222262051b9",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "bc20f12ac0271fb29fe3350beef9e0faa8e6f2977bcfe7a42d19207a4cf4a51f"
+  },
+  {
+    "key": "RobeScroll",
+    "category": "Items",
+    "path": "Assets/_Project/Sprites/Generated/Items/RobeScroll.png",
+    "guid": "83b9454739434417b7fa0a894f3b104b",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "2d96bf27b26900430a3e028a01e7bd7d7463ca056ef41ef3fdff1e26a877c8c0"
+  },
+  {
+    "key": "SealScroll",
+    "category": "Items",
+    "path": "Assets/_Project/Sprites/Generated/Items/SealScroll.png",
+    "guid": "2a01900545c6433a94478a26a623df99",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "24fa612f59887b112fe9870807e8b22b57905875dcc4665dec53483d9505772e"
+  },
+  {
+    "key": "SkullNecklaceScroll",
+    "category": "Items",
+    "path": "Assets/_Project/Sprites/Generated/Items/SkullNecklaceScroll.png",
+    "guid": "4af1cff4d81c5ae4fbd1b6e472205567",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "d9413b286b1f773c1a9dbb35d6cf2b43c90c2074192e4448a29acf335319723e"
+  },
+  {
+    "key": "StaffScroll",
+    "category": "Items",
+    "path": "Assets/_Project/Sprites/Generated/Items/StaffScroll.png",
+    "guid": "6ac5b9030c1131249a1a62a2b9c44bfc",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "190abef8ebbba367f60476d0e8da95e7ccc8e7fb7b26137d56f092d3dbcd516c"
+  },
+  {
+    "key": "LobbyGrass",
+    "category": "LayeredSheets",
+    "path": "Assets/_Project/Sprites/Generated/LayeredSheets/LobbyGrass.png",
+    "guid": "f58584111ee79284ba7e2723778842d4",
+    "width": 1672,
+    "height": 941,
+    "source": "built-in image_gen",
+    "sha256": "53b4227946f327a5d5a91b9b8d58212b7c254494070ed2233f3e5f6b26d6a669"
+  },
+  {
+    "key": "LobbySky",
+    "category": "LayeredSheets",
+    "path": "Assets/_Project/Sprites/Generated/LayeredSheets/LobbySky.png",
+    "guid": "3ab99716b6863b9498287511ff18c8ae",
+    "width": 1672,
+    "height": 940,
+    "source": "built-in image_gen",
+    "sha256": "02cf26a49cfefa39848b10a5ed9dd02dc919b57c7f32958d40a8b30bd50104a0"
+  },
+  {
+    "key": "ResultSpotlight",
+    "category": "LayeredSheets",
+    "path": "Assets/_Project/Sprites/Generated/LayeredSheets/ResultSpotlight.png",
+    "guid": "84530c492bd13eb4b86eafbf58877111",
+    "width": 1672,
+    "height": 941,
+    "source": "built-in image_gen",
+    "sha256": "b13b3a454c21030f6e0163d0465b7f3e803b1469ccb85e971f60028977dc14a8"
+  },
+  {
+    "key": "UICircleLayers",
+    "category": "LayeredSheets",
+    "path": "Assets/_Project/Sprites/Generated/LayeredSheets/UICircleLayers.png",
+    "guid": "256e7fff31566b14e81a254145f0c189",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "76ae9619497fa112f58ff41f3a31369f9328edec80ec4697b9c055c1573df635"
+  },
+  {
+    "key": "UIControlGlyphs",
+    "category": "LayeredSheets",
+    "path": "Assets/_Project/Sprites/Generated/LayeredSheets/UIControlGlyphs.png",
+    "guid": "e98c6a7131bec1e4cb52826e74a70157",
+    "width": 1448,
+    "height": 1086,
+    "source": "built-in image_gen",
+    "sha256": "384b6745c9ddd57f54e73884e05a7679d7162ccfe0f34cb2318b8f088af52464"
+  },
+  {
+    "key": "UIExtraGlyphs",
+    "category": "LayeredSheets",
+    "path": "Assets/_Project/Sprites/Generated/LayeredSheets/UIExtraGlyphs.png",
+    "guid": "2a7d07fb9e58fe241a4023a141aa1f95",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "c30475f332a36ac49ff67f4431d6c27591aad38638533e3110acd5698cab7e8e"
+  },
+  {
+    "key": "UIFills",
+    "category": "LayeredSheets",
+    "path": "Assets/_Project/Sprites/Generated/LayeredSheets/UIFills.png",
+    "guid": "a53fae459a184704e8161e8f4f2d9139",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "6b2fdef3e4f6d25c9a6fccd97c573dea08e61d46846f6241ebaa39cba0e8561c"
+  },
+  {
+    "key": "UIFrames",
+    "category": "LayeredSheets",
+    "path": "Assets/_Project/Sprites/Generated/LayeredSheets/UIFrames.png",
+    "guid": "813178e9e603e574eb2f4812c0a072fd",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "d40609c20e0a4693103b5294c32fc2161686f5e4896c186e05adde43aff6dd0f"
+  },
+  {
+    "key": "UIMenuGlyphs",
+    "category": "LayeredSheets",
+    "path": "Assets/_Project/Sprites/Generated/LayeredSheets/UIMenuGlyphs.png",
+    "guid": "78bfb232b5dba6643a4b7f03acdd551b",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "8b3ce9883dce9409a414a99e357fd26b71833f7c2f7be2df5fc1481d1e850130"
+  },
+  {
+    "key": "UIStrokes",
+    "category": "LayeredSheets",
+    "path": "Assets/_Project/Sprites/Generated/LayeredSheets/UIStrokes.png",
+    "guid": "9e9ecc65c3c719a4888605c43da58d3e",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "04ab09539e9e69c2a1dd0a484374666d88212d26826e4e9c7ac8be83eb35e0e8"
+  },
+  {
+    "key": "WallStates",
+    "category": "LayeredSheets",
+    "path": "Assets/_Project/Sprites/Generated/LayeredSheets/WallStates.png",
+    "guid": "f4d5efe50c0b2644fb5e1917a71dfcf2",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "92b38e964f7ad008bb3e4e984096d03bc78e246225f25010050edd8718ba4aaa"
+  },
+  {
+    "key": "ArmoredCrab",
+    "category": "Monsters",
+    "path": "Assets/_Project/Sprites/Generated/Monsters/ArmoredCrab.png",
+    "guid": "eb0f05d433819c142bcb40491231eab5",
+    "width": 253,
+    "height": 250,
+    "source": "existing PSD composite",
+    "sha256": "4663b2bdaed03233906298b460d215e1d0c1c66a3f0b76a0cb84f6064360beb9"
+  },
+  {
+    "key": "Bat",
+    "category": "Monsters",
+    "path": "Assets/_Project/Sprites/Generated/Monsters/Bat.png",
+    "guid": "51c038e916aa24042b97fb808c9b9dfb",
+    "width": 257,
+    "height": 109,
+    "source": "existing PSD composite",
+    "sha256": "b3f0d0530bf36196e8a34934fc88bc19e7e12cf46bccbb4a323cfbb9e51fa502"
+  },
+  {
+    "key": "BrainSpider",
+    "category": "Monsters",
+    "path": "Assets/_Project/Sprites/Generated/Monsters/BrainSpider.png",
+    "guid": "a29d45d8a945d634dba0ba48996afbdf",
+    "width": 345,
+    "height": 316,
+    "source": "existing PSD composite",
+    "sha256": "057d493f6750f18f69fc7fc8b99a7706341f799c9f84562e55a05f9bbd98f5fa"
+  },
+  {
+    "key": "EyeJelly",
+    "category": "Monsters",
+    "path": "Assets/_Project/Sprites/Generated/Monsters/EyeJelly.png",
+    "guid": "ec87a51f42a40764a98ff1f5d66e9e48",
+    "width": 266,
+    "height": 272,
+    "source": "existing PSD composite",
+    "sha256": "f2b5d49f081247d1350393753743362eecf9ca45c6f4eef3b98e3c12b63e86ac"
+  },
+  {
+    "key": "Ghost",
+    "category": "Monsters",
+    "path": "Assets/_Project/Sprites/Generated/Monsters/Ghost.png",
+    "guid": "1eb3fe2cd5db2504686ca4ee20453a61",
+    "width": 272,
+    "height": 261,
+    "source": "existing PSD composite",
+    "sha256": "2a2ed06c14119df62dd3fbb6754498fac0450c4d02e2d26cc2539cff660e045b"
+  },
+  {
+    "key": "Golem",
+    "category": "Monsters",
+    "path": "Assets/_Project/Sprites/Generated/Monsters/Golem.png",
+    "guid": "8b6da33f4d0876d4ca8d82b075ef3814",
+    "width": 338,
+    "height": 333,
+    "source": "existing PSD composite",
+    "sha256": "cb9a9697bb5b895a02c018c65bb1d147f2612e31e6d6e921786ba872908ad379"
+  },
+  {
+    "key": "Oni",
+    "category": "Monsters",
+    "path": "Assets/_Project/Sprites/Generated/Monsters/Oni.png",
+    "guid": "4dce97bca4a8f024bb9c7fb5d7a62304",
+    "width": 206,
+    "height": 356,
+    "source": "existing PSD composite",
+    "sha256": "882a1925f32bb8181d5c7551b0ececbe6b19cb088f036138bbbe459899919372"
+  },
+  {
+    "key": "Skeleton",
+    "category": "Monsters",
+    "path": "Assets/_Project/Sprites/Generated/Monsters/Skeleton.png",
+    "guid": "317d60322d7f2ca4ca6884267bc563d7",
+    "width": 196,
+    "height": 256,
+    "source": "existing PSD composite",
+    "sha256": "0f89c40ce30b177704d984e97db15ee6169567baf2cab39f4cf2cbd9d821f387"
+  },
+  {
+    "key": "Slime",
+    "category": "Monsters",
+    "path": "Assets/_Project/Sprites/Generated/Monsters/Slime.png",
+    "guid": "f6fc5bd0511be024bada5d137fa4efd1",
+    "width": 151,
+    "height": 139,
+    "source": "existing PSD composite",
+    "sha256": "50e39af37218bd47764cd5a0660d852d6707ed1f4a62d9999b4d44d940091fd0"
+  },
+  {
+    "key": "Spider",
+    "category": "Monsters",
+    "path": "Assets/_Project/Sprites/Generated/Monsters/Spider.png",
+    "guid": "9d1dfabb9b3efd04d94dfce666331341",
+    "width": 465,
+    "height": 307,
+    "source": "existing PSD composite",
+    "sha256": "ab9e804d302f81d5783f150c2b465d4a774c7ca570d8d35790a0d7b1e8074176"
+  },
+  {
+    "key": "Arrow",
+    "category": "Skills",
+    "path": "Assets/_Project/Sprites/Generated/Skills/Arrow.png",
+    "guid": "cd1b3d4d92db82347acefbead8229252",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "f164c6bc8912597fc3240e91cb5a0063ebb8d459a375dc451e279ef5db90fa6e"
+  },
+  {
+    "key": "ChainLightning",
+    "category": "Skills",
+    "path": "Assets/_Project/Sprites/Generated/Skills/ChainLightning.png",
+    "guid": "486d09e7fd5bb904290685db59a5d148",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "92a89406ab00e4eaa8e49f967a8a0fc987ee8084d50532a29d599d1ed2141b3a"
+  },
+  {
+    "key": "ColdZone",
+    "category": "Skills",
+    "path": "Assets/_Project/Sprites/Generated/Skills/ColdZone.png",
+    "guid": "d49002f4eb035364abbf720dd9844bf5",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "d46e23381bfa284c588e720434a52846f0221c6ffe7148da783cd14fedc8c221"
+  },
+  {
+    "key": "EnergyBeam",
+    "category": "Skills",
+    "path": "Assets/_Project/Sprites/Generated/Skills/EnergyBeam.png",
+    "guid": "27224b3463b726848a120617ffe95449",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "33407ee245e7f1200b9cb3ed324abd8f83a4a69bc3cf3f7bdec1dd4f27bae790"
+  },
+  {
+    "key": "Fireball",
+    "category": "Skills",
+    "path": "Assets/_Project/Sprites/Generated/Skills/Fireball.png",
+    "guid": "4426318d3eacec84da33c02a8066f9f4",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "e35274e41d34b040b374fd93aaea092575bbf2507eed5d7455e4e8833be3f606"
+  },
+  {
+    "key": "FrostCrystal",
+    "category": "Skills",
+    "path": "Assets/_Project/Sprites/Generated/Skills/FrostCrystal.png",
+    "guid": "baee726e7a9640c0ab566c5be326cc36",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "64bf87854da002680103f96931023710005d83d98809c41434b5ce5b4f8850e5"
+  },
+  {
+    "key": "Lightning",
+    "category": "Skills",
+    "path": "Assets/_Project/Sprites/Generated/Skills/Lightning.png",
+    "guid": "7cab7be4daa2d1b48900af152debc6e3",
+    "width": 1263,
+    "height": 1245,
+    "source": "built-in image_gen",
+    "sha256": "8d848e3acdcd60df63751090be161ae7a5ff3d020e238375402081fb65fdbc94"
+  },
+  {
+    "key": "LightningCloud",
+    "category": "Skills",
+    "path": "Assets/_Project/Sprites/Generated/Skills/LightningCloud.png",
+    "guid": "432a527732f31d742a4d8fa77bdb62bb",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "4003a0c4eaf62ab8394be0c1a26127f67ec0066d0710ceb79bac59bc68c48b70"
+  },
+  {
+    "key": "LogRoot",
+    "category": "Skills",
+    "path": "Assets/_Project/Sprites/Generated/Skills/LogRoot.png",
+    "guid": "57d8ff141e45434ea1b491a9e1d31ccb",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "e2e2fa5d113755ba76bef0b411066fd221bad1d062b892cf9d6bd4149fd6dc31"
+  },
+  {
+    "key": "WallRepair",
+    "category": "Skills",
+    "path": "Assets/_Project/Sprites/Generated/Skills/WallRepair.png",
+    "guid": "f8c8f2f1000c677409c4585062d5a6a2",
+    "width": 1254,
+    "height": 1254,
+    "source": "built-in image_gen",
+    "sha256": "32fbced2462f956becbfff14e19cce2660e413063c3ab04824c01b3bffbd380f"
+  }
+]

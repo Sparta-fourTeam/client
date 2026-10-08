@@ -1,19 +1,103 @@
 [
-  { "Id": "book.arrow", "Name": "화살 마법북", "IconKey": "ArrowBook", "TargetId": "1" },
-  { "Id": "book.fireball", "Name": "화염구 마법북", "IconKey": "FireballBook", "TargetId": "2" },
-  { "Id": "book.lightning", "Name": "벼락 마법북", "IconKey": "LightningBook", "TargetId": "3" },
-  { "Id": "book.frost_crystal", "Name": "서리 결정 마법북", "IconKey": "FrostCrystalBook", "TargetId": "4" },
-  { "Id": "book.log", "Name": "나무뿌리 마법북", "IconKey": "LogBook", "TargetId": "5" },
-  { "Id": "book.cold_zone", "Name": "냉기 지대 마법북", "IconKey": "ColdZoneBook", "TargetId": "6" },
-  { "Id": "book.lightning_cloud", "Name": "전기 구름 마법북", "IconKey": "LightningCloudBook", "TargetId": "7" },
-  { "Id": "book.energy_beam", "Name": "에너지 빔 마법북", "IconKey": "EnergyBeamBook", "TargetId": "16" },
-  { "Id": "book.chain_lightning", "Name": "연쇄 번개 마법북", "IconKey": "ChainLightningBook", "TargetId": "18" },
-  { "Id": "book.hat", "Name": "모자 마법북", "IconKey": "HatBook", "TargetId": "equipment.hat" },
-  { "Id": "book.top", "Name": "상의 마법북", "IconKey": "TopBook", "TargetId": "equipment.top" },
-  { "Id": "book.shoes", "Name": "신발 마법북", "IconKey": "ShoesBook", "TargetId": "equipment.shoes" },
-  { "Id": "book.weapon", "Name": "무기 마법북", "IconKey": "WeaponBook", "TargetId": "equipment.weapon" },
-  { "Id": "book.ring", "Name": "반지 마법북", "IconKey": "RingBook", "TargetId": "equipment.ring" },
-  { "Id": "book.tie", "Name": "넥타이 마법북", "IconKey": "TieBook", "TargetId": "equipment.tie" },
-  { "Id": "book.employee_id", "Name": "사원증 마법북", "IconKey": "EmployeeIdBook", "TargetId": "equipment.employee_id" },
-  {"Id": "chest.gem", "Name": "보석상자", "IconKey": "GemChest"}
+  {
+    "Id": "book.arrow",
+    "Name": "화살 마법북",
+    "IconKey": "ArrowBook",
+    "TargetId": "1"
+  },
+  {
+    "Id": "book.fireball",
+    "Name": "화염구 마법북",
+    "IconKey": "FireballBook",
+    "TargetId": "2"
+  },
+  {
+    "Id": "book.lightning",
+    "Name": "벼락 마법북",
+    "IconKey": "LightningBook",
+    "TargetId": "3"
+  },
+  {
+    "Id": "book.frost_crystal",
+    "Name": "서리 결정 마법북",
+    "IconKey": "FrostCrystalBook",
+    "TargetId": "4"
+  },
+  {
+    "Id": "book.log",
+    "Name": "나무뿌리 마법북",
+    "IconKey": "LogBook",
+    "TargetId": "5"
+  },
+  {
+    "Id": "book.cold_zone",
+    "Name": "냉기 지대 마법북",
+    "IconKey": "ColdZoneBook",
+    "TargetId": "6"
+  },
+  {
+    "Id": "book.lightning_cloud",
+    "Name": "전기 구름 마법북",
+    "IconKey": "LightningCloudBook",
+    "TargetId": "7"
+  },
+  {
+    "Id": "book.energy_beam",
+    "Name": "에너지 빔 마법북",
+    "IconKey": "EnergyBeamBook",
+    "TargetId": "16"
+  },
+  {
+    "Id": "book.chain_lightning",
+    "Name": "연쇄 번개 마법북",
+    "IconKey": "ChainLightningBook",
+    "TargetId": "18"
+  },
+  {
+    "Id": "book.hat",
+    "Name": "후드 인챈트 주문서",
+    "IconKey": "HoodScroll",
+    "TargetId": "equipment.hat"
+  },
+  {
+    "Id": "book.top",
+    "Name": "로브 인챈트 주문서",
+    "IconKey": "RobeScroll",
+    "TargetId": "equipment.top"
+  },
+  {
+    "Id": "book.shoes",
+    "Name": "장화 인챈트 주문서",
+    "IconKey": "BootsScroll",
+    "TargetId": "equipment.shoes"
+  },
+  {
+    "Id": "book.weapon",
+    "Name": "무기 인챈트 주문서",
+    "IconKey": "StaffScroll",
+    "TargetId": "equipment.weapon"
+  },
+  {
+    "Id": "book.ring",
+    "Name": "뼈 반지 인챈트 주문서",
+    "IconKey": "BoneRingScroll",
+    "TargetId": "equipment.ring"
+  },
+  {
+    "Id": "book.tie",
+    "Name": "해골 목걸이 인챈트 주문서",
+    "IconKey": "SkullNecklaceScroll",
+    "TargetId": "equipment.tie"
+  },
+  {
+    "Id": "book.employee_id",
+    "Name": "인장 인챈트 주문서",
+    "IconKey": "SealScroll",
+    "TargetId": "equipment.employee_id"
+  },
+  {
+    "Id": "chest.gem",
+    "Name": "보석상자",
+    "IconKey": "GemChest"
+  }
 ]

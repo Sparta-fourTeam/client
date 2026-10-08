@@ -1,0 +1,626 @@
+fileFormatVersion: 2
+guid: 0fe2263dcc181e04f9f9511c4097bfae
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -8113456256148937759
+    second: SkillCircleFrame_0
+  - first:
+      213: 869507565160547468
+    second: SkillCircleFrame_1
+  - first:
+      213: 6100172191524675499
+    second: SkillCircleFrame_2
+  - first:
+      213: -296849894437049091
+    second: SkillCircleFrame_3
+  - first:
+      213: 2064828169748828407
+    second: SkillCircleFrame_4
+  - first:
+      213: 4090460697455316871
+    second: SkillCircleFrame_5
+  - first:
+      213: -5056986562382799072
+    second: SkillCircleFrame_6
+  - first:
+      213: -3815283731472147488
+    second: SkillCircleFrame_7
+  - first:
+      213: 2193737819029693135
+    second: SkillCircleFrame_8
+  - first:
+      213: 7695611223361676560
+    second: SkillCircleFrame_9
+  - first:
+      213: 520825479863422690
+    second: SkillCircleFrame_10
+  - first:
+      213: -1265813926370263132
+    second: SkillCircleFrame_11
+  - first:
+      213: -3150045868795647373
+    second: SkillCircleFrame_12
+  - first:
+      213: -5756916715402000974
+    second: SkillCircleFrame_13
+  - first:
+      213: 8042417301399940774
+    second: SkillCircleFrame_14
+  - first:
+      213: -3452021065151096511
+    second: SkillCircleFrame_15
+  - first:
+      213: 6197077081207160511
+    second: SkillCircleFrame_16
+  - first:
+      213: -7687144176549130024
+    second: SkillCircleFrame_17
+  - first:
+      213: -4906850264627433783
+    second: SkillCircleFrame_18
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 256
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: SkillCircleFrame_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 43
+        width: 1241
+        height: 1180
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1e3629f9586376f80800000000000000
+      internalID: -8113456256148937759
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SkillCircleFrame_1
+      rect:
+        serializedVersion: 2
+        x: 239
+        y: 1228
+        width: 13
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c84c8ee068c111c00800000000000000
+      internalID: 869507565160547468
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SkillCircleFrame_2
+      rect:
+        serializedVersion: 2
+        x: 786
+        y: 1197
+        width: 13
+        height: 43
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: baf5b80c94a28a450800000000000000
+      internalID: 6100172191524675499
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SkillCircleFrame_3
+      rect:
+        serializedVersion: 2
+        x: 1139
+        y: 1213
+        width: 48
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dfca772089061ebf0800000000000000
+      internalID: -296849894437049091
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SkillCircleFrame_4
+      rect:
+        serializedVersion: 2
+        x: 512
+        y: 1195
+        width: 9
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7f0591cc74eb7ac10800000000000000
+      internalID: 2064828169748828407
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SkillCircleFrame_5
+      rect:
+        serializedVersion: 2
+        x: 525
+        y: 1193
+        width: 7
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 78f4587055c34c830800000000000000
+      internalID: 4090460697455316871
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SkillCircleFrame_6
+      rect:
+        serializedVersion: 2
+        x: 528
+        y: 1187
+        width: 14
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 02fdf3bb389f1d9b0800000000000000
+      internalID: -5056986562382799072
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SkillCircleFrame_7
+      rect:
+        serializedVersion: 2
+        x: 549
+        y: 1177
+        width: 12
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0eb964419a36d0bc0800000000000000
+      internalID: -3815283731472147488
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SkillCircleFrame_8
+      rect:
+        serializedVersion: 2
+        x: 585
+        y: 1187
+        width: 17
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fc2ea996ce8b17e10800000000000000
+      internalID: 2193737819029693135
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SkillCircleFrame_9
+      rect:
+        serializedVersion: 2
+        x: 601
+        y: 1175
+        width: 105
+        height: 33
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0156bf172ad4cca60800000000000000
+      internalID: 7695611223361676560
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SkillCircleFrame_10
+      rect:
+        serializedVersion: 2
+        x: 729
+        y: 1179
+        width: 8
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2ee4b35b3085a3700800000000000000
+      internalID: 520825479863422690
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SkillCircleFrame_11
+      rect:
+        serializedVersion: 2
+        x: 731
+        y: 1186
+        width: 6
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4af35f6c0fcee6ee0800000000000000
+      internalID: -1265813926370263132
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SkillCircleFrame_12
+      rect:
+        serializedVersion: 2
+        x: 1196
+        y: 795
+        width: 11
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 37aaf34d8f9c844d0800000000000000
+      internalID: -3150045868795647373
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SkillCircleFrame_13
+      rect:
+        serializedVersion: 2
+        x: 48
+        y: 614
+        width: 17
+        height: 33
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2b584f0bfb25b10b0800000000000000
+      internalID: -5756916715402000974
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SkillCircleFrame_14
+      rect:
+        serializedVersion: 2
+        x: 78
+        y: 521
+        width: 18
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6ae2661dce76c9f60800000000000000
+      internalID: 8042417301399940774
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SkillCircleFrame_15
+      rect:
+        serializedVersion: 2
+        x: 78
+        y: 472
+        width: 7
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 149d08e7125f710d0800000000000000
+      internalID: -3452021065151096511
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SkillCircleFrame_16
+      rect:
+        serializedVersion: 2
+        x: 495
+        y: 65
+        width: 13
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fbe311795c0700650800000000000000
+      internalID: 6197077081207160511
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SkillCircleFrame_17
+      rect:
+        serializedVersion: 2
+        x: 553
+        y: 63
+        width: 13
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8d093938917c15590800000000000000
+      internalID: -7687144176549130024
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SkillCircleFrame_18
+      rect:
+        serializedVersion: 2
+        x: 563
+        y: 39
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9cea9d29ead57ebb0800000000000000
+      internalID: -4906850264627433783
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      SkillCircleFrame_0: -8113456256148937759
+      SkillCircleFrame_1: 869507565160547468
+      SkillCircleFrame_10: 520825479863422690
+      SkillCircleFrame_11: -1265813926370263132
+      SkillCircleFrame_12: -3150045868795647373
+      SkillCircleFrame_13: -5756916715402000974
+      SkillCircleFrame_14: 8042417301399940774
+      SkillCircleFrame_15: -3452021065151096511
+      SkillCircleFrame_16: 6197077081207160511
+      SkillCircleFrame_17: -7687144176549130024
+      SkillCircleFrame_18: -4906850264627433783
+      SkillCircleFrame_2: 6100172191524675499
+      SkillCircleFrame_3: -296849894437049091
+      SkillCircleFrame_4: 2064828169748828407
+      SkillCircleFrame_5: 4090460697455316871
+      SkillCircleFrame_6: -5056986562382799072
+      SkillCircleFrame_7: -3815283731472147488
+      SkillCircleFrame_8: 2193737819029693135
+      SkillCircleFrame_9: 7695611223361676560
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
