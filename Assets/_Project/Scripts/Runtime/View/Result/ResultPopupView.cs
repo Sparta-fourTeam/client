@@ -30,6 +30,9 @@ namespace Game.View
 
         [SerializeField] private ResultStarsView _starsView;
 
+        [Tooltip("실패하면 결과 위에 겹쳐 띄우는 TIP 패널. 비우면 띄우지 않는다")]
+        [SerializeField] private ResultTipView _tip;
+
 
         // 스킬별 피해량은 StageResult.SkillDamages로 온다. 보유 스킬(SkillChanged)의 레벨과 SkillAssetTable의 아이콘으로 줄을 만든다.
         // 목록이 비면 영역이 꺼진다
@@ -79,6 +82,25 @@ namespace Game.View
             }
             _lobbyButton.interactable = true;
             PopupPanel.Set(_panel, _transition, true);
+            ShowTip(result.Cleared);
+        }
+
+        // 실패에만 결과 위에 TIP을 띄운다. 누르면 닫히고 아래의 실패 결과가 그대로 보인다
+        private void ShowTip(bool cleared)
+        {
+            if (_tip == null)
+            {
+                return;
+            }
+
+            if (cleared)
+            {
+                _tip.Hide();
+            }
+            else
+            {
+                _tip.Show();
+            }
         }
 
         private void OnLobbyClicked()

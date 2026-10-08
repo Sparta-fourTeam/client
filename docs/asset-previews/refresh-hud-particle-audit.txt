@@ -1,0 +1,36 @@
+SLOT Slot1
+_icon Icon sprite:null rect:(x:-40.00, y:-40.00, width:80.00, height:80.00) order:1 parent:Slot1
+_cooldownOverlay Cooldown sprite:skill_1 (UnityEngine.Sprite) rect:(x:-48.00, y:-48.00, width:96.00, height:96.00) order:2 parent:Slot1
+_activeFrame Active sprite:null rect:(x:-50.00, y:-50.00, width:100.00, height:100.00) order:0 parent:Slot1
+_activeSprite skill_0 (UnityEngine.Sprite)
+RootImage: skill_0 (UnityEngine.Sprite)
+SLOT Slot2
+_icon Icon sprite:null rect:(x:-40.00, y:-40.00, width:80.00, height:80.00) order:1 parent:Slot2
+_cooldownOverlay Cooldown sprite:skill_1 (UnityEngine.Sprite) rect:(x:-48.00, y:-48.00, width:96.00, height:96.00) order:2 parent:Slot2
+_activeFrame Active (1) sprite:null rect:(x:-50.00, y:-50.00, width:100.00, height:100.00) order:0 parent:Slot2
+_activeSprite skill_0 (UnityEngine.Sprite)
+RootImage: skill_0 (UnityEngine.Sprite)
+SLOT Slot3
+_icon Icon sprite:null rect:(x:-40.00, y:-40.00, width:80.00, height:80.00) order:1 parent:Slot3
+_cooldownOverlay Cooldown sprite:skill_1 (UnityEngine.Sprite) rect:(x:-48.00, y:-48.00, width:96.00, height:96.00) order:2 parent:Slot3
+_activeFrame Active (2) sprite:null rect:(x:-50.00, y:-50.00, width:100.00, height:100.00) order:0 parent:Slot3
+_activeSprite skill_0 (UnityEngine.Sprite)
+RootImage: skill_0 (UnityEngine.Sprite)
+SLOT Slot4
+_icon Icon sprite:null rect:(x:-40.00, y:-40.00, width:80.00, height:80.00) order:1 parent:Slot4
+_cooldownOverlay Cooldown sprite:skill_1 (UnityEngine.Sprite) rect:(x:-48.00, y:-48.00, width:96.00, height:96.00) order:2 parent:Slot4
+_activeFrame Active (3) sprite:null rect:(x:-50.00, y:-50.00, width:100.00, height:100.00) order:0 parent:Slot4
+_activeSprite skill_0 (UnityEngine.Sprite)
+RootImage: skill_0 (UnityEngine.Sprite)
+SLOT Slot5
+_icon Icon sprite:null rect:(x:-40.00, y:-40.00, width:80.00, height:80.00) order:1 parent:Slot5
+_cooldownOverlay Cooldown sprite:skill_1 (UnityEngine.Sprite) rect:(x:-48.00, y:-48.00, width:96.00, height:96.00) order:2 parent:Slot5
+_activeFrame Active (4) sprite:null rect:(x:-50.00, y:-50.00, width:100.00, height:100.00) order:0 parent:Slot5
+_activeSprite skill_0 (UnityEngine.Sprite)
+RootImage: skill_0 (UnityEngine.Sprite)
+PARTICLE | ChalkStroke | (x:95.54, y:114.32, width:65.12, height:25.31) | (0.65, 0.25, 0.20) | 100 | 256,256
+PARTICLE | DustPuff | (x:74.92, y:70.43, width:106.16, height:104.73) | (1.06, 1.05, 0.20) | 100 | 256,256
+PARTICLE | FlameDab | (x:80.03, y:62.26, width:93.70, height:130.65) | (0.94, 1.31, 0.20) | 100 | 256,256
+PARTICLE | IceChip | (x:63.49, y:50.83, width:134.74, height:153.93) | (1.35, 1.54, 0.20) | 100 | 256,256
+PARTICLE | LightningStroke | (x:80.84, y:45.12, width:95.95, height:165.77) | (0.96, 1.66, 0.20) | 100 | 256,256
+PARTICLE | WoodCrumb | (x:102.89, y:87.37, width:60.63, height:72.68) | (0.61, 0.73, 0.20) | 100 | 256,256

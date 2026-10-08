@@ -1,0 +1,704 @@
+fileFormatVersion: 2
+guid: 2e34ea80788f0b04d8a5d271be97061b
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -4760220659622320506
+    second: ChestClosed_0
+  - first:
+      213: -6585812303405027097
+    second: ChestClosed_1
+  - first:
+      213: -4626204358101041041
+    second: ChestClosed_2
+  - first:
+      213: -745443712507324617
+    second: ChestClosed_3
+  - first:
+      213: -9075567150845356064
+    second: ChestClosed_4
+  - first:
+      213: 1829911113306114565
+    second: ChestClosed_5
+  - first:
+      213: 7914683797959598753
+    second: ChestClosed_6
+  - first:
+      213: 1341954681780139319
+    second: ChestClosed_7
+  - first:
+      213: -5131926527854144945
+    second: ChestClosed_8
+  - first:
+      213: 4429842807510277984
+    second: ChestClosed_9
+  - first:
+      213: 3671449204093910626
+    second: ChestClosed_10
+  - first:
+      213: -6770047784871822782
+    second: ChestClosed_11
+  - first:
+      213: 7446382684248009776
+    second: ChestClosed_12
+  - first:
+      213: 1554584542744088459
+    second: ChestClosed_13
+  - first:
+      213: 4921249028755930229
+    second: ChestClosed_14
+  - first:
+      213: 6908875209471887006
+    second: ChestClosed_15
+  - first:
+      213: 1982756278062367745
+    second: ChestClosed_16
+  - first:
+      213: -7314928584921224521
+    second: ChestClosed_17
+  - first:
+      213: -5648861093900088070
+    second: ChestClosed_18
+  - first:
+      213: 3456860542576698487
+    second: ChestClosed_19
+  - first:
+      213: -8733747570782038635
+    second: ChestClosed_20
+  - first:
+      213: 8693794084067904748
+    second: ChestClosed_21
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 256
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: ChestClosed_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 15
+        width: 1241
+        height: 1219
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6866cb2e78c40fdb0800000000000000
+      internalID: -4760220659622320506
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ChestClosed_1
+      rect:
+        serializedVersion: 2
+        x: 303
+        y: 1212
+        width: 10
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7e0752a6a9e7a94a0800000000000000
+      internalID: -6585812303405027097
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ChestClosed_2
+      rect:
+        serializedVersion: 2
+        x: 690
+        y: 1128
+        width: 8
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f600601a5ab6ccfb0800000000000000
+      internalID: -4626204358101041041
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ChestClosed_3
+      rect:
+        serializedVersion: 2
+        x: 360
+        y: 1090
+        width: 17
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 737d3fb94e6a7a5f0800000000000000
+      internalID: -745443712507324617
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ChestClosed_4
+      rect:
+        serializedVersion: 2
+        x: 541
+        y: 1092
+        width: 7
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0e798aeb2cb1d0280800000000000000
+      internalID: -9075567150845356064
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ChestClosed_5
+      rect:
+        serializedVersion: 2
+        x: 563
+        y: 1100
+        width: 11
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 50a86275676256910800000000000000
+      internalID: 1829911113306114565
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ChestClosed_6
+      rect:
+        serializedVersion: 2
+        x: 705
+        y: 1098
+        width: 20
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1a2ebeefafa96dd60800000000000000
+      internalID: 7914683797959598753
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ChestClosed_7
+      rect:
+        serializedVersion: 2
+        x: 402
+        y: 1076
+        width: 15
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7357d205ca49f9210800000000000000
+      internalID: 1341954681780139319
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ChestClosed_8
+      rect:
+        serializedVersion: 2
+        x: 639
+        y: 1059
+        width: 21
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f4299d5530cb7c8b0800000000000000
+      internalID: -5131926527854144945
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ChestClosed_9
+      rect:
+        serializedVersion: 2
+        x: 810
+        y: 1076
+        width: 9
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 06f18782096f97d30800000000000000
+      internalID: 4429842807510277984
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ChestClosed_10
+      rect:
+        serializedVersion: 2
+        x: 981
+        y: 1074
+        width: 11
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 26e78e4599b93f230800000000000000
+      internalID: 3671449204093910626
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ChestClosed_11
+      rect:
+        serializedVersion: 2
+        x: 1011
+        y: 1064
+        width: 13
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 24a7b4ea865fb02a0800000000000000
+      internalID: -6770047784871822782
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ChestClosed_12
+      rect:
+        serializedVersion: 2
+        x: 234
+        y: 1052
+        width: 16
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 03ce834499dd65760800000000000000
+      internalID: 7446382684248009776
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ChestClosed_13
+      rect:
+        serializedVersion: 2
+        x: 402
+        y: 1044
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b8f0393b76ef29510800000000000000
+      internalID: 1554584542744088459
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ChestClosed_14
+      rect:
+        serializedVersion: 2
+        x: 76
+        y: 816
+        width: 14
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 57cbb32fae9cb4440800000000000000
+      internalID: 4921249028755930229
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ChestClosed_15
+      rect:
+        serializedVersion: 2
+        x: 1214
+        y: 803
+        width: 15
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e960312f56141ef50800000000000000
+      internalID: 6908875209471887006
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ChestClosed_16
+      rect:
+        serializedVersion: 2
+        x: 1228
+        y: 806
+        width: 11
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 104451e645a248b10800000000000000
+      internalID: 1982756278062367745
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ChestClosed_17
+      rect:
+        serializedVersion: 2
+        x: 1246
+        y: 706
+        width: 8
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7ba6b6a45372c7a90800000000000000
+      internalID: -7314928584921224521
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ChestClosed_18
+      rect:
+        serializedVersion: 2
+        x: 1236
+        y: 642
+        width: 10
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: afc8f8893c63b91b0800000000000000
+      internalID: -5648861093900088070
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ChestClosed_19
+      rect:
+        serializedVersion: 2
+        x: 88
+        y: 272
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7742956295c39ff20800000000000000
+      internalID: 3456860542576698487
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ChestClosed_20
+      rect:
+        serializedVersion: 2
+        x: 699
+        y: 129
+        width: 7
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5951b959bde7bc680800000000000000
+      internalID: -8733747570782038635
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ChestClosed_21
+      rect:
+        serializedVersion: 2
+        x: 719
+        y: 111
+        width: 12
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cec824368af86a870800000000000000
+      internalID: 8693794084067904748
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      ChestClosed_0: -4760220659622320506
+      ChestClosed_1: -6585812303405027097
+      ChestClosed_10: 3671449204093910626
+      ChestClosed_11: -6770047784871822782
+      ChestClosed_12: 7446382684248009776
+      ChestClosed_13: 1554584542744088459
+      ChestClosed_14: 4921249028755930229
+      ChestClosed_15: 6908875209471887006
+      ChestClosed_16: 1982756278062367745
+      ChestClosed_17: -7314928584921224521
+      ChestClosed_18: -5648861093900088070
+      ChestClosed_19: 3456860542576698487
+      ChestClosed_2: -4626204358101041041
+      ChestClosed_20: -8733747570782038635
+      ChestClosed_21: 8693794084067904748
+      ChestClosed_3: -745443712507324617
+      ChestClosed_4: -9075567150845356064
+      ChestClosed_5: 1829911113306114565
+      ChestClosed_6: 7914683797959598753
+      ChestClosed_7: 1341954681780139319
+      ChestClosed_8: -5131926527854144945
+      ChestClosed_9: 4429842807510277984
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

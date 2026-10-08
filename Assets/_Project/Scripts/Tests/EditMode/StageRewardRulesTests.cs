@@ -8,16 +8,17 @@ namespace Game.Tests
 {
     public sealed class StageRewardRulesTests
     {
+        /// <summary>기본 누적(코인 125, 스킬 재료 21)에 중간 보너스 코인 40, 스킬 재료 30이 붙는 총수량</summary>
         internal static StageRewardBalance Balance() => new()
         {
             StageId = 1,
-            SkillMaterial = ItemIds.ArrowBook,
             BaseExp = 100,
             ThreeStarBonusExp = 50,
-            Wave3SkillMaterialBonusAmount = 30,
-            Wave5GemChestCount = 1,
-            Wave6CoinBonus = 40,
-            Wave4EquipmentMaterials = ItemIds.EquipmentMaterials.Select(id => new ItemAmount { itemId = id, quantity = 2 }).ToList()
+            FinalCoin = 165,
+            Items = new List<StageRewardEntry> { new() { itemId = ItemIds.ArrowBook, finalAmount = 51 } }
+                .Concat(ItemIds.EquipmentMaterials.Select(id => new StageRewardEntry { itemId = id, finalAmount = 2 }))
+                .Append(new StageRewardEntry { itemId = ItemIds.GemChest, finalAmount = 1 })
+                .ToList()
         };
 
         [TestCase(0)]
@@ -112,17 +113,48 @@ namespace Game.Tests
         }
 
         [Test]
-        public void EquipmentMaterialList_AllowsFixedOrRandomEntries_ButNotUnknownOrDuplicate()
+        public void ItemEntries_AllowFixedOrRandomMaterials_ButNotUnknownOrDuplicate()
         {
             var balance = Balance();
-            balance.Wave4EquipmentMaterials = new List<ItemAmount> { new() { itemId = ItemIds.RandomEquipmentMaterial, quantity = 1 } };
+            balance.Items = new List<StageRewardEntry> { new() { itemId = ItemIds.RandomEquipmentMaterial, finalAmount = 1 } };
             Assert.DoesNotThrow(balance.Validate);
             Assert.IsTrue(balance.UsesRandomEquipmentMaterial);
-            balance.Wave4EquipmentMaterials = new List<ItemAmount> { new() { itemId = ItemIds.ArrowBook, quantity = 1 } };
+            balance.Items = new List<StageRewardEntry> { new() { itemId = "item.unknown", finalAmount = 1 } };
             Assert.Throws<InvalidOperationException>(balance.Validate);
-            balance.Wave4EquipmentMaterials = new List<ItemAmount>
-            { new() { itemId = ItemIds.WeaponBook, quantity = 1 }, new() { itemId = ItemIds.WeaponBook, quantity = 1 } };
+            balance.Items = new List<StageRewardEntry>
+            { new() { itemId = ItemIds.WeaponBook, finalAmount = 1 }, new() { itemId = ItemIds.WeaponBook, finalAmount = 1 } };
             Assert.Throws<InvalidOperationException>(balance.Validate);
+        }
+
+        [Test(Description = "총수량이 기본 누적보다 작으면 중간 보너스가 음수가 되므로 거절한다")]
+        public void FinalAmountBelowBaseAccumulation_IsRejected()
+        {
+            var coin = Balance();
+            coin.FinalCoin = StageRewardSchedule.Coin.MinimumFinal - 1;
+            Assert.Throws<InvalidOperationException>(coin.Validate);
+            var skill = Balance();
+            skill.Items[0].finalAmount = StageRewardSchedule.SkillMaterial.MinimumFinal - 1;
+            Assert.Throws<InvalidOperationException>(skill.Validate);
+        }
+
+        [Test(Description = "중간 보너스는 총수량에서 계산되므로 총수량만 바꿔도 맞춰진다")]
+        public void Bonus_IsDerivedFromFinalAmount()
+        {
+            var balance = Balance();
+            balance.FinalCoin = 200;
+            Assert.AreEqual(25 + 5 * 5, StageRewardRules.Calculate(balance, 5, false, 0).Coin);
+            Assert.AreEqual(25 + 5 * 6 + (200 - 125), StageRewardRules.Calculate(balance, 6, false, 0).Coin);
+            Assert.AreEqual(200, StageRewardRules.Maximum(balance).Coin);
+        }
+
+        [Test(Description = "새 아이템 보상은 목록에 항목만 추가하면 규칙대로 지급된다")]
+        public void NewItemEntry_FollowsItsKindSchedule()
+        {
+            var balance = Balance();
+            balance.Items.Add(new StageRewardEntry { itemId = ItemIds.FireballBook, finalAmount = 21 });
+            Assert.DoesNotThrow(balance.Validate);
+            Assert.AreEqual(1 + 2, StageRewardRules.Calculate(balance, 2, false, 0).Items.Single(i => i.itemId == ItemIds.FireballBook).quantity);
+            Assert.AreEqual(21, StageRewardRules.Maximum(balance).Items.Single(i => i.itemId == ItemIds.FireballBook).quantity);
         }
     }
 }

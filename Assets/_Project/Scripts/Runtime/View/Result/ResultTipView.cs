@@ -1,44 +1,35 @@
 using System;
-using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 namespace Game.View
 {
-    /// <summary>실패 시 보여주는 "성장을 위한 TIP!" 패널. Show로 열고 확인을 누르면 닫히면서 Confirmed가 발생한다.
-    /// 언제 열지(실패 직후, 결과 앞 단계)는 연결하는 쪽이 정한다. 호출 전에는 꺼져 있다</summary>
-    public sealed class ResultTipView : MonoBehaviour
+    /// <summary>실패하면 결과 화면 위에 겹쳐 띄우는 "성장을 위한 TIP!" 패널. 카드 문구와 아이콘은 프리팹에 고정되어 있고 기능은 없다.
+    /// 패널 아무 곳이나 누르면 닫히면서 Closed가 발생한다. 호출 전에는 꺼져 있다.
+    /// 버튼이 아니라 클릭을 직접 받으므로 버튼 공통 눌림 효과(ButtonPressFeedback)가 적용되지 않는다.
+    /// 클릭은 패널 배경 이미지(raycastTarget)가 받고, 카드 위를 눌러도 부모인 이 패널로 올라온다</summary>
+    public sealed class ResultTipView : MonoBehaviour, IPointerClickHandler
     {
-        [SerializeField] private TMP_Text[] _tipTexts;
-        [SerializeField] private Button _confirmButton;
+        public event Action Closed;
 
-        public event Action Confirmed;
+        public bool IsShown => gameObject.activeSelf;
 
-        private void Awake()
+        public void Show() => gameObject.SetActive(true);
+
+        public void Hide() => gameObject.SetActive(false);
+
+        public void OnPointerClick(PointerEventData eventData) => Close();
+
+        /// <summary>닫고 Closed를 알린다. 이미 닫혀 있으면 아무것도 하지 않는다</summary>
+        public void Close()
         {
-            _confirmButton.onClick.AddListener(OnConfirmClicked);
-        }
-
-        public void Show(IReadOnlyList<string> tips)
-        {
-            for (int i = 0; i < _tipTexts.Length; i++)
+            if (!IsShown)
             {
-                bool has = i < tips.Count;
-                _tipTexts[i].transform.parent.gameObject.SetActive(has);
-                if (has)
-                {
-                    _tipTexts[i].text = tips[i];
-                }
+                return;
             }
 
-            gameObject.SetActive(true);
-        }
-
-        private void OnConfirmClicked()
-        {
-            gameObject.SetActive(false);
-            Confirmed?.Invoke();
+            Hide();
+            Closed?.Invoke();
         }
     }
 }

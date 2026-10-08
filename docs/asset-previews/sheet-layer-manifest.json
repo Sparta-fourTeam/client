@@ -1,0 +1,1413 @@
+[
+  {
+    "key": "UIFrames",
+    "cols": 3,
+    "rows": 2,
+    "names": [
+      "SquareFrame",
+      "CardFrame",
+      "ButtonFrame",
+      "PanelFrame",
+      "GaugeFrame",
+      "RoundedButtonFrame"
+    ],
+    "prompt": "Use case: stylized-concept. Create a production game UI OUTLINE LAYER sprite atlas, transparent PNG. Reference image 1 is the OLD UI sheet for its rough hand-drawn crayon concept, reference image 2 is the approved improved rendering style. Reorganize and redraw cleanly; do not copy the old sheet layout. A square canvas divided mathematically into exactly 3 equal columns and 2 equal rows, six distinct independent assets, ordered left-to-right then top-to-bottom. Each drawing must stay centered inside its own cell with a 10% transparent gutter on every side. Row 1: (1) rough black square outline, (2) rough black vertical portrait card outline height:width 1.6:1, (3) rough black wide rectangular button outline width:height 2.4:1. Row 2: (4) rough black broad panel outline width:height 1.6:1, (5) rough black slim horizontal gauge outline width:height 3:1, (6) rough black wide rounded rectangle button outline width:height 2.3:1, modest round corners. All six OUTLINES ONLY: actual fully transparent interiors and exteriors, no gray or white fill, no shadows, no symbols, no labels, no text, no gridlines. Crayon outlines thick enough to survive mobile UI, organic but coherent with approved yellow star. Shapes front-facing, axis-aligned, clean straight center segments suitable for Unity 9-slicing. Exactly six outlines.",
+    "path": "Assets/_Project/Sprites/Generated/LayeredSheets/UIFrames.png",
+    "generatedSource": "C:\\Users\\psj45\\.codex\\generated_images\\01a11a14-a412-73e3-9cc3-68fbda78ff2d\\exec-54eb910f-0632-4f66-8cba-d26bd40d9cbe.png",
+    "tool": "built-in image_gen",
+    "history": [],
+    "width": 1254,
+    "height": 1254,
+    "sha256": "d40609c20e0a4693103b5294c32fc2161686f5e4896c186e05adde43aff6dd0f",
+    "cornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "sprites": [
+      {
+        "name": "SquareFrame",
+        "rect": [
+          49,
+          692,
+          339,
+          341
+        ],
+        "border": [
+          81,
+          81,
+          81,
+          81
+        ]
+      },
+      {
+        "name": "CardFrame",
+        "rect": [
+          495,
+          658,
+          257,
+          420
+        ],
+        "border": [
+          62,
+          62,
+          62,
+          62
+        ]
+      },
+      {
+        "name": "ButtonFrame",
+        "rect": [
+          842,
+          769,
+          389,
+          186
+        ],
+        "border": [
+          45,
+          45,
+          45,
+          45
+        ]
+      },
+      {
+        "name": "PanelFrame",
+        "rect": [
+          18,
+          200,
+          391,
+          260
+        ],
+        "border": [
+          62,
+          62,
+          62,
+          62
+        ]
+      },
+      {
+        "name": "GaugeFrame",
+        "rect": [
+          438,
+          280,
+          386,
+          91
+        ],
+        "border": [
+          22,
+          22,
+          22,
+          22
+        ]
+      },
+      {
+        "name": "RoundedButtonFrame",
+        "rect": [
+          852,
+          220,
+          380,
+          215
+        ],
+        "border": [
+          52,
+          52,
+          52,
+          52
+        ]
+      }
+    ],
+    "maxSize": 1024,
+    "guid": "813178e9e603e574eb2f4812c0a072fd"
+  },
+  {
+    "key": "UIFills",
+    "cols": 4,
+    "rows": 4,
+    "names": [
+      "LightGrayFill",
+      "GrayFill",
+      "SkyBlueFill",
+      "BlueFill",
+      "CyanFill",
+      "PinkFill",
+      "PurpleFill",
+      "GoldFill",
+      "OrangeFill",
+      "WhiteFill",
+      "NavyFill",
+      "TealFill",
+      "GreenFill",
+      "RedFill",
+      "BrownFill",
+      "DarkGrayFill"
+    ],
+    "prompt": "Use case: stylized-concept. Create a production game UI BACKGROUND COLOR LAYER atlas, square transparent PNG, exactly 4 equal columns by 4 equal rows. Reference 1 is the old UI sheet concept; reference 2 is approved wax-crayon texture. Redesign into reusable organized layers. Exactly 16 centered square flat color swatches, all SAME dimensions and aligned, each occupies 80% of its cell, with 10% actual transparent gutters on all sides. No borders or black outlines. Pure color/background layers, NO icons, text, decorative marks, lighting, shadows, sparkles or grid. Soft crayon pigment grain, small sparse white flecks like original UI crayon texture, sufficiently calm for text readability. Tiny rounded corners. Cell colors in left-to-right, top-to-bottom order: row1 light silver gray, medium gray, sky blue, saturated royal blue; row2 bright cyan teal, bright pink magenta, muted violet, warm golden yellow; row3 warm orange, ivory white, deep navy indigo, dark ocean teal; row4 vivid grass green, coral red, earthy brown, dark charcoal gray. All shapes opaque inside with the same fine wax-crayon texture density. Transparent outside. Exactly16 swatches.",
+    "path": "Assets/_Project/Sprites/Generated/LayeredSheets/UIFills.png",
+    "generatedSource": "C:\\Users\\psj45\\.codex\\generated_images\\01a11a14-a412-73e3-9cc3-68fbda78ff2d\\exec-6370c143-2eae-40f9-ac44-31610b45ce3c.png",
+    "tool": "built-in image_gen",
+    "history": [],
+    "width": 1254,
+    "height": 1254,
+    "sha256": "6b2fdef3e4f6d25c9a6fccd97c573dea08e61d46846f6241ebaa39cba0e8561c",
+    "cornerAlpha": [
+      0,
+      0,
+      1,
+      0
+    ],
+    "sprites": [
+      {
+        "name": "LightGrayFill",
+        "rect": [
+          51,
+          947,
+          261,
+          261
+        ],
+        "border": [
+          21,
+          21,
+          21,
+          21
+        ]
+      },
+      {
+        "name": "GrayFill",
+        "rect": [
+          349,
+          947,
+          262,
+          261
+        ],
+        "border": [
+          21,
+          21,
+          21,
+          21
+        ]
+      },
+      {
+        "name": "SkyBlueFill",
+        "rect": [
+          645,
+          947,
+          262,
+          261
+        ],
+        "border": [
+          21,
+          21,
+          21,
+          21
+        ]
+      },
+      {
+        "name": "BlueFill",
+        "rect": [
+          946,
+          947,
+          261,
+          261
+        ],
+        "border": [
+          21,
+          21,
+          21,
+          21
+        ]
+      },
+      {
+        "name": "CyanFill",
+        "rect": [
+          51,
+          654,
+          261,
+          261
+        ],
+        "border": [
+          21,
+          21,
+          21,
+          21
+        ]
+      },
+      {
+        "name": "PinkFill",
+        "rect": [
+          350,
+          654,
+          261,
+          262
+        ],
+        "border": [
+          21,
+          21,
+          21,
+          21
+        ]
+      },
+      {
+        "name": "PurpleFill",
+        "rect": [
+          646,
+          654,
+          261,
+          262
+        ],
+        "border": [
+          21,
+          21,
+          21,
+          21
+        ]
+      },
+      {
+        "name": "GoldFill",
+        "rect": [
+          946,
+          654,
+          261,
+          262
+        ],
+        "border": [
+          21,
+          21,
+          21,
+          21
+        ]
+      },
+      {
+        "name": "OrangeFill",
+        "rect": [
+          51,
+          314,
+          261,
+          305
+        ],
+        "border": [
+          21,
+          21,
+          21,
+          21
+        ]
+      },
+      {
+        "name": "WhiteFill",
+        "rect": [
+          350,
+          314,
+          261,
+          306
+        ],
+        "border": [
+          21,
+          21,
+          21,
+          21
+        ]
+      },
+      {
+        "name": "NavyFill",
+        "rect": [
+          646,
+          314,
+          261,
+          305
+        ],
+        "border": [
+          21,
+          21,
+          21,
+          21
+        ]
+      },
+      {
+        "name": "TealFill",
+        "rect": [
+          946,
+          314,
+          261,
+          305
+        ],
+        "border": [
+          21,
+          21,
+          21,
+          21
+        ]
+      },
+      {
+        "name": "GreenFill",
+        "rect": [
+          51,
+          63,
+          261,
+          251
+        ],
+        "border": [
+          20,
+          20,
+          20,
+          20
+        ]
+      },
+      {
+        "name": "RedFill",
+        "rect": [
+          349,
+          63,
+          262,
+          251
+        ],
+        "border": [
+          20,
+          20,
+          20,
+          20
+        ]
+      },
+      {
+        "name": "BrownFill",
+        "rect": [
+          645,
+          63,
+          262,
+          251
+        ],
+        "border": [
+          20,
+          20,
+          20,
+          20
+        ]
+      },
+      {
+        "name": "DarkGrayFill",
+        "rect": [
+          946,
+          63,
+          261,
+          251
+        ],
+        "border": [
+          20,
+          20,
+          20,
+          20
+        ]
+      }
+    ],
+    "maxSize": 1024,
+    "guid": "a53fae459a184704e8161e8f4f2d9139"
+  },
+  {
+    "key": "UIMenuGlyphs",
+    "cols": 4,
+    "rows": 3,
+    "names": [
+      "BookGlyph",
+      "CharacterGlyph",
+      "RankGlyph",
+      "MailGlyph",
+      "DocumentGlyph",
+      "TicketGlyph",
+      "CloverGlyph",
+      "HomeGlyph",
+      "DaggerGlyph",
+      "ButterflyGlyph",
+      "MapGlyph",
+      "SealGlyph"
+    ],
+    "prompt": "Use case: stylized-concept. Production game UI GLYPH LAYER sprite atlas, square transparent PNG. Image1 is original sheet concept, Image2 is approved upgraded crayon art style. Redraw with coherent bold rough black wax-crayon outlines, flat saturated color and pigment grain. Organize a NEW clean atlas, not old cluttered sheet. Exactly 4 equal columns x 3 equal rows; 12 independent assets ordered left-to-right then top-to-bottom. Each icon CENTERED in its own equal cell with at least 18% transparent margin on all sides. All drawings free-standing on actual transparency, NO attached button/card/panel background, NO rectangle or circle frames around icons. No grid or labels. Row1: 1 a single CLOSED green book with ivory page edge and black outline, 2 a tiny white hooded wizard bust with simple charcoal cross face and a short raised wand, 3 a golden numeral 1 with two small orange laurel leaves at sides (rank symbol), 4 one coral red envelope icon with white envelope flap lines. Row2: 5 two overlapping ivory paper documents with a few short gray writing lines, 6 one mint-green ticket with small centered dollar symbol and stub ends, 7 one green four-leaf clover, 8 a tiny house with orange roof and ivory walls. Row3: 9 a short ivory dagger blade with orange/brown hilt angled lower-left to upper-right, 10 a small yellow butterfly with black brown body and antennae, 11 a folded ivory map with pale cyan route and coral location pin, 12 a dark wooden stamp seal with dark handle and small red seal base. Preserve each symbol's recognizable concept but improve consistency. Exactly12 separate glyphs.",
+    "path": "Assets/_Project/Sprites/Generated/LayeredSheets/UIMenuGlyphs.png",
+    "generatedSource": "C:\\Users\\psj45\\.codex\\generated_images\\01a11a14-a412-73e3-9cc3-68fbda78ff2d\\exec-ed4f0a7f-afa3-4333-b31a-a1d0ca5ab796.png",
+    "tool": "built-in image_gen",
+    "history": [],
+    "width": 1254,
+    "height": 1254,
+    "sha256": "8b3ce9883dce9409a414a99e357fd26b71833f7c2f7be2df5fc1481d1e850130",
+    "cornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "sprites": [
+      {
+        "name": "BookGlyph",
+        "rect": [
+          36,
+          836,
+          272,
+          218
+        ],
+        "border": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "CharacterGlyph",
+        "rect": [
+          353,
+          836,
+          273,
+          215
+        ],
+        "border": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "RankGlyph",
+        "rect": [
+          634,
+          836,
+          306,
+          210
+        ],
+        "border": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "MailGlyph",
+        "rect": [
+          970,
+          837,
+          254,
+          196
+        ],
+        "border": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "DocumentGlyph",
+        "rect": [
+          47,
+          469,
+          253,
+          367
+        ],
+        "border": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "TicketGlyph",
+        "rect": [
+          341,
+          478,
+          286,
+          358
+        ],
+        "border": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "CloverGlyph",
+        "rect": [
+          659,
+          468,
+          258,
+          368
+        ],
+        "border": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "HomeGlyph",
+        "rect": [
+          964,
+          472,
+          256,
+          255
+        ],
+        "border": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "DaggerGlyph",
+        "rect": [
+          36,
+          129,
+          263,
+          280
+        ],
+        "border": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "ButterflyGlyph",
+        "rect": [
+          336,
+          140,
+          291,
+          254
+        ],
+        "border": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "MapGlyph",
+        "rect": [
+          647,
+          132,
+          293,
+          242
+        ],
+        "border": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "SealGlyph",
+        "rect": [
+          940,
+          136,
+          281,
+          268
+        ],
+        "border": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "maxSize": 1024,
+    "guid": "78bfb232b5dba6643a4b7f03acdd551b"
+  },
+  {
+    "key": "UIControlGlyphs",
+    "cols": 4,
+    "rows": 3,
+    "names": [
+      "ChevronLeftBlack",
+      "ChevronRightBlack",
+      "ChevronLeftWhite",
+      "ChevronRightWhite",
+      "BackWhite",
+      "CloseWhite",
+      "PauseWhite",
+      "SpeedOneWhite",
+      "SpeedTwoWhite",
+      "VideoWhite",
+      "SearchGlyph",
+      "DisableCross"
+    ],
+    "prompt": "Use case: precise-object-edit. Clean ONLY the transparency around the 12 UI glyphs in the reference atlas. Remove every floating white dust blob, ghost outline, stray fragment and colored speck that sits outside the main intended glyph silhouettes. Retain exactly the same twelve glyphs, their ordering, colors, directions, size and position in the 4column3row grid, especially x1/x2 text. Each glyph should have a clean recognizable crayon contour; keep subtle pigment grain INSIDE the marks but make all cell gutters fully transparent with no spray. Preserve main white shapes and black chevrons, blue magnifier and orangeX. Preserve existing canvas aspect and dimensions; no new shapes or labels.",
+    "path": "Assets/_Project/Sprites/Generated/LayeredSheets/UIControlGlyphs.png",
+    "generatedSource": "C:\\Users\\psj45\\.codex\\generated_images\\01a11a14-a412-73e3-9cc3-68fbda78ff2d\\exec-36eb1d78-c2e8-4c85-8203-8ed703ccec7c.png",
+    "tool": "built-in image_gen",
+    "history": [
+      {
+        "prompt": "Use case: stylized-concept. Production game UI GLYPH LAYER sprite atlas, square transparent PNG. Image1 is original sheet concept, Image2 is approved upgraded crayon art style. Redraw with coherent bold rough black wax-crayon outlines, flat saturated color and pigment grain. Organize a NEW clean atlas, not old cluttered sheet. Exactly 4 equal columns x 3 equal rows; 12 independent assets ordered left-to-right then top-to-bottom. Each icon CENTERED in its own equal cell with at least 18% transparent margin on all sides. All drawings free-standing on actual transparency, NO attached button/card/panel background, NO rectangle or circle frames around icons. No grid or labels. Draw exactly these cells: Row1: 1 black left-pointing chevron '<', 2 black right-pointing chevron '>', 3 IVORY WHITE left-pointing chevron '<', 4 IVORY WHITE right-pointing chevron '>'. Row2: 5 IVORY WHITE broad left-pointing return arrow, 6 IVORY WHITE diagonal X close mark, 7 IVORY WHITE pause mark with two short vertical parallel bars, 8 IVORY WHITE readable speed text 'x1'. Row3: 9 IVORY WHITE readable speed text 'x2', 10 IVORY WHITE video/play symbol (small slanted rectangle outline and right-pointing triangle center), 11 a blue-gray magnifying glass with dark black outline, 12 coral-orange diagonal X used as a disabled overlay. White controls must be opaque WHITE crayon strokes visible on dark UI, no black border around the white glyphs. The chevrons must point in their specified direction. No extra labels besides requested x1 and x2; no backgrounds; exact12.",
+        "generatedSource": "C:\\Users\\psj45\\.codex\\generated_images\\01a11a14-a412-73e3-9cc3-68fbda78ff2d\\exec-264e51cf-0d5c-4c43-b736-d4e6a822dfa4.png"
+      }
+    ],
+    "width": 1448,
+    "height": 1086,
+    "sha256": "384b6745c9ddd57f54e73884e05a7679d7162ccfe0f34cb2318b8f088af52464",
+    "cornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "sprites": [
+      {
+        "name": "ChevronLeftBlack",
+        "rect": [
+          95,
+          741,
+          182,
+          260
+        ],
+        "border": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "ChevronRightBlack",
+        "rect": [
+          479,
+          741,
+          183,
+          261
+        ],
+        "border": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "ChevronLeftWhite",
+        "rect": [
+          794,
+          741,
+          172,
+          257
+        ],
+        "border": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "ChevronRightWhite",
+        "rect": [
+          1181,
+          741,
+          176,
+          259
+        ],
+        "border": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "BackWhite",
+        "rect": [
+          56,
+          401,
+          288,
+          238
+        ],
+        "border": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "CloseWhite",
+        "rect": [
+          434,
+          408,
+          242,
+          239
+        ],
+        "border": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "PauseWhite",
+        "rect": [
+          813,
+          417,
+          186,
+          221
+        ],
+        "border": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "SpeedOneWhite",
+        "rect": [
+          1123,
+          411,
+          268,
+          245
+        ],
+        "border": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "SpeedTwoWhite",
+        "rect": [
+          55,
+          79,
+          288,
+          228
+        ],
+        "border": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "VideoWhite",
+        "rect": [
+          411,
+          81,
+          289,
+          227
+        ],
+        "border": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "SearchGlyph",
+        "rect": [
+          766,
+          57,
+          281,
+          271
+        ],
+        "border": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "DisableCross",
+        "rect": [
+          1137,
+          73,
+          255,
+          248
+        ],
+        "border": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "maxSize": 1024,
+    "guid": "e98c6a7131bec1e4cb52826e74a70157"
+  },
+  {
+    "key": "UICircleLayers",
+    "cols": 3,
+    "rows": 2,
+    "names": [
+      "GrayDisk",
+      "BlueDisk",
+      "DarkDisk",
+      "CircleOutline",
+      "GoldenCircleOutline",
+      "GreenNode"
+    ],
+    "prompt": "Use case: stylized-concept. Create a square transparent PNG atlas of six separated circular UI layers, exactly3 equal columns x2equal rows, cell-centered and each circular layer has identical diameter 68% of cell width, generous clean transparent gutters. Reference1oldgameUIconcept, reference2approvedhanddrawnwaxcrayonstyle. Row1left-to-right: 1 medium-light gray FILLED CIRCLE with subtle crayon grain and NO OUTLINE, 2 sky-blue FILLED CIRCLE with same grain and NO OUTLINE, 3 charcoal-black FILLED CIRCLE with crayon grain and NO OUTLINE. Row2left-to-right: 4 black rough thick circular OUTLINE ONLY with fully transparent center, 5 golden-yellow rough circular OUTLINE ONLY with fully transparent center, 6 small round bright mint-green FILLED milestone node crayon dot, no outline. These are background/fill/border layers so absolutely NO symbols/icons/text/numbers/stars. All pigments calm texture, not excessive stray spray outside drawings, actual transparency.",
+    "path": "Assets/_Project/Sprites/Generated/LayeredSheets/UICircleLayers.png",
+    "generatedSource": "C:\\Users\\psj45\\.codex\\generated_images\\01a11a14-a412-73e3-9cc3-68fbda78ff2d\\exec-c1df78c5-ecfb-4661-949c-677973cb87cb.png",
+    "tool": "built-in image_gen",
+    "history": [],
+    "width": 1254,
+    "height": 1254,
+    "sha256": "76ae9619497fa112f58ff41f3a31369f9328edec80ec4697b9c055c1573df635",
+    "cornerAlpha": [
+      1,
+      0,
+      0,
+      0
+    ],
+    "sprites": [
+      {
+        "name": "GrayDisk",
+        "rect": [
+          29,
+          632,
+          369,
+          368
+        ],
+        "border": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "BlueDisk",
+        "rect": [
+          442,
+          632,
+          370,
+          368
+        ],
+        "border": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "DarkDisk",
+        "rect": [
+          859,
+          632,
+          368,
+          368
+        ],
+        "border": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "CircleOutline",
+        "rect": [
+          28,
+          166,
+          374,
+          374
+        ],
+        "border": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "GoldenCircleOutline",
+        "rect": [
+          440,
+          167,
+          376,
+          373
+        ],
+        "border": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "GreenNode",
+        "rect": [
+          972,
+          278,
+          146,
+          146
+        ],
+        "border": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "maxSize": 1024,
+    "guid": "256e7fff31566b14e81a254145f0c189"
+  },
+  {
+    "key": "WallStates",
+    "cols": 1,
+    "rows": 3,
+    "names": [
+      "WallIntact",
+      "WallDamaged",
+      "WallRubble"
+    ],
+    "prompt": "Use case: stylized-concept. Production mobile game wall sprite atlas, square transparent PNG, exactly ONE COLUMN and THREE EQUAL ROWS. Reference1 is existing sheet with three gray wall durability stages; reference2 is approved thick crayon outlines. Draw three long flat low walls centered in their own row, same width exactly80% of total canvas and SAME flat bottom baseline offset within every row. Outer height of intact wall exactly10% of total canvas, producing a width:height8:1 low horizontal wall, not tall bricks. Row1 intact solid gray parapet strip, flat straight top/bottom, modest rough black outline, wax-crayon gray grain. Row2 same gray parapet with deep irregular broken notches and a few cracks along its top edge, same bottom and width. Row3 five separated gray angular rubble chunks along the original wall baseline, low rocks at the ends and triangles near middle, transparent gaps between chunks, SAME total width and maximal height as other stages. Gray color, rough black outlines, no colored lighting, no ground shadow, no floating fragments or particles, no extra objects, no text/grid. Actually transparent background and all inter-row gaps. Keep precise width and row alignment so game can swap durability stages.",
+    "path": "Assets/_Project/Sprites/Generated/LayeredSheets/WallStates.png",
+    "generatedSource": "C:\\Users\\psj45\\.codex\\generated_images\\01a11a14-a412-73e3-9cc3-68fbda78ff2d\\exec-5bfd6b08-8d9d-4f73-ae29-eaac3c5724a6.png",
+    "tool": "built-in image_gen",
+    "history": [],
+    "width": 1254,
+    "height": 1254,
+    "sha256": "92b38e964f7ad008bb3e4e984096d03bc78e246225f25010050edd8718ba4aaa",
+    "cornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "pixelsPerUnit": 265.6818181818182,
+    "sprites": [
+      {
+        "name": "WallIntact",
+        "rect": [
+          43,
+          818,
+          1169,
+          150
+        ],
+        "border": [
+          35,
+          32,
+          32,
+          0
+        ]
+      },
+      {
+        "name": "WallDamaged",
+        "rect": [
+          43,
+          511,
+          1169,
+          150
+        ],
+        "border": [
+          35,
+          32,
+          32,
+          0
+        ]
+      },
+      {
+        "name": "WallRubble",
+        "rect": [
+          43,
+          206,
+          1169,
+          150
+        ],
+        "border": [
+          35,
+          32,
+          32,
+          0
+        ]
+      }
+    ],
+    "maxSize": 1024,
+    "guid": "f4d5efe50c0b2644fb5e1917a71dfcf2"
+  },
+  {
+    "key": "UIStrokes",
+    "cols": 3,
+    "rows": 3,
+    "names": [
+      "TealStroke",
+      "PurpleStroke",
+      "LightBlueStroke",
+      "BlueStroke",
+      "PinkStroke",
+      "RedStroke",
+      "OrangeStroke",
+      "GrayStroke",
+      "BrownStroke"
+    ],
+    "prompt": "Use case: stylized-concept. Mobile game art matching the approved rough wax-crayon style in reference2, keeping the visual concepts of old reference1, redesigned into clean organized reusable assets, flat saturated pigments, crayon grain, simple bold silhouettes. Square transparent PNG atlas exactly3 equal columns by3 equal rows. Nine separate plain horizontal brush swatches, centered in each cell, same shape dimensions width80%cell height25%cell. Mildly rough short crayon-dab contour and calm fine pigment texture, NO black outline, no icons, no text, no directional lighting or shadow. Row1left-to-right darkteal, mutedpurple, paleblue. Row2 royalblue, pinkmagenta, coralred. Row3 orange, silvergray, earthbrown. All generous gutters genuinely transparent. Background/color layers only, exact9 swatches.",
+    "path": "Assets/_Project/Sprites/Generated/LayeredSheets/UIStrokes.png",
+    "generatedSource": "C:\\Users\\psj45\\.codex\\generated_images\\01a11a14-a412-73e3-9cc3-68fbda78ff2d\\exec-3f1f4276-6243-481b-94d9-c267da905f79.png",
+    "tool": "built-in image_gen",
+    "history": [],
+    "width": 1254,
+    "height": 1254,
+    "sha256": "04ab09539e9e69c2a1dd0a484374666d88212d26826e4e9c7ac8be83eb35e0e8",
+    "cornerAlpha": [
+      1,
+      0,
+      1,
+      0
+    ],
+    "sprites": [
+      {
+        "name": "TealStroke",
+        "rect": [
+          34,
+          888,
+          366,
+          193
+        ],
+        "border": [
+          15,
+          15,
+          15,
+          15
+        ]
+      },
+      {
+        "name": "PurpleStroke",
+        "rect": [
+          445,
+          891,
+          365,
+          188
+        ],
+        "border": [
+          15,
+          15,
+          15,
+          15
+        ]
+      },
+      {
+        "name": "LightBlueStroke",
+        "rect": [
+          853,
+          887,
+          368,
+          194
+        ],
+        "border": [
+          16,
+          16,
+          16,
+          16
+        ]
+      },
+      {
+        "name": "BlueStroke",
+        "rect": [
+          31,
+          540,
+          370,
+          189
+        ],
+        "border": [
+          15,
+          15,
+          15,
+          15
+        ]
+      },
+      {
+        "name": "PinkStroke",
+        "rect": [
+          446,
+          541,
+          362,
+          184
+        ],
+        "border": [
+          15,
+          15,
+          15,
+          15
+        ]
+      },
+      {
+        "name": "RedStroke",
+        "rect": [
+          856,
+          539,
+          368,
+          186
+        ],
+        "border": [
+          15,
+          15,
+          15,
+          15
+        ]
+      },
+      {
+        "name": "OrangeStroke",
+        "rect": [
+          27,
+          185,
+          372,
+          192
+        ],
+        "border": [
+          15,
+          15,
+          15,
+          15
+        ]
+      },
+      {
+        "name": "GrayStroke",
+        "rect": [
+          448,
+          188,
+          361,
+          185
+        ],
+        "border": [
+          15,
+          15,
+          15,
+          15
+        ]
+      },
+      {
+        "name": "BrownStroke",
+        "rect": [
+          854,
+          185,
+          374,
+          193
+        ],
+        "border": [
+          15,
+          15,
+          15,
+          15
+        ]
+      }
+    ],
+    "maxSize": 1024,
+    "guid": "9e9ecc65c3c719a4888605c43da58d3e"
+  },
+  {
+    "key": "UIExtraGlyphs",
+    "cols": 2,
+    "rows": 2,
+    "names": [
+      "MenuGlyph",
+      "PlayerDummyGlyph",
+      "GreenLine",
+      "CyanDash"
+    ],
+    "prompt": "Use case: stylized-concept. Draw a clean FLAT GAME UI SYMBOL ATLAS with exactly FOUR isolated elements on an actually TRANSPARENT PNG. Square canvas, exactly2equalcolumns and2equalrows, each symbol centered within its own quadrant with generous25%transparent margin. Match the simple wax-crayon artwork of the reference sheets. Top-left: a hamburger menu symbol, THREE short mediumgray horizontal crayon strokes, no frame. Top-right: the simple ivory-white FULL-BODY training dummy on the left of originalreference1, round head with gray cross face, chunky body, arms outstretched and two feet, blackcrayonoutline, no weapon, no box. Bottom-left: one short GREEN flat horizontal crayon LINE, narrow rectangle width60%cell and height5%cell, rough crisp ends, no outline. Bottom-right: one CYAN flat horizontal crayon WEDGE/arrow shape with right-pointed end, width60%cellheight12%cell, no outline. This is printed opaque crayon art, ALL pigments must remain strictly inside the four actual drawing silhouettes. ABSOLUTELY NO glowing/blooming/aura/emission effects, no gray mist, no gradients, no lighting, no shadows, no blurry edges and no particles. All cell gutters and empty spaces fully transparent. Exactly4flat symbols. No text.",
+    "path": "Assets/_Project/Sprites/Generated/LayeredSheets/UIExtraGlyphs.png",
+    "generatedSource": "C:\\Users\\psj45\\.codex\\generated_images\\01a11a14-a412-73e3-9cc3-68fbda78ff2d\\exec-115e18f8-0212-4ca8-8612-69bba5f50780.png",
+    "tool": "built-in image_gen",
+    "history": [
+      {
+        "prompt": "Use case: stylized-concept. Mobile game art matching the approved rough wax-crayon style in reference2, keeping the visual concepts of old reference1, redesigned into clean organized reusable assets, flat saturated pigments, crayon grain, simple bold silhouettes. Square transparent PNG atlas exactly3 equal columns by2equal rows, six independent drawings centered in each equal cell with at least15% clear transparent gutters. Row1left-to-right: 1 a silvergray hamburger menu glyph of THREE separate thick horizontal crayon strokes, no surrounding box; 2 a simple fullbody ivory-white training dummy silhouette from old left side of reference1: large round head with small gray CROSS face, chunky armless-robe body with TWO outstretched arms and TWO short separated feet, friendly flat cartoon, thick rough black contour, no weapon, no button background; 3 one slender bright mint-green horizontal milestone line, width75%cell height5%cell, rough crayon grain, NO nodes or dots. Row2left-to-right:4 short warmorange horizontal energy streak with rough ends,width75%cell height12%cell;5 short cyan horizontal pointed energy streak with tapered right tip,width75%cell height12%cell;6 short earthbrown horizontal dust/wood streak with rough ends,width75%cell height12%cell. No frames, no shadows, no labels, actual transparency everywhere outside these6 glyphs.",
+        "generatedSource": "C:\\Users\\psj45\\.codex\\generated_images\\01a11a14-a412-73e3-9cc3-68fbda78ff2d\\exec-1e7f4713-4983-42a9-a8eb-a0ea3cdd3bc1.png"
+      },
+      {
+        "prompt": "Use case: precise-object-edit. Remove ONLY the colored glow halos, gray haze, lighting bloom and soft shadows around the six crayon drawings in this reference atlas. Set every background and all gutters to actually transparent alpha, with absolutely no colored/gray haze outside the intended silhouettes. Preserve the six drawings, their colors, size, positioning, shape and crayon grain: three gray menu bars, full ivory training dummy, mint green line, orange dash, cyan dash and brown dash, in the existing 3columns2rows arrangement. Keep all existing main black outlines and every intended drawing. No outer lighting and no shadow. A clean production sprite atlas with true transparent background.",
+        "generatedSource": "C:\\Users\\psj45\\.codex\\generated_images\\01a11a14-a412-73e3-9cc3-68fbda78ff2d\\exec-b6350d7d-dce4-4245-a89e-1a002acfdcce.png"
+      }
+    ],
+    "width": 1254,
+    "height": 1254,
+    "sha256": "c30475f332a36ac49ff67f4431d6c27591aad38638533e3110acd5698cab7e8e",
+    "cornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "sprites": [
+      {
+        "name": "MenuGlyph",
+        "rect": [
+          152,
+          708,
+          404,
+          311
+        ],
+        "border": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "PlayerDummyGlyph",
+        "rect": [
+          702,
+          644,
+          420,
+          496
+        ],
+        "border": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "GreenLine",
+        "rect": [
+          120,
+          290,
+          448,
+          65
+        ],
+        "border": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "CyanDash",
+        "rect": [
+          704,
+          265,
+          453,
+          110
+        ],
+        "border": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "maxSize": 1024,
+    "guid": "2a7d07fb9e58fe241a4023a141aa1f95"
+  },
+  {
+    "key": "LobbySky",
+    "cols": 1,
+    "rows": 1,
+    "names": [
+      "LobbySky"
+    ],
+    "fullCanvas": true,
+    "prompt": "Use case: stylized-concept. Mobile game art matching the approved rough wax-crayon style in reference2, keeping the visual concepts of old reference1, redesigned into clean organized reusable assets, flat saturated pigments, crayon grain, simple bold silhouettes. Create ONLY the SKY BACKGROUND LAYER for the lobby. Wide16:9 canvas suitable for a1920x1080mobile game. Flat pale skyblue wax-crayon pigment wash filling the ENTIRE canvas edge-to-edge, with exactly two soft simple ivory crayon cloud shapes in the upper half, one towardupperleft and one towardupperright. Leave the lowerhalf calm skyblue. No ground, grass, horizon line, characters, butterfly, panel, frames, text, buildings or objects. This will be composed with a separate grass foreground layer. Gentle readable lowcontrast paper-pigment texture. Opaque fullbleed skybackground.",
+    "path": "Assets/_Project/Sprites/Generated/LayeredSheets/LobbySky.png",
+    "generatedSource": "C:\\Users\\psj45\\.codex\\generated_images\\01a11a14-a412-73e3-9cc3-68fbda78ff2d\\exec-730bc6fa-1fc1-4b95-b961-f661720cd4d2.png",
+    "tool": "built-in image_gen",
+    "history": [],
+    "width": 1672,
+    "height": 940,
+    "sha256": "02cf26a49cfefa39848b10a5ed9dd02dc919b57c7f32958d40a8b30bd50104a0",
+    "sprites": [
+      {
+        "name": "LobbySky",
+        "rect": [
+          0,
+          0,
+          1672,
+          940
+        ],
+        "border": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "maxSize": 2048,
+    "guid": "3ab99716b6863b9498287511ff18c8ae"
+  },
+  {
+    "key": "LobbyGrass",
+    "cols": 1,
+    "rows": 1,
+    "names": [
+      "LobbyGrass"
+    ],
+    "fullCanvas": true,
+    "prompt": "Use case: stylized-concept. Mobile game art matching the approved rough wax-crayon style in reference2, keeping the visual concepts of old reference1, redesigned into clean organized reusable assets, flat saturated pigments, crayon grain, simple bold silhouettes. Create ONLY the GRASS FOREGROUND LAYER for a lobby. Wide16:9 canvas suitable for1920x1080. The UPPER55% of the entire image must be completely transparent. The LOWER45% is a flat lush green wax-crayon lawn extending edge-to-edge to left,right,bottom of canvas, calm green pigment texture with sparse mint/ivory dry crayon gaps. Its topedge follows a very shallow irregular grassy horizon around y55%ofimageheight measuredfromtop with a few short tufts. No sky/clouds behind it, no characters, butterfly, flowers, rocks, panels, shadow or text. A genuine alpha cutout with all space above the grass fully transparent, designed to overlay a separately drawn blue sky background.",
+    "path": "Assets/_Project/Sprites/Generated/LayeredSheets/LobbyGrass.png",
+    "generatedSource": "C:\\Users\\psj45\\.codex\\generated_images\\01a11a14-a412-73e3-9cc3-68fbda78ff2d\\exec-9c813800-bd1c-499b-bc4f-e37fccaae768.png",
+    "tool": "built-in image_gen",
+    "history": [],
+    "width": 1672,
+    "height": 941,
+    "sha256": "53b4227946f327a5d5a91b9b8d58212b7c254494070ed2233f3e5f6b26d6a669",
+    "sprites": [
+      {
+        "name": "LobbyGrass",
+        "rect": [
+          0,
+          0,
+          1672,
+          941
+        ],
+        "border": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "maxSize": 2048,
+    "guid": "f58584111ee79284ba7e2723778842d4"
+  },
+  {
+    "key": "ResultSpotlight",
+    "cols": 1,
+    "rows": 1,
+    "names": [
+      "ResultSpotlight"
+    ],
+    "fullCanvas": true,
+    "prompt": "Use case: stylized-concept. Create only the LIGHTING OVERLAY LAYER used behind a mobile game's results panel, matching the old reference1 gray result background with a warm overhead spotlight. Wide16:9 transparent PNG suitable for1920x1080. One very subtle broad pale warm-ivory cone of overhead light entering from the upper center, spreading outward into the lower middle, strongest near the topcenter and fading completely toward bottom and sides. Soft wax-crayon/paper pigment grain like reference2 rather than realistic photography. Actual partially transparent alpha throughout, outside the cone fully transparent, no solid black or gray background. NO rays drawn as lines, no lamp fixture, no stars or speckles outside light, no characters, icons, borders, text or other shapes. Neutral warm light to overlay a separately drawn gray panel, subtle enough not to impair text contrast.",
+    "path": "Assets/_Project/Sprites/Generated/LayeredSheets/ResultSpotlight.png",
+    "generatedSource": "C:\\Users\\psj45\\.codex\\generated_images\\01a11a14-a412-73e3-9cc3-68fbda78ff2d\\exec-28935034-ae70-4b13-a690-34d39744355a.png",
+    "tool": "built-in image_gen",
+    "history": [],
+    "width": 1672,
+    "height": 941,
+    "sha256": "b13b3a454c21030f6e0163d0465b7f3e803b1469ccb85e971f60028977dc14a8",
+    "sprites": [
+      {
+        "name": "ResultSpotlight",
+        "rect": [
+          0,
+          0,
+          1672,
+          941
+        ],
+        "border": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "maxSize": 1024,
+    "guid": "84530c492bd13eb4b86eafbf58877111"
+  }
+]

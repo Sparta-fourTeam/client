@@ -1,0 +1,808 @@
+fileFormatVersion: 2
+guid: 6a7225659a5db42498b0058bcb1ad6b1
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -6653792110123191775
+    second: HoodBook_0
+  - first:
+      213: 7025865672257061060
+    second: HoodBook_1
+  - first:
+      213: 5512281801894804112
+    second: HoodBook_2
+  - first:
+      213: -2230609229438100248
+    second: HoodBook_3
+  - first:
+      213: -4827342324779166424
+    second: HoodBook_4
+  - first:
+      213: -7283860651479611632
+    second: HoodBook_5
+  - first:
+      213: 4624872654754884045
+    second: HoodBook_6
+  - first:
+      213: 7447764999120798506
+    second: HoodBook_7
+  - first:
+      213: 8374412001662903411
+    second: HoodBook_8
+  - first:
+      213: -6323123215942770810
+    second: HoodBook_9
+  - first:
+      213: -5990210688754344520
+    second: HoodBook_10
+  - first:
+      213: 1644942618010404580
+    second: HoodBook_11
+  - first:
+      213: -2867690132384989549
+    second: HoodBook_12
+  - first:
+      213: -1413921031563743569
+    second: HoodBook_13
+  - first:
+      213: 5450337221043416390
+    second: HoodBook_14
+  - first:
+      213: 8460892936013856820
+    second: HoodBook_15
+  - first:
+      213: -301769559958856285
+    second: HoodBook_16
+  - first:
+      213: -3112701971135256538
+    second: HoodBook_17
+  - first:
+      213: 4143417235975511324
+    second: HoodBook_18
+  - first:
+      213: -8365800334550909680
+    second: HoodBook_19
+  - first:
+      213: 8059159576453189163
+    second: HoodBook_20
+  - first:
+      213: 8735224242430142723
+    second: HoodBook_21
+  - first:
+      213: 7396653595904117401
+    second: HoodBook_22
+  - first:
+      213: -1743946872791773351
+    second: HoodBook_23
+  - first:
+      213: 6602347241923082545
+    second: HoodBook_24
+  - first:
+      213: 4630127369766355746
+    second: HoodBook_25
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: HoodBook_0
+      rect:
+        serializedVersion: 2
+        x: 90
+        y: 25
+        width: 1095
+        height: 1210
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1227fc2445bf8a3a0800000000000000
+      internalID: -6653792110123191775
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HoodBook_1
+      rect:
+        serializedVersion: 2
+        x: 1163
+        y: 1213
+        width: 12
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4c04e72ba93e08160800000000000000
+      internalID: 7025865672257061060
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HoodBook_2
+      rect:
+        serializedVersion: 2
+        x: 669
+        y: 1130
+        width: 15
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 09a3acfe71f8f7c40800000000000000
+      internalID: 5512281801894804112
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HoodBook_3
+      rect:
+        serializedVersion: 2
+        x: 729
+        y: 1127
+        width: 12
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8ec52ae59b84b01e0800000000000000
+      internalID: -2230609229438100248
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HoodBook_4
+      rect:
+        serializedVersion: 2
+        x: 762
+        y: 1142
+        width: 17
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 82554526bb5d10db0800000000000000
+      internalID: -4827342324779166424
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HoodBook_5
+      rect:
+        serializedVersion: 2
+        x: 796
+        y: 1142
+        width: 11
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 017cc1b34578aea90800000000000000
+      internalID: -7283860651479611632
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HoodBook_6
+      rect:
+        serializedVersion: 2
+        x: 836
+        y: 1143
+        width: 23
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dc925160d29de2040800000000000000
+      internalID: 4624872654754884045
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HoodBook_7
+      rect:
+        serializedVersion: 2
+        x: 850
+        y: 1163
+        width: 9
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a23ce278ec6cb5760800000000000000
+      internalID: 7447764999120798506
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HoodBook_8
+      rect:
+        serializedVersion: 2
+        x: 866
+        y: 1140
+        width: 19
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 374a2e19853e73470800000000000000
+      internalID: 8374412001662903411
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HoodBook_9
+      rect:
+        serializedVersion: 2
+        x: 1141
+        y: 1140
+        width: 92
+        height: 36
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 68f94babfe0cf38a0800000000000000
+      internalID: -6323123215942770810
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HoodBook_10
+      rect:
+        serializedVersion: 2
+        x: 593
+        y: 1122
+        width: 17
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8bd9c07bd1f7edca0800000000000000
+      internalID: -5990210688754344520
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HoodBook_11
+      rect:
+        serializedVersion: 2
+        x: 723
+        y: 1132
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4e64966889204d610800000000000000
+      internalID: 1644942618010404580
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HoodBook_12
+      rect:
+        serializedVersion: 2
+        x: 1133
+        y: 933
+        width: 91
+        height: 81
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 39ebc4da40be338d0800000000000000
+      internalID: -2867690132384989549
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HoodBook_13
+      rect:
+        serializedVersion: 2
+        x: 1139
+        y: 779
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fae6035205eb06ce0800000000000000
+      internalID: -1413921031563743569
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HoodBook_14
+      rect:
+        serializedVersion: 2
+        x: 1145
+        y: 730
+        width: 92
+        height: 178
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 64de16e43dc73ab40800000000000000
+      internalID: 5450337221043416390
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HoodBook_15
+      rect:
+        serializedVersion: 2
+        x: 1149
+        y: 530
+        width: 8
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 430c7bd2c412b6570800000000000000
+      internalID: 8460892936013856820
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HoodBook_16
+      rect:
+        serializedVersion: 2
+        x: 1147
+        y: 517
+        width: 8
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3ad50ae1f26efcbf0800000000000000
+      internalID: -301769559958856285
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HoodBook_17
+      rect:
+        serializedVersion: 2
+        x: 1172
+        y: 435
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 62823de8c067dc4d0800000000000000
+      internalID: -3112701971135256538
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HoodBook_18
+      rect:
+        serializedVersion: 2
+        x: 1174
+        y: 441
+        width: 7
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c1d1d8af500608930800000000000000
+      internalID: 4143417235975511324
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HoodBook_19
+      rect:
+        serializedVersion: 2
+        x: 167
+        y: 407
+        width: 12
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 01dbf3d6be4b6eb80800000000000000
+      internalID: -8365800334550909680
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HoodBook_20
+      rect:
+        serializedVersion: 2
+        x: 1131
+        y: 401
+        width: 10
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b2e0eae7fe2e7df60800000000000000
+      internalID: 8059159576453189163
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HoodBook_21
+      rect:
+        serializedVersion: 2
+        x: 161
+        y: 329
+        width: 7
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 309ed63da20c93970800000000000000
+      internalID: 8735224242430142723
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HoodBook_22
+      rect:
+        serializedVersion: 2
+        x: 1115
+        y: 312
+        width: 28
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 99a0b7e914136a660800000000000000
+      internalID: 7396653595904117401
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HoodBook_23
+      rect:
+        serializedVersion: 2
+        x: 1133
+        y: 296
+        width: 12
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 95fc71c1f814cc7e0800000000000000
+      internalID: -1743946872791773351
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HoodBook_24
+      rect:
+        serializedVersion: 2
+        x: 143
+        y: 248
+        width: 9
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 139fa96f5df30ab50800000000000000
+      internalID: 6602347241923082545
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HoodBook_25
+      rect:
+        serializedVersion: 2
+        x: 311
+        y: 63
+        width: 44
+        height: 36
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 223ccb3bf44814040800000000000000
+      internalID: 4630127369766355746
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      HoodBook_0: -6653792110123191775
+      HoodBook_1: 7025865672257061060
+      HoodBook_10: -5990210688754344520
+      HoodBook_11: 1644942618010404580
+      HoodBook_12: -2867690132384989549
+      HoodBook_13: -1413921031563743569
+      HoodBook_14: 5450337221043416390
+      HoodBook_15: 8460892936013856820
+      HoodBook_16: -301769559958856285
+      HoodBook_17: -3112701971135256538
+      HoodBook_18: 4143417235975511324
+      HoodBook_19: -8365800334550909680
+      HoodBook_2: 5512281801894804112
+      HoodBook_20: 8059159576453189163
+      HoodBook_21: 8735224242430142723
+      HoodBook_22: 7396653595904117401
+      HoodBook_23: -1743946872791773351
+      HoodBook_24: 6602347241923082545
+      HoodBook_25: 4630127369766355746
+      HoodBook_3: -2230609229438100248
+      HoodBook_4: -4827342324779166424
+      HoodBook_5: -7283860651479611632
+      HoodBook_6: 4624872654754884045
+      HoodBook_7: 7447764999120798506
+      HoodBook_8: 8374412001662903411
+      HoodBook_9: -6323123215942770810
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

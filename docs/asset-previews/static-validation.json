@@ -1,0 +1,794 @@
+{
+  "artwork": 88,
+  "itemDefinitions": 17,
+  "itemIconKeys": 24,
+  "equipmentScrolls": 8,
+  "monsterIds": 14,
+  "preservedItemIdsAndTargets": true,
+  "resolvedTableGuids": true,
+  "transparentPNGs": [
+    {
+      "key": "Player",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "MonsterShadow",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "SkillCircleFrame",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "ArrowProjectile",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "ChalkStroke",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "ColdZoneGround",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "DustPuff",
+      "cornerAlpha": [
+        1,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "key": "EnergyBeamBody",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "EyeJellyCross",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "FlameDab",
+      "cornerAlpha": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "IceChip",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "LightningCloudBody",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "LightningStroke",
+      "cornerAlpha": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "SlimeProjectile",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "WoodCrumb",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "ElectricFrames3x3",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "key": "FxBeam",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "FxHole",
+      "cornerAlpha": [
+        0,
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "key": "FxRing",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "FxSoft",
+      "cornerAlpha": [
+        1,
+        0,
+        1,
+        1
+      ]
+    },
+    {
+      "key": "FxSparkle",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "FxSpiral",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "FxStreak",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "LightningFrames",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "BoneRing",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "Boots",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "Hood",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "Robe",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "Seal",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "SkullNecklace",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "Staff",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "ArrowBook",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "BoneRingScroll",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "BootsScroll",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "ChainLightningBook",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "ChestClosed",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "ChestOpen",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "Coin",
+      "cornerAlpha": [
+        0,
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "key": "ColdZoneBook",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "EnergyBeamBook",
+      "cornerAlpha": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "Experience",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "FireballBook",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "FrostCrystalBook",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "Gem",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "GemChest",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "Heart",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "HeartBundle",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "HoodScroll",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "LightningBook",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "LightningCloudBook",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "LogBook",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "RandomEquipmentMaterial",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "RandomSkillMaterial",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "RobeScroll",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "SealScroll",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "SkullNecklaceScroll",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "StaffScroll",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "LobbyGrass",
+      "fullCanvasLayer": true,
+      "minAlpha": 0,
+      "maxAlpha": 255
+    },
+    {
+      "key": "LobbySky",
+      "fullCanvasLayer": true,
+      "opaqueRGB": true
+    },
+    {
+      "key": "ResultSpotlight",
+      "fullCanvasLayer": true,
+      "minAlpha": 0,
+      "maxAlpha": 253
+    },
+    {
+      "key": "UICircleLayers",
+      "cornerAlpha": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "UIControlGlyphs",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "UIExtraGlyphs",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "UIFills",
+      "cornerAlpha": [
+        0,
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "key": "UIFrames",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "UIMenuGlyphs",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "UIStrokes",
+      "cornerAlpha": [
+        1,
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "key": "WallStates",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "ArmoredCrab",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "Bat",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "BrainSpider",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "EyeJelly",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "Ghost",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "Golem",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "Oni",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "Skeleton",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "Slime",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "Spider",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "Arrow",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "ChainLightning",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "ColdZone",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "EnergyBeam",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "Fireball",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "FrostCrystal",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "Lightning",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "LightningCloud",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "LogRoot",
+      "cornerAlpha": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "key": "WallRepair",
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "errors": []
+}

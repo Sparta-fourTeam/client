@@ -14,17 +14,44 @@ MonoBehaviour:
   m_EditorClassIdentifier: Game.View::Game.View.MonsterDisplayTable
   _monsters:
   - monsterId: 1
-    displayName: "\uC694\uB9C8 1"
-    icon: {fileID: 0}
+    displayName: "슬라임"
+    icon: {fileID: 21300000, guid: f6fc5bd0511be024bada5d137fa4efd1, type: 3}
   - monsterId: 2
-    displayName: "\uC694\uB9C8 2"
-    icon: {fileID: 0}
+    displayName: "박쥐"
+    icon: {fileID: 21300000, guid: 51c038e916aa24042b97fb808c9b9dfb, type: 3}
+  - monsterId: 3
+    displayName: "작은 슬라임"
+    icon: {fileID: 21300000, guid: f6fc5bd0511be024bada5d137fa4efd1, type: 3}
+  - monsterId: 4
+    displayName: "골렘"
+    icon: {fileID: 21300000, guid: 8b6da33f4d0876d4ca8d82b075ef3814, type: 3}
+  - monsterId: 5
+    displayName: "거미"
+    icon: {fileID: 21300000, guid: 9d1dfabb9b3efd04d94dfce666331341, type: 3}
+  - monsterId: 6
+    displayName: "작은 거미"
+    icon: {fileID: 21300000, guid: 9d1dfabb9b3efd04d94dfce666331341, type: 3}
   - monsterId: 11
-    displayName: "\uC694\uB9C8 11"
-    icon: {fileID: 0}
+    displayName: "정예 슬라임"
+    icon: {fileID: -8215510745074873636, guid: 38e7a13c9ba4b614eaa5372079d4b154, type: 3}
   - monsterId: 12
-    displayName: "\uC694\uB9C8 12"
-    icon: {fileID: 0}
+    displayName: "정예 박쥐"
+    icon: {fileID: 1289800932146914806, guid: 38e7a13c9ba4b614eaa5372079d4b154, type: 3}
+  - monsterId: 21
+    displayName: "갑옷 게"
+    icon: {fileID: 21300000, guid: eb0f05d433819c142bcb40491231eab5, type: 3}
+  - monsterId: 22
+    displayName: "눈 해파리"
+    icon: {fileID: 21300000, guid: ec87a51f42a40764a98ff1f5d66e9e48, type: 3}
+  - monsterId: 23
+    displayName: "유령"
+    icon: {fileID: 21300000, guid: 1eb3fe2cd5db2504686ca4ee20453a61, type: 3}
+  - monsterId: 24
+    displayName: "해골"
+    icon: {fileID: 21300000, guid: 317d60322d7f2ca4ca6884267bc563d7, type: 3}
+  - monsterId: 25
+    displayName: "뿔 요마"
+    icon: {fileID: 21300000, guid: 4dce97bca4a8f024bb9c7fb5d7a62304, type: 3}
   - monsterId: 100
-    displayName: "\uC694\uB9C8 \uBCF4\uC2A4"
-    icon: {fileID: 0}
+    displayName: "뇌 거미"
+    icon: {fileID: 21300000, guid: a29d45d8a945d634dba0ba48996afbdf, type: 3}
