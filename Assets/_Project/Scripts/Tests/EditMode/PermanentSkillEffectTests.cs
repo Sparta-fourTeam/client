@@ -68,7 +68,7 @@ namespace Game.Tests
         [Test(Description = "그 스킬의 공격 종류가 쓰지 않는 효과는 조용히 무시되므로 거부한다")]
         public void Validate_RejectsUnsupportedKind()
         {
-            Assert.IsFalse(EffectRegistry.Supports(_shuriken.castType, "areaRadius"), "전제: 쿠나이는 영역 효과를 쓰지 않는다");
+            Assert.IsFalse(EffectRegistry.Supports(_shuriken.castType, "areaRadius"), "전제: 화살은 영역 효과를 쓰지 않는다");
 
             Assert.Throws<InvalidOperationException>(() =>
                 PermanentSkillEffect.Validate(Row("shuriken", Effect("areaRadius", 5)), new[] { _shuriken }));

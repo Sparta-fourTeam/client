@@ -168,7 +168,7 @@ namespace Game.Tests
 
             var card = controller.GetRandomUpgradeChoices(100).Find(c => !c.IsNewWeapon && c.skill.Data.id == 1
                 && c.Option.effects.Count == 1 && c.Option.effects[0].kind == "damage");
-            Assume.That(card, Is.Not.Null, "쿠나이에 피해만 올리는 카드가 있어야 확인할 수 있다");
+            Assume.That(card, Is.Not.Null, "화살에 피해만 올리는 카드가 있어야 확인할 수 있다");
             Assert.IsTrue(controller.ApplyUpgradeChoice(card));
             float expected = raised.baseStats.cast.baseDamage * 1.4f * (1 + card.Option.effects[0].value * .01f);
             Assert.AreEqual(expected, StatsOf(1).Cast.Damage, 0.001f);
