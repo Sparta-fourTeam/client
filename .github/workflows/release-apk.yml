@@ -37,7 +37,7 @@ jobs:
           projectPath: .
           unityVersion: auto
           targetPlatform: Android
-          buildProfile: 'Assets/Settings/Build Profiles/Adnroid_Release.asset'
+          buildProfile: 'Assets/Settings/Build Profiles/Android_Release.asset'
           androidExportType: androidPackage
           versioning: Tag
           buildsPath: build

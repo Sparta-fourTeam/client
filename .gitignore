@@ -115,3 +115,6 @@ External.meta
 
 ## 개인 로컬 UPM embedded 패키지 (레포 공유 X, manifest.json/packages-lock.json은 계속 추적) ###
 /Packages/*/
+
+*.keystore
+*.jks
