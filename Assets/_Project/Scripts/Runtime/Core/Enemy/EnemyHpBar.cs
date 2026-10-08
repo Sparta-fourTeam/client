@@ -76,25 +76,8 @@ namespace Game.Core
                 barScale.x / Mathf.Max(0.001f, Mathf.Abs(scale.x)),
                 barScale.y / Mathf.Max(0.001f, Mathf.Abs(scale.y)),
                 barScale.z / Mathf.Max(0.001f, Mathf.Abs(scale.z)));
-            _bar.transform.position = new Vector3(transform.position.x, TopOfVisual() + Margin, transform.position.z);
+            _bar.transform.position = new Vector3(transform.position.x, VisualBounds.TopY(transform, _bar.transform) + Margin, transform.position.z);
             return true;
-        }
-
-        private float TopOfVisual()
-        {
-            var renderers = GetComponentsInChildren<SpriteRenderer>();
-            float top = transform.position.y;
-            foreach (var renderer in renderers)
-            {
-                if (_bar != null && renderer.transform.IsChildOf(_bar.transform))
-                {
-                    continue;
-                }
-
-                top = Mathf.Max(top, renderer.bounds.max.y);
-            }
-
-            return top;
         }
 
         private void LateUpdate() => Sync();

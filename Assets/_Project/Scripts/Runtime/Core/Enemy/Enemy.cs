@@ -17,6 +17,7 @@ namespace Game.Core
         private static readonly int DieHash = Animator.StringToHash("Die");
         private static readonly int AttackHash = Animator.StringToHash("Attack");
         private const float DefaultDeathDuration = 0.6f;
+        private const float DamagePopupJitter = 0.15f; // 연속으로 맞아도 숫자가 한 자리에 겹쳐 쌓이지 않도록 가로로 살짝 흩는다
 
         private EnemyModel _enemyModel;
         private Animator _animator; // 몬스터 비주얼 프리팹의 Animator (없으면 애니메이션 없이 동작)
@@ -182,14 +183,18 @@ namespace Game.Core
             }
 
             // 체력이 늘었다면(회복) 피격 연출은 없다
-            bool damaged = message.Current < _lastHp;
+            int damage = _lastHp - message.Current;
             _lastHp = message.Current;
-            if (!damaged)
+            if (damage <= 0)
             {
                 return;
             }
 
             _hitFlash.Flash();
+
+            // 실제로 깎인 체력(남은 체력을 넘는 과잉 피해는 빠진 값)을 머리 위에 띄운다
+            float jitter = UnityEngine.Random.Range(-DamagePopupJitter, DamagePopupJitter);
+            DamagePopupPool.Show(damage, new Vector3(Position.x + jitter, VisualBounds.TopY(transform), transform.position.z), gameObject.scene);
 
             if (_hasHit && message.Current > 0)
             {
