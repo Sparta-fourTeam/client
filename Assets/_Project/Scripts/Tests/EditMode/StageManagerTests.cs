@@ -441,6 +441,27 @@ namespace Game.Tests
             Assert.AreEqual(1, _api.Requests.Count);
         }
 
+        [Test(Description = "클리어·실패로 전투가 끝나면 배속과 관계없이 시간이 멈춘다")]
+        public void StageEnded_StopsTimeRegardlessOfSpeed()
+        {
+            _manager.SetSpeed(2f);
+            Assert.AreEqual(2f, Time.timeScale);
+
+            _stageEnded.Publish(new StageEnded(StageOutcome.Fail));
+
+            Assert.AreEqual(0f, Time.timeScale);
+        }
+
+        [Test(Description = "전투가 끝난 뒤에는 SetSpeed가 시간을 다시 흐르게 하지 않는다")]
+        public void SetSpeed_AfterStageEnded_KeepsTimeStopped()
+        {
+            _stageEnded.Publish(new StageEnded(StageOutcome.Clear));
+
+            _manager.SetSpeed(2f);
+
+            Assert.AreEqual(0f, Time.timeScale);
+        }
+
         [Test(Description = "Dispose하면 timeScale이 1로 복구된다")]
         public void Dispose_RestoresTimeScale()
         {

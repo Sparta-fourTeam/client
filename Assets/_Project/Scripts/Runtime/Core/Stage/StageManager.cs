@@ -197,6 +197,9 @@ namespace Game.Core
         {
             if (State is StageState.Submitting or StageState.Finished) { return; }
             _rewards?.Stop();
+            // 클리어·실패는 Playing 중에 끝나 timeScale이 배속 그대로라 적·투사체가 결과 화면 뒤에서 계속 움직인다.
+            // 제출 대기·재시도 연출은 unscaled time을 쓰므로 멈춰도 된다. 다음 전투는 Dispose가 1로 되돌린다
+            Time.timeScale = 0f;
             ChangeState(StageState.Submitting);
 
             _pendingRequest = new SubmitResultRequest
