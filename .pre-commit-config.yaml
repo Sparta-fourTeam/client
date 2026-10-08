@@ -8,13 +8,16 @@ repos:
     hooks:
       - id: trailing-whitespace
         files: \.(cs|json|asmdef)$
+        exclude: ^Assets/(.*/)?(Plugins|ThirdParty)/
 
       - id: mixed-line-ending
         args: [ --fix=lf ]
         files: \.cs$
+        exclude: ^Assets/(.*/)?(Plugins|ThirdParty)/
 
       - id: end-of-file-fixer
         files: \.(cs|json|asmdef)$
+        exclude: ^Assets/(.*/)?(Plugins|ThirdParty)/
 
       - id: check-merge-conflict
 

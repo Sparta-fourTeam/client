@@ -16,3 +16,6 @@
 *.dds binary
 *.dll binary
 *.exe binary
+
+# 외부 에셋(DOTween)은 원본 줄바꿈을 그대로 보존한다
+Assets/Plugins/Demigiant/** -text

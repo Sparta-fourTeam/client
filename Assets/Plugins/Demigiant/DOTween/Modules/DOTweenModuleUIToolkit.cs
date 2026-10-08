@@ -73,7 +73,7 @@ namespace DG.Tweening
             t.SetOptions(AxisConstraint.Z, snapping).SetTarget(target);
             return t;
         }
-
+        
         /// <summary>Tweens a VisualElement's scale (via style.scale) to the given value.
         /// Also stores the VisualElement as the tween's target so it can be used for filtered operations</summary>
         /// <param name="endValue">The end value to reach</param><param name="duration">The duration of the tween</param>
@@ -94,7 +94,7 @@ namespace DG.Tweening
             t.SetTarget(target);
             return t;
         }
-
+        
         /// <summary>Tweens a VisualElement's rotation (via style.rotate) to the given value.
         /// Also stores the VisualElement as the tween's target so it can be used for filtered operations</summary>
         /// <param name="endValue">The end value to reach</param><param name="duration">The duration of the tween</param>
@@ -105,7 +105,7 @@ namespace DG.Tweening
             t.SetTarget(target);
             return t;
         }
-
+        
         /// <summary>Punches a VisualElement's position towards the given direction and then back to the starting one
         /// as if it was connected to the starting position via an elastic.
         /// Also stores the VisualElement as the tween's target so it can be used for filtered operations</summary>
@@ -121,13 +121,13 @@ namespace DG.Tweening
             return DOTween.Punch(() => target.resolvedStyle.translate, x => target.style.translate = new Translate(x.x, x.y, x.z), punch, duration, vibrato, elasticity)
                 .SetTarget(target).SetOptions(snapping);
         }
-
+        
         /// <summary>Shakes a VisualElement's position with the given values.
         /// Also stores the VisualElement as the tween's target so it can be used for filtered operations</summary>
         /// <param name="duration">The duration of the tween</param>
         /// <param name="strength">The shake strength</param>
         /// <param name="vibrato">Indicates how much will the shake vibrate</param>
-        /// <param name="randomness">Indicates how much the shake will be random (0 to 180 - values higher than 90 kind of suck, so beware).
+        /// <param name="randomness">Indicates how much the shake will be random (0 to 180 - values higher than 90 kind of suck, so beware). 
         /// Setting it to 0 will shake along a single direction.</param>
         /// <param name="snapping">If TRUE the tween will smoothly snap all values to integers</param>
         /// <param name="fadeOut">If TRUE the shake will automatically fadeOut smoothly within the tween's duration, otherwise it will not</param>
@@ -142,7 +142,7 @@ namespace DG.Tweening
         /// <param name="duration">The duration of the tween</param>
         /// <param name="strength">The shake strength on each axis</param>
         /// <param name="vibrato">Indicates how much will the shake vibrate</param>
-        /// <param name="randomness">Indicates how much the shake will be random (0 to 180 - values higher than 90 kind of suck, so beware).
+        /// <param name="randomness">Indicates how much the shake will be random (0 to 180 - values higher than 90 kind of suck, so beware). 
         /// Setting it to 0 will shake along a single direction.</param>
         /// <param name="snapping">If TRUE the tween will smoothly snap all values to integers</param>
         /// <param name="fadeOut">If TRUE the shake will automatically fadeOut smoothly within the tween's duration, otherwise it will not</param>
