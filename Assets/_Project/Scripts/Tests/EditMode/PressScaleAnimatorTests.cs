@@ -1,3 +1,4 @@
+using DG.Tweening;
 using Game.View;
 using NUnit.Framework;
 using UnityEngine;
@@ -17,9 +18,20 @@ namespace Game.Tests
             _anim = new PressScaleAnimator(pressedScale: 0.9f, pressSeconds: 0.1f, releaseSeconds: 0.2f);
         }
 
+        // 편집 모드에서는 DOTween이 매 프레임 돌지 않으므로, 진행 중인 트윈의 시간을 직접 앞당긴다
+        private void Tick(float seconds)
+        {
+            var tween = _anim.Current;
+            if (tween != null && tween.active)
+            {
+                tween.Goto(tween.Elapsed() + seconds);
+            }
+        }
+
         [TearDown]
         public void TearDown()
         {
+            DOTween.KillAll();
             Object.DestroyImmediate(_a);
             Object.DestroyImmediate(_b);
         }
@@ -29,10 +41,10 @@ namespace Game.Tests
         {
             _anim.Press(_a.transform);
 
-            _anim.Tick(0.03f);
+            Tick(0.03f);
             Assert.That(_a.transform.localScale.x, Is.LessThan(1f).And.GreaterThan(0.9f));
 
-            _anim.Tick(1f);
+            Tick(1f);
             Assert.AreEqual(0.9f, _a.transform.localScale.x, 0.0001f);
         }
 
@@ -40,13 +52,13 @@ namespace Game.Tests
         public void Release_RestoresExactBaseScale()
         {
             _anim.Press(_a.transform);
-            _anim.Tick(1f);
+            Tick(1f);
 
             _anim.Release();
-            _anim.Tick(0.1f);
+            Tick(0.1f);
             Assert.That(_a.transform.localScale.x, Is.GreaterThan(0.9f).And.LessThan(1f));
 
-            _anim.Tick(1f);
+            Tick(1f);
             Assert.AreEqual(Vector3.one, _a.transform.localScale);
             Assert.IsFalse(_anim.IsActive);
         }
@@ -55,9 +67,9 @@ namespace Game.Tests
         public void QuickTap_ReturnsToBase()
         {
             _anim.Press(_a.transform);
-            _anim.Tick(0.02f);
+            Tick(0.02f);
             _anim.Release();
-            _anim.Tick(5f);
+            Tick(5f);
 
             Assert.AreEqual(Vector3.one, _a.transform.localScale);
             Assert.IsFalse(_anim.IsActive);
@@ -69,12 +81,12 @@ namespace Game.Tests
             _a.transform.localScale = new Vector3(2f, 1f, 1f);
 
             _anim.Press(_a.transform);
-            _anim.Tick(1f);
+            Tick(1f);
             Assert.AreEqual(1.8f, _a.transform.localScale.x, 0.0001f);
             Assert.AreEqual(0.9f, _a.transform.localScale.y, 0.0001f);
 
             _anim.Release();
-            _anim.Tick(5f);
+            Tick(5f);
             Assert.AreEqual(new Vector3(2f, 1f, 1f), _a.transform.localScale);
         }
 
@@ -82,14 +94,14 @@ namespace Game.Tests
         public void NewPress_WhileReleasing_RestoresPreviousImmediately()
         {
             _anim.Press(_a.transform);
-            _anim.Tick(1f);
+            Tick(1f);
             _anim.Release();
-            _anim.Tick(0.05f);
+            Tick(0.05f);
 
             _anim.Press(_b.transform);
 
             Assert.AreEqual(Vector3.one, _a.transform.localScale);
-            _anim.Tick(1f);
+            Tick(1f);
             Assert.AreEqual(0.9f, _b.transform.localScale.x, 0.0001f);
         }
 
@@ -99,22 +111,22 @@ namespace Game.Tests
             _anim.Press(_a.transform);
             Object.DestroyImmediate(_a);
 
-            Assert.DoesNotThrow(() => _anim.Tick(0.1f));
+            Assert.DoesNotThrow(() => _anim.CheckTarget());
             Assert.IsFalse(_anim.IsActive);
         }
 
-        [Test(Description = "누른 뒤 대상이 꺼져도(눌러서 팝업이 닫히는 경우) 놓고 나면 원래 크기로 돌아와, 다음에 켜졌을 때 줄어 있지 않다")]
-        public void DeactivatedTarget_StillRestoresScale()
+        [Test(Description = "누른 채로 대상이 꺼지면(눌러서 팝업이 닫히는 경우) 바로 원래 크기로 돌아와, 다음에 켜졌을 때 줄어 있지 않다")]
+        public void DeactivatedTarget_RestoresScale()
         {
             _anim.Press(_a.transform);
-            _anim.Tick(1f);
+            Tick(1f);
             _a.SetActive(false);
 
-            _anim.Release();
-            _anim.Tick(5f);
+            _anim.CheckTarget();
             _a.SetActive(true);
 
             Assert.AreEqual(Vector3.one, _a.transform.localScale);
+            Assert.IsFalse(_anim.IsActive);
         }
     }
 }

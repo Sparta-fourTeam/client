@@ -1,4 +1,5 @@
 using System.Reflection;
+using DG.Tweening;
 using Game.View;
 using NUnit.Framework;
 using UnityEngine;
@@ -26,9 +27,21 @@ namespace Game.Tests
         }
 
         [TearDown]
-        public void TearDown() => Object.DestroyImmediate(_go);
+        public void TearDown()
+        {
+            DOTween.KillAll();
+            Object.DestroyImmediate(_go);
+        }
 
-        private void Tick(float seconds) => typeof(PopupTransition).GetMethod("Tick", Flags).Invoke(_popup, new object[] { seconds });
+        // 편집 모드에서는 DOTween이 매 프레임 돌지 않으므로, 진행 중인 전환의 시간을 직접 앞당긴다
+        private void Tick(float seconds)
+        {
+            var sequence = (Sequence)typeof(PopupTransition).GetField("_sequence", Flags).GetValue(_popup);
+            if (sequence != null && sequence.active)
+            {
+                sequence.Goto(sequence.Elapsed() + seconds);
+            }
+        }
 
         // 편집 모드에서는 SetActive가 OnEnable/OnDisable을 부르지 않으므로 직접 부른다
         private void CallMessage(string name) => typeof(PopupTransition).GetMethod(name, Flags).Invoke(_popup, null);

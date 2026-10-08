@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
@@ -12,7 +13,7 @@ namespace Game.View
     {
     }
 
-    /// <summary>눌린 대상 하나를 살짝 줄였다가 놓으면 되돌린다. 시간은 타임스케일과 상관없이(unscaled) 흐르도록 호출하는 쪽이 정한다.
+    /// <summary>눌린 대상 하나를 살짝 줄였다가 놓으면 되돌린다. 시간은 타임스케일과 상관없이(unscaled) 흐른다.
     /// 놓은 뒤에도 대상이 꺼졌거나 파괴돼도 크기를 원래대로 돌려, 꺼진 팝업의 버튼이 줄어든 채 남지 않게 한다</summary>
     public sealed class PressScaleAnimator
     {
@@ -21,8 +22,7 @@ namespace Game.View
         private readonly float _releaseSeconds;
         private Transform _target;
         private Vector3 _baseScale;
-        private float _amount;     // 0 = 원래 크기, 1 = 완전히 눌림
-        private bool _held;
+        private Tween _tween;
 
         public PressScaleAnimator(float pressedScale = 0.95f, float pressSeconds = 0.06f, float releaseSeconds = 0.10f)
         {
@@ -32,7 +32,9 @@ namespace Game.View
         }
 
         public bool IsActive => _target != null;
-        public float Amount => _amount;
+
+        /// <summary>진행 중인 트윈 (테스트가 시간을 앞당길 때 쓴다)</summary>
+        public Tween Current => _tween;
 
         /// <summary>target을 누른다. 앞서 놓는 중이던 대상은 바로 원래 크기로 돌린다</summary>
         public void Press(Transform target)
@@ -45,26 +47,35 @@ namespace Game.View
 
             _target = target;
             _baseScale = target.localScale;
-            _amount = 0f;
-            _held = true;
+            _tween = target.DOScale(_baseScale * _pressedScale, _pressSeconds).SetEase(Ease.OutQuad).SetUpdate(true);
         }
 
-        public void Release() => _held = false;
-
-        public void Tick(float deltaTime)
+        public void Release()
         {
             if (_target == null)
             {
-                Clear();
                 return;
             }
 
-            float step = deltaTime / (_held ? _pressSeconds : _releaseSeconds);
-            _amount = _held ? Mathf.Min(1f, _amount + step) : Mathf.Max(0f, _amount - step);
-            float eased = 1f - (1f - _amount) * (1f - _amount);   // ease-out
-            _target.localScale = _baseScale * Mathf.Lerp(1f, _pressedScale, eased);
+            _tween?.Kill();
+            _tween = _target.DOScale(_baseScale, _releaseSeconds).SetEase(Ease.OutQuad).SetUpdate(true).OnComplete(Clear);
+        }
 
-            if (!_held && _amount <= 0f)
+        /// <summary>대상이 꺼졌거나 사라졌으면 크기를 되돌리고 놓는다. 매 프레임 불러도 되는 가벼운 검사</summary>
+        public void CheckTarget()
+        {
+            if (_target == null)
+            {
+                if (_tween != null)
+                {
+                    _tween.Kill();
+                    Clear();
+                }
+
+                return;
+            }
+
+            if (!_target.gameObject.activeInHierarchy)
             {
                 Restore();
             }
@@ -72,6 +83,7 @@ namespace Game.View
 
         private void Restore()
         {
+            _tween?.Kill();
             if (_target != null)
             {
                 _target.localScale = _baseScale;
@@ -82,9 +94,8 @@ namespace Game.View
 
         private void Clear()
         {
+            _tween = null;
             _target = null;
-            _amount = 0f;
-            _held = false;
         }
     }
 
@@ -126,7 +137,7 @@ namespace Game.View
                 }
             }
 
-            _animator.Tick(Time.unscaledDeltaTime);
+            _animator.CheckTarget();
         }
 
         /// <summary>화면 좌표를 누른다. 눌린 Button이 있으면 돌려주고 그 버튼을 줄이기 시작한다</summary>
