@@ -51,7 +51,7 @@ jobs:
           projectPath: .
           unityVersion: auto
           targetPlatform: Android
-          buildProfile: 'Assets/Settings/Build Profiles/Adnroid_Release.asset'
+          buildProfile: 'Assets/Settings/Build Profiles/Android_Release.asset'
           androidExportType: androidAppBundle
           versioning: Semantic
           androidVersionCode: ${{ steps.version.outputs.code }}
