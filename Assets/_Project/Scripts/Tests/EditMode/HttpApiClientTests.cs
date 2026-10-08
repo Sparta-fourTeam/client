@@ -10,27 +10,6 @@ namespace Game.Tests
 {
     public class HttpApiClientTests
     {
-        private sealed class FakeTransport : IHttpTransport
-        {
-            public HttpResponseData Response = new HttpResponseData(200, "{}");
-            public Exception ToThrow;
-            public readonly List<HttpRequestData> Requests = new();
-            public float LastTimeout;
-
-            public UniTask<HttpResponseData> Send(HttpRequestData request, float timeoutSeconds, CancellationToken cancellationToken)
-            {
-                Requests.Add(request);
-                LastTimeout = timeoutSeconds;
-                cancellationToken.ThrowIfCancellationRequested();
-                if (ToThrow != null)
-                {
-                    throw ToThrow;
-                }
-
-                return UniTask.FromResult(Response);
-            }
-        }
-
         private sealed class FixedHeaders : IAuthHeaderProvider
         {
             public IReadOnlyDictionary<string, string> GetHeaders() =>
@@ -44,13 +23,13 @@ namespace Game.Tests
             public int count;
         }
 
-        private FakeTransport _transport;
+        private FakeHttpTransport _transport;
         private HttpApiClient _client;
 
         [SetUp]
         public void SetUp()
         {
-            _transport = new FakeTransport();
+            _transport = new FakeHttpTransport();
             _client = new HttpApiClient(new HttpApiConfig("https://example.test/", 7f), _transport);
         }
 
