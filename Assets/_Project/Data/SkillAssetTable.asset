@@ -15,39 +15,39 @@ MonoBehaviour:
   entries:
   - key: weapon_arrow
     prefab: {fileID: 5228935304015980034, guid: 158ccb1ab53c447659a53da97583c103, type: 3}
-    hudIcon: {fileID: 240244169675946729, guid: 2cf05a8ded9e77d4eae2dea037db079e, type: 3}
-    newCardIcon: {fileID: -8647948609961382094, guid: 2cf05a8ded9e77d4eae2dea037db079e, type: 3}
-    upgradeCardIcon: {fileID: -4326262013424500140, guid: 2cf05a8ded9e77d4eae2dea037db079e, type: 3}
+    hudIcon: {fileID: 21300000, guid: cd1b3d4d92db82347acefbead8229252, type: 3}
+    newCardIcon: {fileID: 21300000, guid: cd1b3d4d92db82347acefbead8229252, type: 3}
+    upgradeCardIcon: {fileID: 21300000, guid: cd1b3d4d92db82347acefbead8229252, type: 3}
   - key: weapon_fireball
     prefab: {fileID: 7451147369274982716, guid: 0af9f3faa168a4cbcbbcfa788f02b312, type: 3}
-    hudIcon: {fileID: 3254138636239939185, guid: 2cf05a8ded9e77d4eae2dea037db079e, type: 3}
-    newCardIcon: {fileID: 6408189739897901983, guid: 2cf05a8ded9e77d4eae2dea037db079e, type: 3}
-    upgradeCardIcon: {fileID: 3264308230041917409, guid: 2cf05a8ded9e77d4eae2dea037db079e, type: 3}
+    hudIcon: {fileID: 21300000, guid: 4426318d3eacec84da33c02a8066f9f4, type: 3}
+    newCardIcon: {fileID: 21300000, guid: 4426318d3eacec84da33c02a8066f9f4, type: 3}
+    upgradeCardIcon: {fileID: 21300000, guid: 4426318d3eacec84da33c02a8066f9f4, type: 3}
   - key: weapon_lightning
     prefab: {fileID: 4528877711005814777, guid: 9514f5ca8a14e4a9e8c9d189f896aeaf, type: 3}
-    hudIcon: {fileID: -2878529133878831360, guid: 2cf05a8ded9e77d4eae2dea037db079e, type: 3}
-    newCardIcon: {fileID: -7630160406200261039, guid: 2cf05a8ded9e77d4eae2dea037db079e, type: 3}
-    upgradeCardIcon: {fileID: 6229257388046850901, guid: 2cf05a8ded9e77d4eae2dea037db079e, type: 3}
+    hudIcon: {fileID: 21300000, guid: 7cab7be4daa2d1b48900af152debc6e3, type: 3}
+    newCardIcon: {fileID: 21300000, guid: 7cab7be4daa2d1b48900af152debc6e3, type: 3}
+    upgradeCardIcon: {fileID: 21300000, guid: 7cab7be4daa2d1b48900af152debc6e3, type: 3}
   - key: weapon_frost_crystal
     prefab: {fileID: 898466977149368188, guid: d7935ccce6302b94f8eb4729673ed2bd, type: 3}
-    hudIcon: {fileID: 240244169675946729, guid: 2cf05a8ded9e77d4eae2dea037db079e, type: 3}
-    newCardIcon: {fileID: -8647948609961382094, guid: 2cf05a8ded9e77d4eae2dea037db079e, type: 3}
-    upgradeCardIcon: {fileID: -4326262013424500140, guid: 2cf05a8ded9e77d4eae2dea037db079e, type: 3}
+    hudIcon: {fileID: 21300000, guid: baee726e7a9640c0ab566c5be326cc36, type: 3}
+    newCardIcon: {fileID: 21300000, guid: baee726e7a9640c0ab566c5be326cc36, type: 3}
+    upgradeCardIcon: {fileID: 21300000, guid: baee726e7a9640c0ab566c5be326cc36, type: 3}
   - key: weapon_log
     prefab: {fileID: 898466977149368188, guid: 78f27881a2cc7d24d8b4a047ef4294c3, type: 3}
-    hudIcon: {fileID: 240244169675946729, guid: 2cf05a8ded9e77d4eae2dea037db079e, type: 3}
-    newCardIcon: {fileID: -8647948609961382094, guid: 2cf05a8ded9e77d4eae2dea037db079e, type: 3}
-    upgradeCardIcon: {fileID: -4326262013424500140, guid: 2cf05a8ded9e77d4eae2dea037db079e, type: 3}
+    hudIcon: {fileID: 21300000, guid: 57d8ff141e45434ea1b491a9e1d31ccb, type: 3}
+    newCardIcon: {fileID: 21300000, guid: 57d8ff141e45434ea1b491a9e1d31ccb, type: 3}
+    upgradeCardIcon: {fileID: 21300000, guid: 57d8ff141e45434ea1b491a9e1d31ccb, type: 3}
   - key: weapon_cold_zone
     prefab: {fileID: 1250824655994611127, guid: 64576d935a589492995081ed15480d68, type: 3}
-    hudIcon: {fileID: 240244169675946729, guid: 2cf05a8ded9e77d4eae2dea037db079e, type: 3}
-    newCardIcon: {fileID: -8647948609961382094, guid: 2cf05a8ded9e77d4eae2dea037db079e, type: 3}
-    upgradeCardIcon: {fileID: -4326262013424500140, guid: 2cf05a8ded9e77d4eae2dea037db079e, type: 3}
+    hudIcon: {fileID: 21300000, guid: d49002f4eb035364abbf720dd9844bf5, type: 3}
+    newCardIcon: {fileID: 21300000, guid: d49002f4eb035364abbf720dd9844bf5, type: 3}
+    upgradeCardIcon: {fileID: 21300000, guid: d49002f4eb035364abbf720dd9844bf5, type: 3}
   - key: weapon_lightning_cloud
     prefab: {fileID: 7168287425355702108, guid: 9624c7626d06e4909b1226b0c8407b8c, type: 3}
-    hudIcon: {fileID: -2878529133878831360, guid: 2cf05a8ded9e77d4eae2dea037db079e, type: 3}
-    newCardIcon: {fileID: -7630160406200261039, guid: 2cf05a8ded9e77d4eae2dea037db079e, type: 3}
-    upgradeCardIcon: {fileID: 6229257388046850901, guid: 2cf05a8ded9e77d4eae2dea037db079e, type: 3}
+    hudIcon: {fileID: 21300000, guid: 432a527732f31d742a4d8fa77bdb62bb, type: 3}
+    newCardIcon: {fileID: 21300000, guid: 432a527732f31d742a4d8fa77bdb62bb, type: 3}
+    upgradeCardIcon: {fileID: 21300000, guid: 432a527732f31d742a4d8fa77bdb62bb, type: 3}
   - key: weapon_ice_shard
     prefab: {fileID: 898466977149368188, guid: 47c71bb476fdf4ea9854bd72e58fe821, type: 3}
     hudIcon: {fileID: 0}
@@ -75,9 +75,9 @@ MonoBehaviour:
     upgradeCardIcon: {fileID: 0}
   - key: weapon_energy_beam
     prefab: {fileID: 2980857046471916804, guid: 4eea5613b65644f77bb087f873ceca9b, type: 3}
-    hudIcon: {fileID: 3254138636239939185, guid: 2cf05a8ded9e77d4eae2dea037db079e, type: 3}
-    newCardIcon: {fileID: 6408189739897901983, guid: 2cf05a8ded9e77d4eae2dea037db079e, type: 3}
-    upgradeCardIcon: {fileID: 3264308230041917409, guid: 2cf05a8ded9e77d4eae2dea037db079e, type: 3}
+    hudIcon: {fileID: 21300000, guid: 27224b3463b726848a120617ffe95449, type: 3}
+    newCardIcon: {fileID: 21300000, guid: 27224b3463b726848a120617ffe95449, type: 3}
+    upgradeCardIcon: {fileID: 21300000, guid: 27224b3463b726848a120617ffe95449, type: 3}
   - key: weapon_energy_beam_aux
     prefab: {fileID: 2980857046471916804, guid: 4eea5613b65644f77bb087f873ceca9b, type: 3}
     hudIcon: {fileID: 0}
@@ -85,13 +85,13 @@ MonoBehaviour:
     upgradeCardIcon: {fileID: 0}
   - key: weapon_chain_lightning
     prefab: {fileID: 5771007646284350489, guid: e293cbe6b6ab14932a152afed6d7906f, type: 3}
-    hudIcon: {fileID: -2878529133878831360, guid: 2cf05a8ded9e77d4eae2dea037db079e, type: 3}
-    newCardIcon: {fileID: -7630160406200261039, guid: 2cf05a8ded9e77d4eae2dea037db079e, type: 3}
-    upgradeCardIcon: {fileID: 6229257388046850901, guid: 2cf05a8ded9e77d4eae2dea037db079e, type: 3}
+    hudIcon: {fileID: 21300000, guid: 486d09e7fd5bb904290685db59a5d148, type: 3}
+    newCardIcon: {fileID: 21300000, guid: 486d09e7fd5bb904290685db59a5d148, type: 3}
+    upgradeCardIcon: {fileID: 21300000, guid: 486d09e7fd5bb904290685db59a5d148, type: 3}
   - key: wall_repair
     prefab: {fileID: 0}
     hudIcon: {fileID: 0}
     newCardIcon: {fileID: 0}
-    upgradeCardIcon: {fileID: 0}
-  hudFallback: {fileID: 1010984901492693545, guid: 590aec5eefbe91b46afa8b1d85d55ecd, type: 3}
-  cardFallback: {fileID: 1010984901492693545, guid: 590aec5eefbe91b46afa8b1d85d55ecd, type: 3}
+    upgradeCardIcon: {fileID: 21300000, guid: f8c8f2f1000c677409c4585062d5a6a2, type: 3}
+  hudFallback: {fileID: -1817599883, guid: 256e7fff31566b14e81a254145f0c189, type: 3}
+  cardFallback: {fileID: -1817599883, guid: 256e7fff31566b14e81a254145f0c189, type: 3}
