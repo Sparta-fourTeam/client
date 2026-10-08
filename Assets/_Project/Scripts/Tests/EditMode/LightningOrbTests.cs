@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Game.Core;
 using NUnit.Framework;
@@ -25,8 +26,11 @@ namespace Game.Tests
             var orb = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Skills/LightningOrb.prefab");
             Assert.IsNotNull(orb.GetComponent<Projectile>(), "전기 구체 자식 스킬(id 15)의 프리팹");
             var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 3);
-            CollectionAssert.AreEquivalent(new[] { "lightning_voltage", "lightning_damage" }, data.upgrades.Find(c => c.id == "lightning_split").requiredCardIds);
-            CollectionAssert.AreEqual(new[] { "lightning_split" }, data.upgrades.Find(c => c.id == "lightning_particle_voltage").requiredCardIds);
+            CollectionAssert.AreEquivalent(new[] { "lightning_voltage", "lightning_damage" }, RequiredCardIds(data, "lightning_split"));
+            CollectionAssert.AreEqual(new[] { "lightning_split" }, RequiredCardIds(data, "lightning_particle_voltage"));
         }
+
+        private static string[] RequiredCardIds(SkillData data, string cardId) =>
+            data.upgrades.Find(c => c.id == cardId).requiredCardCounts.Select(r => r.cardId).ToArray();
     }
 }

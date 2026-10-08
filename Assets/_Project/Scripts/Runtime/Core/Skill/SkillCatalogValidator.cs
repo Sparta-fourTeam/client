@@ -13,6 +13,9 @@ namespace Game.Core
                 throw new InvalidOperationException("무기 카탈로그가 비어 있습니다.");
             }
 
+            // 공유 강화의 대상 스킬은 데이터에 적지 않으므로 검증 전에 sharedId로 모아 채운다
+            SkillUpgradeTransaction.LinkSharedTargets(weapons);
+
             var ids = new HashSet<int>();
             var assetKeys = new HashSet<string>();
             var cards = new HashSet<string>();
@@ -231,10 +234,6 @@ namespace Game.Core
                         {
                             if (!byId.ContainsKey(id)) { Invalid(); }
                         }
-                    }
-                    if (option.requiredCardIds != null)
-                    {
-                        foreach (string id in option.requiredCardIds) { Require(id, weapon.id, 1); }
                     }
                     if (option.requiredCardCounts != null)
                     {

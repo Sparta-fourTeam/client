@@ -93,11 +93,10 @@ flowchart TD
 | `variants` | `minPermanentLevel` 이상일 때 이름, 설명, 효과 **전체**를 교체한다. 카드 ID와 선택 횟수는 그대로다. 일반과 (+)는 같은 카드다 |
 | `minBattleLevel` | 이 스킬의 전투 중 레벨이 이 값 이상일 때만 나온다 (기본 1) |
 | `minPermanentLevel` | 로비 영구 레벨이 이 값 이상일 때만 나온다 |
-| `requiredCardIds` | 이 스킬에서 먼저 고른 카드가 있어야 한다 |
-| `requiredCardCounts` | `{skillId, cardId, count}`: 지정한 스킬의 카드를 count번 이상 골라야 한다. `skillId` 0은 자기 스킬 |
+| `requiredCardCounts` | `{skillId, cardId, count}`: 지정한 스킬의 카드를 count번 이상 골라야 한다. `skillId` 0은 자기 스킬. 같은 스킬의 카드를 한 번 먼저 고르라는 조건은 `{cardId, count: 1}`로 적는다 |
 | `requiredWeaponIds` | 이 스킬들을 가지고 있어야 한다 |
 | `exclusions` | `{skillId, cardId, belowPermanentLevel}`: 그 카드를 이미 골랐으면 나오지 않는다. `belowPermanentLevel`이 양수면 영구 레벨이 그 값 미만일 때만 적용 |
-| `sharedId`, `affectedWeaponIds` | 두 스킬이 같은 선택 횟수를 공유하는 강화. 양쪽 스킬을 함께 올린다 |
+| `sharedId` | 두 스킬이 같은 선택 횟수를 공유하는 강화의 키. 같은 키를 가진 카드의 스킬이 함께 올라간다. 대상 스킬 목록은 데이터에 적지 않고 읽을 때 모은다(적어도 무시된다) |
 | `enabled`, `disabledReason` | false면 후보에서 빼고, 샌드박스에는 사유를 보여 준다 |
 
 조건은 한 방향으로만 건다. 서리 결정 연발→일제 사격→관통처럼 제외 조건을 양방향으로 바꾸면 선택 가능한 순서가 사라진다.
@@ -155,7 +154,7 @@ flowchart TD
 
 | 표시 | 언제 |
 |---|---|
-| 아이콘만 (`Enables`) | 이 카드가 변환의 조건이다. 새 스킬 카드는 그 스킬의 변환과 그 스킬을 `requiredWeaponIds`로 요구하는 변환에 붙는다. 강화 카드는 아직 안 가진 `requiredCardIds`·`requiredCardCounts`일 때만 붙는다 |
+| 아이콘만 (`Enables`) | 이 카드가 변환의 조건이다. 새 스킬 카드는 그 스킬의 변환과 그 스킬을 `requiredWeaponIds`로 요구하는 변환에 붙는다. 강화 카드는 아직 안 가진 `requiredCardCounts`일 때만 붙는다 |
 | 아이콘 + X (`Blocks`) | 이 카드를 고르면 변환을 더는 얻을 수 없다. 변환 카드의 `exclusions`에 이 카드가 있고 지금 영구 레벨에서 그 배타가 살아 있을 때 |
 | 안 보임 | 이미 얻은 변환, 이미 막힌 변환(배타 카드 보유), 꺼진 변환, 영구 레벨이 모자라 이번 판에 못 얻는 변환. 일반 카드와 변환 카드 자신에도 붙지 않는다 |
 
