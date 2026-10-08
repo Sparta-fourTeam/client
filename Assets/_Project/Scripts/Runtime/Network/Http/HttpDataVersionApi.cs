@@ -32,13 +32,9 @@ namespace Game.Network
 
         public async UniTask<DataVersions> GetVersions(CancellationToken cancellationToken = default)
         {
-            var response = await _client.Get<DataVersionResponse>(VersionPath, cancellationToken);
-
-            // 응답은 왔지만 tables가 빠졌다면 계약과 다른 응답이다. 빈 목록으로 보면 모든 테이블이 최신으로 보일 수 있다
-            if (response.tables == null)
-            {
-                throw new ApiException(ApiErrorKind.Rejected, HttpErrorMapper.InvalidResponse);
-            }
+            // tables가 빠진 응답을 빈 목록으로 보면 모든 테이블이 최신으로 판정될 수 있어 계약 위반으로 거절한다
+            var response = await _client.Get<DataVersionResponse>(VersionPath, cancellationToken,
+                isValid: r => r.tables != null);
 
             return new DataVersions { revisions = new Dictionary<string, int>(response.tables) };
         }

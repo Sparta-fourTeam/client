@@ -38,17 +38,20 @@ namespace Game.Network
             _errorCodeReader = errorCodeReader;
         }
 
-        public async UniTask<TResponse> Get<TResponse>(string path, CancellationToken cancellationToken = default)
+        /// <summary>isValid는 응답이 계약대로인지(필수 필드가 채워졌는지) 가리는 규칙이다. JSON 문법만 맞고 모양이 다른 응답
+        /// (예: {})은 역직렬화가 성공하므로, 필수 필드를 아는 API 쪽에서 넘긴다. 주지 않으면 null 여부만 본다</summary>
+        public async UniTask<TResponse> Get<TResponse>(string path, CancellationToken cancellationToken = default,
+            Func<TResponse, bool> isValid = null)
         {
             var body = await Execute(HttpVerb.Get, path, null, cancellationToken);
-            return Deserialize<TResponse>(body);
+            return Deserialize(body, isValid);
         }
 
         public async UniTask<TResponse> Post<TRequest, TResponse>(string path, TRequest request,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default, Func<TResponse, bool> isValid = null)
         {
             var body = await Execute(HttpVerb.Post, path, JsonConvert.SerializeObject(request), cancellationToken);
-            return Deserialize<TResponse>(body);
+            return Deserialize(body, isValid);
         }
 
         /// <summary>응답 본문이 없는 요청 (2xx만 오면 성공)</summary>
@@ -73,7 +76,7 @@ namespace Game.Network
             return response.Body;
         }
 
-        private static T Deserialize<T>(string json)
+        private static T Deserialize<T>(string json, Func<T, bool> isValid)
         {
             if (string.IsNullOrWhiteSpace(json))
             {
@@ -91,7 +94,7 @@ namespace Game.Network
                 throw new ApiException(ApiErrorKind.Rejected, HttpErrorMapper.InvalidResponse);
             }
 
-            if (value == null)
+            if (value == null || (isValid != null && !isValid(value)))
             {
                 throw new ApiException(ApiErrorKind.Rejected, HttpErrorMapper.InvalidResponse);
             }
