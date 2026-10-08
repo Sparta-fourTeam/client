@@ -25,9 +25,8 @@ namespace Game.Tests
             var fixture = StageRewardRulesTests.Balance();
             var balance = _data.StageRewards.GetOrThrow(1);
             balance.BaseExp = fixture.BaseExp; balance.ThreeStarBonusExp = fixture.ThreeStarBonusExp;
-            balance.Wave3SkillMaterialBonusAmount = fixture.Wave3SkillMaterialBonusAmount;
-            balance.Wave4EquipmentMaterials = fixture.Wave4EquipmentMaterials;
-            balance.Wave5GemChestCount = fixture.Wave5GemChestCount; balance.Wave6CoinBonus = fixture.Wave6CoinBonus;
+            balance.FinalCoin = fixture.FinalCoin;
+            balance.Items = fixture.Items;
             var save = _store.Load();
             save.wallet.energyStored = 10; save.wallet.energyUpdatedAt = DateTime.UtcNow.ToString("O");
             _store.Flush(save);
@@ -53,7 +52,7 @@ namespace Game.Tests
             Assert.AreEqual(expected.Coin, snapshot.gold);
             var before = File.ReadAllText(_path);
             request.cleared = true; request.completedWaves = 20;
-            _data.StageRewards.GetOrThrow(1).Wave6CoinBonus = 999;
+            _data.StageRewards.GetOrThrow(1).FinalCoin = 9999;
             var replay = new LocalBattleApi(new LocalSaveStore(_path), _data).SubmitResult(request).GetAwaiter().GetResult();
             Assert.IsFalse(replay.cleared);
             Assert.AreEqual(result.rewardExp, replay.rewardExp);
@@ -77,7 +76,7 @@ namespace Game.Tests
         [Test]
         public void RandomReward_UsesLatestProvidedUnlocks_AndPersistsResolvedItemsForReplay()
         {
-            _data.StageRewards.GetOrThrow(1).SkillMaterial = ItemIds.RandomSkillMaterial;
+            _data.StageRewards.GetOrThrow(1).Items[0].itemId = ItemIds.RandomSkillMaterial;
             _api.UnlockedSkillIds = () => new[] { 1 };
             var issued = _api.StartBattle(1, 1).GetAwaiter().GetResult();
             _api.UnlockedSkillIds = () => new[] { 2, 3 };
@@ -95,7 +94,7 @@ namespace Game.Tests
         [Test]
         public void MissingUnlockIntegration_RejectsBeforeEnergyConsumption_AndFailedResolveDoesNotFinalize()
         {
-            _data.StageRewards.GetOrThrow(1).SkillMaterial = ItemIds.RandomSkillMaterial;
+            _data.StageRewards.GetOrThrow(1).Items[0].itemId = ItemIds.RandomSkillMaterial;
             var before = File.ReadAllText(_path);
             var error = Assert.Throws<ApiException>(() => _api.StartBattle(1, 1).GetAwaiter().GetResult());
             Assert.AreEqual("SKILL_UNLOCK_SOURCE_NOT_READY", error.Code); Assert.AreEqual(before, File.ReadAllText(_path));
@@ -109,8 +108,8 @@ namespace Game.Tests
         [Test]
         public void RandomEquipmentReward_NeedsUnlockSourceAndPaysOnlyUnlockedEquipment()
         {
-            _data.StageRewards.GetOrThrow(1).Wave4EquipmentMaterials = new List<ItemAmount>
-            { new() { itemId = ItemIds.RandomEquipmentMaterial, quantity = 1 } };
+            _data.StageRewards.GetOrThrow(1).Items = new List<StageRewardEntry>
+            { new() { itemId = ItemIds.RandomEquipmentMaterial, finalAmount = 1 } };
             var before = File.ReadAllText(_path);
             var error = Assert.Throws<ApiException>(() => _api.StartBattle(1, 1).GetAwaiter().GetResult());
             Assert.AreEqual("EQUIPMENT_UNLOCK_SOURCE_NOT_READY", error.Code);

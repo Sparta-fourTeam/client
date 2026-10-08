@@ -55,7 +55,7 @@ namespace Game.Tests
             save.exp = ExpFor(1);
             save.wallet.energyStored = 10; save.wallet.energyUpdatedAt = DateTime.UtcNow.ToString("O");
             _store.Flush(save);
-            _data.StageRewards.GetOrThrow(1).Wave4EquipmentMaterials = new() { new() { itemId = ItemIds.RandomEquipmentMaterial, quantity = 1 } };
+            _data.StageRewards.GetOrThrow(1).Items = new() { new() { itemId = ItemIds.RandomEquipmentMaterial, finalAmount = 1 } };
             var api = new LocalBattleApi(_store, _data)
             {
                 UnlockedSkillIds = () => new[] { 1 },

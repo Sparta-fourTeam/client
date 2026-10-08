@@ -81,10 +81,9 @@ namespace Game.Core
             {
                 balance.Validate();
                 if (!Stages.Contains(balance.StageId)) { throw new InvalidOperationException("보상의 스테이지가 없습니다."); }
-                if (balance.SkillMaterial != ItemIds.RandomSkillMaterial) { Items.GetOrThrow(balance.SkillMaterial); }
-                foreach (var item in balance.Wave4EquipmentMaterials)
+                foreach (var item in balance.Items)
                 {
-                    if (item.itemId != ItemIds.RandomEquipmentMaterial) { Items.GetOrThrow(item.itemId); }
+                    if (item.itemId != ItemIds.RandomSkillMaterial && item.itemId != ItemIds.RandomEquipmentMaterial) { Items.GetOrThrow(item.itemId); }
                 }
             }
             foreach (var stage in stages.Values)
