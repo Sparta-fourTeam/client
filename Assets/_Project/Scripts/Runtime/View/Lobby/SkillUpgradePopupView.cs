@@ -15,6 +15,7 @@ namespace Game.View
     public sealed class SkillUpgradePopupView : HudView
     {
         [SerializeField] private GameObject _panel;
+        [SerializeField] private PopupTransition _transition;
         [SerializeField] private Button _closeButton;
         [SerializeField] private Button _upgradeButton;
         [SerializeField] private GameObject _maxLevel;
@@ -43,7 +44,7 @@ namespace Game.View
         private void Awake()
         {
             _panel.SetActive(false);
-            _closeButton.onClick.AddListener(() => _panel.SetActive(false));
+            _closeButton.onClick.AddListener(() => PopupPanel.Set(_panel, _transition, false));
             _upgradeButton.onClick.AddListener(() => UpgradeAsync().Forget(Debug.LogException));
 
             // 프리팹에 미리 만들어 둔 행을 재사용하고, 모자라면 BindRewards에서 복제한다
@@ -53,7 +54,7 @@ namespace Game.View
         public void Open(int index)
         {
             _index = index;
-            _panel.SetActive(true);
+            PopupPanel.Set(_panel, _transition, true);
             Refresh();
         }
 

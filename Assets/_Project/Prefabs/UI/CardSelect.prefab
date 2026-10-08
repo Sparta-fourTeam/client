@@ -607,6 +607,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Game.View::Game.View.CardSelectView
   _panel: {fileID: 5400663625742590639}
+  _transition: {fileID: 52390972370520189}
   _slots:
   - {fileID: 8423519144745198469}
   - {fileID: 6457271029841332576}
@@ -1316,6 +1317,8 @@ GameObject:
   - component: {fileID: 4537005975115004932}
   - component: {fileID: 2358676757359013217}
   - component: {fileID: 2148420197841640107}
+  - component: {fileID: 6711514830060912842}
+  - component: {fileID: 52390972370520189}
   m_Layer: 0
   m_Name: Panel
   m_TagString: Untagged
@@ -1381,6 +1384,34 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!225 &6711514830060912842
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5400663625742590639}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
+--- !u!114 &52390972370520189
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5400663625742590639}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d01169d586848c3b53bfb18d3dfd4f8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.PopupTransition
+  _window: {fileID: 1275508635971677816}
+  _showSeconds: 0.18
+  _hideSeconds: 0.12
+  _hiddenScale: 0.92
 --- !u!1 &5460315484361560618
 GameObject:
   m_ObjectHideFlags: 0

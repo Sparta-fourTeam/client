@@ -11,6 +11,7 @@ namespace Game.View
     public sealed class CardSelectView : HudView
     {
         [SerializeField] private GameObject _panel;
+        [SerializeField] private PopupTransition _transition;
         [SerializeField] private CardSlotView[] _slots;
         [FormerlySerializedAs("_iconTable")]
         [SerializeField] private SkillAssetTable _assets;
@@ -41,7 +42,7 @@ namespace Game.View
             }
             else
             {
-                _panel.SetActive(false);
+                PopupPanel.Set(_panel, _transition, false);
             }
         }
 
@@ -61,7 +62,7 @@ namespace Game.View
                 }
             }
 
-            _panel.SetActive(true);
+            PopupPanel.Set(_panel, _transition, true);
         }
 
         // 스킬 카드는 스킬의 assetKey로, 일반 카드는 IconKey로 찾는다 (일반 카드는 강화 아이콘 칸을 쓴다)
