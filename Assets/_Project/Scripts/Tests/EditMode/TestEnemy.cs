@@ -35,6 +35,7 @@ namespace Game.Tests
             }
 
             Created.Clear();
+            DamagePopupPool.Clear();
         }
     }
 
