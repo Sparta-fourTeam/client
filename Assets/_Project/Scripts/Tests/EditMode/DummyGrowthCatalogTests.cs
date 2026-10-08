@@ -126,6 +126,30 @@ namespace Game.Tests
             Assert.AreEqual("unknownKind 6 ▲ (+2)", EquipEffectText.Format(new UpgradeStatEffect { Kind = "unknownKind", ValuePerLevel = 2 }, 3, false));
         }
 
+        [Test(Description = "장비 능력치는 효과마다 한 줄과 장비 레벨 줄이고, 현재 값과 다음 레벨 값을 가진다 (최대 레벨은 다음 값 없음)")]
+        public void Equips_StatsHaveCurrentAndNext()
+        {
+            var def = _data.Upgrades.GetOrThrow("equipment.hat");
+            var effect = def.Effects[0];
+            _profile.Apply(new PlayerSnapshot { exp = ExpFor(5), upgrades = new() { new UpgradeRow { upgradeId = "equipment.hat", level = 2 } } });
+
+            var stats = _catalog.Equips[0].Stats;
+            Assert.AreEqual(def.Effects.Count + 1, stats.Count);
+            Assert.AreEqual(EquipEffectText.Name(effect), stats[0].Label);
+            Assert.AreEqual(EquipEffectText.Value(effect, 2), stats[0].Current);
+            Assert.AreEqual(EquipEffectText.Value(effect, 3), stats[0].Next);
+            Assert.AreEqual("장비 레벨", stats[stats.Count - 1].Label);
+            Assert.AreEqual("2", stats[stats.Count - 1].Current);
+            Assert.AreEqual("3", stats[stats.Count - 1].Next);
+
+            _profile.Apply(new PlayerSnapshot { exp = ExpFor(5), upgrades = new() { new UpgradeRow { upgradeId = "equipment.hat", level = def.MaxLevel } } });
+
+            foreach (var line in _catalog.Equips[0].Stats)
+            {
+                Assert.IsNull(line.Next, line.Label);
+            }
+        }
+
         [Test(Description = "장식품 효과는 팝업 줄 수(5)를 넘지 않는다")]
         public void Equips_EffectsFitPopup()
         {

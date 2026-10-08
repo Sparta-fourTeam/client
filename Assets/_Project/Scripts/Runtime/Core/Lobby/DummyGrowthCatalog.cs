@@ -91,11 +91,17 @@ namespace Game.Core
                 bool isMax = level >= def.MaxLevel;
                 int next = level + 1;
 
+                // 능력치는 강화 팝업의 "현재 / 다음" 두 블록에 그린다: 효과마다 한 줄, 마지막 줄은 장비 레벨. 최대 레벨이면 다음 값이 없다
                 var effects = new List<EquipEffect>();
+                var stats = new List<StatLine>();
                 foreach (var effect in def.Effects)
                 {
                     effects.Add(new EquipEffect(EquipEffectText.Format(effect, level, isMax)));
+                    stats.Add(new StatLine(EquipEffectText.Name(effect), EquipEffectText.Value(effect, level),
+                        isMax ? null : EquipEffectText.Value(effect, next)));
                 }
+
+                stats.Add(new StatLine("장비 레벨", level.ToString(), isMax ? null : next.ToString()));
 
                 list.Add(new EquipInfo
                 {
@@ -106,11 +112,7 @@ namespace Game.Core
                     MaxLevel = def.MaxLevel,
                     UnlockLevel = def.UnlockLevel,
                     IsUnlocked = _profile.Level >= def.UnlockLevel,
-                    Stats = new[]
-                    {
-                        new StatLine("장비 레벨", $"{level} / {def.MaxLevel}"),
-                        new StatLine("해금 레벨", def.UnlockLevel.ToString()),
-                    },
+                    Stats = stats,
                     Effects = effects,
                     CoinCost = isMax ? 0 : def.CostAt(next),
                     MaterialItemId = def.MaterialItemId,
