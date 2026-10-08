@@ -83,6 +83,10 @@ namespace Game.Core
             if (hpBar == null) { hpBar = gameObject.AddComponent<EnemyHpBar>(); }
             hpBar.Bind(enemyModel);
 
+            var depthSort = GetComponent<EnemyDepthSort>();
+            if (depthSort == null) { depthSort = gameObject.AddComponent<EnemyDepthSort>(); }
+            depthSort.Bind();
+
             var bag = DisposableBag.CreateBuilder();
             hpChanged.Subscribe(OnHpChanged).AddTo(bag);
             died.Subscribe(OnDied).AddTo(bag);
