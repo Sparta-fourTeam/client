@@ -14,6 +14,7 @@
 | [monsters-contract.md](monsters-contract.md) | 몬스터·스킬 데이터의 서버 계약: 클라이언트가 읽는 방식, 결정 사항, 시트 컬럼 |
 | [items.md](items.md) | 아이템 종류, 식별·수량 및 소유량 저장 계약 |
 | [ninjutsu/](ninjutsu/README.md) | 스킬 원문 요구사항, 확정·보류 결정, 구현 이력, 카드별 대응표 |
+| [performance-baseline.md](performance-baseline.md) | 성능 기준선 측정 절차: 준비, 측정 장면, 기록할 수치, 통과 기준, 기록 표 |
 | [qa-v0.0.1.md](qa-v0.0.1.md) | 기존 Android QA와 발견된 이슈 |
 
 공통 작업 규칙(브랜치, 커밋, PR)은 조직 `.github` 레포의 `CONTRIBUTING.md`를 본다.
