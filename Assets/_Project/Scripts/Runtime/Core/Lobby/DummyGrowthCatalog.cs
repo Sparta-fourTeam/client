@@ -1,14 +1,17 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Game.Core
 {
-    /// <summary>IGrowthCatalog의 하드코딩 구현. 화면 확인용 임시 값이다.
-    /// 장비와, Upgrades 테이블에 영구 강화가 정의된 스킬(쿠나이·화염구·벼락)은 테이블과 PlayerProfile에서 레벨·비용을 만든다.
-    /// TODO(data): 나머지 스킬과 캐릭터는 데이터와 API가 생기면 실제 구현으로 교체</summary>
+    /// <summary>IGrowthCatalog의 임시 구현.
+    /// 장비는 Upgrades 테이블과 PlayerProfile에서, 스킬 칸은 Skills.json(기획 시트의 스킬 탭)에서 만든다.
+    /// Upgrades 테이블에 영구 강화가 정의된 스킬(화살·화염구·벼락)은 레벨·비용도 테이블과 PlayerProfile에서 온다.
+    /// TODO(data): 캐릭터 정보와 보석·티켓은 데이터와 API가 생기면 실제 구현으로 교체</summary>
     public sealed class DummyGrowthCatalog : IGrowthCatalog, IDisposable
     {
-        private const int SkillMaxLevel = 30;
+        // 강화 데이터가 없는 스킬의 표시용 최대 레벨. 강화할 수 없으므로 레벨 0에서 MAX로 보이지 않게만 한다
+        private const int NoUpgradeMaxLevel = 1;
 
         // 장비 칸 순서(오른쪽 2열 6칸 → 왼쪽 1칸)와 표시 이름. 이름은 클라이언트 표시용이다
         private static readonly (string upgradeId, string name)[] EquipSlots =
@@ -17,21 +20,9 @@ namespace Game.Core
             ("equipment.ring", "반지"), ("equipment.tie", "넥타이"), ("equipment.employee_id", "사원증"),
         };
 
-        // 스킬 칸 순서와 표시 정보. id가 Upgrades 테이블에 있으면 그 스킬은 실제로 강화할 수 있다 (id = Skills.json의 progressionId).
-        // level은 강화 데이터가 없는 스킬의 더미 레벨이다
-        private static readonly (string id, string name, string desc, int level, int attack, float cooldown)[] OpenSkills =
-        {
-            ("shuriken", "단검", "가장 가까운 적에게 단검을 던진다", 0, 10, 1.0f),
-            ("fireball", "화염탄", "적에게 닿으면 폭발하는 화염탄을 쏜다", 0, 15, 2.0f),
-            ("frost", "빙결", "주변 적을 얼려 느리게 만든다", 0, 8, 3.0f),
-            ("lightning", "낙뢰", "무작위 적에게 벼락을 떨어뜨린다", 0, 20, 2.5f),
-            ("thorn", "가시", "바닥에 가시를 깔아 지나가는 적을 찌른다", 0, 6, 4.0f),
-            ("flash", "섬광", "앞쪽 적을 꿰뚫는 빛줄기를 쏜다", 0, 12, 3.0f),
-        };
-
         private readonly PlayerProfile _profile;
         private readonly GameDataStore _data;
-        private readonly Dictionary<string, SkillData> _skillData = new(StringComparer.Ordinal); // progressionId → 스킬 정의 (능력치 계산용)
+        private readonly List<SkillData> _skillRows; // Skills의 칸과 같은 순서의 스킬 정의 (능력치 계산용)
 
         public CharacterInfo Character { get; } = new CharacterInfo
         {
@@ -53,11 +44,13 @@ namespace Game.Core
         {
             _profile = profile;
             _data = data;
-            // 스킬 정의는 읽을 때마다 파싱·검증하므로 한 번만 읽어 둔다. 같은 progressionId를 여러 스킬이 쓰면 앞의 것을 쓴다
-            foreach (var skill in data.LoadSkills())
-            {
-                if (!string.IsNullOrEmpty(skill.progressionId)) { _skillData.TryAdd(skill.progressionId, skill); }
-            }
+            // 습득 카드로 나오는 스킬만 칸을 가진다(다른 스킬이 시전하는 자식 스킬은 제외). 해금 레벨 순서로 놓는다.
+            // 스킬 정의는 읽을 때마다 파싱·검증하므로 한 번만 읽어 둔다
+            _skillRows = data.LoadSkills()
+                .Where(s => !s.childOnly)
+                .OrderBy(s => s.unlockLevel)
+                .ThenBy(s => s.id)
+                .ToList();
 
             Skills = CreateSkills();
             RefreshSkills();
@@ -82,7 +75,7 @@ namespace Game.Core
                 skill.IsUnlocked = skill.UnlockLevel <= playerLevel;
                 if (skill.UpgradeId != null)
                 {
-                    ApplyUpgrade(skill, _data.Upgrades.GetOrThrow(skill.UpgradeId), OpenSkills[i]);
+                    ApplyUpgrade(skill, _data.Upgrades.GetOrThrow(skill.UpgradeId), _skillRows[i]);
                 }
             }
         }
@@ -128,48 +121,32 @@ namespace Game.Core
             return list;
         }
 
-        // 6개는 열려 있고, 나머지는 플레이어 레벨 4부터 하나씩 열린다
+        // 이름·설명·해금 레벨은 Skills.json에서 온다. progressionId가 Upgrades 테이블에 있으면 강화할 수 있는 스킬이고(UpgradeId),
+        // 없으면 기본 능력치만 보여주고 비용·레벨별 보상은 없다
         private List<SkillInfo> CreateSkills()
         {
             var list = new List<SkillInfo>();
-            foreach (var n in OpenSkills)
+            foreach (var data in _skillRows)
             {
-                var skill = new SkillInfo
-                {
-                    Id = n.id,
-                    UpgradeId = _data.Upgrades.Contains(n.id) ? n.id : null,
-                    Name = n.name,
-                    Description = n.desc,
-                    Level = n.level,
-                    MaxLevel = SkillMaxLevel,
-                    UnlockLevel = 1,
-                    CoinCost = 100 + n.level * 50,
-                    MaterialCost = 1 + n.level / 3,
-                    LevelRewards = CreateRewards(n.name, SkillMaxLevel),
-                };
-                skill.Stats = CreateStats(n, skill.Level);
-                list.Add(skill);
-            }
-
-            for (int unlockLevel = 4; unlockLevel <= 15; unlockLevel++)
-            {
+                bool upgradable = !string.IsNullOrEmpty(data.progressionId) && _data.Upgrades.Contains(data.progressionId);
                 list.Add(new SkillInfo
                 {
-                    Id = "locked" + unlockLevel,
-                    Name = "???",
-                    Description = string.Empty,
-                    MaxLevel = SkillMaxLevel,
-                    UnlockLevel = unlockLevel,
-                    Stats = new StatLine[0],
-                    LevelRewards = new LevelReward[0],
+                    Id = data.id.ToString(),
+                    UpgradeId = upgradable ? data.progressionId : null,
+                    Name = data.name,
+                    Description = data.desc ?? string.Empty,
+                    MaxLevel = NoUpgradeMaxLevel,
+                    UnlockLevel = data.unlockLevel,
+                    Stats = CreateStats(data, null, 0, true),
+                    LevelRewards = Array.Empty<LevelReward>(),
                 });
             }
+
             return list;
         }
 
         // 강화 데이터가 있는 스킬: 레벨은 프로필, 최대 레벨·다음 비용은 Upgrades 테이블에서 온다. 최대 레벨이면 다음 비용은 0이다
-        private void ApplyUpgrade(SkillInfo skill, UpgradeDefinition def,
-            (string id, string name, string desc, int level, int attack, float cooldown) display)
+        private void ApplyUpgrade(SkillInfo skill, UpgradeDefinition def, SkillData data)
         {
             int level = _profile.UpgradeLevel(def.UpgradeId);
             bool isMax = level >= def.MaxLevel;
@@ -177,7 +154,7 @@ namespace Game.Core
 
             if (skill.MaxLevel != def.MaxLevel)
             {
-                skill.LevelRewards = CreateRewards(display.name, def.MaxLevel);
+                skill.LevelRewards = CreateRewards(skill.Name, def.MaxLevel);
             }
 
             skill.Level = level;
@@ -185,35 +162,21 @@ namespace Game.Core
             skill.CoinCost = isMax ? 0 : def.CostAt(next);
             skill.MaterialItemId = def.MaterialItemId;
             skill.MaterialCost = isMax || !def.UsesMaterial ? 0 : def.MaterialAt(next);
-            skill.Stats = _skillData.TryGetValue(def.UpgradeId, out var data)
-                ? CreateUpgradeStats(def, data, level, isMax)
-                : CreateStats(display, level);
+            skill.Stats = CreateStats(data, def, level, isMax);
         }
 
-        // 강화 데이터가 있는 스킬의 능력치: 전투와 같은 계산(Skills.json 기본 스탯 + 영구 강화 효과)으로 현재 값과 다음 레벨 증가량을 만든다.
-        // 증가량이 없는 줄(예: 피해만 오르는 강화의 쿨타임)은 증가 표시를 하지 않는다
-        private static StatLine[] CreateUpgradeStats(UpgradeDefinition def, SkillData data, int level, bool isMax)
+        // 능력치는 전투와 같은 계산(Skills.json 기본 스탯 + 영구 강화 효과)으로 현재 값과 다음 레벨 증가량을 만든다.
+        // 강화 데이터가 없거나(def == null) 최대 레벨이면 증가량이 없고, 증가량이 없는 줄(예: 피해만 오르는 강화의 쿨타임)은 증가 표시를 하지 않는다
+        private static StatLine[] CreateStats(SkillData data, UpgradeDefinition def, int level, bool isMax)
         {
-            var current = PermanentSkillEffect.Apply(data, PermanentSkillEffect.At(def, level)).Stats.Cast;
-            var next = isMax ? current : PermanentSkillEffect.Apply(data, PermanentSkillEffect.At(def, level + 1)).Stats.Cast;
+            var current = PermanentSkillEffect.Apply(data, def == null ? null : PermanentSkillEffect.At(def, level)).Stats.Cast;
+            var next = def == null || isMax ? current : PermanentSkillEffect.Apply(data, PermanentSkillEffect.At(def, level + 1)).Stats.Cast;
             float damageUp = next.Damage - current.Damage;
             float cooldownDown = next.Cooldown - current.Cooldown;
             return new[]
             {
                 new StatLine("공격력", $"{current.Damage:0.#}", increase: damageUp > 0.001f ? $"+{damageUp:0.#}" : null),
                 new StatLine("쿨타임", $"{current.Cooldown:0.##}초", increase: cooldownDown < -0.001f ? $"{cooldownDown:0.##}초" : null),
-            };
-        }
-
-        // 강화 데이터가 없는 스킬은 화면 확인용 임시 공식을 쓴다. TODO(data): 그 스킬의 강화 행이 생기면 CreateUpgradeStats로 옮겨 간다
-        private static StatLine[] CreateStats((string id, string name, string desc, int level, int attack, float cooldown) n, int level)
-        {
-            int attack = Attack(n.attack, level);
-            float cooldown = Cooldown(n.cooldown, level);
-            return new[]
-            {
-                new StatLine("공격력", attack.ToString(), increase: $"+{Attack(n.attack, level + 1) - attack}"),
-                new StatLine("쿨타임", $"{cooldown:0.##}초", increase: $"{Cooldown(n.cooldown, level + 1) - cooldown:0.##}초"),
             };
         }
 
@@ -236,9 +199,5 @@ namespace Game.Core
 
             return list;
         }
-
-        // 임시 공식: 공격력은 레벨당 기본값의 20%씩, 쿨타임은 3레벨마다 5%씩 줄어든다
-        private static int Attack(int baseAttack, int level) => baseAttack + baseAttack * level / 5;
-        private static float Cooldown(float baseCooldown, int level) => baseCooldown * (1f - 0.05f * level / 3f);
     }
 }

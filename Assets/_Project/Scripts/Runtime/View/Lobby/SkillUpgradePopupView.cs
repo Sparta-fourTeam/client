@@ -82,12 +82,15 @@ namespace Game.View
 
             BindRewards(info);
 
-            // 최대 레벨에는 다음 비용이 없으므로 비용 칸과 강화 버튼을 숨기고 "최대 레벨"을 띄운다
-            _cost.SetActive(!isMax);
+            // 최대 레벨에는 다음 비용이 없으므로 비용 칸과 강화 버튼을 숨기고 "최대 레벨"을 띄운다.
+            // 강화 데이터가 없는 스킬은 비용이 없으므로 비용 칸만 숨기고, 강화 버튼은 눌리지 않게 둔다
+            bool upgradable = info.UpgradeId != null;
+            _cost.SetActive(!isMax && upgradable);
             _maxLevel.SetActive(isMax);
             _upgradeButton.gameObject.SetActive(!isMax);
-            if (isMax)
+            if (isMax || !upgradable)
             {
+                _upgradeButton.interactable = false;
                 return;
             }
 
@@ -95,7 +98,7 @@ namespace Game.View
             int material = info.MaterialItemId != null ? _profile.ItemQuantity(info.MaterialItemId) : 0;
             _bookText.text = CostFormat.HaveNeed(material, info.MaterialCost);
             _coinText.text = CostFormat.HaveNeed(coin, info.CoinCost);
-            _upgradeButton.interactable = !_busy && info.UpgradeId != null && info.IsUnlocked
+            _upgradeButton.interactable = !_busy && info.IsUnlocked
                 && coin >= info.CoinCost && material >= info.MaterialCost;
         }
 
