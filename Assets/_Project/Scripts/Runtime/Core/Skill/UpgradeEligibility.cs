@@ -49,14 +49,21 @@ namespace Game.Core
                 {
                     if (exclusion == null || string.IsNullOrEmpty(exclusion.cardId)
                         || exclusion.belowPermanentLevel < 0) { return false; }
-                    int owner = exclusion.skillId == 0 ? weaponId : exclusion.skillId;
-                    bool applies = exclusion.belowPermanentLevel == 0
-                        || state.GetPermanentWeaponLevel(weaponId) < exclusion.belowPermanentLevel;
-                    if (applies && state.GetAcquiredCount(owner, exclusion.cardId) > 0) { return false; }
+                    if (ExclusionApplies(exclusion, weaponId, state)
+                        && state.GetAcquiredCount(ExclusionOwner(exclusion, weaponId), exclusion.cardId) > 0) { return false; }
                 }
             }
 
             return true;
         }
+
+        /// <summary>배타 카드의 주인 스킬 ID. skillId가 0이면 배타를 가진 카드의 스킬이다</summary>
+        public static int ExclusionOwner(CardExclusion exclusion, int weaponId) =>
+            exclusion.skillId == 0 ? weaponId : exclusion.skillId;
+
+        /// <summary>지금 영구 레벨에서 이 배타가 살아 있는지. 배타 카드를 이미 가졌는지는 보지 않는다</summary>
+        public static bool ExclusionApplies(CardExclusion exclusion, int weaponId, IUpgradeState state) =>
+            exclusion.belowPermanentLevel == 0
+            || state.GetPermanentWeaponLevel(weaponId) < exclusion.belowPermanentLevel;
     }
 }

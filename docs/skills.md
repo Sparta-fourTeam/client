@@ -139,7 +139,7 @@ flowchart TD
 | 3 Beam | `BeamStrategy` | `AreaZone` | 지속하며 닿는 모든 적을 공격하는 선 (에너지 빔) |
 | 4 Chain | `ChainStrategy` | `ChainBolt` | 여러 적을 연쇄로 튕기며 공격 (연쇄 번개) |
 
-**에셋 표 규칙**: 스킬의 프리팹, HUD 아이콘, 카드 아이콘은 `SkillAssetTable`의 항목 하나(`key` = 스킬의 `assetKey`)에 모은다. 항목은 `prefab`, `hudIcon`, `newCardIcon`(새 스킬 카드), `upgradeCardIcon`(강화 카드)을 가진다. 카드마다가 아니라 스킬마다 아이콘 두 장이다. 자식 전용 스킬은 `prefab`만 있으면 된다. 표에는 기본 아이콘(`hudFallback`, `cardFallback`)이 있어 아이콘이 비어 있으면 기본 아이콘이 나온다. 스킬이 아닌 일반 카드는 `IconKey`를 같은 표의 `key`로 쓰고 `upgradeCardIcon`을 쓴다.
+**에셋 표 규칙**: 스킬의 프리팹, HUD 아이콘, 카드 아이콘은 `SkillAssetTable`의 항목 하나(`key` = 스킬의 `assetKey`)에 모은다. 항목은 `prefab`, `hudIcon`, `newCardIcon`(새 스킬 카드), `upgradeCardIcon`(강화 카드)을 가진다. 카드마다가 아니라 스킬마다 아이콘 두 장이다. 자식 전용 스킬은 `prefab`만 있으면 된다. 표에는 기본 아이콘(`hudFallback`, `cardFallback`)이 있어 아이콘이 비어 있으면 기본 아이콘이 나온다. 스킬이 아닌 일반 카드는 `IconKey`를 같은 표의 `key`로 쓰고 `upgradeCardIcon`을 쓴다. 형태 변환 아이콘은 스킬 항목이 아니라 표의 `formIcons`(형태 → 아이콘)에 둔다. 비어 있으면 변환 카드를 가진 스킬의 `hudIcon`이 나온다.
 
 ## 5. 카드 뽑기와 적용
 
@@ -148,6 +148,18 @@ flowchart TD
 3. **일반 카드 후보**: `GeneralCards.json`에서 조건(`Condition`)이 맞고 `MaxPicks`를 넘지 않은 것. `Forced`이면 3장 중 한 칸을 먼저 차지한다(한 번에 최대 1장, 여럿이면 `Priority`가 높은 쪽, 같으면 무작위). `Forced`가 아니면 스킬 카드와 같은 후보 목록에서 무작위로 섞인다.
 4. 고르면 `CardDeck.TryApply`가 스킬 카드는 `SkillController`로 넘긴다. 강화는 효과를 순서대로 적용한 설정을 만들고, 전부 성공해야 교체한다(공유 강화는 참여한 모든 스킬이 준비되어야 함께 반영). 일반 카드는 조건이 아직 맞는지 한 번 더 확인하고 효과를 적용한다.
 5. 일시정지 뒤 카드 선택으로 돌아올 때는 후보를 다시 뽑지 않는다(리롤 방지).
+
+### 카드 아래 형태 변환 표시
+
+카드 선택 화면에서 카드마다 아래에 형태 변환(효과에 `form`이 있는 카드) 아이콘이 최대 3개 붙는다. 후보를 만들 때 `FormHintFinder`가 카드마다 관계를 찾아 `UpgradeChoice.FormHints`에 넣고, `CardSlotView`가 그린다.
+
+| 표시 | 언제 |
+|---|---|
+| 아이콘만 (`Enables`) | 이 카드가 변환의 조건이다. 새 스킬 카드는 그 스킬의 변환과 그 스킬을 `requiredWeaponIds`로 요구하는 변환에 붙는다. 강화 카드는 아직 안 가진 `requiredCardIds`·`requiredCardCounts`일 때만 붙는다 |
+| 아이콘 + X (`Blocks`) | 이 카드를 고르면 변환을 더는 얻을 수 없다. 변환 카드의 `exclusions`에 이 카드가 있고 지금 영구 레벨에서 그 배타가 살아 있을 때 |
+| 안 보임 | 이미 얻은 변환, 이미 막힌 변환(배타 카드 보유), 꺼진 변환, 영구 레벨이 모자라 이번 판에 못 얻는 변환. 일반 카드와 변환 카드 자신에도 붙지 않는다 |
+
+전투 레벨, 필수 카드, 필수 스킬은 판 안에서 채울 수 있어서 "안 보임" 판정에 쓰지 않는다. 배타 판정은 `UpgradeEligibility`와 같은 함수(`ExclusionOwner`, `ExclusionApplies`)를 써서 표시와 실제 획득이 어긋나지 않는다. 예: 통나무를 가진 상태에서 `log_large` 카드가 나오면 아래에 불타는 뿌리 아이콘이 X와 함께 붙는다.
 
 **일반 카드**(`GeneralCards.json`)의 한 행:
 
@@ -227,7 +239,7 @@ flowchart TD
 
 ### F. 새 변형(form) 만들기
 
-`SkillForm` enum에 값을 더하고, `EffectRegistry`의 `form` 허용 값에 넣고, 그 변형의 겉모습을 처리하는 코드(스프라이트 교체는 `ProjectileVisual.FormSprite`)를 추가한다. 데이터에는 이름으로 적는다. 변형이 늘 때마다 코드를 고쳐야 하는 한계는 10절.
+`SkillForm` enum에 값을 더하고, `EffectRegistry`의 `form` 허용 값에 넣고, 그 변형의 겉모습을 처리하는 코드(스프라이트 교체는 `ProjectileVisual.FormSprite`)를 추가한다. 데이터에는 이름으로 적는다. 카드 선택 화면의 변환 아이콘은 `SkillAssetTable`의 `formIcons`에 연결한다(5절). 변형이 늘 때마다 코드를 고쳐야 하는 한계는 10절.
 
 ### G. 일반 카드 만들기
 

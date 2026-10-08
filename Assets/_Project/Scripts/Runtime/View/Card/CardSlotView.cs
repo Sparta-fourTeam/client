@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Game.Core;
 using TMPro;
 using UnityEngine;
@@ -18,6 +19,8 @@ namespace Game.View
         private Action<int> _onPick;
         [SerializeField] private Image _background;
         [SerializeField] private Image _iconImage;
+        [Tooltip("카드 아래 형태 변환 아이콘 칸. 관련 변환이 칸보다 많으면 앞에서부터 칸 수만큼만 보인다")]
+        [SerializeField] private FormHintIconView[] _formHints;
 
 
         private void Awake()
@@ -25,12 +28,14 @@ namespace Game.View
             _button.onClick.AddListener(() => _onPick?.Invoke(_index));
         }
 
-        public void Bind(int index, UpgradeChoice choice, Sprite icon, Sprite background, Action<int> onPick)
+        public void Bind(int index, UpgradeChoice choice, Sprite icon, Sprite background, Action<int> onPick,
+            Func<FormHint, Sprite> formIcon = null)
         {
             _index = index;
             _onPick = onPick;
             _background.sprite = background;
             _iconImage.sprite = icon;
+            ShowFormHints(choice.FormHints, formIcon);
 
 
             if (choice.IsGeneral)
@@ -54,6 +59,26 @@ namespace Game.View
                 _titleText.text = choice.DisplayName ?? choice.Option.name;
                 _levelText.text = $"{choice.skill.Level} » {choice.skill.Level + 1}";
                 _descText.text = choice.DisplayDescription ?? choice.Option.desc ?? string.Empty;
+            }
+        }
+
+        // 이 카드가 조건이 되는 변환은 그대로, 이 카드를 고르면 막히는 변환은 X 표시로 보인다
+        private void ShowFormHints(IReadOnlyList<FormHint> hints, Func<FormHint, Sprite> formIcon)
+        {
+            if (_formHints == null) { return; }
+            int count = hints?.Count ?? 0;
+            for (int i = 0; i < _formHints.Length; i++)
+            {
+                if (_formHints[i] == null) { continue; }
+                if (i < count)
+                {
+                    var hint = hints[i];
+                    _formHints[i].Show(formIcon?.Invoke(hint), hint.Kind == FormHintKind.Blocks);
+                }
+                else
+                {
+                    _formHints[i].Hide();
+                }
             }
         }
     }

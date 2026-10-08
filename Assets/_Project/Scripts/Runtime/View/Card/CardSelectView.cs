@@ -58,7 +58,7 @@ namespace Game.View
                     var choice = choices[i];
                     Sprite icon = _assets != null ? FindIcon(choice) : null;
                     Sprite background = choice.IsNewWeapon ? _newWeaponBg : _upgradeBg;
-                    _slots[i].Bind(i, choice, icon, background, OnPick);
+                    _slots[i].Bind(i, choice, icon, background, OnPick, FindFormIcon);
                 }
             }
 
@@ -77,6 +77,9 @@ namespace Game.View
                 ? _assets.GetCardIcon(choice.newSkillData.assetKey, SkillCardIcon.New)
                 : _assets.GetCardIcon(choice.skill.Data.assetKey, SkillCardIcon.Upgrade);
         }
+
+        private Sprite FindFormIcon(FormHint hint) =>
+            _assets != null ? _assets.GetFormIcon(hint.Form, hint.Skill.assetKey) : null;
 
         private void OnPick(int index)
         {
