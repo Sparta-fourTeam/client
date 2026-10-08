@@ -55,7 +55,7 @@ namespace Game.View
                 if (hasChoice)
                 {
                     var choice = choices[i];
-                    Sprite icon = _assets != null ? FindIcon(choice) : null;
+                    SkillCardVisual icon = _assets != null ? FindIcon(choice) : default;
                     Sprite background = choice.IsNewWeapon ? _newWeaponBg : _upgradeBg;
                     _slots[i].Bind(i, choice, icon, background, OnPick);
                 }
@@ -65,16 +65,16 @@ namespace Game.View
         }
 
         // 스킬 카드는 스킬의 assetKey로, 일반 카드는 IconKey로 찾는다 (일반 카드는 강화 아이콘 칸을 쓴다)
-        private Sprite FindIcon(UpgradeChoice choice)
+        private SkillCardVisual FindIcon(UpgradeChoice choice)
         {
             if (choice.IsGeneral)
             {
-                return _assets.GetCardIcon(choice.GeneralCard.IconKey, SkillCardIcon.Upgrade);
+                return _assets.GetCardVisual(choice.GeneralCard.IconKey, SkillCardIcon.Upgrade);
             }
 
             return choice.IsNewWeapon
-                ? _assets.GetCardIcon(choice.newSkillData.assetKey, SkillCardIcon.New)
-                : _assets.GetCardIcon(choice.skill.Data.assetKey, SkillCardIcon.Upgrade);
+                ? _assets.GetCardVisual(choice.newSkillData.assetKey, SkillCardIcon.New)
+                : _assets.GetCardVisual(choice.skill.Data.assetKey, SkillCardIcon.Upgrade);
         }
 
         private void OnPick(int index)

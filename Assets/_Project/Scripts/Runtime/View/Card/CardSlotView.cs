@@ -18,6 +18,7 @@ namespace Game.View
         private Action<int> _onPick;
         [SerializeField] private Image _background;
         [SerializeField] private Image _iconImage;
+        [SerializeField] private LayeredIconView _layeredIcon;
 
 
         private void Awake()
@@ -27,30 +28,40 @@ namespace Game.View
 
         public void Bind(int index, UpgradeChoice choice, Sprite icon, Sprite background, Action<int> onPick)
         {
+            Bind(index, choice, new SkillCardVisual(icon), background, onPick);
+        }
+
+        public void Bind(int index, UpgradeChoice choice, SkillCardVisual icon, Sprite background, Action<int> onPick)
+        {
             _index = index;
             _onPick = onPick;
             _background.sprite = background;
-            _iconImage.sprite = icon;
+            if (_layeredIcon != null)
+            {
+                _layeredIcon.Bind(icon.Glyph, icon.Background, icon.Frame);
+            }
+            else
+            {
+                _iconImage.sprite = icon.Glyph;
+                _iconImage.enabled = icon.Glyph != null;
+            }
 
 
             if (choice.IsGeneral)
             {
                 // 일반 카드는 아이콘이 없을 수 있다 (없으면 빈 흰 칸 대신 숨긴다)
-                _iconImage.enabled = icon != null;
                 _titleText.text = choice.DisplayName;
                 _levelText.text = string.Empty;
                 _descText.text = choice.DisplayDescription ?? string.Empty;
             }
             else if (choice.IsNewWeapon)
             {
-                _iconImage.enabled = true;
                 _titleText.text = choice.newSkillData.name;
                 _levelText.text = "NEW";
                 _descText.text = choice.newSkillData.desc ?? string.Empty;
             }
             else
             {
-                _iconImage.enabled = true;
                 _titleText.text = choice.DisplayName ?? choice.Option.name;
                 _levelText.text = $"{choice.skill.Level} » {choice.skill.Level + 1}";
                 _descText.text = choice.DisplayDescription ?? choice.Option.desc ?? string.Empty;

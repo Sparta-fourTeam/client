@@ -9,6 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1111217444267366676}
+  - component: {fileID: 2819112167907434584}
   m_Layer: 5
   m_Name: LobbyBackground
   m_TagString: Untagged
@@ -38,6 +39,22 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &2819112167907434584
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2032281216697883631}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: acb30e01ad1a48b43bec5178b6b4f305, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.BackgroundView
+  images:
+  - {fileID: 3168556267793243150}
+  - {fileID: 3107695114131067870}
+  speed: 500
 --- !u!1 &2530921394894882605
 GameObject:
   m_ObjectHideFlags: 0

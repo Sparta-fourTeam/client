@@ -8,6 +8,7 @@ namespace Game.View
     {
         [SerializeField] private Button _shopTab, _characterTab, _homeTab, _skillTab, _gachaTab;
         [SerializeField] private GameObject _characterSelected, _homeSelected, _skillSelected;
+        [SerializeField] private LayeredIconView _characterIcon, _homeIcon, _skillIcon;
         [SerializeField] private CharacterScreenView _characterScreen;
         [SerializeField] private SkillScreenView _skillScreen;
         [SerializeField] private ComingSoonToastView _toast;
@@ -42,6 +43,9 @@ namespace Game.View
             _homeSelected.SetActive(tab == Tab.Home);
             _characterSelected.SetActive(tab == Tab.Character);
             _skillSelected.SetActive(tab == Tab.Skill);
+            _homeIcon?.SetSelected(tab == Tab.Home);
+            _characterIcon?.SetSelected(tab == Tab.Character);
+            _skillIcon?.SetSelected(tab == Tab.Skill);
         }
     }
 }

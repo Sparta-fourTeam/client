@@ -473,6 +473,21 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &6691296501533893602
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 498134583730977452}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1ae1eedd1e47f71459a9c9542cf72345, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.LevelRewardRowView
+  _background: {fileID: 2866501672032190926}
+  _number: {fileID: 8478014482207404863}
+  _text: {fileID: 2667461393548705825}
 --- !u!1 &558956796852285913
 GameObject:
   m_ObjectHideFlags: 0
@@ -1038,6 +1053,21 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &4312038269433451602
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1087345666500928219}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1ae1eedd1e47f71459a9c9542cf72345, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.LevelRewardRowView
+  _background: {fileID: 956360895315341766}
+  _number: {fileID: 1872874444141523531}
+  _text: {fileID: 2077431099143692074}
 --- !u!1 &1137869459054446512
 GameObject:
   m_ObjectHideFlags: 0
@@ -1116,6 +1146,21 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &2585151906568197931
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1137869459054446512}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1ae1eedd1e47f71459a9c9542cf72345, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.LevelRewardRowView
+  _background: {fileID: 2921691892879628171}
+  _number: {fileID: 8730882876744430389}
+  _text: {fileID: 3686741942532384059}
 --- !u!1 &1505485117718626658
 GameObject:
   m_ObjectHideFlags: 0
@@ -1448,16 +1493,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.93, g: 0.86, b: 0.72, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
+  m_Sprite: {fileID: 472996493, guid: 2520381a9b2f24cb78947765fc9a2b99, type: 3}
   m_Type: 1
-  m_PreserveAspect: 0
+  m_PreserveAspect: 1
   m_FillCenter: 1
   m_FillMethod: 4
   m_FillAmount: 1
@@ -1797,16 +1842,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.8, g: 0.62, b: 0.3, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
+  m_Sprite: {fileID: 2691650823057339236, guid: 87ddbd6be03ec7c4ebbfed37cb7a578a, type: 3}
   m_Type: 1
-  m_PreserveAspect: 0
+  m_PreserveAspect: 1
   m_FillCenter: 1
   m_FillMethod: 4
   m_FillAmount: 1
@@ -3651,6 +3696,21 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &7741252222589169124
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5687097471953135074}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 115e8a33df46e934f9b01aa3c750fc03, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.StatCellView
+  _label: {fileID: 7093924570609025437}
+  _value: {fileID: 1768214557200803527}
+  _increase: {fileID: 1323087174375622168}
 --- !u!1 &5751845807950535342
 GameObject:
   m_ObjectHideFlags: 0
@@ -4232,6 +4292,21 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &4619749074133635080
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6406778305623822165}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 115e8a33df46e934f9b01aa3c750fc03, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.StatCellView
+  _label: {fileID: 5902251400649448194}
+  _value: {fileID: 2204245078176186534}
+  _increase: {fileID: 2179854046779144092}
 --- !u!1 &6552350243058523793
 GameObject:
   m_ObjectHideFlags: 0
@@ -4630,7 +4705,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2638089053484922688
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4981,6 +5056,21 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &5677176092025143760
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6973091548162805461}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 115e8a33df46e934f9b01aa3c750fc03, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.StatCellView
+  _label: {fileID: 9074100750627732711}
+  _value: {fileID: 8117882667883508593}
+  _increase: {fileID: 1252015786441819102}
 --- !u!1 &7069128086345914554
 GameObject:
   m_ObjectHideFlags: 0
@@ -5047,7 +5137,6 @@ MonoBehaviour:
   _rewardRowPrefab: {fileID: 2585151906568197931}
   _rewardContent: {fileID: 6351035511672775033}
   _cost: {fileID: 2871966289903736211}
-  _toast: {fileID: 0}
 --- !u!1 &7149733278285198010
 GameObject:
   m_ObjectHideFlags: 0
@@ -5400,6 +5489,21 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &7523584821942164557
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7230727239746681793}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1ae1eedd1e47f71459a9c9542cf72345, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.LevelRewardRowView
+  _background: {fileID: 3653701886635324174}
+  _number: {fileID: 4672678716948815178}
+  _text: {fileID: 3411876003409030151}
 --- !u!1 &7272900880611153713
 GameObject:
   m_ObjectHideFlags: 0
@@ -5479,6 +5583,21 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &4462742611217940110
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7272900880611153713}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 115e8a33df46e934f9b01aa3c750fc03, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.StatCellView
+  _label: {fileID: 4603970350721417547}
+  _value: {fileID: 8310192423924150827}
+  _increase: {fileID: 772848851014902398}
 --- !u!1 &7349662111207462514
 GameObject:
   m_ObjectHideFlags: 0
@@ -6582,6 +6701,21 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &6577667966788409170
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8679467700656272510}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1ae1eedd1e47f71459a9c9542cf72345, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.LevelRewardRowView
+  _background: {fileID: 1215635326180622584}
+  _number: {fileID: 7125109230460649948}
+  _text: {fileID: 743714215075563223}
 --- !u!1 &8949386097806887598
 GameObject:
   m_ObjectHideFlags: 0
@@ -6658,138 +6792,3 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &4462742611217940110
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7272900880611153713}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 115e8a33df46e934f9b01aa3c750fc03, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Game.View::Game.View.StatCellView
-  _label: {fileID: 4603970350721417547}
-  _value: {fileID: 8310192423924150827}
-  _increase: {fileID: 772848851014902398}
---- !u!114 &5677176092025143760
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6973091548162805461}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 115e8a33df46e934f9b01aa3c750fc03, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Game.View::Game.View.StatCellView
-  _label: {fileID: 9074100750627732711}
-  _value: {fileID: 8117882667883508593}
-  _increase: {fileID: 1252015786441819102}
---- !u!114 &4619749074133635080
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6406778305623822165}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 115e8a33df46e934f9b01aa3c750fc03, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Game.View::Game.View.StatCellView
-  _label: {fileID: 5902251400649448194}
-  _value: {fileID: 2204245078176186534}
-  _increase: {fileID: 2179854046779144092}
---- !u!114 &7741252222589169124
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5687097471953135074}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 115e8a33df46e934f9b01aa3c750fc03, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Game.View::Game.View.StatCellView
-  _label: {fileID: 7093924570609025437}
-  _value: {fileID: 1768214557200803527}
-  _increase: {fileID: 1323087174375622168}
---- !u!114 &2585151906568197931
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1137869459054446512}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1ae1eedd1e47f71459a9c9542cf72345, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Game.View::Game.View.LevelRewardRowView
-  _background: {fileID: 2921691892879628171}
-  _number: {fileID: 8730882876744430389}
-  _text: {fileID: 3686741942532384059}
---- !u!114 &6577667966788409170
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8679467700656272510}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1ae1eedd1e47f71459a9c9542cf72345, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Game.View::Game.View.LevelRewardRowView
-  _background: {fileID: 1215635326180622584}
-  _number: {fileID: 7125109230460649948}
-  _text: {fileID: 743714215075563223}
---- !u!114 &7523584821942164557
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7230727239746681793}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1ae1eedd1e47f71459a9c9542cf72345, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Game.View::Game.View.LevelRewardRowView
-  _background: {fileID: 3653701886635324174}
-  _number: {fileID: 4672678716948815178}
-  _text: {fileID: 3411876003409030151}
---- !u!114 &6691296501533893602
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 498134583730977452}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1ae1eedd1e47f71459a9c9542cf72345, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Game.View::Game.View.LevelRewardRowView
-  _background: {fileID: 2866501672032190926}
-  _number: {fileID: 8478014482207404863}
-  _text: {fileID: 2667461393548705825}
---- !u!114 &4312038269433451602
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1087345666500928219}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1ae1eedd1e47f71459a9c9542cf72345, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Game.View::Game.View.LevelRewardRowView
-  _background: {fileID: 956360895315341766}
-  _number: {fileID: 1872874444141523531}
-  _text: {fileID: 2077431099143692074}

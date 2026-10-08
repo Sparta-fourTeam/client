@@ -174,15 +174,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.95, g: 0.6, b: 0.2, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
+  m_Sprite: {fileID: 3089864702522627156, guid: 2cf05a8ded9e77d4eae2dea037db079e, type: 3}
+  m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -249,7 +249,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Game.View::Game.View.MissonButtonView
   _button: {fileID: 2741811370757933130}
   _stageText: {fileID: 8397079311915061677}
-  _missionScreen: {fileID: 8106915261588189252, guid: 412c72eb7c9d6d44dbac4ba5448a874b, type: 3}
+  _missionScreen: {fileID: 0}
 --- !u!1 &7286093289443170024
 GameObject:
   m_ObjectHideFlags: 0

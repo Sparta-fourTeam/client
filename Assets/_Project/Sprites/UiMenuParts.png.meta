@@ -1,0 +1,493 @@
+fileFormatVersion: 2
+guid: 2520381a9b2f24cb78947765fc9a2b99
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 7145149381757411870
+    second: UiMenuParts_0
+  - first:
+      213: 942956412565653364
+    second: UiMenuParts_1
+  - first:
+      213: -3735299339074908451
+    second: UiMenuParts_2
+  - first:
+      213: 3491096212379723635
+    second: UiMenuParts_3
+  - first:
+      213: -6608186209619009259
+    second: UiMenuParts_4
+  - first:
+      213: -1982466136372028006
+    second: UiMenuParts_5
+  - first:
+      213: -8176063337260295138
+    second: UiMenuParts_6
+  - first:
+      213: -5614593582606452263
+    second: UiMenuParts_7
+  - first:
+      213: 4829045415108748553
+    second: UiMenuParts_8
+  - first:
+      213: -4619803502972579507
+    second: UiMenuParts_9
+  - first:
+      213: 7162962011500833260
+    second: UiMenuParts_10
+  - first:
+      213: -5615781081089383632
+    second: UiMenuParts_11
+  - first:
+      213: -1402883981017377976
+    second: UiMenuParts_12
+  - first:
+      213: 5025471601727028895
+    second: UiMenuParts_13
+  - first:
+      213: 5101528921601229513
+    second: UiMenuParts_14
+  - first:
+      213: -5482097466771453135
+    second: UiMenuParts_15
+  - first:
+      213: 4568299299651246737
+    second: UiMenuParts_16
+  - first:
+      213: -3779551111963087482
+    second: UiMenuParts_17
+  - first:
+      213: -807394843588498794
+    second: UiMenuParts_18
+  - first:
+      213: -7777955925484655168
+    second: UiMenuParts_19
+  - first:
+      213: 7202936731679479648
+    second: UiMenuParts_20
+  - first:
+      213: -1257474559152891543
+    second: UiMenuParts_21
+  - first:
+      213: 875488408333010690
+    second: UiMenuParts_22
+  - first:
+      213: -6059095994988713612
+    second: UiMenuParts_23
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: MenuBook
+      rect:
+        serializedVersion: 2
+        x: 217
+        y: 816
+        width: 228
+        height: 185
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 209536d022b0c49dfbabd452630ef255
+      internalID: 472996493
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MenuProfile
+      rect:
+        serializedVersion: 2
+        x: 648
+        y: 815
+        width: 174
+        height: 206
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 61196ef2eed5041aeba3e34cdbcec6c2
+      internalID: 1068403851
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MenuQuest
+      rect:
+        serializedVersion: 2
+        x: 991
+        y: 828
+        width: 241
+        height: 163
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 970d76547c5ba44858a29486b5874e9e
+      internalID: 707188648
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MenuPost
+      rect:
+        serializedVersion: 2
+        x: 232
+        y: 551
+        width: 208
+        height: 190
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a8976f0ecf7c044f3a7f457081353d37
+      internalID: 852932121
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MenuDocument
+      rect:
+        serializedVersion: 2
+        x: 622
+        y: 570
+        width: 208
+        height: 245
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1bd5875e9735449bcb77b93c12583cec
+      internalID: 979403465
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MenuCash
+      rect:
+        serializedVersion: 2
+        x: 987
+        y: 551
+        width: 240
+        height: 176
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 06d546f695c64494bb9888f7d4d949bd
+      internalID: -1518045557
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MenuClover
+      rect:
+        serializedVersion: 2
+        x: 211
+        y: 294
+        width: 220
+        height: 211
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7206699ec573d4907b92914450a62721
+      internalID: -942048167
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MenuCharacter
+      rect:
+        serializedVersion: 2
+        x: 630
+        y: 298
+        width: 188
+        height: 188
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0eaf25b70fcad4e2eb4ffb06d9af9cda
+      internalID: -901549173
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MenuHome
+      rect:
+        serializedVersion: 2
+        x: 1012
+        y: 300
+        width: 210
+        height: 176
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: eb3b5112f77bf40baa0a16d772aae630
+      internalID: -1929856828
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LockCross
+      rect:
+        serializedVersion: 2
+        x: 213
+        y: 37
+        width: 231
+        height: 221
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c52ba66a5a73a41a0b3c166bbdd0f73b
+      internalID: -1221128230
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MenuLines
+      rect:
+        serializedVersion: 2
+        x: 631
+        y: 56
+        width: 181
+        height: 168
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e40c2572da883462591ef181e7d17a01
+      internalID: 1847517052
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MenuWeapon
+      rect:
+        serializedVersion: 2
+        x: 1031
+        y: 73
+        width: 178
+        height: 145
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a9c5f3ace1d8e4be092af35143f2cb7d
+      internalID: -597487000
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 6c166c4d8e0f447cca9530ff82c8a5e6
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      LockCross: -1221128230
+      MenuBook: 472996493
+      MenuCash: -1518045557
+      MenuCharacter: -901549173
+      MenuClover: -942048167
+      MenuDocument: 979403465
+      MenuHome: -1929856828
+      MenuLines: 1847517052
+      MenuPost: 852932121
+      MenuProfile: 1068403851
+      MenuQuest: 707188648
+      MenuWeapon: -597487000
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
