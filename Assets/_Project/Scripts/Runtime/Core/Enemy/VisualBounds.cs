@@ -22,5 +22,24 @@ namespace Game.Core
 
             return top;
         }
+
+        /// <summary>root 아래 모든 SpriteRenderer 중 가장 낮은 곳의 y(발끝). 스프라이트가 없으면 fallback</summary>
+        public static float BottomY(Transform root, float fallback)
+        {
+            bool found = false;
+            float bottom = 0f;
+            foreach (var renderer in root.GetComponentsInChildren<SpriteRenderer>())
+            {
+                if (renderer.sprite == null)
+                {
+                    continue;
+                }
+
+                bottom = found ? Mathf.Min(bottom, renderer.bounds.min.y) : renderer.bounds.min.y;
+                found = true;
+            }
+
+            return found ? bottom : fallback;
+        }
     }
 }
