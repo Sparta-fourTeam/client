@@ -15,6 +15,9 @@ namespace Game.Core
         /// <summary>스킬이 아닌 일반 카드(방벽 회복 등)이면 그 정의. 이때 Weapon, Option, NewWeaponData는 비어 있다</summary>
         public GeneralCardDefinition GeneralCard;
 
+        /// <summary>이 카드가 조건이 되거나 막는 형태 변환. 후보를 만들 때 채우고, 일반 카드나 관련 변환이 없으면 null이거나 비어 있다</summary>
+        public IReadOnlyList<FormHint> FormHints;
+
         public bool IsGeneral => GeneralCard != null;
     }
 
@@ -80,6 +83,12 @@ namespace Game.Core
                 {
                     candidates.Add(new UpgradeChoice { IsNewWeapon = true, newSkillData = data });
                 }
+            }
+            for (int i = 0; i < candidates.Count; i++)
+            {
+                var candidate = candidates[i];
+                candidate.FormHints = FormHintFinder.For(candidate, catalog, state);
+                candidates[i] = candidate;
             }
             return candidates;
         }

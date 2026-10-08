@@ -25,6 +25,14 @@ namespace Game.Core
 
     public enum SkillCardIcon { New, Upgrade }
 
+    /// <summary>형태 변환 하나의 아이콘. 카드 선택창에서 카드 아래에 작게 보인다</summary>
+    [Serializable]
+    public class SkillFormIconEntry
+    {
+        public SkillForm form;
+        public Sprite icon;
+    }
+
     /// <summary>스킬별 에셋(프리팹, HUD 아이콘, 카드 아이콘)을 키 하나로 찾는 표. 새 스킬을 추가하면 이 표에 항목 하나만 더하면 된다.
     /// 아이콘이 없는 키는 기본 아이콘을 돌려준다</summary>
     [CreateAssetMenu(fileName = "SkillAssetTable", menuName = "Project Nova/Skill Asset Table")]
@@ -33,18 +41,21 @@ namespace Game.Core
         [SerializeField] private List<SkillAssetEntry> entries = new List<SkillAssetEntry>();
         [SerializeField] private Sprite hudFallback;
         [SerializeField] private Sprite cardFallback;
+        [SerializeField] private List<SkillFormIconEntry> formIcons = new List<SkillFormIconEntry>();
 
         private Dictionary<string, SkillAssetEntry> lookup;
 
         public IReadOnlyList<SkillAssetEntry> Entries => entries;
 
         /// <summary>코드(테스트, 도구)에서 표를 만들 때 쓴다. 에셋 표는 인스펙터에서 채운다</summary>
-        public static SkillAssetTable Create(IEnumerable<SkillAssetEntry> entries, Sprite hudFallback = null, Sprite cardFallback = null)
+        public static SkillAssetTable Create(IEnumerable<SkillAssetEntry> entries, Sprite hudFallback = null, Sprite cardFallback = null,
+            IEnumerable<SkillFormIconEntry> formIcons = null)
         {
             var table = CreateInstance<SkillAssetTable>();
             table.entries = new List<SkillAssetEntry>(entries);
             table.hudFallback = hudFallback;
             table.cardFallback = cardFallback;
+            table.formIcons = formIcons != null ? new List<SkillFormIconEntry>(formIcons) : new List<SkillFormIconEntry>();
             return table;
         }
 
@@ -75,6 +86,17 @@ namespace Game.Core
             if (!TryGet(key, out var entry)) { return cardFallback; }
             var icon = kind == SkillCardIcon.New ? entry.newCardIcon : entry.upgradeCardIcon;
             return icon != null ? icon : cardFallback;
+        }
+
+        /// <summary>형태 변환 아이콘. 그 형태의 아이콘이 없으면 변환 카드를 가진 스킬(skillKey)의 HUD 아이콘을 쓴다</summary>
+        public Sprite GetFormIcon(SkillForm form, string skillKey)
+        {
+            foreach (var entry in formIcons)
+            {
+                if (entry != null && entry.form == form && entry.icon != null) { return entry.icon; }
+            }
+
+            return GetHudIcon(skillKey);
         }
 
         // 인스펙터에서 항목을 고치면 다음 조회에서 다시 만든다
