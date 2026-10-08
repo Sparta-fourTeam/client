@@ -78,6 +78,10 @@ namespace Game.Core
             if (statuses == null) { statuses = gameObject.AddComponent<EnemyStatusEffects>(); }
             statuses.Bind(enemyModel);
 
+            var hpBar = GetComponent<EnemyHpBar>();
+            if (hpBar == null) { hpBar = gameObject.AddComponent<EnemyHpBar>(); }
+            hpBar.Bind(enemyModel);
+
             var bag = DisposableBag.CreateBuilder();
             hpChanged.Subscribe(OnHpChanged).AddTo(bag);
             died.Subscribe(OnDied).AddTo(bag);
