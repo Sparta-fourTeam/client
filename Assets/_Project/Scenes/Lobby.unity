@@ -3847,9 +3847,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2868611731319788956, guid: e79f4c84097498b48ac78d2a3d2ce3a9, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1499834534}
-    - targetCorrespondingSourceObject: {fileID: 2000036265975931514, guid: e79f4c84097498b48ac78d2a3d2ce3a9, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1499834533}
     - targetCorrespondingSourceObject: {fileID: 3904065257519355333, guid: e79f4c84097498b48ac78d2a3d2ce3a9, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1499834532}
@@ -4107,11 +4104,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 3904065257519355333, guid: e79f4c84097498b48ac78d2a3d2ce3a9, type: 3}
   m_PrefabInstance: {fileID: 1499834495}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &1499834528 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 2000036265975931514, guid: e79f4c84097498b48ac78d2a3d2ce3a9, type: 3}
-  m_PrefabInstance: {fileID: 1499834495}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1499834529 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 2868611731319788956, guid: e79f4c84097498b48ac78d2a3d2ce3a9, type: 3}
@@ -4142,19 +4134,6 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1499834527}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 98d404df5fdfb2448b538f424d54ed06, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Game.View::Game.View.ComingSoonButton
-  _toast: {fileID: 1921941343}
---- !u!114 &1499834533
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1499834528}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 98d404df5fdfb2448b538f424d54ed06, type: 3}
