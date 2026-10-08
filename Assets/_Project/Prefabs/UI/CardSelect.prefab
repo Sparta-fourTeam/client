@@ -540,7 +540,7 @@ MonoBehaviour:
     m_Bottom: 0
   m_ChildAlignment: 4
   m_Spacing: 24
-  m_ChildForceExpandWidth: 1
+  m_ChildForceExpandWidth: 0
   m_ChildForceExpandHeight: 1
   m_ChildControlWidth: 1
   m_ChildControlHeight: 1
@@ -1248,6 +1248,7 @@ GameObject:
   - component: {fileID: 2198777292791324598}
   - component: {fileID: 3406758865174175493}
   - component: {fileID: 6457271029841332576}
+  - component: {fileID: 5406386832049185065}
   m_Layer: 0
   m_Name: CardSlot2
   m_TagString: Untagged
@@ -1384,6 +1385,28 @@ MonoBehaviour:
   - {fileID: 2277215648486354345}
   - {fileID: 8019366701149895178}
   - {fileID: 3232981590327178700}
+--- !u!114 &5406386832049185065
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2250480463379481994}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 306cc8c2b49d7114eaa3623786fc2126, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.LayoutElement
+  m_IgnoreLayout: 0
+  m_MinWidth: -1
+  m_MinHeight: -1
+  m_PreferredWidth: 328
+  m_PreferredHeight: -1
+  m_FlexibleWidth: 0
+  m_FlexibleHeight: -1
+  m_LayoutPriority: 1
+  m_MaxWidth: -1
+  m_MaxHeight: -1
 --- !u!1 &2623478426771160343
 GameObject:
   m_ObjectHideFlags: 0
@@ -2250,6 +2273,7 @@ GameObject:
   - component: {fileID: 5991043500451100100}
   - component: {fileID: 3069297077054876220}
   - component: {fileID: 8423519144745198469}
+  - component: {fileID: 4409762460358857481}
   m_Layer: 0
   m_Name: CardSlot1
   m_TagString: Untagged
@@ -2386,6 +2410,28 @@ MonoBehaviour:
   - {fileID: 7652237611365662557}
   - {fileID: 1950788927811792851}
   - {fileID: 197943895110474449}
+--- !u!114 &4409762460358857481
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4523485808233669870}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 306cc8c2b49d7114eaa3623786fc2126, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.LayoutElement
+  m_IgnoreLayout: 0
+  m_MinWidth: -1
+  m_MinHeight: -1
+  m_PreferredWidth: 328
+  m_PreferredHeight: -1
+  m_FlexibleWidth: 0
+  m_FlexibleHeight: -1
+  m_LayoutPriority: 1
+  m_MaxWidth: -1
+  m_MaxHeight: -1
 --- !u!1 &4950664689384304554
 GameObject:
   m_ObjectHideFlags: 0
@@ -3264,6 +3310,7 @@ GameObject:
   - component: {fileID: 3074542626724603569}
   - component: {fileID: 2372224428052157366}
   - component: {fileID: 332104828704174937}
+  - component: {fileID: 6612320792007289936}
   m_Layer: 0
   m_Name: CardSlot3
   m_TagString: Untagged
@@ -3400,6 +3447,28 @@ MonoBehaviour:
   - {fileID: 3833773062188440282}
   - {fileID: 1750657604036026864}
   - {fileID: 8146433134254510880}
+--- !u!114 &6612320792007289936
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5717268245434300095}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 306cc8c2b49d7114eaa3623786fc2126, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.LayoutElement
+  m_IgnoreLayout: 0
+  m_MinWidth: -1
+  m_MinHeight: -1
+  m_PreferredWidth: 328
+  m_PreferredHeight: -1
+  m_FlexibleWidth: 0
+  m_FlexibleHeight: -1
+  m_LayoutPriority: 1
+  m_MaxWidth: -1
+  m_MaxHeight: -1
 --- !u!1 &6407991717133344941
 GameObject:
   m_ObjectHideFlags: 0
