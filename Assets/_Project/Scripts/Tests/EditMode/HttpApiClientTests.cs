@@ -162,6 +162,49 @@ namespace Game.Tests
             Assert.AreEqual(HttpErrorMapper.InvalidResponse, ex.Code);
         }
 
+        [Test(Description = "검증 규칙을 주면 JSON 문법만 맞고 필수 필드가 빠진 응답({})을 거절(INVALID_RESPONSE)한다")]
+        public void Get_WithValidator_RejectsResponseMissingRequiredField()
+        {
+            _transport.Response = new HttpResponseData(200, "{}");
+
+            var ex = Assert.Throws<ApiException>(() =>
+                Run(_client.Get<Ping>("api/ping", isValid: p => !string.IsNullOrEmpty(p.name))));
+
+            Assert.AreEqual(ApiErrorKind.Rejected, ex.Kind);
+            Assert.AreEqual(HttpErrorMapper.InvalidResponse, ex.Code);
+        }
+
+        [Test(Description = "검증 규칙을 만족하는 응답은 그대로 돌려준다")]
+        public void Get_WithValidator_AcceptsValidResponse()
+        {
+            _transport.Response = new HttpResponseData(200, "{\"name\":\"nova\",\"count\":0}");
+
+            var result = Run(_client.Get<Ping>("api/ping", isValid: p => !string.IsNullOrEmpty(p.name)));
+
+            Assert.AreEqual("nova", result.name);
+        }
+
+        [Test(Description = "POST에도 같은 검증 규칙이 적용된다")]
+        public void Post_WithValidator_RejectsResponseMissingRequiredField()
+        {
+            _transport.Response = new HttpResponseData(200, "{}");
+
+            var ex = Assert.Throws<ApiException>(() =>
+                Run(_client.Post<Ping, Ping>("api/ping", new Ping(), isValid: p => !string.IsNullOrEmpty(p.name))));
+
+            Assert.AreEqual(HttpErrorMapper.InvalidResponse, ex.Code);
+        }
+
+        [Test(Description = "검증 규칙을 주지 않으면 {} 같은 응답도 null이 아니면 통과한다 (규칙은 필수 필드를 아는 API가 넘긴다)")]
+        public void Get_WithoutValidator_AcceptsEmptyObject()
+        {
+            _transport.Response = new HttpResponseData(200, "{}");
+
+            var result = Run(_client.Get<Ping>("api/ping"));
+
+            Assert.IsNull(result.name);
+        }
+
         [Test(Description = "오류 코드 읽기 지점이 서버가 준 코드를 돌려주면 그 코드를 쓴다")]
         public void ErrorCodeReader_ProvidesDomainCode()
         {
