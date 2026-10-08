@@ -22,6 +22,8 @@ namespace Game.View
         [FormerlySerializedAs("_bookText")]
         [SerializeField] private TMP_Text _materialText;
         [SerializeField] private TMP_Text _materialNameText;
+        [SerializeField] private ItemIconTable _icons;
+        [SerializeField] private Image _equipmentIcon, _materialIcon;
         [SerializeField] private GameObject _cost, _maxLevel;
         [SerializeField] private StatRowView[] _statRows;
         [SerializeField] private EquipEffectRowView[] _effectRows;
@@ -62,6 +64,12 @@ namespace Game.View
 
             _nameText.text = info.Name;
             _levelText.text = $"Lv.{info.Level}";
+            if (_icons != null)
+            {
+                SetIcon(_equipmentIcon, _icons.Get(info.UpgradeId));
+                var item = _data.Items.GetOrThrow(info.MaterialItemId);
+                SetIcon(_materialIcon, _icons.Get(item.IconKey));
+            }
             for (int i = 0; i < _statRows.Length; i++)
             {
                 if (i < info.Stats.Count)
@@ -102,6 +110,13 @@ namespace Game.View
             _materialText.text = CostFormat.HaveNeed(material, info.MaterialCost);
             _materialNameText.text = _data.Items.GetOrThrow(info.MaterialItemId).Name;
             _upgradeButton.interactable = !_busy && info.IsUnlocked && coin >= info.CoinCost && material >= info.MaterialCost;
+        }
+
+        private static void SetIcon(Image image, Sprite sprite)
+        {
+            if (image == null) { return; }
+            image.sprite = sprite;
+            image.enabled = sprite != null;
         }
 
         private async UniTask UpgradeAsync()

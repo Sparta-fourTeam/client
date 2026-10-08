@@ -1658,16 +1658,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.2, g: 0.18, b: 0.2, a: 0.9}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
-  m_PreserveAspect: 0
+  m_Sprite: {fileID: 21300000, guid: cc1d84e0bbda7ff40b2c2634dceb0e1f, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 1
   m_FillCenter: 1
   m_FillMethod: 4
   m_FillAmount: 1
@@ -4552,6 +4552,30 @@ PrefabInstance:
       propertyPath: m_TextStyleHashCode
       value: -1183493901
       objectReference: {fileID: 0}
+    - target: {fileID: 238753612176629771, guid: ff55ef711127c534dbba79079951049d, type: 3}
+      propertyPath: m_Sprite
+      value:
+      objectReference: {fileID: 21300000, guid: 509cc25c0ce186849b620df95ca8132e, type: 3}
+    - target: {fileID: 238753612176629771, guid: ff55ef711127c534dbba79079951049d, type: 3}
+      propertyPath: m_Type
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 238753612176629771, guid: ff55ef711127c534dbba79079951049d, type: 3}
+      propertyPath: m_PreserveAspect
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 238753612176629771, guid: ff55ef711127c534dbba79079951049d, type: 3}
+      propertyPath: m_Color.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 238753612176629771, guid: ff55ef711127c534dbba79079951049d, type: 3}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 238753612176629771, guid: ff55ef711127c534dbba79079951049d, type: 3}
+      propertyPath: m_Color.b
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -4680,6 +4704,30 @@ PrefabInstance:
     - target: {fileID: 9010509061448210867, guid: ff55ef711127c534dbba79079951049d, type: 3}
       propertyPath: m_TextStyleHashCode
       value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 238753612176629771, guid: ff55ef711127c534dbba79079951049d, type: 3}
+      propertyPath: m_Sprite
+      value:
+      objectReference: {fileID: 21300000, guid: df545d3cb60349b4f9696771147638a6, type: 3}
+    - target: {fileID: 238753612176629771, guid: ff55ef711127c534dbba79079951049d, type: 3}
+      propertyPath: m_Type
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 238753612176629771, guid: ff55ef711127c534dbba79079951049d, type: 3}
+      propertyPath: m_PreserveAspect
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 238753612176629771, guid: ff55ef711127c534dbba79079951049d, type: 3}
+      propertyPath: m_Color.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 238753612176629771, guid: ff55ef711127c534dbba79079951049d, type: 3}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 238753612176629771, guid: ff55ef711127c534dbba79079951049d, type: 3}
+      propertyPath: m_Color.b
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -5123,6 +5171,30 @@ PrefabInstance:
     - target: {fileID: 2201671186580205882, guid: ff55ef711127c534dbba79079951049d, type: 3}
       propertyPath: m_Name
       value: EquipSlot1
+      objectReference: {fileID: 0}
+    - target: {fileID: 238753612176629771, guid: ff55ef711127c534dbba79079951049d, type: 3}
+      propertyPath: m_Sprite
+      value:
+      objectReference: {fileID: 21300000, guid: f6403261763f18945a0ae5cfde328de1, type: 3}
+    - target: {fileID: 238753612176629771, guid: ff55ef711127c534dbba79079951049d, type: 3}
+      propertyPath: m_Type
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 238753612176629771, guid: ff55ef711127c534dbba79079951049d, type: 3}
+      propertyPath: m_PreserveAspect
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 238753612176629771, guid: ff55ef711127c534dbba79079951049d, type: 3}
+      propertyPath: m_Color.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 238753612176629771, guid: ff55ef711127c534dbba79079951049d, type: 3}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 238753612176629771, guid: ff55ef711127c534dbba79079951049d, type: 3}
+      propertyPath: m_Color.b
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -5791,6 +5863,30 @@ PrefabInstance:
       propertyPath: m_TextStyleHashCode
       value: -1183493901
       objectReference: {fileID: 0}
+    - target: {fileID: 238753612176629771, guid: ff55ef711127c534dbba79079951049d, type: 3}
+      propertyPath: m_Sprite
+      value:
+      objectReference: {fileID: 21300000, guid: ce3bfe10cb554b5496aff1c08c194778, type: 3}
+    - target: {fileID: 238753612176629771, guid: ff55ef711127c534dbba79079951049d, type: 3}
+      propertyPath: m_Type
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 238753612176629771, guid: ff55ef711127c534dbba79079951049d, type: 3}
+      propertyPath: m_PreserveAspect
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 238753612176629771, guid: ff55ef711127c534dbba79079951049d, type: 3}
+      propertyPath: m_Color.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 238753612176629771, guid: ff55ef711127c534dbba79079951049d, type: 3}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 238753612176629771, guid: ff55ef711127c534dbba79079951049d, type: 3}
+      propertyPath: m_Color.b
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -6120,6 +6216,30 @@ PrefabInstance:
       propertyPath: m_Name
       value: EquipLeft
       objectReference: {fileID: 0}
+    - target: {fileID: 238753612176629771, guid: ff55ef711127c534dbba79079951049d, type: 3}
+      propertyPath: m_Sprite
+      value:
+      objectReference: {fileID: 21300000, guid: 8730d4b9a3070d8499696820cbb9017d, type: 3}
+    - target: {fileID: 238753612176629771, guid: ff55ef711127c534dbba79079951049d, type: 3}
+      propertyPath: m_Type
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 238753612176629771, guid: ff55ef711127c534dbba79079951049d, type: 3}
+      propertyPath: m_PreserveAspect
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 238753612176629771, guid: ff55ef711127c534dbba79079951049d, type: 3}
+      propertyPath: m_Color.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 238753612176629771, guid: ff55ef711127c534dbba79079951049d, type: 3}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 238753612176629771, guid: ff55ef711127c534dbba79079951049d, type: 3}
+      propertyPath: m_Color.b
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -6354,6 +6474,30 @@ PrefabInstance:
     - target: {fileID: 9010509061448210867, guid: ff55ef711127c534dbba79079951049d, type: 3}
       propertyPath: m_TextStyleHashCode
       value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 238753612176629771, guid: ff55ef711127c534dbba79079951049d, type: 3}
+      propertyPath: m_Sprite
+      value:
+      objectReference: {fileID: 21300000, guid: eccb17345f76d954d9ac8555f2a05446, type: 3}
+    - target: {fileID: 238753612176629771, guid: ff55ef711127c534dbba79079951049d, type: 3}
+      propertyPath: m_Type
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 238753612176629771, guid: ff55ef711127c534dbba79079951049d, type: 3}
+      propertyPath: m_PreserveAspect
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 238753612176629771, guid: ff55ef711127c534dbba79079951049d, type: 3}
+      propertyPath: m_Color.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 238753612176629771, guid: ff55ef711127c534dbba79079951049d, type: 3}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 238753612176629771, guid: ff55ef711127c534dbba79079951049d, type: 3}
+      propertyPath: m_Color.b
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -6686,6 +6830,30 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5596565732560795570, guid: ff55ef711127c534dbba79079951049d, type: 3}
       propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 238753612176629771, guid: ff55ef711127c534dbba79079951049d, type: 3}
+      propertyPath: m_Sprite
+      value:
+      objectReference: {fileID: 21300000, guid: 2d20137d968c47a469e5e912d75bbc16, type: 3}
+    - target: {fileID: 238753612176629771, guid: ff55ef711127c534dbba79079951049d, type: 3}
+      propertyPath: m_Type
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 238753612176629771, guid: ff55ef711127c534dbba79079951049d, type: 3}
+      propertyPath: m_PreserveAspect
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 238753612176629771, guid: ff55ef711127c534dbba79079951049d, type: 3}
+      propertyPath: m_Color.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 238753612176629771, guid: ff55ef711127c534dbba79079951049d, type: 3}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 238753612176629771, guid: ff55ef711127c534dbba79079951049d, type: 3}
+      propertyPath: m_Color.b
       value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
