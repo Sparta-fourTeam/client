@@ -326,9 +326,8 @@ namespace Game.Tests
         {
             var s = Owned(); var o = Option(); o.enabled = false;
             Assert.IsFalse(UpgradeEligibility.CanAcquire(o, 1, s));
-            o.enabled = true; o.requiredCardIds = new[] { o.id }; s.Counts[(1, o.id)] = 1;
-            Assert.IsFalse(UpgradeEligibility.CanAcquire(o, 1, s));
-            o.requiredCardIds = null; o.requiredCardCounts = new[] { new CardCountRequirement { cardId = o.id } };
+            o.enabled = true; s.Counts[(1, o.id)] = 1;
+            o.requiredCardCounts = new[] { new CardCountRequirement { cardId = o.id } };
             Assert.IsFalse(UpgradeEligibility.CanAcquire(o, 1, s));
         }
 

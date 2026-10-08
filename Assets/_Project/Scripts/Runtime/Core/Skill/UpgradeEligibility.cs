@@ -22,15 +22,6 @@ namespace Game.Core
                 }
             }
 
-            if (option.requiredCardIds != null)
-            {
-                foreach (var cardId in option.requiredCardIds)
-                {
-                    if (string.IsNullOrEmpty(cardId) || cardId == option.id
-                        || state.GetAcquiredCount(weaponId, cardId) < 1) { return false; }
-                }
-            }
-
             if (option.requiredCardCounts != null)
             {
                 foreach (var requirement in option.requiredCardCounts)

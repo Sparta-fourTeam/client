@@ -149,15 +149,6 @@ namespace Game.Core
                 return false;
             }
 
-            if (skillId == chosenSkillId && card.requiredCardIds != null
-                && state.GetAcquiredCount(chosenSkillId, chosenCardId) < 1)
-            {
-                foreach (var requiredId in card.requiredCardIds)
-                {
-                    if (requiredId == chosenCardId) { return true; }
-                }
-            }
-
             if (card.requiredCardCounts != null)
             {
                 foreach (var requirement in card.requiredCardCounts)

@@ -73,6 +73,40 @@ namespace Game.Core
             return true;
         }
 
+        /// <summary>sharedId가 같은 카드를 가진 스킬을 모아 각 카드의 affectedWeaponIds를 채운다.
+        /// 데이터에는 대상 목록을 적지 않으므로, 카탈로그를 읽은 직후 검증보다 먼저 호출한다</summary>
+        public static void LinkSharedTargets(List<SkillData> weapons)
+        {
+            // 비었거나 잘못된 정의는 여기서 건너뛰고 검증이 정해진 예외로 거절한다
+            if (weapons == null) { return; }
+            var groups = new Dictionary<string, List<int>>();
+            foreach (var weapon in weapons)
+            {
+                foreach (var option in OptionsOf(weapon))
+                {
+                    if (string.IsNullOrEmpty(option.sharedId)) { continue; }
+                    if (!groups.TryGetValue(option.sharedId, out var ids)) { groups[option.sharedId] = ids = new List<int>(); }
+                    ids.Add(weapon.id);
+                }
+            }
+            foreach (var weapon in weapons)
+            {
+                foreach (var option in OptionsOf(weapon))
+                {
+                    option.affectedWeaponIds = string.IsNullOrEmpty(option.sharedId) ? null : groups[option.sharedId].ToArray();
+                }
+            }
+        }
+
+        private static IEnumerable<SkillUpgradeOption> OptionsOf(SkillData weapon)
+        {
+            if (weapon?.upgrades == null) { yield break; }
+            foreach (var option in weapon.upgrades)
+            {
+                if (option != null) { yield return option; }
+            }
+        }
+
         public static void ValidateCatalog(List<SkillData> weapons)
         {
             var ids = new Dictionary<int, SkillData>();

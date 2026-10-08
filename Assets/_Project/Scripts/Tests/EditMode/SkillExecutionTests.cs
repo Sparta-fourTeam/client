@@ -328,14 +328,12 @@ namespace Game.Tests
                 id = 1, assetKey = "a", maxLevel = 15, baseStats = new SkillBaseStats(),
                 upgrades = new System.Collections.Generic.List<SkillUpgradeOption> { a, b }
             } };
-            a.requiredCardIds = new[] { "missing" };
+            a.requiredCardCounts = new[] { new CardCountRequirement { cardId = "missing" } };
             Assert.Throws<InvalidOperationException>(() => GameDataStore.ParseSkills(Newtonsoft.Json.JsonConvert.SerializeObject(data)));
-            a.requiredCardIds = null;
             a.requiredCardCounts = new[] { new CardCountRequirement { cardId = "b", count = 2 } };
             Assert.Throws<InvalidOperationException>(() => GameDataStore.ParseSkills(Newtonsoft.Json.JsonConvert.SerializeObject(data)));
-            a.requiredCardCounts = null;
-            a.requiredCardIds = new[] { "b" };
-            b.requiredCardIds = new[] { "a" };
+            a.requiredCardCounts = new[] { new CardCountRequirement { cardId = "b" } };
+            b.requiredCardCounts = new[] { new CardCountRequirement { cardId = "a" } };
             Assert.Throws<InvalidOperationException>(() => GameDataStore.ParseSkills(Newtonsoft.Json.JsonConvert.SerializeObject(data)));
         }
 

@@ -105,8 +105,12 @@
             "value": -30
           }
         ],
-        "requiredCardIds": [
-          "arrow_sharp"
+        "requiredCardCounts": [
+          {
+            "cardId": "arrow_sharp",
+            "count": 1,
+            "skillId": 0
+          }
         ],
         "variants": [
           {
@@ -137,8 +141,12 @@
             "value": 10
           }
         ],
-        "requiredCardIds": [
-          "arrow_burst"
+        "requiredCardCounts": [
+          {
+            "cardId": "arrow_burst",
+            "count": 1,
+            "skillId": 0
+          }
         ]
       },
       {
@@ -172,7 +180,6 @@
             "value": 0.8
           }
         ],
-        "requiredCardIds": [],
         "requiredWeaponIds": [
           2
         ],
@@ -193,8 +200,12 @@
             "value": 80
           }
         ],
-        "requiredCardIds": [
-          "arrow_explosion"
+        "requiredCardCounts": [
+          {
+            "cardId": "arrow_explosion",
+            "count": 1,
+            "skillId": 0
+          }
         ],
         "requiredWeaponIds": []
       },
@@ -209,8 +220,12 @@
             "value": 80
           }
         ],
-        "requiredCardIds": [
-          "arrow_explosion_damage"
+        "requiredCardCounts": [
+          {
+            "cardId": "arrow_explosion_damage",
+            "count": 1,
+            "skillId": 0
+          }
         ],
         "requiredWeaponIds": []
       },
@@ -225,7 +240,6 @@
             "value": 15
           }
         ],
-        "requiredCardIds": [],
         "requiredWeaponIds": [
           3
         ],
@@ -254,8 +268,12 @@
             }
           }
         ],
-        "requiredCardIds": [
-          "arrow_sharp"
+        "requiredCardCounts": [
+          {
+            "cardId": "arrow_sharp",
+            "count": 1,
+            "skillId": 0
+          }
         ],
         "minPermanentLevel": 0
       },
@@ -271,8 +289,12 @@
             "target": 13
           }
         ],
-        "requiredCardIds": [
-          "arrow_spread"
+        "requiredCardCounts": [
+          {
+            "cardId": "arrow_spread",
+            "count": 1,
+            "skillId": 0
+          }
         ],
         "minPermanentLevel": 0
       },
@@ -288,8 +310,12 @@
             "target": 13
           }
         ],
-        "requiredCardIds": [
-          "arrow_spread"
+        "requiredCardCounts": [
+          {
+            "cardId": "arrow_spread",
+            "count": 1,
+            "skillId": 0
+          }
         ],
         "minPermanentLevel": 0
       },
@@ -304,8 +330,12 @@
             "value": 100
           }
         ],
-        "requiredCardIds": [
-          "arrow_spread"
+        "requiredCardCounts": [
+          {
+            "cardId": "arrow_spread",
+            "count": 1,
+            "skillId": 0
+          }
         ],
         "minPermanentLevel": 13
       },
@@ -324,9 +354,17 @@
             "value": 100
           }
         ],
-        "requiredCardIds": [
-          "arrow_light",
-          "arrow_shock"
+        "requiredCardCounts": [
+          {
+            "cardId": "arrow_light",
+            "count": 1,
+            "skillId": 0
+          },
+          {
+            "cardId": "arrow_shock",
+            "count": 1,
+            "skillId": 0
+          }
         ]
       },
       {
@@ -344,8 +382,12 @@
             "value": 20
           }
         ],
-        "requiredCardIds": [
-          "arrow_thunder"
+        "requiredCardCounts": [
+          {
+            "cardId": "arrow_thunder",
+            "count": 1,
+            "skillId": 0
+          }
         ]
       },
       {
@@ -359,8 +401,12 @@
             "value": 50
           }
         ],
-        "requiredCardIds": [
-          "arrow_quick"
+        "requiredCardCounts": [
+          {
+            "cardId": "arrow_quick",
+            "count": 1,
+            "skillId": 0
+          }
         ]
       },
       {
@@ -375,9 +421,17 @@
             "target": 13
           }
         ],
-        "requiredCardIds": [
-          "arrow_spread",
-          "arrow_rod"
+        "requiredCardCounts": [
+          {
+            "cardId": "arrow_spread",
+            "count": 1,
+            "skillId": 0
+          },
+          {
+            "cardId": "arrow_rod",
+            "count": 1,
+            "skillId": 0
+          }
         ]
       },
       {
@@ -395,9 +449,17 @@
             }
           }
         ],
-        "requiredCardIds": [
-          "arrow_explosion",
-          "arrow_spread"
+        "requiredCardCounts": [
+          {
+            "cardId": "arrow_explosion",
+            "count": 1,
+            "skillId": 0
+          },
+          {
+            "cardId": "arrow_spread",
+            "count": 1,
+            "skillId": 0
+          }
         ]
       },
       {
@@ -415,9 +477,17 @@
             "value": 10
           }
         ],
-        "requiredCardIds": [
-          "arrow_explosion",
-          "arrow_sharp"
+        "requiredCardCounts": [
+          {
+            "cardId": "arrow_explosion",
+            "count": 1,
+            "skillId": 0
+          },
+          {
+            "cardId": "arrow_sharp",
+            "count": 1,
+            "skillId": 0
+          }
         ]
       },
       {
@@ -433,10 +503,6 @@
         ],
         "enabled": true,
         "sharedId": "shared_arrow_energy_damage",
-        "affectedWeaponIds": [
-          1,
-          16
-        ],
         "requiredWeaponIds": [
           16
         ]
@@ -546,8 +612,7 @@
             "kind": "explosionDamage",
             "value": 80
           }
-        ],
-        "requiredCardIds": []
+        ]
       },
       {
         "id": "fireball_explosion_radius",
@@ -560,8 +625,12 @@
             "value": 80
           }
         ],
-        "requiredCardIds": [
-          "fireball_explosion_damage"
+        "requiredCardCounts": [
+          {
+            "cardId": "fireball_explosion_damage",
+            "count": 1,
+            "skillId": 0
+          }
         ]
       },
       {
@@ -579,8 +648,12 @@
             "value": 10
           }
         ],
-        "requiredCardIds": [
-          "fireball_explosion_damage"
+        "requiredCardCounts": [
+          {
+            "cardId": "fireball_explosion_damage",
+            "count": 1,
+            "skillId": 0
+          }
         ]
       },
       {
@@ -594,8 +667,12 @@
             "value": 3
           }
         ],
-        "requiredCardIds": [
-          "fireball_burn"
+        "requiredCardCounts": [
+          {
+            "cardId": "fireball_burn",
+            "count": 1,
+            "skillId": 0
+          }
         ],
         "minPermanentLevel": 0
       },
@@ -610,8 +687,12 @@
             "value": 1
           }
         ],
-        "requiredCardIds": [
-          "fireball_burn"
+        "requiredCardCounts": [
+          {
+            "cardId": "fireball_burn",
+            "count": 1,
+            "skillId": 0
+          }
         ],
         "minPermanentLevel": 5
       },
@@ -642,9 +723,17 @@
             "value": 10
           }
         ],
-        "requiredCardIds": [
-          "fireball_impact_damage",
-          "fireball_explosion_radius"
+        "requiredCardCounts": [
+          {
+            "cardId": "fireball_impact_damage",
+            "count": 1,
+            "skillId": 0
+          },
+          {
+            "cardId": "fireball_explosion_radius",
+            "count": 1,
+            "skillId": 0
+          }
         ]
       },
       {
@@ -665,9 +754,17 @@
             }
           }
         ],
-        "requiredCardIds": [
-          "fireball_impact_damage",
-          "fireball_explosion_damage"
+        "requiredCardCounts": [
+          {
+            "cardId": "fireball_impact_damage",
+            "count": 1,
+            "skillId": 0
+          },
+          {
+            "cardId": "fireball_explosion_damage",
+            "count": 1,
+            "skillId": 0
+          }
         ]
       },
       {
@@ -685,9 +782,17 @@
             "value": 2
           }
         ],
-        "requiredCardIds": [
-          "fireball_impact_damage",
-          "fireball_explosion_radius"
+        "requiredCardCounts": [
+          {
+            "cardId": "fireball_impact_damage",
+            "count": 1,
+            "skillId": 0
+          },
+          {
+            "cardId": "fireball_explosion_radius",
+            "count": 1,
+            "skillId": 0
+          }
         ],
         "minPermanentLevel": 13,
         "exclusions": [
@@ -789,7 +894,6 @@
             "value": 0.8
           }
         ],
-        "requiredCardIds": [],
         "requiredWeaponIds": []
       },
       {
@@ -803,8 +907,12 @@
             "value": 80
           }
         ],
-        "requiredCardIds": [
-          "lightning_storm"
+        "requiredCardCounts": [
+          {
+            "cardId": "lightning_storm",
+            "count": 1,
+            "skillId": 0
+          }
         ],
         "requiredWeaponIds": []
       },
@@ -819,8 +927,12 @@
             "value": 80
           }
         ],
-        "requiredCardIds": [
-          "lightning_storm_damage"
+        "requiredCardCounts": [
+          {
+            "cardId": "lightning_storm_damage",
+            "count": 1,
+            "skillId": 0
+          }
         ],
         "requiredWeaponIds": []
       },
@@ -845,9 +957,17 @@
         "name": "전자 분열",
         "desc": "공격 대상 주위로 번개 구체 6개 발사",
         "maxPickCount": 1,
-        "requiredCardIds": [
-          "lightning_voltage",
-          "lightning_damage"
+        "requiredCardCounts": [
+          {
+            "cardId": "lightning_voltage",
+            "count": 1,
+            "skillId": 0
+          },
+          {
+            "cardId": "lightning_damage",
+            "count": 1,
+            "skillId": 0
+          }
         ],
         "effects": [
           {
@@ -868,8 +988,12 @@
         "name": "고전압 입자",
         "desc": "번개 구체 공격력 +40% / 마비 0.5초",
         "maxPickCount": 1,
-        "requiredCardIds": [
-          "lightning_split"
+        "requiredCardCounts": [
+          {
+            "cardId": "lightning_split",
+            "count": 1,
+            "skillId": 0
+          }
         ],
         "effects": [
           {
@@ -890,8 +1014,12 @@
         "desc": "공격력 +150% / 적 처치 시 소형 벼락 1회 시전",
         "maxPickCount": 1,
         "minPermanentLevel": 5,
-        "requiredCardIds": [
-          "lightning_damage"
+        "requiredCardCounts": [
+          {
+            "cardId": "lightning_damage",
+            "count": 1,
+            "skillId": 0
+          }
         ],
         "effects": [
           {
@@ -910,9 +1038,17 @@
         "desc": "폭풍의 격노으로 강화 / 공격력 +200%",
         "maxPickCount": 1,
         "minPermanentLevel": 13,
-        "requiredCardIds": [
-          "lightning_voltage",
-          "lightning_sanction"
+        "requiredCardCounts": [
+          {
+            "cardId": "lightning_voltage",
+            "count": 1,
+            "skillId": 0
+          },
+          {
+            "cardId": "lightning_sanction",
+            "count": 1,
+            "skillId": 0
+          }
         ],
         "exclusions": [
           {
@@ -935,8 +1071,12 @@
         "name": "전자기장",
         "desc": "전자기장 생성 / 범위 내 이동속도 30% 감소",
         "maxPickCount": 1,
-        "requiredCardIds": [
-          "lightning_storm"
+        "requiredCardCounts": [
+          {
+            "cardId": "lightning_storm",
+            "count": 1,
+            "skillId": 0
+          }
         ],
         "effects": [
           {
@@ -950,8 +1090,12 @@
         "name": "안정된 전장",
         "desc": "전자기장 공격력 +50 / 지속 시간 +2초",
         "maxPickCount": 1,
-        "requiredCardIds": [
-          "lightning_field"
+        "requiredCardCounts": [
+          {
+            "cardId": "lightning_field",
+            "count": 1,
+            "skillId": 0
+          }
         ],
         "effects": [
           {
@@ -969,8 +1113,12 @@
         "name": "고전압 전장",
         "desc": "전자기장 공격력 +400%",
         "maxPickCount": 1,
-        "requiredCardIds": [
-          "lightning_field"
+        "requiredCardCounts": [
+          {
+            "cardId": "lightning_field",
+            "count": 1,
+            "skillId": 0
+          }
         ],
         "effects": [
           {
@@ -992,10 +1140,6 @@
         ],
         "enabled": true,
         "sharedId": "shared_lightning_chain_damage",
-        "affectedWeaponIds": [
-          3,
-          18
-        ],
         "requiredWeaponIds": [
           18
         ]
@@ -1131,8 +1275,12 @@
             "value": 1
           }
         ],
-        "requiredCardIds": [
-          "frost_crystal_pierce"
+        "requiredCardCounts": [
+          {
+            "cardId": "frost_crystal_pierce",
+            "count": 1,
+            "skillId": 0
+          }
         ]
       },
       {
@@ -1150,8 +1298,12 @@
             "value": -40
           }
         ],
-        "requiredCardIds": [
-          "frost_crystal_extreme"
+        "requiredCardCounts": [
+          {
+            "cardId": "frost_crystal_extreme",
+            "count": 1,
+            "skillId": 0
+          }
         ],
         "minPermanentLevel": 13,
         "exclusions": [
@@ -1193,8 +1345,7 @@
             }
           }
         ],
-        "enabled": true,
-        "requiredCardIds": []
+        "enabled": true
       },
       {
         "id": "frost_crystal_shard_damage",
@@ -1209,8 +1360,12 @@
           }
         ],
         "enabled": true,
-        "requiredCardIds": [
-          "frost_crystal_split"
+        "requiredCardCounts": [
+          {
+            "cardId": "frost_crystal_split",
+            "count": 1,
+            "skillId": 0
+          }
         ]
       },
       {
@@ -1228,8 +1383,7 @@
             "value": 2
           }
         ],
-        "enabled": true,
-        "requiredCardIds": []
+        "enabled": true
       },
       {
         "id": "frost_crystal_frostbite",
@@ -1243,9 +1397,17 @@
           }
         ],
         "enabled": true,
-        "requiredCardIds": [
-          "frost_crystal_pierce",
-          "frost_crystal_extreme"
+        "requiredCardCounts": [
+          {
+            "cardId": "frost_crystal_pierce",
+            "count": 1,
+            "skillId": 0
+          },
+          {
+            "cardId": "frost_crystal_extreme",
+            "count": 1,
+            "skillId": 0
+          }
         ]
       },
       {
@@ -1261,9 +1423,17 @@
           }
         ],
         "enabled": true,
-        "requiredCardIds": [
-          "frost_crystal_split",
-          "frost_crystal_frostbite"
+        "requiredCardCounts": [
+          {
+            "cardId": "frost_crystal_split",
+            "count": 1,
+            "skillId": 0
+          },
+          {
+            "cardId": "frost_crystal_frostbite",
+            "count": 1,
+            "skillId": 0
+          }
         ]
       },
       {
@@ -1295,10 +1465,22 @@
           }
         ],
         "enabled": true,
-        "requiredCardIds": [
-          "frost_crystal_pierce",
-          "frost_crystal_extreme",
-          "frost_crystal_damage"
+        "requiredCardCounts": [
+          {
+            "cardId": "frost_crystal_pierce",
+            "count": 1,
+            "skillId": 0
+          },
+          {
+            "cardId": "frost_crystal_extreme",
+            "count": 1,
+            "skillId": 0
+          },
+          {
+            "cardId": "frost_crystal_damage",
+            "count": 1,
+            "skillId": 0
+          }
         ]
       }
     ]
@@ -1363,8 +1545,12 @@
         "name": "연발 나무뿌리",
         "desc": "추가 시전 +1 / 공격력 -20%",
         "maxPickCount": 2,
-        "requiredCardIds": [
-          "log_damage"
+        "requiredCardCounts": [
+          {
+            "cardId": "log_damage",
+            "count": 1,
+            "skillId": 0
+          }
         ],
         "effects": [
           {
@@ -1395,8 +1581,12 @@
         "name": "크기 증가",
         "desc": "크기 +60%",
         "maxPickCount": 1,
-        "requiredCardIds": [
-          "log_damage"
+        "requiredCardCounts": [
+          {
+            "cardId": "log_damage",
+            "count": 1,
+            "skillId": 0
+          }
         ],
         "effects": [
           {
@@ -1470,10 +1660,22 @@
         "name": "대형 나무뿌리",
         "desc": "공격력·크기·밀침 +60%",
         "maxPickCount": 1,
-        "requiredCardIds": [
-          "log_size",
-          "log_impact",
-          "log_weight"
+        "requiredCardCounts": [
+          {
+            "cardId": "log_size",
+            "count": 1,
+            "skillId": 0
+          },
+          {
+            "cardId": "log_impact",
+            "count": 1,
+            "skillId": 0
+          },
+          {
+            "cardId": "log_weight",
+            "count": 1,
+            "skillId": 0
+          }
         ],
         "exclusions": [
           {
@@ -1505,9 +1707,17 @@
         "desc": "불타는 나무뿌리로 변화 / 직격 시 점화",
         "maxPickCount": 1,
         "minPermanentLevel": 9,
-        "requiredCardIds": [
-          "log_size",
-          "log_damage"
+        "requiredCardCounts": [
+          {
+            "cardId": "log_size",
+            "count": 1,
+            "skillId": 0
+          },
+          {
+            "cardId": "log_damage",
+            "count": 1,
+            "skillId": 0
+          }
         ],
         "requiredWeaponIds": [
           2
@@ -1538,8 +1748,12 @@
         "desc": "방벽 접근 시 0.1초 간격으로 3회 추가 시전 (재발동 10초)",
         "maxPickCount": 1,
         "minPermanentLevel": 13,
-        "requiredCardIds": [
-          "log_weight"
+        "requiredCardCounts": [
+          {
+            "cardId": "log_weight",
+            "count": 1,
+            "skillId": 0
+          }
         ],
         "effects": [
           {
@@ -1629,8 +1843,12 @@
         "effects": [],
         "enabled": false,
         "disabledReason": "중심부 추가 공격(영역 중심 타격)이 구현되지 않았다",
-        "requiredCardIds": [
-          "cold_zone_extreme"
+        "requiredCardCounts": [
+          {
+            "cardId": "cold_zone_extreme",
+            "count": 1,
+            "skillId": 0
+          }
         ]
       },
       {
@@ -1641,8 +1859,12 @@
         "effects": [],
         "enabled": false,
         "disabledReason": "빙결핵(중심부 추가 공격)이 구현되지 않았다",
-        "requiredCardIds": [
-          "cold_zone_core"
+        "requiredCardCounts": [
+          {
+            "cardId": "cold_zone_core",
+            "count": 1,
+            "skillId": 0
+          }
         ]
       },
       {
@@ -1656,8 +1878,12 @@
             "value": 100
           }
         ],
-        "requiredCardIds": [
-          "cold_zone_damage"
+        "requiredCardCounts": [
+          {
+            "cardId": "cold_zone_damage",
+            "count": 1,
+            "skillId": 0
+          }
         ]
       },
       {
@@ -1829,9 +2055,17 @@
         "effects": [],
         "enabled": false,
         "disabledReason": "블랙홀의 동작과 수치가 원문에 없다",
-        "requiredCardIds": [
-          "lightning_cloud_expand",
-          "lightning_cloud_duration"
+        "requiredCardCounts": [
+          {
+            "cardId": "lightning_cloud_expand",
+            "count": 1,
+            "skillId": 0
+          },
+          {
+            "cardId": "lightning_cloud_duration",
+            "count": 1,
+            "skillId": 0
+          }
         ],
         "minPermanentLevel": 21
       },
@@ -1843,9 +2077,17 @@
         "effects": [],
         "enabled": false,
         "disabledReason": "분열 구름의 지속·재분열·피해 규칙이 원문에 없다. 자기 자신을 자식으로 시전하면 순환이라 별도 자식 스킬이 필요하다",
-        "requiredCardIds": [
-          "lightning_cloud_duration",
-          "lightning_cloud_damage"
+        "requiredCardCounts": [
+          {
+            "cardId": "lightning_cloud_duration",
+            "count": 1,
+            "skillId": 0
+          },
+          {
+            "cardId": "lightning_cloud_damage",
+            "count": 1,
+            "skillId": 0
+          }
         ]
       },
       {
@@ -1864,8 +2106,12 @@
         "requiredWeaponIds": [
           3
         ],
-        "requiredCardIds": [
-          "lightning_cloud_damage"
+        "requiredCardCounts": [
+          {
+            "cardId": "lightning_cloud_damage",
+            "count": 1,
+            "skillId": 0
+          }
         ],
         "minPermanentLevel": 13
       },
@@ -1880,9 +2126,17 @@
         "requiredWeaponIds": [
           18
         ],
-        "requiredCardIds": [
-          "lightning_cloud_speed",
-          "lightning_cloud_damage"
+        "requiredCardCounts": [
+          {
+            "cardId": "lightning_cloud_speed",
+            "count": 1,
+            "skillId": 0
+          },
+          {
+            "cardId": "lightning_cloud_damage",
+            "count": 1,
+            "skillId": 0
+          }
         ]
       }
     ]
@@ -2147,8 +2401,12 @@
             "value": 150
           }
         ],
-        "requiredCardIds": [
-          "energy_beam_amplify"
+        "requiredCardCounts": [
+          {
+            "cardId": "energy_beam_amplify",
+            "count": 1,
+            "skillId": 0
+          }
         ]
       },
       {
@@ -2166,9 +2424,17 @@
             }
           }
         ],
-        "requiredCardIds": [
-          "energy_beam_overload",
-          "energy_beam_amplify"
+        "requiredCardCounts": [
+          {
+            "cardId": "energy_beam_overload",
+            "count": 1,
+            "skillId": 0
+          },
+          {
+            "cardId": "energy_beam_amplify",
+            "count": 1,
+            "skillId": 0
+          }
         ],
         "exclusions": [
           {
@@ -2184,9 +2450,17 @@
         "effects": [],
         "enabled": false,
         "disabledReason": "변환 후 피해·범위·지속 상세가 원문에 없다",
-        "requiredCardIds": [
-          "energy_beam_overload",
-          "energy_beam_spread"
+        "requiredCardCounts": [
+          {
+            "cardId": "energy_beam_overload",
+            "count": 1,
+            "skillId": 0
+          },
+          {
+            "cardId": "energy_beam_spread",
+            "count": 1,
+            "skillId": 0
+          }
         ]
       },
       {
@@ -2197,10 +2471,22 @@
         "effects": [],
         "enabled": false,
         "disabledReason": "광선 개수와 배치가 원문에 없다",
-        "requiredCardIds": [
-          "energy_beam_overload",
-          "energy_beam_spread",
-          "energy_beam_weaken"
+        "requiredCardCounts": [
+          {
+            "cardId": "energy_beam_overload",
+            "count": 1,
+            "skillId": 0
+          },
+          {
+            "cardId": "energy_beam_spread",
+            "count": 1,
+            "skillId": 0
+          },
+          {
+            "cardId": "energy_beam_weaken",
+            "count": 1,
+            "skillId": 0
+          }
         ],
         "minPermanentLevel": 17,
         "exclusions": [
@@ -2224,11 +2510,7 @@
         "requiredWeaponIds": [
           1
         ],
-        "sharedId": "shared_arrow_energy_damage",
-        "affectedWeaponIds": [
-          1,
-          16
-        ]
+        "sharedId": "shared_arrow_energy_damage"
       },
       {
         "id": "energy_beam_freeze",
@@ -2380,8 +2662,12 @@
             "value": 0.8
           }
         ],
-        "requiredCardIds": [
-          "chain_lightning_voltage"
+        "requiredCardCounts": [
+          {
+            "cardId": "chain_lightning_voltage",
+            "count": 1,
+            "skillId": 0
+          }
         ]
       },
       {
@@ -2392,8 +2678,12 @@
         "effects": [],
         "enabled": false,
         "disabledReason": "원문 표현이 불명확하고 범위·피해 수치가 없다",
-        "requiredCardIds": [
-          "chain_lightning_voltage"
+        "requiredCardCounts": [
+          {
+            "cardId": "chain_lightning_voltage",
+            "count": 1,
+            "skillId": 0
+          }
         ]
       },
       {
@@ -2407,8 +2697,12 @@
             "value": 100
           }
         ],
-        "requiredCardIds": [
-          "chain_lightning_ion_burst"
+        "requiredCardCounts": [
+          {
+            "cardId": "chain_lightning_ion_burst",
+            "count": 1,
+            "skillId": 0
+          }
         ]
       },
       {
@@ -2419,8 +2713,12 @@
         "effects": [],
         "enabled": false,
         "disabledReason": "폭발에 마비를 거는 규칙이 원문에 없다",
-        "requiredCardIds": [
-          "chain_lightning_ion_burst"
+        "requiredCardCounts": [
+          {
+            "cardId": "chain_lightning_ion_burst",
+            "count": 1,
+            "skillId": 0
+          }
         ]
       },
       {
@@ -2438,10 +2736,22 @@
             "value": 0.6
           }
         ],
-        "requiredCardIds": [
-          "chain_lightning_continuous",
-          "chain_lightning_voltage",
-          "chain_lightning_amplify"
+        "requiredCardCounts": [
+          {
+            "cardId": "chain_lightning_continuous",
+            "count": 1,
+            "skillId": 0
+          },
+          {
+            "cardId": "chain_lightning_voltage",
+            "count": 1,
+            "skillId": 0
+          },
+          {
+            "cardId": "chain_lightning_amplify",
+            "count": 1,
+            "skillId": 0
+          }
         ],
         "minPermanentLevel": 17
       },
@@ -2460,11 +2770,7 @@
         "requiredWeaponIds": [
           3
         ],
-        "sharedId": "shared_lightning_chain_damage",
-        "affectedWeaponIds": [
-          3,
-          18
-        ]
+        "sharedId": "shared_lightning_chain_damage"
       }
     ]
   }
