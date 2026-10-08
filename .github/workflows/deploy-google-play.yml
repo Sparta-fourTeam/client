@@ -1,0 +1,82 @@
+name: Deploy Google Play Internal
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: google-play-internal
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Cache Unity Library
+        uses: actions/cache@v4
+        with:
+          path: Library
+          key: Unity-Android-Release-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          restore-keys: |
+            Unity-Android-Release-
+
+      - name: Set Android version code
+        id: version
+        env:
+          BUILD_NUMBER: ${{ github.run_number }}
+          VERSION_CODE_BASE: ${{ vars.ANDROID_VERSION_CODE_BASE || '10000' }}
+        run: |
+          echo "code=$((VERSION_CODE_BASE + BUILD_NUMBER))" >> "$GITHUB_OUTPUT"
+
+      - name: Build Release AAB
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: .
+          unityVersion: auto
+          targetPlatform: Android
+          buildProfile: 'Assets/Settings/Build Profiles/Adnroid_Release.asset'
+          androidExportType: androidAppBundle
+          versioning: Semantic
+          androidVersionCode: ${{ steps.version.outputs.code }}
+          buildsPath: build
+
+          androidKeystoreName: release.keystore
+          androidKeystoreBase64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          androidKeystorePass: ${{ secrets.ANDROID_KEYSTORE_PASS }}
+          androidKeyaliasName: ${{ secrets.ANDROID_KEYALIAS_NAME }}
+          androidKeyaliasPass: ${{ secrets.ANDROID_KEYALIAS_PASS }}
+
+      - name: Save AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: Release-AAB-${{ steps.version.outputs.code }}
+          path: build/Android/*.aab
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Deploy to Google Play internal testing
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.example.yourgame
+          releaseFiles: build/Android/*.aab
+          tracks: internal
+          status: completed
+          releaseName: main-${{ steps.version.outputs.code }}
