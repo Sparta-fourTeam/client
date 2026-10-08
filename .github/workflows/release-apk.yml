@@ -1,4 +1,4 @@
-name: Release
+name: Release APK
 
 on:
   push:
@@ -23,11 +23,11 @@ jobs:
         uses: actions/cache@v4
         with:
           path: Library
-          key: Unity-Android-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          key: Unity-Android-Release-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
           restore-keys: |
-            Unity-Android-
+            Unity-Android-Release-
 
-      - name: Build Android APK
+      - name: Build Release APK
         uses: game-ci/unity-builder@v4
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
@@ -37,9 +37,16 @@ jobs:
           projectPath: .
           unityVersion: auto
           targetPlatform: Android
+          buildProfile: 'Assets/Settings/Build Profiles/Adnroid_Release.asset'
           androidExportType: androidPackage
           versioning: Tag
           buildsPath: build
+
+          androidKeystoreName: release.keystore
+          androidKeystoreBase64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          androidKeystorePass: ${{ secrets.ANDROID_KEYSTORE_PASS }}
+          androidKeyaliasName: ${{ secrets.ANDROID_KEYALIAS_NAME }}
+          androidKeyaliasPass: ${{ secrets.ANDROID_KEYALIAS_PASS }}
 
       - name: Generate changelog
         uses: orhun/git-cliff-action@v4
@@ -49,7 +56,7 @@ jobs:
         env:
           OUTPUT: CHANGES.md
 
-      - name: Create GitHub Release
+      - name: Publish GitHub Release
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ github.ref_name }}
