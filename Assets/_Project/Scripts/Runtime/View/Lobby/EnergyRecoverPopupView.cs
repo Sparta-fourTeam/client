@@ -12,6 +12,7 @@ namespace Game.View
     public class EnergyRecoverPopupView : HudView
     {
         [SerializeField] private GameObject _panel;
+        [SerializeField] private PopupTransition _transition;
         [SerializeField] private Button _closeButton;
         [SerializeField] private Button _adButton;
         [SerializeField] private Button _purchaseButton;
@@ -32,7 +33,7 @@ namespace Game.View
         private void Awake()
         {
             _panel.SetActive(false);
-            _closeButton.onClick.AddListener(() => _panel.SetActive(false));
+            _closeButton.onClick.AddListener(() => PopupPanel.Set(_panel, _transition, false));
             _adButton.onClick.AddListener(() => RecoverAsync(EnergySource.Ad).Forget());
             _purchaseButton.onClick.AddListener(() => RecoverAsync(EnergySource.Purchase).Forget());
         }
@@ -41,7 +42,7 @@ namespace Game.View
         {
             _adTitle.text = $"에너지 x{_profile.EnergyConfig.AdRecoverAmount}";
             _purchaseTitle.text = $"에너지 x{_profile.EnergyConfig.PurchaseRecoverAmount}";
-            _panel.SetActive(true);
+            PopupPanel.Set(_panel, _transition, true);
         }
 
         // 연타로 두 번 지급되지 않게 막고, 성공하면 닫는다
@@ -60,7 +61,7 @@ namespace Game.View
 
             if (ok)
             {
-                _panel.SetActive(false);
+                PopupPanel.Set(_panel, _transition, false);
             }
         }
         private void SetButtons(bool interactable)

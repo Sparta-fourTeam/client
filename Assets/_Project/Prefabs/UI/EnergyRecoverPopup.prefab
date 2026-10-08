@@ -1701,6 +1701,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Game.View::Game.View.EnergyRecoverPopupVIew
   _panel: {fileID: 8455421546545961555}
+  _transition: {fileID: 1623569679142729894}
   _closeButton: {fileID: 3256532261077270750}
   _adButton: {fileID: 969834262019582606}
   _purchaseButton: {fileID: 965870370818715813}
@@ -2141,6 +2142,8 @@ GameObject:
   - component: {fileID: 6736184794118356592}
   - component: {fileID: 3087310220636610435}
   - component: {fileID: 6116567628036387147}
+  - component: {fileID: 8444832733895019442}
+  - component: {fileID: 1623569679142729894}
   m_Layer: 5
   m_Name: Panel
   m_TagString: Untagged
@@ -2206,6 +2209,34 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!225 &8444832733895019442
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8455421546545961555}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
+--- !u!114 &1623569679142729894
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8455421546545961555}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d01169d586848c3b53bfb18d3dfd4f8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.PopupTransition
+  _window: {fileID: 6933997833593007727}
+  _showSeconds: 0.18
+  _hideSeconds: 0.12
+  _hiddenScale: 0.92
 --- !u!1 &9125669336979006638
 GameObject:
   m_ObjectHideFlags: 0
