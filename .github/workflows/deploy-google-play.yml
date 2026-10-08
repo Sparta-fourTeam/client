@@ -52,6 +52,7 @@ jobs:
           unityVersion: auto
           targetPlatform: Android
           buildProfile: 'Assets/Settings/Build Profiles/Android_Release.asset'
+          buildMethod: Game.Editor.CiBuild.Build
           androidExportType: androidAppBundle
           versioning: Semantic
           androidVersionCode: ${{ steps.version.outputs.code }}

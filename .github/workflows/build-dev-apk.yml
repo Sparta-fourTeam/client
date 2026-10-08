@@ -36,6 +36,7 @@ jobs:
           unityVersion: auto
           targetPlatform: Android
           buildProfile: 'Assets/Settings/Build Profiles/Android_Dev.asset'
+          buildMethod: Game.Editor.CiBuild.Build
           androidExportType: androidPackage
           versioning: Semantic
           buildsPath: build

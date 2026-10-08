@@ -38,6 +38,7 @@ jobs:
           unityVersion: auto
           targetPlatform: Android
           buildProfile: 'Assets/Settings/Build Profiles/Android_Release.asset'
+          buildMethod: Game.Editor.CiBuild.Build
           androidExportType: androidPackage
           versioning: Tag
           buildsPath: build
