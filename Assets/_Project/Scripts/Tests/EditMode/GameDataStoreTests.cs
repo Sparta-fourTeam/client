@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Game.Core;
 using Newtonsoft.Json;
@@ -40,20 +41,38 @@ namespace Game.Tests
         [Test]
         public void SpawnConfig_FromDefinition_CopiesValues()
         {
-            var config = EnemySpawnConfig.From(new SpawnDefinition { IntervalMin = 0.3f, IntervalMax = 0.9f, Cooldown = 7f, EliteChance = 0.4f });
+            var config = EnemySpawnConfig.From(new SpawnDefinition { IntervalMin = 0.3f, IntervalMax = 0.9f, Cooldown = 7f });
 
             Assert.AreEqual(0.3f, config.SpawnIntervalMin);
             Assert.AreEqual(7f, config.SpawnCooldown);
-            Assert.AreEqual(0.4f, config.EliteSpawnChance);
         }
+
+        private static WaveDefinition Wave(int monsterA, int countA, int monsterB, int countB) => new()
+        {
+            Spawns = new List<WaveSpawn>
+            {
+                new() { MonsterId = monsterA, Count = countA },
+                new() { MonsterId = monsterB, Count = countB },
+            }
+        };
 
         private static StageDefinition ValidStage()
         {
             var stage = JsonConvert.DeserializeObject<StageDefinition>(
-            "{\"Id\":1,\"MonsterIds\":[1,2],\"WallHp\":100,\"Spawn\":{\"IntervalMin\":0.1,\"IntervalMax\":0.5,\"Cooldown\":3,\"EliteChance\":0.2},"
-            + "\"Waves\":[{\"EnemyCount\":5,\"MaxEliteCount\":0,\"MaxBossCount\":0}]}");
-            stage.Waves = Enumerable.Range(0, 20).Select(_ => new WaveDefinition { EnemyCount = 5 }).ToList();
+            "{\"Id\":1,\"WallHp\":100,\"Spawn\":{\"IntervalMin\":0.1,\"IntervalMax\":0.5,\"Cooldown\":3},"
+            + "\"Waves\":[{\"Spawns\":[{\"MonsterId\":1,\"Count\":3},{\"MonsterId\":2,\"Count\":2}]}]}");
+            stage.Waves = Enumerable.Range(0, 20).Select(_ => Wave(1, 3, 2, 2)).ToList();
             return stage;
+        }
+
+        [Test(Description = "등장 몬스터 목록은 웨이브 구성에서 첫 등장 순서로 모은다")]
+        public void MonsterIds_CollectedFromWavesInFirstAppearanceOrder()
+        {
+            var stage = ValidStage();
+            stage.Waves[0] = Wave(2, 1, 1, 1);
+            stage.Waves[5] = Wave(1, 1, 7, 1);
+
+            CollectionAssert.AreEqual(new[] { 2, 1, 7 }, stage.MonsterIds);
         }
 
         [Test]
@@ -74,20 +93,20 @@ namespace Game.Tests
             Assert.Throws<InvalidOperationException>(() => noWaves.Validate());
 
             var emptyWave = ValidStage();
-            emptyWave.Waves[0].EnemyCount = 0;
+            emptyWave.Waves[0].Spawns.Clear();
             Assert.Throws<InvalidOperationException>(() => emptyWave.Validate());
+
+            var zeroCount = ValidStage();
+            zeroCount.Waves[0].Spawns[0].Count = 0;
+            Assert.Throws<InvalidOperationException>(() => zeroCount.Validate());
+
+            var duplicateInWave = ValidStage();
+            duplicateInWave.Waves[0].Spawns[1].MonsterId = duplicateInWave.Waves[0].Spawns[0].MonsterId;
+            Assert.Throws<InvalidOperationException>(() => duplicateInWave.Validate());
 
             var reversedInterval = ValidStage();
             reversedInterval.Spawn.IntervalMin = 1f;
             Assert.Throws<InvalidOperationException>(() => reversedInterval.Validate());
-
-            var noMonsters = ValidStage();
-            noMonsters.MonsterIds.Clear();
-            Assert.Throws<InvalidOperationException>(() => noMonsters.Validate());
-
-            var duplicateMonsters = ValidStage();
-            duplicateMonsters.MonsterIds = new() { 1, 1 };
-            Assert.Throws<InvalidOperationException>(() => duplicateMonsters.Validate());
         }
 
         [Test]

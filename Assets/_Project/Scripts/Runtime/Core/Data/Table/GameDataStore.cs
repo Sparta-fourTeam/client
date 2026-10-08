@@ -58,9 +58,21 @@ namespace Game.Core
 
             foreach (var stage in stages.Values)
             {
-                foreach (var monsterId in stage.MonsterIds)
+                foreach (var wave in stage.Waves)
                 {
-                    if (!monsters.ContainsKey(monsterId)) { throw new InvalidOperationException($"Stages {stage.Id}: MonsterIds의 몬스터 {monsterId}이(가) Monsters에 없습니다"); }
+                    foreach (var spawn in wave.Spawns)
+                    {
+                        if (!monsters.TryGetValue(spawn.MonsterId, out var monster))
+                        {
+                            throw new InvalidOperationException($"Stages {stage.Id}: 웨이브 구성의 몬스터 {spawn.MonsterId}이(가) Monsters에 없습니다");
+                        }
+
+                        spawn.Type = monster.GetEnemyType();
+                        if (spawn.Type != EnemyType.Normal && spawn.Count != 1)
+                        {
+                            throw new InvalidOperationException($"Stages {stage.Id}: 엘리트·보스 {spawn.MonsterId}은(는) 웨이브마다 1마리만 나옵니다 (Count 1)");
+                        }
+                    }
                 }
             }
 

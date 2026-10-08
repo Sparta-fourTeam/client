@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Game.Core;
 using Game.Core.Messages;
 using Game.Core.Stage;
@@ -33,9 +34,9 @@ namespace Game.Tests
             {
                 Waves = new List<WaveDefinition>
                 {
-                    new WaveDefinition { EnemyCount = 5 },
-                    new WaveDefinition { EnemyCount = 8, MaxEliteCount = 2 },
-                    new WaveDefinition { EnemyCount = 10, MaxBossCount = 1 },
+                    Wave((1, 5, EnemyType.Normal)),
+                    Wave((1, 6, EnemyType.Normal), (11, 1, EnemyType.Elite), (12, 1, EnemyType.Elite)),
+                    Wave((1, 9, EnemyType.Normal), (100, 1, EnemyType.Boss)),
                 },
             };
             _manager = new WaveManager(
@@ -44,6 +45,11 @@ namespace Game.Tests
                 stage);
             _manager.Initialize();
         }
+
+        private static WaveDefinition Wave(params (int id, int count, EnemyType type)[] spawns) => new()
+        {
+            Spawns = spawns.Select(s => new WaveSpawn { MonsterId = s.id, Count = s.count, Type = s.type }).ToList()
+        };
 
         [TearDown]
         public void TearDown()
@@ -69,9 +75,9 @@ namespace Game.Tests
 
             Assert.AreEqual(3, _started.Count);
             Assert.AreEqual(8, _started[1].EnemyCount);
-            Assert.AreEqual(2, _started[1].MaxEliteCount);
+            CollectionAssert.AreEqual(new[] { 1, 11, 12 }, _started[1].Spawns.Select(s => s.MonsterId).ToArray());
             Assert.AreEqual(10, _started[2].EnemyCount);
-            Assert.AreEqual(1, _started[2].MaxBossCount);
+            Assert.AreEqual(EnemyType.Boss, _started[2].Spawns[1].Type);
             Assert.IsTrue(_started[2].IsFinalWave);
         }
 

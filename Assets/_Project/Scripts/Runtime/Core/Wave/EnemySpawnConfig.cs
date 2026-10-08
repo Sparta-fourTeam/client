@@ -1,5 +1,3 @@
-using UnityEngine;
-
 namespace Game.Core
 {
     public class EnemySpawnConfig
@@ -7,21 +5,18 @@ namespace Game.Core
         public float SpawnIntervalMin { get; }
         public float SpawnIntervalMax { get; }
         public float SpawnCooldown { get; }
-        public float EliteSpawnChance { get; }
 
         public EnemySpawnConfig(
             float spawnIntervalMin,
             float spawnIntervalMax,
-            float spawnCooldown,
-            float eliteSpawnChance = 0.2f)
+            float spawnCooldown)
         {
             SpawnIntervalMin = spawnIntervalMin;
             SpawnIntervalMax = spawnIntervalMax;
             SpawnCooldown = spawnCooldown;
-            EliteSpawnChance = Mathf.Clamp01(eliteSpawnChance);
         }
 
         public static EnemySpawnConfig From(SpawnDefinition spawn) =>
-            new EnemySpawnConfig(spawn.IntervalMin, spawn.IntervalMax, spawn.Cooldown, spawn.EliteChance);
+            new EnemySpawnConfig(spawn.IntervalMin, spawn.IntervalMax, spawn.Cooldown);
     }
 }

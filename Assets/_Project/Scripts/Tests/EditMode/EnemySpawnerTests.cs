@@ -169,10 +169,6 @@ namespace Game.Tests
                 new FakePublisher<EnemyHpChanged>(), new FakePublisher<EnemyDied>()));
         }
 
-        // 일반 등급 몬스터 하나만 나오는 스테이지
-        private static EnemyRoster TestRoster() =>
-            new EnemyRoster(new[] { new MonsterDefinition { Id = 1, Hp = 10, AttackInterval = 1f } });
-
         private EnemySpawner CreateSpawner(
             FakeEnemyViewFactory factory,
             out FakeSubscriber<WaveStarted> waveStarted,
@@ -187,7 +183,6 @@ namespace Game.Tests
 
             var spawner = new EnemySpawner(
                 factory,
-                TestRoster(),
                 CreateTestWaveData(),
                 spawnArea ?? CreateTestSpawnArea(),
                 random ?? new FakeRandomProvider(1f),
@@ -201,7 +196,7 @@ namespace Game.Tests
 
         private static void StartWave(FakeSubscriber<WaveStarted> waveStarted, int enemyCount, bool isFinal = false)
         {
-            waveStarted.Publish(new WaveStarted(waveIndex: 1, enemyCount: enemyCount, isFinalWave: isFinal));
+            waveStarted.Publish(TestWaves.Started(waveIndex: 1, enemyCount: enemyCount, isFinalWave: isFinal));
         }
 
         // 지정한 위치에 적을 스폰해 둔 스포너. 속도 0이라 적이 움직이지 않음
@@ -616,7 +611,7 @@ namespace Game.Tests
         {
             var factory = new FakeEnemyViewFactory(3f);
             var spawner = CreateSpawner(factory, out var waveStarted, out _);
-            waveStarted.Publish(new WaveStarted(3, enemyCount: 2, isFinalWave: true));
+            waveStarted.Publish(TestWaves.Started(3, enemyCount: 2, isFinalWave: true));
 
             spawner.Advance(1f);
             spawner.Advance(1f);
@@ -631,7 +626,7 @@ namespace Game.Tests
         {
             var factory = new FakeEnemyViewFactory(3f);
             var spawner = CreateSpawner(factory, out var waveStarted, out var allCleared);
-            waveStarted.Publish(new WaveStarted(3, enemyCount: 1, isFinalWave: true));
+            waveStarted.Publish(TestWaves.Started(3, enemyCount: 1, isFinalWave: true));
 
             spawner.Advance(1f); // 1마리 스폰 → 버스트 완료
             spawner.Advance(1f);
@@ -644,7 +639,7 @@ namespace Game.Tests
         {
             var factory = new FakeEnemyViewFactory(3f);
             var spawner = CreateSpawner(factory, out var waveStarted, out var allCleared);
-            waveStarted.Publish(new WaveStarted(3, enemyCount: 1, isFinalWave: true));
+            waveStarted.Publish(TestWaves.Started(3, enemyCount: 1, isFinalWave: true));
 
             spawner.Advance(1f);
             factory.Created[0].TakeDamage(999); // 스폰된 적 처치
@@ -660,7 +655,7 @@ namespace Game.Tests
         {
             var factory = new FakeEnemyViewFactory(3f);
             var spawner = CreateSpawner(factory, out var waveStarted, out var allCleared);
-            waveStarted.Publish(new WaveStarted(1, enemyCount: 1, isFinalWave: false));
+            waveStarted.Publish(TestWaves.Started(1, enemyCount: 1, isFinalWave: false));
 
             spawner.Advance(1f);
             factory.Created[0].TakeDamage(999); // 스폰된 적 처치
