@@ -12,7 +12,6 @@
 | `DamageProfile` | `Core/Enemy` | 속성·시전 형태 약점/저항, 투사체 차단 (`Monsters.json`에서 만든 불변 표) |
 | `IPassive` 구현들 | `Core/Enemy` | 패시브. 아래 [패시브](#passives) |
 | `EnemyFactory` | `Core/Wave` | `MonsterId`로 적을 만든다. 프리팹은 `MonsterAssetTable`에서 찾는다 |
-| `EnemyRoster` | `Core/Wave` | 스테이지의 등장 몬스터를 등급별로 모아 두고 웨이브 스폰이 무작위로 고른다 |
 | `EnemySpawner` | `Core/Wave` | 웨이브 스폰, 매 프레임 전투 진행, 분열·소환 요청 처리 |
 | `MonsterAssetTable` | `Data/*.asset` | 클라이언트 전용. `MonsterId` → 프리팹과 투사체 프리팹 |
 | `MonsterDisplayTable` | `Data/*.asset` | 클라이언트 전용. `MonsterId` → 이름, 아이콘 |
@@ -24,16 +23,17 @@
 ```mermaid
 flowchart LR
     M[Monsters.json] --> G[GameDataStore<br/>검증]
-    S[Stages.json<br/>MonsterIds] --> R[EnemyRoster<br/>등급별 무작위]
+    S[Stages.json<br/>Waves 몬스터 구성] --> P[EnemySpawner<br/>웨이브 스폰]
     G --> F[EnemyFactory]
-    R --> P[EnemySpawner<br/>웨이브 스폰]
     P -->|monsterId| F
     A[MonsterAssetTable<br/>프리팹] --> F
     F --> E[Enemy + EnemyModel]
     E -->|분열·소환 요청| P
 ```
 
-- 웨이브 스폰은 스테이지 `MonsterIds` 안에서만 고른다. 분열·소환으로만 나오는 몬스터는 `MonsterIds`에 넣지 않는다.
+- 웨이브 스폰은 `Stages.json`의 `Waves[].Spawns`(`{MonsterId, Count}`)에 적힌 몬스터를 그대로 낸다. 분열·소환으로만 나오는 몬스터는 웨이브 구성에 넣지 않는다.
+- 웨이브를 끝내는 처치 수(`EnemyCount`)는 `Count`의 합계다. 첫 묶음은 구성 전체를 섞어 내고, 처치가 늦어 다음 묶음이 나올 때는 **일반 몬스터만** 반복한다. 엘리트·보스는 웨이브당 한 번만 나오고 `Count`는 1이다(어기면 부팅 예외).
+- 스테이지의 "등장 몬스터"(`StageDefinition.MonsterIds`, 일시정지 창의 "등장 요마")는 데이터에 따로 적지 않고 웨이브 구성에서 첫 등장 순서로 모은다.
 - 등급(보스·엘리트·일반)과 공격 방식(근접·원거리)은 `Monsters` 행에서 정해진다. 프리팹 쪽에 따로 적지 않는다.
 - 소환된 적의 사망은 웨이브 게이지에 세지 않는다(`EnemyDied.IsSummoned`, [messages.md](messages.md)).
 
@@ -43,7 +43,7 @@ flowchart LR
 2. **웨이브 프리팹**: `Prefabs/Stage/Skeleton.prefab`을 복사해 `Prefabs/Stage/<이름>.prefab`을 만든다. `Scripts/Editor/WaveMonsterVisualLinker.cs`의 `Links`에 `("<이름>", "<이름>_Animated", false)`를 더하고 메뉴 `Tools/Monster/Link Visuals To Wave Prefabs`를 실행하면 리그가 `Visual` 자식으로 붙는다(엘리트는 세 번째 값을 `true`로, 1.2배 크기에 원래 색).
 3. **`Monsters.json` 행**: [필드](#monsters-json-필드)와 [패시브](#passives)를 보고 새 `Id`로 행을 더한다. 지금은 일반 1~6과 21 이후, 엘리트 11~12, 보스 100을 쓰고 있다.
 4. **`MonsterAssetTable.asset`**(`Data/`): 인스펙터의 표에 `Key`(= `MonsterId`)와 `prefab`(웨이브 프리팹의 `Enemy`)을 더한다. 원거리(`ProjectileSpeed > 0`)면 `projectilePrefab`도 연결한다(예: `Slime_Projectile`).
-5. **스테이지 배치**: 웨이브에 나오게 하려면 `Stages.json`의 해당 스테이지 `MonsterIds`에 `Id`를 더한다. 소환·분열로만 나오는 몬스터는 넣지 않는다.
+5. **스테이지 배치**: 웨이브에 나오게 하려면 `Stages.json`의 해당 스테이지 `Waves[].Spawns`에 `{MonsterId, Count}`를 더한다. 소환·분열로만 나오는 몬스터는 넣지 않는다.
 6. **이름·아이콘**(선택): `MonsterDisplayTable.asset`에 항목을 더한다. 없으면 일시정지 창에는 `#Id`로 보인다.
 7. **테스트**: `EnemyPrefabMonsterLinkTests`가 모든 몬스터 행에 표 항목과 프리팹이 있는지, 원거리에 투사체 프리팹이 있는지 자동으로 지킨다. 능력이 의도대로 붙었는지는 `NewMonsterDataTests`처럼 실제 데이터를 읽어 확인하는 테스트를 더한다. 마지막에 EditMode 전체를 돌린다.
 
@@ -56,7 +56,7 @@ flowchart LR
 
 | 필드 | 타입 | 기본/필수 | 설명 |
 |---|---|---|---|
-| `Id` | int | 필수, 유일 | 몬스터 행 ID. `Stages.MonsterIds`, `Spawn.MonsterId`, `MonsterAssetTable` 키가 가리킨다 |
+| `Id` | int | 필수, 유일 | 몬스터 행 ID. `Stages.Waves[].Spawns[].MonsterId`, `Spawn.MonsterId`, `MonsterAssetTable` 키가 가리킨다 |
 | `Hp` | int | 필수, 1 이상 | 최대 체력 |
 | `Damage` | int | 0 이상 | 공격 한 번의 피해(벽에) |
 | `Speed` | float | 0 이상 | 이동 속도(월드 단위/초). 느림 0.05~0.08, 보통 0.1, 빠름 0.14, 매우 빠름 0.18 정도로 쓴다 |
@@ -128,7 +128,7 @@ flowchart LR
 
 ## 검증과 테스트
 
-- 부팅(`GameDataStore`)이 `Monsters`의 값 범위, 패시브 정의, 소환 참조(없는 `Id`, 자기 자신, 연쇄 소환), 스테이지 `MonsterIds`의 몬스터 존재를 검사하고 어기면 예외로 멈춘다.
+- 부팅(`GameDataStore`)이 `Monsters`의 값 범위, 패시브 정의, 소환 참조(없는 `Id`, 자기 자신, 연쇄 소환), 스테이지 웨이브 구성의 몬스터 존재와 엘리트·보스 `Count` 1을 검사하고 어기면 예외로 멈춘다.
 - 테스트: 패시브 단위(`DefensivePassiveTests`, `PassiveTests`, `StatusModifierTests`, `EnemyBurstAttackTests`), 피해 계산(`DamageProfileTests`, `DamageContractTests`, `DamageHookTests`), 데이터와 프리팹 일치(`EnemyPrefabMonsterLinkTests`), 몬스터별 능력(`NewMonsterDataTests`), 로스터(`EnemyRosterTests`).
 
 ## 알려진 한계

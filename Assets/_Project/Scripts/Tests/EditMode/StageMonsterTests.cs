@@ -15,7 +15,7 @@ namespace Game.Tests
             return table;
         }
 
-        [Test(Description = "스테이지의 등장 몬스터는 Stages.json의 MonsterIds 순서 그대로, 몬스터 정의와 함께 나온다")]
+        [Test(Description = "스테이지의 등장 몬스터는 웨이브 구성에서 모은 순서 그대로, 몬스터 정의와 함께 나온다")]
         public void StageMonsters_FollowStageMonsterIds()
         {
             var store = new GameDataStore();

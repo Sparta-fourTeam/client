@@ -10,7 +10,7 @@ using Object = UnityEngine.Object;
 
 namespace Game.Tests
 {
-    // 웨이브별 Normal / Elite / Boss 타입 선택 테스트
+    // 웨이브 구성(몬스터×마릿수)대로 스폰하는지, 엘리트·보스가 웨이브당 한 번만 나오는지 테스트
     public class EnemySpawnerTypeTests
     {
         // ───────── Fakes ─────────
@@ -36,13 +36,6 @@ namespace Game.Tests
             // 등급별 몬스터 Id: 일반 1, 엘리트 2, 보스 3
             public const int NormalId = 1, EliteId = 2, BossId = 3;
 
-            public static EnemyRoster Roster() => new EnemyRoster(new[]
-            {
-                new MonsterDefinition { Id = NormalId, Hp = 10, AttackInterval = 1f },
-                new MonsterDefinition { Id = EliteId, Hp = 10, AttackInterval = 1f, IsElite = true },
-                new MonsterDefinition { Id = BossId, Hp = 10, AttackInterval = 1f, IsBoss = true },
-            });
-
             public Enemy Create(int monsterId, Vector2 spawnPosition, bool isSummoned = false)
             {
                 var type = monsterId == BossId ? EnemyType.Boss : monsterId == EliteId ? EnemyType.Elite : EnemyType.Normal;
@@ -55,21 +48,10 @@ namespace Game.Tests
             public int Count(EnemyType type) => Types.FindAll(t => t == type).Count;
         }
 
-        // Range(0, 1)은 엘리트 판정 → EliteRoll, 그 외(스폰 간격·위치)는 1
-        private class ScriptedRandomProvider : IRandomProvider
+        // 스폰 간격·위치·섞기 모두 같은 값(1)을 받는다
+        private class FixedRandomProvider : IRandomProvider
         {
-            public float EliteRoll;
-            public int EliteRollCallCount;
-
-            public float Range(float min, float max)
-            {
-                if (min == 0f && max == 1f)
-                {
-                    EliteRollCallCount++;
-                    return EliteRoll;
-                }
-                return 1f;
-            }
+            public float Range(float min, float max) => 1f;
         }
 
         private class FakeSubscriber<T> : ISubscriber<T>
@@ -112,7 +94,7 @@ namespace Game.Tests
         private readonly List<GameObject> _createdObjects = new();
 
         private TypeRecordingFactory _factory;
-        private ScriptedRandomProvider _random;
+        private FixedRandomProvider _random;
         private FakeSubscriber<WaveStarted> _waveStarted;
         private FakePublisher<AllEnemiesCleared> _allCleared;
 
@@ -129,7 +111,7 @@ namespace Game.Tests
             _createdObjects.Clear();
         }
 
-        private EnemySpawner CreateSpawner(float eliteSpawnChance)
+        private EnemySpawner CreateSpawner()
         {
             var wallGo = new GameObject("Wall");
             _createdObjects.Add(wallGo);
@@ -145,25 +127,28 @@ namespace Game.Tests
             var config = new EnemySpawnConfig(
                 spawnIntervalMin: 0.1f,
                 spawnIntervalMax: 0.5f,
-                spawnCooldown: SpawnCooldown,
-                eliteSpawnChance: eliteSpawnChance);
+                spawnCooldown: SpawnCooldown);
 
             _factory = new TypeRecordingFactory();
-            _random = new ScriptedRandomProvider();
+            _random = new FixedRandomProvider();
             _waveStarted = new FakeSubscriber<WaveStarted>();
             _allCleared = new FakePublisher<AllEnemiesCleared>();
 
             var spawner = new EnemySpawner(
-                _factory, TypeRecordingFactory.Roster(), config, spawnArea, _random,
+                _factory, config, spawnArea, _random,
                 _waveStarted, _allCleared,
                 wall, new EnemyProjectileSystem());
             spawner.Initialize();
             return spawner;
         }
 
-        private void StartWave(int enemyCount, int maxElite = 0, int maxBoss = 0, bool isFinal = false)
+        private static WaveSpawn N(int count) => new() { MonsterId = TypeRecordingFactory.NormalId, Count = count, Type = EnemyType.Normal };
+        private static WaveSpawn E(int count = 1) => new() { MonsterId = TypeRecordingFactory.EliteId, Count = count, Type = EnemyType.Elite };
+        private static WaveSpawn B(int count = 1) => new() { MonsterId = TypeRecordingFactory.BossId, Count = count, Type = EnemyType.Boss };
+
+        private void StartWave(bool isFinal, params WaveSpawn[] spawns)
         {
-            _waveStarted.Publish(new WaveStarted(1, enemyCount, isFinal, maxElite, maxBoss));
+            _waveStarted.Publish(new WaveStarted(1, isFinal, spawns));
         }
 
         // 스폰 간격 1초, 쿨다운 3초 → 1초씩 진행하며 총 count마리가 될 때까지 (버스트 넘김 포함)
@@ -177,192 +162,106 @@ namespace Game.Tests
             Assert.AreEqual(count, _factory.Types.Count, "스폰 수가 기대와 다름");
         }
 
-        // ───────── Normal ─────────
-
-        [Test]
-        public void NoEliteNoBoss_SpawnsOnlyNormal()
+        // 더 나올 몬스터가 없는지: 충분히 진행해도 스폰 수가 그대로다
+        private void AssertNothingMoreSpawns(EnemySpawner spawner)
         {
-            var spawner = CreateSpawner(eliteSpawnChance: 1f);
-            _random.EliteRoll = 0f; // 판정은 무조건 성공하는 값이지만
-            StartWave(enemyCount: 3);  // 최대 수가 0이라
-
-            AdvanceUntilSpawned(spawner, 9); // 3버스트
-
-            Assert.AreEqual(9, _factory.Count(EnemyType.Normal));
-            Assert.AreEqual(0, _random.EliteRollCallCount); // 남은 엘리트가 없으면 판정 자체를 안 함
+            int before = _factory.Types.Count;
+            for (int i = 0; i < 20; i++) { spawner.Advance(1f); }
+            Assert.AreEqual(before, _factory.Types.Count, "더 나오면 안 된다");
         }
 
         [Test]
-        public void Normal_KeepsSpawningAcrossBursts_InNonFinalWave()
+        public void FirstBurst_SpawnsExactlyTheWaveComposition()
         {
-            var spawner = CreateSpawner(eliteSpawnChance: 0f);
-            StartWave(enemyCount: 2, maxElite: 1, maxBoss: 1);
+            var spawner = CreateSpawner();
+            StartWave(false, N(3), E(), B());
 
-            AdvanceUntilSpawned(spawner, 10);
-            Assert.AreEqual(9, _factory.Count(EnemyType.Normal)); // 보스 1 + 노멀 9
+            AdvanceUntilSpawned(spawner, 5);
+
+            Assert.AreEqual(3, _factory.Count(EnemyType.Normal));
+            Assert.AreEqual(1, _factory.Count(EnemyType.Elite));
+            Assert.AreEqual(1, _factory.Count(EnemyType.Boss));
+        }
+
+        [Test(Description = "처치가 늦어 다음 묶음이 나와도 엘리트·보스는 다시 나오지 않고 일반 몬스터만 반복된다")]
+        public void LaterBursts_RepeatOnlyNormals()
+        {
+            var spawner = CreateSpawner();
+            StartWave(false, N(2), E(), B());
+
+            AdvanceUntilSpawned(spawner, 4 + 2 + 2); // 첫 묶음 4마리 + 일반 2마리씩 두 번 더
+
+            Assert.AreEqual(1, _factory.Count(EnemyType.Boss));
+            Assert.AreEqual(1, _factory.Count(EnemyType.Elite));
+            Assert.AreEqual(6, _factory.Count(EnemyType.Normal));
+        }
+
+        [Test(Description = "첫 묶음은 구성의 마릿수 합계이고 반복 묶음은 일반 몬스터 수다")]
+        public void BurstSize_IsCompositionTotalThenNormalCount()
+        {
+            var spawner = CreateSpawner();
+            StartWave(false, N(2), E(), B());
+
+            for (int i = 0; i < 4; i++) { spawner.Advance(1f); }
+            Assert.AreEqual(4, _factory.Types.Count);
+
+            spawner.Advance(1f); spawner.Advance(1f);
+            Assert.AreEqual(4, _factory.Types.Count, "쿨다운 중에는 나오지 않는다");
+
+            spawner.Advance(1f); // 누적 3초 → 쿨다운 끝
+            spawner.Advance(1f);
+            spawner.Advance(1f);
+            Assert.AreEqual(6, _factory.Types.Count);
+            Assert.AreEqual(EnemyType.Normal, _factory.Types[4]);
+            Assert.AreEqual(EnemyType.Normal, _factory.Types[5]);
         }
 
         [Test]
         public void FinalWave_StopsAfterOneBurst()
         {
-            var spawner = CreateSpawner(eliteSpawnChance: 0f);
-            StartWave(enemyCount: 2, maxBoss: 1, isFinal: true);
+            var spawner = CreateSpawner();
+            StartWave(true, N(1), B());
 
             AdvanceUntilSpawned(spawner, 2);
-            spawner.Advance(10f);
-            spawner.Advance(10f);
 
-            // 마지막 웨이브는 1버스트(보스 1 + 노멀 1)만 스폰하고 멈춤
-            CollectionAssert.AreEqual(new[] { EnemyType.Boss, EnemyType.Normal }, _factory.Types);
-        }
-
-        // ───────── Boss ─────────
-
-        [Test]
-        public void BossWave_FirstSpawnIsBoss_OnlyOnceAcrossBursts()
-        {
-            var spawner = CreateSpawner(eliteSpawnChance: 0f);
-            StartWave(enemyCount: 3, maxBoss: 1);
-
-            AdvanceUntilSpawned(spawner, 9);
-
-            Assert.AreEqual(EnemyType.Boss, _factory.Types[0]);
+            AssertNothingMoreSpawns(spawner);
             Assert.AreEqual(1, _factory.Count(EnemyType.Boss));
-            Assert.AreEqual(8, _factory.Count(EnemyType.Normal));
+            Assert.AreEqual(1, _factory.Count(EnemyType.Normal));
         }
 
-        // ───────── Elite ─────────
-
-        [Test]
-        public void EliteRollSuccess_SpawnsEliteUpToMaxOnly()
+        [Test(Description = "일반 몬스터가 없는 웨이브는 구성을 한 번 내고 나면 더 낼 것이 없다")]
+        public void SpecialsOnlyWave_SpawnsOnceThenStops()
         {
-            var spawner = CreateSpawner(eliteSpawnChance: 1f);
-            _random.EliteRoll = 0f;
-            StartWave(enemyCount: 5, maxElite: 2);
+            var spawner = CreateSpawner();
+            StartWave(false, E(), B());
 
-            AdvanceUntilSpawned(spawner, 10);
+            AdvanceUntilSpawned(spawner, 2);
 
-            Assert.AreEqual(EnemyType.Elite, _factory.Types[0]);
-            Assert.AreEqual(EnemyType.Elite, _factory.Types[1]);
-            Assert.AreEqual(2, _factory.Count(EnemyType.Elite)); // 최대 2를 넘지 않음
-            Assert.AreEqual(8, _factory.Count(EnemyType.Normal));
+            AssertNothingMoreSpawns(spawner);
         }
 
-        [Test]
-        public void EliteRollFail_SpawnsNoElite()
+        [Test(Description = "다음 웨이브는 자기 구성으로 다시 시작해 앞 웨이브의 보스를 이어받지 않는다")]
+        public void EachWave_SpawnsItsOwnComposition()
         {
-            var spawner = CreateSpawner(eliteSpawnChance: 0.2f);
-            _random.EliteRoll = 0.5f; // 0.5 < 0.2 거짓
-            StartWave(enemyCount: 5, maxElite: 2);
+            var spawner = CreateSpawner();
+            StartWave(true, N(1), B());
+            AdvanceUntilSpawned(spawner, 2);
 
-            AdvanceUntilSpawned(spawner, 10);
+            StartWave(true, N(1), B());
+            AdvanceUntilSpawned(spawner, 4);
 
-            Assert.AreEqual(0, _factory.Count(EnemyType.Elite));
-            Assert.AreEqual(10, _factory.Count(EnemyType.Normal));
-        }
-
-        [Test]
-        public void EliteRoll_ExactlyChance_IsFail()
-        {
-            var spawner = CreateSpawner(eliteSpawnChance: 0.2f);
-            _random.EliteRoll = 0.2f; // < 비교라 경계값은 실패
-            StartWave(enemyCount: 1, maxElite: 1);
-
-            AdvanceUntilSpawned(spawner, 1);
-
-            Assert.AreEqual(EnemyType.Normal, _factory.Types[0]);
-        }
-
-        // ───────── Boss + Elite ─────────
-
-        [Test]
-        public void BossAndElite_BossFirst_ThenElite_ThenNormal()
-        {
-            var spawner = CreateSpawner(eliteSpawnChance: 1f);
-            _random.EliteRoll = 0f;
-            StartWave(enemyCount: 5, maxElite: 2, maxBoss: 1);
-
-            AdvanceUntilSpawned(spawner, 5);
-
-            CollectionAssert.AreEqual(
-                new[] { EnemyType.Boss, EnemyType.Elite, EnemyType.Elite, EnemyType.Normal, EnemyType.Normal },
-                _factory.Types);
-        }
-
-        // ───────── 버스트 수 제한 ─────────
-
-        [Test]
-        public void BossAndElite_BurstDoesNotExceedEnemyCount()
-        {
-            var spawner = CreateSpawner(eliteSpawnChance: 1f);
-            _random.EliteRoll = 0f;
-            StartWave(enemyCount: 2, maxElite: 1, maxBoss: 1);
-
-            spawner.Advance(1f); // Boss
-            spawner.Advance(1f); // Elite → 버스트 2마리 채움, 대기 상태
-            CollectionAssert.AreEqual(new[] { EnemyType.Boss, EnemyType.Elite }, _factory.Types);
-
-            spawner.Advance(1f);
-            spawner.Advance(1f); // 쿨다운 중
-            Assert.AreEqual(2, _factory.Types.Count); // 특수 몬스터가 있어도 enemyCount를 넘지 않음
-
-            spawner.Advance(1f); // 누적 3초 → 쿨다운 끝 (스폰 X)
-            spawner.Advance(1f); // 다음 버스트
-            Assert.AreEqual(3, _factory.Types.Count);
-            Assert.AreEqual(EnemyType.Normal, _factory.Types[2]);
-        }
-
-        [Test]
-        public void SpecialsMoreThanEnemyCount_StillCappedPerBurst()
-        {
-            var spawner = CreateSpawner(eliteSpawnChance: 1f);
-            _random.EliteRoll = 0f;
-            StartWave(enemyCount: 2, maxElite: 3, maxBoss: 1); // 특수 4마리 > 버스트 2마리
-
-            spawner.Advance(1f);
-            spawner.Advance(1f);
-            spawner.Advance(1f); // 쿨다운 중
-
-            Assert.AreEqual(2, _factory.Types.Count);
-
-            AdvanceUntilSpawned(spawner, 6);
-            Assert.AreEqual(1, _factory.Count(EnemyType.Boss));
-            Assert.AreEqual(3, _factory.Count(EnemyType.Elite));
+            Assert.AreEqual(2, _factory.Count(EnemyType.Boss));
             Assert.AreEqual(2, _factory.Count(EnemyType.Normal));
         }
 
-        // ───────── 웨이브 전환 ─────────
-
-        [Test]
-        public void NextWave_ResetsRemainingCounts_NoCarryOver()
+        [Test(Description = "구성이 없는 웨이브(처치 수만 알리는 메시지)는 아무것도 내지 않는다")]
+        public void WaveWithoutComposition_SpawnsNothing()
         {
-            var spawner = CreateSpawner(eliteSpawnChance: 0.2f);
-            _random.EliteRoll = 0.9f; // 1웨이브: 엘리트 판정 실패 → 엘리트 2 남음
-            StartWave(enemyCount: 3, maxElite: 2);
-            AdvanceUntilSpawned(spawner, 3);
-            Assert.AreEqual(0, _factory.Count(EnemyType.Elite));
+            var spawner = CreateSpawner();
+            _waveStarted.Publish(new WaveStarted(1, 5, false));
 
-            _random.EliteRoll = 0f; // 2웨이브: 판정은 성공하지만
-            StartWave(enemyCount: 3, maxElite: 0); // 최대 0 → 1웨이브에서 남은 수가 넘어오면 안 됨
-            AdvanceUntilSpawned(spawner, 6);
-
-            Assert.AreEqual(0, _factory.Count(EnemyType.Elite));
-        }
-
-        [Test]
-        public void EachBossWave_SpawnsItsOwnBoss()
-        {
-            var spawner = CreateSpawner(eliteSpawnChance: 0f);
-
-            StartWave(enemyCount: 2, maxBoss: 1);
-            AdvanceUntilSpawned(spawner, 2);
-
-            StartWave(enemyCount: 2, maxBoss: 1);
-            AdvanceUntilSpawned(spawner, 4);
-
-            CollectionAssert.AreEqual(
-                new[] { EnemyType.Boss, EnemyType.Normal, EnemyType.Boss, EnemyType.Normal },
-                _factory.Types);
+            AssertNothingMoreSpawns(spawner);
+            Assert.AreEqual(0, _factory.Types.Count);
         }
     }
 }

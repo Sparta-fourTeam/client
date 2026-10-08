@@ -15,8 +15,6 @@ namespace Game.Boot
             builder.Register(resolver =>
                 resolver.Resolve<GameDataStore>().StageOrFirst(resolver.Resolve<StageContext>().StageId), Lifetime.Scoped);
             builder.Register(resolver => EnemySpawnConfig.From(resolver.Resolve<StageDefinition>().Spawn), Lifetime.Scoped);
-            // 웨이브 스폰은 스테이지의 등장 몬스터(MonsterIds)에서만 고른다
-            builder.Register(resolver => new EnemyRoster(resolver.Resolve<GameDataStore>().StageMonsters(resolver.Resolve<StageDefinition>().Id)), Lifetime.Scoped);
             builder.RegisterComponentInHierarchy<Wall>();
             builder.RegisterComponentInHierarchy<SkillController>().AsSelf().As<IUpgradeChoiceSource>();
             builder.Register<CardDeck>(Lifetime.Scoped);

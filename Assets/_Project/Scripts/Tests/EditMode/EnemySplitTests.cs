@@ -137,7 +137,6 @@ namespace Game.Tests
 
             var spawner = new EnemySpawner(
                 factory,
-                new EnemyRoster(new[] { new MonsterDefinition { Id = 1, Hp = 10, AttackInterval = 1f } }),
                 new EnemySpawnConfig(spawnIntervalMin: 0.1f, spawnIntervalMax: 0.5f, spawnCooldown: 3f),
                 area,
                 new FixedRandom(),
@@ -222,7 +221,7 @@ namespace Game.Tests
         {
             var factory = new SplitFactory();
             var spawner = CreateSpawner(factory, out var waveStarted, out _);
-            waveStarted.Publish(new WaveStarted(waveIndex: 1, enemyCount: 1, isFinalWave: true));
+            waveStarted.Publish(TestWaves.Started(waveIndex: 1, enemyCount: 1, isFinalWave: true));
             spawner.Advance(1f);
             Assert.AreEqual(1, factory.Parents.Count); // 준비 확인
 
@@ -239,7 +238,7 @@ namespace Game.Tests
         {
             var factory = new SplitFactory();
             var spawner = CreateSpawner(factory, out var waveStarted, out var allCleared);
-            waveStarted.Publish(new WaveStarted(waveIndex: 1, enemyCount: 1, isFinalWave: true));
+            waveStarted.Publish(TestWaves.Started(waveIndex: 1, enemyCount: 1, isFinalWave: true));
             spawner.Advance(1f);
 
             factory.Parents[0].TakeDamage(10);
@@ -260,7 +259,7 @@ namespace Game.Tests
         {
             var factory = new SplitFactory();
             var spawner = CreateSpawner(factory, out var waveStarted, out var allCleared);
-            waveStarted.Publish(new WaveStarted(waveIndex: 1, enemyCount: 1, isFinalWave: true));
+            waveStarted.Publish(TestWaves.Started(waveIndex: 1, enemyCount: 1, isFinalWave: true));
             spawner.Advance(1f);
 
             // 화상 피해가 TickCombat 안에서 부모를 죽이는 경우

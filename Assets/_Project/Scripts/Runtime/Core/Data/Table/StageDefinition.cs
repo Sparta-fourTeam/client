@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace Game.Core
 {
@@ -19,8 +20,27 @@ namespace Game.Core
         /// <summary>rating 1~3의 1회성 마법북 보상 (index 0 = rating 1). 미설정 등급은 아이템 보상 없음.</summary>
         public List<List<ItemAmount>> RatingItemRewards = new();
 
-        /// <summary>이 스테이지에 등장하는 몬스터의 ID (Monsters 테이블). 일시정지 창의 "등장 요마"가 이 순서대로 보여준다</summary>
-        public List<int> MonsterIds = new();
+        /// <summary>이 스테이지의 웨이브에 한 번이라도 나오는 몬스터 ID. 웨이브 구성에서 첫 등장 순서로 모은다.
+        /// 데이터에 따로 적지 않는다. 일시정지 창의 "등장 요마"가 이 순서대로 보여준다</summary>
+        [JsonIgnore]
+        public IReadOnlyList<int> MonsterIds
+        {
+            get
+            {
+                var ids = new List<int>();
+                if (Waves == null) { return ids; }
+                foreach (var wave in Waves)
+                {
+                    if (wave?.Spawns == null) { continue; }
+                    foreach (var spawn in wave.Spawns)
+                    {
+                        if (spawn != null && !ids.Contains(spawn.MonsterId)) { ids.Add(spawn.MonsterId); }
+                    }
+                }
+
+                return ids;
+            }
+        }
 
         public int WallHp;
         public SpawnDefinition Spawn;
@@ -40,11 +60,6 @@ namespace Game.Core
                 foreach (var rewards in RatingItemRewards) { ValidateItemRewards(rewards); }
             }
 
-            if (MonsterIds == null || MonsterIds.Count == 0 || MonsterIds.Count != new HashSet<int>(MonsterIds).Count)
-            {
-                throw new InvalidOperationException($"Stages {Id}: MonsterIds는 비어 있지 않고 중복이 없어야 합니다");
-            }
-
             if (WallHp <= 0)
             {
                 throw new InvalidOperationException($"Stages {Id}: WallHp는 1 이상이어야 합니다");
@@ -60,11 +75,21 @@ namespace Game.Core
                 throw new InvalidOperationException($"Stages {Id}: 모든 스테이지는 {StageRewardRules.WaveCount}웨이브입니다");
             }
 
-            foreach (var wave in Waves)
+            for (int i = 0; i < Waves.Count; i++)
             {
-                if (wave == null || wave.EnemyCount <= 0 || wave.MaxEliteCount < 0 || wave.MaxBossCount < 0)
+                var wave = Waves[i];
+                if (wave?.Spawns == null || wave.Spawns.Count == 0)
                 {
-                    throw new InvalidOperationException($"Stages {Id}: 웨이브 값이 잘못되었습니다 (EnemyCount >= 1, 엘리트·보스 수 >= 0)");
+                    throw new InvalidOperationException($"Stages {Id}: {i + 1}웨이브에 몬스터 구성(Spawns)이 필요합니다");
+                }
+
+                var seen = new HashSet<int>();
+                foreach (var spawn in wave.Spawns)
+                {
+                    if (spawn == null || spawn.Count < 1 || !seen.Add(spawn.MonsterId))
+                    {
+                        throw new InvalidOperationException($"Stages {Id}: {i + 1}웨이브의 구성은 중복 없는 몬스터와 1 이상의 마릿수여야 합니다");
+                    }
                 }
             }
         }

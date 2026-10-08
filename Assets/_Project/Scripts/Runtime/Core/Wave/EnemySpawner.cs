@@ -11,7 +11,6 @@ namespace Game.Core
     public class EnemySpawner : IInitializable, IDisposable, ITickable, IEnemyTargetProvider
     {
         private readonly IEnemyFactory _enemyViewFactory;
-        private readonly EnemyRoster _roster;
         private readonly EnemySpawnConfig _enemySpawnConfig;
         private readonly SpawnArea _spawnArea;
         private readonly IRandomProvider _randomProvider;
@@ -30,15 +29,17 @@ namespace Game.Core
         private IDisposable _subscriptions;
         private bool _isSpawningAllowed;
 
-        private int _currentBurstSize; // 이번 웨이브에서 한 번에(한 버스트에) 몇 마리씩 스폰할지
+        // 지금 버스트에서 스폰할 몬스터 ID를 섞어 둔 순서. 하나씩 꺼내 스폰한다
+        private readonly List<int> _burst = new();
+        // 웨이브 구성. 첫 버스트는 전부, 이후 반복 버스트는 일반 몬스터만 쓴다 (엘리트·보스는 웨이브당 한 번)
+        private IReadOnlyList<WaveSpawn> _waveSpawns = Array.Empty<WaveSpawn>();
+        private int _currentBurstSize; // 지금 버스트의 스폰 수
 
         private float _elapsedTime;
         private int _spawnedCountInOnceSpawn;
         private bool _isWaitingForNextSpawn; // 다음 스폰 기다리는 상태
 
         private float _nextSpawnInterval;
-        private int _remainingElite; // 남은 엘리트 몬스터 수
-        private int _remainingBoss; // 남은 보스 몬스터 수
 
         private bool _isFinalWave;
         private bool _finalSpawnDone;
@@ -46,7 +47,6 @@ namespace Game.Core
 
         public EnemySpawner(
             IEnemyFactory enemyViewFactory,
-            EnemyRoster roster,
             EnemySpawnConfig enemySpawnConfig,
             SpawnArea spawnArea,
             IRandomProvider randomProvider,
@@ -56,7 +56,6 @@ namespace Game.Core
             EnemyProjectileSystem projectiles)
         {
             _enemyViewFactory = enemyViewFactory;
-            _roster = roster;
             _enemySpawnConfig = enemySpawnConfig;
             _spawnArea = spawnArea;
             _randomProvider = randomProvider;
@@ -107,8 +106,12 @@ namespace Game.Core
                 if (_elapsedTime >= _enemySpawnConfig.SpawnCooldown)
                 {
                     _elapsedTime = 0f;
-                    _spawnedCountInOnceSpawn = 0;
                     _isWaitingForNextSpawn = false;
+                    // 이미 나온 엘리트·보스는 다시 내지 않는다. 일반 몬스터가 없는 웨이브는 더 낼 것이 없다
+                    if (!StartBurst(includeSpecials: false))
+                    {
+                        _isSpawningAllowed = false;
+                    }
                 }
                 return;
             }
@@ -142,13 +145,10 @@ namespace Game.Core
 
         private void OnWaveStarted(WaveStarted message)
         {
-            _isSpawningAllowed = true;
-            _currentBurstSize = message.EnemyCount;
+            _waveSpawns = message.Spawns;
+            _isSpawningAllowed = StartBurst(includeSpecials: true);
             _elapsedTime = 0f;
-            _spawnedCountInOnceSpawn = 0;
             _isWaitingForNextSpawn = false;
-            _remainingElite = message.MaxEliteCount;
-            _remainingBoss = message.MaxBossCount;
             _isFinalWave = message.IsFinalWave;
         }
 
@@ -172,25 +172,29 @@ namespace Game.Core
             _allEnemiesClearedPublisher.Publish(new AllEnemiesCleared());
         }
 
-        private EnemyType PickEnemyType()
+        /// <summary>웨이브 구성으로 새 버스트를 만든다. 낼 몬스터가 없으면 false</summary>
+        private bool StartBurst(bool includeSpecials)
         {
-            if (_remainingBoss > 0)
+            _burst.Clear();
+            foreach (var spawn in _waveSpawns)
             {
-                _remainingBoss--;
-                return EnemyType.Boss;
+                if (spawn.Type != EnemyType.Normal && !includeSpecials) { continue; }
+                for (int i = 0; i < spawn.Count; i++) { _burst.Add(spawn.MonsterId); }
             }
 
-            if (_remainingElite > 0 && _randomProvider.Range(0f, 1f) < _enemySpawnConfig.EliteSpawnChance)
+            // 구성 순서대로 내면 같은 몬스터가 몰려 나오므로 섞는다
+            for (int i = _burst.Count - 1; i > 0; i--)
             {
-                _remainingElite--;
-                return EnemyType.Elite;
+                int j = Mathf.Clamp((int)_randomProvider.Range(0f, i + 1), 0, i);
+                (_burst[i], _burst[j]) = (_burst[j], _burst[i]);
             }
 
-            return EnemyType.Normal;
+            _currentBurstSize = _burst.Count;
+            _spawnedCountInOnceSpawn = 0;
+            return _burst.Count > 0;
         }
 
-
-        // PickEnemyType으로 등급을 고르고, 스테이지에 나오는 그 등급의 몬스터 중에서 하나를 뽑는다. 위치는 SpawnArea의 현재 범위에서 매번 새로 뽑는다
+        // 버스트에서 몬스터 하나를 꺼내 스폰한다. 위치는 SpawnArea의 현재 범위에서 매번 새로 뽑는다
         private void Spawn()
         {
             var min = _spawnArea.Min;
@@ -198,8 +202,7 @@ namespace Game.Core
             var spawnX = _randomProvider.Range(min.x, max.x);
             var spawnY = _randomProvider.Range(min.y, max.y);
             var spawnPosition = new Vector2(spawnX, spawnY);
-            var monster = _roster.Pick(PickEnemyType(), _randomProvider);
-            var enemy = _enemyViewFactory.Create(monster.Id, spawnPosition);
+            var enemy = _enemyViewFactory.Create(_burst[_spawnedCountInOnceSpawn], spawnPosition);
 
             Track(enemy);
             _spawnedCountInOnceSpawn++;

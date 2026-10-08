@@ -7,7 +7,7 @@
 | 데이터 | 누가 정하나 | 비고 |
 |---|---|---|
 | `Monsters` | 서버 | 수치, 등급, 능력(`Passives`, `Resists`, `CastResists`, `BlocksProjectile`) |
-| `Stages`의 `MonsterIds` | 서버 | 스테이지에 나오는 몬스터. 분열·소환 전용 몬스터는 넣지 않는다 |
+| `Stages`의 `Waves[].Spawns[]` (`MonsterId`, `Count`) | 서버 | 웨이브마다 나오는 몬스터와 마릿수. 엘리트·보스는 `Count` 1. 분열·소환 전용 몬스터는 넣지 않는다. 최상위 `MonsterIds`는 없고 웨이브 구성에서 모은다 |
 | `Skills`의 `element` | 서버 | 스킬 속성 |
 | `MonsterAssetTable`(프리팹) | **클라이언트** | `MonsterId` → 프리팹. 서버는 모른다 |
 | `MonsterDisplayTable`(이름, 아이콘) | **클라이언트** | 이름은 아직 고정 텍스트. 로컬라이징이 들어오면 키로 바꾼다 |
@@ -27,7 +27,7 @@
 | `Resists`, `CastResists`의 키, `HealOnHit.Element` | **정확한 영문 이름**이어야 한다(대소문자 구분). 숫자와 모르는 이름은 거부한다 |
 | 값 범위를 벗어남(체력 0, 확률 0, 비율 -1 미만 등) | 부팅 예외 |
 | 소환 대상이 없거나 자기 자신이거나 다시 소환함 | 부팅 예외(연쇄 소환 금지) |
-| `Stages.MonsterIds`에 없는 몬스터 | 부팅 예외 |
+| 웨이브 구성(`Spawns`)에 `Monsters`에 없는 몬스터, 엘리트·보스의 `Count`가 1이 아님, 빈 구성·0마리·웨이브 안 중복 | 부팅 예외 |
 | `Skills.element` | 숫자(0~5)와 이름(`Fire` 등) 둘 다 읽는다. 모르는 이름이나 범위 밖 숫자는 로드 실패 |
 
 ## 필드 규칙

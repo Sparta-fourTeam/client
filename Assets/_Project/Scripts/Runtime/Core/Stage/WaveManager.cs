@@ -65,7 +65,7 @@ namespace Game.Core.Stage
             WaveDefinition plan = _waves[waveIndex];
             bool isFinalWave = waveIndex == _waves.Count - 1;
 
-            _waveStartedPublisher.Publish(new WaveStarted(waveIndex + 1, plan.EnemyCount, isFinalWave, plan.MaxEliteCount, plan.MaxBossCount));
+            _waveStartedPublisher.Publish(new WaveStarted(waveIndex + 1, isFinalWave, plan.Spawns));
         }
     }
 }
