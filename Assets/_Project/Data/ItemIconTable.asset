@@ -12,6 +12,56 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7da334b8738774b4ebfb6b81f84ded78, type: 3}
   m_Name: ItemIconTable
   m_EditorClassIdentifier: Game.View::Game.View.ItemIconTable
-  _coin: {fileID: 0}
-  _exp: {fileID: 0}
-  _items: []
+  _coin: {fileID: 21300000, guid: d86c1ffe64598e440ab97e282f9ca7c8, type: 3}
+  _exp: {fileID: 21300000, guid: 2634858161ecab54caab42caf73931cc, type: 3}
+  _randomSkillMaterial: {fileID: 21300000, guid: ad1afc19c01168949bd55222262051b9, type: 3}
+  _randomEquipmentMaterial: {fileID: 21300000, guid: 36483939a31116b49bf8239910d34cae, type: 3}
+  _items:
+  - iconKey: ArrowBook
+    icon: {fileID: 21300000, guid: 8ec4784bbf47c594e8d87e345ea27a20, type: 3}
+  - iconKey: FireballBook
+    icon: {fileID: 21300000, guid: 8d9e37e448bbc6f4ea211e3c55e21eee, type: 3}
+  - iconKey: LightningBook
+    icon: {fileID: 21300000, guid: 705fd12290d91624ebd3af12a917a8d7, type: 3}
+  - iconKey: FrostCrystalBook
+    icon: {fileID: 21300000, guid: 4f2193f8b70948faa79f003e7d38c326, type: 3}
+  - iconKey: LogBook
+    icon: {fileID: 21300000, guid: 304d9baa3b00fe249a83d89df9934e9a, type: 3}
+  - iconKey: ColdZoneBook
+    icon: {fileID: 21300000, guid: 6c8780618f2fbb942a5711dc422dd2ef, type: 3}
+  - iconKey: LightningCloudBook
+    icon: {fileID: 21300000, guid: 06c3eed95b7e22b43b15beef9039340b, type: 3}
+  - iconKey: EnergyBeamBook
+    icon: {fileID: 21300000, guid: e5cfc3d3e2d42c74a8e3e2ad82faa211, type: 3}
+  - iconKey: ChainLightningBook
+    icon: {fileID: 21300000, guid: e40e93b3ceb130541b81a7b4da073849, type: 3}
+  - iconKey: HoodScroll
+    icon: {fileID: 21300000, guid: 7fb1e87863474ee8a64590924e0beb52, type: 3}
+  - iconKey: RobeScroll
+    icon: {fileID: 21300000, guid: 83b9454739434417b7fa0a894f3b104b, type: 3}
+  - iconKey: BootsScroll
+    icon: {fileID: 21300000, guid: 0320d06b5b6368d4aba7a2e0d4ee96db, type: 3}
+  - iconKey: StaffScroll
+    icon: {fileID: 21300000, guid: 6ac5b9030c1131249a1a62a2b9c44bfc, type: 3}
+  - iconKey: BoneRingScroll
+    icon: {fileID: 21300000, guid: 3a68c6e79095ee44088406cfcff1bdd2, type: 3}
+  - iconKey: SkullNecklaceScroll
+    icon: {fileID: 21300000, guid: 4af1cff4d81c5ae4fbd1b6e472205567, type: 3}
+  - iconKey: SealScroll
+    icon: {fileID: 21300000, guid: 2a01900545c6433a94478a26a623df99, type: 3}
+  - iconKey: GemChest
+    icon: {fileID: 21300000, guid: 629ab21936b9eeb4cbac8748204d400c, type: 3}
+  - iconKey: equipment.hat
+    icon: {fileID: 21300000, guid: f6403261763f18945a0ae5cfde328de1, type: 3}
+  - iconKey: equipment.top
+    icon: {fileID: 21300000, guid: 2d20137d968c47a469e5e912d75bbc16, type: 3}
+  - iconKey: equipment.shoes
+    icon: {fileID: 21300000, guid: df545d3cb60349b4f9696771147638a6, type: 3}
+  - iconKey: equipment.weapon
+    icon: {fileID: 21300000, guid: ce3bfe10cb554b5496aff1c08c194778, type: 3}
+  - iconKey: equipment.ring
+    icon: {fileID: 21300000, guid: 509cc25c0ce186849b620df95ca8132e, type: 3}
+  - iconKey: equipment.tie
+    icon: {fileID: 21300000, guid: eccb17345f76d954d9ac8555f2a05446, type: 3}
+  - iconKey: equipment.employee_id
+    icon: {fileID: 21300000, guid: 8730d4b9a3070d8499696820cbb9017d, type: 3}

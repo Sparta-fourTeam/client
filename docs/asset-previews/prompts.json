@@ -1,0 +1,29 @@
+{
+  "generator": "built-in image_gen",
+  "references": [
+    "Assets/_Project/Sprites/2-Sheet.png",
+    "Assets/_Project/Sprites/3-Sheet.png"
+  ],
+  "transparent_background": true,
+  "status": "awaiting_style_approval",
+  "assets": [
+    {
+      "key": "frost-crystal",
+      "name": "서리 결정",
+      "file": "FrostCrystal-v01.png",
+      "prompt": "Use case: stylized-concept. Asset type: transparent Unity 2D mobile game inventory/HUD icon, a new separate asset. The local input images are STYLE REFERENCES ONLY, not images to modify. Match the handmade art of the references precisely: scratchy uneven black charcoal/crayon outlines, deliberately naive childlike doodle geometry, sparse wax-crayon strokes and mottled scribble fill, simple flat colors, slight white gaps in the pigment, inexpensive classroom notebook drawing. The reference's existing arrow, fire and lightning symbols are especially important for level of simplicity. Do not make polished vector art, fantasy trading-card art, intricate illustration, 3D rendering or smooth digital gradients. Draw just ONE isolated small iconic object centered on a square canvas with 15 percent clear transparent margin. No circular badge, no frame, no card rectangle, no extra symbols, no labels, no text, no watermark, no background or ground shadow. True transparent alpha background, including outside any rough outline. The colored body stays readable at 64px; use only a few broad interior marks. This is a subject icon that will be placed within the game's existing UI frames. Subject: a chunky jagged pale cyan ice crystal shard pointing diagonally up-right, one main shard with two short attached points; thick irregular black pencil boundary, uneven sky blue and pale icy cyan crayon fill with two white scrape highlights. A few simple facet lines only. It must look as crude and playful as the arrow and fire icon in the source sheet."
+    },
+    {
+      "key": "log-root",
+      "name": "나무뿌리",
+      "file": "LogRoot-v01.png",
+      "prompt": "Use case: stylized-concept. Asset type: transparent Unity 2D mobile game inventory/HUD icon, a new separate asset. The local input images are STYLE REFERENCES ONLY, not images to modify. Match the handmade art of the references precisely: scratchy uneven black charcoal/crayon outlines, deliberately naive childlike doodle geometry, sparse wax-crayon strokes and mottled scribble fill, simple flat colors, slight white gaps in the pigment, inexpensive classroom notebook drawing. The reference's existing arrow, fire and lightning symbols are especially important for level of simplicity. Do not make polished vector art, fantasy trading-card art, intricate illustration, 3D rendering or smooth digital gradients. Draw just ONE isolated small iconic object centered on a square canvas with 15 percent clear transparent margin. No circular badge, no frame, no card rectangle, no extra symbols, no labels, no text, no watermark, no background or ground shadow. True transparent alpha background, including outside any rough outline. The colored body stays readable at 64px; use only a few broad interior marks. This is a subject icon that will be placed within the game's existing UI frames. Subject: a thick bent brown tree root with two short tapering branching root tips, pointing diagonally up-right, a small cut end showing one simple ring. Uneven chestnut/ochre wax-crayon fill, irregular bold black crayon boundary, just two or three rough grain marks. Simple chunky silhouette. No leaves, no face, no forest scene. Match the very crude sketch quality of the game's source arrow."
+    },
+    {
+      "key": "frost-crystal-book",
+      "name": "서리 결정 마법북",
+      "file": "FrostCrystalBook-v01.png",
+      "prompt": "Use case: stylized-concept. Asset type: transparent Unity 2D mobile game inventory/HUD icon, a new separate asset. The local input images are STYLE REFERENCES ONLY, not images to modify. Match the handmade art of the references precisely: scratchy uneven black charcoal/crayon outlines, deliberately naive childlike doodle geometry, sparse wax-crayon strokes and mottled scribble fill, simple flat colors, slight white gaps in the pigment, inexpensive classroom notebook drawing. The reference's existing arrow, fire and lightning symbols are especially important for level of simplicity. Do not make polished vector art, fantasy trading-card art, intricate illustration, 3D rendering or smooth digital gradients. Draw just ONE isolated small iconic object centered on a square canvas with 15 percent clear transparent margin. No circular badge, no frame, no card rectangle, no extra symbols, no labels, no text, no watermark, no background or ground shadow. True transparent alpha background, including outside any rough outline. The colored body stays readable at 64px; use only a few broad interior marks. This is a subject icon that will be placed within the game's existing UI frames. Subject: a small closed magic book, shown in an almost front-on slightly tilted three-quarter view with a narrow visible white page edge on the right and bottom. Uneven medium blue crayon cover, irregular thick black pencil outline, one very simple pale cyan ice-crystal emblem on the front cover. Two rough strokes indicate the book spine. No clasp, no decorative border, no writing, no runes. Simple naive classroom crayon doodle, as primitive as the small green book in the source game's UI sheet."
+    }
+  ]
+}

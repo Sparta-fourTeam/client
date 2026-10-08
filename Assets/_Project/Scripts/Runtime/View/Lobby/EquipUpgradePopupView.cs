@@ -35,6 +35,9 @@ namespace Game.View
         [FormerlySerializedAs("_bookText")]
         [SerializeField] private TMP_Text _materialText;
         [SerializeField] private TMP_Text _materialNameText;
+        [SerializeField] private ItemIconTable _icons;
+        [SerializeField] private Image _equipmentIcon, _materialIcon;
+        [SerializeField] private Image _nextEquipmentIcon;
         [SerializeField] private GameObject _cost, _maxLevel;
 
         private IGrowthCatalog _catalog;
@@ -76,6 +79,15 @@ namespace Game.View
             _nameText.text = info.Name;
             _currentLevelText.text = $"Lv.{info.Level}/{info.MaxLevel}";
             BindRows(_currentRows, info.Stats, next: false);
+            if (_icons != null)
+            {
+                SetIcon(_equipmentIcon, _icons.Get(info.UpgradeId));
+                SetIcon(_nextEquipmentIcon, _icons.Get(info.UpgradeId));
+                var materialSprite = info.MaterialItemId != null
+                    ? _icons.Get(_data.Items.GetOrThrow(info.MaterialItemId).IconKey)
+                    : null;
+                SetIcon(_materialIcon, materialSprite);
+            }
 
             // 최대 레벨에는 다음 레벨과 비용이 없으므로 다음 블록·비용·버튼을 숨기고 "최대 레벨"을 띄운다
             _next.SetActive(!isMax);
@@ -123,6 +135,13 @@ namespace Game.View
 
         private bool CanUpgrade(EquipInfo info) =>
             info.IsUnlocked && !info.IsMaxLevel && _profile.Gold >= info.CoinCost && Material(info) >= info.MaterialCost;
+
+        private static void SetIcon(Image image, Sprite sprite)
+        {
+            if (image == null) { return; }
+            image.sprite = sprite;
+            image.enabled = sprite != null;
+        }
 
         // all이면 재화가 모자라거나 최대 레벨이 될 때까지 한 단계씩 연속으로 강화한다
         private async UniTask UpgradeAsync(bool all)

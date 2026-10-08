@@ -1,0 +1,1505 @@
+[
+  {
+    "path": "Assets/_Project/Sprites/2-Sheet.png",
+    "guid": "2cf05a8ded9e77d4eae2dea037db079e",
+    "size": [
+      2240,
+      780
+    ],
+    "sprites": [
+      {
+        "name": "2-Sheet_0",
+        "rect": [
+          32.0,
+          734.0,
+          29.0,
+          36.0
+        ],
+        "fileID": "1577143017576440098",
+        "references": [
+          "Assets/_Project/Scenes/Lobby.unity"
+        ]
+      },
+      {
+        "name": "2-Sheet_1",
+        "rect": [
+          69.0,
+          728.0,
+          99.0,
+          45.0
+        ],
+        "fileID": "7069260351784017822",
+        "references": [
+          "Assets/_Project/Prefabs/UI/MissionScreen.prefab",
+          "Assets/_Project/Scenes/Lobby.unity"
+        ]
+      },
+      {
+        "name": "2-Sheet_2",
+        "rect": [
+          192.0,
+          725.0,
+          40.0,
+          32.0
+        ],
+        "fileID": "-6358994743392475034",
+        "references": [
+          "Assets/_Project/Scenes/Lobby.unity"
+        ]
+      },
+      {
+        "name": "2-Sheet_3",
+        "rect": [
+          248.0,
+          720.0,
+          84.0,
+          45.0
+        ],
+        "fileID": "-1423843575472690035",
+        "references": [
+          "Assets/_Project/Scenes/Lobby.unity"
+        ]
+      },
+      {
+        "name": "wall_0",
+        "rect": [
+          452.0,
+          697.0,
+          440.0,
+          54.0
+        ],
+        "fileID": "-5542841022967529848",
+        "references": [
+          "Assets/_Project/Prefabs/Stage/Wall.prefab"
+        ]
+      },
+      {
+        "name": "gauge_0",
+        "rect": [
+          906.0,
+          725.0,
+          424.0,
+          53.0
+        ],
+        "fileID": "-3104319700599736158",
+        "references": [
+          "Assets/_Project/Prefabs/UI/HudCanvas.prefab",
+          "Assets/_Project/Prefabs/UI/LobbyTopBar.prefab"
+        ]
+      },
+      {
+        "name": "2-Sheet_6",
+        "rect": [
+          50.0,
+          677.0,
+          32.0,
+          33.0
+        ],
+        "fileID": "6766846066714910784",
+        "references": [
+          "Assets/_Project/Scenes/Lobby.unity"
+        ]
+      },
+      {
+        "name": "2-Sheet_7",
+        "rect": [
+          96.0,
+          671.0,
+          84.0,
+          45.0
+        ],
+        "fileID": "-6145748708600747627",
+        "references": [
+          "Assets/_Project/Scenes/Lobby.unity"
+        ]
+      },
+      {
+        "name": "2-Sheet_8",
+        "rect": [
+          230.0,
+          642.0,
+          55.0,
+          55.0
+        ],
+        "fileID": "6574319341449175902",
+        "references": [
+          "Assets/_Project/Scenes/Lobby.unity"
+        ]
+      },
+      {
+        "name": "2-Sheet_9",
+        "rect": [
+          295.0,
+          643.0,
+          55.0,
+          55.0
+        ],
+        "fileID": "1880504616607037712",
+        "references": [
+          "Assets/_Project/Scenes/Lobby.unity"
+        ]
+      },
+      {
+        "name": "gauge_1",
+        "rect": [
+          913.0,
+          660.0,
+          412.0,
+          38.0
+        ],
+        "fileID": "8976761576101220777",
+        "references": [
+          "Assets/_Project/Prefabs/UI/HudCanvas.prefab"
+        ]
+      },
+      {
+        "name": "2-Sheet_11",
+        "rect": [
+          38.0,
+          606.0,
+          57.0,
+          43.0
+        ],
+        "fileID": "-6357690169185649713",
+        "references": [
+          "Assets/_Project/Scenes/Lobby.unity"
+        ]
+      },
+      {
+        "name": "2-Sheet_12",
+        "rect": [
+          107.0,
+          607.0,
+          47.0,
+          45.0
+        ],
+        "fileID": "1906380700458824991",
+        "references": [
+          "Assets/_Project/Scenes/Lobby.unity"
+        ]
+      },
+      {
+        "name": "2-Sheet_13",
+        "rect": [
+          223.0,
+          565.0,
+          55.0,
+          55.0
+        ],
+        "fileID": "-4652764650170367516",
+        "references": [
+          "Assets/_Project/Scenes/Lobby.unity"
+        ]
+      },
+      {
+        "name": "2-Sheet_14",
+        "rect": [
+          289.0,
+          565.0,
+          55.0,
+          55.0
+        ],
+        "fileID": "-6730266640182169504",
+        "references": [
+          "Assets/_Project/Scenes/Lobby.unity"
+        ]
+      },
+      {
+        "name": "gauge_2",
+        "rect": [
+          913.0,
+          595.0,
+          412.0,
+          38.0
+        ],
+        "fileID": "-1972896690729535018",
+        "references": [
+          "Assets/_Project/Prefabs/UI/HudCanvas.prefab",
+          "Assets/_Project/Prefabs/UI/LobbyTopBar.prefab"
+        ]
+      },
+      {
+        "name": "weapon_0",
+        "rect": [
+          1368.0,
+          555.0,
+          83.0,
+          88.0
+        ],
+        "fileID": "6229257388046850901",
+        "references": []
+      },
+      {
+        "name": "weapon_1",
+        "rect": [
+          1486.0,
+          555.0,
+          83.0,
+          88.0
+        ],
+        "fileID": "3264308230041917409",
+        "references": []
+      },
+      {
+        "name": "weapon_2",
+        "rect": [
+          1604.0,
+          555.0,
+          83.0,
+          88.0
+        ],
+        "fileID": "-4326262013424500140",
+        "references": []
+      },
+      {
+        "name": "weapon_3",
+        "rect": [
+          1816.0,
+          555.0,
+          83.0,
+          88.0
+        ],
+        "fileID": "-7630160406200261039",
+        "references": []
+      },
+      {
+        "name": "weapon_4",
+        "rect": [
+          1934.0,
+          555.0,
+          83.0,
+          88.0
+        ],
+        "fileID": "6408189739897901983",
+        "references": []
+      },
+      {
+        "name": "weapon_5",
+        "rect": [
+          2053.0,
+          555.0,
+          83.0,
+          88.0
+        ],
+        "fileID": "-8647948609961382094",
+        "references": []
+      },
+      {
+        "name": "2-Sheet_22",
+        "rect": [
+          40.0,
+          514.0,
+          134.0,
+          75.0
+        ],
+        "fileID": "-8299547863685749883",
+        "references": [
+          "Assets/_Project/Scenes/Lobby.unity"
+        ]
+      },
+      {
+        "name": "wall_1",
+        "rect": [
+          452.0,
+          541.0,
+          440.0,
+          54.0
+        ],
+        "fileID": "2779871491296094607",
+        "references": [
+          "Assets/_Project/Prefabs/Stage/Wall.prefab"
+        ]
+      },
+      {
+        "name": "2-Sheet_24",
+        "rect": [
+          39.0,
+          430.0,
+          81.0,
+          70.0
+        ],
+        "fileID": "-6475973243977809496",
+        "references": [
+          "Assets/_Project/Scenes/Lobby.unity"
+        ]
+      },
+      {
+        "name": "2-Sheet_25",
+        "rect": [
+          144.0,
+          427.0,
+          81.0,
+          70.0
+        ],
+        "fileID": "-6724351953738717419",
+        "references": [
+          "Assets/_Project/Scenes/Lobby.unity"
+        ]
+      },
+      {
+        "name": "2-Sheet_26",
+        "rect": [
+          267.0,
+          481.0,
+          55.0,
+          55.0
+        ],
+        "fileID": "5207584623139031790",
+        "references": [
+          "Assets/_Project/Scenes/Lobby.unity"
+        ]
+      },
+      {
+        "name": "card_0",
+        "rect": [
+          1350.0,
+          323.0,
+          116.0,
+          195.0
+        ],
+        "fileID": "-9015292720473756836",
+        "references": [
+          "Assets/_Project/Prefabs/UI/CardSelect.prefab"
+        ]
+      },
+      {
+        "name": "2-Sheet_28",
+        "rect": [
+          1469.0,
+          323.0,
+          116.0,
+          195.0
+        ],
+        "fileID": "-2265965899787491248",
+        "references": []
+      },
+      {
+        "name": "2-Sheet_29",
+        "rect": [
+          1587.0,
+          323.0,
+          116.0,
+          195.0
+        ],
+        "fileID": "704082925491374861",
+        "references": []
+      },
+      {
+        "name": "card_1",
+        "rect": [
+          1798.0,
+          323.0,
+          116.0,
+          195.0
+        ],
+        "fileID": "-5675027869577820121",
+        "references": [
+          "Assets/_Project/Prefabs/UI/CardSelect.prefab"
+        ]
+      },
+      {
+        "name": "2-Sheet_31",
+        "rect": [
+          1917.0,
+          323.0,
+          116.0,
+          195.0
+        ],
+        "fileID": "-8103864486193639295",
+        "references": []
+      },
+      {
+        "name": "2-Sheet_32",
+        "rect": [
+          2035.0,
+          323.0,
+          116.0,
+          195.0
+        ],
+        "fileID": "2893310399039364908",
+        "references": []
+      },
+      {
+        "name": "wall_2",
+        "rect": [
+          452.0,
+          423.0,
+          440.0,
+          54.0
+        ],
+        "fileID": "9001559754651840043",
+        "references": [
+          "Assets/_Project/Prefabs/Stage/Wall.prefab"
+        ]
+      },
+      {
+        "name": "2-Sheet_45",
+        "rect": [
+          36.0,
+          353.0,
+          81.0,
+          70.0
+        ],
+        "fileID": "1456939377719760306",
+        "references": []
+      },
+      {
+        "name": "2-Sheet_46",
+        "rect": [
+          144.0,
+          352.0,
+          81.0,
+          70.0
+        ],
+        "fileID": "-8628323854538365953",
+        "references": []
+      },
+      {
+        "name": "2-Sheet_47",
+        "rect": [
+          38.0,
+          280.0,
+          81.0,
+          70.0
+        ],
+        "fileID": "-2279640793018001453",
+        "references": []
+      },
+      {
+        "name": "2-Sheet_48",
+        "rect": [
+          143.0,
+          281.0,
+          81.0,
+          70.0
+        ],
+        "fileID": "-7959863752148171880",
+        "references": []
+      },
+      {
+        "name": "2-Sheet_49",
+        "rect": [
+          238.0,
+          281.0,
+          81.0,
+          70.0
+        ],
+        "fileID": "8396951118354403591",
+        "references": [
+          "Assets/_Project/Scenes/Lobby.unity"
+        ]
+      },
+      {
+        "name": "skillIcon_2",
+        "rect": [
+          440.0,
+          299.0,
+          19.0,
+          22.0
+        ],
+        "fileID": "3254138636239939185",
+        "references": []
+      },
+      {
+        "name": "skillIcon_3",
+        "rect": [
+          466.0,
+          300.0,
+          18.0,
+          23.0
+        ],
+        "fileID": "-2878529133878831360",
+        "references": []
+      },
+      {
+        "name": "skillIcon_1",
+        "rect": [
+          496.0,
+          302.0,
+          23.0,
+          19.0
+        ],
+        "fileID": "240244169675946729",
+        "references": []
+      },
+      {
+        "name": "skill_0",
+        "rect": [
+          525.0,
+          294.0,
+          33.0,
+          36.0
+        ],
+        "fileID": "1790485213689364391",
+        "references": []
+      },
+      {
+        "name": "2-Sheet_54",
+        "rect": [
+          39.0,
+          208.0,
+          81.0,
+          70.0
+        ],
+        "fileID": "-3570052701582988770",
+        "references": [
+          "Assets/_Project/Scenes/Lobby.unity"
+        ]
+      },
+      {
+        "name": "2-Sheet_55",
+        "rect": [
+          143.0,
+          209.0,
+          81.0,
+          70.0
+        ],
+        "fileID": "-4243244494643233792",
+        "references": [
+          "Assets/_Project/Scenes/Lobby.unity"
+        ]
+      },
+      {
+        "name": "skill_1",
+        "rect": [
+          526.0,
+          258.0,
+          33.0,
+          36.0
+        ],
+        "fileID": "2129125668017701518",
+        "references": [
+          "Assets/_Project/Prefabs/UI/HudCanvas.prefab"
+        ]
+      },
+      {
+        "name": "2-Sheet_57",
+        "rect": [
+          525.0,
+          186.0,
+          33.0,
+          36.0
+        ],
+        "fileID": "1245345412906558532",
+        "references": []
+      },
+      {
+        "name": "2-Sheet_58",
+        "rect": [
+          526.0,
+          221.0,
+          33.0,
+          36.0
+        ],
+        "fileID": "-780715867729780839",
+        "references": []
+      },
+      {
+        "name": "2-Sheet_59",
+        "rect": [
+          36.0,
+          125.0,
+          81.0,
+          70.0
+        ],
+        "fileID": "1211177355745454613",
+        "references": [
+          "Assets/_Project/Scenes/Lobby.unity"
+        ]
+      },
+      {
+        "name": "2-Sheet_60",
+        "rect": [
+          143.0,
+          123.0,
+          145.0,
+          70.0
+        ],
+        "fileID": "3089864702522627156",
+        "references": [
+          "Assets/_Project/Scenes/Lobby.unity"
+        ]
+      },
+      {
+        "name": "2-Sheet_61",
+        "rect": [
+          36.0,
+          37.0,
+          81.0,
+          70.0
+        ],
+        "fileID": "-7557089409354249535",
+        "references": [
+          "Assets/_Project/Scenes/Lobby.unity"
+        ]
+      },
+      {
+        "name": "2-Sheet_62",
+        "rect": [
+          147.0,
+          38.0,
+          81.0,
+          70.0
+        ],
+        "fileID": "-162180294550514629",
+        "references": [
+          "Assets/_Project/Scenes/Lobby.unity"
+        ]
+      }
+    ]
+  },
+  {
+    "path": "Assets/_Project/Sprites/3-Sheet.png",
+    "guid": "c85fb095b58e75045bffd083c7bb853c",
+    "size": [
+      1080,
+      780
+    ],
+    "sprites": [
+      {
+        "name": "bg_0",
+        "rect": [
+          357.0,
+          0.0,
+          362.0,
+          780.0
+        ],
+        "fileID": "-2673419114055572261",
+        "references": [
+          "Assets/_Project/Prefabs/UI/LobbyBackground.prefab"
+        ]
+      },
+      {
+        "name": "3-Sheet_1",
+        "rect": [
+          732.0,
+          709.0,
+          30.0,
+          53.0
+        ],
+        "fileID": "-4225156110634057556",
+        "references": []
+      },
+      {
+        "name": "3-Sheet_2",
+        "rect": [
+          781.0,
+          709.0,
+          30.0,
+          53.0
+        ],
+        "fileID": "4283174885018362325",
+        "references": []
+      },
+      {
+        "name": "3-Sheet_3",
+        "rect": [
+          838.0,
+          710.0,
+          30.0,
+          53.0
+        ],
+        "fileID": "2199068693262589173",
+        "references": [
+          "Assets/_Project/Prefabs/UI/MissionScreen.prefab"
+        ]
+      },
+      {
+        "name": "3-Sheet_4",
+        "rect": [
+          898.0,
+          712.0,
+          30.0,
+          53.0
+        ],
+        "fileID": "3710166005748710330",
+        "references": [
+          "Assets/_Project/Prefabs/UI/MissionScreen.prefab"
+        ]
+      },
+      {
+        "name": "3-Sheet_5",
+        "rect": [
+          954.0,
+          714.0,
+          120.0,
+          38.0
+        ],
+        "fileID": "-547292741239331420",
+        "references": []
+      },
+      {
+        "name": "3-Sheet_6",
+        "rect": [
+          725.0,
+          646.0,
+          166.0,
+          50.0
+        ],
+        "fileID": "-4564066302927346108",
+        "references": [
+          "Assets/_Project/Prefabs/UI/MissionScreen.prefab"
+        ]
+      },
+      {
+        "name": "3-Sheet_7",
+        "rect": [
+          901.0,
+          670.0,
+          26.0,
+          25.0
+        ],
+        "fileID": "-2662589114339668983",
+        "references": []
+      },
+      {
+        "name": "3-Sheet_8",
+        "rect": [
+          953.0,
+          671.0,
+          120.0,
+          38.0
+        ],
+        "fileID": "-5840962425066783550",
+        "references": [
+          "Assets/_Project/Prefabs/UI/MissionScreen.prefab"
+        ]
+      },
+      {
+        "name": "3-Sheet_9",
+        "rect": [
+          900.0,
+          631.0,
+          33.0,
+          29.0
+        ],
+        "fileID": "-1601877276668410677",
+        "references": [
+          "Assets/_Project/Prefabs/UI/MissionScreen.prefab"
+        ]
+      },
+      {
+        "name": "3-Sheet_10",
+        "rect": [
+          952.0,
+          625.0,
+          120.0,
+          38.0
+        ],
+        "fileID": "-3124170990746665893",
+        "references": [
+          "Assets/_Project/Prefabs/UI/MissionScreen.prefab"
+        ]
+      },
+      {
+        "name": "bg_2",
+        "rect": [
+          116.0,
+          521.0,
+          87.0,
+          84.0
+        ],
+        "fileID": "4826062194085477833",
+        "references": [
+          "Assets/_Project/Prefabs/UI/LobbyBackground.prefab"
+        ]
+      },
+      {
+        "name": "3-Sheet_12",
+        "rect": [
+          729.0,
+          586.0,
+          43.0,
+          41.0
+        ],
+        "fileID": "-2617863573559170392",
+        "references": [
+          "Assets/_Project/Prefabs/UI/MissionScreen.prefab"
+        ]
+      },
+      {
+        "name": "3-Sheet_13",
+        "rect": [
+          783.0,
+          590.0,
+          146.0,
+          28.0
+        ],
+        "fileID": "-4950375247169892714",
+        "references": [
+          "Assets/_Project/Prefabs/UI/MissionScreen.prefab"
+        ]
+      },
+      {
+        "name": "3-Sheet_15",
+        "rect": [
+          763.0,
+          530.0,
+          54.0,
+          48.0
+        ],
+        "fileID": "1320498196413051251",
+        "references": []
+      },
+      {
+        "name": "3-Sheet_19",
+        "rect": [
+          848.0,
+          531.0,
+          54.0,
+          48.0
+        ],
+        "fileID": "3954408396765421218",
+        "references": []
+      },
+      {
+        "name": "3-Sheet_20",
+        "rect": [
+          940.0,
+          532.0,
+          44.0,
+          40.0
+        ],
+        "fileID": "-1143779024004138049",
+        "references": []
+      },
+      {
+        "name": "bg_1",
+        "rect": [
+          32.0,
+          93.0,
+          287.0,
+          340.0
+        ],
+        "fileID": "-5025266899936364083",
+        "references": [
+          "Assets/_Project/Prefabs/UI/LobbyBackground.prefab"
+        ]
+      },
+      {
+        "name": "3-Sheet_22",
+        "rect": [
+          749.0,
+          326.0,
+          294.0,
+          186.0
+        ],
+        "fileID": "4635437972976925677",
+        "references": [
+          "Assets/_Project/Prefabs/UI/MissionScreen.prefab"
+        ]
+      },
+      {
+        "name": "3-Sheet_23",
+        "rect": [
+          778.0,
+          296.0,
+          213.0,
+          11.0
+        ],
+        "fileID": "8011248384883258257",
+        "references": [
+          "Assets/_Project/Prefabs/UI/MissionScreen.prefab"
+        ]
+      },
+      {
+        "name": "3-Sheet_24",
+        "rect": [
+          786.0,
+          261.0,
+          19.0,
+          26.0
+        ],
+        "fileID": "202921038224303497",
+        "references": [
+          "Assets/_Project/Prefabs/UI/MissionScreen.prefab"
+        ]
+      },
+      {
+        "name": "3-Sheet_25",
+        "rect": [
+          872.0,
+          261.0,
+          19.0,
+          26.0
+        ],
+        "fileID": "-6716616634142900680",
+        "references": []
+      },
+      {
+        "name": "3-Sheet_26",
+        "rect": [
+          961.0,
+          261.0,
+          19.0,
+          26.0
+        ],
+        "fileID": "-3238054197460907053",
+        "references": []
+      },
+      {
+        "name": "3-Sheet_27",
+        "rect": [
+          794.0,
+          240.0,
+          182.0,
+          11.0
+        ],
+        "fileID": "8081686109617971666",
+        "references": [
+          "Assets/_Project/Prefabs/UI/MissionScreen.prefab"
+        ]
+      },
+      {
+        "name": "3-Sheet_28",
+        "rect": [
+          786.0,
+          200.0,
+          194.0,
+          26.0
+        ],
+        "fileID": "1095033479175997274",
+        "references": []
+      },
+      {
+        "name": "3-Sheet_29",
+        "rect": [
+          748.0,
+          149.0,
+          39.0,
+          14.0
+        ],
+        "fileID": "-7318749988496189096",
+        "references": [
+          "Assets/_Project/Prefabs/UI/MissionScreen.prefab"
+        ]
+      },
+      {
+        "name": "3-Sheet_30",
+        "rect": [
+          862.0,
+          97.0,
+          63.0,
+          67.0
+        ],
+        "fileID": "-5609951737317132147",
+        "references": [
+          "Assets/_Project/Prefabs/UI/MissionScreen.prefab"
+        ]
+      },
+      {
+        "name": "3-Sheet_31",
+        "rect": [
+          749.0,
+          118.0,
+          18.0,
+          18.0
+        ],
+        "fileID": "4277550855162692572",
+        "references": [
+          "Assets/_Project/Prefabs/UI/MissionScreen.prefab"
+        ]
+      },
+      {
+        "name": "3-Sheet_32",
+        "rect": [
+          743.0,
+          82.0,
+          82.0,
+          20.0
+        ],
+        "fileID": "-3309412669430454712",
+        "references": [
+          "Assets/_Project/Prefabs/UI/MissionScreen.prefab"
+        ]
+      },
+      {
+        "name": "3-Sheet_33",
+        "rect": [
+          960.0,
+          87.0,
+          88.0,
+          20.0
+        ],
+        "fileID": "-1699552217111524088",
+        "references": [
+          "Assets/_Project/Prefabs/UI/MissionScreen.prefab"
+        ]
+      },
+      {
+        "name": "3-Sheet_34",
+        "rect": [
+          937.0,
+          17.0,
+          132.0,
+          56.0
+        ],
+        "fileID": "-8394102172929864280",
+        "references": [
+          "Assets/_Project/Prefabs/UI/MissionScreen.prefab"
+        ]
+      }
+    ]
+  },
+  {
+    "path": "Assets/_Project/Sprites/4-Sheet.png",
+    "guid": "590aec5eefbe91b46afa8b1d85d55ecd",
+    "size": [
+      446,
+      780
+    ],
+    "sprites": [
+      {
+        "name": "4-sheet_0",
+        "rect": [
+          92.0,
+          721.0,
+          129.0,
+          40.0
+        ],
+        "fileID": "-2484140231975051272",
+        "references": [
+          "Assets/_Project/Prefabs/UI/EnergyRecoverPopup.prefab"
+        ]
+      },
+      {
+        "name": "4-sheet_1",
+        "rect": [
+          239.0,
+          720.0,
+          128.0,
+          40.0
+        ],
+        "fileID": "-4343339770401250956",
+        "references": [
+          "Assets/_Project/Prefabs/UI/EnergyRecoverPopup.prefab"
+        ]
+      },
+      {
+        "name": "4-sheet_2",
+        "rect": [
+          390.0,
+          715.0,
+          53.0,
+          53.0
+        ],
+        "fileID": "1010984901492693545",
+        "references": [
+          "Assets/_Project/Prefabs/UI/EnergyRecoverPopup.prefab",
+          "Assets/_Project/Prefabs/UI/PauseMenu.prefab",
+          "Assets/_Project/Data/SkillAssetTable.asset"
+        ]
+      },
+      {
+        "name": "pause_0",
+        "rect": [
+          57.0,
+          616.0,
+          38.0,
+          37.0
+        ],
+        "fileID": "7075163658482500186",
+        "references": [
+          "Assets/_Project/Prefabs/UI/StageControls.prefab"
+        ]
+      },
+      {
+        "name": "4-sheet_4",
+        "rect": [
+          110.0,
+          454.0,
+          157.0,
+          238.0
+        ],
+        "fileID": "-252459828893122207",
+        "references": [
+          "Assets/_Project/Prefabs/UI/EnergyRecoverPopup.prefab"
+        ]
+      },
+      {
+        "name": "4-sheet_5",
+        "rect": [
+          267.0,
+          454.0,
+          157.0,
+          238.0
+        ],
+        "fileID": "-1825994219323491980",
+        "references": [
+          "Assets/_Project/Prefabs/UI/EnergyRecoverPopup.prefab"
+        ]
+      },
+      {
+        "name": "fast_0",
+        "rect": [
+          15.0,
+          564.0,
+          39.0,
+          40.0
+        ],
+        "fileID": "-8308856544462651630",
+        "references": [
+          "Assets/_Project/Prefabs/UI/StageControls.prefab"
+        ]
+      },
+      {
+        "name": "fast_1",
+        "rect": [
+          58.0,
+          564.0,
+          39.0,
+          40.0
+        ],
+        "fileID": "-1464785530653518859",
+        "references": [
+          "Assets/_Project/Prefabs/UI/StageControls.prefab"
+        ]
+      },
+      {
+        "name": "4-sheet_8",
+        "rect": [
+          146.0,
+          360.0,
+          86.0,
+          87.0
+        ],
+        "fileID": "-1487303018654729077",
+        "references": []
+      },
+      {
+        "name": "4-sheet_9",
+        "rect": [
+          287.0,
+          354.0,
+          112.0,
+          90.0
+        ],
+        "fileID": "448686385144734468",
+        "references": []
+      },
+      {
+        "name": "4-sheet_10",
+        "rect": [
+          107.0,
+          311.0,
+          31.0,
+          25.0
+        ],
+        "fileID": "-3154291705826454089",
+        "references": [
+          "Assets/_Project/Prefabs/UI/EnergyRecoverPopup.prefab"
+        ]
+      },
+      {
+        "name": "4-sheet_11",
+        "rect": [
+          151.0,
+          302.0,
+          123.0,
+          45.0
+        ],
+        "fileID": "-1618403683267056001",
+        "references": [
+          "Assets/_Project/Prefabs/UI/EnergyRecoverPopup.prefab"
+        ]
+      },
+      {
+        "name": "4-sheet_12",
+        "rect": [
+          279.0,
+          311.0,
+          35.0,
+          27.0
+        ],
+        "fileID": "-4638392044910927503",
+        "references": []
+      },
+      {
+        "name": "4-sheet_13",
+        "rect": [
+          317.0,
+          303.0,
+          123.0,
+          45.0
+        ],
+        "fileID": "-3705514600529417299",
+        "references": [
+          "Assets/_Project/Prefabs/UI/EnergyRecoverPopup.prefab"
+        ]
+      },
+      {
+        "name": "4-sheet_14",
+        "rect": [
+          96.0,
+          5.0,
+          342.0,
+          290.0
+        ],
+        "fileID": "1453214392915198294",
+        "references": [
+          "Assets/_Project/Prefabs/UI/EnergyRecoverPopup.prefab"
+        ]
+      }
+    ]
+  },
+  {
+    "path": "Assets/_Project/Sprites/5-Sheet.png",
+    "guid": "0dbab9ae997e68140b4e6419aa540fae",
+    "size": [
+      1800,
+      780
+    ],
+    "sprites": [
+      {
+        "name": "5-Sheet_0",
+        "rect": [
+          395.0,
+          644.0,
+          273.0,
+          102.0
+        ],
+        "fileID": "1180296689353329746",
+        "references": [
+          "Assets/_Project/Prefabs/UI/ResultPopup.prefab"
+        ]
+      },
+      {
+        "name": "5-Sheet_1",
+        "rect": [
+          719.0,
+          0.0,
+          362.0,
+          780.0
+        ],
+        "fileID": "7540277373471348355",
+        "references": [
+          "Assets/_Project/Prefabs/UI/ResultPopup.prefab"
+        ]
+      },
+      {
+        "name": "5-Sheet_2",
+        "rect": [
+          1115.0,
+          644.0,
+          273.0,
+          102.0
+        ],
+        "fileID": "-5434804791744037227",
+        "references": []
+      },
+      {
+        "name": "5-Sheet_3",
+        "rect": [
+          1439.0,
+          0.0,
+          361.0,
+          780.0
+        ],
+        "fileID": "3666062145793323630",
+        "references": [
+          "Assets/_Project/Scenes/Stage.unity"
+        ]
+      },
+      {
+        "name": "5-Sheet_4",
+        "rect": [
+          420.0,
+          552.0,
+          219.0,
+          87.0
+        ],
+        "fileID": "-6184120518216577998",
+        "references": [
+          "Assets/_Project/Prefabs/UI/ResultPopup.prefab"
+        ]
+      },
+      {
+        "name": "5-Sheet_5",
+        "rect": [
+          1140.0,
+          552.0,
+          219.0,
+          87.0
+        ],
+        "fileID": "-677509023867196673",
+        "references": []
+      },
+      {
+        "name": "5-Sheet_6",
+        "rect": [
+          50.0,
+          272.0,
+          258.0,
+          232.0
+        ],
+        "fileID": "4476022611631029071",
+        "references": [
+          "Assets/_Project/Scenes/Stage.unity"
+        ]
+      },
+      {
+        "name": "5-Sheet_7",
+        "rect": [
+          387.0,
+          420.0,
+          101.0,
+          115.0
+        ],
+        "fileID": "-4209008174106093213",
+        "references": [
+          "Assets/_Project/Prefabs/UI/ResultPopup.prefab"
+        ]
+      },
+      {
+        "name": "5-Sheet_8",
+        "rect": [
+          494.0,
+          438.0,
+          217.0,
+          92.0
+        ],
+        "fileID": "3219507238113071912",
+        "references": [
+          "Assets/_Project/Prefabs/UI/ResultPopup.prefab"
+        ]
+      },
+      {
+        "name": "5-Sheet_9",
+        "rect": [
+          1214.0,
+          438.0,
+          217.0,
+          92.0
+        ],
+        "fileID": "2760248581853511264",
+        "references": []
+      },
+      {
+        "name": "5-Sheet_10",
+        "rect": [
+          380.0,
+          346.0,
+          319.0,
+          58.0
+        ],
+        "fileID": "3370176622654930315",
+        "references": [
+          "Assets/_Project/Prefabs/UI/ResultPopup.prefab"
+        ]
+      },
+      {
+        "name": "5-Sheet_11",
+        "rect": [
+          73.0,
+          169.0,
+          215.0,
+          55.0
+        ],
+        "fileID": "-2212527936516378406",
+        "references": [
+          "Assets/_Project/Scenes/Stage.unity"
+        ]
+      },
+      {
+        "name": "5-Sheet_12",
+        "rect": [
+          397.0,
+          195.0,
+          296.0,
+          139.0
+        ],
+        "fileID": "-496094106967393511",
+        "references": [
+          "Assets/_Project/Prefabs/UI/MonsterList.prefab",
+          "Assets/_Project/Prefabs/UI/ResultPopup.prefab",
+          "Assets/_Project/Prefabs/UI/RewardList.prefab"
+        ]
+      },
+      {
+        "name": "5-Sheet_13",
+        "rect": [
+          73.0,
+          79.0,
+          215.0,
+          55.0
+        ],
+        "fileID": "-7326139334133312247",
+        "references": [
+          "Assets/_Project/Scenes/Stage.unity"
+        ]
+      },
+      {
+        "name": "5-Sheet_14",
+        "rect": [
+          504.0,
+          108.0,
+          78.0,
+          71.0
+        ],
+        "fileID": "3078536161544962577",
+        "references": []
+      },
+      {
+        "name": "5-Sheet_15",
+        "rect": [
+          370.0,
+          14.0,
+          167.0,
+          65.0
+        ],
+        "fileID": "-6375928185919371013",
+        "references": [
+          "Assets/_Project/Prefabs/UI/ResultPopup.prefab"
+        ]
+      },
+      {
+        "name": "5-Sheet_16",
+        "rect": [
+          542.0,
+          14.0,
+          167.0,
+          65.0
+        ],
+        "fileID": "6432628734871803438",
+        "references": [
+          "Assets/_Project/Prefabs/UI/ResultPopup.prefab"
+        ]
+      }
+    ]
+  },
+  {
+    "path": "Assets/_Project/Sprites/6-Sheet.png",
+    "guid": "87ddbd6be03ec7c4ebbfed37cb7a578a",
+    "size": [
+      185,
+      81
+    ],
+    "sprites": [
+      {
+        "name": "6-sheet_0",
+        "rect": [
+          12.0,
+          7.0,
+          78.0,
+          71.0
+        ],
+        "fileID": "3929854621992929791",
+        "references": [
+          "Assets/_Project/Prefabs/UI/MonsterList.prefab",
+          "Assets/_Project/Prefabs/UI/RewardList.prefab"
+        ]
+      },
+      {
+        "name": "6-sheet_1",
+        "rect": [
+          119.0,
+          14.0,
+          56.0,
+          57.0
+        ],
+        "fileID": "2691650823057339236",
+        "references": []
+      }
+    ]
+  }
+]
