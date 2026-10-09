@@ -68,11 +68,19 @@ namespace Game.View
                     Sprite icon = _assets != null ? FindIcon(choice) : null;
                     Sprite background = choice.IsNewWeapon ? _newWeaponBg : _upgradeBg;
                     _slots[i].Bind(i, choice, icon, background, OnPick, FindFormIcon);
-                    _slots[i].PlayEntrance(order++ * EntranceStagger);
                 }
             }
 
             PopupPanel.Set(_panel, _transition, true);
+
+            // 패널이 켜진 뒤에야 레이아웃이 계산되므로 등장 연출은 여기서 시작한다
+            for (int i = 0; i < _slots.Length; i++)
+            {
+                if (_slots[i].gameObject.activeSelf)
+                {
+                    _slots[i].PlayEntrance(order++ * EntranceStagger);
+                }
+            }
         }
 
         // 스킬 카드는 스킬의 assetKey로, 일반 카드는 IconKey로 찾는다 (일반 카드는 강화 아이콘 칸을 쓴다)

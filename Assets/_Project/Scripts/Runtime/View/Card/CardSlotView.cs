@@ -24,15 +24,21 @@ namespace Game.View
         [SerializeField] private FormHintIconView[] _formHints;
 
 
-        private const float EntranceSeconds = 0.2f;
-        private const float EntranceStartScaleY = 0.4f;
+        private const float EntranceSeconds = 0.15f;
+        private const float EntranceStartScaleY = 0.15f;
+        private const float EntranceSlide = 35f;       // 펼쳐지는 동안 위에서 이만큼 내려온다 (기준 해상도 px)
+        private const float FoldSeconds = 0.08f;
         private const float PickedHoldSeconds = 0.35f;
         private const float PickedFadeSeconds = 0.2f;
+        private const float PickedSink = 35f;
+        private const float PickedGrowScale = 1.15f;
+        private static readonly Color PickedTint = new Color(0.45f, 0.45f, 0.45f);
 
         private Sequence _entrance;
-        private Tween _picked;
+        private Sequence _picked;
         private CanvasGroup _group;
         private RectTransform _rect;
+        private Graphic[] _graphics;
 
         private void Awake()
         {
@@ -42,41 +48,93 @@ namespace Game.View
             _rect.pivot = new Vector2(_rect.pivot.x, 1f);
         }
 
-        /// <summary>카드가 폭은 그대로 두고 위쪽 가장자리에서 아래로 펼쳐지며 나타난다. delay를 카드마다 다르게 주면 차례로 나온다.
+        /// <summary>카드가 폭은 그대로 두고 위쪽 가장자리에서 아래로 펼쳐지며 살짝 내려앉는다. delay를 카드마다 다르게 주면 차례로 나온다.
+        /// 패널이 켜진 뒤에 불러야 한다: 레이아웃을 먼저 계산해 도착 위치를 얻는다.
         /// 등장하는 동안에는 눌리지 않는다. 일시정지 중에도 흐르도록 unscaled 시간을 쓴다</summary>
         public void PlayEntrance(float delay)
         {
-            _entrance?.Kill();
-            _picked?.Kill();
+            Stop();
             EnsureGroup();
             _rect = (RectTransform)transform;
+            RestoreTint();
 
-            // 위치는 HorizontalLayoutGroup이 정하므로 건드리지 않고 세로 크기와 투명도만 쓴다
+            // 도착 위치는 레이아웃이 정한 값이다. 계산을 끝낸 뒤에 읽어야 겹치지 않는다
+            if (_rect.parent is RectTransform parent)
+            {
+                LayoutRebuilder.ForceRebuildLayoutImmediate(parent);
+            }
+            var home = _rect.anchoredPosition;
+
             _group.alpha = 0f;
             _group.interactable = false;
             _rect.localScale = new Vector3(1f, EntranceStartScaleY, 1f);
+            _rect.anchoredPosition = home + new Vector2(0f, EntranceSlide);
 
             _entrance = DOTween.Sequence().SetDelay(delay).SetUpdate(true).SetLink(gameObject);
-            _entrance.Join(DOTween.To(() => _group.alpha, a => _group.alpha = a, 1f, EntranceSeconds * 0.5f));
+            _entrance.Join(DOTween.To(() => _group.alpha, a => _group.alpha = a, 1f, EntranceSeconds * 0.4f));
             _entrance.Join(DOTween.To(() => _rect.localScale.y, y => _rect.localScale = new Vector3(1f, y, 1f), 1f, EntranceSeconds)
-                .SetEase(Ease.OutCubic));
+                .SetEase(Ease.OutQuad));
+            _entrance.Join(DOTween.To(() => _rect.anchoredPosition, v => _rect.anchoredPosition = v, home, EntranceSeconds)
+                .SetEase(Ease.OutQuad));
             _entrance.OnComplete(() => _group.interactable = true);
         }
 
-        /// <summary>이 카드가 골라졌다. 잠시 그 자리에 남아 있다가 흐려지며 사라진다</summary>
+        /// <summary>이 카드가 골라졌다. 잠시 남아 아래로 내려앉다가, 조금 커지며 회색으로 흐려져 사라진다</summary>
         public void PlayPicked()
         {
             Prepare();
-            _picked = DOTween.Sequence().SetUpdate(true).SetLink(gameObject)
-                .AppendInterval(PickedHoldSeconds)
-                .Append(DOTween.To(() => _group.alpha, a => _group.alpha = a, 0f, PickedFadeSeconds));
+            CollectGraphics();
+            var start = _rect.anchoredPosition;
+            _picked = DOTween.Sequence().SetUpdate(true).SetLink(gameObject);
+            _picked.Join(DOTween.To(() => _rect.anchoredPosition, v => _rect.anchoredPosition = v,
+                start - new Vector2(0f, PickedSink), PickedHoldSeconds + PickedFadeSeconds).SetEase(Ease.Linear));
+            _picked.Insert(PickedHoldSeconds, _rect.DOScale(PickedGrowScale, PickedFadeSeconds).SetEase(Ease.OutQuad));
+            _picked.Insert(PickedHoldSeconds, DOTween.To(() => 0f, t => Tint(t), 1f, PickedFadeSeconds));
+            _picked.Insert(PickedHoldSeconds, DOTween.To(() => _group.alpha, a => _group.alpha = a, 0f, PickedFadeSeconds));
         }
 
-        /// <summary>다른 카드가 골라졌다. 바로 사라진다. 자리는 그대로 두어 고른 카드가 움직이지 않게 한다</summary>
+        /// <summary>다른 카드가 골라졌다. 위로 접혀 사라진다. 자리는 그대로 두어 고른 카드가 움직이지 않게 한다</summary>
         public void PlayDismissed()
         {
             Prepare();
-            _group.alpha = 0f;
+            _picked = DOTween.Sequence().SetUpdate(true).SetLink(gameObject);
+            _picked.Join(DOTween.To(() => _rect.localScale.y, y => _rect.localScale = new Vector3(1f, y, 1f), 0f, FoldSeconds)
+                .SetEase(Ease.InQuad));
+            _picked.OnComplete(() => _group.alpha = 0f);
+        }
+
+        private void Stop()
+        {
+            _entrance?.Kill();
+            _picked?.Kill();
+        }
+
+        private void CollectGraphics()
+        {
+            _graphics ??= GetComponentsInChildren<Graphic>(true);
+            _tintFrom = new Color[_graphics.Length];
+            for (int i = 0; i < _graphics.Length; i++) { _tintFrom[i] = _graphics[i].color; }
+        }
+
+        private Color[] _tintFrom;
+
+        private void Tint(float t)
+        {
+            if (_graphics == null) { return; }
+            for (int i = 0; i < _graphics.Length; i++)
+            {
+                var from = _tintFrom[i];
+                var to = new Color(from.r * PickedTint.r, from.g * PickedTint.g, from.b * PickedTint.b, from.a);
+                _graphics[i].color = Color.Lerp(from, to, t);
+            }
+        }
+
+        // 다음 등장 전에 색을 원래대로 돌린다
+        private void RestoreTint()
+        {
+            if (_graphics == null || _tintFrom == null) { return; }
+            for (int i = 0; i < _graphics.Length; i++) { _graphics[i].color = _tintFrom[i]; }
+            _tintFrom = null;
         }
 
         // Unity 오브젝트는 ??로 null을 판별하면 안 된다 (없는 컴포넌트가 가짜 null로 돌아온다)
