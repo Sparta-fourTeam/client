@@ -918,6 +918,7 @@ RectTransform:
   - {fileID: 8453558183539885752}
   - {fileID: 3940661411553649679}
   - {fileID: 6679347376967646018}
+  - {fileID: 6706892919149912250}
   m_Father: {fileID: 4439765720107700867}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
@@ -945,7 +946,14 @@ MonoBehaviour:
   - {fileID: 7611046948685453496}
   - {fileID: 8001586204641590593}
   - {fileID: 6993248843321444798}
-  _fullSparks: {fileID: 6755994226551274803}
+  _boltSprites:
+  - {fileID: 21300000, guid: f18e56cf1254c4c66a2eef9f2a4fd6f4, type: 3}
+  - {fileID: 21300000, guid: aab3249f6a2064dde8d2ef6dc0e077c7, type: 3}
+  - {fileID: 21300000, guid: 5bab7f4e9931b4341abc59f6824c943b, type: 3}
+  - {fileID: 21300000, guid: 09be16ede9a0c40d1920641baf98fc2a, type: 3}
+  - {fileID: 21300000, guid: a4322f73e98b04286a14386e14093a97, type: 3}
+  - {fileID: 21300000, guid: d8797d6e6771343ffb10b1f6e8be6f31, type: 3}
+  _resetSparks: {fileID: 6755994226551274803}
 --- !u!1 &1512174348263287268
 GameObject:
   m_ObjectHideFlags: 0
@@ -1215,7 +1223,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: d58b4940ef477407793ca93df6c466ae, type: 3}
+  m_Sprite: {fileID: 21300000, guid: f18e56cf1254c4c66a2eef9f2a4fd6f4, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -2347,6 +2355,7 @@ GameObject:
   - component: {fileID: 6679347376967646018}
   - component: {fileID: 2051765475758676379}
   - component: {fileID: 800220271001682898}
+  - component: {fileID: 4678087691267107299}
   m_Layer: 0
   m_Name: GaugeStar
   m_TagString: Untagged
@@ -2368,7 +2377,6 @@ RectTransform:
   m_Children:
   - {fileID: 8203739567841912352}
   - {fileID: 3211006676430648148}
-  - {fileID: 6706892919149912250}
   m_Father: {fileID: 5534799165362881682}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -2414,6 +2422,18 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!225 &4678087691267107299
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3669094289921303090}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &3673939840294540802
 GameObject:
   m_ObjectHideFlags: 0
@@ -2808,7 +2828,7 @@ MonoBehaviour:
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 0
-  m_FillAmount: 1
+  m_FillAmount: 0
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
@@ -3798,7 +3818,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: d58b4940ef477407793ca93df6c466ae, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 5bab7f4e9931b4341abc59f6824c943b, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -4126,7 +4146,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: d58b4940ef477407793ca93df6c466ae, type: 3}
+  m_Sprite: {fileID: 21300000, guid: aab3249f6a2064dde8d2ef6dc0e077c7, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -5002,7 +5022,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 6679347376967646018}
+    m_TransformParent: {fileID: 5534799165362881682}
     m_Modifications:
     - target: {fileID: 1265558470888985573, guid: f50f20d3bc313414ebc4052fc4993189, type: 3}
       propertyPath: m_Name

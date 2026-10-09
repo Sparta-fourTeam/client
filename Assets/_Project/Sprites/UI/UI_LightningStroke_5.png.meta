@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: d58b4940ef477407793ca93df6c466ae
+guid: a4322f73e98b04286a14386e14093a97
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -6667107416480380231
-    second: UI_LightningStroke_0
+      213: 5135926601627815931
+    second: UI_LightningStroke_5_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -128,13 +128,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: UI_LightningStroke_0
+      name: UI_LightningStroke_5_0
       rect:
         serializedVersion: 2
-        x: 9
-        y: 104
-        width: 238
-        height: 46
+        x: 0
+        y: 118
+        width: 255
+        height: 19
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -143,8 +143,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 9ba8059e02da973a0800000000000000
-      internalID: -6667107416480380231
+      spriteID: bff418a680a764740800000000000000
+      internalID: 5135926601627815931
       vertices: []
       indices: 
       edges: []
@@ -163,7 +163,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      UI_LightningStroke_0: -6667107416480380231
+      UI_LightningStroke_5_0: 5135926601627815931
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
