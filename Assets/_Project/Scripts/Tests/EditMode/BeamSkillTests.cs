@@ -165,7 +165,7 @@ namespace Game.Tests
             Tick(zone, .1f);
             Assert.AreEqual(.25f, probe.VulnerabilityRatio, .001f);
             Assert.AreEqual(5, probe.VulnerabilityDuration);
-            Assert.AreEqual(.8f, probe.SlowRatio, .001f);
+            Assert.AreEqual(.35f, probe.SlowRatio, .001f);
             Assert.AreEqual(1, probe.SlowDuration);
             Assert.AreEqual(.5f, probe.Freeze, .001f);
         }

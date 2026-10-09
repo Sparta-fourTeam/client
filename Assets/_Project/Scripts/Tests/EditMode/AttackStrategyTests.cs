@@ -26,6 +26,55 @@ namespace Game.Tests
             maxLevel = 10
         };
 
+        private sealed class PoseTarget : IEnemyTarget
+        {
+            public Vector2 Position { get; set; } = Vector2.up;
+            public bool IsDead { get; set; }
+            public void TakeDamage(int amount) { }
+        }
+
+        private sealed class PoseTargets : IEnemyTargetProvider
+        {
+            public readonly PoseTarget Target = new();
+            public int GetNearest(Vector2 from, int count, List<IEnemyTarget> results)
+            {
+                results.Clear();
+                results.Add(Target);
+                return 1;
+            }
+        }
+
+        [Test]
+        public void FiredPose_RequiresLivingTargetInRangeAndSkipsChildCasts()
+        {
+            var go = new GameObject("CastPoseTest");
+            var targets = new PoseTargets();
+            var strategy = new FakeStrategy();
+            var data = Data();
+            data.baseStats.cast.range = 10;
+            var caster = SkillFactory.Create(data, go.transform, targets, strategy);
+            try
+            {
+                int poses = 0;
+                caster.Fired += () => poses++;
+                caster.Tick(.1f);
+                Assert.AreEqual(1, poses);
+                caster.FireAt(Vector3.zero);
+                Assert.AreEqual(1, poses, "자식 공격은 발사 자세를 중복 재생하지 않는다");
+                targets.Target.IsDead = true;
+                caster.Tick(1f);
+                targets.Target.IsDead = false;
+                targets.Target.Position = Vector2.up * 100;
+                caster.Tick(1f);
+                Assert.AreEqual(1, poses, "죽었거나 범위 밖인 적에게는 자세를 재생하지 않는다");
+                Assert.AreEqual(4, strategy.Fires, "전략의 기존 시전 주기는 유지한다");
+                caster.Dispose();
+                caster.Tick(1f);
+                Assert.AreEqual(1, poses);
+            }
+            finally { UnityEngine.Object.DestroyImmediate(go); }
+        }
+
         [Test]
         public void SkillCaster_FiresThroughStrategyWhenCooldownElapses()
         {

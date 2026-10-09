@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEngine;
 
 namespace Game.Core
@@ -8,6 +9,8 @@ namespace Game.Core
         private readonly AttackEnvironment environment;
 
         public IAttackStrategy Strategy { get; }
+        /// <summary>주 스킬이 대상을 향해 시전할 때 알린다. 자식 공격은 캐릭터 자세를 다시 재생하지 않는다.</summary>
+        public event System.Action Fired;
 
         public SkillCaster(SkillData data, Transform caster, IEnemyTargetProvider targetProvider,
             IAttackStrategy strategy, SkillConfig config = null) : base(data, caster, targetProvider, config)
@@ -19,6 +22,7 @@ namespace Game.Core
         public override void Dispose()
         {
             base.Dispose();
+            Fired = null;
             Strategy.Dispose();
         }
 
@@ -31,7 +35,9 @@ namespace Game.Core
         protected override void OnFire()
         {
             using var scope = Game.Core.Combat.DamageAttribution.BeginOutermost(Data.ToDamageSource());
+            bool hasTarget = Fired != null && FindTargets(Config.Attack.Range).Any(target => !target.IsDead);
             Strategy.Fire(Config, environment);
+            if (hasTarget) { Fired?.Invoke(); }
         }
 
         /// <summary>쿨타임과 무관하게 지정한 위치에서 공격 한 번을 낸다. 자식 스킬 시전에 쓴다.</summary>

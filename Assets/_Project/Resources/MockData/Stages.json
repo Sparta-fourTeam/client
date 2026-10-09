@@ -1,83 +1,113 @@
 [
-  {
-    "Id": 1, "ClearGold": 100, "RatingRewards": [20, 50, 100],
-    "WallHp": 100,
-    "Spawn": { "IntervalMin": 0.1, "IntervalMax": 0.5, "Cooldown": 3 },
-    "Waves": [
-      {"Spawns": [{"MonsterId": 1, "Count": 2}, {"MonsterId": 2, "Count": 1}, {"MonsterId": 4, "Count": 1}, {"MonsterId": 5, "Count": 1}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 2}, {"MonsterId": 2, "Count": 2}, {"MonsterId": 4, "Count": 2}, {"MonsterId": 5, "Count": 2}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 2}, {"MonsterId": 2, "Count": 2}, {"MonsterId": 4, "Count": 2}, {"MonsterId": 5, "Count": 2}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 2}, {"MonsterId": 2, "Count": 2}, {"MonsterId": 4, "Count": 2}, {"MonsterId": 5, "Count": 2}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 2}, {"MonsterId": 2, "Count": 2}, {"MonsterId": 4, "Count": 2}, {"MonsterId": 5, "Count": 2}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 2}, {"MonsterId": 2, "Count": 2}, {"MonsterId": 4, "Count": 2}, {"MonsterId": 5, "Count": 2}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 2}, {"MonsterId": 2, "Count": 2}, {"MonsterId": 4, "Count": 2}, {"MonsterId": 5, "Count": 2}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 2}, {"MonsterId": 2, "Count": 2}, {"MonsterId": 4, "Count": 2}, {"MonsterId": 5, "Count": 2}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 2}, {"MonsterId": 2, "Count": 2}, {"MonsterId": 4, "Count": 2}, {"MonsterId": 5, "Count": 2}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 2}, {"MonsterId": 2, "Count": 2}, {"MonsterId": 4, "Count": 2}, {"MonsterId": 5, "Count": 2}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 2}, {"MonsterId": 2, "Count": 2}, {"MonsterId": 4, "Count": 2}, {"MonsterId": 5, "Count": 2}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 2}, {"MonsterId": 2, "Count": 2}, {"MonsterId": 4, "Count": 2}, {"MonsterId": 5, "Count": 2}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 2}, {"MonsterId": 2, "Count": 2}, {"MonsterId": 4, "Count": 2}, {"MonsterId": 5, "Count": 2}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 2}, {"MonsterId": 2, "Count": 2}, {"MonsterId": 4, "Count": 2}, {"MonsterId": 5, "Count": 2}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 2}, {"MonsterId": 2, "Count": 2}, {"MonsterId": 4, "Count": 2}, {"MonsterId": 5, "Count": 2}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 2}, {"MonsterId": 2, "Count": 2}, {"MonsterId": 4, "Count": 2}, {"MonsterId": 5, "Count": 2}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 2}, {"MonsterId": 2, "Count": 2}, {"MonsterId": 4, "Count": 2}, {"MonsterId": 5, "Count": 2}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 2}, {"MonsterId": 2, "Count": 2}, {"MonsterId": 4, "Count": 2}, {"MonsterId": 5, "Count": 2}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 2}, {"MonsterId": 2, "Count": 2}, {"MonsterId": 4, "Count": 2}, {"MonsterId": 5, "Count": 2}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 3}, {"MonsterId": 2, "Count": 3}, {"MonsterId": 4, "Count": 2}, {"MonsterId": 5, "Count": 2}]}
-    ]
+{
+  "Id": 1,
+  "ClearGold": 100,
+  "RatingRewards": [
+    20,
+    50,
+    100
+  ],
+  "WallHp": 100,
+  "Spawn": {
+    "IntervalMin": 0.18,
+    "IntervalMax": 0.3,
+    "Cooldown": 12
   },
-  {
-    "Id": 2, "ClearGold": 150, "RatingRewards": [30, 75, 150],
-    "WallHp": 100,
-    "Spawn": { "IntervalMin": 0.1, "IntervalMax": 0.5, "Cooldown": 3 },
-    "Waves": [
-      {"Spawns": [{"MonsterId": 1, "Count": 1}, {"MonsterId": 2, "Count": 1}, {"MonsterId": 4, "Count": 1}, {"MonsterId": 5, "Count": 1}, {"MonsterId": 21, "Count": 1}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 2}, {"MonsterId": 2, "Count": 1}, {"MonsterId": 4, "Count": 1}, {"MonsterId": 5, "Count": 1}, {"MonsterId": 21, "Count": 1}, {"MonsterId": 22, "Count": 1}, {"MonsterId": 23, "Count": 1}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 2}, {"MonsterId": 2, "Count": 1}, {"MonsterId": 4, "Count": 1}, {"MonsterId": 5, "Count": 1}, {"MonsterId": 21, "Count": 1}, {"MonsterId": 22, "Count": 1}, {"MonsterId": 23, "Count": 1}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 2}, {"MonsterId": 2, "Count": 1}, {"MonsterId": 4, "Count": 1}, {"MonsterId": 5, "Count": 1}, {"MonsterId": 21, "Count": 1}, {"MonsterId": 22, "Count": 1}, {"MonsterId": 23, "Count": 1}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 1}, {"MonsterId": 2, "Count": 1}, {"MonsterId": 4, "Count": 1}, {"MonsterId": 5, "Count": 1}, {"MonsterId": 21, "Count": 1}, {"MonsterId": 22, "Count": 1}, {"MonsterId": 23, "Count": 1}, {"MonsterId": 11, "Count": 1}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 2}, {"MonsterId": 2, "Count": 1}, {"MonsterId": 4, "Count": 1}, {"MonsterId": 5, "Count": 1}, {"MonsterId": 21, "Count": 1}, {"MonsterId": 22, "Count": 1}, {"MonsterId": 23, "Count": 1}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 2}, {"MonsterId": 2, "Count": 1}, {"MonsterId": 4, "Count": 1}, {"MonsterId": 5, "Count": 1}, {"MonsterId": 21, "Count": 1}, {"MonsterId": 22, "Count": 1}, {"MonsterId": 23, "Count": 1}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 2}, {"MonsterId": 2, "Count": 1}, {"MonsterId": 4, "Count": 1}, {"MonsterId": 5, "Count": 1}, {"MonsterId": 21, "Count": 1}, {"MonsterId": 22, "Count": 1}, {"MonsterId": 23, "Count": 1}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 2}, {"MonsterId": 2, "Count": 1}, {"MonsterId": 4, "Count": 1}, {"MonsterId": 5, "Count": 1}, {"MonsterId": 21, "Count": 1}, {"MonsterId": 22, "Count": 1}, {"MonsterId": 23, "Count": 1}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 1}, {"MonsterId": 2, "Count": 1}, {"MonsterId": 4, "Count": 1}, {"MonsterId": 5, "Count": 1}, {"MonsterId": 21, "Count": 1}, {"MonsterId": 22, "Count": 1}, {"MonsterId": 23, "Count": 1}, {"MonsterId": 12, "Count": 1}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 2}, {"MonsterId": 2, "Count": 1}, {"MonsterId": 4, "Count": 1}, {"MonsterId": 5, "Count": 1}, {"MonsterId": 21, "Count": 1}, {"MonsterId": 22, "Count": 1}, {"MonsterId": 23, "Count": 1}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 2}, {"MonsterId": 2, "Count": 1}, {"MonsterId": 4, "Count": 1}, {"MonsterId": 5, "Count": 1}, {"MonsterId": 21, "Count": 1}, {"MonsterId": 22, "Count": 1}, {"MonsterId": 23, "Count": 1}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 2}, {"MonsterId": 2, "Count": 1}, {"MonsterId": 4, "Count": 1}, {"MonsterId": 5, "Count": 1}, {"MonsterId": 21, "Count": 1}, {"MonsterId": 22, "Count": 1}, {"MonsterId": 23, "Count": 1}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 2}, {"MonsterId": 2, "Count": 1}, {"MonsterId": 4, "Count": 1}, {"MonsterId": 5, "Count": 1}, {"MonsterId": 21, "Count": 1}, {"MonsterId": 22, "Count": 1}, {"MonsterId": 23, "Count": 1}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 1}, {"MonsterId": 2, "Count": 1}, {"MonsterId": 4, "Count": 1}, {"MonsterId": 5, "Count": 1}, {"MonsterId": 21, "Count": 1}, {"MonsterId": 22, "Count": 1}, {"MonsterId": 11, "Count": 1}, {"MonsterId": 12, "Count": 1}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 2}, {"MonsterId": 2, "Count": 1}, {"MonsterId": 4, "Count": 1}, {"MonsterId": 5, "Count": 1}, {"MonsterId": 21, "Count": 1}, {"MonsterId": 22, "Count": 1}, {"MonsterId": 23, "Count": 1}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 2}, {"MonsterId": 2, "Count": 1}, {"MonsterId": 4, "Count": 1}, {"MonsterId": 5, "Count": 1}, {"MonsterId": 21, "Count": 1}, {"MonsterId": 22, "Count": 1}, {"MonsterId": 23, "Count": 1}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 2}, {"MonsterId": 2, "Count": 1}, {"MonsterId": 4, "Count": 1}, {"MonsterId": 5, "Count": 1}, {"MonsterId": 21, "Count": 1}, {"MonsterId": 22, "Count": 1}, {"MonsterId": 23, "Count": 1}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 2}, {"MonsterId": 2, "Count": 1}, {"MonsterId": 4, "Count": 1}, {"MonsterId": 5, "Count": 1}, {"MonsterId": 21, "Count": 1}, {"MonsterId": 22, "Count": 1}, {"MonsterId": 23, "Count": 1}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 2}, {"MonsterId": 2, "Count": 2}, {"MonsterId": 4, "Count": 2}, {"MonsterId": 5, "Count": 1}, {"MonsterId": 21, "Count": 1}, {"MonsterId": 22, "Count": 1}, {"MonsterId": 23, "Count": 1}]}
-    ]
+  "Waves": [
+    {"Spawns": [{"MonsterId": 2, "Count": 3}]},
+    {"Spawns": [{"MonsterId": 2, "Count": 4}]},
+    {"Spawns": [{"MonsterId": 2, "Count": 4}]},
+    {"Spawns": [{"MonsterId": 1, "Count": 1}, {"MonsterId": 2, "Count": 2}]},
+    {"Spawns": [{"MonsterId": 1, "Count": 2}, {"MonsterId": 2, "Count": 3}]},
+    {"Spawns": [{"MonsterId": 1, "Count": 1}, {"MonsterId": 2, "Count": 2}]},
+    {"Spawns": [{"MonsterId": 1, "Count": 5}, {"MonsterId": 2, "Count": 9}]},
+    {"Spawns": [{"MonsterId": 1, "Count": 3}, {"MonsterId": 2, "Count": 9}]},
+    {"Spawns": [{"MonsterId": 1, "Count": 6}, {"MonsterId": 2, "Count": 11}]},
+    {"Spawns": [{"MonsterId": 1, "Count": 9}, {"MonsterId": 2, "Count": 11}]},
+    {"Spawns": [{"MonsterId": 2, "Count": 11}, {"MonsterId": 1, "Count": 3}]},
+    {"Spawns": [{"MonsterId": 2, "Count": 17}, {"MonsterId": 1, "Count": 5}]},
+    {"Spawns": [{"MonsterId": 1, "Count": 7}, {"MonsterId": 2, "Count": 12}]},
+    {"Spawns": [{"MonsterId": 1, "Count": 5}, {"MonsterId": 2, "Count": 12}]},
+    {"Spawns": [{"MonsterId": 1, "Count": 19}, {"MonsterId": 2, "Count": 12}]},
+    {"Spawns": [{"MonsterId": 2, "Count": 17}, {"MonsterId": 1, "Count": 5}]},
+    {"Spawns": [{"MonsterId": 1, "Count": 9}, {"MonsterId": 2, "Count": 21}]},
+    {"Spawns": [{"MonsterId": 1, "Count": 17}, {"MonsterId": 2, "Count": 21}]},
+    {"Spawns": [{"MonsterId": 1, "Count": 15}, {"MonsterId": 2, "Count": 17}]},
+    {"Spawns": [{"MonsterId": 1, "Count": 26}, {"MonsterId": 2, "Count": 26}]}
+  ]
+},
+{
+  "Id": 2,
+  "ClearGold": 150,
+  "RatingRewards": [
+    30,
+    75,
+    150
+  ],
+  "WallHp": 100,
+  "Spawn": {
+    "IntervalMin": 0.45,
+    "IntervalMax": 0.7,
+    "Cooldown": 14
   },
-  {
-    "Id": 3, "ClearGold": 300, "RatingRewards": [60, 150, 300],
-    "WallHp": 100,
-    "Spawn": { "IntervalMin": 0.1, "IntervalMax": 0.5, "Cooldown": 3 },
-    "Waves": [
-      {"Spawns": [{"MonsterId": 1, "Count": 1}, {"MonsterId": 2, "Count": 1}, {"MonsterId": 4, "Count": 1}, {"MonsterId": 5, "Count": 1}, {"MonsterId": 21, "Count": 1}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 1}, {"MonsterId": 2, "Count": 1}, {"MonsterId": 4, "Count": 1}, {"MonsterId": 5, "Count": 1}, {"MonsterId": 21, "Count": 1}, {"MonsterId": 22, "Count": 1}, {"MonsterId": 23, "Count": 1}, {"MonsterId": 24, "Count": 1}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 1}, {"MonsterId": 2, "Count": 1}, {"MonsterId": 4, "Count": 1}, {"MonsterId": 5, "Count": 1}, {"MonsterId": 21, "Count": 1}, {"MonsterId": 22, "Count": 1}, {"MonsterId": 23, "Count": 1}, {"MonsterId": 24, "Count": 1}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 1}, {"MonsterId": 2, "Count": 1}, {"MonsterId": 4, "Count": 1}, {"MonsterId": 5, "Count": 1}, {"MonsterId": 21, "Count": 1}, {"MonsterId": 22, "Count": 1}, {"MonsterId": 23, "Count": 1}, {"MonsterId": 24, "Count": 1}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 1}, {"MonsterId": 2, "Count": 1}, {"MonsterId": 4, "Count": 1}, {"MonsterId": 5, "Count": 1}, {"MonsterId": 21, "Count": 1}, {"MonsterId": 22, "Count": 1}, {"MonsterId": 23, "Count": 1}, {"MonsterId": 11, "Count": 1}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 1}, {"MonsterId": 2, "Count": 1}, {"MonsterId": 4, "Count": 1}, {"MonsterId": 5, "Count": 1}, {"MonsterId": 21, "Count": 1}, {"MonsterId": 22, "Count": 1}, {"MonsterId": 23, "Count": 1}, {"MonsterId": 24, "Count": 1}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 1}, {"MonsterId": 2, "Count": 1}, {"MonsterId": 4, "Count": 1}, {"MonsterId": 5, "Count": 1}, {"MonsterId": 21, "Count": 1}, {"MonsterId": 22, "Count": 1}, {"MonsterId": 23, "Count": 1}, {"MonsterId": 24, "Count": 1}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 1}, {"MonsterId": 2, "Count": 1}, {"MonsterId": 4, "Count": 1}, {"MonsterId": 5, "Count": 1}, {"MonsterId": 21, "Count": 1}, {"MonsterId": 22, "Count": 1}, {"MonsterId": 23, "Count": 1}, {"MonsterId": 24, "Count": 1}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 1}, {"MonsterId": 2, "Count": 1}, {"MonsterId": 4, "Count": 1}, {"MonsterId": 5, "Count": 1}, {"MonsterId": 21, "Count": 1}, {"MonsterId": 22, "Count": 1}, {"MonsterId": 23, "Count": 1}, {"MonsterId": 24, "Count": 1}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 1}, {"MonsterId": 2, "Count": 1}, {"MonsterId": 4, "Count": 1}, {"MonsterId": 5, "Count": 1}, {"MonsterId": 21, "Count": 1}, {"MonsterId": 22, "Count": 1}, {"MonsterId": 23, "Count": 1}, {"MonsterId": 12, "Count": 1}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 1}, {"MonsterId": 2, "Count": 1}, {"MonsterId": 4, "Count": 1}, {"MonsterId": 5, "Count": 1}, {"MonsterId": 21, "Count": 1}, {"MonsterId": 22, "Count": 1}, {"MonsterId": 23, "Count": 1}, {"MonsterId": 24, "Count": 1}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 1}, {"MonsterId": 2, "Count": 1}, {"MonsterId": 4, "Count": 1}, {"MonsterId": 5, "Count": 1}, {"MonsterId": 21, "Count": 1}, {"MonsterId": 22, "Count": 1}, {"MonsterId": 23, "Count": 1}, {"MonsterId": 24, "Count": 1}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 1}, {"MonsterId": 2, "Count": 1}, {"MonsterId": 4, "Count": 1}, {"MonsterId": 5, "Count": 1}, {"MonsterId": 21, "Count": 1}, {"MonsterId": 22, "Count": 1}, {"MonsterId": 23, "Count": 1}, {"MonsterId": 24, "Count": 1}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 1}, {"MonsterId": 2, "Count": 1}, {"MonsterId": 4, "Count": 1}, {"MonsterId": 5, "Count": 1}, {"MonsterId": 21, "Count": 1}, {"MonsterId": 22, "Count": 1}, {"MonsterId": 23, "Count": 1}, {"MonsterId": 24, "Count": 1}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 1}, {"MonsterId": 2, "Count": 1}, {"MonsterId": 4, "Count": 1}, {"MonsterId": 5, "Count": 1}, {"MonsterId": 21, "Count": 1}, {"MonsterId": 22, "Count": 1}, {"MonsterId": 11, "Count": 1}, {"MonsterId": 12, "Count": 1}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 1}, {"MonsterId": 2, "Count": 1}, {"MonsterId": 4, "Count": 1}, {"MonsterId": 5, "Count": 1}, {"MonsterId": 21, "Count": 1}, {"MonsterId": 22, "Count": 1}, {"MonsterId": 23, "Count": 1}, {"MonsterId": 24, "Count": 1}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 1}, {"MonsterId": 2, "Count": 1}, {"MonsterId": 4, "Count": 1}, {"MonsterId": 5, "Count": 1}, {"MonsterId": 21, "Count": 1}, {"MonsterId": 22, "Count": 1}, {"MonsterId": 23, "Count": 1}, {"MonsterId": 24, "Count": 1}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 1}, {"MonsterId": 2, "Count": 1}, {"MonsterId": 4, "Count": 1}, {"MonsterId": 5, "Count": 1}, {"MonsterId": 21, "Count": 1}, {"MonsterId": 22, "Count": 1}, {"MonsterId": 23, "Count": 1}, {"MonsterId": 24, "Count": 1}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 1}, {"MonsterId": 2, "Count": 1}, {"MonsterId": 4, "Count": 1}, {"MonsterId": 5, "Count": 1}, {"MonsterId": 21, "Count": 1}, {"MonsterId": 22, "Count": 1}, {"MonsterId": 23, "Count": 1}, {"MonsterId": 24, "Count": 1}]},
-      {"Spawns": [{"MonsterId": 1, "Count": 1}, {"MonsterId": 2, "Count": 1}, {"MonsterId": 4, "Count": 1}, {"MonsterId": 5, "Count": 1}, {"MonsterId": 21, "Count": 1}, {"MonsterId": 22, "Count": 1}, {"MonsterId": 23, "Count": 1}, {"MonsterId": 24, "Count": 1}, {"MonsterId": 25, "Count": 1}, {"MonsterId": 100, "Count": 1}]}
-    ]
-  }
+  "Waves": [
+    {"Spawns": [{"MonsterId": 2, "Count": 4}]},
+    {"Spawns": [{"MonsterId": 2, "Count": 6}]},
+    {"Spawns": [{"MonsterId": 1, "Count": 2}, {"MonsterId": 2, "Count": 4}]},
+    {"Spawns": [{"MonsterId": 2, "Count": 6}, {"MonsterId": 1, "Count": 3}]},
+    {"Spawns": [{"MonsterId": 4, "Count": 1}, {"MonsterId": 2, "Count": 6}, {"MonsterId": 11, "Count": 1}]},
+    {"Spawns": [{"MonsterId": 2, "Count": 8}, {"MonsterId": 1, "Count": 2}]},
+    {"Spawns": [{"MonsterId": 21, "Count": 1}, {"MonsterId": 2, "Count": 8}]},
+    {"Spawns": [{"MonsterId": 21, "Count": 1}, {"MonsterId": 1, "Count": 4}, {"MonsterId": 2, "Count": 8}]},
+    {"Spawns": [{"MonsterId": 22, "Count": 1}, {"MonsterId": 2, "Count": 10}]},
+    {"Spawns": [{"MonsterId": 22, "Count": 2}, {"MonsterId": 2, "Count": 10}, {"MonsterId": 12, "Count": 1}]},
+    {"Spawns": [{"MonsterId": 2, "Count": 12}]},
+    {"Spawns": [{"MonsterId": 22, "Count": 3}, {"MonsterId": 1, "Count": 5}, {"MonsterId": 2, "Count": 10}]},
+    {"Spawns": [{"MonsterId": 23, "Count": 1}, {"MonsterId": 2, "Count": 10}, {"MonsterId": 5, "Count": 1}]},
+    {"Spawns": [{"MonsterId": 23, "Count": 2}, {"MonsterId": 2, "Count": 12}, {"MonsterId": 21, "Count": 1}]},
+    {"Spawns": [{"MonsterId": 21, "Count": 2}, {"MonsterId": 22, "Count": 2}, {"MonsterId": 2, "Count": 12}, {"MonsterId": 11, "Count": 1}, {"MonsterId": 12, "Count": 1}]},
+    {"Spawns": [{"MonsterId": 2, "Count": 16}, {"MonsterId": 1, "Count": 4}]},
+    {"Spawns": [{"MonsterId": 21, "Count": 3}, {"MonsterId": 1, "Count": 6}, {"MonsterId": 2, "Count": 12}]},
+    {"Spawns": [{"MonsterId": 22, "Count": 4}, {"MonsterId": 23, "Count": 3}, {"MonsterId": 2, "Count": 14}]},
+    {"Spawns": [{"MonsterId": 5, "Count": 3}, {"MonsterId": 21, "Count": 2}, {"MonsterId": 2, "Count": 16}]},
+    {"Spawns": [{"MonsterId": 21, "Count": 3}, {"MonsterId": 22, "Count": 3}, {"MonsterId": 23, "Count": 3}, {"MonsterId": 5, "Count": 2}, {"MonsterId": 1, "Count": 8}, {"MonsterId": 2, "Count": 18}]}
+  ]
+},
+{
+  "Id": 3,
+  "ClearGold": 300,
+  "RatingRewards": [
+    60,
+    150,
+    300
+  ],
+  "WallHp": 100,
+  "Spawn": {
+    "IntervalMin": 0.45,
+    "IntervalMax": 0.7,
+    "Cooldown": 15
+  },
+  "Waves": [
+    {"Spawns": [{"MonsterId": 2, "Count": 4}]},
+    {"Spawns": [{"MonsterId": 2, "Count": 6}]},
+    {"Spawns": [{"MonsterId": 1, "Count": 2}, {"MonsterId": 2, "Count": 6}]},
+    {"Spawns": [{"MonsterId": 2, "Count": 8}, {"MonsterId": 4, "Count": 1}]},
+    {"Spawns": [{"MonsterId": 24, "Count": 1}, {"MonsterId": 2, "Count": 8}, {"MonsterId": 11, "Count": 1}]},
+    {"Spawns": [{"MonsterId": 2, "Count": 10}, {"MonsterId": 1, "Count": 2}]},
+    {"Spawns": [{"MonsterId": 24, "Count": 2}, {"MonsterId": 2, "Count": 10}]},
+    {"Spawns": [{"MonsterId": 21, "Count": 1}, {"MonsterId": 24, "Count": 2}, {"MonsterId": 2, "Count": 10}]},
+    {"Spawns": [{"MonsterId": 22, "Count": 2}, {"MonsterId": 2, "Count": 12}, {"MonsterId": 1, "Count": 3}]},
+    {"Spawns": [{"MonsterId": 22, "Count": 2}, {"MonsterId": 24, "Count": 2}, {"MonsterId": 2, "Count": 10}, {"MonsterId": 12, "Count": 1}]},
+    {"Spawns": [{"MonsterId": 2, "Count": 14}, {"MonsterId": 1, "Count": 3}]},
+    {"Spawns": [{"MonsterId": 23, "Count": 2}, {"MonsterId": 2, "Count": 14}, {"MonsterId": 4, "Count": 2}]},
+    {"Spawns": [{"MonsterId": 25, "Count": 1}, {"MonsterId": 2, "Count": 12}, {"MonsterId": 1, "Count": 4}]},
+    {"Spawns": [{"MonsterId": 25, "Count": 1}, {"MonsterId": 24, "Count": 3}, {"MonsterId": 2, "Count": 12}]},
+    {"Spawns": [{"MonsterId": 21, "Count": 2}, {"MonsterId": 25, "Count": 1}, {"MonsterId": 22, "Count": 3}, {"MonsterId": 2, "Count": 14}, {"MonsterId": 11, "Count": 1}, {"MonsterId": 12, "Count": 1}]},
+    {"Spawns": [{"MonsterId": 2, "Count": 16}, {"MonsterId": 5, "Count": 1}, {"MonsterId": 1, "Count": 3}]},
+    {"Spawns": [{"MonsterId": 25, "Count": 2}, {"MonsterId": 24, "Count": 4}, {"MonsterId": 2, "Count": 16}]},
+    {"Spawns": [{"MonsterId": 21, "Count": 3}, {"MonsterId": 23, "Count": 3}, {"MonsterId": 2, "Count": 16}]},
+    {"Spawns": [{"MonsterId": 5, "Count": 3}, {"MonsterId": 22, "Count": 4}, {"MonsterId": 24, "Count": 4}, {"MonsterId": 2, "Count": 16}]},
+    {"Spawns": [{"MonsterId": 100, "Count": 1}, {"MonsterId": 25, "Count": 2}, {"MonsterId": 21, "Count": 2}, {"MonsterId": 24, "Count": 4}, {"MonsterId": 5, "Count": 2}, {"MonsterId": 2, "Count": 18}]}
+  ]
+}
 ]

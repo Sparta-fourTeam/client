@@ -10,6 +10,26 @@ namespace Game.Sandbox
         public int GetLevel(string progressionId) => Level;
     }
 
+    /// <summary>샌드박스 슬라이더의 영구 레벨을 실제 강화 테이블 효과로 변환한다.</summary>
+    public sealed class SandboxPermanentSkillEffects : IPermanentSkillEffects
+    {
+        private readonly GameDataStore data;
+        private readonly SandboxProgression progression;
+
+        public SandboxPermanentSkillEffects(GameDataStore data, SandboxProgression progression)
+        {
+            this.data = data;
+            this.progression = progression;
+        }
+
+        public System.Collections.Generic.IReadOnlyList<EffectDef> For(string progressionId)
+        {
+            if (string.IsNullOrEmpty(progressionId) || !data.Upgrades.Contains(progressionId))
+            { return System.Array.Empty<EffectDef>(); }
+            return PermanentSkillEffect.At(data.Upgrades.GetOrThrow(progressionId), progression.Level);
+        }
+    }
+
     /// <summary>샌드박스는 모든 스킬을 시험하는 곳이라 해금 레벨과 상관없이 전부 열린 것으로 본다. 스테이지 씬은 플레이어 레벨(ProfileSkillUnlock)을 따른다.</summary>
     public sealed class AllSkillsUnlocked : ISkillUnlock
     {

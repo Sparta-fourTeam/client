@@ -20,20 +20,37 @@ namespace Game.View
         [Tooltip("게이지가 찬 끝을 따라다니는 광채. 비우면 표시하지 않는다")]
         [SerializeField] private RectTransform _gaugeStar;
 
+        private WaveGaugeChanged _gauge;
+        private bool _selectingCard;
         private Tween _fillTween;
         private Tween _punchTween;
         private int _shownWave;
 
         [Inject]
-        public void Construct(IBufferedSubscriber<WaveGaugeChanged> gaugeChanged)
+        public void Construct(IBufferedSubscriber<WaveGaugeChanged> gaugeChanged,
+            IBufferedSubscriber<StageStateChanged> stateChanged)
         {
             Track(gaugeChanged.Subscribe(OnGaugeChanged));
+            Track(stateChanged.Subscribe(OnStateChanged));
         }
 
         private void OnGaugeChanged(WaveGaugeChanged message)
         {
+            _gauge = message;
+            RenderGauge();
+        }
+
+        private void OnStateChanged(StageStateChanged message)
+        {
+            if (message.State == StageState.CardSelect) { _selectingCard = true; }
+            else if (message.State != StageState.Paused) { _selectingCard = false; }
+            RenderGauge();
+        }
+
+        private void RenderGauge()
+        {
             // Max 0 = 첫 웨이브 시작 전 (Buffered struct는 구독 즉시 기본값이 온다)
-            if (message.Max <= 0)
+            if (_gauge.Max <= 0)
             {
                 _waveValueText.text = string.Empty;
                 SetFill(0f, false);
@@ -41,17 +58,20 @@ namespace Game.View
                 return;
             }
 
-            _waveValueText.text = $"{message.WaveIndex}/{StageRewardRules.WaveCount}";
-            // 새 웨이브로 넘어가 게이지가 다시 차오르기 시작할 때는 줄어드는 모습 없이 바로 비운다
-            float target = (float)message.Current / message.Max;
-            bool animate = message.WaveIndex == _shownWave && target >= _gaugeFill.fillAmount;
+            // 다음 웨이브 신호는 카드 선택 전에 온다. 선택 중에는 방금 끝낸 웨이브를 표시한다.
+            int index = _selectingCard ? Mathf.Max(1, _gauge.WaveIndex - 1) : _gauge.WaveIndex;
+            _waveValueText.text = $"{index}/{StageRewardRules.WaveCount}";
+
+            // 같은 웨이브 안에서 차오를 때만 부드럽게 채운다. 새 웨이브로 넘어가 다시 비워질 때는 줄어드는 모습 없이 바로 비운다
+            float target = _selectingCard ? 1f : (float)_gauge.Current / _gauge.Max;
+            bool animate = index == _shownWave && target >= _gaugeFill.fillAmount;
             SetFill(target, animate);
 
-            if (_shownWave != 0 && message.WaveIndex != _shownWave)
+            if (_shownWave != 0 && index != _shownWave)
             {
                 PunchWaveText();
             }
-            _shownWave = message.WaveIndex;
+            _shownWave = index;
         }
 
         private void SetFill(float value, bool animate)

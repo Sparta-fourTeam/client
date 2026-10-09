@@ -47,13 +47,15 @@ namespace Game.View
         private ISceneNavigator _navigator;
         private GameDataStore _data;
         private IReadOnlyList<ISkillStatus> _ownedSkills;
+        private bool _firstStageClear;
 
         [Inject]
         public void Construct(ISubscriber<StageResult> stageResult, StageContext stageContext, ISceneNavigator navigator, GameDataStore data,
-            IBufferedSubscriber<SkillChanged> skillChanged)
+            IBufferedSubscriber<SkillChanged> skillChanged, PlayerProfile profile)
         {
             Track(skillChanged.Subscribe(message => _ownedSkills = message.Skills));
             _stageContext = stageContext;
+            _firstStageClear = stageContext.StageId == 1 && !profile.IsStageCleared(1);
             _data = data;
             _navigator = navigator;
             Track(stageResult.Subscribe(OnStageResult));
@@ -72,7 +74,9 @@ namespace Game.View
             _killsText.text = $"처치\n{result.Kills}";
             _waveText.text = result.ReachedWave > 0 ? $"도달 웨이브\n{result.ReachedWave}" : "도달 웨이브\n-";
             _timeText.text = $"플레이 시간\n{FormatTime(result.PlayTime)}";
-            _bubbleText.text = result.Cleared ? ClearBubble : FailBubble;
+            _bubbleText.text = result.Cleared
+                ? (_firstStageClear ? "첫 클리어! 로비에서 화살을 강화해 봐요!" : ClearBubble)
+                : FailBubble;
             _rewardList.Show(RewardRows.Build(_itemIcons, _data, result.RewardGold, result.RewardExp, result.RewardItems));
             _starsView.Show(result.Cleared, result.ClearRating);
             if (_damageList != null)
