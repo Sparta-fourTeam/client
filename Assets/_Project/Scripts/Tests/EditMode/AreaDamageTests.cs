@@ -58,7 +58,7 @@ namespace Game.Tests
             stats = SkillTestFactory.Apply(SkillTestFactory.Apply(stats, "damage", 20), "attackSpeed", 10);
             Assert.AreEqual(25.92f, stats.Cast.Damage, 0.001f);
             Assert.AreEqual(25.92f, stats.Explosion.Damage, 0.001f);
-            Assert.AreEqual(1.62f, stats.Cast.Cooldown, 0.001f);
+            Assert.AreEqual(3.06f, stats.Cast.Cooldown, 0.001f);
         }
 
         [Test]
@@ -73,8 +73,8 @@ namespace Game.Tests
                 Assert.IsTrue(weapon.LevelUp(option));
                 Assert.IsFalse(weapon.LevelUp(option));
                 var stats = (SkillStats)typeof(SkillBase).GetField("stats", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(weapon);
-                Assert.AreEqual(32.5f, stats.Cast.Damage, 0.001f);
-                Assert.AreEqual(2.5f, stats.Status.ParalysisDuration, 0.001f);
+                Assert.AreEqual(41.6f, stats.Cast.Damage, 0.001f);
+                Assert.AreEqual(2f, stats.Status.ParalysisDuration, 0.001f);
                 Assert.AreEqual(1, data.baseStats.status.paralysisChance);
             }
             finally { Object.DestroyImmediate(go); }
@@ -94,7 +94,7 @@ namespace Game.Tests
                 Assert.IsFalse(weapon.LevelUp(data.upgrades.Find(c => c.id == "lightning_judgement")));
                 var flags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance;
                 var statsField = typeof(SkillBase).GetField("stats", flags);
-                Assert.AreEqual(75, ((SkillStats)statsField.GetValue(weapon)).Cast.Damage);
+                Assert.AreEqual(96, ((SkillStats)statsField.GetValue(weapon)).Cast.Damage);
                 var fire = typeof(SkillCaster).GetMethod("OnFire", flags);
                 fire.Invoke(weapon, null);
                 HitscanEffect clone = null;

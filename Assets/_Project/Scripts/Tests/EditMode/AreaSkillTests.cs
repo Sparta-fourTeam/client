@@ -146,9 +146,9 @@ namespace Game.Tests
             Assert.AreEqual(1, zones.Count);
             Assert.AreEqual(new Vector3(2, 3, 0), zones[0].transform.position);
             Tick(zones[0], .1f);
-            Assert.AreEqual(8, target.Damage, "기본 피해 8");
-            Assert.AreEqual(.4f, target.SlowRatio, .001f);
-            Assert.AreEqual(1f, target.SlowDuration);
+            Assert.AreEqual(4, target.Damage, "기본 피해 4");
+            Assert.AreEqual(.35f, target.SlowRatio, .001f);
+            Assert.AreEqual(.6f, target.SlowDuration);
         }
 
         [Test]
@@ -347,7 +347,7 @@ namespace Game.Tests
             Assert.AreEqual(start.Stats.Area.MoveSpeed * 1.2f, speed.Area.MoveSpeed, .001f);
             Assert.AreEqual(start.Stats.Cast.Damage * 1.4f, speed.Cast.Damage, .001f);
             var magnet = Apply("lightning_cloud_magnet").Stats;
-            Assert.AreEqual(start.Stats.Area.Pull * 1.25f, magnet.Area.Pull, .001f);
+            Assert.AreEqual(start.Stats.Area.Pull * 1.2f, magnet.Area.Pull, .001f);
             Assert.AreEqual(2f, Apply("lightning_cloud_voltage").Stats.Status.ParalysisDuration);
             Assert.AreEqual(start.Stats.Area.Duration * 1.6f, Apply("lightning_cloud_duration").Stats.Area.Duration, .001f);
             Assert.AreEqual(start.Stats.Area.Radius * 1.5f, Apply("lightning_cloud_expand").Stats.Area.Radius, .001f);

@@ -38,6 +38,7 @@ namespace Game.Tests
         }
 
         private static GameDataStore Store() => new GameDataStore();
+        private static int Hp(int id) => Store().Monsters.GetOrThrow(id).Hp;
 
         // EnemyFactory가 만드는 것과 같은 방식으로 데이터에서 모델을 만든다
         private static EnemyModel Build(int monsterId, IRandomProvider random = null)
@@ -103,10 +104,10 @@ namespace Game.Tests
                 Hit(model, 10);
             }
 
-            Assert.AreEqual(60, model.Hp, "방어막이 6번을 막는다");
+            Assert.AreEqual(Hp(Crab), model.Hp, "방어막이 6번을 막는다");
 
             Hit(model, 10);
-            Assert.AreEqual(50, model.Hp);
+            Assert.AreEqual(Hp(Crab) - 10, model.Hp);
         }
 
         [Test]
@@ -137,7 +138,7 @@ namespace Game.Tests
 
             Hit(model, 10, Element.Lightning);
 
-            Assert.AreEqual(60, model.Hp, "뇌속성 피해는 0");
+            Assert.AreEqual(Hp(Crab), model.Hp, "뇌속성 피해는 0");
             Assert.AreEqual(0.5f, model.ResolveKnockback(Vector2.up, 1f).y, 0.0001f);
         }
 
@@ -148,11 +149,11 @@ namespace Game.Tests
         {
             var model = Build(BrainSpider);
 
-            Assert.AreEqual(0.14f, model.MoveSpeed, 0.0001f);
-            model.TickPassives(4f);
-            Assert.AreEqual(0.35f, model.MoveSpeed, 0.0001f, "4초마다 2.5배");
+            Assert.AreEqual(0.4f, model.MoveSpeed, 0.0001f);
+            model.TickPassives(6f);
+            Assert.AreEqual(1f, model.MoveSpeed, 0.0001f, "6초마다 2.5배");
             model.TickStatus(1.5f);
-            Assert.AreEqual(0.14f, model.MoveSpeed, 0.0001f, "1.5초 뒤 끝난다");
+            Assert.AreEqual(0.4f, model.MoveSpeed, 0.0001f, "1.5초 뒤 끝난다");
         }
 
         [Test]
@@ -162,7 +163,7 @@ namespace Game.Tests
 
             Hit(model, 10, Element.Ice);
 
-            Assert.AreEqual(20, model.Hp, "빙속성 +50%: 35 - 15");
+            Assert.AreEqual(Hp(BrainSpider) - 15, model.Hp, "빙속성 +50%");
         }
 
         // ───────── 눈 해파리: 회피·임시 방어막형 ─────────
@@ -174,10 +175,10 @@ namespace Game.Tests
             var model = Build(EyeJelly, new ScriptedRandom(0.9f, 0.1f));
 
             Hit(model, 10);
-            Assert.AreEqual(30, model.Hp);
+            Assert.AreEqual(Hp(EyeJelly) - 10, model.Hp);
 
             Hit(model, 10);
-            Assert.AreEqual(30, model.Hp, "켜진 방어막이 막는다");
+            Assert.AreEqual(Hp(EyeJelly) - 10, model.Hp, "켜진 방어막이 막는다");
         }
 
         [Test]
@@ -185,11 +186,11 @@ namespace Game.Tests
         {
             var evading = Build(EyeJelly, new ScriptedRandom(0.1f));
             Hit(evading, 10);
-            Assert.AreEqual(40, evading.Hp, "회피 굴림 0.1 < 0.3");
+            Assert.AreEqual(Hp(EyeJelly), evading.Hp, "회피 굴림 0.1 < 0.2");
 
             var model = Build(EyeJelly, new ScriptedRandom(0.9f, 0.9f));
             Hit(model, 10, Element.Earth);
-            Assert.AreEqual(20, model.Hp, "토속성 +100%: 20");
+            Assert.AreEqual(Hp(EyeJelly) - 20, model.Hp, "토속성 +100%");
         }
 
         // ───────── 유령: 지상 공격 면역형 ─────────
@@ -200,16 +201,16 @@ namespace Game.Tests
             var model = Build(Ghost);
 
             Hit(model, 10, Element.Earth);
-            Assert.AreEqual(30, model.Hp, "토속성(지상 공격) 면역");
+            Assert.AreEqual(Hp(Ghost), model.Hp, "토속성(지상 공격) 면역");
 
             Hit(model, 10, Element.Fire);
-            Assert.AreEqual(20, model.Hp);
+            Assert.AreEqual(Hp(Ghost) - 10, model.Hp);
         }
 
         [Test]
         public void Ghost_IsTheFastest()
         {
-            Assert.AreEqual(0.18f, Build(Ghost).MoveSpeed, 0.0001f);
+            Assert.AreEqual(0.6f, Build(Ghost).MoveSpeed, 0.0001f);
         }
 
         // ───────── 골렘: 투사체 차단형 ─────────
@@ -220,11 +221,11 @@ namespace Game.Tests
             var model = Build(Golem);
 
             Hit(model, 10, cast: CastType.Projectile);
-            Assert.AreEqual(80, model.Hp, "투사체의 직접 피해는 0");
+            Assert.AreEqual(Hp(Golem), model.Hp, "투사체의 직접 피해는 0");
             Assert.IsTrue(model.BlocksPierce);
 
             Hit(model, 10, cast: CastType.Area);
-            Assert.AreEqual(70, model.Hp, "투사체가 아니면 피해를 받는다");
+            Assert.AreEqual(Hp(Golem) - 10, model.Hp, "투사체가 아니면 피해를 받는다");
         }
 
         [Test]
@@ -233,7 +234,7 @@ namespace Game.Tests
             var model = Build(Golem);
 
             Hit(model, 10, Element.Fire, CastType.Area);
-            Assert.AreEqual(50, model.Hp, "화속성 +200%: 30");
+            Assert.AreEqual(Hp(Golem) - 30, model.Hp, "화속성 +200%");
 
             model.ApplyBurn(5f, 3f);
             model.ApplyParalysis(3f);

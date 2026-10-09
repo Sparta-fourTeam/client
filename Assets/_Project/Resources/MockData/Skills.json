@@ -10,17 +10,17 @@
     "progressionId": "shuriken",
     "baseStats": {
       "cast": {
-        "cooldown": 1,
-        "baseDamage": 10,
-        "range": 22,
+        "cooldown": 2.0,
+        "baseDamage": 12,
+        "range": 12,
         "projectileCount": 1,
         "castCount": 1,
         "castInterval": 0.1
       },
       "projectile": {
-        "speed": 20,
+        "speed": 10,
         "pierceCount": 0,
-        "knockbackDistance": 0.2
+        "knockbackDistance": 0.08
       },
       "status": {
         "paralysisChance": 1,
@@ -507,11 +507,12 @@
           16
         ]
       }
-    ]
+    ],
+    "desc": "가장 가까운 적에게 화살을 발사합니다. 강화로 발사 수와 관통력을 늘릴 수 있습니다."
   },
   {
     "id": 2,
-    "unlockLevel": 2,
+    "unlockLevel": 1,
     "name": "화염구",
     "assetKey": "weapon_fireball",
     "castType": 0,
@@ -520,15 +521,15 @@
     "progressionId": "fireball",
     "baseStats": {
       "cast": {
-        "cooldown": 1.8,
+        "cooldown": 3.4,
         "baseDamage": 12,
-        "range": 20,
+        "range": 12,
         "projectileCount": 1,
         "castCount": 1,
         "castInterval": 0.1
       },
       "projectile": {
-        "speed": 16
+        "speed": 8
       },
       "status": {
         "freezeChance": 1,
@@ -802,11 +803,12 @@
           }
         ]
       }
-    ]
+    ],
+    "desc": "적에게 화염구를 발사하고 폭발로 주변 적을 함께 공격합니다."
   },
   {
     "id": 3,
-    "unlockLevel": 3,
+    "unlockLevel": 1,
     "name": "벼락",
     "assetKey": "weapon_lightning",
     "castType": 1,
@@ -815,9 +817,9 @@
     "progressionId": "lightning",
     "baseStats": {
       "cast": {
-        "cooldown": 2.5,
-        "baseDamage": 25,
-        "range": 20,
+        "cooldown": 4.2,
+        "baseDamage": 32,
+        "range": 12,
         "projectileCount": 1,
         "castCount": 1,
         "castInterval": 0.1
@@ -830,15 +832,15 @@
         "frostbiteChance": 1,
         "burnChance": 1,
         "paralysisChance": 1,
-        "paralysisDuration": 1
+        "paralysisDuration": 0.5
       },
       "explosion": {
         "damageRatio": 1
       },
       "field": {
-        "damageRatio": 0.1,
-        "radius": 0.8,
-        "slowRatio": 0.3
+        "damageRatio": 0.15,
+        "radius": 0.9,
+        "slowRatio": 0.25
       }
     },
     "upgrades": [
@@ -1035,7 +1037,7 @@
       {
         "id": "lightning_judgement",
         "name": "폭풍의 격노",
-        "desc": "폭풍의 격노으로 강화 / 공격력 +200%",
+        "desc": "폭풍의 격노로 강화 / 공격력 +200%",
         "maxPickCount": 1,
         "minPermanentLevel": 13,
         "requiredCardCounts": [
@@ -1069,7 +1071,7 @@
       {
         "id": "lightning_field",
         "name": "전자기장",
-        "desc": "전자기장 생성 / 범위 내 이동속도 30% 감소",
+        "desc": "전자기장 생성 / 범위 내 이동속도 25% 감소",
         "maxPickCount": 1,
         "requiredCardCounts": [
           {
@@ -1144,37 +1146,38 @@
           18
         ]
       }
-    ]
+    ],
+    "desc": "벼락으로 적과 주변을 즉시 공격하고 잠시 마비시킵니다."
   },
   {
     "id": 4,
-    "unlockLevel": 4,
+    "unlockLevel": 1,
     "name": "서리 결정",
     "assetKey": "weapon_frost_crystal",
     "castType": 0,
     "element": 2,
     "maxLevel": 15,
     "progressionId": null,
-    "prototypeBalanceSourceId": 1,
     "baseStats": {
       "cast": {
-        "cooldown": 1,
-        "baseDamage": 10,
-        "range": 22,
+        "cooldown": 2.6,
+        "baseDamage": 9,
+        "range": 12,
         "projectileCount": 1,
         "castCount": 1,
         "castInterval": 0.1
       },
       "projectile": {
-        "speed": 20,
-        "pierceCount": 0,
-        "knockbackDistance": 0.2
+        "speed": 9,
+        "pierceCount": 1,
+        "knockbackDistance": 0.08
       },
       "status": {
         "freezeChance": 1,
         "frostbiteChance": 1,
         "burnChance": 1,
-        "paralysisChance": 1
+        "paralysisChance": 1,
+        "freezeDuration": 0.35
       }
     },
     "upgrades": [
@@ -1483,31 +1486,31 @@
           }
         ]
       }
-    ]
+    ],
+    "desc": "적을 관통하는 서리 결정을 발사하고 잠시 얼립니다."
   },
   {
     "id": 5,
-    "unlockLevel": 5,
+    "unlockLevel": 2,
     "name": "나무뿌리",
     "assetKey": "weapon_log",
     "castType": 0,
     "element": 5,
     "maxLevel": 10,
     "progressionId": null,
-    "prototypeBalanceSourceId": 1,
     "baseStats": {
       "cast": {
-        "cooldown": 1,
-        "baseDamage": 10,
-        "range": 22,
+        "cooldown": 4.2,
+        "baseDamage": 18,
+        "range": 12,
         "projectileCount": 1,
         "castCount": 1,
         "castInterval": 0.1
       },
       "projectile": {
-        "speed": 4,
-        "pierceCount": 0,
-        "knockbackDistance": 0.2
+        "speed": 3.5,
+        "pierceCount": 2,
+        "knockbackDistance": 0.25
       },
       "reserve": {
         "distance": 1,
@@ -1520,8 +1523,8 @@
         "frostbiteChance": 1,
         "burnChance": 1,
         "stunChance": 0.1,
-        "slowRatio": 0.3,
-        "slowDuration": 2
+        "slowRatio": 0.2,
+        "slowDuration": 1.2
       },
       "explosion": {
         "damageRatio": 1
@@ -1642,7 +1645,7 @@
       {
         "id": "log_wound",
         "name": "상처 악화",
-        "desc": "피격된 적가 받는 피해 +20% (6초)",
+        "desc": "피격된 적이 받는 피해 +20% (6초)",
         "maxPickCount": 1,
         "effects": [
           {
@@ -1763,34 +1766,34 @@
         ]
       }
     ],
-    "projectilePath": 1
+    "projectilePath": 1,
+    "desc": "나무뿌리가 방벽 앞에서 굴러가며 적을 관통하고 밀어냅니다."
   },
   {
     "id": 6,
-    "unlockLevel": 6,
+    "unlockLevel": 3,
     "name": "냉기 지대",
     "assetKey": "weapon_cold_zone",
     "castType": 2,
     "element": 2,
     "maxLevel": 10,
     "progressionId": null,
-    "prototypeBalanceSourceId": 4,
     "baseStats": {
       "cast": {
-        "cooldown": 5,
-        "baseDamage": 8,
-        "range": 14,
+        "cooldown": 7.5,
+        "baseDamage": 4,
+        "range": 12,
         "projectileCount": 1,
         "castCount": 1,
         "castInterval": 0.1
       },
       "status": {
-        "slowDuration": 1,
-        "slowRatio": 0.4
+        "slowDuration": 0.6,
+        "slowRatio": 0.35
       },
       "area": {
-        "radius": 1.5,
-        "duration": 3,
+        "radius": 1.1,
+        "duration": 2.5,
         "pulseInterval": 0.5
       }
     },
@@ -1937,33 +1940,33 @@
           }
         ]
       }
-    ]
+    ],
+    "desc": "적의 위치에 냉기 지대를 만들어 지속 피해를 주고 이동을 늦춥니다."
   },
   {
     "id": 7,
-    "unlockLevel": 7,
+    "unlockLevel": 4,
     "name": "전기 구름",
     "assetKey": "weapon_lightning_cloud",
     "castType": 2,
     "element": 4,
     "maxLevel": 10,
     "progressionId": null,
-    "prototypeBalanceSourceId": 3,
     "baseStats": {
       "cast": {
-        "cooldown": 6,
-        "baseDamage": 6,
-        "range": 14,
+        "cooldown": 8.5,
+        "baseDamage": 3,
+        "range": 12,
         "projectileCount": 1,
         "castCount": 1,
         "castInterval": 0.1
       },
       "area": {
-        "radius": 1.2,
-        "duration": 4,
+        "radius": 0.9,
+        "duration": 3,
         "pulseInterval": 0.5,
-        "moveSpeed": 0.8,
-        "pull": 0.25
+        "moveSpeed": 0.6,
+        "pull": 0.08
       }
     },
     "upgrades": [
@@ -2034,7 +2037,7 @@
       {
         "id": "lightning_cloud_magnet",
         "name": "전자력 구름",
-        "desc": "공격력 +40% / 끌어당기는 힘 +25%(임시)",
+        "desc": "공격력 +40% / 끌어당기는 힘 +20%(임시)",
         "maxPickCount": 1,
         "effects": [
           {
@@ -2043,7 +2046,7 @@
           },
           {
             "kind": "areaPull",
-            "value": 25
+            "value": 20
           }
         ]
       },
@@ -2139,7 +2142,8 @@
           }
         ]
       }
-    ]
+    ],
+    "desc": "전기 구름이 적을 따라가며 지속 피해를 주고 주변 적을 끌어당깁니다."
   },
   {
     "id": 8,
@@ -2269,30 +2273,29 @@
   },
   {
     "id": 16,
-    "unlockLevel": 8,
+    "unlockLevel": 5,
     "name": "에너지 빔",
     "assetKey": "weapon_energy_beam",
     "castType": 3,
     "element": 0,
     "maxLevel": 13,
     "progressionId": null,
-    "prototypeBalanceSourceId": 3,
     "baseStats": {
       "cast": {
-        "cooldown": 6,
+        "cooldown": 7,
         "baseDamage": 5,
-        "range": 16,
+        "range": 12,
         "projectileCount": 1,
         "castCount": 1,
         "castInterval": 0.1
       },
       "status": {
-        "slowRatio": 0.8
+        "slowRatio": 0.35
       },
       "beam": {
-        "length": 16,
-        "width": 0.8,
-        "duration": 2,
+        "length": 12,
+        "width": 0.65,
+        "duration": 1.5,
         "pulses": 4
       }
     },
@@ -2536,7 +2539,8 @@
         "enabled": false,
         "disabledReason": "집중 광선이 구현되지 않았고 공유 카드가 연결되지 않았다"
       }
-    ]
+    ],
+    "desc": "가장 가까운 적을 향해 빔을 쏘아 직선 위의 적을 반복 공격합니다."
   },
   {
     "id": 17,
@@ -2568,19 +2572,18 @@
   },
   {
     "id": 18,
-    "unlockLevel": 9,
+    "unlockLevel": 6,
     "name": "연쇄 번개",
     "assetKey": "weapon_chain_lightning",
     "castType": 4,
     "element": 4,
     "maxLevel": 11,
     "progressionId": null,
-    "prototypeBalanceSourceId": 3,
     "baseStats": {
       "cast": {
-        "cooldown": 3,
+        "cooldown": 4.8,
         "baseDamage": 12,
-        "range": 14,
+        "range": 12,
         "projectileCount": 1,
         "castCount": 1,
         "castInterval": 0.1
@@ -2589,9 +2592,9 @@
         "damageRatio": 0.5
       },
       "chain": {
-        "bounces": 3,
-        "jumpRange": 4,
-        "hopInterval": 0.08
+        "bounces": 2,
+        "jumpRange": 2.5,
+        "hopInterval": 0.12
       }
     },
     "upgrades": [
@@ -2772,6 +2775,7 @@
         ],
         "sharedId": "shared_lightning_chain_damage"
       }
-    ]
+    ],
+    "desc": "번개가 가까운 적 사이를 튕기며 여러 적을 공격합니다."
   }
 ]

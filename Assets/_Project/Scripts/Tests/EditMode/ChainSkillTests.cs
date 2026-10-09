@@ -183,12 +183,12 @@ namespace Game.Tests
         {
             var chain = ChainLightning();
             Assert.AreEqual(CastType.Chain, world.Data[ChainLightningId].castType);
-            var a = world.AddEnemy(3, 0); var b = world.AddEnemy(6, 0); var c = world.AddEnemy(9, 0); var d = world.AddEnemy(12, 0); var e = world.AddEnemy(15, 0);
+            var a = world.AddEnemy(3, 0); var b = world.AddEnemy(5, 0); var c = world.AddEnemy(7, 0); var d = world.AddEnemy(9, 0); var e = world.AddEnemy(11, 0);
             typeof(SkillCaster).GetMethod("OnFire", Flags).Invoke(chain, null);
             var bolt = Bolts().Single();
             for (int i = 0; i < 20; i++) { Tick(bolt, .1f); }
-            Assert.AreEqual(12, a.Damage); Assert.AreEqual(12, b.Damage); Assert.AreEqual(12, c.Damage); Assert.AreEqual(12, d.Damage);
-            Assert.AreEqual(0, e.Damage, "기본 반사 3번 → 첫 대상 포함 4명");
+            Assert.AreEqual(12, a.Damage); Assert.AreEqual(12, b.Damage); Assert.AreEqual(12, c.Damage); Assert.AreEqual(0, d.Damage);
+            Assert.AreEqual(0, e.Damage, "기본 반사 2번 → 첫 대상 포함 3명");
         }
 
         [Test]
@@ -211,8 +211,8 @@ namespace Game.Tests
         {
             var chain = ChainLightning("chain_lightning_ion_burst", "chain_lightning_ion_spread");
             Assert.AreEqual(.8f * 2, chain.Stats.Explosion.Radius, .001f, "이온 확산: 폭발 범위 +100%");
-            var a = world.AddEnemy(3, 0); var b = world.AddEnemy(6, 0);
-            var bystander = world.AddEnemy(6, 1.2f);
+            var a = world.AddEnemy(3, 0); var b = world.AddEnemy(5, 0);
+            var bystander = world.AddEnemy(5, 1.2f);
             typeof(SkillCaster).GetMethod("OnFire", Flags).Invoke(chain, null);
             var bolt = Bolts().Single();
             for (int i = 0; i < 20; i++) { Tick(bolt, .1f); }

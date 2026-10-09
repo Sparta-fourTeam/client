@@ -122,7 +122,7 @@ namespace Game.Tests
                 var position = new Vector2(1000, 1000);
                 prefab.transform.position = position;
                 var victim = CreateEnemy(maxHp: 10, position: position);
-                var neighbour = CreateEnemy(2, 30, position: position + Vector2.right * 2);
+                var neighbour = CreateEnemy(2, 24, position: position + Vector2.right * 2);
                 var farther = CreateEnemy(3, 100, position: position + Vector2.right * 3);
                 var dead = CreateEnemy(4, 1, position: position + Vector2.right); dead.TakeDamage(1);
                 victim.gameObject.AddComponent<CircleCollider2D>(); victim.gameObject.AddComponent<BoxCollider2D>();
@@ -148,7 +148,7 @@ namespace Game.Tests
                 foreach (var effect in UnityEngine.Object.FindObjectsByType<HitscanEffect>(FindObjectsSortMode.None))
                 { if (effect.name == "KillLightningTest(Clone)") { count++; if (effect != main) { secondary = effect; } } }
                 Assert.AreEqual(2, count);
-                Assert.AreEqual(31.25f, (float)typeof(HitscanEffect).GetField("damage", flags).GetValue(secondary));
+                Assert.AreEqual(40f, (float)typeof(HitscanEffect).GetField("damage", flags).GetValue(secondary));
                 Assert.AreEqual(Vector3.one * .5f, secondary.transform.localScale);
                 hit.Invoke(secondary, null); hit.Invoke(secondary, null);
                 Assert.IsTrue(neighbour.IsDead); Assert.AreEqual(100, farther.Model.Hp);
