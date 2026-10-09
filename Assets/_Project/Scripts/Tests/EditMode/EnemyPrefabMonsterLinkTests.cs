@@ -17,21 +17,18 @@ namespace Game.Tests
         }
 
         [Test]
-        public void Factory_HasMonsterAssetTable()
-        {
-            Assert.IsNotNull(LoadAssets(), "Spawn.prefab의 EnemyFactory에 MonsterAssetTable이 연결돼 있어야 합니다");
-        }
-
-        [Test]
         public void EveryMonster_HasPrefab_AndRangedHasProjectile()
         {
             var store = new GameDataStore();
             var assets = LoadAssets();
+            Assert.IsNotNull(assets, "Spawn.prefab의 EnemyFactory에 MonsterAssetTable이 연결돼 있어야 합니다");
 
             foreach (var monster in store.Monsters.Values)
             {
                 Assert.IsTrue(assets.TryGet(monster.Id, out var entry), $"MonsterId {monster.Id}에 해당하는 표 항목이 없습니다");
                 Assert.IsNotNull(entry.prefab, $"MonsterId {monster.Id}: prefab이 없습니다");
+                Assert.IsNotNull(entry.prefab.GetComponent<Enemy>(), $"MonsterId {monster.Id}: Enemy가 없습니다");
+                Assert.IsNotNull(entry.prefab.GetComponentInChildren<Animator>(), $"MonsterId {monster.Id}: Animator가 없습니다");
 
                 if (monster.GetAttackType() == AttackType.Ranged)
                 {

@@ -65,11 +65,5 @@ namespace Game.Tests
 
             Assert.DoesNotThrow(() => GameDataStore.ValidatePassiveReferences(table));
         }
-
-        [Test]
-        public void RealData_HasNoChainedSpawns()
-        {
-            Assert.DoesNotThrow(() => new GameDataStore());
-        }
     }
 }

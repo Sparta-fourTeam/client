@@ -38,63 +38,16 @@ namespace Game.Tests
 
         private static Transform FillOf(Enemy enemy) => enemy.transform.Find("EnemyHpBar(Clone)/Fill");
 
-        [Test(Description = "체력바 프리팹이 Resources에 있고 Fill 자식을 가진다")]
-        public void Prefab_ExistsWithFill()
-        {
-            var prefab = Resources.Load<GameObject>("UI/EnemyHpBar");
-
-            Assert.IsNotNull(prefab);
-            Assert.IsNotNull(prefab.transform.Find("Fill"));
-            Assert.IsNotNull(prefab.transform.Find("Background"));
-        }
-
-        [Test(Description = "엘리트와 보스만 체력바를 보인다")]
-        public void ShowsFor_OnlyEliteAndBoss()
-        {
-            Assert.IsFalse(EnemyHpBar.ShowsFor(EnemyType.Normal));
-            Assert.IsTrue(EnemyHpBar.ShowsFor(EnemyType.Elite));
-            Assert.IsTrue(EnemyHpBar.ShowsFor(EnemyType.Boss));
-        }
-
-        [Test(Description = "막대 길이는 비율에 비례하고 0~1 밖은 잘린다")]
-        public void FillWidth_ScalesAndClamps()
-        {
-            Assert.AreEqual(0.6f, EnemyHpBar.FillWidth(0.5f, 1.2f), 0.0001f);
-            Assert.AreEqual(1.2f, EnemyHpBar.FillWidth(2f, 1.2f), 0.0001f);
-            Assert.AreEqual(0f, EnemyHpBar.FillWidth(-1f, 1.2f), 0.0001f);
-        }
-
-        [Test(Description = "일반 등급은 체력바를 만들지 않는다")]
-        public void Normal_HasNoBar()
-        {
-            var enemy = TestEnemy.Create(NewModel(EnemyType.Normal));
-
-            var bar = BindBar(enemy, enemy.Model);
-
-            Assert.IsFalse(bar.IsVisible);
-            Assert.AreEqual(0, enemy.transform.childCount);
-        }
-
         [TestCase(EnemyType.Elite)]
         [TestCase(EnemyType.Boss)]
-        [Test(Description = "엘리트·보스는 가득 찬 체력바로 시작한다")]
-        public void EliteAndBoss_StartWithFullBar(EnemyType type)
-        {
-            var enemy = TestEnemy.Create(NewModel(type));
-            float fullWidth = Resources.Load<GameObject>("UI/EnemyHpBar").transform.Find("Fill").localScale.x;
-
-            var bar = BindBar(enemy, enemy.Model);
-
-            Assert.IsTrue(bar.IsVisible);
-            Assert.AreEqual(fullWidth, FillOf(enemy).localScale.x, 0.0001f);
-        }
-
         [Test(Description = "맞으면 체력 비율만큼 줄고, 회복하면 다시 늘어난다")]
-        public void Fill_FollowsDamageAndHeal()
+        public void Fill_FollowsDamageAndHeal(EnemyType type)
         {
-            var enemy = TestEnemy.Create(NewModel(EnemyType.Elite, 10));
+            var enemy = TestEnemy.Create(NewModel(type, 10));
             float fullWidth = Resources.Load<GameObject>("UI/EnemyHpBar").transform.Find("Fill").localScale.x;
             var bar = BindBar(enemy, enemy.Model);
+            Assert.IsTrue(bar.IsVisible);
+            Assert.AreEqual(fullWidth, FillOf(enemy).localScale.x, 0.0001f, "처음에는 가득 찬 체력바다");
 
             enemy.Model.TakeDamage(4);
             bar.Sync();

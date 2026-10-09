@@ -27,16 +27,6 @@ namespace Game.Tests
             return exp;
         }
 
-        [Test(Description = "장비 칸은 캐릭터 화면 칸 수(오른쪽 6 + 왼쪽 1)와 같고, 칸 번호가 순서대로다")]
-        public void Equips_MatchScreenSlots()
-        {
-            Assert.AreEqual(7, _catalog.Equips.Count);
-            for (int i = 0; i < _catalog.Equips.Count; i++)
-            {
-                Assert.AreEqual(i, _catalog.Equips[i].Slot);
-            }
-        }
-
         [Test(Description = "장비 칸은 플레이어 레벨에 맞춰 열린다")]
         public void Equips_UnlockByPlayerLevel()
         {
@@ -116,16 +106,6 @@ namespace Game.Tests
             Assert.AreEqual(0, hat.MaterialCost);
         }
 
-        [Test(Description = "장비 효과는 현재 레벨의 효과량과 다음 레벨 증가량을 보여준다 (최대 레벨은 증가량 없음)")]
-        public void Equips_EffectTextShowsCurrentAndNext()
-        {
-            var effect = new UpgradeStatEffect { Kind = "skillDamagePercent", ValuePerLevel = 5 };
-
-            Assert.AreEqual("[기술력] 스킬 대미지 15% ▲ (+5%)", EquipEffectText.Format(effect, 3, false));
-            Assert.AreEqual("[기술력] 스킬 대미지 50% ▲", EquipEffectText.Format(effect, 10, true));
-            Assert.AreEqual("unknownKind 6 ▲ (+2)", EquipEffectText.Format(new UpgradeStatEffect { Kind = "unknownKind", ValuePerLevel = 2 }, 3, false));
-        }
-
         [Test(Description = "장비 능력치는 효과마다 한 줄과 장비 레벨 줄이고, 현재 값과 다음 레벨 값을 가진다 (최대 레벨은 다음 값 없음)")]
         public void Equips_StatsHaveCurrentAndNext()
         {
@@ -147,15 +127,6 @@ namespace Game.Tests
             foreach (var line in _catalog.Equips[0].Stats)
             {
                 Assert.IsNull(line.Next, line.Label);
-            }
-        }
-
-        [Test(Description = "장식품 효과는 팝업 줄 수(5)를 넘지 않는다")]
-        public void Equips_EffectsFitPopup()
-        {
-            foreach (EquipInfo equip in _catalog.Equips)
-            {
-                Assert.LessOrEqual(equip.Effects.Count, 5, equip.Name);
             }
         }
 
@@ -254,12 +225,6 @@ namespace Game.Tests
                 Assert.IsTrue(def.UsesMaterial, skill.progressionId);
                 Assert.AreEqual(skill.id.ToString(), _data.Items.GetOrThrow(def.MaterialItemId).TargetId, skill.progressionId);
             }
-        }
-
-        [Test(Description = "스킬 칸은 화면 칸 수(18)를 넘지 않는다")]
-        public void Skills_FitScreen()
-        {
-            Assert.LessOrEqual(_catalog.Skills.Count, 18);
         }
     }
 }

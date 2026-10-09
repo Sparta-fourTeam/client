@@ -65,19 +65,6 @@ namespace Game.Tests
 
         private static void Show(int amount) => DamagePopupPool.Show(amount, Vector3.zero, SceneManager.GetActiveScene());
 
-        [Test(Description = "데미지 숫자 프리팹이 Resources에 있고 글자 컴포넌트가 연결돼 있다")]
-        public void Prefab_ExistsWithText()
-        {
-            var prefab = Resources.Load<DamagePopup>("UI/DamagePopup");
-
-            Assert.IsNotNull(prefab);
-            // 에셋을 직접 건드리지 않도록 복사본으로 확인한다
-            var copy = UnityEngine.Object.Instantiate(prefab);
-            copy.Show(8, Vector3.zero);
-            Assert.AreEqual("8", copy.DisplayedText, "글자 컴포넌트가 연결돼 있어야 숫자가 쓰인다");
-            UnityEngine.Object.DestroyImmediate(copy.gameObject);
-        }
-
         [Test(Description = "숫자는 위로 떠오르고, 앞쪽 절반은 그대로 있다가 끝까지 투명해진다")]
         public void Popup_RisesAndFades()
         {

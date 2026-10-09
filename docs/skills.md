@@ -214,7 +214,7 @@ flowchart TD
 1. 스킬의 `upgrades`에 카드를 적는다(3절). `id`는 전체에서 유일해야 한다.
 2. 선행·제외·영구 레벨 조건이 필요하면 해당 필드를 적고, 일반/(+)가 다르면 `variants`를 쓴다.
 3. 카드 아이콘은 스킬 단위라 따로 필요 없다.
-4. 샌드박스에서 확인하고, 카드 효과 골든 테스트를 갱신한다(9절).
+4. 샌드박스에서 확인하고, 카드 효과와 실제 공격 동작 테스트를 실행한다(9절).
 
 ### C. 새 효과 종류 만들기
 
@@ -268,13 +268,13 @@ python3 docs/ninjutsu/validate_requirements.py
 |---|---|
 | 효과 종류의 등록, 소비하는 공격, 적용, 스냅샷 복사 | `SkillCatalogSafetyNetTests` |
 | 카탈로그 검증, 공격 종류와 효과의 불일치 거부 | `SkillCatalogSafetyNetTests`, `SkillExecutionTests` |
-| 모든 카드의 결과 수치 | 골든 `CardEffects_MatchGoldenSnapshot` |
+| 효과별 계산, 카드 적용과 스냅샷 독립성 | `SkillStatsSnapshotTests`, `SkillExecutionTests`, 공격 종류별 테스트 |
 | 프리팹 컴포넌트, HUD 아이콘, 카드 아이콘 연결 | `SkillCatalogSafetyNetTests` |
 | 자식 스킬, 상속, 순환 | `ChildStatReferenceTests`, `SkillChildEffectTests` |
 | 공격 종류별 동작 | `AreaSkillTests`, `BeamSkillTests`, `ChainSkillTests` 등 (`CatalogWorld`로 실제 카탈로그와 프리팹을 씀) |
 | 카드 뽑기, 일반 카드 | `UpgradeEligibilityTests`, `CardDeckTests` |
 
-**골든 갱신**: 카드 효과를 의도해서 바꿨다면 `SkillCatalogSafetyNetTests.RegenerateGolden`(Explicit 테스트)을 Test Runner에서 실행해 `Tests/EditMode/Golden/WeaponCardStats.golden.txt`를 다시 만들고, **diff를 리뷰**한다. 의도하지 않은 변경이 섞이지 않았는지 보는 것이 목적이다.
+**밸런스 변경**: 효과별 계산과 카드 적용 테스트, 실제 프리팹을 사용하는 전투 테스트를 실행하고 Skill Sandbox에서 동작을 확인한다. 카드 수치를 복제한 골든 파일은 사용하지 않는다. 테스트 유지 기준과 전체 실행 방법은 [testing.md](testing.md)를 본다.
 
 **요구사항 검증기**(`validate_requirements.py`)는 원문 15종·168개 카드와 실행 데이터의 연결(ID, 참조, 횟수, 선행 그래프)을 확인한다. 카드 ID나 스킬을 바꾸면 `requirements.json`도 같이 고친다.
 

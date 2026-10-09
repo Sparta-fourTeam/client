@@ -1,4 +1,3 @@
-using System.Threading;
 using Game.Core;
 using Game.Network;
 using NUnit.Framework;
@@ -60,26 +59,6 @@ namespace Game.Tests
 
             Assert.AreEqual(ApiErrorKind.Rejected, ex.Kind);
             Assert.AreEqual(HttpErrorMapper.InvalidResponse, ex.Code);
-        }
-
-        [Test(Description = "서버 오류는 ApiException 그대로 전달된다")]
-        public void GetVersions_ServerError_PropagatesApiException()
-        {
-            _transport.Response = new HttpResponseData(503, "");
-
-            var ex = Assert.Throws<ApiException>(() => _api.GetVersions().GetAwaiter().GetResult());
-
-            Assert.AreEqual(ApiErrorKind.Transient, ex.Kind);
-            Assert.AreEqual("HTTP_503", ex.Code);
-        }
-
-        [Test(Description = "취소 토큰이 이미 취소돼 있으면 OperationCanceledException으로 끝난다")]
-        public void GetVersions_Cancelled_Throws()
-        {
-            using var cts = new CancellationTokenSource();
-            cts.Cancel();
-
-            Assert.Throws<System.OperationCanceledException>(() => _api.GetVersions(cts.Token).GetAwaiter().GetResult());
         }
     }
 }

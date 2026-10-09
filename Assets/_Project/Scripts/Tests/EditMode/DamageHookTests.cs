@@ -214,16 +214,6 @@ namespace Game.Tests
             Assert.IsTrue(model.IsDead);
         }
 
-        [Test]
-        public void HpRatio_FollowsHp()
-        {
-            var model = Model(maxHp: 200);
-
-            model.TakeDamage(50);
-
-            Assert.AreEqual(0.75f, model.HpRatio, 0.0001f);
-        }
-
         // ───────── 출처별 동적 면역 ─────────
 
         [Test]

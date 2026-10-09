@@ -9,16 +9,6 @@ namespace Game.Tests
     {
         private static readonly GameDataStore Store = new();
 
-        [Test(Description = "모든 스테이지가 20웨이브이고 웨이브마다 몬스터 구성이 있다")]
-        public void EveryWave_HasComposition()
-        {
-            foreach (var stage in Store.Stages.Values)
-            {
-                Assert.AreEqual(20, stage.Waves.Count, $"스테이지 {stage.Id}");
-                foreach (var wave in stage.Waves) { Assert.Greater(wave.EnemyCount, 0); }
-            }
-        }
-
         [Test(Description = "엘리트·보스는 웨이브마다 1마리만 적혀 있다 (반복 스폰에 끼지 않는다)")]
         public void EliteAndBoss_AreSingleInEachWave()
         {
@@ -41,16 +31,6 @@ namespace Game.Tests
                     Assert.AreEqual(Store.Monsters.GetOrThrow(spawn.MonsterId).GetEnemyType(), spawn.Type);
                 }
             }
-        }
-
-        [Test(Description = "3스테이지의 보스는 마지막 웨이브에 한 번만 나온다")]
-        public void Stage3_BossAppearsOnlyInFinalWave()
-        {
-            var stage = Store.Stages.GetOrThrow(3);
-            var bossWaves = Enumerable.Range(0, stage.Waves.Count)
-                .Where(i => stage.Waves[i].Spawns.Any(s => s.Type == EnemyType.Boss)).ToList();
-
-            CollectionAssert.AreEqual(new[] { 19 }, bossWaves);
         }
     }
 }

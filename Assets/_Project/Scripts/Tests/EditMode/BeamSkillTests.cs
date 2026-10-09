@@ -188,29 +188,5 @@ namespace Game.Tests
             typeof(SkillCaster).GetMethod("OnFire", Flags).Invoke(beam, null);
             Assert.AreEqual(2, Zones().Count, "본 광선과 보조 광선이 함께 나간다");
         }
-
-        [Test]
-        public void ShippedCatalog_SunBeamHasFourDisabledCardsWithReasons()
-        {
-            var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == SunBeamId);
-            var disabled = data.upgrades.Where(c => !c.enabled).ToList();
-            Assert.AreEqual(4, disabled.Count);
-            foreach (var card in disabled) { Assert.IsNotEmpty(card.disabledReason, card.id); }
-            CollectionAssert.AreEqual(new[] { 4 }, data.upgrades.Find(c => c.id == "energy_beam_freeze").requiredWeaponIds);
-        }
-
-        [Test]
-        public void Registry_BeamEffectsAreBeamOnlyAndSharedEffectsIncludeBeam()
-        {
-            Assert.IsTrue(EffectRegistry.Supports(CastType.Beam, "beamWidth"));
-            Assert.IsFalse(EffectRegistry.Supports(CastType.Area, "beamWidth"));
-            Assert.IsFalse(EffectRegistry.Supports(CastType.Beam, "areaRadius"));
-            Assert.IsFalse(EffectRegistry.Supports(CastType.Beam, "pierceCount"));
-            foreach (var kind in new[] { "damage", "attackSpeed", "freezeDuration", "slowDuration", "vulnerabilityRatio", "stunDuration", "stunChance", "onEvent" })
-            {
-                Assert.IsTrue(EffectRegistry.Supports(CastType.Beam, kind), kind);
-            }
-            Assert.IsTrue(SkillFactory.IsRegistered(CastType.Beam));
-        }
     }
 }

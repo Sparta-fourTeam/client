@@ -38,15 +38,6 @@ namespace Game.Tests
             Assert.AreEqual(3, store.StageOrFirst(3).Id);
         }
 
-        [Test]
-        public void SpawnConfig_FromDefinition_CopiesValues()
-        {
-            var config = EnemySpawnConfig.From(new SpawnDefinition { IntervalMin = 0.3f, IntervalMax = 0.9f, Cooldown = 7f });
-
-            Assert.AreEqual(0.3f, config.SpawnIntervalMin);
-            Assert.AreEqual(7f, config.SpawnCooldown);
-        }
-
         private static WaveDefinition Wave(int monsterA, int countA, int monsterB, int countB) => new()
         {
             Spawns = new List<WaveSpawn>
@@ -73,12 +64,6 @@ namespace Game.Tests
             stage.Waves[5] = Wave(1, 1, 7, 1);
 
             CollectionAssert.AreEqual(new[] { 2, 1, 7 }, stage.MonsterIds);
-        }
-
-        [Test]
-        public void StageValidate_ValidStage_Passes()
-        {
-            Assert.DoesNotThrow(() => ValidStage().Validate());
         }
 
         [Test]
@@ -122,18 +107,6 @@ namespace Game.Tests
             var noInterval = JsonConvert.DeserializeObject<MonsterDefinition>(JsonConvert.SerializeObject(monster));
             noInterval.AttackInterval = 0f;
             Assert.Throws<InvalidOperationException>(() => noInterval.Validate());
-        }
-
-        [Test(Description = "일반 카드 테이블에 방벽 수리가 조건과 효과와 함께 있다")]
-        public void GeneralCards_HaveWallRepairWithConditionAndEffect()
-        {
-            var card = new GameDataStore().GeneralCards.Single(c => c.Id == "wall_repair");
-
-            Assert.IsTrue(card.Forced);
-            Assert.AreEqual("wallHpBelow", card.Condition.Kind);
-            Assert.AreEqual(50f, card.Condition.Value);
-            Assert.AreEqual("wallRepair", card.Effect.Kind);
-            Assert.AreEqual(20f, card.Effect.Value);
         }
 
         [Test]

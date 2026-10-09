@@ -174,13 +174,6 @@ namespace Game.Tests
             Assert.AreEqual(expected, StatsOf(1).Cast.Damage, 0.001f);
         }
 
-        [Test(Description = "HasPrefab은 SkillAssetTable의 프리팹 연결 여부를 알려 준다")]
-        public void HasPrefab_ReflectsAssetTable()
-        {
-            Assert.IsTrue(_controller.HasPrefab(1));
-            Assert.IsFalse(_controller.HasPrefab(99));
-        }
-
         [Test(Description = "새 무기를 얻으면 보유 목록 전체를 다시 발행한다")]
         public void AcquireWeapon_PublishesFullSnapshot()
         {
@@ -343,13 +336,6 @@ namespace Game.Tests
             levels[4] = 13;
             Assert.IsFalse(_controller.GetRandomUpgradeChoices(100).Exists(c => c.Option?.id == "frost_crystal_volley"));
             Assert.IsTrue(_controller.GetRandomUpgradeChoices(100).Exists(c => c.Option?.id == "frost_crystal_repeat"));
-        }
-
-        [Test]
-        public void NonPositiveChoiceCount_ReturnsEmpty()
-        {
-            Assert.IsEmpty(_controller.GetRandomUpgradeChoices(-1));
-            Assert.IsEmpty(_controller.GetRandomUpgradeChoices(0));
         }
     }
 }

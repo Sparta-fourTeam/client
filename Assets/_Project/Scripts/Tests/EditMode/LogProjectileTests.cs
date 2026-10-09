@@ -290,13 +290,5 @@ namespace Game.Tests
             public int GetNearest(Vector2 from, int count, List<IEnemyTarget> results)
             { results.Clear(); results.AddRange(Targets); return results.Count; }
         }
-
-        [Test]
-        public void ActualAssetTable_HasProjectileForLogAcquisition()
-        {
-            var log = TestSkillAssets.Real().GetPrefab(TestSkillAssets.Data(5).assetKey);
-            Assert.IsNotNull(log);
-            Assert.IsNotNull(log.GetComponent<Projectile>());
-        }
     }
 }

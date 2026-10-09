@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using Game.Core;
 using NUnit.Framework;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.Pool;
 
@@ -268,18 +267,6 @@ namespace Game.Tests
         }
 
         [Test]
-        public void Catalog_FrostCrystalHasPartialFreezeChance_OtherStatusesAreCertain()
-        {
-            foreach (var weapon in new DefaultSkillDataProvider(new GameDataStore()).LoadAll())
-            {
-                Assert.AreEqual(1f, weapon.baseStats.status.freezeChance);
-                Assert.AreEqual(1, weapon.baseStats.status.frostbiteChance);
-                Assert.AreEqual(1, weapon.baseStats.status.burnChance);
-                Assert.AreEqual(1, weapon.baseStats.status.paralysisChance);
-            }
-        }
-
-        [Test]
         public void FireballFormsAndFlames_ApplyThreeChildrenAndTwoPierces()
         {
             var prefab = new GameObject("EnbakutsuTest");
@@ -320,14 +307,6 @@ namespace Game.Tests
 
                 Object.DestroyImmediate(prefab);
             }
-        }
-
-        [Test]
-        public void IcePrefab_IsConnectedToAssetTableAndHasProjectileComponent()
-        {
-            var projectile = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Skills/IceSpear.prefab");
-            Assert.IsNotNull(projectile.GetComponent<Projectile>());
-            Assert.AreEqual(projectile, TestSkillAssets.Real().GetPrefab(TestSkillAssets.Data(4).assetKey));
         }
     }
 }

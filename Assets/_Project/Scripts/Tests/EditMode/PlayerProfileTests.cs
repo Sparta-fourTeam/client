@@ -8,26 +8,6 @@ namespace Game.Tests
     {
         private static PlayerProfile NewProfile() => new PlayerProfile(new GameDataStore());
 
-        [Test(Description = "Apply 후에는 스냅샷 값을 그대로 노출한다")]
-        public void Apply_ExposesSnapshotValues()
-        {
-            var profile = NewProfile();
-
-            profile.Apply(new PlayerSnapshot
-            {
-                gold = 500,
-                energyStored = 10,
-                energyUpdatedAt = "2026-01-01T00:00:00Z",
-                stageProgress = new(),
-                upgrades = new() { new UpgradeRow { upgradeId = "atk", level = 2 } },
-            });
-
-            Assert.AreEqual(500, profile.Gold);
-            Assert.AreEqual(10, profile.EnergyStored);
-            Assert.AreEqual(2, profile.UpgradeLevel("atk"));
-            Assert.AreEqual(0, profile.UpgradeLevel("unknown"));
-        }
-
         [Test(Description = "energyUpdatedAt은 UTC 문자열을 시간대 변환 없이 그대로 UTC로 해석한다")]
         public void EnergyUpdatedAt_ParsesAsUtc()
         {

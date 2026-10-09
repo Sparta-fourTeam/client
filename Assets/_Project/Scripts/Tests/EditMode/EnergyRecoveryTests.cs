@@ -87,6 +87,8 @@ namespace Game.Tests
         public void Recover_Ad_Success_AppliesSnapshot()
         {
             _api.Response = Snapshot(7);
+            int changed = 0;
+            _profile.Changed += _ => changed++;
 
             bool ok = Recover(EnergySource.Ad);
 
@@ -95,6 +97,7 @@ namespace Game.Tests
             Assert.AreEqual(EnergySource.Ad, _api.LastSource);
             Assert.AreEqual(7, _profile.EnergyStored);
             Assert.AreEqual(0, _failed.Count);
+            Assert.AreEqual(1, changed, "회복한 프로필을 로비와 에너지 시계에 한 번 알린다");
         }
 
         [Test(Description = "광고 회복은 중복 지급 방지용 키를 함께 보낸다")]
@@ -131,18 +134,6 @@ namespace Game.Tests
             Assert.AreEqual(1, _failed.Count);
             Assert.AreEqual("AD_NOT_READY", _failed[0].Code);
             Assert.AreEqual(2, _profile.EnergyStored);
-        }
-
-        [Test(Description = "회복에 성공하면 프로필 Changed 이벤트가 불린다 (EnergyClock·LobbyModel이 이를 보고 갱신한다)")]
-        public void Recover_Success_RaisesProfileChanged()
-        {
-            _api.Response = Snapshot(7);
-            int changed = 0;
-            _profile.Changed += _ => changed++;
-
-            Recover(EnergySource.Ad);
-
-            Assert.AreEqual(1, changed);
         }
     }
 }

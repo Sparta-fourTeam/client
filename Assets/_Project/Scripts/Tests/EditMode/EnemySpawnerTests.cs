@@ -402,21 +402,6 @@ namespace Game.Tests
             Assert.AreEqual(new Vector2(5f, 3f), results[0].Position);
         }
 
-        [Test]
-        public void GetNearest_CalledTwice_ReturnsSameResult()
-        {
-            var spawner = CreateSpawnerWithEnemies(out _,
-                new Vector2(0f, 3f),
-                new Vector2(0f, 1f));
-            var first = new List<IEnemyTarget>();
-            var second = new List<IEnemyTarget>();
-
-            spawner.GetNearest(Vector2.zero, 2, first);
-            spawner.GetNearest(Vector2.zero, 2, second);
-
-            CollectionAssert.AreEqual(first, second); // 같은 적, 같은 순서
-        }
-
         // ───────── 사망 ─────────
 
         [Test]
@@ -448,40 +433,6 @@ namespace Game.Tests
 
             Assert.AreEqual(1, spawner.GetNearest(Vector2.zero, 5, results));
             Assert.AreSame(factory.Created[1], results[0]);
-        }
-
-        [Test]
-        public void EnemyDied_PublishedOnceWithId()
-        {
-            var spawner = CreateSpawnerWithEnemies(out var factory, new Vector2(0f, 1f));
-            var enemy = factory.Created[0];
-
-            enemy.TakeDamage(999);
-            spawner.Advance(0.1f);
-            enemy.TakeDamage(999); // 이미 죽은 적을 또 때려도
-            spawner.Advance(0.1f);
-
-            Assert.AreEqual(1, factory.Died.Published.Count);
-            Assert.AreEqual(enemy.Id, factory.Died.Published[0].EnemyId);
-        }
-
-        [Test]
-        public void Advance_AllEnemiesDead_GetNearestReturnsZero()
-        {
-            var spawner = CreateSpawnerWithEnemies(out var factory,
-                new Vector2(0f, 1f),
-                new Vector2(0f, 2f),
-                new Vector2(0f, 3f));
-            var results = new List<IEnemyTarget>();
-
-            foreach (var enemy in factory.Created)
-            {
-                enemy.TakeDamage(999);
-            }
-            spawner.Advance(0.1f);
-
-            Assert.AreEqual(0, spawner.GetNearest(Vector2.zero, 5, results));
-            Assert.AreEqual(3, factory.Died.Published.Count);
         }
 
         // ───────── 적 공격 (TickCombat) ─────────

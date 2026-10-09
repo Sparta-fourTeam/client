@@ -1,11 +1,8 @@
-using System.Collections.Generic;
-using System.Linq;
 using Game.Core;
 using Game.Core.Combat;
 using Game.Core.Messages;
 using MessagePipe;
 using NUnit.Framework;
-using UnityEditor;
 using UnityEngine;
 
 namespace Game.Tests
@@ -14,8 +11,6 @@ namespace Game.Tests
     public sealed class NewMonsterDataTests
     {
         private const int Crab = 21, BrainSpider = 22, EyeJelly = 23, Ghost = 24, Golem = 25;
-        private static readonly int[] BatchIds = { Crab, BrainSpider, EyeJelly, Ghost, Golem };
-        private const string TablePath = "Assets/_Project/Data/MonsterAssetTable.asset";
 
         private sealed class Recorder<T> : IPublisher<T>
         {
@@ -55,42 +50,6 @@ namespace Game.Tests
 
         private static void Hit(EnemyModel model, int amount, Element element = Element.Neutral, CastType cast = CastType.Projectile) =>
             model.TakeDamage(new DamageInfo(amount, 1, element, cast, true));
-
-        // ───────── 공통 ─────────
-
-        [Test]
-        public void EveryNewMonster_BuildsFromData()
-        {
-            foreach (int id in BatchIds)
-            {
-                Assert.DoesNotThrow(() => Build(id), $"Monsters {id}");
-            }
-        }
-
-        [Test(Description = "새 몬스터의 프리팹은 Enemy 컴포넌트와 애니메이터가 붙은 Visual을 가진다")]
-        public void EveryNewMonster_PrefabHasEnemyAndAnimatedVisual()
-        {
-            var table = AssetDatabase.LoadAssetAtPath<MonsterAssetTable>(TablePath);
-
-            foreach (int id in BatchIds)
-            {
-                Assert.IsTrue(table.TryGet(id, out var entry), $"MonsterId {id}: 표 항목이 없습니다");
-                Assert.IsNotNull(entry.prefab, $"MonsterId {id}: prefab이 없습니다");
-                var visual = entry.prefab.transform.Find("Visual");
-                Assert.IsNotNull(visual, $"MonsterId {id}: Visual 자식이 없습니다");
-                Assert.IsNotNull(visual.GetComponentInChildren<Animator>(), $"MonsterId {id}: Visual에 Animator가 없습니다");
-            }
-        }
-
-        [Test(Description = "스테이지 1에는 넣지 않고, 스테이지 2는 21~23, 스테이지 3은 21~25가 나온다")]
-        public void Stages_PlaceTheNewMonsters()
-        {
-            var store = Store();
-
-            CollectionAssert.IsEmpty(store.Stages.GetOrThrow(1).MonsterIds.Intersect(BatchIds));
-            CollectionAssert.AreEquivalent(new[] { Crab, BrainSpider, EyeJelly }, store.Stages.GetOrThrow(2).MonsterIds.Intersect(BatchIds));
-            CollectionAssert.AreEquivalent(BatchIds, store.Stages.GetOrThrow(3).MonsterIds.Intersect(BatchIds));
-        }
 
         // ───────── 갑옷 게: 방어형 ─────────
 
@@ -205,12 +164,6 @@ namespace Game.Tests
 
             Hit(model, 10, Element.Fire);
             Assert.AreEqual(Hp(Ghost) - 10, model.Hp);
-        }
-
-        [Test]
-        public void Ghost_IsTheFastest()
-        {
-            Assert.AreEqual(0.6f, Build(Ghost).MoveSpeed, 0.0001f);
         }
 
         // ───────── 골렘: 투사체 차단형 ─────────

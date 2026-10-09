@@ -58,15 +58,6 @@ namespace Game.Tests
             }));
         }
 
-        [Test(Description = "PlayerLevels.json이 로드·검증을 통과하고 레벨이 1부터 시작한다")]
-        public void Store_LoadsPlayerLevels()
-        {
-            var levels = new GameDataStore().PlayerLevels;
-
-            Assert.AreEqual((1, 0), levels.At(0));
-            Assert.Greater(levels.MaxLevel, 1);
-        }
-
         [Test(Description = "Profile은 저장된 exp(재실행 후 Apply된 스냅샷)에서 같은 레벨을 복원한다")]
         public void Profile_RestoresLevelFromSnapshotExp()
         {

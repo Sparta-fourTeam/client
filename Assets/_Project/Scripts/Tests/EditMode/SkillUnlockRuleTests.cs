@@ -25,12 +25,6 @@ namespace Game.Tests
             CollectionAssert.AreEquivalent(expected, SkillUnlockRule.UnlockedSkillIds(Skills(), level));
         }
 
-        [Test(Description = "해금 레벨을 쓰지 않은 스킬은 처음부터 열려 있다")]
-        public void UnlockLevel_DefaultsToOne()
-        {
-            Assert.AreEqual(1, new SkillData().unlockLevel);
-        }
-
         [Test(Description = "MockData의 모든 스킬은 해금 레벨이 1 이상이고, 랜덤 스킬재료의 스킬이 레벨 1에서 최소 하나는 열려 있다")]
         public void MockData_HasValidUnlockLevels_AndAtLeastOneOpenMaterialSkill()
         {

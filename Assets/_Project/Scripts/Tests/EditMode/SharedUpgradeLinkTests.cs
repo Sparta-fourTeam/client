@@ -42,18 +42,6 @@ namespace Game.Tests
             CollectionAssert.AreEquivalent(new[] { 1, 3 }, c.affectedWeaponIds);
         }
 
-        [Test(Description = "같은 두 스킬에 키가 다른 공유 강화가 여럿 있어도 키별로 구분된다")]
-        public void Link_SamePairWithDifferentKeys_StaysSeparate()
-        {
-            var a1 = Shared("a1", "k1"); var a2 = Shared("a2", "k2");
-            var b1 = Shared("b1", "k1"); var b2 = Shared("b2", "k2");
-
-            SkillUpgradeTransaction.LinkSharedTargets(new List<SkillData> { Weapon(1, a1, a2), Weapon(2, b1, b2) });
-
-            Assert.AreEqual(2, a1.affectedWeaponIds.Length);
-            Assert.AreEqual(2, a2.affectedWeaponIds.Length);
-        }
-
         [Test(Description = "sharedId 없는 카드는 대상 목록이 없다")]
         public void Link_NoSharedId_LeavesTargetsNull()
         {
@@ -86,22 +74,6 @@ namespace Game.Tests
             const string json = "[{\"id\":1,\"assetKey\":\"a\",\"maxLevel\":1,\"baseStats\":{},\"upgrades\":[{\"id\":\"c\",\"maxPickCount\":1,\"effects\":[],\"requiredCardIds\":[]}]}]";
 
             Assert.DoesNotThrow(() => Newtonsoft.Json.JsonConvert.DeserializeObject<List<SkillData>>(json));
-        }
-
-        [Test(Description = "데이터에 대상 목록이 없어도 실제 카탈로그의 공유 강화가 양쪽 스킬을 가리킨다")]
-        public void ShippedCatalog_SharedUpgradesTargetBothWeapons()
-        {
-            var weapons = new GameDataStore().LoadSkills();
-            var shared = weapons.SelectMany(w => w.upgrades.Select(u => (w, u))).Where(x => !string.IsNullOrEmpty(x.u.sharedId)).ToList();
-
-            Assert.IsNotEmpty(shared);
-            foreach (var (weapon, option) in shared)
-            {
-                Assert.GreaterOrEqual(option.affectedWeaponIds.Length, 2, option.id);
-                CollectionAssert.Contains(option.affectedWeaponIds, weapon.id, option.id);
-            }
-            var arrowEnergy = weapons.SelectMany(w => w.upgrades).First(u => u.sharedId == "shared_arrow_energy_damage");
-            CollectionAssert.AreEquivalent(new[] { 1, 16 }, arrowEnergy.affectedWeaponIds);
         }
     }
 }

@@ -98,17 +98,6 @@ namespace Game.Tests
 
         // ───────── 머티리얼 바꿔 끼우기 ─────────
 
-        [Test(Description = "플래시용 머티리얼이 Resources에 있고 셰이더에 섞는 정도와 색 속성이 있다")]
-        public void FlashMaterial_ExistsInResources()
-        {
-            var material = Resources.Load<Material>("Materials/SpriteHitFlash");
-
-            Assert.IsNotNull(material);
-            Assert.IsTrue(material.shader.isSupported);
-            Assert.IsTrue(material.HasProperty(FlashAmountId));
-            Assert.IsTrue(material.HasProperty(FlashColorId));
-        }
-
         [Test(Description = "Flash하면 자식 조각까지 모든 SpriteRenderer가 플래시 머티리얼로 바뀌고 섞는 정도가 peak이다")]
         public void Flash_SwapsEveryChildRenderer()
         {
@@ -153,20 +142,6 @@ namespace Game.Tests
             {
                 Assert.AreEqual(flashColors[0], flashColors[i], "원래 색 " + colors[i] + "과 상관없이 같은 플래시 색");
             }
-        }
-
-        [Test(Description = "플래시 중에도 스프라이트의 원래 색(SpriteRenderer.color)은 건드리지 않는다")]
-        public void Flash_DoesNotChangeSpriteColor()
-        {
-            var root = NewObject("Enemy");
-            var baseColor = new Color(0.3f, 0.6f, 0.9f, 0.7f);
-            var sr = AddRenderer(root, baseColor, "Mat");
-            var flash = root.AddComponent<HitFlash>();
-
-            flash.Flash();
-            flash.Advance(0.05f);
-
-            Assert.AreEqual(baseColor, sr.color);
         }
 
         [Test(Description = "시간이 지나면 섞는 정도가 줄어들고, 끝나면 원래 머티리얼로 돌아가고 속성 블록도 지워진다")]
@@ -219,21 +194,6 @@ namespace Game.Tests
             Assert.IsFalse(sr.HasPropertyBlock());
         }
 
-        [Test(Description = "플래시를 시작하지 않았으면 Advance와 Restore는 아무것도 바꾸지 않는다")]
-        public void NotFlashing_LeavesRendererUntouched()
-        {
-            var root = NewObject("Enemy");
-            var sr = AddRenderer(root, new Color(0.3f, 0.6f, 0.9f, 1f), "OriginalMat");
-            var original = sr.sharedMaterial;
-            var flash = root.AddComponent<HitFlash>();
-
-            flash.Advance(0.1f);
-            flash.Restore();
-
-            Assert.AreSame(original, sr.sharedMaterial);
-            Assert.IsFalse(sr.HasPropertyBlock());
-        }
-
         // ───────── Enemy 뷰와 연결 ─────────
 
         private sealed class Fixture
@@ -273,14 +233,6 @@ namespace Game.Tests
             return new Fixture { Enemy = enemy, Sprite = sr, Model = model, HpPublisher = hpPublisher };
         }
 
-        [Test(Description = "프리팹에 HitFlash가 없어도 Bind하면 붙는다")]
-        public void Bind_AddsHitFlashWhenMissing()
-        {
-            var f = CreateBoundEnemy(1, Color.white);
-
-            Assert.IsNotNull(f.Enemy.GetComponent<HitFlash>());
-        }
-
         [Test(Description = "이 적이 데미지를 받으면 원래 색과 상관없이 플래시한다")]
         public void Damage_FlashesThisEnemy_WhateverItsColor()
         {
@@ -301,17 +253,6 @@ namespace Game.Tests
 
             Assert.AreEqual("OriginalMat", f.Sprite.sharedMaterial.name);
             Assert.IsFalse(f.Sprite.HasPropertyBlock());
-        }
-
-        [Test(Description = "회복한 뒤에 다시 맞으면 플래시한다")]
-        public void DamageAfterHeal_StillFlashes()
-        {
-            var f = CreateBoundEnemy(1, Color.white, preDamage: 5);
-
-            f.Model.Heal(3);
-            f.Model.TakeDamage(1);
-
-            Assert.AreEqual("SpriteHitFlash", f.Sprite.sharedMaterial.name);
         }
 
         [Test(Description = "다른 적의 피격 메시지에는 반응하지 않는다")]

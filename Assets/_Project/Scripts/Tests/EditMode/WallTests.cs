@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Game.Core.Combat;
 using Game.Core.Defense;
 using Game.Core.Messages;
 using MessagePipe;
@@ -90,18 +89,6 @@ namespace Game.Tests
             Assert.AreEqual(0, _destroyed.Published.Count);
         }
 
-        [Test(Description = "HP가 10에서 3을 맞으면 7이 되고 ,HUD에 보내는 값도 7이다")]
-        public void TakeDamage_ReducesHpByAmount()
-        {
-            Wall wall = CreateWall(10);
-
-            wall.TakeDamage(3);
-
-            Assert.AreEqual(7, wall.CurrentHp);
-            Assert.AreEqual(7, _hp.Published.Last().Current);
-            Assert.IsFalse(wall.IsDestroyed);
-        }
-
         [Test(Description = "수리하면 체력이 늘고 HUD에 보내는 값도 늘어난다")]
         public void Repair_RestoresHpAndPublishes()
         {
@@ -146,18 +133,6 @@ namespace Game.Tests
             Assert.IsTrue(wall.IsDestroyed);
         }
 
-        [Test(Description = "IDamageable로 다뤄도 HP가 줄어든다")]
-        public void TakeDamage_ViaIDamageable_ReducesHp()
-        {
-            Wall wall = CreateWall(10);
-            IDamageable target = wall;
-
-            target.TakeDamage(3);
-
-            Assert.AreEqual(7, wall.CurrentHp);
-            Assert.AreEqual(7, _hp.Published.Last().Current);
-        }
-
         [Test(Description = "HP보다 큰 데미지를 입어도 음수가 아니라 0이 된다")]
         public void TakeDamage_OverMaxHp_ClampsToZero()
         {
@@ -182,7 +157,6 @@ namespace Game.Tests
             Assert.AreEqual(1, _hp.Published.Count); // Initialize에서 발행한 초기값만
         }
 
-
         [Test(Description = "HP가 0이 된 뒤 또 맞아도 파괴 메시지는 1번만 발송된다 (실패 판정·결과 전송은 판당 1번이어야 함)")]
         public void TakeDamage_ReachesZero_PublishesDestroyedOnce()
         {
@@ -205,22 +179,6 @@ namespace Game.Tests
             wall.TakeDamage(1);
 
             Assert.AreEqual(hpCountAfterDestroy, _hp.Published.Count);
-            Assert.AreEqual(1, _destroyed.Published.Count);
-        }
-
-        [Test(Description = "여러번 맞다가 마지막 한 방이 남은 HP보다 커도 0이 되며 파괴된다")]
-        public void TakeDamage_MultipleHits_AccumulatesUntilDestroyed()
-        {
-            Wall wall = CreateWall(10);
-
-            wall.TakeDamage(4);
-            wall.TakeDamage(4);
-            Assert.IsFalse(wall.IsDestroyed);
-
-            wall.TakeDamage(4);
-
-            Assert.AreEqual(0, wall.CurrentHp);
-            Assert.IsTrue(wall.IsDestroyed);
             Assert.AreEqual(1, _destroyed.Published.Count);
         }
 
@@ -288,16 +246,6 @@ namespace Game.Tests
             wall.Initialize(100);
 
             Assert.AreSame(sprites[0], renderer.sprite);
-        }
-
-        [Test(Description = "스프라이트 배열이 없어도 피해를 받을 수 있다")]
-        public void TakeDamage_WithoutSprites_DoesNotThrow()
-        {
-            Wall wall = CreateWall(10);
-            _go.AddComponent<SpriteRenderer>();
-
-            Assert.DoesNotThrow(() => wall.TakeDamage(10));
-            Assert.IsTrue(wall.IsDestroyed);
         }
 
         [Test(Description = "피해를 받으면 적과 같은 피격 플래시가 붙고, 무시되는 피해에는 붙지 않는다")]

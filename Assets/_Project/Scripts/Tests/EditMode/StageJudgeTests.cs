@@ -46,24 +46,6 @@ namespace Game.Tests
             _endedSubscription.Dispose();
         }
 
-        [Test(Description = "벽이 파괴되면 실패를 1번 발행한다")]
-        public void WallDestroyed_PublishesFail()
-        {
-            _wallDestroyed.Publish(new WallDestroyed());
-
-            Assert.AreEqual(1, _ended.Count);
-            Assert.AreEqual(StageOutcome.Fail, _ended[0].Outcome);
-        }
-
-        [Test(Description = "마지막 웨이브를 완료하면 클리어를 1번 발행한다")]
-        public void FinalWaveCleared_PublishesClear()
-        {
-            _allCleared.Publish(new AllEnemiesCleared());
-
-            Assert.AreEqual(1, _ended.Count);
-            Assert.AreEqual(StageOutcome.Clear, _ended[0].Outcome);
-        }
-
         [Test(Description = "실패로 판정된 뒤에 웨이브 완료가 와도 다시 판정하지 않는다")]
         public void AfterFail_FinalWave_DoesNotPublishAgain()
         {

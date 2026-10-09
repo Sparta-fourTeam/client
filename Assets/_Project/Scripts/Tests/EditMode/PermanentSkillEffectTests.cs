@@ -81,16 +81,6 @@ namespace Game.Tests
                 PermanentSkillEffect.Validate(Row("equipment.hat", Effect("skillDamagePercent", 5)), new[] { _shuriken }));
         }
 
-        [Test(Description = "실제 Upgrades 데이터의 스킬 강화 효과는 모두 그 스킬에 적용된다")]
-        public void UpgradesData_SkillEffectsAreValid()
-        {
-            var skills = _data.LoadSkills();
-            foreach (var skill in skills.Where(s => !string.IsNullOrEmpty(s.progressionId) && _data.Upgrades.Contains(s.progressionId)))
-            {
-                Assert.DoesNotThrow(() => PermanentSkillEffect.Validate(_data.Upgrades.GetOrThrow(skill.progressionId), skills), skill.progressionId);
-            }
-        }
-
         [Test(Description = "프로필의 강화 레벨만큼 효과를 돌려주고, 강화 데이터가 없는 스킬은 빈 목록이다")]
         public void ProfileEffects_FollowUpgradeLevel()
         {

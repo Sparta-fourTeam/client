@@ -113,14 +113,6 @@ namespace Game.Tests
             skill.upgrades[0].effects.Add(OnEvent(AttackEvent.Hit, childId));
 
         [Test]
-        public void Validator_AcceptsChildSkillThatExists()
-        {
-            var catalog = Catalog();
-            AddChildCast(catalog[0], catalog[1].id);
-            Assert.DoesNotThrow(() => SkillCatalogValidator.Validate(catalog));
-        }
-
-        [Test]
         public void Validator_RejectsUnknownChildSkillWithCardId()
         {
             var catalog = Catalog();

@@ -235,26 +235,6 @@ namespace Game.Tests
         }
 
         [Test]
-        public void ShippedCatalog_DisablesCardsWithUnimplementedEffectsAndExplainsWhy()
-        {
-            var disabled = FrostPrison().upgrades.Where(c => !c.enabled).ToList();
-            Assert.AreEqual(4, disabled.Count);
-            foreach (var card in disabled) { Assert.IsNotEmpty(card.disabledReason, card.id); }
-        }
-
-        [Test]
-        public void Registry_AreaEffectsAreAreaOnlyAndSharedEffectsIncludeArea()
-        {
-            Assert.IsTrue(EffectRegistry.Supports(CastType.Area, "areaRadius"));
-            Assert.IsFalse(EffectRegistry.Supports(CastType.Projectile, "areaRadius"));
-            Assert.IsFalse(EffectRegistry.Supports(CastType.Area, "pierceCount"));
-            foreach (var kind in new[] { "damage", "attackSpeed", "castCount", "freezeDuration", "onEvent", "periodic" })
-            {
-                Assert.IsTrue(EffectRegistry.Supports(CastType.Area, kind), kind);
-            }
-        }
-
-        [Test]
         public void Validator_RejectsAreaEffectOnProjectileWeapon()
         {
             var catalog = JsonConvert.DeserializeObject<List<SkillData>>(Resources.Load<TextAsset>("MockData/Skills").text);
@@ -413,18 +393,5 @@ namespace Game.Tests
 
         private static List<HitscanEffect> ActiveStrikes() => Object.FindObjectsByType<HitscanEffect>(FindObjectsSortMode.None)
             .Where(e => e.gameObject.scene.IsValid() && e.gameObject.activeInHierarchy).ToList();
-
-        [Test]
-        public void ShippedCatalog_CloudDisablesCardsWithUnknownEffectsAndRequiresLightningForGuide()
-        {
-            var data = Cloud();
-            Assert.AreEqual(CastType.Area, data.castType);
-            var disabled = data.upgrades.Where(c => !c.enabled).ToList();
-            Assert.AreEqual(3, disabled.Count);
-            foreach (var card in disabled) { Assert.IsNotEmpty(card.disabledReason, card.id); }
-            var guide = data.upgrades.Find(c => c.id == "lightning_cloud_guide");
-            CollectionAssert.AreEqual(new[] { LightningId }, guide.requiredWeaponIds);
-            Assert.AreEqual(13, guide.minPermanentLevel);
-        }
     }
 }

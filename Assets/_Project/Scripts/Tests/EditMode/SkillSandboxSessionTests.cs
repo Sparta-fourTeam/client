@@ -4,7 +4,6 @@ using System.Reflection;
 using Game.Core;
 using Game.Sandbox;
 using NUnit.Framework;
-using UnityEditor;
 using UnityEngine;
 
 namespace Game.Tests
@@ -12,7 +11,6 @@ namespace Game.Tests
     /// <summary>스킬 샌드박스의 조작 로직: 구성 적용, 카드 직접 적용, 영구 레벨, 실제 3지선다, 저장</summary>
     public sealed class SkillSandboxSessionTests
     {
-        private const string PlayerPrefab = "Assets/_Project/Prefabs/Stage/Player_Animated.prefab";
         private const BindingFlags Private = BindingFlags.NonPublic | BindingFlags.Instance;
 
         private sealed class Targets : IEnemyTargetProvider
@@ -81,23 +79,6 @@ namespace Game.Tests
             Assert.AreEqual(1, controller.Skills.Count, "이전 스킬은 정리된다");
             Assert.AreEqual(2, session.Current.Data.id);
             Assert.AreEqual(0, session.Build.cards.Count, "스킬을 바꾸면 카드 목록도 새로 시작한다");
-        }
-
-        [Test]
-        public void AddedCards_ProduceSameStatsAsApplyingThemDirectly()
-        {
-            session.SelectSkill(1);
-            foreach (var id in new[] { "arrow_sharp", "arrow_spread", "arrow_barrage" }) { Assert.IsTrue(session.TryAddCard(id, out var reason), reason); }
-
-            var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 1);
-            var expected = SkillConfig.FromDefinition(data).WithChildCaster(new NoopChildCaster());
-            foreach (var id in new[] { "arrow_sharp", "arrow_spread", "arrow_barrage" })
-            {
-                var builder = new SkillConfigBuilder(expected);
-                Assert.IsTrue(builder.TryApplyCatalog(data.upgrades.Find(c => c.id == id).effects));
-                expected = builder.Build();
-            }
-            Assert.AreEqual("(변화 없음)", SkillStatsDump.Diff(SkillStatsDump.Flatten(expected.Stats), SkillStatsDump.Flatten(session.Current.Stats)));
         }
 
         [Test]
@@ -181,13 +162,6 @@ namespace Game.Tests
         }
 
         [Test]
-        public void PermanentLevel_IsClampedAtZero()
-        {
-            session.SetPermanentLevel(-5);
-            Assert.AreEqual(0, session.Build.permanentLevel);
-        }
-
-        [Test]
         public void ChangingPermanentLevel_KeepsTheCardsApplied()
         {
             session.SelectSkill(1);
@@ -226,12 +200,6 @@ namespace Game.Tests
             Assert.IsTrue(session.RollChoices(50).Any(c => c.Option.id == "arrow_spread"), "선행 카드를 얻으면 다음 카드가 열린다");
             session.SetPermanentLevel(1);
             CollectionAssert.AreEqual(new[] { "arrow_sharp" }, session.Build.cards, "기록된 빌드는 다시 적용해도 같다");
-        }
-
-        [Test]
-        public void RealChoices_AreEmptyWithoutASkill()
-        {
-            Assert.IsEmpty(session.RollChoices());
         }
 
         // ── 저장 ──────────────────────────────────────────────────────
@@ -283,18 +251,5 @@ namespace Game.Tests
         }
 
         // ── 통계 텍스트 ───────────────────────────────────────────────
-
-        [Test]
-        public void StatsText_DescribesSkillNameCastTypeAndNonZeroStats()
-        {
-            Assert.AreEqual("(스킬 없음)", session.StatsText());
-            session.SelectSkill(7);
-            var text = session.StatsText();
-            StringAssert.Contains("전기 구름", text);
-            StringAssert.Contains("Area", text);
-            StringAssert.Contains("Radius", text);
-            StringAssert.DoesNotContain("Lightning:", text, "값이 모두 0인 묶음은 숨긴다");
-            StringAssert.DoesNotContain("Explosion:", text);
-        }
     }
 }

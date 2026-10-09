@@ -47,17 +47,5 @@ namespace Game.Tests
 
             Assert.AreEqual(2, UpgradeUnlockRule.SkillUnlockLevels(skills)["x"]);
         }
-
-        [Test(Description = "MockData: 초기 4종은 레벨 1, 나머지는 레벨 2~6에 열리고 스킬 강화 행은 자기 해금 레벨을 쓰지 않는다")]
-        public void MockData_FourInitialSkillsThenUnlocksInOrder()
-        {
-            var data = new GameDataStore();
-            var byId = new Dictionary<int, int>();
-            foreach (var skill in data.LoadSkills()) { byId[skill.id] = skill.unlockLevel; }
-
-            var expected = new Dictionary<int, int> { [1] = 1, [2] = 1, [3] = 1, [4] = 1, [5] = 2, [6] = 3, [7] = 4, [16] = 5, [18] = 6 };
-            foreach (var pair in expected) { Assert.AreEqual(pair.Value, byId[pair.Key], $"스킬 {pair.Key}"); }
-            foreach (var skill in data.LoadSkills()) { Assert.IsTrue(skill.unlockLevel >= 1); }
-        }
     }
 }

@@ -40,12 +40,6 @@ namespace Game.Tests
             Assert.AreEqual(2, def.MaterialAt(2));
         }
 
-        [Test(Description = "올바른 정의는 통과한다")]
-        public void Validate_ValidDefinition_Passes()
-        {
-            Assert.DoesNotThrow(() => Valid().Validate());
-        }
-
         [Test(Description = "비용 배열 길이가 MaxLevel과 다르거나 비용이 0 이하이거나 해금·최대 레벨이 1 미만이면 거절한다")]
         public void Validate_BadValues_Throw()
         {

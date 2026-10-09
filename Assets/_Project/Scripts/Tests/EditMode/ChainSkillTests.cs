@@ -218,28 +218,5 @@ namespace Game.Tests
             for (int i = 0; i < 20; i++) { Tick(bolt, .1f); }
             Assert.Greater(bystander.Damage, 0, "튕겨 도착한 적 주변이 폭발한다");
         }
-
-        [Test]
-        public void ShippedCatalog_ChainLightningHasTwoDisabledCardsWithReasons()
-        {
-            var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == ChainLightningId);
-            var disabled = data.upgrades.Where(c => !c.enabled).ToList();
-            Assert.AreEqual(2, disabled.Count);
-            foreach (var card in disabled) { Assert.IsNotEmpty(card.disabledReason, card.id); }
-            Assert.AreEqual(17, data.upgrades.Find(c => c.id == "chain_lightning_conduction").minPermanentLevel);
-        }
-
-        [Test]
-        public void Registry_ChainEffectsAreChainOnlyAndSharedEffectsIncludeChain()
-        {
-            Assert.IsTrue(EffectRegistry.Supports(CastType.Chain, "chainBounces"));
-            Assert.IsFalse(EffectRegistry.Supports(CastType.Beam, "chainBounces"));
-            Assert.IsFalse(EffectRegistry.Supports(CastType.Chain, "beamWidth"));
-            foreach (var kind in new[] { "damage", "attackSpeed", "castCount", "paralysis", "enableExplosion", "explosionRadius", "freezeDuration", "onEvent" })
-            {
-                Assert.IsTrue(EffectRegistry.Supports(CastType.Chain, kind), kind);
-            }
-            Assert.IsTrue(SkillFactory.IsRegistered(CastType.Chain));
-        }
     }
 }

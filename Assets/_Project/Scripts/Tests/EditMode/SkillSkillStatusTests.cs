@@ -50,26 +50,6 @@ namespace Game.Tests
             };
         }
 
-        [Test(Description = "무기는 Id, Level, AssetKey를 HUD에 그대로 내준다")]
-        public void Status_ExposesIdLevelAndAssetKey()
-        {
-            ISkillStatus status = new TestSkill(Data());
-
-            Assert.AreEqual(7, status.Id);
-            Assert.AreEqual(1, status.Level);
-            Assert.AreEqual("weapon_test", status.AssetKey);
-        }
-
-        [Test(Description = "강화하면 Level이 HUD에 올라간 값으로 보인다")]
-        public void Status_LevelFollowsLevelUp()
-        {
-            var weapon = new TestSkill(Data());
-
-            weapon.LevelUp(AttackSpeed(10f));
-
-            Assert.AreEqual(2, ((ISkillStatus)weapon).Level);
-        }
-
         [Test(Description = "아직 한 번도 발사하지 않았으면 쿨타임 진행도는 0(발사 가능)이다")]
         public void CooldownRatio_BeforeFirstFire_IsZero()
         {

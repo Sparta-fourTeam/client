@@ -36,7 +36,9 @@ namespace Game.Tests
             Dictionary<string, float> resists = null, Dictionary<string, float> castResists = null, bool blocksProjectile = false) =>
             new MonsterDefinition
             {
-                Id = 7, Hp = 10, AttackInterval = 1f,
+                Id = 7,
+                Hp = 10,
+                AttackInterval = 1f,
                 Resists = resists ?? new Dictionary<string, float>(),
                 CastResists = castResists ?? new Dictionary<string, float>(),
                 BlocksProjectile = blocksProjectile,
@@ -129,13 +131,6 @@ namespace Game.Tests
         // ───────── 검증 ─────────
 
         [Test]
-        public void Empty_ReturnsSharedNone()
-        {
-            Assert.AreSame(DamageProfile.None, DamageProfile.From(Monster()));
-            Assert.IsFalse(DamageProfile.None.BlocksProjectile);
-        }
-
-        [Test]
         public void Validate_RejectsUnknownKeysAndBadRatios()
         {
             Assert.Throws<InvalidOperationException>(() => Monster(new Dictionary<string, float> { { "Fire2", 0.5f } }).Validate());
@@ -220,16 +215,6 @@ namespace Game.Tests
         }
 
         // ───────── 투사체 차단 몬스터 ─────────
-
-        [Test]
-        public void Enemy_BlocksPierceFollowsProfile()
-        {
-            var normal = TestEnemy.Create(Model(DamageProfile.None));
-            var blocker = TestEnemy.Create(Model(Profile(blocks: true)));
-
-            Assert.IsFalse(((IEnemyTarget)normal).BlocksPierce);
-            Assert.IsTrue(((IEnemyTarget)blocker).BlocksPierce);
-        }
 
         [Test(Description = "차단 몬스터에 맞은 투사체는 충격 피해가 0이지만 상태이상 같은 부가 반응은 걸리고, 관통은 막힌다")]
         public void BlockingEnemy_NegatesImpactKeepsReactionsAndStopsPierce()

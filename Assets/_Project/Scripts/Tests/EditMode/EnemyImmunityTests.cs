@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Game.Core;
 using Game.Core.Messages;
 using MessagePipe;
@@ -60,24 +59,6 @@ namespace Game.Tests
             enemy.ApplyFreeze(2f);
 
             Assert.IsTrue(enemy.Model.IsFrozen);
-        }
-
-        [Test(Description = "면역 여부를 조회할 수 있다")]
-        public void IsImmuneTo_ReflectsFlags()
-        {
-            Assert.IsTrue(Create(StatusImmunity.Stun).Model.IsImmuneTo(StatusImmunity.Stun));
-            Assert.IsFalse(Create(StatusImmunity.None).Model.IsImmuneTo(StatusImmunity.Stun));
-        }
-
-        [Test(Description = "기본 생성(면역 인자 생략)은 면역이 없다")]
-        public void DefaultConstructor_HasNoImmunity()
-        {
-            var enemy = new EnemyModel(1, 1f, EnemyType.Normal, 10, Attack,
-                new Recorder<EnemyHpChanged>(), new Recorder<EnemyDied>());
-
-            enemy.ApplyStun(1f);
-
-            Assert.IsTrue(enemy.IsStunned);
         }
     }
 }

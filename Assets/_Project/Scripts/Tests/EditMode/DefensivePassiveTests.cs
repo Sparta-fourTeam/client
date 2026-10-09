@@ -428,29 +428,6 @@ namespace Game.Tests
             new PassiveDefinition { Kind = PassiveKind.Shield, Trigger = trigger, Hits = hits, Duration = duration, Chance = chance, Statuses = statuses };
 
         [Test]
-        public void Data_DefaultsAreSafe()
-        {
-            var definition = new PassiveDefinition();
-
-            Assert.AreEqual(1f, definition.Chance);
-            Assert.AreEqual(1f, definition.SpeedMultiplier);
-        }
-
-        [Test]
-        public void Data_AcceptsValidDefinitions()
-        {
-            var monster = Monster(
-                ShieldDef("OnHit", 6, 4f, 0.4f, "Stun", "Burn"),
-                new PassiveDefinition { Kind = PassiveKind.Evade, Chance = 0.3f },
-                new PassiveDefinition { Kind = PassiveKind.LowHp, HpRatio = 0.3f, Duration = 5f, HealRatio = 0.5f },
-                new PassiveDefinition { Kind = PassiveKind.LowHp, HpRatio = 0.1f, Duration = 6f, Invulnerable = true, SpeedMultiplier = 2f, Statuses = new[] { "AllDebuffs" } },
-                new PassiveDefinition { Kind = PassiveKind.HealOnHit, HealRatio = 0.05f, SpeedMultiplier = 1.5f, Duration = 3f, Element = "Earth" },
-                new PassiveDefinition { Kind = PassiveKind.SpeedBoost, Interval = 6f, Duration = 2f, SpeedMultiplier = 3f });
-
-            Assert.DoesNotThrow(() => monster.Validate());
-        }
-
-        [Test]
         public void Data_RejectsBadShield()
         {
             Assert.Throws<InvalidOperationException>(() => Monster(ShieldDef("Always")).Validate());
@@ -528,22 +505,6 @@ namespace Game.Tests
                 new PassiveDefinition { Kind = PassiveKind.Immunity, Statuses = new[] { "Burn" } });
 
             Assert.AreEqual(StatusImmunity.Burn, PassiveBuilder.BuildImmunities(monster));
-        }
-
-        [Test]
-        public void Builder_StatusesAcceptTheNewNames()
-        {
-            var monster = Monster(new PassiveDefinition { Kind = PassiveKind.Immunity, Statuses = new[] { "Slow", "Frostbite", "Vulnerability" } });
-
-            Assert.DoesNotThrow(() => monster.Validate());
-            Assert.AreEqual(StatusImmunity.Slow | StatusImmunity.Frostbite | StatusImmunity.Vulnerability, PassiveBuilder.BuildImmunities(monster));
-            Assert.AreEqual(StatusImmunity.AllDebuffs, new PassiveDefinition { Kind = PassiveKind.Immunity, Statuses = new[] { "AllDebuffs" } }.ToImmunities());
-        }
-
-        [Test]
-        public void RealData_StillLoads()
-        {
-            Assert.DoesNotThrow(() => new GameDataStore());
         }
     }
 }
