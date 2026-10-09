@@ -77,7 +77,8 @@ namespace Game.View
         private void SetFill(float value, bool animate)
         {
             _fillTween?.Kill();
-            if (!animate || !isActiveAndEnabled)
+            // 이미 같은 값이면 움직일 게 없다. 의미 없는 트윈을 만들지 않는다
+            if (!animate || !isActiveAndEnabled || Mathf.Approximately(_gaugeFill.fillAmount, value))
             {
                 _gaugeFill.fillAmount = value;
                 PlaceStar();

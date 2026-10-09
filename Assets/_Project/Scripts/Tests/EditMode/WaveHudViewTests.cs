@@ -1,4 +1,5 @@
 using System.Reflection;
+using DG.Tweening;
 using Game.Core;
 using Game.Core.Messages;
 using Game.View;
@@ -31,7 +32,14 @@ namespace Game.Tests
         }
 
         [TearDown]
-        public void TearDown() => Object.DestroyImmediate(_root);
+        public void TearDown()
+        {
+            DOTween.KillAll();
+            Object.DestroyImmediate(_root);
+        }
+
+        // 게이지는 부드럽게 차오르므로, 값을 확인하기 전에 진행 중인 트윈을 끝까지 보낸다
+        private void Settle() => DOTween.CompleteAll();
 
         private void Gauge(int index, int current, int max) =>
             typeof(WaveHudView).GetMethod("OnGaugeChanged", Private).Invoke(_view,
@@ -47,6 +55,7 @@ namespace Game.Tests
             State(StageState.Playing);
             Gauge(2, 0, 4);
             State(StageState.CardSelect);
+            Settle();
             Assert.AreEqual("1/20", _text.text);
             Assert.AreEqual(1f, _fill.fillAmount);
 
@@ -54,9 +63,11 @@ namespace Game.Tests
             Assert.AreEqual("1/20", _text.text);
             State(StageState.CardSelect);
             State(StageState.Playing);
+            Settle();
             Assert.AreEqual("2/20", _text.text);
             Assert.AreEqual(0f, _fill.fillAmount);
             Gauge(2, 2, 4);
+            Settle();
             Assert.AreEqual(0.5f, _fill.fillAmount);
         }
 
