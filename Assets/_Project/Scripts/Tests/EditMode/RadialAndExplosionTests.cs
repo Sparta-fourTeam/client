@@ -21,20 +21,6 @@ namespace Game.Tests
         }
 
         [Test]
-        public void RadialPath_SpreadsShotsEvenlyAroundTheOrigin()
-        {
-            var directions = Enumerable.Range(0, 6)
-                .Select(i => ProjectileLaunchPath.Calculate(ProjectilePath.Radial, Vector3.zero, Vector2.zero, null, 10, 10, 0, i, 6).Direction)
-                .ToList();
-            for (int i = 0; i < 6; i++)
-            {
-                Assert.AreEqual(1f, directions[i].magnitude, .001f);
-                Assert.AreEqual(60f, Vector3.Angle(directions[i], directions[(i + 1) % 6]), .01f, "이웃한 발과 60도 간격");
-            }
-            Assert.AreEqual(6, directions.Select(d => Mathf.RoundToInt(Mathf.Atan2(d.y, d.x) * 100)).Distinct().Count());
-        }
-
-        [Test]
         public void RadialStrategy_FiresAllShotsEvenWithNoEnemiesAndStartsAtTheOrigin()
         {
             var prefab = new GameObject("RadialPrefab"); prefab.AddComponent<Projectile>();

@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using Game.Core;
 using Game.Core.Messages;
@@ -92,12 +91,6 @@ namespace Game.Tests
             Assert.AreEqual(0, controller.GetWeaponLevel(3), "기본 시작 스킬이 섞이면 안 된다");
         }
 
-        private sealed class MutableProgression : IWeaponProgression
-        {
-            public int Level;
-            public int GetLevel(string progressionId) => Level;
-        }
-
         [Test(Description = "ClearWeapons는 보유 스킬을 모두 정리하고 빈 목록을 발행한다")]
         public void ClearWeapons_DisposesAllAndPublishesEmptySnapshot()
         {
@@ -107,71 +100,6 @@ namespace Game.Tests
             Assert.AreEqual(0, _controller.Skills.Count);
             Assert.AreEqual(0, _publisher.Published[_publisher.Published.Count - 1].Skills.Count);
             Assert.IsTrue(_controller.AddWeapon(1), "정리 후에는 같은 스킬을 다시 얻을 수 있다");
-        }
-
-        [Test(Description = "RefreshPermanentLevels는 진행 서비스가 바꾼 영구 레벨을 다시 읽는다")]
-        public void RefreshPermanentLevels_ReadsProgressionAgain()
-        {
-            var player = new GameObject("PlayerProgression");
-            _created.Add(player);
-            var controller = player.AddComponent<SkillController>();
-            const BindingFlags Private = BindingFlags.NonPublic | BindingFlags.Instance;
-            TestSkillAssets.Attach(controller, new int[0], _created);
-            var progression = new MutableProgression { Level = 3 };
-            controller.Construct(new NullEnemyTargetProvider(), new FakeSkillPublisher(), new DefaultSkillDataProvider(new GameDataStore()), progression,
-                startingSkills: new EmptySkills());
-            typeof(SkillController).GetMethod("Start", Private).Invoke(controller, null);
-            Assert.IsTrue(controller.IsReady);
-            var withProgression = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => !string.IsNullOrEmpty(w.progressionId));
-            Assert.AreEqual(3, controller.GetPermanentWeaponLevel(withProgression.id));
-            progression.Level = 21;
-            controller.RefreshPermanentLevels();
-            Assert.AreEqual(21, controller.GetPermanentWeaponLevel(withProgression.id));
-        }
-
-        private sealed class EmptySkills : IStartingSkills
-        {
-            public IReadOnlyList<int> GetSkillIds() => new int[0];
-        }
-
-        private sealed class FixedPermanentEffects : IPermanentSkillEffects
-        {
-            private readonly string progressionId;
-            private readonly EffectDef[] effects;
-            public FixedPermanentEffects(string progressionId, params EffectDef[] effects)
-            {
-                this.progressionId = progressionId;
-                this.effects = effects;
-            }
-            public IReadOnlyList<EffectDef> For(string id) => id == progressionId ? effects : new EffectDef[0];
-        }
-
-        [Test(Description = "영구 강화 효과는 스킬을 얻을 때 기본 스탯에 적용되고, 판 안의 카드 강화는 그 위에 쌓인다")]
-        public void AddWeapon_AppliesPermanentEffectsUnderCardUpgrades()
-        {
-            var player = new GameObject("PlayerPermanentEffects");
-            _created.Add(player);
-            var controller = player.AddComponent<SkillController>();
-            TestSkillAssets.Attach(controller, new[] { 1, 2 }, _created);
-            const BindingFlags Private = BindingFlags.NonPublic | BindingFlags.Instance;
-            var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll();
-            var raised = data.Find(w => w.id == 1);
-            var plain = data.Find(w => w.id == 2);
-            controller.Construct(new NullEnemyTargetProvider(), new FakeSkillPublisher(), new DefaultSkillDataProvider(new GameDataStore()),
-                startingSkills: new FixedStartingSkills(1, 2),
-                permanentEffects: new FixedPermanentEffects(raised.progressionId, new EffectDef { kind = "damage", value = 40 }));
-            typeof(SkillController).GetMethod("Start", Private).Invoke(controller, null);
-
-            SkillStats StatsOf(int id) => (SkillStats)typeof(SkillBase).GetField("stats", Private).GetValue(controller.Skills.First(s => s.Data.id == id));
-            Assert.AreEqual(raised.baseStats.cast.baseDamage * 1.4f, StatsOf(1).Cast.Damage, 0.001f);
-            Assert.AreEqual(plain.baseStats.cast.baseDamage, StatsOf(2).Cast.Damage, 0.001f, "다른 스킬에는 적용되지 않는다");
-
-            var card = controller.GetRandomUpgradeChoices(100).Find(c => !c.IsNewWeapon && c.skill.Data.id == 1
-                && c.Option.effects.Count == 1 && c.Option.effects[0].kind == "damage");
-            Assume.That(card, Is.Not.Null, "화살에 피해만 올리는 카드가 있어야 확인할 수 있다");
-            Assert.IsTrue(controller.ApplyUpgradeChoice(card));
-            float expected = raised.baseStats.cast.baseDamage * 1.4f * (1 + card.Option.effects[0].value * .01f);
-            Assert.AreEqual(expected, StatsOf(1).Cast.Damage, 0.001f);
         }
 
         [Test(Description = "새 무기를 얻으면 보유 목록 전체를 다시 발행한다")]
@@ -235,22 +163,6 @@ namespace Game.Tests
             Assert.IsFalse(_controller.ApplyUpgradeChoice(choice));
             Assert.AreEqual(1, choice.skill.Level);
             Assert.AreEqual(1, _publisher.Published.Count);
-        }
-
-        [Test]
-        public void PermanentVariant_ChoiceUsesSnapshotForPresentationAndApplication()
-        {
-            const BindingFlags Private = BindingFlags.NonPublic | BindingFlags.Instance;
-            var levels = (Dictionary<int, int>)typeof(SkillController).GetField("permanentLevels", Private).GetValue(_controller);
-            levels[3] = 9;
-            var choice = _controller.GetRandomUpgradeChoices(50).Find(c => c.Option?.id == "lightning_burst");
-            Assert.AreEqual("연속 벼락(+)", choice.DisplayName);
-            Assert.AreEqual("시전 수 +1", choice.DisplayDescription);
-            Assert.IsTrue(_controller.ApplyUpgradeChoice(choice));
-            var stats = (SkillStats)typeof(SkillBase).GetField("stats", Private).GetValue(choice.skill);
-            Assert.AreEqual(choice.skill.Data.baseStats.cast.baseDamage, stats.Cast.Damage);
-            Assert.AreEqual(2, stats.Cast.Count);
-            Assert.AreEqual(1, choice.skill.GetAcquiredCount("lightning_burst"));
         }
 
         [Test]

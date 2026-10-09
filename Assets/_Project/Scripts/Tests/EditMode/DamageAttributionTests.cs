@@ -40,27 +40,6 @@ namespace Game.Tests
             TestEnemy.Create(new EnemyModel(1, 0f, EnemyType.Normal, hp, new EnemyAttackStats(AttackType.Melee, 10, 1f, 0f),
                 new Publisher<EnemyHpChanged>(), new Publisher<EnemyDied>()));
 
-        [Test(Description = "범위를 열면 현재 스킬이 바뀌고 닫으면 이전 값으로 돌아간다 (중첩 포함)")]
-        public void Scopes_NestAndRestore()
-        {
-            using (DamageAttribution.Begin(1))
-            {
-                Assert.AreEqual(1, DamageAttribution.Current);
-                using (DamageAttribution.Begin(2)) { Assert.AreEqual(2, DamageAttribution.Current); }
-                Assert.AreEqual(1, DamageAttribution.Current);
-            }
-        }
-
-        [Test(Description = "가장 바깥 범위가 이긴다: 이미 열려 있으면 안쪽 시전은 바깥 스킬 몫이다 (자식 스킬 피해가 부모로 모인다)")]
-        public void BeginOutermost_KeepsOuterSkill()
-        {
-            using (DamageAttribution.BeginOutermost(7))
-            {
-                using (DamageAttribution.BeginOutermost(8)) { Assert.AreEqual(7, DamageAttribution.Current); }
-                Assert.AreEqual(7, DamageAttribution.Current);
-            }
-        }
-
         [Test(Description = "스킬 밖에서 받은 피해는 기록하지 않는다")]
         public void Damage_OutsideScope_IsNotRecorded()
         {

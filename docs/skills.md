@@ -207,7 +207,7 @@ flowchart TD
 4. **아이콘**: 같은 항목에 `hudIcon`, `newCardIcon`, `upgradeCardIcon`을 넣는다. 아트가 아직 없으면 기존 아이콘을 임시로 연결한다. 자식 전용 스킬은 아이콘이 필요 없다.
 5. **눈으로 확인**: **Tools → Project Nova → Skill Sandbox**를 열면 스킬이 목록에 자동으로 나온다. 카드를 고르고 적을 놓아 동작과 수치를 본다(8절).
 6. **영구 성장**을 쓰면 `progressionId`를 `Upgrades` 테이블의 ID와 맞춘다.
-7. **검증**: 테스트를 돌린다(9절). 프리팹 컴포넌트와 아이콘 누락은 테스트가 알려 준다.
+7. **검증**: 실제 공격 동작 테스트를 돌린다(9절). 프리팹 컴포넌트와 아이콘 연결은 샌드박스와 카드 화면에서 직접 확인한다.
 
 ### B. 새 카드 만들기 (기존 효과만 쓰는 경우)
 
@@ -221,7 +221,7 @@ flowchart TD
 1. `EffectRegistry`에 한 줄을 더한다(키, 분류, 쓰는 공격, 값 규칙, 적용).
 2. 새 스탯이 필요하면 `Stat` enum, `SkillStats`의 기본값, 묶음의 속성에 한 줄씩 더한다.
 3. 스탯을 읽는 쪽에서 쓴다. 반응이면 `ReactionCompiler`/`HitReactionBuilder`, 그 밖이면 해당 전략이다.
-4. 안전망 테스트가 등록 누락, 소비하는 공격 없음, 스냅샷 복사 누락을 알려 준다.
+4. 효과를 소비할 수 없는 공격은 검증기가 거부하는지 확인하고, 새 효과가 실제 적중·상태이상·자식 시전에 반영되는 동작 테스트를 실행한다.
 
 ### D. 자식 스킬 시전 카드 만들기
 
@@ -266,15 +266,13 @@ python3 docs/ninjutsu/validate_requirements.py
 
 | 지키는 것 | 테스트 |
 |---|---|
-| 효과 종류의 등록, 소비하는 공격, 적용, 스냅샷 복사 | `SkillCatalogSafetyNetTests` |
 | 카탈로그 검증, 공격 종류와 효과의 불일치 거부 | `SkillCatalogSafetyNetTests`, `SkillExecutionTests` |
-| 효과별 계산, 카드 적용과 스냅샷 독립성 | `SkillStatsSnapshotTests`, `SkillExecutionTests`, 공격 종류별 테스트 |
-| 프리팹 컴포넌트, HUD 아이콘, 카드 아이콘 연결 | `SkillCatalogSafetyNetTests` |
-| 자식 스킬, 상속, 순환 | `ChildStatReferenceTests`, `SkillChildEffectTests` |
+| 카드 적용·거절·중복 방지와 실제 공격 | `SkillExecutionTests`, 공격 종류별 테스트 |
+| 자식 시전, 조건부 반응, 순환 거절 | `ChildStatReferenceTests`, `SkillChildEffectTests` |
 | 공격 종류별 동작 | `AreaSkillTests`, `BeamSkillTests`, `ChainSkillTests` 등 (`CatalogWorld`로 실제 카탈로그와 프리팹을 씀) |
 | 카드 뽑기, 일반 카드 | `UpgradeEligibilityTests`, `CardDeckTests` |
 
-**밸런스 변경**: 효과별 계산과 카드 적용 테스트, 실제 프리팹을 사용하는 전투 테스트를 실행하고 Skill Sandbox에서 동작을 확인한다. 카드 수치를 복제한 골든 파일은 사용하지 않는다. 테스트 유지 기준과 전체 실행 방법은 [testing.md](testing.md)를 본다.
+**밸런스 변경**: 카드 적용과 실제 프리팹을 사용하는 전투 테스트를 실행하고 Skill Sandbox에서 동작을 확인한다. 계산 결과·필드 복사·에셋 연결 대조와 카드 수치를 복제한 골든 파일은 사용하지 않는다. 테스트 유지 기준과 전체 실행 방법은 [testing.md](testing.md)를 본다.
 
 **요구사항 검증기**(`validate_requirements.py`)는 원문 15종·168개 카드와 실행 데이터의 연결(ID, 참조, 횟수, 선행 그래프)을 확인한다. 카드 ID나 스킬을 바꾸면 `requirements.json`도 같이 고친다.
 

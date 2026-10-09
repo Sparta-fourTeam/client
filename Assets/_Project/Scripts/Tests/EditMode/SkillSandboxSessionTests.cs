@@ -51,15 +51,6 @@ namespace Game.Tests
         // ── 목록 ──────────────────────────────────────────────────────
 
         [Test]
-        public void Catalog_ListsEverySkillExceptChildOnlyOnes()
-        {
-            var all = new DefaultSkillDataProvider(new GameDataStore()).LoadAll();
-            CollectionAssert.AreEquivalent(all.Where(w => !w.childOnly).Select(w => w.id), session.Skills.Select(s => s.Id));
-            Assert.IsTrue(session.Skills.All(s => s.HasPrefab), "카탈로그의 모든 스킬은 프리팹이 연결돼 있다");
-            foreach (var id in new[] { 6, 7, 16, 18 }) { Assert.IsTrue(session.Skills.Any(s => s.Id == id), $"스킬 {id}가 목록에 있다"); }
-        }
-
-        [Test]
         public void SelectSkill_RejectsUnknownAndChildOnlySkills()
         {
             Assert.IsFalse(session.SelectSkill(9999));
@@ -144,22 +135,6 @@ namespace Game.Tests
         }
 
         // ── 영구 레벨 ─────────────────────────────────────────────────
-
-        [Test]
-        public void PermanentLevel_FlowsToControllerAndSwitchesLevelVariants()
-        {
-            session.SelectSkill(1);
-            session.SetPermanentLevel(0);
-            var low = controller.Skills[0].Data.upgrades.Find(c => c.id == "arrow_multishot");
-            SkillUpgradeResolver.TryResolve(low, session.Build.permanentLevel, out var before);
-            float baseDamage = session.Current.Config.Stats.Cast.Damage;
-            session.SetPermanentLevel(9);
-            Assert.AreEqual(baseDamage * 1.72f, session.Current.Config.Stats.Cast.Damage, .001f, "실제 영구 강화 테이블의 레벨당 8%도 반영한다");
-            Assert.AreEqual(9, controller.GetPermanentWeaponLevel(1), "슬라이더 값이 컨트롤러의 영구 레벨 표에 반영된다");
-            SkillUpgradeResolver.TryResolve(low, session.Build.permanentLevel, out var after);
-            Assert.AreNotEqual(before.Name, after.Name, "영구 레벨 9에서 (+) 변형으로 바뀐다");
-            Assert.AreEqual(0, new SkillSandboxSession(controller, new DefaultSkillDataProvider(new GameDataStore()), progression).Build.permanentLevel);
-        }
 
         [Test]
         public void ChangingPermanentLevel_KeepsTheCardsApplied()

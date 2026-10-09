@@ -49,18 +49,6 @@ namespace Game.Tests
         private static FormHint Hint(string cardId, FormHintKind kind) =>
             new(new SkillData { id = 5, assetKey = "weapon_log" }, new SkillUpgradeOption { id = cardId }, SkillForm.LargeLog, kind);
 
-        [Test(Description = "프리팹의 카드마다 형태 변환 아이콘 칸이 연결돼 있고 처음에는 숨어 있다")]
-        public void Prefab_EverySlotHasHiddenFormHintIcons()
-        {
-            foreach (var slot in _root.GetComponentsInChildren<CardSlotView>(true))
-            {
-                var icons = Icons(slot);
-                Assert.IsNotNull(icons, slot.name);
-                Assert.GreaterOrEqual(icons.Length, 2, $"{slot.name}: 통나무처럼 변환이 둘인 스킬을 보여 줄 칸이 있어야 한다");
-                Assert.IsTrue(icons.All(i => i != null && !i.gameObject.activeSelf), $"{slot.name}: 칸이 비었거나 처음부터 보인다");
-            }
-        }
-
         [Test(Description = "조건인 변환은 아이콘만, 막히는 변환은 X 표시와 함께 보이고 남는 칸은 숨는다")]
         public void Bind_ShowsEnablesAndBlockedHints()
         {

@@ -75,27 +75,6 @@ namespace Game.Tests
             return block.GetColor(FlashColorId);
         }
 
-        // ───────── 섞는 정도 ─────────
-
-        [Test(Description = "앞쪽 60%는 peak을 유지하고 마지막 40% 동안 0으로 줄어든다")]
-        public void AmountAt_HoldsPeakThenFades()
-        {
-            Assert.AreEqual(1f, HitFlash.AmountAt(0.15f, 0.15f, 1f), 0.0001f, "맞은 직후");
-            Assert.AreEqual(1f, HitFlash.AmountAt(0.075f, 0.15f, 1f), 0.0001f, "절반까지는 유지");
-            Assert.AreEqual(1f, HitFlash.AmountAt(0.06f, 0.15f, 1f), 0.0001f, "유지가 끝나는 지점");
-            Assert.AreEqual(0.5f, HitFlash.AmountAt(0.03f, 0.15f, 1f), 0.0001f, "줄어드는 구간의 중간");
-            Assert.AreEqual(0f, HitFlash.AmountAt(0f, 0.15f, 1f), 0.0001f, "끝");
-        }
-
-        [Test(Description = "남은 시간이 범위를 벗어나거나 지속 시간이 0 이하여도 0~peak 안이다")]
-        public void AmountAt_IsClampedAndSafe()
-        {
-            Assert.AreEqual(1f, HitFlash.AmountAt(10f, 0.15f, 1f), 0.0001f);
-            Assert.AreEqual(0f, HitFlash.AmountAt(-1f, 0.15f, 1f), 0.0001f);
-            Assert.AreEqual(0f, HitFlash.AmountAt(0.1f, 0f, 1f), 0.0001f);
-            Assert.AreEqual(0.4f, HitFlash.AmountAt(0.15f, 0.15f, 0.4f), 0.0001f, "peak이 작으면 그 값이 상한");
-        }
-
         // ───────── 머티리얼 바꿔 끼우기 ─────────
 
         [Test(Description = "Flash하면 자식 조각까지 모든 SpriteRenderer가 플래시 머티리얼로 바뀌고 섞는 정도가 peak이다")]

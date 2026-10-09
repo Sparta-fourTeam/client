@@ -45,7 +45,7 @@ flowchart LR
 4. **`MonsterAssetTable.asset`**(`Data/`): 인스펙터의 표에 `Key`(= `MonsterId`)와 `prefab`(웨이브 프리팹의 `Enemy`)을 더한다. 원거리(`ProjectileSpeed > 0`)면 `projectilePrefab`도 연결한다(예: `Slime_Projectile`).
 5. **스테이지 배치**: 웨이브에 나오게 하려면 `Stages.json`의 해당 스테이지 `Waves[].Spawns`에 `{MonsterId, Count}`를 더한다. 소환·분열로만 나오는 몬스터는 넣지 않는다.
 6. **이름·아이콘**(선택): `MonsterDisplayTable.asset`에 항목을 더한다. 없으면 일시정지 창에는 `#Id`로 보인다.
-7. **테스트**: `EnemyPrefabMonsterLinkTests`가 모든 몬스터 행에 표 항목과 프리팹이 있는지, 원거리에 투사체 프리팹이 있는지 자동으로 지킨다. 능력이 의도대로 붙었는지는 `NewMonsterDataTests`처럼 실제 데이터를 읽어 확인하는 테스트를 더한다. 마지막에 EditMode 전체를 돌린다.
+7. **검증**: 표 항목·몬스터 프리팹·원거리 투사체 연결은 샌드박스에서 직접 확인한다. 능력은 `NewMonsterDataTests`처럼 실제 데이터를 사용해 공격·방어·상태이상 동작을 검증한다. 마지막에 EditMode 전체를 돌린다.
 
 자주 하는 실수:
 - 소환 대상(`Spawn`의 `MonsterId`)은 존재해야 하고 자기 자신이거나 다시 `Spawn` 패시브를 가지면 안 된다(연쇄 소환 금지). 부팅 때 예외가 난다.
@@ -129,7 +129,7 @@ flowchart LR
 ## 검증과 테스트
 
 - 부팅(`GameDataStore`)이 `Monsters`의 값 범위, 패시브 정의, 소환 참조(없는 `Id`, 자기 자신, 연쇄 소환), 스테이지 웨이브 구성의 몬스터 존재와 엘리트·보스 `Count` 1을 검사하고 어기면 예외로 멈춘다.
-- 테스트: 패시브 단위(`DefensivePassiveTests`, `PassiveTests`, `StatusModifierTests`, `EnemyBurstAttackTests`), 피해 계산(`DamageProfileTests`, `DamageContractTests`, `DamageHookTests`), 데이터와 프리팹 일치(`EnemyPrefabMonsterLinkTests`), 몬스터별 능력(`NewMonsterDataTests`), 로스터(`EnemyRosterTests`).
+- 테스트: 패시브 단위(`DefensivePassiveTests`, `PassiveTests`, `StatusModifierTests`, `EnemyBurstAttackTests`), 피해 계산(`DamageProfileTests`, `DamageContractTests`, `DamageHookTests`), 몬스터별 능력(`NewMonsterDataTests`), 로스터(`EnemyRosterTests`).
 
 ## 알려진 한계
 

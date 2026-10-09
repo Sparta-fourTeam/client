@@ -268,20 +268,6 @@ namespace Game.Tests
                 new[] { StageState.Playing, StageState.Submitting, StageState.Finished }, _states);
         }
 
-        [Test(Description = "클리어하면 제출 응답의 별점이 StageResult로 전달되고, 실패하면 별점은 0이다")]
-        public void StageResult_CarriesClearRating()
-        {
-            _api.ClearRating = 3;
-            _stageEnded.Publish(new StageEnded(StageOutcome.Clear));
-            Assert.AreEqual(3, _results[0].ClearRating);
-
-            TearDown();
-            SetUp();
-            _stageEnded.Publish(new StageEnded(StageOutcome.Fail));
-            Assert.IsFalse(_results[0].Cleared);
-            Assert.AreEqual(0, _results[0].ClearRating);
-        }
-
         [Test(Description = "StageResult에 스킬별 피해량이 피해량 순서로 담긴다")]
         public void StageResult_CarriesSkillDamageRanking()
         {

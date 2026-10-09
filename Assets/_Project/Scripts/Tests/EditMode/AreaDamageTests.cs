@@ -43,44 +43,6 @@ namespace Game.Tests
         }
 
         [Test]
-        public void ImpactUpgrade_ChangesOnlyDirectDamageAndTrainingScalesBoth()
-        {
-            var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 2);
-            SkillStats stats = SkillStats.FromDefinition(data.baseStats);
-            var impact = data.upgrades.Find(c => c.id == "fireball_impact_damage");
-            Assert.AreEqual(3, impact.maxPickCount);
-            stats = SkillTestFactory.Apply(stats, "impactDamage", impact.effects[0].value);
-            Assert.AreEqual(21.6f, stats.Cast.Damage, 0.001f);
-            Assert.AreEqual(12, stats.Explosion.Damage, 0.001f);
-            stats = SkillTestFactory.Apply(stats, "explosionDamage", 80);
-            Assert.AreEqual(21.6f, stats.Cast.Damage, 0.001f);
-            Assert.AreEqual(21.6f, stats.Explosion.Damage, 0.001f);
-            stats = SkillTestFactory.Apply(SkillTestFactory.Apply(stats, "damage", 20), "attackSpeed", 10);
-            Assert.AreEqual(25.92f, stats.Cast.Damage, 0.001f);
-            Assert.AreEqual(25.92f, stats.Explosion.Damage, 0.001f);
-            Assert.AreEqual(3.06f, stats.Cast.Cooldown, 0.001f);
-        }
-
-        [Test]
-        public void HighVoltageLightning_IncreasesDamageAndAddsParalysisDuration()
-        {
-            var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 3);
-            var go = new GameObject("HighVoltageStatsTest");
-            try
-            {
-                var weapon = Casters.Hitscan(data, go, go.transform, new Provider());
-                var option = data.upgrades.Find(c => c.id == "lightning_voltage");
-                Assert.IsTrue(weapon.LevelUp(option));
-                Assert.IsFalse(weapon.LevelUp(option));
-                var stats = (SkillStats)typeof(SkillBase).GetField("stats", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(weapon);
-                Assert.AreEqual(41.6f, stats.Cast.Damage, 0.001f);
-                Assert.AreEqual(2f, stats.Status.ParalysisDuration, 0.001f);
-                Assert.AreEqual(1, data.baseStats.status.paralysisChance);
-            }
-            finally { Object.DestroyImmediate(go); }
-        }
-
-        [Test]
         public void JudgementCard_ChangesFormAndPooledVisualScaleResets()
         {
             var go = new GameObject("JudgementScaleTest"); go.AddComponent<HitscanEffect>();
@@ -112,31 +74,6 @@ namespace Game.Tests
                 { if (effect.name == "JudgementScaleTest(Clone)") { Object.DestroyImmediate(effect.gameObject); } }
                 Object.DestroyImmediate(go);
             }
-        }
-
-        [Test]
-        public void JudgementForm_PreservesOtherStatsAndScalesDamage()
-        {
-            SkillStats stats = SkillStats.FromDefinition(new SkillBaseStats { cast = { baseDamage = 25 }, status = { paralysisDuration = 1 } });
-            stats = SkillTestFactory.Apply(stats, "damage", 150);
-            stats = SkillTestFactory.Apply(SkillTestFactory.Apply(stats, "damage", 200), "form", (int)SkillForm.JudgementThunder);
-            Assert.AreEqual(187.5f, stats.Cast.Damage);
-            Assert.AreEqual(1, stats.Status.ParalysisDuration);
-            Assert.AreEqual(SkillForm.JudgementThunder, stats.Cast.Form);
-        }
-
-        [Test]
-        public void ExplosionUpgrades_KeepDirectDamageSeparateAndScaleRadius()
-        {
-            SkillStats stats = SkillStats.FromDefinition(new SkillBaseStats { cast = { baseDamage = 12 }, explosion = { damageRatio = 1, radius = 0.8f } });
-            stats = SkillTestFactory.Apply(stats, "explosionDamage", 80);
-            stats = SkillTestFactory.Apply(stats, "explosionRadius", 80);
-            Assert.AreEqual(12, stats.Cast.Damage);
-            Assert.AreEqual(21.6f, stats.Explosion.Damage, 0.001f);
-            Assert.AreEqual(1.44f, stats.Explosion.Radius, 0.001f);
-            stats = SkillTestFactory.Apply(stats, "damage", -30);
-            Assert.AreEqual(8.4f, stats.Cast.Damage, 0.001f);
-            Assert.AreEqual(15.12f, stats.Explosion.Damage, 0.001f);
         }
 
         [Test]

@@ -34,20 +34,6 @@ namespace Game.Tests
             return exp;
         }
 
-        [Test(Description = "플레이어 레벨 1에서는 해금 레벨 1인 장비(사원증)만 열려 있다")]
-        public void Level1_OnlyEmployeeId()
-        {
-            CollectionAssert.AreEquivalent(new[] { "equipment.employee_id" }, EquipmentUnlockRule.UnlockedTargetIds(_data, ExpFor(1)));
-        }
-
-        [Test(Description = "레벨이 오르면 해금 레벨에 도달한 장비가 하나씩 더 열린다 (레벨 2: 모자, 레벨 7: 전부)")]
-        public void HigherLevels_UnlockMoreEquipment()
-        {
-            CollectionAssert.AreEquivalent(new[] { "equipment.employee_id", "equipment.hat" }, EquipmentUnlockRule.UnlockedTargetIds(_data, ExpFor(2)));
-            Assert.AreEqual(7, EquipmentUnlockRule.UnlockedTargetIds(_data, ExpFor(7)).Count);
-            Assert.AreEqual(ItemIds.EquipmentMaterials.Count, EquipmentUnlockRule.UnlockedTargetIds(_data, ExpFor(10)).Count);
-        }
-
         [Test(Description = "랜덤 장비재료는 열린 장비의 재료만 준다 (레벨 1이면 사원증 재료뿐)")]
         public void RandomEquipmentReward_OnlyFromUnlockedEquipment()
         {

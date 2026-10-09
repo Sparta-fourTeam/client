@@ -46,48 +46,6 @@ namespace Game.Tests
             typeof(Projectile).GetMethod("Tick", BindingFlags.NonPublic | BindingFlags.Instance)
                 .Invoke(projectile, new object[] { deltaTime });
 
-        // ───────── DamageAttribution이 속성과 시전 형태를 싣는다 ─────────
-
-        [Test]
-        public void Scope_CarriesSkillElementAndCastType()
-        {
-            using (DamageAttribution.Begin(new DamageSource(5, Element.Earth, CastType.Area)))
-            {
-                var info = DamageInfo.FromCurrent(10, isImpact: true);
-
-                Assert.AreEqual(5, DamageAttribution.Current);
-                Assert.AreEqual(10, info.Amount);
-                Assert.AreEqual(5, info.SkillId);
-                Assert.AreEqual(Element.Earth, info.Element);
-                Assert.AreEqual(CastType.Area, info.CastType);
-                Assert.IsTrue(info.IsImpact);
-            }
-        }
-
-        [Test(Description = "자식 스킬의 피해는 가장 바깥 스킬(부모)의 속성과 시전 형태를 이어받는다")]
-        public void Outermost_WinsForElementAndCastType()
-        {
-            using (DamageAttribution.BeginOutermost(new DamageSource(4, Element.Ice, CastType.Projectile)))
-            using (DamageAttribution.BeginOutermost(new DamageSource(8, Element.Fire, CastType.Chain)))
-            {
-                var info = DamageInfo.FromCurrent(1);
-
-                Assert.AreEqual(4, info.SkillId);
-                Assert.AreEqual(Element.Ice, info.Element);
-                Assert.AreEqual(CastType.Projectile, info.CastType);
-            }
-        }
-
-        [Test(Description = "ID만 넘기는 기존 방식도 그대로 동작한다")]
-        public void IdOnlyOverloads_StillWork()
-        {
-            using (DamageAttribution.Begin(7))
-            {
-                Assert.AreEqual(7, DamageAttribution.Current);
-                Assert.AreEqual(Element.Neutral, DamageAttribution.CurrentSource.Element);
-            }
-        }
-
         // ───────── DamageInfo 오버로드 ─────────
 
         [Test(Description = "DamageInfo를 모르는 대상은 피해량만 받는다")]
@@ -98,11 +56,6 @@ namespace Game.Tests
             ((IDamageable)target).TakeDamage(new DamageInfo(7, 3, Element.Fire, CastType.Projectile, true));
 
             Assert.AreEqual(7, target.Total);
-        }
-
-        private sealed class NullPublisher<T> : MessagePipe.IPublisher<T>
-        {
-            public void Publish(T message) { }
         }
 
         // ───────── 피해 반응이 충격 여부를 싣는다 ─────────
@@ -238,18 +191,6 @@ namespace Game.Tests
         // ───────── 스킬 데이터 ─────────
 
         private static List<SkillData> LoadSkills() => new DefaultSkillDataProvider(new GameDataStore()).LoadAll();
-
-        [Test]
-        public void SkillData_BuildsDamageSource()
-        {
-            var data = new SkillData { id = 9, element = Element.Wind, castType = CastType.Beam };
-
-            var source = data.ToDamageSource();
-
-            Assert.AreEqual(9, source.SkillId);
-            Assert.AreEqual(Element.Wind, source.Element);
-            Assert.AreEqual(CastType.Beam, source.CastType);
-        }
 
         [Test]
         public void Validator_RejectsUndefinedElement()

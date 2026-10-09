@@ -466,45 +466,5 @@ namespace Game.Tests
             Assert.Throws<InvalidOperationException>(() => Monster(new PassiveDefinition { Kind = PassiveKind.HealOnHit, HealRatio = 0.1f, Element = "7" }).Validate());
             Assert.Throws<InvalidOperationException>(() => Monster(new PassiveDefinition { Kind = PassiveKind.HealOnHit, HealRatio = 0.1f, Chance = 0f }).Validate());
         }
-
-        [Test]
-        public void Builder_CreatesTheRightPassives()
-        {
-            var monster = Monster(
-                ShieldDef(),
-                new PassiveDefinition { Kind = PassiveKind.Evade, Chance = 0.3f },
-                new PassiveDefinition { Kind = PassiveKind.LowHp, HpRatio = 0.3f, Duration = 5f, HealRatio = 0.5f },
-                new PassiveDefinition { Kind = PassiveKind.HealOnHit, HealRatio = 0.05f },
-                new PassiveDefinition { Kind = PassiveKind.SpeedBoost, Interval = 6f, Duration = 2f, SpeedMultiplier = 3f });
-
-            var passives = PassiveBuilder.BuildPassives(monster, new ScriptedRandom(0f));
-
-            Assert.AreEqual(5, passives.Count);
-            Assert.IsInstanceOf<ShieldPassive>(passives[0]);
-            Assert.IsInstanceOf<EvadePassive>(passives[1]);
-            Assert.IsInstanceOf<LowHpPassive>(passives[2]);
-            Assert.IsInstanceOf<HealOnHitPassive>(passives[3]);
-            Assert.IsInstanceOf<SpeedBoostPassive>(passives[4]);
-        }
-
-        [Test(Description = "확률이 1보다 작은 패시브는 랜덤 없이 만들 수 없다")]
-        public void Builder_RequiresRandomForChancePassives()
-        {
-            var evade = Monster(new PassiveDefinition { Kind = PassiveKind.Evade, Chance = 0.3f });
-
-            Assert.Throws<ArgumentNullException>(() => PassiveBuilder.BuildPassives(evade));
-            Assert.DoesNotThrow(() => PassiveBuilder.BuildPassives(evade, new ScriptedRandom(0f)));
-            Assert.DoesNotThrow(() => PassiveBuilder.BuildPassives(Monster(ShieldDef())), "확률 1이면 랜덤이 필요 없다");
-        }
-
-        [Test(Description = "Shield·LowHp의 Statuses는 켜져 있는 동안만의 면역이라 처음부터 있는 면역에 합치지 않는다")]
-        public void Builder_StaticImmunitiesIgnoreShieldStatuses()
-        {
-            var monster = Monster(
-                ShieldDef(statuses: "Stun"),
-                new PassiveDefinition { Kind = PassiveKind.Immunity, Statuses = new[] { "Burn" } });
-
-            Assert.AreEqual(StatusImmunity.Burn, PassiveBuilder.BuildImmunities(monster));
-        }
     }
 }

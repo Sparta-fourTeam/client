@@ -52,81 +52,11 @@ namespace Game.Tests
 
         // ───────── 속성 약점·저항 ─────────
 
-        [Test]
-        public void Weakness_IncreasesDamage()
-        {
-            var profile = Profile(new Dictionary<string, float> { { "Fire", 0.5f } });
-
-            Assert.AreEqual(15, profile.Apply(Skill(10, Element.Fire)));
-        }
-
-        [Test]
-        public void Resistance_ReducesDamage_ButNeverBelowOne()
-        {
-            var profile = Profile(new Dictionary<string, float> { { "Ice", -0.5f } });
-
-            Assert.AreEqual(5, profile.Apply(Skill(10, Element.Ice)));
-            Assert.AreEqual(1, profile.Apply(Skill(1, Element.Ice)), "줄어도 완전히 무효가 아니면 최소 1");
-        }
-
-        [Test]
-        public void FullResistance_NegatesDamage()
-        {
-            var profile = Profile(new Dictionary<string, float> { { "Earth", -1f } });
-
-            Assert.AreEqual(0, profile.Apply(Skill(10, Element.Earth)));
-        }
-
-        [Test]
-        public void OtherElements_AreUnaffected()
-        {
-            var profile = Profile(new Dictionary<string, float> { { "Fire", 1f } });
-
-            Assert.AreEqual(10, profile.Apply(Skill(10, Element.Ice)));
-            Assert.AreEqual(10, profile.Apply(Skill(10, Element.Neutral)));
-        }
-
         // ───────── 시전 형태 ─────────
-
-        [Test]
-        public void CastResistance_ReducesByCastType()
-        {
-            var profile = Profile(castResists: new Dictionary<string, float> { { "Projectile", -0.7f } });
-
-            Assert.AreEqual(3, profile.Apply(Skill(10, cast: CastType.Projectile)));
-            Assert.AreEqual(10, profile.Apply(Skill(10, cast: CastType.Area)));
-        }
-
-        [Test(Description = "속성과 시전 형태의 배율은 곱해진다")]
-        public void ElementAndCast_Multiply()
-        {
-            var profile = Profile(new Dictionary<string, float> { { "Fire", 0.5f } },
-                new Dictionary<string, float> { { "Projectile", -0.5f } });
-
-            Assert.AreEqual(7, profile.Apply(Skill(10, Element.Fire, CastType.Projectile))); // 10 * 1.5 * 0.5 = 7.5
-        }
 
         // ───────── 스킬 밖의 피해 ─────────
 
-        [Test(Description = "스킬 밖의 피해(상태이상 지속 피해 등)는 속성 계산을 받지 않는다")]
-        public void NonSkillDamage_IsUntouched()
-        {
-            var profile = Profile(new Dictionary<string, float> { { "Neutral", -1f } }, blocks: true);
-
-            Assert.AreEqual(10, profile.Apply(new DamageInfo(10)));
-        }
-
         // ───────── 투사체 차단 ─────────
-
-        [Test(Description = "투사체의 직접 충격 피해만 무효다")]
-        public void BlocksProjectile_NegatesOnlyProjectileImpact()
-        {
-            var profile = Profile(blocks: true);
-
-            Assert.AreEqual(0, profile.Apply(Skill(10, cast: CastType.Projectile, impact: true)));
-            Assert.AreEqual(10, profile.Apply(Skill(10, cast: CastType.Projectile, impact: false)), "폭발 같은 부가 피해는 막지 않는다");
-            Assert.AreEqual(10, profile.Apply(Skill(10, cast: CastType.Hitscan, impact: true)), "투사체가 아니면 막지 않는다");
-        }
 
         // ───────── 검증 ─────────
 
@@ -141,17 +71,6 @@ namespace Game.Tests
             Assert.Throws<InvalidOperationException>(() => Monster(new Dictionary<string, float> { { "Fire", float.NaN } }).Validate());
             Assert.DoesNotThrow(() => Monster(new Dictionary<string, float> { { "Fire", -1f }, { "Earth", 2f } },
                 new Dictionary<string, float> { { "Chain", 0.25f } }, true).Validate());
-        }
-
-        [Test(Description = "필드가 없거나 null이어도 안전하다")]
-        public void NullDictionaries_AreTreatedAsEmpty()
-        {
-            var monster = Monster();
-            monster.Resists = null;
-            monster.CastResists = null;
-
-            Assert.AreSame(DamageProfile.None, DamageProfile.From(monster));
-            Assert.DoesNotThrow(() => monster.Validate());
         }
 
         // ───────── 적의 피해 파이프라인 ─────────

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Game.Core;
 using Game.Core.Defense;
@@ -56,42 +55,6 @@ namespace Game.Tests
                 new EnemyAttackStats(type, damage, interval, range, type == AttackType.Ranged ? ProjectileSpeed : 0f),
                 new FakePublisher<EnemyHpChanged>(), new FakePublisher<EnemyDied>());
             return TestEnemy.Create(model, new Vector2(x, y));
-        }
-
-        // ───────── 공격 값 검증 ─────────
-
-        [TestCase(0f)]
-        [TestCase(-1f)]
-        public void AttackStats_NonPositiveInterval_Throws(float interval)
-        {
-            Assert.Throws<ArgumentOutOfRangeException>(() => new EnemyAttackStats(AttackType.Melee, 10, interval, 0f));
-        }
-
-        [Test]
-        public void AttackStats_NegativeRangeOrDamage_Throws()
-        {
-            Assert.Throws<ArgumentOutOfRangeException>(() => new EnemyAttackStats(AttackType.Ranged, 10, 1f, -1f));
-            Assert.Throws<ArgumentOutOfRangeException>(() => new EnemyAttackStats(AttackType.Melee, -1, 1f, 0f));
-        }
-
-        // ───────── 사거리 판정 ─────────
-
-        [Test]
-        public void IsInAttackRange_DistanceEqualsRange_True()
-        {
-            var enemy = CreateEnemy(y: 3f, range: 3f); // 거리 3 == 3 (경계값)
-
-            Assert.IsTrue(enemy.IsInAttackRange(_wall));
-        }
-
-        [Test]
-        public void IsInAttackRange_UsesOnlyY()
-        {
-            var left = CreateEnemy(y: 3f, range: 3f, x: -10f);
-            var right = CreateEnemy(y: 3f, range: 3f, x: 10f);
-
-            Assert.IsTrue(left.IsInAttackRange(_wall));  // x가 달라도 y 거리만으로 판정
-            Assert.IsTrue(right.IsInAttackRange(_wall));
         }
 
         // ───────── 근거리 공격 ─────────

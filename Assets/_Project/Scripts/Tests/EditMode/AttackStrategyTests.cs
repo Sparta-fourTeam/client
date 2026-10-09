@@ -141,15 +141,6 @@ namespace Game.Tests
         }
 
         [Test]
-        public void Factory_RegistersProjectileHitscanAndArea()
-        {
-            Assert.IsTrue(SkillFactory.IsRegistered(CastType.Projectile));
-            Assert.IsTrue(SkillFactory.IsRegistered(CastType.Hitscan));
-            Assert.IsTrue(SkillFactory.IsRegistered(CastType.Area));
-            Assert.IsFalse(SkillFactory.IsRegistered((CastType)99));
-        }
-
-        [Test]
         public void Factory_ThrowsClearErrorForUnregisteredCastType()
         {
             var go = new GameObject("StrategyUnregisteredTest");

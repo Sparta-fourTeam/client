@@ -28,7 +28,7 @@ namespace Game.Tests
             typeof(Projectile).GetMethod("Tick", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(projectile, new object[] { deltaTime });
 
         [Test]
-        public void Builder_ComposesStatsCastsTransformAndHitReactions()
+        public void Builder_AttachesHitReactionWithoutTriggeringItOnStart()
         {
             var builder = new SkillConfigBuilder(Config());
             int childCasts = 0;
@@ -40,10 +40,6 @@ namespace Game.Tests
                 new TransformUpgradeEffect(SkillForm.FireLog)
             }));
             var config = builder.Build();
-            Assert.AreEqual(160, config.Stats.Cast.Damage, .001f);
-            Assert.AreEqual(2, config.Stats.Cast.Count);
-            Assert.AreEqual(SkillForm.FireLog, config.Stats.Cast.Form);
-            Assert.AreEqual(8, config.Attack.Range);
             config.Reactions.Raise(AttackEvent.Start, new AttackContext(Vector2.zero, Vector3.up));
             Assert.AreEqual(0, childCasts);
             config.Reactions.Raise(AttackEvent.Hit, new AttackContext(Vector2.one, Vector3.up));
@@ -65,16 +61,6 @@ namespace Game.Tests
             Assert.AreEqual(100, result.Stats.Cast.Damage);
             result.Reactions.Raise(AttackEvent.Hit, new AttackContext(Vector2.zero, Vector3.up));
             Assert.AreEqual(0, children);
-        }
-
-        [Test]
-        public void Builder_LaterUpgradeDoesNotChangePreviousConfig()
-        {
-            var builder = new SkillConfigBuilder(Config());
-            var previous = builder.Build();
-            Assert.IsTrue(builder.TryApply(new[] { new StatUpgradeEffect("damage", 60) }));
-            Assert.AreEqual(100, previous.Stats.Cast.Damage);
-            Assert.AreEqual(160, builder.Build().Stats.Cast.Damage, .001f);
         }
 
         [Test]

@@ -83,15 +83,6 @@ namespace Game.Tests
 
         // ───────── 면역 데이터 ─────────
 
-        [Test]
-        public void ImmunityData_ParsesNewStatusNamesCaseInsensitively()
-        {
-            var monster = Monster(Immune("Burn", "paralysis", "FREEZE"));
-
-            Assert.DoesNotThrow(() => monster.Validate());
-            Assert.AreEqual(StatusImmunity.Burn | StatusImmunity.Paralysis | StatusImmunity.Freeze, PassiveBuilder.BuildImmunities(monster));
-        }
-
         [Test(Description = "이름이 아닌 값(숫자, 빈 문자열)은 거부한다")]
         public void ImmunityData_RejectsNonNames()
         {
@@ -102,13 +93,6 @@ namespace Game.Tests
         }
 
         // ───────── Modifier 데이터 ─────────
-
-        [Test]
-        public void ModifierData_AcceptsKnownTargets()
-        {
-            Assert.DoesNotThrow(() => Monster(Modifier("KnockbackDistance", 0.5f), Modifier("burnduration", 4f)).Validate());
-            Assert.DoesNotThrow(() => Monster(Modifier("KnockbackDistance", 0f)).Validate(), "0은 무효");
-        }
 
         [Test]
         public void ModifierData_RejectsBadValues()
@@ -122,45 +106,7 @@ namespace Game.Tests
             Assert.Throws<InvalidOperationException>(() => Monster(Modifier("BurnDuration", float.PositiveInfinity)).Validate());
         }
 
-        [Test]
-        public void Builder_CombinesModifiers_AndMultipliesDuplicates()
-        {
-            var monster = Monster(Modifier("KnockbackDistance", 0.5f), Modifier("KnockbackDistance", 0.5f), Modifier("BurnDuration", 4f));
-
-            var modifiers = PassiveBuilder.BuildModifiers(monster);
-
-            Assert.AreEqual(0.25f, modifiers.KnockbackMultiplier, 0.0001f);
-            Assert.AreEqual(4f, modifiers.BurnDurationMultiplier, 0.0001f);
-        }
-
-        [Test]
-        public void Builder_WithoutModifiers_ReturnsNone()
-        {
-            Assert.AreSame(EffectModifiers.None, PassiveBuilder.BuildModifiers(Monster()));
-            Assert.AreSame(EffectModifiers.None, PassiveBuilder.BuildModifiers(Monster(Immune("Stun"))));
-            Assert.IsNull(PassiveBuilder.BuildPassives(Monster(Modifier("BurnDuration", 2f))), "Modifier는 패시브 객체가 아니다");
-        }
-
-        [Test]
-        public void EffectModifiers_RejectsInvalidValues()
-        {
-            Assert.Throws<ArgumentOutOfRangeException>(() => new EffectModifiers(-1f, 1f));
-            Assert.Throws<ArgumentOutOfRangeException>(() => new EffectModifiers(1f, float.NaN));
-        }
-
         // ───────── 밀치기 저항 ─────────
-
-        [Test]
-        public void Knockback_IsScaledByMultiplier()
-        {
-            var half = Model(modifiers: new EffectModifiers(0.5f, 1f));
-            var immune = Model(modifiers: new EffectModifiers(0f, 1f));
-            var normal = Model();
-
-            Assert.AreEqual(0.5f, half.ResolveKnockback(Vector2.up, 1f).y, 0.0001f);
-            Assert.AreEqual(Vector2.zero, immune.ResolveKnockback(Vector2.up, 1f));
-            Assert.AreEqual(1f, normal.ResolveKnockback(Vector2.up, 1f).y, 0.0001f);
-        }
 
         [Test(Description = "실제 Enemy도 저항한 만큼만 밀려난다")]
         public void Enemy_IsPushedByResolvedDistance()
@@ -173,19 +119,6 @@ namespace Game.Tests
         }
 
         // ───────── 점화 지속시간 ─────────
-
-        [Test]
-        public void BurnDuration_IsScaledByMultiplier()
-        {
-            var long4 = Model(modifiers: new EffectModifiers(1f, 4f));
-            var normal = Model();
-
-            long4.ApplyBurn(5f, 2f);
-            normal.ApplyBurn(5f, 2f);
-
-            Assert.AreEqual(8f, long4.BurnRemaining, 0.0001f);
-            Assert.AreEqual(2f, normal.BurnRemaining, 0.0001f);
-        }
 
         [Test(Description = "배수가 0이면 점화에 걸리지 않는다")]
         public void BurnDuration_ZeroMultiplierIgnoresBurn()

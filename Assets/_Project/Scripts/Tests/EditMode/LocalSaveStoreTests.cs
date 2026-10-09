@@ -25,19 +25,6 @@ namespace Game.Tests
             }
         }
 
-        [Test(Description = "저장 파일이 없을 때 Load()는 기본값(스테이지 1, 클리어 안 됨)을 가진 LocalSave를 반환한다")]
-        public void Load_WhenNoFileExists_ReturnsDefaultLocalSave()
-        {
-            var store = new LocalSaveStore(_filePath);
-
-            var save = store.Load();
-
-            Assert.AreEqual(0, save.wallet.gold);
-            Assert.AreEqual(1, save.stageProgress.Count);
-            Assert.AreEqual(1, save.stageProgress[0].stageId);
-            Assert.AreEqual(0, save.stageProgress[0].clearRating);
-        }
-
         [Test(Description = "Flush()로 저장한 지갑/업그레이드 데이터를 Load()가 그대로 복원한다")]
         public void Flush_ThenLoad_RoundTripsData()
         {

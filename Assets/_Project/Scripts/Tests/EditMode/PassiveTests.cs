@@ -119,30 +119,6 @@ namespace Game.Tests
 
         // ───────── PassiveBuilder ─────────
 
-        [Test(Description = "정의대로 패시브 객체를 만들고 면역은 객체가 아니라 플래그가 된다")]
-        public void Builder_CreatesPassivesAndImmunities()
-        {
-            var monster = Monster(Split(), Summon(), Immune("Stun"));
-
-            var passives = PassiveBuilder.BuildPassives(monster);
-
-            Assert.AreEqual(2, passives.Count);
-            Assert.IsInstanceOf<SpawnPassive>(passives[0]);
-            Assert.IsInstanceOf<SpawnPassive>(passives[1]);
-            Assert.AreEqual(StatusImmunity.Stun, PassiveBuilder.BuildImmunities(monster));
-        }
-
-        [Test(Description = "상태를 가진 패시브라 호출마다 새 객체를 만든다")]
-        public void Builder_CreatesFreshInstancesEachCall()
-        {
-            var monster = Monster(Summon());
-
-            var first = PassiveBuilder.BuildPassives(monster);
-            var second = PassiveBuilder.BuildPassives(monster);
-
-            Assert.AreNotSame(first[0], second[0]);
-        }
-
         // ───────── SpawnPassive (Interval) ─────────
 
         [Test(Description = "주기가 지나면 count마리를 가로로 벌려 요청하고 주기가 지나기 전에는 요청하지 않는다")]

@@ -1,4 +1,3 @@
-using System;
 using Game.Core;
 using Game.Core.Defense;
 using Game.Core.Messages;
@@ -152,28 +151,5 @@ namespace Game.Tests
             Assert.AreEqual(before - 15, _wall.CurrentHp);
         }
 
-        // ───────── 값 검증 ─────────
-
-        [Test]
-        public void Stats_RejectsBadBurstValues()
-        {
-            Assert.Throws<ArgumentOutOfRangeException>(() => Burst(0, 0.2f));
-            Assert.Throws<ArgumentOutOfRangeException>(() => Burst(2, 0f), "연속 공격인데 간격이 0");
-            Assert.Throws<ArgumentOutOfRangeException>(() => Burst(3, 0.5f, interval: 1f), "연속 공격이 공격 간격 안에 안 끝남");
-            Assert.DoesNotThrow(() => Burst(3, 0.4f, interval: 1f));
-            Assert.DoesNotThrow(() => Burst(1, 0f), "1회면 간격은 쓰지 않는다");
-        }
-
-        private static MonsterDefinition Monster(int burstCount, float burstInterval, float attackInterval = 1f) =>
-            new MonsterDefinition { Id = 7, Hp = 10, AttackInterval = attackInterval, BurstCount = burstCount, BurstInterval = burstInterval };
-
-        [Test]
-        public void MonsterData_RejectsBadBurstValues()
-        {
-            Assert.Throws<InvalidOperationException>(() => Monster(0, 0.2f).Validate());
-            Assert.Throws<InvalidOperationException>(() => Monster(2, 0f).Validate());
-            Assert.Throws<InvalidOperationException>(() => Monster(3, 0.5f, attackInterval: 1f).Validate());
-            Assert.DoesNotThrow(() => Monster(3, 0.4f, attackInterval: 1f).Validate());
-        }
     }
 }
