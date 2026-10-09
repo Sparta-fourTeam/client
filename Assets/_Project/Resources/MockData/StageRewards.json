@@ -1,35 +1,5 @@
 [
-  {
-    "StageId": 1,
-    "BaseExp": 15,
-    "ThreeStarBonusExp": 15,
-    "FinalCoin": 150,
-    "Items": [
-      { "itemId": "book.arrow", "finalAmount": 45 },
-      { "itemId": "book.weapon", "finalAmount": 1 },
-      { "itemId": "chest.gem", "finalAmount": 1 }
-    ]
-  },
-  {
-    "StageId": 2,
-    "BaseExp": 15,
-    "ThreeStarBonusExp": 15,
-    "FinalCoin": 150,
-    "Items": [
-      { "itemId": "material.skill.random", "finalAmount": 46 },
-      { "itemId": "material.equipment.random", "finalAmount": 1 },
-      { "itemId": "chest.gem", "finalAmount": 1 }
-    ]
-  },
-  {
-    "StageId": 3,
-    "BaseExp": 15,
-    "ThreeStarBonusExp": 15,
-    "FinalCoin": 150,
-    "Items": [
-      { "itemId": "material.skill.random", "finalAmount": 47 },
-      { "itemId": "material.equipment.random", "finalAmount": 1 },
-      { "itemId": "chest.gem", "finalAmount": 1 }
-    ]
-  }
+  {"StageId": 1, "BaseExp": 60, "ThreeStarBonusExp": 15, "FinalCoin": 150, "Items": [{"itemId": "book.arrow", "finalAmount": 45}, {"itemId": "book.weapon", "finalAmount": 1}, {"itemId": "chest.gem", "finalAmount": 1}]},
+  {"StageId": 2, "BaseExp": 120, "ThreeStarBonusExp": 15, "FinalCoin": 150, "Items": [{"itemId": "material.skill.random", "finalAmount": 46}, {"itemId": "material.equipment.random", "finalAmount": 1}, {"itemId": "chest.gem", "finalAmount": 1}]},
+  {"StageId": 3, "BaseExp": 180, "ThreeStarBonusExp": 15, "FinalCoin": 150, "Items": [{"itemId": "material.skill.random", "finalAmount": 47}, {"itemId": "material.equipment.random", "finalAmount": 1}, {"itemId": "chest.gem", "finalAmount": 1}]}
 ]

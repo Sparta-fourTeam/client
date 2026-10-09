@@ -23,6 +23,7 @@ namespace Game.Sandbox
             builder.Register<ISkillDataProvider, DefaultSkillDataProvider>(Lifetime.Scoped);
             builder.Register<IStartingSkills, NoStartingSkills>(Lifetime.Scoped);
             builder.Register<ISkillUnlock, AllSkillsUnlocked>(Lifetime.Scoped);
+            builder.Register<IPermanentSkillEffects, SandboxPermanentSkillEffects>(Lifetime.Scoped);
             builder.RegisterInstance(new SandboxProgression()).AsSelf().As<IWeaponProgression>();
             // 씬에 있는 컴포넌트는 누군가 요청해야 주입되므로, 시작할 때 한 번 꺼내 주입을 끝낸다.
             builder.RegisterBuildCallback(resolver =>

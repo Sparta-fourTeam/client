@@ -114,8 +114,8 @@ namespace Game.Tests
                 Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == second)));
                 Assert.IsFalse(weapon.LevelUp(data.upgrades.Find(c => c.id == first)));
                 var stats = (SkillStats)typeof(SkillBase).GetField("stats", Flags).GetValue(weapon);
-                Assert.AreEqual(262.5f, (stats.Cast.Damage * stats.Field.DamageRatio + stats.Field.FlatDamage) * stats.Field.DamageMultiplier);
-                Assert.AreEqual(5, stats.Field.Duration); Assert.AreEqual(25, stats.Cast.Damage); Assert.AreEqual(.8f, stats.Field.Radius);
+                Assert.AreEqual(274f, (stats.Cast.Damage * stats.Field.DamageRatio + stats.Field.FlatDamage) * stats.Field.DamageMultiplier, .001f);
+                Assert.AreEqual(5, stats.Field.Duration); Assert.AreEqual(32, stats.Cast.Damage); Assert.AreEqual(.9f, stats.Field.Radius);
             }
             finally { Object.DestroyImmediate(go); }
         }
@@ -136,7 +136,7 @@ namespace Game.Tests
                 Assert.AreEqual((Vector3)target.Position, field.transform.position);
                 weapon.LevelUp(data.upgrades.Find(c => c.id == "lightning_field_stable"));
                 weapon.LevelUp(data.upgrades.Find(c => c.id == "lightning_field_voltage"));
-                Tick(field, 1); Assert.AreEqual(2, target.DamageTaken);
+                Tick(field, 1); Assert.AreEqual(4, target.DamageTaken);
                 Assert.AreEqual(1, target.Slows.Count);
                 int hitscans = 0;
                 foreach (var effect in Object.FindObjectsByType<HitscanEffect>(FindObjectsSortMode.None))

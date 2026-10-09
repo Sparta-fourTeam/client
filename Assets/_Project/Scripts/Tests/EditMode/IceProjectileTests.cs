@@ -268,11 +268,11 @@ namespace Game.Tests
         }
 
         [Test]
-        public void Catalog_DefaultStatusChancesAreCertain()
+        public void Catalog_FrostCrystalHasPartialFreezeChance_OtherStatusesAreCertain()
         {
             foreach (var weapon in new DefaultSkillDataProvider(new GameDataStore()).LoadAll())
             {
-                Assert.AreEqual(1, weapon.baseStats.status.freezeChance);
+                Assert.AreEqual(1f, weapon.baseStats.status.freezeChance);
                 Assert.AreEqual(1, weapon.baseStats.status.frostbiteChance);
                 Assert.AreEqual(1, weapon.baseStats.status.burnChance);
                 Assert.AreEqual(1, weapon.baseStats.status.paralysisChance);

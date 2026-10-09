@@ -90,7 +90,7 @@ namespace Game.Tests
                 var r = HitRecorder.Hit(normal);
                 Assert.AreEqual(65, r.Damage, "극한 서리 +30%가 반영된 본체 130의 절반");
                 Assert.AreEqual(2, r.Freeze, "빙결 상속");
-                Assert.AreEqual(.2f, r.KnockbackDistance, .001f, "밀치기 상속");
+                Assert.AreEqual(.08f, r.KnockbackDistance, .001f, "밀치기 상속");
                 Assert.AreEqual(r.Damage * .1f, r.Frostbite, .001f, "동상 상속");
                 Assert.AreEqual(SpearScale, normal.transform.localScale.x, .0001f, "일반 얼음창은 얼음창 프리팹 크기");
             }

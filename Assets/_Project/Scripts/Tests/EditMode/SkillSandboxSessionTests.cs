@@ -38,7 +38,7 @@ namespace Game.Tests
             // 실제 SkillAssetTable을 그대로 쓴다.
             TestSkillAssets.AttachReal(controller);
             progression = new SandboxProgression();
-            controller.Construct(new Targets(), new Publisher(), new DefaultSkillDataProvider(new GameDataStore()), progression, startingSkills: new NoStartingSkills());
+            controller.Construct(new Targets(), new Publisher(), new DefaultSkillDataProvider(new GameDataStore()), progression, startingSkills: new NoStartingSkills(), permanentEffects: new SandboxPermanentSkillEffects(new GameDataStore(), progression));
             typeof(SkillController).GetMethod("Start", Private).Invoke(controller, null);
             session = new SkillSandboxSession(controller, new DefaultSkillDataProvider(new GameDataStore()), progression);
         }
@@ -171,7 +171,9 @@ namespace Game.Tests
             session.SetPermanentLevel(0);
             var low = controller.Skills[0].Data.upgrades.Find(c => c.id == "arrow_multishot");
             SkillUpgradeResolver.TryResolve(low, session.Build.permanentLevel, out var before);
+            float baseDamage = session.Current.Config.Stats.Cast.Damage;
             session.SetPermanentLevel(9);
+            Assert.AreEqual(baseDamage * 1.72f, session.Current.Config.Stats.Cast.Damage, .001f, "실제 영구 강화 테이블의 레벨당 8%도 반영한다");
             Assert.AreEqual(9, controller.GetPermanentWeaponLevel(1), "슬라이더 값이 컨트롤러의 영구 레벨 표에 반영된다");
             SkillUpgradeResolver.TryResolve(low, session.Build.permanentLevel, out var after);
             Assert.AreNotEqual(before.Name, after.Name, "영구 레벨 9에서 (+) 변형으로 바뀐다");

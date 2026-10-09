@@ -72,6 +72,7 @@ namespace Game.Tests
                 Assert.AreEqual(ItemIds.EmployeeIdBook, equipment[0].itemId);
 
                 save = _store.Load();
+                save.exp = ExpFor(1); // 반복 보상 검증 중 계정 레벨은 1로 고정한다.
                 save.wallet.energyStored = 10; save.wallet.energyUpdatedAt = DateTime.UtcNow.ToString("O");
                 _store.Flush(save);
             }

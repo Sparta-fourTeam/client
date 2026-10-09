@@ -21,6 +21,9 @@ namespace Game.Core
         private ChildSkillCaster childCaster;
         private ISkillUnlock skillUnlock;
         private IPermanentSkillEffects permanentEffects;
+        private Animator attackAnimator;
+        private float lastAttackPose = float.NegativeInfinity;
+        private static readonly int AttackHash = Animator.StringToHash("Attack");
 
         [Inject]
         public void Construct(IEnemyTargetProvider targetProvider, IBufferedPublisher<SkillChanged> skillChanged, ISkillDataProvider dataProvider, IWeaponProgression progression = null, Game.Core.Defense.Wall wall = null, IStartingSkills startingSkills = null, ISkillUnlock skillUnlock = null, IPermanentSkillEffects permanentEffects = null)
@@ -41,6 +44,15 @@ namespace Game.Core
 
         private void Start()
         {
+            foreach (var animator in GetComponentsInChildren<Animator>(true))
+            {
+                foreach (var parameter in animator.parameters)
+                {
+                    if (parameter.nameHash == AttackHash && parameter.type == AnimatorControllerParameterType.Trigger)
+                    { attackAnimator = animator; break; }
+                }
+                if (attackAnimator != null) { break; }
+            }
             dataTable = new Dictionary<int, SkillData>();
             foreach (var data in dataProvider.LoadAll())
             {
@@ -93,6 +105,7 @@ namespace Game.Core
             var weapon = SkillFactory.Create(data, prefab, transform, targetProvider, wall, CreateConfig(data));
             Debug.Log($"[영구강화] {data.progressionId} Lv.{progression?.GetLevel(data.progressionId) ?? 0} → 피해 {weapon.Config.Stats.Cast.Damage} (기본 {data.baseStats.cast.baseDamage})");
             weapon.UseChildCaster(childCaster);
+            weapon.Fired += OnSkillFired;
             skills.Add(weapon);
             PublishSkills();
             return true;
@@ -180,6 +193,13 @@ namespace Game.Core
             {
                 weapon.Tick();
             }
+        }
+
+        private void OnSkillFired()
+        {
+            if (attackAnimator == null || Time.time - lastAttackPose < 0.16f) { return; }
+            lastAttackPose = Time.time;
+            attackAnimator.SetTrigger(AttackHash);
         }
     }
 }
