@@ -46,9 +46,12 @@ namespace Game.View
             }
         }
 
+        private const float EntranceStagger = 0.08f;
+
         private void Show()
         {
             var choices = _stageManager.Choices;
+            int order = 0;
             for (int i = 0; i < _slots.Length; i++)
             {
                 bool hasChoice = i < choices.Count;
@@ -59,6 +62,7 @@ namespace Game.View
                     Sprite icon = _assets != null ? FindIcon(choice) : null;
                     Sprite background = choice.IsNewWeapon ? _newWeaponBg : _upgradeBg;
                     _slots[i].Bind(i, choice, icon, background, OnPick, FindFormIcon);
+                    _slots[i].PlayEntrance(order++ * EntranceStagger);
                 }
             }
 
