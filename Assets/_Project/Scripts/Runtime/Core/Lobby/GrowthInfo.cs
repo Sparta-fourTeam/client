@@ -38,6 +38,7 @@ namespace Game.Core
     public sealed class SkillInfo
     {
         public string Id;
+        public string AssetKey;
 
         /// <summary>강화 API에 넘기는 업그레이드 ID (스킬의 progressionId, 예: shuriken). null이면 아직 강화 데이터가 없는 스킬이다</summary>
         public string UpgradeId;

@@ -1,0 +1,978 @@
+[
+  {
+    "path": "CurrencySlot",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "SideMenuButton",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "SideMenuButton/Art_Border",
+    "sprite": "RoundedButtonFrame"
+  },
+  {
+    "path": "NavTab",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "NavTab/Art_Border",
+    "sprite": "RoundedButtonFrame"
+  },
+  {
+    "path": "NavTab/Selected",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "NavTab/Selected/Art_Border",
+    "sprite": "SquareFrame"
+  },
+  {
+    "path": "SubTab",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "SubTab/Art_Border",
+    "sprite": "RoundedButtonFrame"
+  },
+  {
+    "path": "SubTab/Selected",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "SubTab/Selected/Art_Border",
+    "sprite": "SquareFrame"
+  },
+  {
+    "path": "SubTab/Lock",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "SubTab/Lock/Art_Lock",
+    "sprite": "DisableCross"
+  },
+  {
+    "path": "MissionTab",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "MissionTab/Art_Border",
+    "sprite": "RoundedButtonFrame"
+  },
+  {
+    "path": "MissionTab/Selected",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "MissionTab/Selected/Art_Border",
+    "sprite": "SquareFrame"
+  },
+  {
+    "path": "MissionTab/Lock",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "MissionTab/Lock/Art_Lock",
+    "sprite": "DisableCross"
+  },
+  {
+    "path": "SkillListSlot",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "SkillListSlot/Art_Border",
+    "sprite": "CardFrame"
+  },
+  {
+    "path": "SkillListSlot/Icon",
+    "sprite": "Skills/Arrow"
+  },
+  {
+    "path": "SkillListSlot/LevelBadge",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "SkillListSlot/LevelBadge/Art_Border",
+    "sprite": "ButtonFrame"
+  },
+  {
+    "path": "SkillListSlot/Lock",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "SkillListSlot/Lock/Art_Lock",
+    "sprite": "DisableCross"
+  },
+  {
+    "path": "EquipSlot",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "EquipSlot/Art_Border",
+    "sprite": "SquareFrame"
+  },
+  {
+    "path": "EquipSlot/Icon",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "EquipSlot/Lock",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "EquipSlot/Lock/Art_Lock",
+    "sprite": "DisableCross"
+  },
+  {
+    "path": "EquipSlot/NewBadge",
+    "sprite": "GreenNode"
+  },
+  {
+    "path": "CharacterCard",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "CharacterCard/Art_Border",
+    "sprite": "CardFrame"
+  },
+  {
+    "path": "CharacterCard/Selected",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "CharacterCard/Selected/Art_Border",
+    "sprite": "SquareFrame"
+  },
+  {
+    "path": "CharacterCard/ElementBadge",
+    "sprite": "BlueDisk"
+  },
+  {
+    "path": "CharacterCard/Unowned",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "CharacterCard/Unowned/Art_Lock",
+    "sprite": "DisableCross"
+  },
+  {
+    "path": "CharacterCard/DeployButton",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "CharacterCard/DeployButton/Art_Border",
+    "sprite": "RoundedButtonFrame"
+  },
+  {
+    "path": "RewardNode/Chest",
+    "sprite": "Items/GemChest"
+  },
+  {
+    "path": "RewardNode/Dot",
+    "sprite": "GreenNode"
+  },
+  {
+    "path": "ComingSoonToast/Panel/Toast",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "LobbyTopBar/TopBar/Profile",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "LobbyTopBar/TopBar/Profile/Art_Border",
+    "sprite": "RoundedButtonFrame"
+  },
+  {
+    "path": "LobbyTopBar/TopBar/Gem/Icon",
+    "sprite": "Items/Gem"
+  },
+  {
+    "path": "LobbyTopBar/TopBar/Menu",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "LobbyTopBar/TopBar/Menu/Art_Border",
+    "sprite": "RoundedButtonFrame"
+  },
+  {
+    "path": "LobbyBottomNav/BottomBar",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "LobbyMissionButton/MissionButton",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "LobbyMissionButton/MissionButton/Art_Border",
+    "sprite": "RoundedButtonFrame"
+  },
+  {
+    "path": "LobbyMissionButton/MissionButton/StageBadge",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "LobbyMissionButton/MissionButton/StageBadge/Art_Border",
+    "sprite": "ButtonFrame"
+  },
+  {
+    "path": "LobbyEventBanner/Banner",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "LobbyEventBanner/Banner/Art_Border",
+    "sprite": "RoundedButtonFrame"
+  },
+  {
+    "path": "CharacterScreen/Panel/SafeArea/Body",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "CharacterScreen/Panel/SafeArea/Body/Art_Border",
+    "sprite": "PanelFrame"
+  },
+  {
+    "path": "CharacterScreen/Panel/SafeArea/Body/CharacterStage",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "CharacterScreen/Panel/SafeArea/Body/CharacterStage/SideMenu/CostumeButton",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "CharacterScreen/Panel/SafeArea/Body/CharacterStage/SideMenu/CostumeButton/Art_Border",
+    "sprite": "RoundedButtonFrame"
+  },
+  {
+    "path": "CharacterScreen/Panel/SafeArea/Body/CharacterStage/SideMenu/CostumeButton/Icon",
+    "sprite": "CharacterGlyph"
+  },
+  {
+    "path": "CharacterScreen/Panel/SafeArea/Body/CharacterStage/SideMenu/LimitBreakButton",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "CharacterScreen/Panel/SafeArea/Body/CharacterStage/SideMenu/LimitBreakButton/Art_Border",
+    "sprite": "RoundedButtonFrame"
+  },
+  {
+    "path": "CharacterScreen/Panel/SafeArea/Body/CharacterStage/SideMenu/LimitBreakButton/Icon",
+    "sprite": "RankGlyph"
+  },
+  {
+    "path": "CharacterScreen/Panel/SafeArea/Body/CharacterStage/SideMenu/InfoButton",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "CharacterScreen/Panel/SafeArea/Body/CharacterStage/SideMenu/InfoButton/Art_Border",
+    "sprite": "RoundedButtonFrame"
+  },
+  {
+    "path": "CharacterScreen/Panel/SafeArea/Body/CharacterStage/SideMenu/InfoButton/Icon",
+    "sprite": "DocumentGlyph"
+  },
+  {
+    "path": "CharacterScreen/Panel/SafeArea/Body/CharacterStage/RankBadge",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "CharacterScreen/Panel/SafeArea/Body/CharacterStage/RankBadge/Art_Border",
+    "sprite": "ButtonFrame"
+  },
+  {
+    "path": "CharacterScreen/Panel/SafeArea/Body/CharacterStage/Power",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "CharacterScreen/Panel/SafeArea/Body/CharacterStage/Power/Art_Border",
+    "sprite": "ButtonFrame"
+  },
+  {
+    "path": "CharacterScreen/Panel/SafeArea/Body/CharacterStage/ElementIcon",
+    "sprite": "BlueDisk"
+  },
+  {
+    "path": "CharacterScreen/Panel/SafeArea/Body/CharacterStage/UpgradeAllButton",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "CharacterScreen/Panel/SafeArea/Body/CharacterStage/UpgradeAllButton/Art_Border",
+    "sprite": "RoundedButtonFrame"
+  },
+  {
+    "path": "CharacterScreen/Panel/SafeArea/Body/CharacterStage/MergeAllButton",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "CharacterScreen/Panel/SafeArea/Body/CharacterStage/MergeAllButton/Art_Border",
+    "sprite": "RoundedButtonFrame"
+  },
+  {
+    "path": "CharacterScreen/Panel/SafeArea/Body/PartyBar",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "CharacterScreen/Panel/SafeArea/Body/PartyBar/PartySelect",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "CharacterScreen/Panel/SafeArea/Body/PartyBar/PartySelect/Art_Border",
+    "sprite": "RoundedButtonFrame"
+  },
+  {
+    "path": "CharacterScreen/Panel/SafeArea/Body/PartyBar/EditButton",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "CharacterScreen/Panel/SafeArea/Body/PartyBar/EditButton/Art_Border",
+    "sprite": "RoundedButtonFrame"
+  },
+  {
+    "path": "CharacterScreen/Panel/SafeArea/Body/FilterButton",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "CharacterScreen/Panel/SafeArea/Body/FilterButton/Art_Border",
+    "sprite": "RoundedButtonFrame"
+  },
+  {
+    "path": "CharacterScreen/Panel/SafeArea/Body/SubTabs",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "SkillScreen/Panel/SafeArea/Body",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "SkillScreen/Panel/SafeArea/Body/Art_Border",
+    "sprite": "PanelFrame"
+  },
+  {
+    "path": "SkillScreen/Panel/SafeArea/Body/Header",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "SkillScreen/Panel/SafeArea/Body/Header/Art_Border",
+    "sprite": "PanelFrame"
+  },
+  {
+    "path": "SkillScreen/Panel/SafeArea/Body/Header/Currencies/Gold",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "SkillScreen/Panel/SafeArea/Body/Header/Currencies/Gem",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "SkillScreen/Panel/SafeArea/Body/Header/Currencies/Gem/Icon",
+    "sprite": "Items/Gem"
+  },
+  {
+    "path": "SkillScreen/Panel/SafeArea/Body/Header/Currencies/Ticket",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "SkillScreen/Panel/SafeArea/Body/Header/Currencies/Ticket/Icon",
+    "sprite": "TicketGlyph"
+  },
+  {
+    "path": "SkillScreen/Panel/SafeArea/Body/Header/ResearchButton",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "SkillScreen/Panel/SafeArea/Body/Header/ResearchButton/Art_Border",
+    "sprite": "RoundedButtonFrame"
+  },
+  {
+    "path": "SkillScreen/Panel/SafeArea/Body/SubTabs",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "SkillUpgradePopup/Panel/Window",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "SkillUpgradePopup/Panel/Window/Art_Border",
+    "sprite": "PanelFrame"
+  },
+  {
+    "path": "SkillUpgradePopup/Panel/Window/LevelPill",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "SkillUpgradePopup/Panel/Window/LevelPill/Art_Border",
+    "sprite": "ButtonFrame"
+  },
+  {
+    "path": "SkillUpgradePopup/Panel/Window/CloseButton",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "SkillUpgradePopup/Panel/Window/CloseButton/Art_Border",
+    "sprite": "SquareFrame"
+  },
+  {
+    "path": "SkillUpgradePopup/Panel/Window/CloseButton/Art_Glyph",
+    "sprite": "CloseWhite"
+  },
+  {
+    "path": "SkillUpgradePopup/Panel/Window/Info",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "SkillUpgradePopup/Panel/Window/Info/Art_Border",
+    "sprite": "PanelFrame"
+  },
+  {
+    "path": "SkillUpgradePopup/Panel/Window/Info/Icon",
+    "sprite": "Skills/Arrow"
+  },
+  {
+    "path": "SkillUpgradePopup/Panel/Window/Info/Icon/Art",
+    "sprite": "Skills/Arrow"
+  },
+  {
+    "path": "SkillUpgradePopup/Panel/Window/Stats",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "SkillUpgradePopup/Panel/Window/Stats/Art_Border",
+    "sprite": "PanelFrame"
+  },
+  {
+    "path": "SkillUpgradePopup/Panel/Window/Stats/StatCell1",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "SkillUpgradePopup/Panel/Window/Stats/StatCell2",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "SkillUpgradePopup/Panel/Window/Stats/StatCell3",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "SkillUpgradePopup/Panel/Window/Stats/StatCell4",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "SkillUpgradePopup/Panel/Window/LevelRewards",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "SkillUpgradePopup/Panel/Window/LevelRewards/Art_Border",
+    "sprite": "PanelFrame"
+  },
+  {
+    "path": "SkillUpgradePopup/Panel/Window/LevelRewards/Viewport/Content/LevelRewardRow1",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "SkillUpgradePopup/Panel/Window/LevelRewards/Viewport/Content/LevelRewardRow1/Number",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "SkillUpgradePopup/Panel/Window/LevelRewards/Viewport/Content/LevelRewardRow2",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "SkillUpgradePopup/Panel/Window/LevelRewards/Viewport/Content/LevelRewardRow2/Number",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "SkillUpgradePopup/Panel/Window/LevelRewards/Viewport/Content/LevelRewardRow3",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "SkillUpgradePopup/Panel/Window/LevelRewards/Viewport/Content/LevelRewardRow3/Number",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "SkillUpgradePopup/Panel/Window/LevelRewards/Viewport/Content/LevelRewardRow4",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "SkillUpgradePopup/Panel/Window/LevelRewards/Viewport/Content/LevelRewardRow4/Number",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "SkillUpgradePopup/Panel/Window/LevelRewards/Viewport/Content/LevelRewardRow5",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "SkillUpgradePopup/Panel/Window/LevelRewards/Viewport/Content/LevelRewardRow5/Number",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "SkillUpgradePopup/Panel/Window/Cost",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "SkillUpgradePopup/Panel/Window/Cost/Art_Border",
+    "sprite": "PanelFrame"
+  },
+  {
+    "path": "SkillUpgradePopup/Panel/Window/Cost/BookIcon",
+    "sprite": "Items/ArrowBook"
+  },
+  {
+    "path": "SkillUpgradePopup/Panel/Window/UpgradeButton",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "SkillUpgradePopup/Panel/Window/UpgradeButton/Art_Border",
+    "sprite": "RoundedButtonFrame"
+  },
+  {
+    "path": "SkillUpgradePopup/Panel/Window/MaxLevel",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Art_Border",
+    "sprite": "PanelFrame"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/CloseButton",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/CloseButton/Art_Border",
+    "sprite": "SquareFrame"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/CloseButton/Art_Glyph",
+    "sprite": "CloseWhite"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Header",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Header/Art_Border",
+    "sprite": "PanelFrame"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Header/Avatar",
+    "sprite": "Characters/Player"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Header/CopyIdButton",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Header/CopyIdButton/Art_Border",
+    "sprite": "RoundedButtonFrame"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Header/ExpTrack",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Header/ExpTrack/Art_Border",
+    "sprite": "GaugeFrame"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Header/ExpFill",
+    "sprite": "OrangeFill"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Equips",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Equips/Art_Border",
+    "sprite": "PanelFrame"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Equips/Grid/EquipCell1/Slot",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Equips/Grid/EquipCell1/Slot/Art_Border",
+    "sprite": "SquareFrame"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Equips/Grid/EquipCell1/Slot/Icon",
+    "sprite": "Equipment/Hood"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Equips/Grid/EquipCell1/Slot/Lock",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Equips/Grid/EquipCell1/Slot/Lock/Art_Lock",
+    "sprite": "DisableCross"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Equips/Grid/EquipCell2/Slot",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Equips/Grid/EquipCell2/Slot/Art_Border",
+    "sprite": "SquareFrame"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Equips/Grid/EquipCell2/Slot/Icon",
+    "sprite": "Equipment/Robe"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Equips/Grid/EquipCell2/Slot/Lock",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Equips/Grid/EquipCell2/Slot/Lock/Art_Lock",
+    "sprite": "DisableCross"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Equips/Grid/EquipCell3/Slot",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Equips/Grid/EquipCell3/Slot/Art_Border",
+    "sprite": "SquareFrame"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Equips/Grid/EquipCell3/Slot/Icon",
+    "sprite": "Equipment/Boots"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Equips/Grid/EquipCell3/Slot/Lock",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Equips/Grid/EquipCell3/Slot/Lock/Art_Lock",
+    "sprite": "DisableCross"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Equips/Grid/EquipCell4/Slot",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Equips/Grid/EquipCell4/Slot/Art_Border",
+    "sprite": "SquareFrame"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Equips/Grid/EquipCell4/Slot/Icon",
+    "sprite": "Equipment/Staff"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Equips/Grid/EquipCell4/Slot/Lock",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Equips/Grid/EquipCell4/Slot/Lock/Art_Lock",
+    "sprite": "DisableCross"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Equips/Grid/EquipCell5/Slot",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Equips/Grid/EquipCell5/Slot/Art_Border",
+    "sprite": "SquareFrame"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Equips/Grid/EquipCell5/Slot/Icon",
+    "sprite": "Equipment/BoneRing"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Equips/Grid/EquipCell5/Slot/Lock",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Equips/Grid/EquipCell5/Slot/Lock/Art_Lock",
+    "sprite": "DisableCross"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Equips/Grid/EquipCell6/Slot",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Equips/Grid/EquipCell6/Slot/Art_Border",
+    "sprite": "SquareFrame"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Equips/Grid/EquipCell6/Slot/Icon",
+    "sprite": "Equipment/SkullNecklace"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Equips/Grid/EquipCell6/Slot/Lock",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Equips/Grid/EquipCell6/Slot/Lock/Art_Lock",
+    "sprite": "DisableCross"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Equips/Grid/EquipCell7/Slot",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Equips/Grid/EquipCell7/Slot/Art_Border",
+    "sprite": "SquareFrame"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Equips/Grid/EquipCell7/Slot/Icon",
+    "sprite": "Equipment/Seal"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Equips/Grid/EquipCell7/Slot/Lock",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Equips/Grid/EquipCell7/Slot/Lock/Art_Lock",
+    "sprite": "DisableCross"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Stage",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "ProfilePopup/Panel/Window/Stage/Art_Border",
+    "sprite": "PanelFrame"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbyTopBar/TopBar/Profile",
+    "sprite": "DarkGrayFill"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbyTopBar/TopBar/Profile/Art_Border",
+    "sprite": "SquareFrame"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbyTopBar/TopBar/Energy",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbyTopBar/TopBar/Energy/Icon",
+    "sprite": "Items/Heart"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbyTopBar/TopBar/Gem",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbyTopBar/TopBar/Gem/Icon",
+    "sprite": "Items/Gem"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbyTopBar/TopBar/Gold",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbyTopBar/TopBar/Gold/Icon",
+    "sprite": "Items/Coin"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbyTopBar/TopBar/Menu",
+    "sprite": "GrayFill"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbyTopBar/TopBar/Menu/Art_Border",
+    "sprite": "SquareFrame"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbyTopBar/TopBar/Menu/Art_Glyph",
+    "sprite": "MenuGlyph"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbyMissionButton/MissionButton",
+    "sprite": "GoldFill"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbyMissionButton/MissionButton/Art_Border",
+    "sprite": "RoundedButtonFrame"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbyBottomNav/BottomBar/Shop",
+    "sprite": "GrayFill"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbyBottomNav/BottomBar/Shop/Art_Border",
+    "sprite": "SquareFrame"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbyBottomNav/BottomBar/Shop/Icon",
+    "sprite": "TicketGlyph"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbyBottomNav/BottomBar/Shop/Art_Overlay",
+    "sprite": "DisableCross"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbyBottomNav/BottomBar/Character",
+    "sprite": "GrayFill"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbyBottomNav/BottomBar/Character/Art_Border",
+    "sprite": "SquareFrame"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbyBottomNav/BottomBar/Character/Icon",
+    "sprite": "CharacterGlyph"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbyBottomNav/BottomBar/Character/Selected",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbyBottomNav/BottomBar/Character/Selected/Art_Border",
+    "sprite": "SquareFrame"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbyBottomNav/BottomBar/Character/Selected/Art_Glyph",
+    "sprite": "CharacterGlyph"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbyBottomNav/BottomBar/Home",
+    "sprite": "GrayFill"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbyBottomNav/BottomBar/Home/Art_Border",
+    "sprite": "SquareFrame"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbyBottomNav/BottomBar/Home/Icon",
+    "sprite": "HomeGlyph"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbyBottomNav/BottomBar/Home/Selected",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbyBottomNav/BottomBar/Home/Selected/Art_Border",
+    "sprite": "SquareFrame"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbyBottomNav/BottomBar/Home/Selected/Art_Glyph",
+    "sprite": "HomeGlyph"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbyBottomNav/BottomBar/Skill",
+    "sprite": "GrayFill"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbyBottomNav/BottomBar/Skill/Art_Border",
+    "sprite": "SquareFrame"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbyBottomNav/BottomBar/Skill/Icon",
+    "sprite": "DaggerGlyph"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbyBottomNav/BottomBar/Skill/Selected",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbyBottomNav/BottomBar/Skill/Selected/Art_Border",
+    "sprite": "SquareFrame"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbyBottomNav/BottomBar/Skill/Selected/Art_Glyph",
+    "sprite": "DaggerGlyph"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbyBottomNav/BottomBar/Gacha",
+    "sprite": "GrayFill"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbyBottomNav/BottomBar/Gacha/Art_Border",
+    "sprite": "SquareFrame"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbyBottomNav/BottomBar/Gacha/Icon",
+    "sprite": "CloverGlyph"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbyBottomNav/BottomBar/Gacha/Art_Overlay",
+    "sprite": "DisableCross"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbySideMenu/Column/Friend",
+    "sprite": "GrayFill"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbySideMenu/Column/Friend/Art_Border",
+    "sprite": "SquareFrame"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbySideMenu/Column/Friend/Icon",
+    "sprite": "CharacterGlyph"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbySideMenu/Column/Quest",
+    "sprite": "GrayFill"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbySideMenu/Column/Quest/Art_Border",
+    "sprite": "SquareFrame"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbySideMenu/Column/Quest/Icon",
+    "sprite": "DocumentGlyph"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbySideMenu/Column/Mail",
+    "sprite": "GrayFill"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbySideMenu/Column/Mail/Art_Border",
+    "sprite": "SquareFrame"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbySideMenu/Column/Mail/Icon",
+    "sprite": "MailGlyph"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbySideMenu/Column/DailyGacha",
+    "sprite": "GrayFill"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbySideMenu/Column/DailyGacha/Art_Border",
+    "sprite": "SquareFrame"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbySideMenu/Column/DailyGacha/Icon",
+    "sprite": "RankGlyph"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbySideMenu/Column/Codex",
+    "sprite": "GrayFill"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbySideMenu/Column/Codex/Art_Border",
+    "sprite": "SquareFrame"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbySideMenu/Column/Codex/Icon",
+    "sprite": "BookGlyph"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbyEventBanner/Banner",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbyEventBanner/Banner/Art_Border",
+    "sprite": "PanelFrame"
+  },
+  {
+    "path": "NavUI/SafeArea/LobbyEventBanner/Banner/Art_Glyph",
+    "sprite": "MapGlyph"
+  },
+  {
+    "path": "NavUI/MissionScreen/Panel/BottomPanel",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "NavUI/MissionScreen/Panel/SafeArea/StageCarousel/StageCard/LockOverlay",
+    "sprite": "WhiteFill"
+  },
+  {
+    "path": "NavUI/MissionScreen/Panel/SafeArea/StageCarousel/StageCard/LockOverlay/Art_Lock",
+    "sprite": "DisableCross"
+  }
+]

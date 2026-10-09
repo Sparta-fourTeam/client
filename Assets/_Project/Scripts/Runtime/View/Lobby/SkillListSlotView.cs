@@ -13,6 +13,7 @@ namespace Game.View
         [SerializeField] private TMP_Text _levelText;
         [SerializeField] private GameObject _lock;
         [SerializeField] private TMP_Text _lockLabel;
+        [SerializeField] private Image _icon;
 
         private Action _onClick;
 
@@ -22,9 +23,14 @@ namespace Game.View
         }
 
         /// <summary>잠긴 칸은 눌러도 아무것도 하지 않는다</summary>
-        public void Bind(SkillInfo info, Action onClick)
+        public void Bind(SkillInfo info, Action onClick, Sprite icon = null)
         {
             gameObject.SetActive(true);
+            if (_icon != null)
+            {
+                _icon.sprite = icon;
+                _icon.enabled = icon != null;
+            }
             _levelText.text = $"Lv.{info.Level}";
             _lock.SetActive(!info.IsUnlocked);
             _lockLabel.text = $"레벨 {info.UnlockLevel}에 해금";

@@ -12,6 +12,7 @@ namespace Game.View
         [SerializeField] private SkillListSlotView[] _slots;        // 화면의 칸 전부 (목록보다 많으면 남는 칸은 숨김)
         [SerializeField] private TMP_Text _goldText, _gemText, _ticketText;
         [SerializeField] private SkillUpgradePopupView _upgradePopup;
+        [SerializeField] private SkillAssetTable _assets;
 
         private IGrowthCatalog _catalog;
         private PlayerProfile _profile;
@@ -74,7 +75,8 @@ namespace Game.View
                 }
 
                 int index = i;
-                _slots[i].Bind(skills[i], () => _upgradePopup.Open(index));
+                _slots[i].Bind(skills[i], () => _upgradePopup.Open(index),
+                    _assets != null ? _assets.GetHudIcon(skills[i].AssetKey) : null);
             }
         }
     }
