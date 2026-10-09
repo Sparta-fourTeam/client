@@ -68,7 +68,7 @@ namespace Game.Tests
             }
         }
 
-        [Test(Description = "분열·소환으로 생긴 적의 사망은 게이지에 세지 않는다")]
+        [Test(Description = "주기 소환으로 생긴 적의 사망은 게이지에 세지 않는다")]
         public void SummonedEnemyDied_DoesNotIncreaseGauge()
         {
             StartWave(3);
@@ -78,6 +78,19 @@ namespace Game.Tests
 
             Assert.AreEqual(before, _changed.Count);
             Assert.AreEqual(0, _filled.Count);
+        }
+
+        [Test(Description = "총량은 마릿수에 분열체를 더한 값이고, 분열체의 사망도 세어 모두 잡으면 웨이브가 끝난다")]
+        public void SplitDescendants_AreInTotalAndCounted()
+        {
+            _waveStarted.Publish(new WaveStarted(1, false,
+                new[] { new WaveSpawn { MonsterId = 1, Count = 2, SplitDescendants = 2, Type = EnemyType.Normal } }));
+
+            Assert.AreEqual(6, _changed[_changed.Count - 1].Max);
+
+            KillEnemies(6);
+
+            Assert.AreEqual(1, _filled.Count);
         }
 
         [Test(Description = "웨이브가 시작되면 빈 게이지(0/몬스터 수)를 발행한다")]

@@ -119,9 +119,9 @@ namespace Game.Core
         // 분열·소환 요청. 위치는 이 적의 현재 위치를 기준으로 한 절대 좌표다
         public event Action<EnemySpawnRequest> SpawnRequested;
 
-        private void OnSpawnRequested(int monsterId, Vector2 offset)
+        private void OnSpawnRequested(int monsterId, Vector2 offset, bool isSummon)
         {
-            SpawnRequested?.Invoke(new EnemySpawnRequest(monsterId, Position + offset));
+            SpawnRequested?.Invoke(new EnemySpawnRequest(monsterId, Position + offset, isSummon));
         }
 
         private void OnDeathExplosionRequested(Action<Vector2> explosion) => explosion(Position);

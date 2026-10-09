@@ -66,7 +66,7 @@ namespace Game.Tests
             public float Range(float min, float max) => 1f;
         }
 
-        // 일반 스폰은 분열 패시브를 가진 적, Id 지정 생성은 분열체(isSummoned)를 만든다
+        // 일반 스폰은 분열 패시브를 가진 적, 분열체 ID로 만들면 분열체를 만든다
         private sealed class SplitFactory : IEnemyFactory
         {
             private int _nextId;
@@ -79,7 +79,7 @@ namespace Game.Tests
 
             public Enemy Create(int monsterId, Vector2 spawnPosition, bool isSummoned = false)
             {
-                if (!isSummoned)
+                if (monsterId != ChildMonsterId)
                 {
                     var parent = TestEnemy.Create(new EnemyModel(++_nextId, 0f, EnemyType.Normal, 10, Attack, HpChanged, Died,
                         new IPassive[] { new SpawnPassive(SpawnTrigger.OnDeath, ChildMonsterId, 2) }), spawnPosition);
@@ -89,7 +89,7 @@ namespace Game.Tests
 
                 RequestedIds.Add(monsterId);
                 var child = TestEnemy.Create(new EnemyModel(++_nextId, 0f, EnemyType.Normal, 10, Attack, HpChanged, Died,
-                    null, isSummoned: true), spawnPosition);
+                    null, isSummoned), spawnPosition);
                 Children.Add(child);
                 return child;
             }
@@ -178,6 +178,7 @@ namespace Game.Tests
             Assert.AreEqual(3.2f, requests[1].Position.x, 0.0001f);
             Assert.AreEqual(5f, requests[0].Position.y, 0.0001f);
             Assert.AreEqual(5f, requests[1].Position.y, 0.0001f);
+            Assert.IsFalse(requests[0].IsSummon); // 분열체는 게이지에 센다
         }
 
         [Test(Description = "이미 죽은 적에게 다시 피해가 와도 분열은 한 번만 요청한다")]

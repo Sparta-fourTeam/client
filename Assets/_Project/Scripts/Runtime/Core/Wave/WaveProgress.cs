@@ -34,6 +34,7 @@ namespace Game.Core
         {
             DisposableBagBuilder bag = DisposableBag.CreateBuilder();
             _waveStartedSubscriber.Subscribe(OnWaveStarted).AddTo(bag);
+            // 분열체의 사망은 센다(총량에 들어 있다). 주기 소환체는 총량에 없으므로 세지 않는다
             _enemyDiedSubscriber.Subscribe(message =>
             {
                 if (!message.IsSummoned)

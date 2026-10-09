@@ -152,6 +152,7 @@ namespace Game.Tests
             }
 
             Assert.AreEqual(3, requests.Count); // 2 + (남은 1)
+            Assert.IsTrue(requests.TrueForAll(r => r.IsSummon)); // 주기 소환체는 게이지에 세지 않는다
         }
 
         [Test(Description = "기절·빙결·마비 중에는 소환 시간이 흐르지 않는다")]

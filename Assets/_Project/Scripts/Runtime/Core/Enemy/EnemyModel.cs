@@ -85,7 +85,7 @@ namespace Game.Core
 
         public event Action<EnemyProjectileModel> ProjectileFired; // 원거리 투사체 생성 용
         public event Action Attacked; // 공격이 나간 순간 (근접/원거리 공통, 공격 모션 재생 용)
-        public event Action<int, Vector2> SpawnRequested; // 분열·소환 요청 (몬스터 Id, 이 적 기준 오프셋). 위치를 더하는 건 Enemy, 만드는 일은 EnemySpawner
+        public event Action<int, Vector2, bool> SpawnRequested; // 분열·소환 요청 (몬스터 Id, 이 적 기준 오프셋, 소환 여부). 위치를 더하는 건 Enemy, 만드는 일은 EnemySpawner
         public event Action<Action<Vector2>> DeathExplosionRequested; // 점화 중 사망 폭발 (Enemy가 자기 위치로 호출한다)
 
         private readonly IReadOnlyList<IPassive> _passives;
@@ -96,7 +96,7 @@ namespace Game.Core
         /// <summary>투사체가 이 적에 맞으면 관통하지 못하고 멈춘다 (투사체 차단)</summary>
         public bool BlocksPierce => _profile.BlocksProjectile;
 
-        public void RequestSpawn(int monsterId, Vector2 offset) => SpawnRequested?.Invoke(monsterId, offset);
+        public void RequestSpawn(int monsterId, Vector2 offset, bool isSummon = false) => SpawnRequested?.Invoke(monsterId, offset, isSummon);
 
         // 패시브의 시간 흐름. 빙결·마비·기절 중에는 멈춘다
         public void TickPassives(float deltaTime)
@@ -113,7 +113,7 @@ namespace Game.Core
         }
 
         // 이동 속도, 타입 지정해서 몬스터 생성
-        // isSummoned: 분열·소환으로 생긴 적. 사망이 웨이브 게이지에 세어지지 않는다
+        // isSummoned: 주기 소환으로 생긴 적. 사망이 웨이브 게이지에 세어지지 않는다 (분열체는 세고 총량에도 들어 있다)
         public EnemyModel(int id, float speed, EnemyType type, int maxHp,
             EnemyAttackStats attack,
             IPublisher<EnemyHpChanged> hpChangedPublisher,

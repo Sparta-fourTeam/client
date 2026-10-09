@@ -36,14 +36,14 @@ namespace Game.Core.Messages
             Spawns = Array.Empty<WaveSpawn>();
         }
 
-        /// <summary>몬스터 구성이 있는 웨이브. 처치 수는 마릿수 합계다</summary>
+        /// <summary>몬스터 구성이 있는 웨이브. 처치 수는 마릿수에 분열체를 더한 합계다</summary>
         public WaveStarted(int waveIndex, bool isFinalWave, IReadOnlyList<WaveSpawn> spawns)
         {
             WaveIndex = waveIndex;
             IsFinalWave = isFinalWave;
             Spawns = spawns ?? Array.Empty<WaveSpawn>();
             int total = 0;
-            foreach (var spawn in Spawns) { total += spawn.Count; }
+            foreach (var spawn in Spawns) { total += spawn.GaugeCount; }
             EnemyCount = total;
         }
     }
