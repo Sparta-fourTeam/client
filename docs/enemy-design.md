@@ -57,7 +57,7 @@ Enemy (MonoBehaviour)            위치, 이동 적용, 밀치기 적용, 연출
 
 ### 기본 규칙
 - 모든 적은 HP, 속도, 근접 또는 원거리 공격을 가진다.
-- 소환체의 사망은 웨이브 게이지에 세지 않고(`EnemyDied.IsSummoned`) 전투 통계에는 센다.
+- 소환체의 사망도 웨이브 게이지와 전투 통계에 센다(`EnemyDied.IsSummoned`). 게이지 총량에는 소환체가 없다.
 - 연속 공격(한 번의 공격에 여러 발)은 `Monsters.json`의 `BurstCount`(생략하면 1)와 `BurstInterval`(초)이다. 첫 타격은 공격 간격이 되면 나가고 나머지는 `BurstInterval`마다 나간다. 연속 공격은 한 번의 공격 간격 안에 끝나야 한다(`AttackInterval > BurstInterval * (BurstCount - 1)`). 기절·빙결·마비 중에는 멈춘다. 근접은 타격마다 벽을 때리고 원거리는 타격마다 투사체를 쏜다.
 
 ### 상태이상 (`EnemyStatus`)

@@ -68,16 +68,15 @@ namespace Game.Tests
             }
         }
 
-        [Test(Description = "분열·소환으로 생긴 적의 사망은 게이지에 세지 않는다")]
-        public void SummonedEnemyDied_DoesNotIncreaseGauge()
+        [Test(Description = "분열·소환으로 생긴 적의 사망도 게이지를 1 올린다. 총량에는 들어 있지 않다")]
+        public void SummonedEnemyDied_IncreasesGauge()
         {
             StartWave(3);
-            int before = _changed.Count;
 
             _enemyDied.Publish(new EnemyDied(1, isSummoned: true));
 
-            Assert.AreEqual(before, _changed.Count);
-            Assert.AreEqual(0, _filled.Count);
+            Assert.AreEqual(1, _changed[_changed.Count - 1].Current);
+            Assert.AreEqual(3, _changed[_changed.Count - 1].Max);
         }
 
         [Test(Description = "웨이브가 시작되면 빈 게이지(0/몬스터 수)를 발행한다")]

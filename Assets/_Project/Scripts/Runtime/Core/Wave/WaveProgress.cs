@@ -34,13 +34,8 @@ namespace Game.Core
         {
             DisposableBagBuilder bag = DisposableBag.CreateBuilder();
             _waveStartedSubscriber.Subscribe(OnWaveStarted).AddTo(bag);
-            _enemyDiedSubscriber.Subscribe(message =>
-            {
-                if (!message.IsSummoned)
-                {
-                    OnEnemyDied();
-                }
-            }).AddTo(bag);
+            // 분열·소환으로 생긴 적의 사망도 센다. 총량(EnemyCount)에는 들어 있지 않으므로 그만큼 웨이브가 일찍 끝난다
+            _enemyDiedSubscriber.Subscribe(_ => OnEnemyDied()).AddTo(bag);
             _subscriptions = bag.Build();
         }
 
