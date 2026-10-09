@@ -49,8 +49,8 @@ namespace Game.View
             }
         }
 
-        private const float EntranceStagger = 0.08f;
-        private const float PickDelay = 0.2f;
+        private const float EntranceStagger = 0f;
+        private const float PickDelay = 0.55f;
 
         private void Show()
         {

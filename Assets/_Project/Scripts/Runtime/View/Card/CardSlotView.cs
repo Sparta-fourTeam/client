@@ -24,55 +24,59 @@ namespace Game.View
         [SerializeField] private FormHintIconView[] _formHints;
 
 
-        private const float EntranceSeconds = 0.28f;
-        private const float EntranceStartScale = 0.7f;
-        private const float PickedSeconds = 0.18f;
-        private const float PickedPunch = 0.12f;
-        private const float DismissedScale = 0.85f;
+        private const float EntranceSeconds = 0.2f;
+        private const float EntranceStartScaleY = 0.4f;
+        private const float PickedHoldSeconds = 0.35f;
+        private const float PickedFadeSeconds = 0.2f;
 
         private Sequence _entrance;
+        private Tween _picked;
         private CanvasGroup _group;
         private RectTransform _rect;
 
         private void Awake()
         {
             _button.onClick.AddListener(() => _onPick?.Invoke(_index));
+            // 세로로 펼칠 때 위쪽 가장자리가 고정되도록 피벗을 위로 둔다. 레이아웃 그룹은 피벗을 감안해 배치한다
+            _rect = (RectTransform)transform;
+            _rect.pivot = new Vector2(_rect.pivot.x, 1f);
         }
 
-        /// <summary>카드가 작게 시작해 커지며 나타난다. delay만큼 기다렸다 시작하므로 카드마다 다르게 주면 차례로 나온다.
+        /// <summary>카드가 폭은 그대로 두고 위쪽 가장자리에서 아래로 펼쳐지며 나타난다. delay를 카드마다 다르게 주면 차례로 나온다.
         /// 등장하는 동안에는 눌리지 않는다. 일시정지 중에도 흐르도록 unscaled 시간을 쓴다</summary>
         public void PlayEntrance(float delay)
         {
             _entrance?.Kill();
+            _picked?.Kill();
             EnsureGroup();
             _rect = (RectTransform)transform;
 
-            // 위치는 HorizontalLayoutGroup이 정하므로 건드리지 않고 크기와 투명도만 쓴다
+            // 위치는 HorizontalLayoutGroup이 정하므로 건드리지 않고 세로 크기와 투명도만 쓴다
             _group.alpha = 0f;
             _group.interactable = false;
-            _rect.localScale = Vector3.one * EntranceStartScale;
+            _rect.localScale = new Vector3(1f, EntranceStartScaleY, 1f);
 
             _entrance = DOTween.Sequence().SetDelay(delay).SetUpdate(true).SetLink(gameObject);
-            _entrance.Join(DOTween.To(() => _group.alpha, a => _group.alpha = a, 1f, EntranceSeconds * 0.6f));
-            _entrance.Join(_rect.DOScale(1f, EntranceSeconds).SetEase(Ease.OutBack));
+            _entrance.Join(DOTween.To(() => _group.alpha, a => _group.alpha = a, 1f, EntranceSeconds * 0.5f));
+            _entrance.Join(DOTween.To(() => _rect.localScale.y, y => _rect.localScale = new Vector3(1f, y, 1f), 1f, EntranceSeconds)
+                .SetEase(Ease.OutCubic));
             _entrance.OnComplete(() => _group.interactable = true);
         }
 
-        /// <summary>이 카드가 골라졌다. 한 번 부풀었다 돌아오며 눌러졌음을 알린다</summary>
+        /// <summary>이 카드가 골라졌다. 잠시 그 자리에 남아 있다가 흐려지며 사라진다</summary>
         public void PlayPicked()
         {
             Prepare();
-            _rect.localScale = Vector3.one;
-            _rect.DOPunchScale(Vector3.one * PickedPunch, PickedSeconds, 1, 0f).SetUpdate(true).SetLink(gameObject);
+            _picked = DOTween.Sequence().SetUpdate(true).SetLink(gameObject)
+                .AppendInterval(PickedHoldSeconds)
+                .Append(DOTween.To(() => _group.alpha, a => _group.alpha = a, 0f, PickedFadeSeconds));
         }
 
-        /// <summary>다른 카드가 골라졌다. 작아지며 사라진다</summary>
+        /// <summary>다른 카드가 골라졌다. 바로 사라진다. 자리는 그대로 두어 고른 카드가 움직이지 않게 한다</summary>
         public void PlayDismissed()
         {
             Prepare();
-            _group.interactable = false;
-            DOTween.To(() => _group.alpha, a => _group.alpha = a, 0f, PickedSeconds).SetUpdate(true).SetLink(gameObject);
-            _rect.DOScale(DismissedScale, PickedSeconds).SetEase(Ease.InCubic).SetUpdate(true).SetLink(gameObject);
+            _group.alpha = 0f;
         }
 
         // Unity 오브젝트는 ??로 null을 판별하면 안 된다 (없는 컴포넌트가 가짜 null로 돌아온다)
@@ -89,6 +93,7 @@ namespace Game.View
         private void Prepare()
         {
             _entrance?.Complete();
+            _picked?.Kill();
             EnsureGroup();
             _rect = (RectTransform)transform;
             _group.interactable = false;
