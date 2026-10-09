@@ -32,7 +32,7 @@ flowchart LR
 ```
 
 - 웨이브 스폰은 `Stages.json`의 `Waves[].Spawns`(`{MonsterId, Count}`)에 적힌 몬스터를 그대로 낸다. 분열·소환으로만 나오는 몬스터는 웨이브 구성에 넣지 않는다.
-- 웨이브를 끝내는 처치 수(`EnemyCount`)는 `Count`의 합계다. 첫 묶음은 구성 전체를 섞어 내고, 처치가 늦어 다음 묶음이 나올 때는 **일반 몬스터만** 반복한다. 엘리트·보스는 웨이브당 한 번만 나오고 `Count`는 1이다(어기면 부팅 예외).
+- 웨이브를 끝내는 처치 수(`EnemyCount`)는 `Count`의 합계다. 이것이 웨이브 게이지 총량이고 몬스터는 종류와 상관없이 한 마리에 1씩 채운다. 게이지 총량은 `Count`로만 조절한다. 첫 묶음은 구성 전체를 섞어 내고, 처치가 늦어 다음 묶음이 나올 때는 **일반 몬스터만** 반복한다. 엘리트·보스는 웨이브당 한 번만 나오고 `Count`는 1이다(어기면 부팅 예외).
 - 스테이지의 "등장 몬스터"(`StageDefinition.MonsterIds`, 일시정지 창의 "등장 요마")는 데이터에 따로 적지 않고 웨이브 구성에서 첫 등장 순서로 모은다.
 - 등급(보스·엘리트·일반)과 공격 방식(근접·원거리)은 `Monsters` 행에서 정해진다. 프리팹 쪽에 따로 적지 않는다.
 - 소환된 적의 사망은 웨이브 게이지에 세지 않는다(`EnemyDied.IsSummoned`, [messages.md](messages.md)).
@@ -71,7 +71,6 @@ flowchart LR
 | `CastResists` | {시전 형태: 비율} | 비어 있음 | 시전 형태별 가감. 키는 `Projectile`, `Hitscan`, `Area`, `Beam`, `Chain`(대소문자 구분) |
 | `BlocksProjectile` | bool | false | 투사체의 직접 충격 피해를 무효로 하고 관통을 막는다. 부가 반응(폭발·상태이상)은 그대로 걸린다 |
 | `Passives` | 목록 | 비어 있음 | [패시브](#passives) |
-| `Exp`, `GaugeValue` | int | 0 | **지금 코드는 읽지 않는다.** 보상은 `StageRewards`가 정한다. 시트와 계약에서 뺄 후보다 |
 
 속성 약점/저항은 곱해지고, 줄어도 무효(-1)가 아니면 최소 피해 1이 들어간다. 지상 공격 면역은 `"Earth": -1`, 투사체 감쇠는 `"CastResists": {"Projectile": -0.7}`로 쓴다. 자세한 계산은 [enemy-design.md](enemy-design.md)의 피해 파이프라인을 본다.
 

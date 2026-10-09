@@ -37,7 +37,6 @@
 - **시전 형태 이름**: `Projectile`, `Hitscan`, `Area`, `Beam`, `Chain`. 스킬의 `castType`은 같은 순서의 숫자 0~4다.
 - **패시브 Kind**: `Spawn`, `Immunity`, `Modifier`, `Shield`, `Evade`, `LowHp`, `HealOnHit`, `SpeedBoost`.
 - **면역 이름**: `Stun`, `Burn`, `Paralysis`, `Freeze`, `Slow`, `Frostbite`, `Vulnerability`, `AllDebuffs`.
-- `Exp`, `GaugeValue`는 클라이언트가 읽지 않는다(보상은 `StageRewards`). 서버가 지워도 클라이언트는 영향이 없고, 있어도 무시된다.
 
 ## 결정이 필요한 항목
 
@@ -47,8 +46,7 @@
 | 2 | 필드 이름 규칙 | 표마다 다름(`Skills`만 camelCase) | **표별 기존 스타일 유지, 새 표는 PascalCase.** 클라이언트는 대소문자를 구분하지 않고 읽으니 어긋나도 깨지지는 않지만, 서버는 표 스타일을 지킨다 | 제안 |
 | 3 | 참조 검증(소환 대상, 스테이지 몬스터 등)을 누가 하나 | 클라이언트가 부팅 때 검증 | **둘 다 한다.** 서버가 시트를 반영할 때 같은 규칙으로 막고, 클라이언트 검증은 마지막 방어선으로 둔다. 규칙 목록은 위 표와 [enemy.md](enemy.md)의 "검증과 테스트" | 제안 |
 | 4 | `element`를 숫자로 줄지 이름으로 줄지 | 둘 다 읽음, 지금 데이터는 숫자 | **숫자 유지**(`castType`과 같은 방식). 대신 숫자의 의미를 **바꾸지 않는다**(항목은 뒤에만 더한다) | 제안 |
-| 5 | `Exp`, `GaugeValue` | 읽지 않음 | 서버 표에서 **제거**(클라이언트 영향 없음). 클라이언트 쪽 필드 정리는 별도 PR | 제안 |
-| 6 | 테이블 개정 번호(`DataVersions.revisions`) | 클라이언트가 전부 1로 고정(TODO) | 서버가 표별 개정 번호를 실제로 주고, **스키마가 바뀌는 변경은 개정 번호를 올린다.** 클라이언트가 지원하지 않는 개정이면 로드하기 전에 거부할 수 있다 | 제안(서버 구현 필요) |
+| 5 | 테이블 개정 번호(`DataVersions.revisions`) | 클라이언트가 전부 1로 고정(TODO) | 서버가 표별 개정 번호를 실제로 주고, **스키마가 바뀌는 변경은 개정 번호를 올린다.** 클라이언트가 지원하지 않는 개정이면 로드하기 전에 거부할 수 있다 | 제안(서버 구현 필요) |
 
 ## 시트 컬럼 (Monsters 탭)
 
@@ -72,7 +70,6 @@
 | `BlocksProjectile` | bool | | `FALSE` |
 | `Passives` | JSON 문자열 | | `[{"Kind": "Shield", "Trigger": "Start", "Hits": 6}]` |
 
-`Exp`, `GaugeValue` 컬럼은 제거 대상이다(위 결정 5).
 
 ## 필드를 더하거나 바꿀 때
 

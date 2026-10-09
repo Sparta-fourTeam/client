@@ -7,7 +7,7 @@ namespace Game.Core
     [Serializable]
     public class MonsterDefinition
     {
-        public int Id, Exp, Hp, Damage, GaugeValue;
+        public int Id, Hp, Damage;
         public float Speed, AttackInterval;
 
         /// <summary>원거리 몬스터가 공격하는 거리. 근접은 0</summary>
