@@ -66,7 +66,7 @@ namespace Game.View
             var home = _rect.anchoredPosition;
 
             _group.alpha = 0f;
-            _group.interactable = false;
+            _group.blocksRaycasts = false;
             _rect.localScale = new Vector3(1f, EntranceStartScaleY, 1f);
             _rect.anchoredPosition = home + new Vector2(0f, EntranceSlide);
 
@@ -76,7 +76,7 @@ namespace Game.View
                 .SetEase(Ease.OutQuad));
             _entrance.Join(DOTween.To(() => _rect.anchoredPosition, v => _rect.anchoredPosition = v, home, EntranceSeconds)
                 .SetEase(Ease.OutQuad));
-            _entrance.OnComplete(() => _group.interactable = true);
+            _entrance.OnComplete(() => _group.blocksRaycasts = true);
         }
 
         /// <summary>이 카드가 골라졌다. 잠시 남아 아래로 내려앉다가, 조금 커지며 회색으로 흐려져 사라진다</summary>
@@ -85,10 +85,19 @@ namespace Game.View
             Prepare();
             CollectGraphics();
             var start = _rect.anchoredPosition;
+            float height = _rect.rect.height;
+            float total = PickedHoldSeconds + PickedFadeSeconds;
+
+            // 피벗이 위쪽이라 그냥 키우면 위를 기준으로 커진다. 커진 만큼의 절반을 위로 올려 가운데를 기준으로 커지게 한다
             _picked = DOTween.Sequence().SetUpdate(true).SetLink(gameObject);
-            _picked.Join(DOTween.To(() => _rect.anchoredPosition, v => _rect.anchoredPosition = v,
-                start - new Vector2(0f, PickedSink), PickedHoldSeconds + PickedFadeSeconds).SetEase(Ease.Linear));
-            _picked.Insert(PickedHoldSeconds, _rect.DOScale(PickedGrowScale, PickedFadeSeconds).SetEase(Ease.OutQuad));
+            _picked.Join(DOTween.To(() => 0f, u =>
+            {
+                float grow = Mathf.Clamp01((u - PickedHoldSeconds) / PickedFadeSeconds);
+                float scale = Mathf.Lerp(1f, PickedGrowScale, DOVirtual.EasedValue(0f, 1f, grow, Ease.OutQuad));
+                float sink = PickedSink * (u / total);
+                _rect.localScale = new Vector3(scale, scale, 1f);
+                _rect.anchoredPosition = start + new Vector2(0f, -sink + (scale - 1f) * height * 0.5f);
+            }, total, total).SetEase(Ease.Linear));
             _picked.Insert(PickedHoldSeconds, DOTween.To(() => 0f, t => Tint(t), 1f, PickedFadeSeconds));
             _picked.Insert(PickedHoldSeconds, DOTween.To(() => _group.alpha, a => _group.alpha = a, 0f, PickedFadeSeconds));
         }
@@ -154,7 +163,7 @@ namespace Game.View
             _picked?.Kill();
             EnsureGroup();
             _rect = (RectTransform)transform;
-            _group.interactable = false;
+            _group.blocksRaycasts = false;
         }
 
         private void OnDisable()
