@@ -224,7 +224,7 @@ namespace Game.Core
             while (_pendingSpawns.Count > 0)
             {
                 var request = _pendingSpawns.Dequeue();
-                Track(_enemyViewFactory.Create(request.MonsterId, request.Position, isSummoned: true));
+                Track(_enemyViewFactory.Create(request.MonsterId, request.Position, isSummoned: request.IsSummon));
             }
         }
 

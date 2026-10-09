@@ -80,7 +80,7 @@ namespace Game.Core
             for (int i = 0; i < amount; i++)
             {
                 float offset = (i - (amount - 1) / 2f) * Spread;
-                self.RequestSpawn(_monsterId, new Vector2(offset, 0f));
+                self.RequestSpawn(_monsterId, new Vector2(offset, 0f), _trigger == SpawnTrigger.Interval);
             }
         }
     }

@@ -8,10 +8,14 @@ namespace Game.Core
         public int MonsterId { get; }
         public Vector2 Position { get; }
 
-        public EnemySpawnRequest(int monsterId, Vector2 position)
+        /// <summary>주기 소환으로 생긴 요청이면 true. 분열은 false다. 소환체는 웨이브 게이지에 세지 않는다</summary>
+        public bool IsSummon { get; }
+
+        public EnemySpawnRequest(int monsterId, Vector2 position, bool isSummon = false)
         {
             MonsterId = monsterId;
             Position = position;
+            IsSummon = isSummon;
         }
     }
 }

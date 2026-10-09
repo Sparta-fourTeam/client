@@ -68,6 +68,7 @@ namespace Game.Core
                         }
 
                         spawn.Type = monster.GetEnemyType();
+                        spawn.SplitDescendants = CountSplitDescendants(monster);
                         if (spawn.Type != EnemyType.Normal && spawn.Count != 1)
                         {
                             throw new InvalidOperationException($"Stages {stage.Id}: 엘리트·보스 {spawn.MonsterId}은(는) 웨이브마다 1마리만 나옵니다 (Count 1)");
@@ -184,6 +185,21 @@ namespace Game.Core
         /// <summary>stageId의 스테이지. 없으면(0 포함) 첫 번째 스테이지를 돌려준다</summary>
         public StageDefinition StageOrFirst(int stageId) =>
             Stages.GetOrThrow(Stages.Contains(stageId) ? stageId : FirstStageId);
+
+        /// <summary>몬스터 한 마리가 죽을 때 분열(OnDeath Spawn)로 나오는 몬스터 수. 분열체는 다시 분열하지 않으므로(연쇄 소환 금지) 한 단계만 센다</summary>
+        private static int CountSplitDescendants(MonsterDefinition monster)
+        {
+            int total = 0;
+            foreach (var passive in monster.Passives ?? new List<PassiveDefinition>())
+            {
+                if (passive != null && passive.Kind == PassiveKind.Spawn && passive.ToSpawnTrigger() == SpawnTrigger.OnDeath)
+                {
+                    total += passive.Count;
+                }
+            }
+
+            return total;
+        }
 
         private Dictionary<TKey, TValue> ParseIndexed<TKey, TValue>(string name, Func<TValue, TKey> keyOf)
         {
