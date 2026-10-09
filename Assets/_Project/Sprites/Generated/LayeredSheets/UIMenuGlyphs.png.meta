@@ -348,6 +348,19 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 1024
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
@@ -355,10 +368,10 @@ TextureImporter:
       name: BookGlyph
       rect:
         serializedVersion: 2
-        x: 36
-        y: 836
-        width: 272
-        height: 218
+        x: 33
+        y: 793
+        width: 277
+        height: 263
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -377,10 +390,10 @@ TextureImporter:
       name: CharacterGlyph
       rect:
         serializedVersion: 2
-        x: 353
-        y: 836
-        width: 273
-        height: 215
+        x: 351
+        y: 785
+        width: 276
+        height: 268
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -399,10 +412,10 @@ TextureImporter:
       name: RankGlyph
       rect:
         serializedVersion: 2
-        x: 634
-        y: 836
-        width: 306
-        height: 210
+        x: 632
+        y: 807
+        width: 308
+        height: 241
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -421,10 +434,10 @@ TextureImporter:
       name: MailGlyph
       rect:
         serializedVersion: 2
-        x: 970
-        y: 837
-        width: 254
-        height: 196
+        x: 940
+        y: 835
+        width: 286
+        height: 201
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -443,10 +456,10 @@ TextureImporter:
       name: DocumentGlyph
       rect:
         serializedVersion: 2
-        x: 47
-        y: 469
-        width: 253
-        height: 367
+        x: 45
+        y: 466
+        width: 257
+        height: 270
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -465,10 +478,10 @@ TextureImporter:
       name: TicketGlyph
       rect:
         serializedVersion: 2
-        x: 341
-        y: 478
-        width: 286
-        height: 358
+        x: 338
+        y: 476
+        width: 289
+        height: 246
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -487,10 +500,10 @@ TextureImporter:
       name: CloverGlyph
       rect:
         serializedVersion: 2
-        x: 659
-        y: 468
-        width: 258
-        height: 368
+        x: 656
+        y: 466
+        width: 263
+        height: 259
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -509,10 +522,10 @@ TextureImporter:
       name: HomeGlyph
       rect:
         serializedVersion: 2
-        x: 964
-        y: 472
-        width: 256
-        height: 255
+        x: 962
+        y: 469
+        width: 261
+        height: 260
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -531,10 +544,10 @@ TextureImporter:
       name: DaggerGlyph
       rect:
         serializedVersion: 2
-        x: 36
-        y: 129
-        width: 263
-        height: 280
+        x: 32
+        y: 127
+        width: 269
+        height: 284
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -553,10 +566,10 @@ TextureImporter:
       name: ButterflyGlyph
       rect:
         serializedVersion: 2
-        x: 336
-        y: 140
-        width: 291
-        height: 254
+        x: 334
+        y: 137
+        width: 293
+        height: 259
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -575,10 +588,10 @@ TextureImporter:
       name: MapGlyph
       rect:
         serializedVersion: 2
-        x: 647
-        y: 132
-        width: 293
-        height: 242
+        x: 627
+        y: 130
+        width: 313
+        height: 246
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -598,9 +611,9 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 940
-        y: 136
-        width: 281
-        height: 268
+        y: 133
+        width: 283
+        height: 273
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}

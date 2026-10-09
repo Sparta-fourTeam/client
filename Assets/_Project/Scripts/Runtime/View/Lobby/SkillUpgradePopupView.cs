@@ -24,21 +24,26 @@ namespace Game.View
         [SerializeField] private LevelRewardRowView _rewardRowPrefab;   // 보상 행이 모자랄 때 복제할 원본 (LevelRewardRow1)
         [SerializeField] private Transform _rewardContent;              // LevelRewards/Viewport/Content
         [SerializeField] private GameObject _cost;                      // 인법서·엽전 비용 묶음
+        [SerializeField] private SkillAssetTable _assets;
+        [SerializeField] private ItemIconTable _itemIcons;
+        [SerializeField] private Image _skillIcon, _bookIcon;
 
         private readonly List<LevelRewardRowView> _rewardRows = new();
 
         private IGrowthCatalog _catalog;
         private PlayerProfile _profile;
         private IUpgradeApi _upgradeApi;
+        private GameDataStore _data;
         private int _index;
         private bool _busy;
 
         [Inject]
-        public void Construct(IGrowthCatalog catalog, PlayerProfile profile, IUpgradeApi upgradeApi)
+        public void Construct(IGrowthCatalog catalog, PlayerProfile profile, IUpgradeApi upgradeApi, GameDataStore data)
         {
             _catalog = catalog;
             _profile = profile;
             _upgradeApi = upgradeApi;
+            _data = data;
         }
 
         private void Awake()
@@ -66,6 +71,11 @@ namespace Game.View
             _nameText.text = info.Name;
             _levelText.text = isMax ? "MAX" : $"Lv. {info.Level}";
             _descText.text = info.Description;
+            SetIcon(_skillIcon, _assets != null ? _assets.GetHudIcon(info.AssetKey) : null);
+            var book = _itemIcons != null && info.MaterialItemId != null && _data.Items.Contains(info.MaterialItemId)
+                ? _itemIcons.Get(_data.Items.GetOrThrow(info.MaterialItemId).IconKey)
+                : null;
+            SetIcon(_bookIcon, book);
 
             // 최대 레벨이면 다음 레벨이 없으므로 증가량을 숨긴다
             for (int i = 0; i < _statCells.Length; i++)
@@ -100,6 +110,13 @@ namespace Game.View
             _coinText.text = CostFormat.HaveNeed(coin, info.CoinCost);
             _upgradeButton.interactable = !_busy && info.IsUnlocked
                 && coin >= info.CoinCost && material >= info.MaterialCost;
+        }
+
+        private static void SetIcon(Image image, Sprite sprite)
+        {
+            if (image == null) { return; }
+            image.sprite = sprite;
+            image.enabled = sprite != null;
         }
 
         private async UniTask UpgradeAsync()
