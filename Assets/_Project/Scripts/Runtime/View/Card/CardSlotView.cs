@@ -26,6 +26,9 @@ namespace Game.View
 
         private const float EntranceSeconds = 0.28f;
         private const float EntranceStartScale = 0.7f;
+        private const float PickedSeconds = 0.18f;
+        private const float PickedPunch = 0.12f;
+        private const float DismissedScale = 0.85f;
 
         private Sequence _entrance;
         private CanvasGroup _group;
@@ -53,6 +56,32 @@ namespace Game.View
             _entrance.Join(DOTween.To(() => _group.alpha, a => _group.alpha = a, 1f, EntranceSeconds * 0.6f));
             _entrance.Join(_rect.DOScale(1f, EntranceSeconds).SetEase(Ease.OutBack));
             _entrance.OnComplete(() => _group.interactable = true);
+        }
+
+        /// <summary>이 카드가 골라졌다. 한 번 부풀었다 돌아오며 눌러졌음을 알린다</summary>
+        public void PlayPicked()
+        {
+            Prepare();
+            _rect.localScale = Vector3.one;
+            _rect.DOPunchScale(Vector3.one * PickedPunch, PickedSeconds, 1, 0f).SetUpdate(true).SetLink(gameObject);
+        }
+
+        /// <summary>다른 카드가 골라졌다. 작아지며 사라진다</summary>
+        public void PlayDismissed()
+        {
+            Prepare();
+            _group.interactable = false;
+            DOTween.To(() => _group.alpha, a => _group.alpha = a, 0f, PickedSeconds).SetUpdate(true).SetLink(gameObject);
+            _rect.DOScale(DismissedScale, PickedSeconds).SetEase(Ease.InCubic).SetUpdate(true).SetLink(gameObject);
+        }
+
+        // 등장 연출이 끝나지 않았다면 끝 상태로 만든 뒤 시작한다
+        private void Prepare()
+        {
+            _entrance?.Complete();
+            _group = _group != null ? _group : (GetComponent<CanvasGroup>() ?? gameObject.AddComponent<CanvasGroup>());
+            _rect = (RectTransform)transform;
+            _group.interactable = false;
         }
 
         private void OnDisable()

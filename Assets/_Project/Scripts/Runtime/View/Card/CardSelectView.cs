@@ -1,3 +1,4 @@
+using DG.Tweening;
 using Game.Core;
 using Game.Core.Messages;
 using MessagePipe;
@@ -18,6 +19,8 @@ namespace Game.View
         [SerializeField] private Sprite _newWeaponBg, _upgradeBg;
 
         private StageManager _stageManager;
+        private bool _picking;   // 선택 연출 중에는 다른 카드를 누를 수 없다
+        private Tween _pickTween;
 
         [Inject]
         public void Construct(
@@ -47,9 +50,12 @@ namespace Game.View
         }
 
         private const float EntranceStagger = 0.08f;
+        private const float PickDelay = 0.2f;
 
         private void Show()
         {
+            _pickTween?.Kill();
+            _picking = false;
             var choices = _stageManager.Choices;
             int order = 0;
             for (int i = 0; i < _slots.Length; i++)
@@ -85,9 +91,31 @@ namespace Game.View
         private Sprite FindFormIcon(FormHint hint) =>
             _assets != null ? _assets.GetFormIcon(hint.Form, hint.Skill.assetKey) : null;
 
+        // 고른 카드는 부풀고 나머지는 사라진 뒤에 실제로 고른다. 그 사이 일시정지되면 PickCard가 무시하고,
+        // 돌아와 다시 Show되면 처음 상태로 새로 그려진다
         private void OnPick(int index)
         {
-            _stageManager.PickCard(index);
+            if (_picking) { return; }
+            _picking = true;
+
+            for (int i = 0; i < _slots.Length; i++)
+            {
+                if (!_slots[i].gameObject.activeSelf) { continue; }
+                if (i == index) { _slots[i].PlayPicked(); }
+                else { _slots[i].PlayDismissed(); }
+            }
+
+            _pickTween = DOVirtual.DelayedCall(PickDelay, () =>
+            {
+                _picking = false;
+                _stageManager.PickCard(index);
+            }, ignoreTimeScale: true).SetLink(gameObject);
+        }
+
+        protected override void OnDestroy()
+        {
+            _pickTween?.Kill();
+            base.OnDestroy();
         }
     }
 }
