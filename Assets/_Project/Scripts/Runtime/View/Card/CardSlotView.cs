@@ -44,7 +44,7 @@ namespace Game.View
         public void PlayEntrance(float delay)
         {
             _entrance?.Kill();
-            _group = _group != null ? _group : (GetComponent<CanvasGroup>() ?? gameObject.AddComponent<CanvasGroup>());
+            EnsureGroup();
             _rect = (RectTransform)transform;
 
             // 위치는 HorizontalLayoutGroup이 정하므로 건드리지 않고 크기와 투명도만 쓴다
@@ -75,11 +75,21 @@ namespace Game.View
             _rect.DOScale(DismissedScale, PickedSeconds).SetEase(Ease.InCubic).SetUpdate(true).SetLink(gameObject);
         }
 
+        // Unity 오브젝트는 ??로 null을 판별하면 안 된다 (없는 컴포넌트가 가짜 null로 돌아온다)
+        private void EnsureGroup()
+        {
+            if (_group != null) { return; }
+            if (!TryGetComponent(out _group))
+            {
+                _group = gameObject.AddComponent<CanvasGroup>();
+            }
+        }
+
         // 등장 연출이 끝나지 않았다면 끝 상태로 만든 뒤 시작한다
         private void Prepare()
         {
             _entrance?.Complete();
-            _group = _group != null ? _group : (GetComponent<CanvasGroup>() ?? gameObject.AddComponent<CanvasGroup>());
+            EnsureGroup();
             _rect = (RectTransform)transform;
             _group.interactable = false;
         }
