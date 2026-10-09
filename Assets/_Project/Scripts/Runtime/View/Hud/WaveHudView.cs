@@ -17,6 +17,8 @@ namespace Game.View
         // 스테이지와 보상 규칙이 공유하는 총 웨이브 수를 함께 표시한다.
         [SerializeField] private TMP_Text _waveValueText;
         [SerializeField] private Image _gaugeFill;
+        [Tooltip("게이지가 찬 끝을 따라다니는 광채. 비우면 표시하지 않는다")]
+        [SerializeField] private RectTransform _gaugeStar;
 
         private Tween _fillTween;
         private Tween _punchTween;
@@ -58,13 +60,23 @@ namespace Game.View
             if (!animate || !isActiveAndEnabled)
             {
                 _gaugeFill.fillAmount = value;
+                PlaceStar();
                 return;
             }
 
-            _fillTween = DOTween.To(() => _gaugeFill.fillAmount, v => _gaugeFill.fillAmount = v, value, FillSeconds)
+            _fillTween = DOTween.To(() => _gaugeFill.fillAmount, v => { _gaugeFill.fillAmount = v; PlaceStar(); }, value, FillSeconds)
                 .SetEase(Ease.OutQuad)
                 .SetUpdate(true)
                 .SetLink(gameObject);
+        }
+
+        // 광채를 게이지가 찬 끝에 둔다. 채움 이미지의 로컬 좌표로 끝을 구해 앵커 설정과 상관없이 맞는다
+        private void PlaceStar()
+        {
+            if (_gaugeStar == null) { return; }
+            var rect = ((RectTransform)_gaugeFill.transform).rect;
+            var local = new Vector3(rect.xMin + rect.width * _gaugeFill.fillAmount, rect.center.y, 0f);
+            _gaugeStar.position = _gaugeFill.transform.TransformPoint(local);
         }
 
         // 웨이브가 바뀌면 숫자가 한 번 튀어 올라 알린다
