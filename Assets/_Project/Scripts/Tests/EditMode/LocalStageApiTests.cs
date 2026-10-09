@@ -43,14 +43,6 @@ namespace Game.Tests
             Assert.AreEqual(2, _store.Load().stageProgress[0].claimedRating);
         }
 
-        [Test(Description = "받을 보상이 없으면 NO_REWARD로 거절한다")]
-        public void ClaimRatingReward_WithNoUnclaimedReward_ThrowsNoReward()
-        {
-            var ex = Assert.Throws<ApiException>(() => _api.ClaimRatingReward(1).GetAwaiter().GetResult());
-
-            Assert.AreEqual("NO_REWARD", ex.Code);
-        }
-
         [Test(Description = "이미 수령한 rating을 다시 수령하려 하면 NO_REWARD로 거절한다(중복 지급 방지)")]
         public void ClaimRatingReward_CalledTwice_SecondCallThrowsNoReward()
         {

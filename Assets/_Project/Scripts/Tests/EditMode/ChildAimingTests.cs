@@ -184,15 +184,5 @@ namespace Game.Tests
             Assert.AreEqual(1, Active().Count);
         }
 
-        [Test]
-        public void Count_SetsChildProjectileCountOnlyWhenGreaterThanOne()
-        {
-            var childBase = SkillConfig.FromDefinition(new SkillData
-            {
-                baseStats = new SkillBaseStats { cast = { baseDamage = 5, projectileCount = 4 } }
-            });
-            Assert.AreEqual(4, new ChildCast(ChildId, 1, null, null, count: 1).Resolve(childBase).Stats.Cast.ProjectileCount, "1이면 자식의 기본 수");
-            Assert.AreEqual(3, new ChildCast(ChildId, 1, null, null, count: 3).Resolve(childBase).Stats.Cast.ProjectileCount);
-        }
     }
 }

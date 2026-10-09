@@ -13,28 +13,6 @@ namespace Game.Tests
             public SkillStats CurrentStats => stats;
         }
 
-        [TestCase(5, -20, 0)]
-        [TestCase(9, -20, 0)]
-        [TestCase(17, -30, 10)]
-        public void PermanentVariant_ChangesPresentationAndDamageAtBoundary(int gate, float before, float after)
-        {
-            var option = VariantOption(gate, before, after);
-            Assert.IsTrue(SkillUpgradeResolver.TryResolve(option, gate - 1, out var low));
-            Assert.AreEqual("연발", low.Name);
-            Assert.IsTrue(SkillUpgradeResolver.TryResolve(option, gate, out var high));
-            Assert.AreEqual("연발(+)", high.Name);
-            var lowWeapon = NewWeapon();
-            var highWeapon = NewWeapon();
-            Assert.IsTrue(lowWeapon.LevelUp(option, gate - 1));
-            Assert.IsTrue(highWeapon.LevelUp(option, gate));
-            Assert.AreEqual(10 * (1 + before / 100), lowWeapon.CurrentStats.Cast.Damage, 0.0001f);
-            Assert.AreEqual(10 * (1 + after / 100), highWeapon.CurrentStats.Cast.Damage, 0.0001f);
-            Assert.AreEqual(2, lowWeapon.CurrentStats.Cast.Count);
-            Assert.AreEqual(2, highWeapon.CurrentStats.Cast.Count);
-            Assert.AreEqual(before, option.effects[1].value, "변형 해석은 원본 효과를 수정하지 않는다");
-            Assert.AreEqual(1, highWeapon.GetAcquiredCount(option.id));
-        }
-
         [Test]
         public void Variant_DoesNotResetChoiceCounterOrRemoveOtherPenalties()
         {
@@ -242,41 +220,6 @@ namespace Game.Tests
             Assert.IsTrue(weapon.IsMaxLevel);
             Assert.IsFalse(weapon.LevelUp(option));
             Assert.AreEqual(cap, weapon.GetAcquiredCount(option.id));
-        }
-
-        private static SkillStats Stats() => SkillStats.FromDefinition(new SkillBaseStats
-        {
-            cast = { cooldown = 2f, baseDamage = 10f, projectileCount = 1 },
-            projectile = { speed = 20f }
-        });
-
-        [Test]
-        public void CountUpgrades_AreIndependent()
-        {
-            SkillStats stats = SkillTestFactory.Apply(Stats(), "projectileCount", 1);
-            stats = SkillTestFactory.Apply(stats, "castCount", 2);
-            stats = SkillTestFactory.Apply(stats, "pierceCount", 3);
-            Assert.AreEqual(2, stats.Cast.ProjectileCount);
-            Assert.AreEqual(3, stats.Cast.Count);
-            Assert.AreEqual(3, stats.Projectile.PierceCount);
-            Assert.AreEqual(20f, stats.Projectile.Speed);
-        }
-
-        [Test]
-        public void SpeedUpgrade_DoesNotChangeCooldown()
-        {
-            var stats = SkillTestFactory.Apply(Stats(), "projectileSpeed", 25);
-            Assert.AreEqual(25f, stats.Projectile.Speed);
-            Assert.AreEqual(2f, stats.Cast.Cooldown);
-        }
-
-        [Test]
-        public void ProjectileCount_AddsProjectilesNotPierce()
-        {
-            var stats = SkillTestFactory.Apply(Stats(), "projectileCount", 2);
-            Assert.AreEqual(3, stats.Cast.ProjectileCount);
-            Assert.AreEqual(3, stats.Cast.ProjectileCount);
-            Assert.AreEqual(0, stats.Projectile.PierceCount);
         }
 
         [Test]

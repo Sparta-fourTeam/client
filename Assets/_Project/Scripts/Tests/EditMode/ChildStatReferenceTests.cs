@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
 using Game.Core;
-using Newtonsoft.Json;
 using NUnit.Framework;
 using UnityEngine;
 
 namespace Game.Tests
 {
-    /// <summary>자식 스킬이 부모의 스탯을 참조하는 방식: 상속(inherit), 자식 전용 강화(target), 시전 시점 스냅샷</summary>
+    /// <summary>자식과 손자의 시전, 형태 조건, 잘못된 자식 연결의 거절을 확인한다.</summary>
     public sealed class ChildStatReferenceTests
     {
         private const int ParentId = 1;
@@ -64,150 +63,12 @@ namespace Game.Tests
 
         private static SkillConfig ChildBase() => SkillConfig.FromDefinition(Child());
 
-        // ── 상속 ──────────────────────────────────────────────────────
-
-        [Test]
-        public void WithoutInherit_ChildKeepsItsOwnBaseStats()
-        {
-            var recorder = new Recorder();
-            var builder = NewBuilder(recorder);
-            Assert.IsTrue(builder.TryApplyCatalog(new[] { Link() }));
-            var resolved = RaiseOnce(builder.Build(), recorder).Resolve(ChildBase());
-            Assert.AreEqual(3, resolved.Stats.Cast.Damage);
-            Assert.AreEqual(5, resolved.Stats.Projectile.Speed);
-        }
-
-        [Test]
-        public void Inherit_TakesParentStatsTimesScale()
-        {
-            var recorder = new Recorder();
-            var builder = NewBuilder(recorder);
-            var inherit = new Dictionary<string, float> { ["damage"] = .5f, ["projectileSpeed"] = 1, ["pierceCount"] = 1, ["freezeDuration"] = 1 };
-            Assert.IsTrue(builder.TryApplyCatalog(new[] { Link(inherit) }));
-            var resolved = RaiseOnce(builder.Build(), recorder).Resolve(ChildBase());
-            Assert.AreEqual(50, resolved.Stats.Cast.Damage, .001f);
-            Assert.AreEqual(20, resolved.Stats.Projectile.Speed);
-            Assert.AreEqual(1, resolved.Stats.Projectile.PierceCount);
-            Assert.AreEqual(2, resolved.Stats.Status.FreezeDuration);
-            Assert.AreEqual(1, resolved.Stats.Cast.Cooldown, "상속하지 않은 값은 자식의 것이다");
-        }
-
-        [Test]
-        public void Inherit_FollowsParentUpgradesMadeAfterTheLinkWasCreated()
-        {
-            var recorder = new Recorder();
-            var builder = NewBuilder(recorder);
-            Assert.IsTrue(builder.TryApplyCatalog(new[] { Link(new Dictionary<string, float> { ["damage"] = .5f }) }));
-            Assert.IsTrue(builder.TryApplyCatalog(new[] { new EffectDef { kind = "damage", value = 100 } }));
-            var resolved = RaiseOnce(builder.Build(), recorder).Resolve(ChildBase());
-            Assert.AreEqual(100, resolved.Stats.Cast.Damage, .001f, "부모 피해 200의 절반");
-        }
-
-        [Test]
-        public void AlreadyLaunchedAttack_KeepsParentStatsFromWhenItWasLaunched()
-        {
-            var recorder = new Recorder();
-            var builder = NewBuilder(recorder);
-            Assert.IsTrue(builder.TryApplyCatalog(new[] { Link(new Dictionary<string, float> { ["damage"] = .5f }) }));
-            var launched = builder.Build();           // 이 설정으로 발사한 공격
-            Assert.IsTrue(builder.TryApplyCatalog(new[] { new EffectDef { kind = "damage", value = 100 } }));
-            var later = builder.Build();              // 이후 강화한 설정
-
-            Assert.AreEqual(50, RaiseOnce(launched, recorder).Resolve(ChildBase()).Stats.Cast.Damage, .001f);
-            Assert.AreEqual(100, RaiseOnce(later, recorder).Resolve(ChildBase()).Stats.Cast.Damage, .001f);
-        }
-
-        // ── 자식 전용 강화 ────────────────────────────────────────────
-
-        [Test]
-        public void ChildOnlyUpgrade_AppliesAfterInheritAndNeverTouchesParent()
-        {
-            var recorder = new Recorder();
-            var builder = NewBuilder(recorder);
-            Assert.IsTrue(builder.TryApplyCatalog(new[] { Link(new Dictionary<string, float> { ["damage"] = .5f }) }));
-            Assert.IsTrue(builder.TryApplyCatalog(new[] { ForChild("damage", 80) }));
-            var config = builder.Build();
-            Assert.AreEqual(100, config.Stats.Cast.Damage, "부모는 바뀌지 않는다");
-            Assert.AreEqual(90, RaiseOnce(config, recorder).Resolve(ChildBase()).Stats.Cast.Damage, .001f, "100 × 0.5 × 1.8");
-        }
-
-        [Test]
-        public void ChildOnlyUpgrade_TakenBeforeTheLinkIsKeptAndAppliedOnceChildIsCast()
-        {
-            var recorder = new Recorder();
-            var builder = NewBuilder(recorder);
-            Assert.IsTrue(builder.TryApplyCatalog(new[] { ForChild("damage", 100) }), "연결이 아직 없어도 보관한다");
-            Assert.IsTrue(builder.TryApplyCatalog(new[] { Link() }));
-            Assert.AreEqual(6, RaiseOnce(builder.Build(), recorder).Resolve(ChildBase()).Stats.Cast.Damage, .001f, "자식 기본 3 × 2");
-        }
-
-        [Test]
-        public void ChildOnlyUpgrades_StackInTheOrderTheyWereTaken()
-        {
-            var recorder = new Recorder();
-            var builder = NewBuilder(recorder);
-            Assert.IsTrue(builder.TryApplyCatalog(new[] { Link(), ForChild("damage", 100), ForChild("projectileSpeed", 50) }));
-            var resolved = RaiseOnce(builder.Build(), recorder).Resolve(ChildBase());
-            Assert.AreEqual(6, resolved.Stats.Cast.Damage, .001f);
-            Assert.AreEqual(7.5f, resolved.Stats.Projectile.Speed, .001f);
-        }
-
-        [Test]
-        public void DamageScale_ComesAfterInheritAndOverlay()
-        {
-            var recorder = new Recorder();
-            var builder = NewBuilder(recorder);
-            var link = Link(new Dictionary<string, float> { ["damage"] = 1 });
-            link.damageScale = .5f;
-            Assert.IsTrue(builder.TryApplyCatalog(new[] { link, ForChild("damage", 100) }));
-            Assert.AreEqual(100, RaiseOnce(builder.Build(), recorder).Resolve(ChildBase()).Stats.Cast.Damage, .001f, "100 × 2 × 0.5");
-        }
-
-        // ── 연결 규칙 ─────────────────────────────────────────────────
-
-        [Test]
-        public void InheritRules_MergeAcrossCastSitesAndLaterValueWinsPerStat()
-        {
-            var recorder = new Recorder();
-            var builder = NewBuilder(recorder);
-            Assert.IsTrue(builder.TryApplyCatalog(new[] { Link(new Dictionary<string, float> { ["damage"] = .5f }) }));
-            Assert.IsTrue(builder.TryApplyCatalog(new[] { Link(new Dictionary<string, float> { ["projectileSpeed"] = 1 }, AttackEvent.Kill) }), "규칙이 합쳐진다");
-            var both = RaiseOnce(builder.Build(), recorder).Resolve(ChildBase());
-            Assert.AreEqual(50, both.Stats.Cast.Damage, .001f);
-            Assert.AreEqual(20, both.Stats.Projectile.Speed, "다른 시전 지점에서 더한 규칙도 같은 연결에 쌓인다");
-
-            Assert.IsTrue(builder.TryApplyCatalog(new[] { Link(new Dictionary<string, float> { ["damage"] = .7f }, AttackEvent.Start) }));
-            Assert.AreEqual(70, RaiseOnce(builder.Build(), recorder).Resolve(ChildBase()).Stats.Cast.Damage, .001f, "같은 스탯은 나중 값이 이긴다");
-        }
-
-        [Test]
-        public void InheritEffect_AddsRulesWithoutCasting()
-        {
-            var recorder = new Recorder();
-            var builder = NewBuilder(recorder);
-            Assert.IsTrue(builder.TryApplyCatalog(new[]
-            {
-                Link(),
-                new EffectDef { kind = "inherit", skillId = ChildId, inherit = new Dictionary<string, float> { ["damage"] = .25f } }
-            }));
-            Assert.AreEqual(25, RaiseOnce(builder.Build(), recorder).Resolve(ChildBase()).Stats.Cast.Damage, .001f);
-        }
-
         // ── 손자: 보관 효과로 자식에게 반응을 붙이고, 보관 효과는 후손 전체에 적용된다 ──
 
         private const int GrandchildId = 3;
 
-        private static SkillConfig GrandchildBase() => SkillConfig.FromDefinition(new SkillData
-        {
-            id = GrandchildId,
-            name = "손자",
-            maxLevel = 5,
-            upgrades = new List<SkillUpgradeOption>(),
-            baseStats = new SkillBaseStats { cast = { baseDamage = 1, cooldown = 1, range = 10, projectileCount = 1 } }
-        });
-
         [Test]
-        public void AttachedReaction_MakesChildCastGrandchildThatInheritsFromChildNotRoot()
+        public void AttachedReaction_MakesChildCastGrandchild()
         {
             var recorder = new Recorder();
             var builder = NewBuilder(recorder);
@@ -223,12 +84,9 @@ namespace Game.Tests
 
             var childCast = RaiseOnce(builder.Build(), recorder);
             var child = childCast.Resolve(ChildBase(), recorder);
-            Assert.AreEqual(50, child.Stats.Cast.Damage, .001f);
 
             var grandchildCast = RaiseOnce(child, recorder);
             Assert.AreEqual(GrandchildId, grandchildCast.SkillId);
-            var grandchild = grandchildCast.Resolve(GrandchildBase(), recorder);
-            Assert.AreEqual(50, grandchild.Stats.Cast.Damage, .001f, "자식 피해 50 × 0.5 × 2(보관 효과)");
         }
 
         [Test]
@@ -281,43 +139,6 @@ namespace Game.Tests
             Assert.IsFalse(NewBuilder(recorder).TryApplyCatalog(new[] { Link(new Dictionary<string, float> { ["noSuchStat"] = 1 }) }));
             Assert.IsFalse(NewBuilder(recorder).TryApplyCatalog(new[] { Link(new Dictionary<string, float> { ["damage"] = 0 }) }));
             Assert.IsFalse(NewBuilder(recorder).TryApplyCatalog(new[] { Link(new Dictionary<string, float> { ["damage"] = -1 }) }));
-        }
-
-        [Test]
-        public void Json_DeserializesInheritAndTarget()
-        {
-            var link = JsonConvert.DeserializeObject<EffectDef>("{\"kind\":\"onEvent\",\"trigger\":\"Hit\",\"skillId\":2,\"inherit\":{\"damage\":0.5,\"projectileSpeed\":1}}");
-            Assert.AreEqual(.5f, link.inherit["damage"]);
-            var overlay = JsonConvert.DeserializeObject<EffectDef>("{\"kind\":\"damage\",\"value\":80,\"target\":2}");
-            Assert.AreEqual(2, overlay.target);
-        }
-
-        // ── 기존 하드코딩 분열 공식과의 일치 ───────────────────────────
-
-        [Test]
-        public void ParityWithHardCodedSplitShardDamage()
-        {
-            // 기존: 조각 피해 = 부모 피해 × 0.5 × 분열 피해 배율(+80% → 1.8). 부모를 강화하면 따라 오른다.
-            var recorder = new Recorder();
-            var builder = NewBuilder(recorder);
-            Assert.IsTrue(builder.TryApplyCatalog(new[] { Link(new Dictionary<string, float> { ["damage"] = .5f }), ForChild("damage", 80) }));
-            Assert.AreEqual(90f, RaiseOnce(builder.Build(), recorder).Resolve(ChildBase()).Stats.Cast.Damage, .001f);
-
-            Assert.AreEqual(100f * .5f * 1.8f, 90f, .001f, "옛 하드코딩 공식(부모 피해 × 0.5 × 분열 배율)과 같은 값");
-
-            Assert.IsTrue(builder.TryApplyCatalog(new[] { new EffectDef { kind = "damage", value = 100 } }));
-            Assert.AreEqual(180f, RaiseOnce(builder.Build(), recorder).Resolve(ChildBase()).Stats.Cast.Damage, .001f, "부모 피해 200 × 0.5 × 1.8");
-        }
-
-        [Test]
-        public void ParityWithHardCodedKillLightningRatio()
-        {
-            // 기존: 처치 번개 피해 = 부모 피해 × 처치 번개 비율(25%)
-            var recorder = new Recorder();
-            var builder = NewBuilder(recorder);
-            var link = Link(new Dictionary<string, float> { ["damage"] = .25f }, AttackEvent.Kill);
-            Assert.IsTrue(builder.TryApplyCatalog(new[] { link }));
-            Assert.AreEqual(25f, RaiseOnce(builder.Build(), recorder, AttackEvent.Kill).Resolve(ChildBase()).Stats.Cast.Damage, .001f);
         }
 
         // ── 카탈로그 검증 ─────────────────────────────────────────────

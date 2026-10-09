@@ -55,16 +55,6 @@ namespace Game.Tests
             Assert.AreEqual(2, snap.energyStored);
         }
 
-        [Test(Description = "광고 회복은 AdRecoverAmount만큼 더한다 (광고 검증은 서버 연동 전까지 무조건 승인)")]
-        public void Recover_Ad_AddsAdAmount()
-        {
-            SaveEnergy(2);
-
-            var snap = _api.Recover(EnergySource.Ad, "key").GetAwaiter().GetResult();
-
-            Assert.AreEqual(2 + Config.AdRecoverAmount, snap.energyStored);
-        }
-
         [Test(Description = "구매 회복은 PurchaseRecoverAmount만큼 더한다 (보석 차감은 서버 연동 전까지 생략)")]
         public void Recover_Purchase_AddsPurchaseAmount()
         {

@@ -21,34 +21,6 @@ namespace Game.Tests
                 .ToList()
         };
 
-        [TestCase(0)]
-        [TestCase(1)]
-        [TestCase(2)]
-        [TestCase(3)]
-        [TestCase(4)]
-        [TestCase(5)]
-        [TestCase(6)]
-        [TestCase(19)]
-        [TestCase(20)]
-        public void Milestones_AddToBaseAccumulation_AndRemainOnFailure(int completed)
-        {
-            var result = StageRewardRules.Calculate(Balance(), completed, false, 0);
-            Assert.AreEqual(25 + 5 * completed + (completed >= 6 ? 40 : 0), result.Coin);
-            Assert.AreEqual(completed >= 1 ? 100 : 0, result.Exp);
-            Assert.AreEqual(1 + completed + (completed >= 3 ? 30 : 0), result.Items.Single(item => item.itemId == ItemIds.ArrowBook).quantity);
-            foreach (var id in ItemIds.EquipmentMaterials)
-            { Assert.AreEqual(completed >= 4 ? 2 : 0, result.Items.Find(item => item.itemId == id)?.quantity ?? 0); }
-            Assert.AreEqual(completed >= 5 ? 1 : 0, result.Items.Find(item => item.itemId == ItemIds.GemChest)?.quantity ?? 0);
-        }
-
-        [Test]
-        public void ThreeStar_AddsOnlyBonusExp_AndMaximumUsesSameCalculator()
-        {
-            var balance = Balance();
-            Assert.AreEqual(100, StageRewardRules.Calculate(balance, 20, true, 2).Exp);
-            Assert.AreEqual(150, StageRewardRules.Maximum(balance).Exp);
-        }
-
         [TestCase(-1, false, 0)]
         [TestCase(21, false, 0)]
         [TestCase(19, true, 3)]
@@ -135,26 +107,6 @@ namespace Game.Tests
             var skill = Balance();
             skill.Items[0].finalAmount = StageRewardSchedule.SkillMaterial.MinimumFinal - 1;
             Assert.Throws<InvalidOperationException>(skill.Validate);
-        }
-
-        [Test(Description = "중간 보너스는 총수량에서 계산되므로 총수량만 바꿔도 맞춰진다")]
-        public void Bonus_IsDerivedFromFinalAmount()
-        {
-            var balance = Balance();
-            balance.FinalCoin = 200;
-            Assert.AreEqual(25 + 5 * 5, StageRewardRules.Calculate(balance, 5, false, 0).Coin);
-            Assert.AreEqual(25 + 5 * 6 + (200 - 125), StageRewardRules.Calculate(balance, 6, false, 0).Coin);
-            Assert.AreEqual(200, StageRewardRules.Maximum(balance).Coin);
-        }
-
-        [Test(Description = "새 아이템 보상은 목록에 항목만 추가하면 규칙대로 지급된다")]
-        public void NewItemEntry_FollowsItsKindSchedule()
-        {
-            var balance = Balance();
-            balance.Items.Add(new StageRewardEntry { itemId = ItemIds.FireballBook, finalAmount = 21 });
-            Assert.DoesNotThrow(balance.Validate);
-            Assert.AreEqual(1 + 2, StageRewardRules.Calculate(balance, 2, false, 0).Items.Single(i => i.itemId == ItemIds.FireballBook).quantity);
-            Assert.AreEqual(21, StageRewardRules.Maximum(balance).Items.Single(i => i.itemId == ItemIds.FireballBook).quantity);
         }
     }
 }

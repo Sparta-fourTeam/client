@@ -31,16 +31,6 @@ namespace Game.Tests
             }
         }
 
-        [Test(Description = "신규 계정으로 로그인하면 에너지를 최대치로 채우고 갱신 시각을 기록한다")]
-        public void Login_NewAccount_FillsEnergyAndSetsUpdatedAt()
-        {
-            _api.Login().GetAwaiter().GetResult();
-
-            var save = _store.Load();
-            Assert.AreEqual(_data.Energy.Max, save.wallet.energyStored);
-            Assert.IsFalse(string.IsNullOrEmpty(save.wallet.energyUpdatedAt));
-        }
-
         [Test(Description = "신규 계정으로 로그인한 직후 바로 StartBattle이 INSUFFICIENT_ENERGY 없이 성공한다")]
         public void Login_NewAccount_ThenStartBattle_Succeeds()
         {

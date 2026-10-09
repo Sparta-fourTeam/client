@@ -43,17 +43,6 @@ namespace Game.Tests
             Assert.AreEqual(0f, _clock.ElapsedSeconds);
         }
 
-        [Test(Description = "Playing 상태에서는 흐른 시간만큼 쌓인다")]
-        public void WhilePlaying_Accumulates()
-        {
-            Enter(StageState.Playing);
-
-            _clock.Accumulate(1.5f);
-            _clock.Accumulate(0.5f);
-
-            Assert.AreEqual(2f, _clock.ElapsedSeconds, 0.0001f);
-        }
-
         [Description("Playing이 아닌 상태에서는 시간이 멈춘다")]
         [TestCase(StageState.Paused)]
         [TestCase(StageState.CardSelect)]

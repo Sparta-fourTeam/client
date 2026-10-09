@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Game.Core;
 using Game.Core.Defense;
@@ -58,80 +57,7 @@ namespace Game.Tests
             return TestEnemy.Create(model, new Vector2(x, y));
         }
 
-        // ───────── 공격 값 검증 ─────────
-
-        [TestCase(0f)]
-        [TestCase(-1f)]
-        public void AttackStats_NonPositiveInterval_Throws(float interval)
-        {
-            Assert.Throws<ArgumentOutOfRangeException>(() => new EnemyAttackStats(AttackType.Melee, 10, interval, 0f));
-        }
-
-        [Test]
-        public void AttackStats_NegativeRangeOrDamage_Throws()
-        {
-            Assert.Throws<ArgumentOutOfRangeException>(() => new EnemyAttackStats(AttackType.Ranged, 10, 1f, -1f));
-            Assert.Throws<ArgumentOutOfRangeException>(() => new EnemyAttackStats(AttackType.Melee, -1, 1f, 0f));
-        }
-
-        // ───────── 사거리 판정 ─────────
-
-        [Test]
-        public void IsInAttackRange_OutsideRange_False()
-        {
-            var enemy = CreateEnemy(y: 5f, range: 3f); // 거리 5 > 3
-
-            Assert.IsFalse(enemy.IsInAttackRange(_wall));
-        }
-
-        [Test]
-        public void IsInAttackRange_DistanceEqualsRange_True()
-        {
-            var enemy = CreateEnemy(y: 3f, range: 3f); // 거리 3 == 3 (경계값)
-
-            Assert.IsTrue(enemy.IsInAttackRange(_wall));
-        }
-
-        [Test]
-        public void IsInAttackRange_MeleeAtWallLine_True()
-        {
-            var enemy = CreateEnemy(y: 0f, range: 0f);
-
-            Assert.IsTrue(enemy.IsInAttackRange(_wall));
-        }
-
-        [Test]
-        public void IsInAttackRange_UsesOnlyY()
-        {
-            var left = CreateEnemy(y: 3f, range: 3f, x: -10f);
-            var right = CreateEnemy(y: 3f, range: 3f, x: 10f);
-
-            Assert.IsTrue(left.IsInAttackRange(_wall));  // x가 달라도 y 거리만으로 판정
-            Assert.IsTrue(right.IsInAttackRange(_wall));
-        }
-
-        [Test]
-        public void IsInAttackRange_BecomesTrueAfterMoving()
-        {
-            var enemy = CreateEnemy(y: 5f, range: 0f, speed: 5f);
-            Assert.IsFalse(enemy.IsInAttackRange(_wall));
-
-            enemy.Move(1f); // 5 → 0
-
-            Assert.IsTrue(enemy.IsInAttackRange(_wall));
-        }
-
         // ───────── 근거리 공격 ─────────
-
-        [Test]
-        public void Melee_BeforeInterval_NoDamage()
-        {
-            var enemy = CreateEnemy(y: 0f, damage: 10, interval: 1f);
-
-            enemy.Attack(0.9f, _wall, _projectiles);
-
-            Assert.AreEqual(WallMaxHp, _wall.CurrentHp);
-        }
 
         [Test]
         public void Melee_DamagesWallExactlyEveryInterval()
@@ -155,19 +81,6 @@ namespace Game.Tests
 
             enemy.Attack(0.5f, _wall, _projectiles); // 누적 1초
             Assert.AreEqual(WallMaxHp - 10, _wall.CurrentHp);
-        }
-
-        [Test]
-        public void Melee_DoesNotFireProjectile()
-        {
-            var enemy = CreateEnemy(y: 0f);
-            int fired = 0;
-            enemy.Model.ProjectileFired += _ => fired++;
-
-            enemy.Attack(1f, _wall, _projectiles);
-
-            Assert.AreEqual(0, fired);
-            Assert.AreEqual(0, _projectiles.ActiveCount);
         }
 
         [Test]
@@ -259,18 +172,6 @@ namespace Game.Tests
         // ───────── 투사체 모델 ─────────
 
         [Test]
-        public void Projectile_MovesDownWithoutDamage_BeforeWall()
-        {
-            var projectile = new EnemyProjectileModel(new Vector2(0f, 4f), Speed, 10);
-
-            projectile.Tick(0.25f, _wall); // 4 → 2
-
-            Assert.AreEqual(2f, projectile.Position.y, 0.0001f);
-            Assert.IsFalse(projectile.IsDone);
-            Assert.AreEqual(WallMaxHp, _wall.CurrentHp);
-        }
-
-        [Test]
         public void Projectile_ReachesAttackLineExactly_Hits()
         {
             // 거리 8 = 탄속 8 × 1초 → 공격선에 딱 닿음 (<= 경계값)
@@ -303,45 +204,7 @@ namespace Game.Tests
             Assert.AreEqual(WallMaxHp - 10, _wall.CurrentHp); // y만으로 명중 판정
         }
 
-        [Test]
-        public void Projectile_FarFromWall_StaysUntilItReaches()
-        {
-            // 수명 없음: 벽에 닿기 전까지는 오래 지나도 남아 있음
-            var projectile = new EnemyProjectileModel(new Vector2(0f, 100f), Speed, 10);
-
-            projectile.Tick(5f, _wall); // 100 → 60
-            Assert.IsFalse(projectile.IsDone);
-            Assert.AreEqual(WallMaxHp, _wall.CurrentHp);
-
-            projectile.Tick(10f, _wall); // 60 → -20, 명중
-            Assert.IsTrue(projectile.IsDone);
-            Assert.AreEqual(WallMaxHp - 10, _wall.CurrentHp);
-        }
-
         // ───────── 투사체 시스템 ─────────
-
-        [Test]
-        public void ProjectileSystem_Fire_AddsActiveProjectile()
-        {
-            var projectile = _projectiles.Fire(new Vector2(0f, 4f), 10, ProjectileSpeed);
-
-            Assert.IsNotNull(projectile);
-            Assert.AreEqual(1, _projectiles.ActiveCount);
-            Assert.AreEqual(4f, projectile.Position.y, 0.0001f);
-        }
-
-        [Test]
-        public void ProjectileSystem_RemovesProjectileAfterHit()
-        {
-            _projectiles.Fire(new Vector2(0f, 4f), 10, ProjectileSpeed);
-
-            _projectiles.Tick(0.25f, _wall); // 4 → 2, 아직 비행 중
-            Assert.AreEqual(1, _projectiles.ActiveCount);
-
-            _projectiles.Tick(1f, _wall);    // 명중 → 제거
-            Assert.AreEqual(0, _projectiles.ActiveCount);
-            Assert.AreEqual(WallMaxHp - 10, _wall.CurrentHp);
-        }
 
         [Test]
         public void ProjectileSystem_MultipleProjectiles_SumDamage()

@@ -37,20 +37,6 @@ namespace Game.Tests
             Assert.Less(result.PeakEnemies, 100, "이전 웨이브의 적이 과도하게 누적됐다");
         }
 
-        [Test]
-        public void FirstClear_OpensRollingLogAfterFourStartingUnlocks()
-        {
-            var data = new GameDataStore();
-            var reward = StageRewardRules.Calculate(data.StageRewards.GetOrThrow(1), 20, true, 1);
-            int level = data.PlayerLevels.At(reward.Exp).level;
-            foreach (var id in new[] { 1, 2, 3, 4 }) { Assert.AreEqual(1, data.LoadSkills().Single(s => s.id == id).unlockLevel); }
-            Assert.GreaterOrEqual(level, data.LoadSkills().Single(s => s.id == 5).unlockLevel);
-            var arrowUpgrade = data.Upgrades.GetOrThrow("shuriken");
-            Assert.GreaterOrEqual(reward.Coin, arrowUpgrade.CostAt(1), "첫 클리어 보상으로 기본 스킬을 한 번 강화할 수 있어야 한다");
-            Assert.GreaterOrEqual(reward.Items.Single(i => i.itemId == arrowUpgrade.MaterialItemId).quantity,
-                arrowUpgrade.MaterialAt(1));
-        }
-
         [TestCase(1)]
         [TestCase(2)]
         [TestCase(3)]

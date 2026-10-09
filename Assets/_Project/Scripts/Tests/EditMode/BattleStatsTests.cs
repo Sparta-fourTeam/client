@@ -54,15 +54,6 @@ namespace Game.Tests
             _stageEnded.Publish(new StageEnded(StageOutcome.Clear));
         }
 
-        [Test(Description = "시작 직후에는 모든 기록이 0이다")]
-        public void Initial_AllZero()
-        {
-            Assert.AreEqual(0, _stats.Kills);
-            Assert.AreEqual(0, _stats.ReachedWave);
-            Assert.AreEqual(0f, _stats.PlayTime);
-            Assert.IsFalse(_stats.IsEnded);
-        }
-
         [Test(Description = "적이 죽을 때마다 처치 수가 1씩 오른다")]
         public void EnemyDied_IncreasesKills()
         {

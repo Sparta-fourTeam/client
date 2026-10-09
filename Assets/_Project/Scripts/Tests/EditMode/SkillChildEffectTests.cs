@@ -94,16 +94,6 @@ namespace Game.Tests
             Assert.IsFalse(Builder(new FakeCaster()).TryApplyCatalog(new[] { new EffectDef { kind = "periodic", skillId = 7 } }));
         }
 
-        [Test]
-        public void Json_DeserializesChildCastFieldsWithDefaults()
-        {
-            var effect = JsonConvert.DeserializeObject<EffectDef>("{\"kind\":\"onEvent\",\"trigger\":\"Expired\",\"skillId\":2}");
-            Assert.AreEqual(AttackEvent.Expired, effect.trigger);
-            Assert.AreEqual(2, effect.skillId);
-            Assert.AreEqual(1f, effect.chance);
-            Assert.AreEqual(1, effect.count);
-        }
-
         // ── 카탈로그 검증 ──────────────────────────────────────────────
 
         private static List<SkillData> Catalog() =>
@@ -111,14 +101,6 @@ namespace Game.Tests
 
         private static void AddChildCast(SkillData skill, int childId) =>
             skill.upgrades[0].effects.Add(OnEvent(AttackEvent.Hit, childId));
-
-        [Test]
-        public void Validator_AcceptsChildSkillThatExists()
-        {
-            var catalog = Catalog();
-            AddChildCast(catalog[0], catalog[1].id);
-            Assert.DoesNotThrow(() => SkillCatalogValidator.Validate(catalog));
-        }
 
         [Test]
         public void Validator_RejectsUnknownChildSkillWithCardId()

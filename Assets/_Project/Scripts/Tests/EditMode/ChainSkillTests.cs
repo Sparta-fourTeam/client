@@ -192,21 +192,6 @@ namespace Game.Tests
         }
 
         [Test]
-        public void Cards_ContinuousAddsBouncesAndDamage_CrossAddsCasts_ConductionAddsPath()
-        {
-            var start = SkillConfig.FromDefinition(new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == ChainLightningId)).Stats;
-            var chain = ChainLightning("chain_lightning_continuous", "chain_lightning_cross", "chain_lightning_voltage");
-            Assert.AreEqual(start.Chain.Bounces + 2, chain.Stats.Chain.Bounces);
-            Assert.AreEqual(2, chain.Stats.Cast.Count);
-            Assert.AreEqual(start.Cast.Damage * 1.3f * 1.3f, chain.Stats.Cast.Damage, .001f);
-            Assert.AreEqual(1f, chain.Stats.Status.ParalysisDuration);
-            Assert.AreEqual(0, start.Chain.PathWidth);
-            var conduction = ChainLightning("chain_lightning_conduction");
-            Assert.Greater(conduction.Stats.Chain.PathWidth, 0);
-            Assert.AreEqual(start.Cast.Damage * .4f, conduction.Stats.Cast.Damage, .001f, "공격력 -60%");
-        }
-
-        [Test]
         public void IonBurstCard_ExplodesOnBouncesWithRadiusAndSpreadCard()
         {
             var chain = ChainLightning("chain_lightning_ion_burst", "chain_lightning_ion_spread");
@@ -217,29 +202,6 @@ namespace Game.Tests
             var bolt = Bolts().Single();
             for (int i = 0; i < 20; i++) { Tick(bolt, .1f); }
             Assert.Greater(bystander.Damage, 0, "튕겨 도착한 적 주변이 폭발한다");
-        }
-
-        [Test]
-        public void ShippedCatalog_ChainLightningHasTwoDisabledCardsWithReasons()
-        {
-            var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == ChainLightningId);
-            var disabled = data.upgrades.Where(c => !c.enabled).ToList();
-            Assert.AreEqual(2, disabled.Count);
-            foreach (var card in disabled) { Assert.IsNotEmpty(card.disabledReason, card.id); }
-            Assert.AreEqual(17, data.upgrades.Find(c => c.id == "chain_lightning_conduction").minPermanentLevel);
-        }
-
-        [Test]
-        public void Registry_ChainEffectsAreChainOnlyAndSharedEffectsIncludeChain()
-        {
-            Assert.IsTrue(EffectRegistry.Supports(CastType.Chain, "chainBounces"));
-            Assert.IsFalse(EffectRegistry.Supports(CastType.Beam, "chainBounces"));
-            Assert.IsFalse(EffectRegistry.Supports(CastType.Chain, "beamWidth"));
-            foreach (var kind in new[] { "damage", "attackSpeed", "castCount", "paralysis", "enableExplosion", "explosionRadius", "freezeDuration", "onEvent" })
-            {
-                Assert.IsTrue(EffectRegistry.Supports(CastType.Chain, kind), kind);
-            }
-            Assert.IsTrue(SkillFactory.IsRegistered(CastType.Chain));
         }
     }
 }

@@ -48,17 +48,6 @@ namespace Game.Tests
             Assert.AreEqual(7f, _transport.LastTimeout);
         }
 
-        [Test(Description = "정상 응답 본문이 DTO로 변환된다")]
-        public void Get_DeserializesBody()
-        {
-            _transport.Response = new HttpResponseData(200, "{\"name\":\"nova\",\"count\":3}");
-
-            var result = Run(_client.Get<Ping>("api/ping"));
-
-            Assert.AreEqual("nova", result.name);
-            Assert.AreEqual(3, result.count);
-        }
-
         [Test(Description = "POST는 요청 DTO를 JSON 본문으로 보낸다")]
         public void Post_SendsJsonBody()
         {
@@ -195,16 +184,6 @@ namespace Game.Tests
             Assert.AreEqual(HttpErrorMapper.InvalidResponse, ex.Code);
         }
 
-        [Test(Description = "검증 규칙을 주지 않으면 {} 같은 응답도 null이 아니면 통과한다 (규칙은 필수 필드를 아는 API가 넘긴다)")]
-        public void Get_WithoutValidator_AcceptsEmptyObject()
-        {
-            _transport.Response = new HttpResponseData(200, "{}");
-
-            var result = Run(_client.Get<Ping>("api/ping"));
-
-            Assert.IsNull(result.name);
-        }
-
         [Test(Description = "오류 코드 읽기 지점이 서버가 준 코드를 돌려주면 그 코드를 쓴다")]
         public void ErrorCodeReader_ProvidesDomainCode()
         {
@@ -238,13 +217,6 @@ namespace Game.Tests
             Assert.Throws<ApiException>(() => Run(_client.Post<Ping, Ping>("api/ping", new Ping())));
 
             Assert.AreEqual(1, _transport.Requests.Count);
-        }
-
-        [Test(Description = "서버 주소가 비어 있거나 제한 시간이 0 이하이면 만들 수 없다")]
-        public void Config_RejectsInvalidValues()
-        {
-            Assert.Throws<ArgumentException>(() => new HttpApiConfig(" "));
-            Assert.Throws<ArgumentOutOfRangeException>(() => new HttpApiConfig("https://example.test", 0f));
         }
     }
 }

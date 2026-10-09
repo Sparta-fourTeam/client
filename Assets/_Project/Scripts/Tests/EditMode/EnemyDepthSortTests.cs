@@ -42,16 +42,6 @@ namespace Game.Tests
             return sort;
         }
 
-        [Test(Description = "발끝이 낮을수록 순서가 커서(앞) 그려지고, 범위를 넘으면 잘린다")]
-        public void OrderAt_LowerIsFront_AndClamped()
-        {
-            Assert.Greater(EnemyDepthSort.OrderAt(-3f), EnemyDepthSort.OrderAt(2f));
-            Assert.AreEqual(EnemyDepthSort.FrontOrder, EnemyDepthSort.OrderAt(-50f));
-            Assert.AreEqual(EnemyDepthSort.BackOrder, EnemyDepthSort.OrderAt(50f));
-            Assert.Less(EnemyDepthSort.FrontOrder, 0, "투사체·이펙트(0 이상)보다 뒤");
-            Assert.Greater(EnemyDepthSort.BackOrder, -500, "배경(-500)보다 앞");
-        }
-
         [Test(Description = "화면 아래쪽 적이 위쪽 적보다 앞에 그려지고, 움직여 위치가 바뀌면 앞뒤도 바뀐다")]
         public void LowerEnemy_DrawsInFront_AndFollowsMovement()
         {

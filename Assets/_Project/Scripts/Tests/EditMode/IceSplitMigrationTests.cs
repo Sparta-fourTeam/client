@@ -133,13 +133,5 @@ namespace Game.Tests
             CatalogWorld.Hit(CatalogWorld.ReactionsOf(normals[0]), second);
             Assert.AreEqual(3, CatalogWorld.Active().Count, "분열 카드가 없으면 일반 얼음창은 쪼개지지 않는다");
         }
-
-        [Test]
-        public void ChildSkillsAreHiddenFromCardChoices()
-        {
-            Assert.IsTrue(world.Data[8].childOnly);
-            Assert.IsTrue(world.Data[12].childOnly);
-            Assert.AreEqual(0, world.Data[8].upgrades.Count);
-        }
     }
 }

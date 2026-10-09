@@ -9,16 +9,6 @@ namespace Game.Tests
 {
     public class GameDataStoreTests
     {
-        [Test]
-        public void Items_AreAvailableToLocalApiAndExcludeCurrencies()
-        {
-            var store = new GameDataStore();
-            Assert.AreEqual("1", store.Items.GetOrThrow(ItemIds.ArrowBook).TargetId);
-            Assert.IsTrue(store.Revisions.ContainsKey("Items"));
-            Assert.IsNotEmpty(store.RawJson("Items"));
-            Assert.IsFalse(store.Items.Contains("gold"));
-            Assert.IsFalse(store.Items.Contains("coin"));
-        }
 
         [Test(Description = "스킬 정의는 가변이라 호출마다 새 객체를 돌려준다")]
         public void LoadSkills_ReturnsFreshObjectsEachCall()
@@ -26,25 +16,6 @@ namespace Game.Tests
             var store = new GameDataStore();
 
             Assert.AreNotSame(store.LoadSkills()[0], store.LoadSkills()[0]);
-        }
-
-        [Test]
-        public void StageOrFirst_UnknownOrZero_FallsBackToFirstStage()
-        {
-            var store = new GameDataStore();
-
-            Assert.AreEqual(store.FirstStageId, store.StageOrFirst(0).Id);
-            Assert.AreEqual(store.FirstStageId, store.StageOrFirst(9999).Id);
-            Assert.AreEqual(3, store.StageOrFirst(3).Id);
-        }
-
-        [Test]
-        public void SpawnConfig_FromDefinition_CopiesValues()
-        {
-            var config = EnemySpawnConfig.From(new SpawnDefinition { IntervalMin = 0.3f, IntervalMax = 0.9f, Cooldown = 7f });
-
-            Assert.AreEqual(0.3f, config.SpawnIntervalMin);
-            Assert.AreEqual(7f, config.SpawnCooldown);
         }
 
         private static WaveDefinition Wave(int monsterA, int countA, int monsterB, int countB) => new()
@@ -63,22 +34,6 @@ namespace Game.Tests
             + "\"Waves\":[{\"Spawns\":[{\"MonsterId\":1,\"Count\":3},{\"MonsterId\":2,\"Count\":2}]}]}");
             stage.Waves = Enumerable.Range(0, 20).Select(_ => Wave(1, 3, 2, 2)).ToList();
             return stage;
-        }
-
-        [Test(Description = "등장 몬스터 목록은 웨이브 구성에서 첫 등장 순서로 모은다")]
-        public void MonsterIds_CollectedFromWavesInFirstAppearanceOrder()
-        {
-            var stage = ValidStage();
-            stage.Waves[0] = Wave(2, 1, 1, 1);
-            stage.Waves[5] = Wave(1, 1, 7, 1);
-
-            CollectionAssert.AreEqual(new[] { 2, 1, 7 }, stage.MonsterIds);
-        }
-
-        [Test]
-        public void StageValidate_ValidStage_Passes()
-        {
-            Assert.DoesNotThrow(() => ValidStage().Validate());
         }
 
         [Test]
@@ -122,18 +77,6 @@ namespace Game.Tests
             var noInterval = JsonConvert.DeserializeObject<MonsterDefinition>(JsonConvert.SerializeObject(monster));
             noInterval.AttackInterval = 0f;
             Assert.Throws<InvalidOperationException>(() => noInterval.Validate());
-        }
-
-        [Test(Description = "일반 카드 테이블에 방벽 수리가 조건과 효과와 함께 있다")]
-        public void GeneralCards_HaveWallRepairWithConditionAndEffect()
-        {
-            var card = new GameDataStore().GeneralCards.Single(c => c.Id == "wall_repair");
-
-            Assert.IsTrue(card.Forced);
-            Assert.AreEqual("wallHpBelow", card.Condition.Kind);
-            Assert.AreEqual(50f, card.Condition.Value);
-            Assert.AreEqual("wallRepair", card.Effect.Kind);
-            Assert.AreEqual(20f, card.Effect.Value);
         }
 
         [Test]

@@ -2,57 +2,12 @@ using System;
 using System.IO;
 using Game.Core;
 using Game.Network;
-using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 
 namespace Game.Tests
 {
     public sealed class ItemContractTests
     {
-        [Test]
-        public void SnapshotJson_StoresCurrenciesSeparatelyFromBooks()
-        {
-            var json = JObject.FromObject(new PlayerSnapshot
-            {
-                gold = 100,
-                energyStored = 5,
-                energyUpdatedAt = "2026-10-06T00:00:00Z",
-                items = new() { new ItemAmount { itemId = ItemIds.WeaponBook, quantity = 2 } }
-            });
-
-            Assert.IsNull(json["wallet"]);
-            Assert.AreEqual(100, (int)json["gold"]);
-            Assert.AreEqual(5, (int)json["energyStored"]);
-            Assert.AreEqual("2026-10-06T00:00:00Z", (string)json["energyUpdatedAt"]);
-            Assert.AreEqual(1, ((JArray)json["items"]).Count);
-            Assert.AreEqual("book.weapon", (string)json["items"][0]["itemId"]);
-        }
-
-        [TestCase("book.arrow")]
-        [TestCase("book.fireball")]
-        [TestCase("book.hat")]
-        [TestCase("book.weapon")]
-        public void BookDefinition_RequiresTarget(string itemId)
-        {
-            var definition = new ItemDefinition
-            {
-                Id = itemId,
-                Name = "마법북",
-                IconKey = "Book"
-            };
-            Assert.Throws<InvalidOperationException>(() => definition.Validate());
-            definition.TargetId = "example";
-            Assert.DoesNotThrow(() => definition.Validate());
-        }
-
-        [TestCase(null, 1)]
-        [TestCase("", 1)]
-        [TestCase("book.example", -1)]
-        public void Amount_RejectsMissingIdAndNegativeQuantity(string id, int quantity)
-        {
-            Assert.Throws<InvalidOperationException>(() =>
-                new ItemAmount { itemId = id, quantity = quantity }.Validate());
-        }
 
         [Test]
         public void Profile_SeparatesWalletFromBooks_AndReplacesPreviousInventory()

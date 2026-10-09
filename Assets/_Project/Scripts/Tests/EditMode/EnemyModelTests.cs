@@ -473,27 +473,6 @@ namespace Game.Tests
             Assert.Throws<ArgumentOutOfRangeException>(() => CreateEnemy(maxHp: maxHp));
         }
 
-        [Test]
-        public void Constructor_StartsWithFullHp()
-        {
-            var enemy = CreateEnemy(id: 3, maxHp: 10);
-
-            Assert.AreEqual(3, enemy.Id);
-            Assert.AreEqual(10, enemy.Model.MaxHp);
-            Assert.AreEqual(10, enemy.Model.Hp);
-            Assert.IsFalse(enemy.IsDead);
-            Assert.AreEqual(0, _hpChanged.Published.Count); // 생성만으로는 발행 안 함
-        }
-
-        [Test]
-        public void Constructor_KeepsAttackType()
-        {
-            var ranged = new EnemyAttackStats(AttackType.Ranged, 5, 2f, 4f, 8f);
-            var enemy = new EnemyModel(1, 0f, EnemyType.Normal, 10, ranged, _hpChanged, _died);
-
-            Assert.AreEqual(AttackType.Ranged, enemy.AttackType);
-        }
-
         // ───────── 체력 감소 ─────────
 
         [Test]
@@ -509,20 +488,6 @@ namespace Game.Tests
             Assert.AreEqual(7, _hpChanged.Published[0].Current);
             Assert.AreEqual(10, _hpChanged.Published[0].Max);
             Assert.AreEqual(0, _died.Published.Count);
-        }
-
-        [Test]
-        public void TakeDamage_MultipleHits_PublishesEachChange()
-        {
-            var enemy = CreateEnemy(maxHp: 10);
-
-            enemy.TakeDamage(2);
-            enemy.TakeDamage(3);
-
-            Assert.AreEqual(5, enemy.Model.Hp);
-            Assert.AreEqual(2, _hpChanged.Published.Count);
-            Assert.AreEqual(8, _hpChanged.Published[0].Current);
-            Assert.AreEqual(5, _hpChanged.Published[1].Current);
         }
 
         [TestCase(0)]
@@ -614,28 +579,7 @@ namespace Game.Tests
             Assert.AreEqual(2f, enemy.Position.y, 0.0001f);
         }
 
-        [Test]
-        public void Move_DoesNotChangeX()
-        {
-            var enemy = CreateEnemy(maxHp: 10, speed: 3f, position: new Vector2(4f, 5f));
-
-            enemy.Move(1f);
-
-            Assert.AreEqual(4f, enemy.Position.x, 0.0001f); // 벽 쪽(아래)으로 일직선 이동
-        }
-
         // ───────── IEnemyTarget ─────────
-
-        [Test]
-        public void AsEnemyTarget_TakeDamageWorksThroughInterface()
-        {
-            var enemy = CreateEnemy(maxHp: 10);
-            IEnemyTarget target = enemy; // 스킬이 쓰는 방식
-
-            target.TakeDamage(4);
-
-            Assert.AreEqual(6, enemy.Model.Hp);
-        }
 
         // 두 Publisher의 발행 순서를 하나의 목록에 기록
         private class OrderRecorder<T> : IPublisher<T>

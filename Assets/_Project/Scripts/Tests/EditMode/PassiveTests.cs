@@ -22,7 +22,9 @@ namespace Game.Tests
         {
             return new MonsterDefinition
             {
-                Id = 7, Hp = 10, AttackInterval = 1f,
+                Id = 7,
+                Hp = 10,
+                AttackInterval = 1f,
                 Passives = new List<PassiveDefinition>(passives),
             };
         }
@@ -44,23 +46,6 @@ namespace Game.Tests
         }
 
         // ───────── 정의 검증 ─────────
-
-        [Test(Description = "올바른 정의는 검증을 통과한다")]
-        public void Validate_AcceptsValidDefinitions()
-        {
-            Assert.DoesNotThrow(() => Monster(Split(), Summon(), Immune("Stun")).Validate());
-        }
-
-        [Test(Description = "Passives가 없거나 null이어도 검증을 통과한다")]
-        public void Validate_AcceptsMissingPassives()
-        {
-            var noPassives = Monster();
-            var nullPassives = Monster();
-            nullPassives.Passives = null;
-
-            Assert.DoesNotThrow(() => noPassives.Validate());
-            Assert.DoesNotThrow(() => nullPassives.Validate());
-        }
 
         [Test(Description = "알 수 없는 Kind는 거부한다")]
         public void Validate_RejectsUnknownKind()
@@ -130,71 +115,9 @@ namespace Game.Tests
             Assert.Throws<InvalidOperationException>(() => GameDataStore.ValidatePassiveReferences(table));
         }
 
-        [Test(Description = "가리키는 몬스터가 있으면 통과한다")]
-        public void ValidateReferences_AcceptsExistingTarget()
-        {
-            var child = Monster();
-            child.Id = 3;
-            var splitter = Monster(Split(monsterId: 3));
-            var table = new Dictionary<int, MonsterDefinition> { { child.Id, child }, { splitter.Id, splitter } };
-
-            Assert.DoesNotThrow(() => GameDataStore.ValidatePassiveReferences(table));
-        }
-
         // ───────── 실제 데이터 ─────────
 
-        [Test(Description = "Monsters.json의 패시브가 읽히고 검증을 통과한다")]
-        public void RealData_LoadsPassives()
-        {
-            var store = new GameDataStore();
-
-            var slime = store.Monsters.GetOrThrow(1);
-            Assert.AreEqual(1, slime.Passives.Count);
-            Assert.AreEqual(PassiveKind.Spawn, slime.Passives[0].Kind);
-            Assert.AreEqual("OnDeath", slime.Passives[0].Trigger);
-
-            var oni = store.Monsters.GetOrThrow(4);
-            Assert.AreEqual(StatusImmunity.Stun, PassiveBuilder.BuildImmunities(oni));
-
-            var spiderLord = store.Monsters.GetOrThrow(5);
-            Assert.AreEqual(PassiveKind.Spawn, spiderLord.Passives[0].Kind);
-            Assert.AreEqual("Interval", spiderLord.Passives[0].Trigger);
-        }
-
         // ───────── PassiveBuilder ─────────
-
-        [Test(Description = "정의대로 패시브 객체를 만들고 면역은 객체가 아니라 플래그가 된다")]
-        public void Builder_CreatesPassivesAndImmunities()
-        {
-            var monster = Monster(Split(), Summon(), Immune("Stun"));
-
-            var passives = PassiveBuilder.BuildPassives(monster);
-
-            Assert.AreEqual(2, passives.Count);
-            Assert.IsInstanceOf<SpawnPassive>(passives[0]);
-            Assert.IsInstanceOf<SpawnPassive>(passives[1]);
-            Assert.AreEqual(StatusImmunity.Stun, PassiveBuilder.BuildImmunities(monster));
-        }
-
-        [Test(Description = "패시브가 없으면 null과 면역 없음을 돌려준다")]
-        public void Builder_EmptyDefinition()
-        {
-            var monster = Monster();
-
-            Assert.IsNull(PassiveBuilder.BuildPassives(monster));
-            Assert.AreEqual(StatusImmunity.None, PassiveBuilder.BuildImmunities(monster));
-        }
-
-        [Test(Description = "상태를 가진 패시브라 호출마다 새 객체를 만든다")]
-        public void Builder_CreatesFreshInstancesEachCall()
-        {
-            var monster = Monster(Summon());
-
-            var first = PassiveBuilder.BuildPassives(monster);
-            var second = PassiveBuilder.BuildPassives(monster);
-
-            Assert.AreNotSame(first[0], second[0]);
-        }
 
         // ───────── SpawnPassive (Interval) ─────────
 

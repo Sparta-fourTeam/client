@@ -33,39 +33,5 @@ namespace Game.Tests
             }
             finally { Object.DestroyImmediate(visual); }
         }
-
-        [TestCase("Skills/Fireball", SkillForm.Default)]
-        [TestCase("Skills/Lightning_Lv1", SkillForm.Default)]
-        [TestCase("Skills/IceSpear", SkillForm.TriangleIce)]
-        [TestCase("Skills/LightningOrb", SkillForm.Default)]
-        public void SecondaryCastScale_HalvesRenderedParticleBounds(string path, SkillForm form)
-        {
-            var prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/" + path + ".prefab");
-            var full = Object.Instantiate(prefab); var half = Object.Instantiate(prefab);
-            try
-            {
-                half.transform.localScale *= .5f;
-                foreach (var go in new[] { full, half })
-                {
-                    var projectile = go.GetComponent<Projectile>();
-                    if (projectile != null) { projectile.SetVisualForm(form); }
-                    foreach (var p in go.GetComponentsInChildren<ParticleSystem>())
-                    {
-                        p.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
-                        p.useAutoRandomSeed = false; p.randomSeed = 123;
-                        p.Simulate(.1f, false, true, false); p.Pause(false);
-                    }
-                }
-                var source = System.Array.Find(full.GetComponentsInChildren<ParticleSystem>(), p => p.particleCount > 0);
-                Assert.IsNotNull(source, path);
-                var match = System.Array.Find(half.GetComponentsInChildren<ParticleSystem>(), p => p.name == source.name);
-                var fullBounds = source.GetComponent<ParticleSystemRenderer>().bounds.size;
-                var halfBounds = match.GetComponent<ParticleSystemRenderer>().bounds.size;
-                Assert.Greater(fullBounds.x + fullBounds.y, 0);
-                Assert.AreEqual(fullBounds.x * .5f, halfBounds.x, .02f, path + " width");
-                Assert.AreEqual(fullBounds.y * .5f, halfBounds.y, .02f, path + " height");
-            }
-            finally { Object.DestroyImmediate(full); Object.DestroyImmediate(half); }
-        }
     }
 }

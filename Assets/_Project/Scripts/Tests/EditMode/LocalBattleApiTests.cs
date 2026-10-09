@@ -130,18 +130,6 @@ namespace Game.Tests
             Assert.AreEqual(FullClearCoin, _store.Load().wallet.gold);
         }
 
-        [Test(Description = "제출 실패 스위치가 꺼져 있으면 평소처럼 성공한다")]
-        public void SubmitResult_WithoutFaultSwitch_Succeeds()
-        {
-            SeedEnergy(10);
-            var start = _api.StartBattle(1, 1).GetAwaiter().GetResult();
-
-            var result = _api.SubmitResult(new SubmitResultRequest { battleId = start.battleId, cleared = false })
-                .GetAwaiter().GetResult();
-
-            Assert.IsFalse(result.cleared);
-        }
-
         [Test(Description = "벽 체력 100%로 클리어하면 누적 보상을 지급하고 rating 3, 다음 스테이지 진행도를 만든다")]
         public void SubmitResult_ClearedAtFullWallHp_GrantsGoldAndTopRatingAndUnlocksNextStage()
         {

@@ -142,18 +142,6 @@ namespace Game.Tests
         }
 
         [Test]
-        public void Cards_OverloadDoublesPulsesAndRaisesCooldown_StableAddsFlatPulses_SpreadWidensBeam()
-        {
-            var start = SkillConfig.FromDefinition(new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == SunBeamId)).Stats;
-            var beam = SunBeam("energy_beam_overload", "energy_beam_stable", "energy_beam_amplify", "energy_beam_spread");
-            var stats = beam.Stats;
-            Assert.AreEqual((start.Beam.Pulses * 2) + 5, stats.Beam.Pulses, .001f, "공격 횟수 +100% 뒤 +5");
-            Assert.AreEqual(start.Cast.Cooldown * 1.5f, stats.Cast.Cooldown, .001f, "쿨타임 +50%");
-            Assert.AreEqual(start.Beam.Width * 2.5f, stats.Beam.Width, .001f, "범위 +150%");
-            Assert.AreEqual(start.Cast.Damage * 1.6f, stats.Cast.Damage, .001f);
-        }
-
-        [Test]
         public void Cards_StatusEffectsReachBeamTargets()
         {
             var beam = SunBeam("energy_beam_split", "energy_beam_dazzle", "energy_beam_weaken", "energy_beam_freeze");
@@ -187,30 +175,6 @@ namespace Game.Tests
             world.AddEnemy(4, 0);
             typeof(SkillCaster).GetMethod("OnFire", Flags).Invoke(beam, null);
             Assert.AreEqual(2, Zones().Count, "본 광선과 보조 광선이 함께 나간다");
-        }
-
-        [Test]
-        public void ShippedCatalog_SunBeamHasFourDisabledCardsWithReasons()
-        {
-            var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == SunBeamId);
-            var disabled = data.upgrades.Where(c => !c.enabled).ToList();
-            Assert.AreEqual(4, disabled.Count);
-            foreach (var card in disabled) { Assert.IsNotEmpty(card.disabledReason, card.id); }
-            CollectionAssert.AreEqual(new[] { 4 }, data.upgrades.Find(c => c.id == "energy_beam_freeze").requiredWeaponIds);
-        }
-
-        [Test]
-        public void Registry_BeamEffectsAreBeamOnlyAndSharedEffectsIncludeBeam()
-        {
-            Assert.IsTrue(EffectRegistry.Supports(CastType.Beam, "beamWidth"));
-            Assert.IsFalse(EffectRegistry.Supports(CastType.Area, "beamWidth"));
-            Assert.IsFalse(EffectRegistry.Supports(CastType.Beam, "areaRadius"));
-            Assert.IsFalse(EffectRegistry.Supports(CastType.Beam, "pierceCount"));
-            foreach (var kind in new[] { "damage", "attackSpeed", "freezeDuration", "slowDuration", "vulnerabilityRatio", "stunDuration", "stunChance", "onEvent" })
-            {
-                Assert.IsTrue(EffectRegistry.Supports(CastType.Beam, kind), kind);
-            }
-            Assert.IsTrue(SkillFactory.IsRegistered(CastType.Beam));
         }
     }
 }

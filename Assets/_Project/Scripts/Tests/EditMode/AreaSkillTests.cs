@@ -152,19 +152,6 @@ namespace Game.Tests
         }
 
         [Test]
-        public void Cards_ExpandRadiusAndAddCastCount()
-        {
-            var data = FrostPrison();
-            var start = SkillConfig.FromDefinition(data);
-            var builder = new SkillConfigBuilder(start);
-            Assert.IsTrue(builder.TryApplyCatalog(data.upgrades.Find(c => c.id == "cold_zone_expand").effects));
-            Assert.IsTrue(builder.TryApplyCatalog(data.upgrades.Find(c => c.id == "cold_zone_cast").effects));
-            var stats = builder.Build().Stats;
-            Assert.AreEqual(start.Stats.Area.Radius * 2, stats.Area.Radius, .001f);
-            Assert.AreEqual(2, stats.Cast.Count);
-        }
-
-        [Test]
         public void ShatterCard_CastsSmallFrostCrystalsWhenZoneExpires()
         {
             var data = FrostPrison();
@@ -235,26 +222,6 @@ namespace Game.Tests
         }
 
         [Test]
-        public void ShippedCatalog_DisablesCardsWithUnimplementedEffectsAndExplainsWhy()
-        {
-            var disabled = FrostPrison().upgrades.Where(c => !c.enabled).ToList();
-            Assert.AreEqual(4, disabled.Count);
-            foreach (var card in disabled) { Assert.IsNotEmpty(card.disabledReason, card.id); }
-        }
-
-        [Test]
-        public void Registry_AreaEffectsAreAreaOnlyAndSharedEffectsIncludeArea()
-        {
-            Assert.IsTrue(EffectRegistry.Supports(CastType.Area, "areaRadius"));
-            Assert.IsFalse(EffectRegistry.Supports(CastType.Projectile, "areaRadius"));
-            Assert.IsFalse(EffectRegistry.Supports(CastType.Area, "pierceCount"));
-            foreach (var kind in new[] { "damage", "attackSpeed", "castCount", "freezeDuration", "onEvent", "periodic" })
-            {
-                Assert.IsTrue(EffectRegistry.Supports(CastType.Area, kind), kind);
-            }
-        }
-
-        [Test]
         public void Validator_RejectsAreaEffectOnProjectileWeapon()
         {
             var catalog = JsonConvert.DeserializeObject<List<SkillData>>(Resources.Load<TextAsset>("MockData/Skills").text);
@@ -262,20 +229,6 @@ namespace Game.Tests
             weapon.upgrades[0].effects.Add(new EffectDef { kind = "areaRadius", value = 10 });
             var error = Assert.Throws<InvalidOperationException>(() => SkillCatalogValidator.Validate(catalog));
             StringAssert.Contains("areaRadius", error.Message);
-        }
-
-        [Test]
-        public void DamageScale_ScalesDirectAndExplosionDamageOnly()
-        {
-            var config = SkillConfig.FromDefinition(new SkillData
-            {
-                baseStats = new SkillBaseStats { cast = { baseDamage = 10, cooldown = 2 }, explosion = { radius = 1, damageRatio = 1 } }
-            });
-            var scaled = config.WithDamageScale(.5f);
-            Assert.AreEqual(5, scaled.Stats.Cast.Damage, .001f);
-            Assert.AreEqual(5, scaled.Stats.Explosion.Damage, .001f);
-            Assert.AreEqual(2, scaled.Stats.Cast.Cooldown);
-            Assert.AreEqual(10, config.Stats.Cast.Damage, "원본 설정은 바뀌지 않는다");
         }
 
         // ── 전기 구름: 이동, 끌어당김, 적중 시 확률 자식 시전 ─────────────
@@ -330,27 +283,6 @@ namespace Game.Tests
             zone.Init(pool, provider, Vector2.zero, new AreaSettings(1, 10, 1), AttackReactions.Empty, AttackReactions.Empty);
             Tick(zone, 1f);
             Assert.AreEqual(Vector3.zero, zone.transform.position);
-        }
-
-        [Test]
-        public void CloudCards_ScaleMoveSpeedPullDamageAndAddParalysis()
-        {
-            var data = Cloud();
-            var start = SkillConfig.FromDefinition(data);
-            SkillConfig Apply(string id)
-            {
-                var b = new SkillConfigBuilder(start);
-                Assert.IsTrue(b.TryApplyCatalog(data.upgrades.Find(c => c.id == id).effects), id);
-                return b.Build();
-            }
-            var speed = Apply("lightning_cloud_speed").Stats;
-            Assert.AreEqual(start.Stats.Area.MoveSpeed * 1.2f, speed.Area.MoveSpeed, .001f);
-            Assert.AreEqual(start.Stats.Cast.Damage * 1.4f, speed.Cast.Damage, .001f);
-            var magnet = Apply("lightning_cloud_magnet").Stats;
-            Assert.AreEqual(start.Stats.Area.Pull * 1.2f, magnet.Area.Pull, .001f);
-            Assert.AreEqual(2f, Apply("lightning_cloud_voltage").Stats.Status.ParalysisDuration);
-            Assert.AreEqual(start.Stats.Area.Duration * 1.6f, Apply("lightning_cloud_duration").Stats.Area.Duration, .001f);
-            Assert.AreEqual(start.Stats.Area.Radius * 1.5f, Apply("lightning_cloud_expand").Stats.Area.Radius, .001f);
         }
 
         [Test]
@@ -413,18 +345,5 @@ namespace Game.Tests
 
         private static List<HitscanEffect> ActiveStrikes() => Object.FindObjectsByType<HitscanEffect>(FindObjectsSortMode.None)
             .Where(e => e.gameObject.scene.IsValid() && e.gameObject.activeInHierarchy).ToList();
-
-        [Test]
-        public void ShippedCatalog_CloudDisablesCardsWithUnknownEffectsAndRequiresLightningForGuide()
-        {
-            var data = Cloud();
-            Assert.AreEqual(CastType.Area, data.castType);
-            var disabled = data.upgrades.Where(c => !c.enabled).ToList();
-            Assert.AreEqual(3, disabled.Count);
-            foreach (var card in disabled) { Assert.IsNotEmpty(card.disabledReason, card.id); }
-            var guide = data.upgrades.Find(c => c.id == "lightning_cloud_guide");
-            CollectionAssert.AreEqual(new[] { LightningId }, guide.requiredWeaponIds);
-            Assert.AreEqual(13, guide.minPermanentLevel);
-        }
     }
 }

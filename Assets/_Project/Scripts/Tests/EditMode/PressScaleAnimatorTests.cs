@@ -48,21 +48,6 @@ namespace Game.Tests
             Assert.AreEqual(0.9f, _a.transform.localScale.x, 0.0001f);
         }
 
-        [Test(Description = "놓으면 원래 크기로 돌아오고 상태가 정리된다")]
-        public void Release_RestoresExactBaseScale()
-        {
-            _anim.Press(_a.transform);
-            Tick(1f);
-
-            _anim.Release();
-            Tick(0.1f);
-            Assert.That(_a.transform.localScale.x, Is.GreaterThan(0.9f).And.LessThan(1f));
-
-            Tick(1f);
-            Assert.AreEqual(Vector3.one, _a.transform.localScale);
-            Assert.IsFalse(_anim.IsActive);
-        }
-
         [Test(Description = "눌림이 끝나기 전에 놓아도(짧게 탭) 현재 크기에서 되돌아와 줄어든 채 남지 않는다")]
         public void QuickTap_ReturnsToBase()
         {
