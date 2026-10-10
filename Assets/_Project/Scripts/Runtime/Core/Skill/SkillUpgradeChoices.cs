@@ -76,9 +76,11 @@ namespace Game.Core
                     });
                 }
             }
+            // 스킬 슬롯이 다 찼으면 새 스킬 카드는 내놓지 않는다 (이미 가진 스킬의 강화 카드만 나온다)
+            bool slotsFull = skills.Count >= SkillSlotLimit.Max;
             foreach (var data in catalog)
             {
-                if (!data.childOnly && state.GetWeaponLevel(data.id) == 0 && hasPrefab(data.id)
+                if (!slotsFull && !data.childOnly && state.GetWeaponLevel(data.id) == 0 && hasPrefab(data.id)
                     && (isUnlocked == null || isUnlocked(data)))
                 {
                     candidates.Add(new UpgradeChoice { IsNewWeapon = true, newSkillData = data });

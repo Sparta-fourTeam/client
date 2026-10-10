@@ -95,6 +95,12 @@ namespace Game.Core
                 }
             }
 
+            if (skills.Count >= SkillSlotLimit.Max)
+            {
+                Debug.LogWarning($"[SkillController] 스킬은 최대 {SkillSlotLimit.Max}개까지 가질 수 있어 weaponId={weaponId}를 얻지 못합니다.");
+                return false;
+            }
+
             var prefab = assets.GetPrefab(data.assetKey);
             if (prefab == null)
             {

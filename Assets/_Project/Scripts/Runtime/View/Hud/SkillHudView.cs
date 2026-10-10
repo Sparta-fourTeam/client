@@ -70,6 +70,15 @@ namespace Game.View
             base.OnDestroy();
         }
 
+        private void Awake()
+        {
+            // 슬롯 수의 출처는 SkillSlotLimit 하나다. 프리팹의 슬롯이 다르면 스킬이 보이지 않거나 빈 칸이 남는다
+            if (_slots != null && _slots.Length != SkillSlotLimit.Max)
+            {
+                Debug.LogWarning($"[SkillHudView] 슬롯이 {_slots.Length}칸인데 스킬 슬롯 수(SkillSlotLimit.Max)는 {SkillSlotLimit.Max}개입니다. 프리팹의 슬롯 수를 맞추세요");
+            }
+        }
+
         private void OnSkillChanged(SkillChanged message)
         {
             // Buffered struct는 구독 즉시 기본값이 오고, 그때 Skills는 null이다

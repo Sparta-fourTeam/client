@@ -10,8 +10,8 @@ namespace Game.Sandbox
     /// 카드는 게임과 같은 선행·배타 조건(<see cref="UpgradeEligibility"/>)으로 고를 수 있고, 조건 무시를 켜면 조건만 건너뛴다. 영구 레벨 조건은 표시만 하고 막지 않는다.</summary>
     public sealed class SkillSandboxSession
     {
-        /// <summary>게임 HUD(SkillHud 프리팹)의 슬롯 수와 같다. 넘는 스킬은 HUD에 보이지 않는다</summary>
-        public const int MaxSkills = 5;
+        /// <summary>게임과 같은 스킬 슬롯 수 (<see cref="SkillSlotLimit"/>)</summary>
+        public const int MaxSkills = SkillSlotLimit.Max;
 
         public readonly struct SkillInfo
         {
