@@ -96,7 +96,8 @@ namespace Game.Core
             Add("reserveCasts", Cast, Projectile, (s, v) => s[Stat.ReserveCastCount] = (int)v, PositiveInteger);
             Add("form", Transform, Both, (s, v) => s[Stat.Form] = (int)v,
                 v => v == (int)SkillForm.Enbakutsu || v == (int)SkillForm.JudgementThunder
-                    || v == (int)SkillForm.TriangleIce || v == (int)SkillForm.LargeLog || v == (int)SkillForm.FireLog);
+                    || v == (int)SkillForm.TriangleIce || v == (int)SkillForm.LargeLog || v == (int)SkillForm.FireLog
+                    || v == (int)SkillForm.FlameArrow || v == (int)SkillForm.ThunderArrow);
 
             // 투사체의 이동과 충돌
             Add("pierceCount", Plain, Projectile, (s, v) => s[Stat.PierceCount] = Math.Max(0, s[Stat.PierceCount] + (int)v));

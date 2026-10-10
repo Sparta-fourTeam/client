@@ -488,12 +488,13 @@
       "id": "arrow.11",
       "skillId": "arrow",
       "name": "화살 폭풍",
-      "effectDescription": "쿨타임 -30%",
-      "maxAppearanceCount": null,
+      "effectDescription": "쿨타임 -40%",
+      "maxAppearanceCount": 1,
       "requirementsText": "연발 화살",
       "minPermanentLevel": 21,
       "unresolvedIssues": [
-        "횟수 미기재"
+        "횟수 미기재(1회로 임시 적용)",
+        "쿨타임: 원문 텍스트 -30%, 스킬 트리 이미지 -40% (-40% 적용)"
       ],
       "exclusions": [],
       "requirements": [
@@ -514,7 +515,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 1,
+        "cardId": "arrow_storm",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "connected",
+        "variantConnected": false
       },
       "decisionStatus": "hold",
       "readyForProduction": false
@@ -2544,7 +2550,16 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 3,
+        "cardId": "lightning_polish",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "connected",
+        "variantConnected": false,
+        "companion": {
+          "weaponId": 18,
+          "cardId": "chain_lightning_polish"
+        }
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
