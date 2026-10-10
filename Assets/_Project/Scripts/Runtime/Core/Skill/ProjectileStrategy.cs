@@ -42,8 +42,11 @@ namespace Game.Core
             foreach (var candidate in candidates)
             {
                 if (candidate == null || candidate.IsDead) { continue; }
-                if (candidate.Position.y <= wall.AttackLineY + cast.ReserveDistance
-                    && (candidate.Position - (Vector2)origin).sqrMagnitude <= config.Attack.Range * config.Attack.Range)
+                // 굴러가는 공격은 시전 판정과 같게 가로 위치(x)와 상관없이 벽 앞선에서의 높이(y)로 사정거리를 잰다
+                bool inRange = config.Attack.Path == ProjectilePath.RollingLane
+                    ? candidate.Position.y - wall.AttackLineY <= config.Attack.Range
+                    : (candidate.Position - (Vector2)origin).sqrMagnitude <= config.Attack.Range * config.Attack.Range;
+                if (candidate.Position.y <= wall.AttackLineY + cast.ReserveDistance && inRange)
                 { nearby = true; break; }
             }
             reserveConfig = config;
