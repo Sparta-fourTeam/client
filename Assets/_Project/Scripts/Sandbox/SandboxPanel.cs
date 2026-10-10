@@ -333,6 +333,12 @@ namespace Game.Sandbox
                 return;
             }
 
+            // 스킬 HUD 같은 UI를 누른 클릭은 적 배치가 아니다
+            if (Game.View.PointerOverUi.IsOver)
+            {
+                return;
+            }
+
             PlaceEnemyAt(e.mousePosition);
         }
 
