@@ -18,8 +18,13 @@ namespace Game.Core
         /// <summary>광선의 폭</summary>
         public float Width { get; }
         public bool IsLine => Length > 0;
+        /// <summary>광선의 메인 대상(겨눈 적)이 공격마다 더 받는 피해 비율</summary>
+        public float FocusBonus { get; }
+        /// <summary>광선의 공격 한 번 피해. 메인 대상 추가 피해 계산에 쓴다</summary>
+        public float BaseDamage { get; }
 
-        public AreaSettings(float radius, float duration, float pulseInterval, float moveSpeed = 0, float pull = 0, float length = 0, float width = 0)
+        public AreaSettings(float radius, float duration, float pulseInterval, float moveSpeed = 0, float pull = 0, float length = 0, float width = 0,
+            float focusBonus = 0, float baseDamage = 0)
         {
             Radius = radius;
             Duration = duration;
@@ -28,14 +33,17 @@ namespace Game.Core
             Pull = pull;
             Length = length;
             Width = width;
+            FocusBonus = focusBonus;
+            BaseDamage = baseDamage;
         }
 
         public static AreaSettings From(AreaStats area) =>
             new AreaSettings(area.Radius, area.Duration, area.PulseInterval, area.MoveSpeed, area.Pull);
 
         /// <summary>광선: 지속 시간 동안 공격 횟수(pulses)만큼 고르게 피해를 준다</summary>
-        public static AreaSettings From(BeamStats beam) =>
-            new AreaSettings(0, beam.Duration, beam.Duration / Mathf.Max(1f, beam.Pulses), length: beam.Length, width: beam.Width);
+        public static AreaSettings From(BeamStats beam, float baseDamage = 0) =>
+            new AreaSettings(0, beam.Duration, beam.Duration / Mathf.Max(1f, beam.Pulses), length: beam.Length, width: beam.Width,
+                focusBonus: beam.FocusBonus, baseDamage: baseDamage);
     }
 
     /// <summary>지정한 자리에 일정 시간 머물며 주기마다 범위 안의 적에게 적중 반응을 거는 영역(또는 광선).
@@ -49,7 +57,7 @@ namespace Game.Core
         private AttackReactions hitReactions = AttackReactions.Empty;
         private AttackReactions reactions = AttackReactions.Empty;
         private Func<float> randomValue;
-        private float radius, duration, pulseInterval, moveSpeed, pull, length, width;
+        private float radius, duration, pulseInterval, moveSpeed, pull, length, width, focusBonus, baseDamage;
         private float elapsed, sincePulse;
         private Vector2? moveTarget;
         private IEnemyTarget aim;
@@ -76,6 +84,8 @@ namespace Game.Core
             pull = Mathf.Max(0, settings.Pull);
             length = Mathf.Max(0, settings.Length);
             width = Mathf.Max(0, settings.Width);
+            focusBonus = Mathf.Max(0, settings.FocusBonus);
+            baseDamage = Mathf.Max(0, settings.BaseDamage);
             moveTarget = null;
             aim = aimTarget;
             this.hitReactions = hitReactions ?? AttackReactions.Empty;
@@ -181,7 +191,9 @@ namespace Game.Core
                         pulled.ApplyKnockback(center - target.Position, Mathf.Min(pull, Mathf.Sqrt(distanceSquared)));
                     }
                 }
-                var context = new AttackContext(target.Position, Direction, target, randomValue);
+                // 광선이 겨눈 메인 대상은 같은 적중의 충격 피해가 커진다 (집중 광선의 초점). 별도 피해로 주면 타격 횟수형 방어막이 두 번으로 세거나 추가 피해만 통과한다
+                float scale = IsLine && focusBonus > 0 && ReferenceEquals(target, aim) ? 1f + focusBonus : 1f;
+                var context = new AttackContext(target.Position, Direction, target, randomValue, damageScale: scale);
                 hitReactions.Raise(AttackEvent.Hit, context);
                 reactions.Raise(AttackEvent.Hit, context);
                 if (target.IsDead) { reactions.Raise(AttackEvent.Kill, context); }

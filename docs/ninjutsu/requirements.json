@@ -1058,7 +1058,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 1,
+        "cardId": "arrow_neutral_2",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "connected",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -3573,9 +3578,9 @@
       "runtime": {
         "weaponId": 16,
         "cardId": "energy_beam_neutral_3",
-        "enabled": false,
-        "state": "disabled",
-        "conditionMapping": "partial",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "connected",
         "variantConnected": false
       },
       "decisionStatus": "source-defined",
@@ -3606,7 +3611,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 19,
+        "cardId": "focus_beam_focus",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "connected",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -3636,7 +3646,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 19,
+        "cardId": "focus_beam_continuous",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "hold",
       "readyForProduction": false
@@ -3666,7 +3681,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 19,
+        "cardId": "focus_beam_amplify",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "hold",
       "readyForProduction": false
@@ -3702,7 +3722,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 19,
+        "cardId": "focus_beam_ultimate",
+        "enabled": false,
+        "state": "disabled",
+        "conditionMapping": "partial",
+        "variantConnected": false
       },
       "decisionStatus": "hold",
       "readyForProduction": false
@@ -3845,7 +3870,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 19,
+        "cardId": "focus_beam_neutral_2",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "connected",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -3925,7 +3955,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 19,
+        "cardId": "focus_beam_neutral_3",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "connected",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false

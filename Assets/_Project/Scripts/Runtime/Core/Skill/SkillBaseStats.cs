@@ -89,6 +89,8 @@ namespace Game.Core
             public float duration;
             /// <summary>지속 시간 동안의 공격 횟수(펄스 수). 간격은 지속 시간 / 공격 횟수다</summary>
             public float pulses = 1;
+            /// <summary>겨눈 적(메인 대상)에게 공격마다 더 주는 피해 비율. 0.5면 메인 대상은 공격력의 150%를 받는다</summary>
+            public float focusBonus;
         }
 
         public class FieldBase

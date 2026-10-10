@@ -13,6 +13,7 @@ namespace Game.Tests
     public sealed class BeamSkillTests
     {
         private const int SunBeamId = 16;
+        private const int FocusBeamId = 19;
         private const BindingFlags Flags = BindingFlags.NonPublic | BindingFlags.Instance;
         private readonly List<GameObject> created = new List<GameObject>();
         private CatalogWorld world;
@@ -139,6 +140,81 @@ namespace Game.Tests
             Assert.AreEqual(4 * 5, near.Damage, "공격 횟수 4번 × 기본 피해 5");
             Assert.AreEqual(4 * 5, farther.Damage, "대상 뒤쪽의 적도 맞는다");
             Assert.AreEqual(0, side.Damage);
+        }
+
+        // ── 집중 광선 ─────────────────────────────────────────────────
+
+        [Test(Description = "광선이 겨눈 메인 대상만 공격마다 추가 피해를 받고 선 위의 다른 적은 그대로다")]
+        public void FocusBonus_OnlyTheAimedMainTargetTakesExtraDamage()
+        {
+            var main = new HitRecorder { Position = new Vector2(4, 0) };
+            var other = new HitRecorder { Position = new Vector2(7, 0) };
+            var provider = new CatalogWorld.Targets();
+            provider.All.AddRange(new[] { main, other });
+            var pool = Pool();
+            var zone = pool.Get();
+            zone.Init(pool, provider, Vector2.zero, new AreaSettings(0, 1, 1, length: 10, width: 1, focusBonus: 1f, baseDamage: 10), Damage(10),
+                AttackReactions.Empty, aimTarget: main);
+
+            Tick(zone, .1f);
+
+            Assert.AreEqual(20, main.Damage, "공격력 10 + 메인 추가 100%");
+            Assert.AreEqual(10, other.Damage);
+        }
+
+        private sealed class ImpactCounter : IEnemyTarget
+        {
+            public Vector2 Position { get; set; }
+            public int Impacts, Total;
+            public void TakeDamage(int amount) => Total += amount;
+            public void TakeDamage(Game.Core.Combat.DamageInfo info) { Total += info.Amount; if (info.IsImpact) { Impacts++; } }
+        }
+
+        [Test(Description = "메인 대상 추가 피해는 같은 적중의 일부라 충격 피해로 세지 않는다 (타격 횟수형 방어막이 두 번으로 세지 않게)")]
+        public void FocusBonus_IsNotCountedAsASecondImpactHit()
+        {
+            var main = new ImpactCounter { Position = new Vector2(4, 0) };
+            var provider = new CatalogWorld.Targets();
+            provider.All.Add(main);
+            var pool = Pool();
+            var zone = pool.Get();
+            zone.Init(pool, provider, Vector2.zero, new AreaSettings(0, 1, 1, length: 10, width: 1, focusBonus: 1f, baseDamage: 10), Damage(10),
+                AttackReactions.Empty, aimTarget: main);
+
+            Tick(zone, .1f);
+
+            Assert.AreEqual(20, main.Total, "공격력 10 + 메인 추가 100%");
+            Assert.AreEqual(1, main.Impacts, "광선 한 번의 적중은 충격 한 번이다");
+        }
+
+        [Test(Description = "집중 광선: 초점 카드를 얻으면 메인 대상이 공격력의 두 배를 받는다")]
+        public void FocusBeam_FocusCardDoublesDamageOnTheMainTarget()
+        {
+            world = new CatalogWorld();
+            var beam = world.Create(FocusBeamId);
+            world.Take(beam, "focus_beam_focus");
+            var main = world.AddEnemy(4, 0);
+            var other = world.AddEnemy(8, 0);
+            typeof(SkillCaster).GetMethod("OnFire", Flags).Invoke(beam, null);
+            var zone = Zones().Single();
+
+            Tick(zone, .1f);
+
+            Assert.AreEqual(CastType.Beam, world.Data[FocusBeamId].castType);
+            Assert.AreEqual(6, main.Damage, "기본 피해 3 + 메인 추가 100%");
+            Assert.AreEqual(3, other.Damage);
+        }
+
+        [Test(Description = "연속 광선은 공격 횟수를 15 늘린다 (지속 시간은 그대로)")]
+        public void FocusBeam_ContinuousCardAddsPulses()
+        {
+            world = new CatalogWorld();
+            var beam = world.Create(FocusBeamId);
+            var before = beam.Stats.Beam.Pulses;
+            world.Take(beam, "focus_beam_continuous");
+
+            Assert.AreEqual(before + 15, beam.Stats.Beam.Pulses);
+            Assert.AreEqual(2f, beam.Stats.Beam.Duration);
         }
 
         [Test]

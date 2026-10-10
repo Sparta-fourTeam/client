@@ -15,9 +15,11 @@ namespace Game.Core
         public Func<float> RandomValue { get; }
         public float DeltaTime { get; }
         public float Elapsed { get; }
+        /// <summary>이 적중에서 충격(직접) 피해에 곱하는 배율. 메인 대상 추가 피해처럼 같은 적중의 피해를 키울 때 쓴다. 1이면 그대로다</summary>
+        public float DamageScale { get; }
 
         public AttackContext(Vector2 position, Vector3 direction, IEnemyTarget target = null, Func<float> randomValue = null,
-            float deltaTime = 0, float elapsed = 0)
+            float deltaTime = 0, float elapsed = 0, float damageScale = 1)
         {
             Position = position;
             Direction = direction;
@@ -25,6 +27,7 @@ namespace Game.Core
             RandomValue = randomValue;
             DeltaTime = deltaTime;
             Elapsed = elapsed;
+            DamageScale = damageScale;
         }
     }
 
@@ -106,7 +109,12 @@ namespace Game.Core
             this.isImpact = isImpact;
         }
 
-        public void Execute(AttackContext context) => context.Target?.TakeDamage(Game.Core.Combat.DamageInfo.FromCurrent(damage, isImpact));
+        public void Execute(AttackContext context)
+        {
+            // 적중 피해 배율은 충격 피해만 따른다. 추가 번개 같은 부가 반응의 피해는 그대로다
+            int amount = isImpact && context.DamageScale != 1f ? Mathf.RoundToInt(damage * context.DamageScale) : damage;
+            context.Target?.TakeDamage(Game.Core.Combat.DamageInfo.FromCurrent(amount, isImpact));
+        }
     }
 
     public sealed class StatusReaction<TTarget> : IAttackReaction where TTarget : class
