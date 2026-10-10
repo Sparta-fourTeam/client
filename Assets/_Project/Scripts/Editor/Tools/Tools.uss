@@ -25,6 +25,7 @@
 .issue-button { -unity-text-align: middle-left; white-space: normal; height: auto; padding: 6px; }
 .section { background-color: #303640; padding: 12px; margin-bottom: 10px; }
 .section-title { -unity-font-style: bold; color: #e8edf5; margin-bottom: 8px; }
-.card-choices > Button { -unity-text-align: middle-left; white-space: normal; height: auto; padding: 8px; margin-bottom: 4px; }
 .runtime-status { white-space: normal; color: #e8edf5; margin-bottom: 10px; }
 .playtest-scroll { flex-grow: 1; }
+.playtest-actions { flex-wrap: wrap; }
+.playtest-actions > Button { margin-bottom: 6px; }
