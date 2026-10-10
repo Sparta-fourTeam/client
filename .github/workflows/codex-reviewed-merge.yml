@@ -1,0 +1,53 @@
+name: Merge Codex-reviewed PRs
+
+on:
+  issue_comment:
+    types: [created, edited]
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches: [dev]
+  workflow_run:
+    workflows: [Codex merge policy tests, Build Dev APK]
+    types: [completed]
+  check_run:
+    types: [completed]
+  status:
+
+# No PAT, OpenAI API key, or persistent credential. Only the short-lived
+# repository token receives the permission needed by the merge REST endpoint.
+permissions: {}
+
+concurrency:
+  group: codex-reviewed-merge
+  cancel-in-progress: false
+
+jobs:
+  merge:
+    if: >-
+      github.repository == 'Sparta-fourTeam/client' &&
+      (github.event_name != 'issue_comment' ||
+       (github.event.issue.pull_request &&
+        (github.event.comment.user.id == 199175422 ||
+         (github.event.comment.user.id == 79277772 && github.event.comment.body == '/codex-merge'))))
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: read
+      issues: read
+      checks: read
+      statuses: read
+      actions: read
+    steps:
+      # This job never executes or checks out a PR ref. Its workflow and code
+      # come from dev, including when pull_request_target wakes it.
+      - name: Check out trusted merge policy
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          sparse-checkout: .github/scripts
+      - name: Verify current evidence and merge eligible PRs
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 -I .github/scripts/codex_merge.py
