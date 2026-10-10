@@ -1,4 +1,3 @@
-using System.Linq;
 using UnityEngine;
 
 namespace Game.Core
@@ -35,7 +34,7 @@ namespace Game.Core
         protected override bool OnFire()
         {
             using var scope = Game.Core.Combat.DamageAttribution.BeginOutermost(Data.ToDamageSource());
-            bool hasTarget = Fired != null && FindTargets(Config.Attack.Range).Any(target => !target.IsDead);
+            bool hasTarget = Fired != null && Strategy.HasTargets(Config, environment);
             bool fired = Strategy.Fire(Config, environment);
             if (hasTarget) { Fired?.Invoke(); }
             return fired;

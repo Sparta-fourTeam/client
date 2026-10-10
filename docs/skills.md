@@ -73,6 +73,10 @@ flowchart TD
 
 `baseStats` 묶음: `cast`(cooldown, baseDamage, range, projectileCount, castCount, castInterval), `projectile`, `reserve`, `status`, `explosion`, `field`, `area`, `beam`, `chain`. 적지 않은 묶음과 값은 클래스의 기본값(`castCount` 1, 확률 1 등)을 쓴다. 정의는 `SkillBaseStats`.
 
+**스킬 슬롯 수**: 한 번에 가질 수 있는 스킬은 `SkillSlotLimit.Max`(5)개다. `SkillController.AddWeapon`이 이를 넘는 획득을 거절하고, 슬롯이 다 차면 새 스킬 카드는 후보에서 빠지며(이미 가진 스킬의 강화 카드만 나온다), 샌드박스도 같은 값을 쓴다. 스킬 HUD 프리팹(`SkillHud`)의 슬롯 수는 이 값과 같아야 하고 테스트가 확인한다. 자식 스킬은 슬롯을 차지하지 않는다.
+
+**사정거리(`cast.range`)**: 공격이 닿는 거리가 아니라 시전을 일으키는 조건이다. 시전 위치(플레이어)에서 이 거리 안에 살아 있는 적이 있어야 시전하고, 없으면 쿨타임을 쓰지 않고 기다린다. 굴러가는 공격(나무뿌리, `projectilePath: RollingLane`)은 플레이어에서 발사되지 않으므로 가로 위치(x)는 보지 않고 **벽 앞선에서 위로의 높이(y)** 가 이 거리 이내인 적을 노린다(벽에 가까운 순). 스킬 HUD 슬롯을 누르고 있는 동안 이 사정거리가 점선으로 보인다: 플레이어 기준 스킬은 플레이어를 중심으로 한 반원, 나무뿌리는 벽 앞선에서 사정거리만큼 위의 가로선이다(`SkillRangeResolver`, `SkillRangeIndicator`). 표시는 실제 판정 값 그대로다. 현재 값은 화면(월드 6.0 × 10.67) 안에 들어오도록 플레이어 기준 스킬 8, 나무뿌리 7이다. 나무뿌리가 벽 앞선에서 굴러가는 거리(`ProjectileLaunchPath.RollingTravelDistance`, 12)는 사정거리와 별개다.
+
 ### 카드 (`upgrades`의 항목)
 
 ```json
@@ -248,7 +252,7 @@ flowchart TD
 
 **Tools → Project Nova → Skill Sandbox**: 스킬과 카드를 코드 수정 없이 눈으로 확인하는 독립 씬이다(`Scenes/Sandbox/SkillSandbox.unity`, 코드는 `Game.Sandbox` 어셈블리로 에디터와 개발 빌드에서만 컴파일). 스테이지와 같은 카메라, 플레이어, 벽 위치에 실제 `Enemy` 프리팹을 놓는다.
 
-- 스킬은 `Skills.json`에서 자동으로 나오고(프리팹이 연결되지 않은 스킬은 비활성), 버튼으로 켜고 끈다. 최대 5개를 함께 켜며, 쿨타임은 인게임과 같은 `SkillHud` 프리팹(오른쪽 위)이 보여 준다.
+- 스킬은 `Skills.json`에서 자동으로 나오고(프리팹이 연결되지 않은 스킬은 비활성), 버튼으로 켜고 끈다. 게임과 같은 스킬 슬롯 수(`SkillSlotLimit.Max`, 5)까지 함께 켜며, 쿨타임은 인게임과 같은 `SkillHud` 프리팹(오른쪽 위)이 보여 준다.
 - 카드는 켠 스킬마다 목록에서 직접 고른다. 선행·배타 조건은 게임과 같은 판정(`UpgradeEligibility`)이고, 카드마다 조건과 충족 여부를 보여 주며 못 고르는 카드는 비활성이다. 영구 레벨 조건(`minPermanentLevel`)은 충족 여부만 표시하고 막지 않는다. **선행·배타 조건 무시**를 켜면 조건만 건너뛴다. 공유 카드(증폭·연마)는 두 스킬을 함께 켜면 고를 수 있다. 구성이 바뀔 때마다 처음부터 다시 쌓아 카드 순서까지 재현한다. 일반 카드는 나오지 않는다.
 - 적은 고정 샌드백(1, 3, 5, 10마리)과 벽을 향해 내려오는 모드가 있고, 누적 피해와 초당 피해(DPS)가 보인다.
 - 영구 레벨, 시간 배속, 구성 저장·불러오기 3칸이 있다.

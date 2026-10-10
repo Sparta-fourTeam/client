@@ -1,13 +1,15 @@
+using System;
 using Game.Core;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace Game.View
 {
     /// <summary>스킬 한 칸: 아이콘, 쿨타임 원형 채움, 레벨. 스킬이 없는 칸은 빈 틀만 보인다.
     /// 쿨타임은 매 프레임 바뀌는 값이라 메시지를 받지 않고 Update에서 직접 읽는다</summary>
-    public sealed class SkillSlotView : MonoBehaviour
+    public sealed class SkillSlotView : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     {
         [SerializeField] private Image _icon;
         [SerializeField] private Image _cooldownOverlay;
@@ -16,6 +18,13 @@ namespace Game.View
         [SerializeField] private Sprite _activeSprite;
 
         private ISkillStatus _status;
+        private bool _holding;
+
+        /// <summary>스킬이 든 칸을 누르기 시작했다 (사정거리 표시용)</summary>
+        public event Action<ISkillStatus> HoldStarted;
+
+        /// <summary>누르고 있던 손을 뗐다</summary>
+        public event Action HoldEnded;
 
         private void Awake()
         {
@@ -43,11 +52,31 @@ namespace Game.View
 
         public void Clear()
         {
+            EndHold();
             _status = null;
             _icon.enabled = false;
             _levelText.gameObject.SetActive(false);
             _cooldownOverlay.gameObject.SetActive(false);
             _activeFrame.enabled = false;
+        }
+
+        public void OnPointerDown(PointerEventData eventData)
+        {
+            if (_status == null || _holding) { return; }
+            _holding = true;
+            HoldStarted?.Invoke(_status);
+        }
+
+        // 손을 슬롯 밖에서 떼도 누르기 시작한 칸으로 전달된다
+        public void OnPointerUp(PointerEventData eventData) => EndHold();
+
+        private void OnDisable() => EndHold();
+
+        private void EndHold()
+        {
+            if (!_holding) { return; }
+            _holding = false;
+            HoldEnded?.Invoke();
         }
 
         private void Update()

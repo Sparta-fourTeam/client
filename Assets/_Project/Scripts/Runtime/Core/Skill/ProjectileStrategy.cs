@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Pool;
 
@@ -9,6 +10,8 @@ namespace Game.Core
     {
         private readonly SkillObjectPool<Projectile> ownedPool;
         private readonly Game.Core.Defense.Wall wall;
+        private SkillTargetSelector laneSelector;
+        private readonly List<IEnemyTarget> laneBuffer = new();
         private readonly ReactiveCastClock reserveClock = new();
         private readonly Action fireReserve;
         private SkillConfig reserveConfig;
@@ -39,8 +42,11 @@ namespace Game.Core
             foreach (var candidate in candidates)
             {
                 if (candidate == null || candidate.IsDead) { continue; }
-                if (candidate.Position.y <= wall.AttackLineY + cast.ReserveDistance
-                    && (candidate.Position - (Vector2)origin).sqrMagnitude <= config.Attack.Range * config.Attack.Range)
+                // 굴러가는 공격은 시전 판정과 같게 가로 위치(x)와 상관없이 벽 앞선에서의 높이(y)로 사정거리를 잰다
+                bool inRange = config.Attack.Path == ProjectilePath.RollingLane
+                    ? candidate.Position.y - wall.AttackLineY <= config.Attack.Range
+                    : (candidate.Position - (Vector2)origin).sqrMagnitude <= config.Attack.Range * config.Attack.Range;
+                if (candidate.Position.y <= wall.AttackLineY + cast.ReserveDistance && inRange)
                 { nearby = true; break; }
             }
             reserveConfig = config;
@@ -48,12 +54,31 @@ namespace Game.Core
             reserveClock.Tick(deltaTime, nearby, cast.ReserveCount, cast.ReserveCooldown, cast.ReserveInterval, fireReserve);
         }
 
+        // 굴러가는 공격(나무뿌리)은 플레이어에서 발사되지 않으므로, 사거리를 벽 앞선에서 위로 높이(y)만 재고 가로 위치(x)는 보지 않는다.
+        // 그 밖의 공격은 시전 위치에서의 거리로 잰다
+        private IReadOnlyList<IEnemyTarget> FindTargets(SkillConfig config, AttackEnvironment environment)
+        {
+            if (config.Attack.Path != ProjectilePath.RollingLane || wall == null) { return environment.FindTargets(config.Attack.Range); }
+            laneSelector ??= new SkillTargetSelector(environment.Targets);
+            var lane = laneSelector.SelectLane(wall.AttackLineY, config.Attack.Range);
+            if (environment.Exclude == null) { return lane; }
+            laneBuffer.Clear();
+            foreach (var target in lane) { if (!ReferenceEquals(target, environment.Exclude)) { laneBuffer.Add(target); } }
+            return laneBuffer;
+        }
+
+        public bool HasTargets(SkillConfig config, AttackEnvironment environment)
+        {
+            foreach (var target in FindTargets(config, environment)) { if (!target.IsDead) { return true; } }
+            return false;
+        }
+
         public bool Fire(SkillConfig config, AttackEnvironment environment)
         {
             var current = config.Stats;
             // 사방 발사는 조준하지 않으므로 대상이 없어도 쏜다. 그 밖에는 가까운 적부터 서로 다른 적에게 나눠 쏜다.
             bool radial = config.Attack.Path == ProjectilePath.Radial;
-            var targets = radial ? null : environment.FindTargets(config.Attack.Range);
+            var targets = radial ? null : FindTargets(config, environment);
             // 맞은 적을 빼고 나니 노릴 적이 없으면, 부모가 날아온 방향이 있을 때 그 방향 기준 부채꼴로 쏜다.
             bool fan = !radial && targets.Count == 0 && environment.Exclude != null && environment.Direction.sqrMagnitude > 0;
             if (!radial && !fan && targets.Count == 0) { return false; }
@@ -66,7 +91,8 @@ namespace Game.Core
                 var path = fan
                     ? ProjectileLaunchPath.Fan(environment.Origin, environment.Direction, current.Projectile.PierceCount, i, count)
                     : ProjectileLaunchPath.Calculate(config.Attack.Path, environment.Origin, aim,
-                        wall != null ? wall.AttackLineY : (float?)null, config.Attack.Range, current.Projectile.Speed, current.Projectile.PierceCount, i, count);
+                        wall != null ? wall.AttackLineY : (float?)null,
+                        config.Attack.Path == ProjectilePath.RollingLane ? ProjectileLaunchPath.RollingTravelDistance : config.Attack.Range, current.Projectile.Speed, current.Projectile.PierceCount, i, count);
                 spawnRules.SpawnMain(path.Start, path.Direction, path.Lifetime, path.PierceCount, environment.Exclude);
             }
 

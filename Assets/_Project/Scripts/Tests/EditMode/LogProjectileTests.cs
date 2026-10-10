@@ -168,7 +168,7 @@ namespace Game.Tests
         public void RollingLog_SpawnsInTargetsLaneMovesVerticallyAndPiercesMultipleEnemies()
         {
             var go = new GameObject("RollingLaneTest"); go.AddComponent<Projectile>();
-            go.transform.position = new Vector3(-5, -2, 0);
+            go.transform.position = new Vector3(-1, -2, 0);   // 벽 없이 시전 위치 기준 사정거리(7) 안에 표적이 들어오는 자리
             try
             {
                 var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 5);
