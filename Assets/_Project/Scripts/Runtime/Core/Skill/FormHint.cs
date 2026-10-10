@@ -58,6 +58,12 @@ namespace Game.Core
         {
             if (catalog == null || state == null) { return None; }
 
+            var skills = new Dictionary<int, SkillData>();
+            foreach (var data in catalog)
+            {
+                if (data != null) { skills[data.id] = data; }
+            }
+
             List<FormHint> hints = null;
             foreach (var data in catalog)
             {
@@ -66,10 +72,10 @@ namespace Game.Core
                 {
                     if (card == null || (data.id == chosenSkillId && card.id == chosenCardId)
                         || !TryGetForm(card, state.GetPermanentWeaponLevel(data.id), out var form)
-                        || !StillObtainable(card, data.id, state)) { continue; }
+                        || !Reachable(card, data.id, skills, state, 0, null, new HashSet<(int, string)>())) { continue; }
 
                     FormHintKind kind;
-                    if (chosenCardId != null && Blocks(card, data.id, chosenSkillId, chosenCardId, state)) { kind = FormHintKind.Blocks; }
+                    if (chosenCardId != null && !Reachable(card, data.id, skills, state, chosenSkillId, chosenCardId, new HashSet<(int, string)>())) { kind = FormHintKind.Blocks; }
                     else if (Enables(card, data.id, chosenSkillId, chosenCardId, state)) { kind = FormHintKind.Enables; }
                     else { continue; }
 
@@ -97,38 +103,51 @@ namespace Game.Core
             return false;
         }
 
-        // 전투 중에 바뀌지 않는 조건(꺼짐, 영구 레벨, 이미 가진 배타 카드)과 이미 얻은 횟수만 본다.
-        // 전투 레벨, 필수 카드, 필수 스킬은 앞으로 채울 수 있으므로 보지 않는다
-        private static bool StillObtainable(SkillUpgradeOption card, int skillId, IUpgradeState state)
+        // 이 카드를 앞으로도 얻을 수 있는지. 전투 중에 바뀌지 않는 조건(꺼짐, 영구 레벨, 이미 가진 배타 카드)과 이미 얻은 횟수를 보고,
+        // 아직 못 채운 선행 카드는 그 카드도 얻을 수 있어야 한다(선행 체인을 따라간다). 그래서 카드에 직접 적히지 않았어도
+        // 선행 카드가 배타로 막히면 이 카드도 막힌 것으로 본다(뇌전 화살은 충격 화살이 선행이고 충격 화살은 폭발 화살과 배타).
+        // 전투 레벨과 필수 스킬은 앞으로 채울 수 있으므로 보지 않는다.
+        // chosenCardId가 있으면 그 카드를 지금 골랐다고 치고 판정한다(고르면 막히는 변환을 찾는다)
+        private static bool Reachable(SkillUpgradeOption card, int skillId, IReadOnlyDictionary<int, SkillData> skills, IUpgradeState state,
+            int chosenSkillId, string chosenCardId, HashSet<(int, string)> visiting)
         {
             if (!card.enabled || string.IsNullOrEmpty(card.id) || card.maxPickCount <= 0
                 || state.GetAcquiredCount(skillId, card.id) >= card.maxPickCount
-                || state.GetPermanentWeaponLevel(skillId) < card.minPermanentLevel) { return false; }
+                || state.GetPermanentWeaponLevel(skillId) < card.minPermanentLevel
+                || !visiting.Add((skillId, card.id))) { return false; }
 
-            if (card.exclusions != null)
+            try
             {
-                foreach (var exclusion in card.exclusions)
+                if (card.exclusions != null)
                 {
-                    if (exclusion == null || string.IsNullOrEmpty(exclusion.cardId)) { continue; }
-                    if (UpgradeEligibility.ExclusionApplies(exclusion, skillId, state)
-                        && state.GetAcquiredCount(UpgradeEligibility.ExclusionOwner(exclusion, skillId), exclusion.cardId) > 0) { return false; }
+                    foreach (var exclusion in card.exclusions)
+                    {
+                        if (exclusion == null || string.IsNullOrEmpty(exclusion.cardId)
+                            || !UpgradeEligibility.ExclusionApplies(exclusion, skillId, state)) { continue; }
+                        int owner = UpgradeEligibility.ExclusionOwner(exclusion, skillId);
+                        if (state.GetAcquiredCount(owner, exclusion.cardId) > 0
+                            || (owner == chosenSkillId && exclusion.cardId == chosenCardId)) { return false; }
+                    }
                 }
+
+                if (card.requiredCardCounts != null)
+                {
+                    foreach (var requirement in card.requiredCardCounts)
+                    {
+                        if (requirement == null || string.IsNullOrEmpty(requirement.cardId)) { continue; }
+                        int owner = requirement.skillId == 0 ? skillId : requirement.skillId;
+                        if (state.GetAcquiredCount(owner, requirement.cardId) >= requirement.count) { continue; }
+                        var required = skills.TryGetValue(owner, out var ownerData)
+                            ? ownerData.upgrades?.Find(c => c != null && c.id == requirement.cardId)
+                            : null;
+                        if (required == null || required.maxPickCount < requirement.count
+                            || !Reachable(required, owner, skills, state, chosenSkillId, chosenCardId, visiting)) { return false; }
+                    }
+                }
+
+                return true;
             }
-
-            return true;
-        }
-
-        private static bool Blocks(SkillUpgradeOption card, int skillId, int chosenSkillId, string chosenCardId, IUpgradeState state)
-        {
-            if (card.exclusions == null) { return false; }
-            foreach (var exclusion in card.exclusions)
-            {
-                if (exclusion != null && exclusion.cardId == chosenCardId
-                    && UpgradeEligibility.ExclusionOwner(exclusion, skillId) == chosenSkillId
-                    && UpgradeEligibility.ExclusionApplies(exclusion, skillId, state)) { return true; }
-            }
-
-            return false;
+            finally { visiting.Remove((skillId, card.id)); }
         }
 
         // 새 스킬 카드는 그 스킬의 변환과 그 스킬을 필수로 하는 변환의 조건이다.
