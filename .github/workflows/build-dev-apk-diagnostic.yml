@@ -1,0 +1,277 @@
+name: Diagnose Dev APK OOM (no cache)
+
+on:
+  push:
+    branches:
+      - 'diagnostics/apk-oom-66b53a1-20261010'
+    paths:
+      - '.github/workflows/build-dev-apk-diagnostic.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: 66b53a1663b4e7e65586e64792b84161e9a96847
+          fetch-depth: 0
+          lfs: true
+
+      # Deliberately no Library cache restore or save for this controlled run.
+      - name: Verify source and start memory diagnostics
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = 66b53a1663b4e7e65586e64792b84161e9a96847
+          test ! -e Library
+          DIAG_DIR="$RUNNER_TEMP/apk-oom-diagnostics"
+          mkdir -p "$DIAG_DIR"
+          echo "DIAG_DIR=$DIAG_DIR" >> "$GITHUB_ENV"
+          {
+            printf 'source_sha='; git rev-parse HEAD
+            printf 'kernel='; uname -sr
+            printf 'cpu_count='; nproc
+            cat ProjectSettings/ProjectVersion.txt
+            free -h
+            docker info --format 'docker_memory_bytes={{.MemTotal}} docker_cpus={{.NCPU}} cgroup_version={{.CgroupVersion}}'
+            echo 'Library cache intentionally absent; source and Unity build inputs unchanged.'
+          } | tee "$DIAG_DIR/baseline.txt"
+          cat > "$DIAG_DIR/monitor.py" <<'PY'
+          #!/usr/bin/env python3
+          """Read-only diagnostics. Never record environments, command lines or credentials."""
+          import datetime
+          import json
+          import os
+          from pathlib import Path
+          import re
+          import signal
+          import subprocess
+          import sys
+          import threading
+          import time
+          
+          out = Path(sys.argv[1])
+          out.mkdir(parents=True, exist_ok=True)
+          (out / "monitor.pid").write_text(str(os.getpid()))
+          stop = threading.Event()
+          lock = threading.Lock()
+          cgroups = {}
+          children = []
+          
+          
+          def write(name, data):
+              data = {"utc": datetime.datetime.now(datetime.timezone.utc).isoformat(), **data}
+              with lock, (out / name).open("a") as f:
+                  f.write(json.dumps(data, sort_keys=True) + "\n")
+          
+          
+          def read(path):
+              try:
+                  return Path(path).read_text().strip()
+              except (OSError, ValueError):
+                  return None
+          
+          
+          def snapshot(path):
+              keys = ("memory.current", "memory.peak", "memory.max", "memory.swap.current",
+                      "memory.swap.max", "memory.events", "memory.events.local", "memory.stat",
+                      "memory.pressure", "memory.usage_in_bytes", "memory.max_usage_in_bytes",
+                      "memory.limit_in_bytes", "memory.failcnt", "memory.oom_control")
+              return {key: val for key in keys if (val := read(path / key)) is not None}
+          
+          
+          def inspect(cid):
+              # Project only non-sensitive Docker fields; never dump Config.Env or Args.
+              fmt = ('{"pid":{{.State.Pid}},"oom_killed":{{.State.OOMKilled}},'
+                     '"exit_code":{{.State.ExitCode}},"memory_limit":{{.HostConfig.Memory}},'
+                     '"memory_swap_limit":{{.HostConfig.MemorySwap}},"image":{{json .Config.Image}}}')
+              p = subprocess.run(["docker", "inspect", "--format", fmt, cid],
+                                 capture_output=True, text=True, timeout=10)
+              if p.returncode:
+                  return
+              state = json.loads(p.stdout)
+              write("container-state.jsonl", {"id": cid, **state})
+              pid = state["pid"]
+              if pid <= 0:
+                  return
+              membership = read(f"/proc/{pid}/cgroup") or ""
+              for entry in membership.splitlines():
+                  _, controllers, relative = entry.split(":", 2)
+                  if controllers == "":
+                      path = Path("/sys/fs/cgroup") / relative.lstrip("/")
+                  elif "memory" in controllers.split(","):
+                      path = Path("/sys/fs/cgroup/memory") / relative.lstrip("/")
+                  else:
+                      continue
+                  with lock:
+                      cgroups[cid] = path
+                  write("container-cgroups.jsonl", {"id": cid, "path": str(path), "initial": snapshot(path)})
+          
+          
+          def docker_events():
+              try:
+                  command = ["docker", "events", "--filter", "type=container", "--format", "{{json .}}"]
+                  for event_type in ("create", "start", "oom", "kill", "die", "destroy", "stop"):
+                      command += ["--filter", f"event={event_type}"]
+                  p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1)
+                  children.append(p)
+                  for line in p.stdout:
+                      event = json.loads(line)
+                      cid = event.get("Actor", {}).get("ID", event.get("id", ""))
+                      action = event.get("Action", event.get("status", "")).split(":", 1)[0]
+                      if action not in ("create", "start", "oom", "kill", "die", "destroy", "stop"):
+                          continue
+                      attrs = event.get("Actor", {}).get("Attributes", {})
+                      write("docker-events.jsonl", {"id": cid, "action": action, "time_nano": event.get("timeNano"),
+                                                   "exit_code": attrs.get("exitCode"), "signal": attrs.get("signal")})
+                      if action in ("oom", "kill", "die", "destroy"):
+                          with lock:
+                              path = cgroups.get(cid)
+                          if path:
+                              write("event-memory.jsonl", {"id": cid, "action": action, "memory": snapshot(path)})
+                      if action in ("start", "oom", "kill", "die"):
+                          try:
+                              inspect(cid)
+                          except (OSError, ValueError, subprocess.TimeoutExpired) as exc:
+                              write("capture-errors.jsonl", {"source": "docker-inspect", "error": type(exc).__name__})
+                      if stop.is_set():
+                          break
+                  if not stop.is_set():
+                      write("capture-errors.jsonl", {"source": "docker-events", "exit_code": p.wait(), "error": "Listener exited unexpectedly"})
+              except Exception as exc:
+                  write("capture-errors.jsonl", {"source": "docker-events", "error": type(exc).__name__})
+          
+          
+          def kernel_events():
+              try:
+                  p = subprocess.Popen(["dmesg", "--follow", "--time-format", "iso"],
+                                       stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1)
+                  children.append(p)
+                  pattern = re.compile(r"out of memory|oom[-_ ]|killed process|memory cgroup", re.I)
+                  for line in p.stdout:
+                      if pattern.search(line):
+                          write("kernel-oom.jsonl", {"line": line.rstrip()})
+                      if stop.is_set():
+                          break
+                  if not stop.is_set():
+                      write("capture-errors.jsonl", {"source": "dmesg", "exit_code": p.wait(), "error": "Listener exited unexpectedly"})
+              except Exception as exc:
+                  write("capture-errors.jsonl", {"source": "dmesg", "error": type(exc).__name__})
+          
+          
+          def finish(_signum, _frame):
+              stop.set()
+          
+          
+          signal.signal(signal.SIGTERM, finish)
+          signal.signal(signal.SIGINT, finish)
+          threading.Thread(target=docker_events, daemon=True).start()
+          threading.Thread(target=kernel_events, daemon=True).start()
+          try:
+              for _ in range(40):
+                  if len(children) == 2:
+                      break
+                  time.sleep(0.05)
+              time.sleep(0.25)
+              if len(children) != 2 or any(child.poll() is not None for child in children):
+                  write("capture-errors.jsonl", {"source": "startup", "error": "Both listeners must be live before build"})
+                  sys.exit(1)
+              write("capture-status.jsonl", {"status": "started", "uid": os.getuid(), "interval_seconds": 0.25,
+                                            "listener_pids": [child.pid for child in children]})
+              (out / "ready").touch()
+              while not stop.is_set():
+                  meminfo = read("/proc/meminfo") or ""
+                  host = {line.split(":", 1)[0]: line.split(":", 1)[1].strip() for line in meminfo.splitlines()
+                          if line.startswith(("MemTotal:", "MemAvailable:", "SwapTotal:", "SwapFree:"))}
+                  vmstat = read("/proc/vmstat") or ""
+                  host["oom_kill"] = next((line.split()[1] for line in vmstat.splitlines() if line.startswith("oom_kill ")), None)
+                  host["pressure"] = read("/proc/pressure/memory")
+                  with lock:
+                      tracked = list(cgroups.items())
+                  write("memory-samples.jsonl", {"host": host, "root_cgroup": snapshot(Path("/sys/fs/cgroup")),
+                                                 "containers": {cid: snapshot(path) for cid, path in tracked}})
+                  stop.wait(0.25)
+          finally:
+              for child in children:
+                  if child.poll() is None:
+                      child.terminate()
+              for child in children:
+                  try:
+                      child.wait(timeout=3)
+                  except subprocess.TimeoutExpired:
+                      child.kill()
+              write("capture-status.jsonl", {"status": "stopped"})
+              (out / "stopped").touch()
+          PY
+          nohup sudo -n env RUNNER_TRACKING_ID="" python3 "$DIAG_DIR/monitor.py" "$DIAG_DIR" > "$DIAG_DIR/monitor-output.txt" 2>&1 < /dev/null &
+          for i in $(seq 1 50); do
+            test ! -f "$DIAG_DIR/ready" || break
+            sleep 0.1
+          done
+          test -f "$DIAG_DIR/ready"
+          sudo -n kill -0 "$(cat "$DIAG_DIR/monitor.pid")"
+
+      - name: Build Dev APK
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: .
+          unityVersion: auto
+          targetPlatform: Android
+          buildProfile: 'Assets/Settings/Build Profiles/Android_Dev.asset'
+          buildMethod: Game.Editor.CiBuild.Build
+          androidExportType: androidPackage
+          versioning: Semantic
+          buildsPath: build
+
+          androidKeystoreName: release.keystore
+          androidKeystoreBase64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          androidKeystorePass: ${{ secrets.ANDROID_KEYSTORE_PASS }}
+          androidKeyaliasName: ${{ secrets.ANDROID_KEYALIAS_NAME }}
+          androidKeyaliasPass: ${{ secrets.ANDROID_KEYALIAS_PASS }}
+
+      - name: Stop memory diagnostics
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          DIAG_DIR="$RUNNER_TEMP/apk-oom-diagnostics"
+          if test -f "$DIAG_DIR/monitor.pid"; then
+            sudo -n kill -TERM "$(cat "$DIAG_DIR/monitor.pid")" 2>/dev/null || true
+            for i in $(seq 1 100); do
+              test ! -f "$DIAG_DIR/stopped" || break
+              sleep 0.1
+            done
+            test -f "$DIAG_DIR/stopped" || echo '::warning::Diagnostic monitor did not confirm a clean stop.'
+          fi
+          if test -f "$DIAG_DIR/capture-errors.jsonl"; then
+            echo '::warning::Some diagnostic sources failed; inspect capture-errors.jsonl.'
+            cat "$DIAG_DIR/capture-errors.jsonl"
+          fi
+
+      - name: Save memory diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: APK-OOM-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/apk-oom-diagnostics/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Save Dev APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Diagnostic-Dev-APK-${{ github.run_id }}
+          path: build/Android/*.apk
+          if-no-files-found: error
+          retention-days: 14
+
