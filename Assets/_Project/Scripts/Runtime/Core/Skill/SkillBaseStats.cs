@@ -91,6 +91,16 @@ namespace Game.Core
             public float pulses = 1;
             /// <summary>겨눈 적(메인 대상)에게 공격마다 더 주는 피해 비율. 0.5면 메인 대상은 공격력의 150%를 받는다</summary>
             public float focusBonus;
+            /// <summary>메인 대상을 공격할 때마다 늘어나 광선이 끝날 때 닿는 추가 피해 비율의 최대값. 0이면 늘어나지 않는다</summary>
+            public float focusRampMax;
+            /// <summary>메인 대상 주변 폭발 반경. 0이면 폭발하지 않는다</summary>
+            public float focusBlastRadius;
+            /// <summary>메인 대상 주변 폭발 피해 비율(공격 한 번 피해 대비)</summary>
+            public float focusBlastRatio = 0.5f;
+            /// <summary>광선이 메인 대상에서 꺾여 다른 적으로 이어지는 횟수(굴절). 0이면 곧게 뻗는다</summary>
+            public float refractions;
+            /// <summary>0보다 크면 집중 광선 방식이다. 광선 길이가 메인 대상까지의 거리이고(메인에서 끝난다), 메인이 죽으면 거리와 상관없이 가장 가까운 살아 있는 적이 새 메인이 된다. 살아 있는 적이 없으면 광선이 사라진다</summary>
+            public float focusAim;
         }
 
         public class FieldBase

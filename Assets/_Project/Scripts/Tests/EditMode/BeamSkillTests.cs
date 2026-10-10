@@ -202,7 +202,240 @@ namespace Game.Tests
 
             Assert.AreEqual(CastType.Beam, world.Data[FocusBeamId].castType);
             Assert.AreEqual(6, main.Damage, "기본 피해 3 + 메인 추가 100%");
-            Assert.AreEqual(3, other.Damage);
+            Assert.AreEqual(0, other.Damage, "집중 광선은 메인 대상에서 끝나 그 뒤쪽은 맞지 않는다");
+        }
+
+        [Test(Description = "초점 조정: 메인 대상을 맞힐 때마다 추가 피해가 광선이 끝날 때 최대값까지 선형으로 늘고 다른 적은 그대로다")]
+        public void FocusRamp_MainTargetExtraDamageGrowsEachPulse()
+        {
+            var main = new HitRecorder { Position = new Vector2(4, 0) };
+            var other = new HitRecorder { Position = new Vector2(7, 0) };
+            var provider = new CatalogWorld.Targets();
+            provider.All.AddRange(new[] { main, other });
+            var pool = Pool();
+            var zone = pool.Get();
+            // 지속 3초에 1초 간격 3번, 최대 +150%: 추가 피해는 50% → 100% → 150%
+            zone.Init(pool, provider, Vector2.zero, new AreaSettings(0, 3, 1, length: 10, width: 1, baseDamage: 10, focusRampMax: 1.5f), Damage(10),
+                AttackReactions.Empty, aimTarget: main);
+
+            Tick(zone, .1f);
+            Assert.AreEqual(10 + 5, main.Damage);
+            Tick(zone, 1f);
+            Assert.AreEqual(15 + 10 + 10, main.Damage);
+            Tick(zone, 1f);
+            Assert.AreEqual(35 + 10 + 15, main.Damage);
+            Assert.AreEqual(30, other.Damage, "메인 대상이 아닌 적은 기본 피해만 받는다");
+        }
+
+        [Test(Description = "집중 폭파: 메인 대상을 맞힐 때마다 주변 적이 폭발 피해를 받고 반경 밖은 받지 않는다")]
+        public void FocusBlast_ExplodesAroundTheMainTargetOnly()
+        {
+            var main = new HitRecorder { Position = new Vector2(4, 0) };
+            var neighbor = new HitRecorder { Position = new Vector2(4, 1.5f) };   // 광선 폭 밖, 폭발 반경 안
+            var far = new HitRecorder { Position = new Vector2(4, 5) };
+            var provider = new CatalogWorld.Targets();
+            provider.All.AddRange(new[] { main, neighbor, far });
+            var pool = Pool();
+            var zone = pool.Get();
+            zone.Init(pool, provider, Vector2.zero, new AreaSettings(0, 1, 1, length: 10, width: 1, baseDamage: 10, focusBlastRadius: 2, focusBlastRatio: .5f), Damage(10),
+                AttackReactions.Empty, aimTarget: main);
+
+            Tick(zone, .1f);
+
+            Assert.AreEqual(5, neighbor.Damage, "공격 한 번 피해 10의 50%");
+            Assert.AreEqual(0, far.Damage);
+            Assert.AreEqual(10 + 5, main.Damage, "메인 대상도 폭발 안에 있다");
+        }
+
+        [Test(Description = "집중 광선: 집중 폭파와 초점 조정 카드는 초점을 선행으로 하고 스탯을 켠다")]
+        public void FocusBeam_BlastAndAdjustCardsRequireFocusAndEnableTheirStats()
+        {
+            world = new CatalogWorld();
+            var beam = world.Create(FocusBeamId);
+            var cards = world.Data[FocusBeamId].upgrades;
+            foreach (var id in new[] { "focus_beam_blast", "focus_beam_adjust" })
+            {
+                Assert.AreEqual("focus_beam_focus", cards.Find(c => c.id == id).requiredCardCounts.Single().cardId);
+            }
+            Assert.AreEqual(13, cards.Find(c => c.id == "focus_beam_adjust").minPermanentLevel);
+
+            world.Take(beam, "focus_beam_focus", "focus_beam_blast", "focus_beam_adjust");
+
+            Assert.AreEqual(1.5f, beam.Stats.Beam.FocusBlastRadius);
+            Assert.AreEqual(1.5f, beam.Stats.Beam.FocusRampMax, .0001f);
+        }
+
+        private (AreaZone zone, HitRecorder main, HitRecorder bend, HitRecorder second, HitRecorder beyond) Refracted(int refractions)
+        {
+            var main = new HitRecorder { Position = new Vector2(4, 0) };
+            var bend = new HitRecorder { Position = new Vector2(4, 2.5f) };       // 메인 대상에서 가장 가까운 다른 적: 첫 굴절 끝
+            var second = new HitRecorder { Position = new Vector2(8, 2.5f) };      // 첫 굴절 끝에서 가장 가까운 적: 두 번째 굴절 끝
+            var beyond = new HitRecorder { Position = new Vector2(9, 0) };         // 곧게 뻗었다면 맞았을 메인 대상 뒤쪽
+            var provider = new CatalogWorld.Targets();
+            provider.All.AddRange(new[] { main, bend, second, beyond });
+            var pool = Pool();
+            var zone = pool.Get();
+            zone.Init(pool, provider, Vector2.zero, new AreaSettings(0, 1, 1, length: 14, width: 1, refractions: refractions), Damage(10),
+                AttackReactions.Empty, aimTarget: main);
+            return (zone, main, bend, second, beyond);
+        }
+
+        [Test(Description = "굴절 1: 광선이 메인 대상에서 끝나 가까운 다른 적으로 꺾이고, 메인 대상 뒤쪽과 굴절 횟수를 넘은 적은 맞지 않는다")]
+        public void Refraction_BendsAtTheMainTargetTowardTheNearestOtherEnemy()
+        {
+            var (zone, main, bend, second, beyond) = Refracted(1);
+
+            Tick(zone, .1f);
+
+            Assert.AreEqual(10, main.Damage);
+            Assert.AreEqual(10, bend.Damage);
+            Assert.AreEqual(0, second.Damage, "굴절 횟수를 넘은 적은 맞지 않는다");
+            Assert.AreEqual(0, beyond.Damage, "굴절하면 메인 대상 뒤로 뻗지 않는다");
+        }
+
+        [Test(Description = "굴절 2: 두 번째 굴절 끝의 적까지 이어진다")]
+        public void Refraction_TwoBendsReachTheSecondEnemy()
+        {
+            var (zone, main, bend, second, beyond) = Refracted(2);
+
+            Tick(zone, .1f);
+
+            Assert.AreEqual(10, main.Damage);
+            Assert.AreEqual(10, bend.Damage);
+            Assert.AreEqual(10, second.Damage);
+            Assert.AreEqual(0, beyond.Damage);
+        }
+
+        [Test(Description = "겨눈 적이 죽으면 굴절 없이 마지막 방향으로 곧게 뻗는다")]
+        public void Refraction_FallsBackToStraightWhenTheMainTargetIsDead()
+        {
+            var (zone, main, bend, _, beyond) = Refracted(1);
+            main.Dead = true;
+
+            Tick(zone, .1f);
+
+            Assert.AreEqual(10, beyond.Damage, "곧게 뻗어 선 위의 적을 맞힌다");
+            Assert.AreEqual(0, bend.Damage);
+        }
+
+        [Test(Description = "굴절이 없으면 지금처럼 곧게 뻗어 메인 대상 뒤쪽도 맞는다")]
+        public void Refraction_NoneKeepsTheStraightBeam()
+        {
+            var (zone, _, bend, _, beyond) = Refracted(0);
+
+            Tick(zone, .1f);
+
+            Assert.AreEqual(10, beyond.Damage);
+            Assert.AreEqual(0, bend.Damage);
+        }
+
+        [Test(Description = "집중 굴절은 집중 증폭을 선행으로 하고 굴절 횟수를 늘린다 (최대 2)")]
+        public void FocusBeam_RefractCardRequiresAmplifyAndAddsRefraction()
+        {
+            world = new CatalogWorld();
+            var beam = world.Create(FocusBeamId);
+            var card = world.Data[FocusBeamId].upgrades.Find(c => c.id == "focus_beam_refract");
+            Assert.AreEqual("focus_beam_amplify", card.requiredCardCounts.Single().cardId);
+            Assert.AreEqual(2, card.maxPickCount);
+
+            world.Take(beam, "focus_beam_amplify", "focus_beam_refract", "focus_beam_refract");
+
+            Assert.AreEqual(2, beam.Stats.Beam.Refractions);
+        }
+
+        // ── 집중 광선 방식: 메인까지가 길이, 메인이 죽으면 가장 가까운 적으로 교체 ───────────────
+
+        private (AreaZone zone, CatalogWorld.Targets provider) FocusZone(float rampMax = 0, params HitRecorder[] enemies)
+        {
+            var provider = new CatalogWorld.Targets();
+            provider.All.AddRange(enemies);
+            var pool = Pool();
+            var zone = pool.Get();
+            zone.Init(pool, provider, Vector2.zero, new AreaSettings(0, 3, 1, length: 14, width: 1, baseDamage: 10, focusRampMax: rampMax, focusAim: true), Damage(10),
+                AttackReactions.Empty, aimTarget: enemies.FirstOrDefault());
+            return (zone, provider);
+        }
+
+        [Test(Description = "광선 길이는 메인 대상까지의 거리다: 메인에서 끝나고 뒤쪽은 맞지 않는다")]
+        public void FocusAim_BeamEndsAtTheMainTarget()
+        {
+            var main = new HitRecorder { Position = new Vector2(4, 0) };
+            var behind = new HitRecorder { Position = new Vector2(9, 0) };
+            var between = new HitRecorder { Position = new Vector2(2, 0) };
+            var (zone, _) = FocusZone(0, main, behind, between);
+
+            Tick(zone, .1f);
+
+            Assert.AreEqual(10, main.Damage);
+            Assert.AreEqual(10, between.Damage, "메인까지의 선 위의 적은 맞는다");
+            Assert.AreEqual(0, behind.Damage);
+        }
+
+        [Test(Description = "메인이 죽으면 거리와 상관없이 가장 가까운 살아 있는 적이 새 메인이 되고 광선이 그쪽으로 간다")]
+        public void FocusAim_MainDiesAndTheNearestAliveEnemyBecomesMain()
+        {
+            var first = new HitRecorder { Position = new Vector2(4, 0) };
+            var next = new HitRecorder { Position = new Vector2(4, 30) };          // 광선 길이(14) 밖이어도 새 메인이 된다
+            var farther = new HitRecorder { Position = new Vector2(-6, 40) };
+            var (zone, _) = FocusZone(0, first, next, farther);
+            Tick(zone, .1f);
+            first.Dead = true;
+
+            Tick(zone, 1f);
+
+            Assert.AreEqual(10, next.Damage, "가장 가까운 살아 있는 적이 새 메인이다");
+            Assert.AreEqual(0, farther.Damage);
+            Assert.AreEqual(10, first.Damage, "죽은 적은 더 맞지 않는다");
+        }
+
+        [Test(Description = "살아 있는 적이 없으면 광선이 사라지고 시전 시간은 흐르며, 적이 나타나면 다시 생겨 그 적이 메인이 된다")]
+        public void FocusAim_NoEnemyMakesTheBeamDisappearAndItComesBackWhenOneAppears()
+        {
+            var only = new HitRecorder { Position = new Vector2(4, 0) };
+            var (zone, provider) = FocusZone(0, only);
+            Tick(zone, .1f);
+            only.Dead = true;
+
+            Tick(zone, 1f);
+            Assert.AreEqual(10, only.Damage, "광선이 사라진 동안에는 아무도 맞지 않는다");
+
+            var arrived = new HitRecorder { Position = new Vector2(3, 3) };
+            provider.All.Add(arrived);
+            Tick(zone, 1f);
+
+            Assert.AreEqual(10, arrived.Damage, "나타난 적이 새 메인이 되어 맞는다");
+        }
+
+        [Test(Description = "새 메인은 초점 조정의 누적을 처음부터 쌓는다")]
+        public void FocusAim_NewMainRestartsTheRamp()
+        {
+            var first = new HitRecorder { Position = new Vector2(4, 0) };
+            var second = new HitRecorder { Position = new Vector2(4, 8) };
+            var (zone, _) = FocusZone(1.5f, first, second);   // 지속 3초 / 1초 간격 3번: 추가 피해 +50% → +100% → +150%
+
+            Tick(zone, .1f);
+            Assert.AreEqual(15, first.Damage, "첫 공격: 10 + 50%");
+            first.Dead = true;
+            Tick(zone, 1f);
+
+            Assert.AreEqual(15, second.Damage, "새 메인의 첫 공격도 +50%부터다 (이어받으면 +100%인 20)");
+        }
+
+        [Test(Description = "집중 광선(데이터)은 집중 광선 방식이라 메인 대상 뒤쪽을 맞히지 않고, 에너지 빔은 그대로 뒤쪽까지 뚫는다")]
+        public void FocusBeam_EndsAtTheMainTargetWhileSunBeamKeepsPiercing()
+        {
+            world = new CatalogWorld();
+            var focus = world.Create(FocusBeamId);
+            var sun = world.Create(SunBeamId);
+            var main = world.AddEnemy(4, 0);
+            var behind = world.AddEnemy(9, 0);
+            typeof(SkillCaster).GetMethod("OnFire", Flags).Invoke(focus, null);
+            typeof(SkillCaster).GetMethod("OnFire", Flags).Invoke(sun, null);
+            foreach (var zone in Zones()) { Tick(zone, .1f); }
+
+            Assert.IsTrue(world.Data[FocusBeamId].baseStats.beam.focusAim > 0);
+            Assert.AreEqual(3 + 5, main.Damage, "집중 광선 3 + 에너지 빔 5");
+            Assert.AreEqual(5, behind.Damage, "뒤쪽은 에너지 빔만 맞는다");
         }
 
         [Test(Description = "연속 광선은 공격 횟수를 15 늘린다 (지속 시간은 그대로)")]

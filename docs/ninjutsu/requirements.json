@@ -3760,7 +3760,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 19,
+        "cardId": "focus_beam_blast",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "connected",
+        "variantConnected": false
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -3795,7 +3800,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 19,
+        "cardId": "focus_beam_adjust",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "connected",
+        "variantConnected": false
       },
       "decisionStatus": "hold",
       "readyForProduction": false
@@ -3830,7 +3840,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 19,
+        "cardId": "focus_beam_refract",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "connected",
+        "variantConnected": false
       },
       "decisionStatus": "hold",
       "readyForProduction": false
@@ -3915,7 +3930,12 @@
         ]
       },
       "runtime": {
-        "state": "not-implemented"
+        "weaponId": 19,
+        "cardId": "focus_beam_arrow",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "connected",
+        "variantConnected": false
       },
       "decisionStatus": "hold",
       "readyForProduction": false

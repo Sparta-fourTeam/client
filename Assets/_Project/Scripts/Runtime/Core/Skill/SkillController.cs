@@ -59,7 +59,8 @@ namespace Game.Core
                 dataTable.Add(data.id, data);
                 permanentLevels[data.id] = progression?.GetLevel(data.progressionId) ?? 0;
             }
-            childCaster = new ChildSkillCaster(CreateChild);
+            childCaster = new ChildSkillCaster(CreateChild,
+                id => dataTable.TryGetValue(id, out var child) ? MirroredEffects.For(child, dataTable, this) : null);
             foreach (int id in startingSkills.GetSkillIds()) { AddWeapon(id); }
         }
 

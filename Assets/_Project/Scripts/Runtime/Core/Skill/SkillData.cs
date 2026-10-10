@@ -29,6 +29,8 @@ namespace Game.Core
         public SkillBaseStats baseStats;
         /// <summary>다른 스킬의 효과로만 시전되는 스킬. 새 스킬 카드로 제시하지 않는다</summary>
         public bool childOnly;
+        /// <summary>이 스킬이 시전될 때 효과를 가져올 다른 스킬의 카드. 그 카드를 얻은 횟수만큼 적용한다 (집중 화살이 화살의 일제 사격을 쓰는 경우)</summary>
+        public List<MirroredCard> mirrorCards;
         public List<SkillUpgradeOption> upgrades;
         // 최초 습득을 제외한 전투 중 성공한 강화 횟수 상한.
         public int maxLevel;
