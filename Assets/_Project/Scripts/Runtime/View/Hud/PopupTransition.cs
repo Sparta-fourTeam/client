@@ -1,6 +1,7 @@
 using System;
 using DG.Tweening;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Game.View
 {
@@ -157,6 +158,21 @@ namespace Game.View
     /// <summary>패널을 켜고 끄는 한 곳. PopupTransition이 있으면 전환으로, 없으면 바로 켜고 끈다 (씬에 아직 연결하지 않은 경우도 동작한다)</summary>
     internal static class PopupPanel
     {
+        /// <summary>보상 목록 길이에 맞춰 창 높이를 정하고, 긴 목록은 스크롤 영역에 남긴다.</summary>
+        public static void FitContent(ScrollRect scroll, float minHeight, float maxHeight)
+        {
+            Canvas.ForceUpdateCanvases();
+            var window = (RectTransform)scroll.transform.parent;
+            var safeArea = (RectTransform)window.parent;
+            float available = safeArea.rect.height > 96f ? safeArea.rect.height - 96f : maxHeight;
+            var viewport = (RectTransform)scroll.transform;
+            float chrome = viewport.offsetMin.y - viewport.offsetMax.y;
+            float preferred = LayoutUtility.GetPreferredHeight(scroll.content) + chrome;
+            window.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,
+                Mathf.Clamp(preferred, Mathf.Min(minHeight, available), Mathf.Min(maxHeight, available)));
+            Canvas.ForceUpdateCanvases();
+        }
+
         public static void Set(GameObject panel, PopupTransition transition, bool visible)
         {
             if (transition == null)

@@ -55,6 +55,8 @@ namespace Game.Core
         /// <summary>0 = 클리어 안 함, 1 = 클리어, 2 = 체력 50%, 3 = 체력 100%</summary>
         public int ClearRating(int stageId) => _snapshot.stageProgress.Find(s => s.stageId == stageId)?.clearRating ?? 0;
 
+        public int ClaimedRating(int stageId) => _snapshot.stageProgress.Find(s => s.stageId == stageId)?.claimedRating ?? 0;
+
         /// <summary>도전 가능한 가장 높은 스테이지. 기록이 없으면 1</summary>
         public int HighestUnlockedStage =>
             _snapshot.stageProgress.Count == 0 ? 1 : _snapshot.stageProgress.Max(s => s.stageId);
