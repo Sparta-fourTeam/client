@@ -15,7 +15,7 @@ namespace Game.Boot
 
         protected override void Configure(IContainerBuilder builder)
         {
-            UiInstaller.Install(builder, _uiHost);
+            new UiInstaller(_uiHost).Install(builder);
             // 어떤 스테이지인지는 로비에서 정해 StageContext에 남긴다. Stage 씬을 바로 열었으면 첫 스테이지 값을 쓴다
             builder.Register(resolver =>
                 resolver.Resolve<GameDataStore>().StageOrFirst(resolver.Resolve<StageContext>().StageId), Lifetime.Scoped);

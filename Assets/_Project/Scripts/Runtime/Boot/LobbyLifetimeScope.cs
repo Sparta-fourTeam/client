@@ -12,7 +12,7 @@ namespace Game.Boot
 
         protected override void Configure(IContainerBuilder builder)
         {
-            UiInstaller.Install(builder, _uiHost);
+            new UiInstaller(_uiHost).Install(builder);
             builder.Register<IUtcClock, SystemUtcClock>(Lifetime.Singleton);
             builder.RegisterEntryPoint<LobbyProfileRefresher>().AsSelf();
             builder.RegisterEntryPoint<LobbyModel>();

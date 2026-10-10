@@ -6,11 +6,18 @@ using VContainer.Unity;
 
 namespace Game.Boot
 {
-    internal static class UiInstaller
+    internal sealed class UiInstaller : IInstaller
     {
-        public static void Install(IContainerBuilder builder, UiHost host)
+        private readonly UiHost _host;
+
+        public UiInstaller(UiHost host)
         {
-            if (host == null)
+            _host = host;
+        }
+
+        public void Install(IContainerBuilder builder)
+        {
+            if (_host == null)
             {
                 return; // Development scenes without a UI host.
             }
@@ -18,8 +25,8 @@ namespace Game.Boot
             var registry = new UiRegistry();
             builder.RegisterInstance<IUiRegistry>(registry);
             builder.Register<IUiPrefabProvider, DirectUiPrefabProvider>(Lifetime.Scoped);
-            builder.RegisterBuildCallback(resolver => host.BuildAsync(resolver.Resolve<IUiPrefabProvider>(), registry,
-                resolver.InjectGameObject, host.GetCancellationTokenOnDestroy()).Forget(Debug.LogException));
+            builder.RegisterBuildCallback(resolver => _host.BuildAsync(resolver.Resolve<IUiPrefabProvider>(), registry,
+                resolver.InjectGameObject, _host.GetCancellationTokenOnDestroy()).Forget(Debug.LogException));
         }
     }
 }
