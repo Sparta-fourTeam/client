@@ -33,6 +33,28 @@ namespace Game.Tests
             }
         }
 
+        private sealed class DeferredBattleApi : IBattleApi
+        {
+            public int Calls;
+            public readonly UniTaskCompletionSource<StartBattleResponse> Response = new();
+            public UniTask<StartBattleResponse> StartBattle(int stageId, int dataRevision)
+            {
+                Calls++;
+                return Response.Task;
+            }
+            public UniTask<SubmitResultResponse> SubmitResult(SubmitResultRequest request) =>
+                throw new System.NotSupportedException();
+        }
+
+        private sealed class FailingNavigator : ISceneNavigator
+        {
+            public SceneId Current => SceneId.Lobby;
+            public UniTask GoToStage(int stageId) => UniTask.FromException(new System.InvalidOperationException("scene failed"));
+            public UniTask GoToLoading() => throw new System.NotSupportedException();
+            public UniTask GoToLobby() => throw new System.NotSupportedException();
+            public UniTask RestartStage() => throw new System.NotSupportedException();
+        }
+
         private static void Set(object target, string name, object value) =>
             target.GetType().GetField(name, Private).SetValue(target, value);
         private static T Get<T>(object target, string name) => (T)target.GetType().GetField(name, Private).GetValue(target);
@@ -109,6 +131,37 @@ namespace Game.Tests
             Claim().GetAwaiter().GetResult();
             Assert.AreEqual(2, _api.Calls);
             Assert.AreEqual(3, _profile.ClaimedRating(1));
+        }
+
+        [TestCase(true)]
+        [TestCase(false)]
+        public void LaunchFault_RestoresInputsAndAllowsClosing(bool networkFailure)
+        {
+            var battleApi = new DeferredBattleApi();
+            Set(_screen, "_launcher", new BattleLauncher(battleApi, new StageContext(), new FailingNavigator(), null));
+            Set(_screen, "_energy", 100);
+            var enter = Get<UnityEngine.UI.Button>(_screen, "_enterButton");
+            enter.onClick.Invoke();
+            enter.onClick.Invoke();
+            Assert.AreEqual(1, battleApi.Calls);
+            Assert.IsFalse(Get<UnityEngine.UI.Button>(_screen, "_backButton").interactable);
+
+            UnityEngine.TestTools.LogAssert.Expect(LogType.Exception,
+                new System.Text.RegularExpressions.Regex(networkFailure ? "OFFLINE" : "scene failed"));
+            if (networkFailure) { battleApi.Response.TrySetException(new ApiException(ApiErrorKind.Network, "OFFLINE")); }
+            else { battleApi.Response.TrySetResult(new StartBattleResponse { battleId = "test", seed = 1 }); }
+
+            Assert.IsFalse(Get<bool>(_screen, "_launching"));
+            Assert.IsTrue(enter.interactable);
+            Assert.IsTrue(Get<UnityEngine.UI.Button>(_screen, "_infoButton").interactable);
+            Assert.IsTrue(Get<UnityEngine.UI.Button>(_screen, "_rewardAreaButton").interactable);
+            StringAssert.Contains("입장하지 못했어요", Get<TMPro.TMP_Text>(_screen, "_rewardStatus").text);
+            var back = Get<UnityEngine.UI.Button>(_screen, "_backButton");
+            Assert.IsTrue(back.interactable);
+            back.onClick.Invoke();
+            Assert.IsFalse(Get<GameObject>(_screen, "_panel").activeSelf);
+            _screen.Open();
+            Assert.IsTrue(enter.interactable);
         }
 
         [Test]

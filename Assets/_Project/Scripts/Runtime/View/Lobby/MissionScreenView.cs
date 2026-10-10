@@ -179,10 +179,19 @@ namespace Game.View
                 return;
             }
 
-            // 연타로 두 번 발급되지 않게 막는다. 성공하면 씬이 바뀌고, 실패하면 StartFailed에서 푼다
+            // 연타를 막고, 거절 메시지와 비동기 예외 모두에서 입력을 복구한다.
             _launching = true;
             Refresh();
-            _launcher.Launch(_stageId).Forget(Debug.LogException);
+            _launcher.Launch(_stageId).Forget(OnLaunchException);
+        }
+
+        private void OnLaunchException(System.Exception error)
+        {
+            if (this == null) { return; }
+            _launching = false;
+            Refresh();
+            _rewardStatus.text = "관문에 입장하지 못했어요. 다시 시도하세요.";
+            Debug.LogException(error);
         }
 
         private void OnStartFailed(StartFailed message)
