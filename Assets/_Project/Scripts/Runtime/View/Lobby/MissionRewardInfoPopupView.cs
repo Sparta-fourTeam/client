@@ -7,7 +7,7 @@ using UnityEngine.UI;
 namespace Game.View
 {
     /// <summary>미수령 보상이 없을 때 선택한 상자의 조건과 1회성 보상을 보여준다.</summary>
-    public sealed class MissionRewardInfoPopupView : MonoBehaviour
+    public sealed class MissionRewardInfoPopupView : HudView
     {
         [SerializeField] private GameObject _panel;
         [SerializeField] private PopupTransition _transition;
@@ -17,7 +17,7 @@ namespace Game.View
         [SerializeField] private ResultRewardListView _rewards;
         [SerializeField] private ItemIconTable _itemIcons;
 
-        private void Awake()
+        protected override void InitializeView()
         {
             _panel.SetActive(false);
             _closeButton.onClick.AddListener(Close);

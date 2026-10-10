@@ -67,10 +67,10 @@ Assets/_Project/
   Data/ Settings/ Scenes/ Scripts/
 ```
 
-- `Prefabs/Monsters`에는 몬스터 리그 프리팹(`*_Animated`)만 둔다. `MonsterAnimationBaker`가 이 폴더의 프리팹을 전부 몬스터로 보고 애니메이션을 만들기 때문이다. 웨이브용 프리팹은 `Prefabs/Stage`에 둔다.
+- `Prefabs/Monsters`에는 몬스터 리그 프리팹(`*_Animated`)을, 웨이브용 프리팹은 `Prefabs/Stage`에 둔다.
 - 이펙트용 텍스처(`fx_*`, `Electric01_3x3`)는 `Textures`에 두고 나머지 이미지는 `Sprites`에 둔다. 임포트 타입은 쓰임을 따른다. 스프라이트로도 쓰는 이미지(`fx_soft`는 재질 텍스처와 스프라이트로 함께 쓴다)는 Sprite 타입이고, 재질에서만 쓰는 `Electric01_3x3`은 Default 타입이다. Sprite 타입 이미지도 재질의 텍스처로 그대로 쓸 수 있다. 리그 PSD는 `PSD`에 둔다. 프리팹이 PSD의 스프라이트 하위 에셋을 참조한다.
 - `Resources`에 넣은 에셋은 참조와 무관하게 빌드에 포함되므로 코드가 경로로 불러오는 것만 둔다.
-- 에디터 도구(`MonsterAnimationBaker`, `WaveMonsterVisualLinker`, `HudLayoutPreview`, `SkillSandboxMenu`)와 테스트는 에셋 경로를 문자열로 갖고 있다. 폴더를 옮기거나 이름을 바꾸면 이 경로도 함께 고친다. 이동은 Unity 안에서 하거나 `.meta`를 같이 옮겨 GUID를 유지한다. 몬스터 리그(PSD, 애니메이션, 프리팹)는 한 번 만들어진 에셋이 원본이다. PNG에서 PSD를 만들던 생성 도구와 입력 PNG는 삭제했고, 필요하면 git 이력에서 복구한다.
+- 에디터 도구(`UI Workspace`, `SkillSandboxMenu`)와 테스트는 에셋 경로를 문자열로 갖고 있다. 폴더를 옮기거나 이름을 바꾸면 이 경로도 함께 고친다. 이동은 Unity 안에서 하거나 `.meta`를 같이 옮겨 GUID를 유지한다. 몬스터 리그(PSD, 애니메이션, 프리팹)는 한 번 만들어진 에셋이 원본이다. PNG에서 PSD를 만들던 생성 도구와 입력 PNG는 삭제했고, 필요하면 git 이력에서 복구한다.
 - 미사용 에셋을 찾을 때 GUID 참조만 보면 안 된다. 코드가 경로나 이름 문자열로 읽는 에셋은 GUID 감사에 참조되지 않은 것으로 보인다. 지우기 전에 Unity의 Find References와 코드의 경로 문자열을 함께 확인한다.
 - 이름 규칙: 한글, 공백, 대문자 확장자(`.PNG`)를 쓰지 않는다. 프리팹, 재질, 애니메이션, 씬 같은 Unity 에셋은 PascalCase로 짓는다(`SkillScreen`, `ResultPopup`). 기존 소재 이미지(`fx_ring.png`, `bg_1.png`)는 영문 snake_case 이름을 유지해도 된다. 새 파일은 숫자로 시작하지 않고 버전은 `_v2`처럼 접미로 붙인다. 폴더를 합쳤으므로 다른 종류의 파일과 이름이 겹치지 않게 접두사를 붙인다.
 - 실험용 씬이나 테스트용 복제 프리팹은 커밋하지 않는다. 빌드에 연결되지 않은 에셋은 쓰임을 확인하고 지운다.

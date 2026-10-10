@@ -6,7 +6,7 @@ using UnityEngine.UI;
 namespace Game.View
 {
     /// <summary>선택 관문의 등장 요마와 획득 가능한 보상을 보여준다.</summary>
-    public sealed class MissionPopupView : MonoBehaviour
+    public sealed class MissionPopupView : HudView
     {
         [SerializeField] private GameObject _panel;
         [SerializeField] private PopupTransition _transition;
@@ -18,7 +18,7 @@ namespace Game.View
         [SerializeField] private ItemIconTable _itemIcons;
         [SerializeField] private MonsterDisplayTable _monsterDisplay;
 
-        private void Awake()
+        protected override void InitializeView()
         {
             _panel.SetActive(false);
             _closeButton.onClick.AddListener(Close);

@@ -19,7 +19,7 @@ namespace Game.Tests
         [SetUp]
         public void SetUp()
         {
-            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/UI/ResultPopup.prefab");
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/UI/Stage/ResultPopup.prefab");
             _root = Object.Instantiate(prefab);
             _popup = _root.GetComponentInChildren<ResultPopupView>(true);
             _tip = (ResultTipView)typeof(ResultPopupView).GetField("_tip", Flags).GetValue(_popup);

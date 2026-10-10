@@ -30,7 +30,7 @@ namespace Game.View
             _profile = profile;
             Track(requestFailed.Subscribe(m => Debug.LogWarning($"[EnergyRecover] 회복 실패: {m.Code}")));
         }
-        private void Awake()
+        protected override void InitializeView()
         {
             _panel.SetActive(false);
             _closeButton.onClick.AddListener(() => PopupPanel.Set(_panel, _transition, false));

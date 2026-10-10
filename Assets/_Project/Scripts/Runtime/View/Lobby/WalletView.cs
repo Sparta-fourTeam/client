@@ -26,6 +26,11 @@ namespace Game.View
         // 처음 값은 바로 보이고, 이후 변화는 숫자가 새 값까지 올라가거나 내려간다
         private void OnWalletChanged(WalletChanged message)
         {
+            if (!message.HasValue)
+            {
+                return;
+            }
+
             int target = message.Gold;
             _countTween?.Kill();
             if (!_hasValue || !isActiveAndEnabled || target == _shown)
@@ -49,10 +54,10 @@ namespace Game.View
             _value.text = CurrencyFormat.Format(value);
         }
 
-        protected override void OnDestroy()
+        protected override void DisposeView()
         {
             _countTween?.Kill();
-            base.OnDestroy();
+            base.DisposeView();
         }
     }
 }

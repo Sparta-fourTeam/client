@@ -1,6 +1,8 @@
 using Game.Core;
 using Game.Core.Defense;
 using Game.Core.Stage;
+using Game.View;
+using UnityEngine;
 using VContainer;
 using VContainer.Unity;
 
@@ -9,8 +11,11 @@ namespace Game.Boot
 {
     public sealed class StageLifetimeScope : LifetimeScope
     {
+        [SerializeField] private UiHost _uiHost;
+
         protected override void Configure(IContainerBuilder builder)
         {
+            new UiInstaller(_uiHost).Install(builder);
             // 어떤 스테이지인지는 로비에서 정해 StageContext에 남긴다. Stage 씬을 바로 열었으면 첫 스테이지 값을 쓴다
             builder.Register(resolver =>
                 resolver.Resolve<GameDataStore>().StageOrFirst(resolver.Resolve<StageContext>().StageId), Lifetime.Scoped);

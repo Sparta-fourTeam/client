@@ -361,7 +361,7 @@ python3 docs/ninjutsu/validate_requirements.py
 - **환경**: 영구 레벨(`(+)` 변형과 해금 조건 확인), 시간 배속(0.25x~2x), 구성 저장·불러오기 3칸(`PlayerPrefs`, 이 기기에만 남음).
 - **스킬 정보**: 켠 스킬마다 값이 0이 아닌 스탯 묶음과 연결된 자식 스킬.
 
-구현은 `Game.Sandbox` 어셈블리다. 조작 로직(`SkillSandboxSession`)은 UI와 분리돼 있고(샌드박스 전용 테스트는 두지 않는다), 패널(`SandboxPanel`)은 디버그 도구라 IMGUI로 만들어 프리팹과 EventSystem이 필요 없다. 쿨타임만 게임과 같은 uGUI `SkillHud` 프리팹(`Prefabs/UI/SkillHud.prefab`, `HudCanvas`도 같은 프리팹을 중첩해 쓴다)을 재사용한다. 새 스킬은 코드를 고칠 필요 없이 `Skills.json`과 `SkillAssetTable` 항목만 맞으면 목록에 나온다. 플레이 모드를 켠 채 에디터가 포커스를 잃으면 게임 루프가 멈추므로(Unity 기본 동작) 자동화로 확인할 때는 `Application.runInBackground`를 켠다.
+구현은 `Game.Sandbox` 어셈블리다. 조작 로직(`SkillSandboxSession`)은 UI와 분리돼 있고(샌드박스 전용 테스트는 두지 않는다), 패널(`SandboxPanel`)은 디버그 도구라 IMGUI로 만들어 프리팹과 EventSystem이 필요 없다. 쿨타임만 게임과 같은 uGUI `SkillHud` 프리팹(`Prefabs/UI/Stage/SkillHud.prefab`, `HudCanvas`도 같은 프리팹을 중첩해 쓴다)을 재사용한다. 새 스킬은 코드를 고칠 필요 없이 `Skills.json`과 `SkillAssetTable` 항목만 맞으면 목록에 나온다. 플레이 모드를 켠 채 에디터가 포커스를 잃으면 게임 루프가 멈추므로(Unity 기본 동작) 자동화로 확인할 때는 `Application.runInBackground`를 켠다.
 
 ### 6.4 위험과 주의
 

@@ -57,7 +57,7 @@ namespace Game.Tests
         [Test(Description = "스킬 HUD 프리팹의 슬롯 수는 스킬 슬롯 수의 출처(SkillSlotLimit.Max)와 같다")]
         public void HudPrefab_HasExactlyAsManySlotsAsTheLimit()
         {
-            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/UI/SkillHud.prefab");
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/UI/Stage/SkillHud.prefab");
             var slots = (SkillSlotView[])typeof(SkillHudView).GetField("_slots", Private).GetValue(prefab.GetComponent<SkillHudView>());
 
             Assert.AreEqual(SkillSlotLimit.Max, slots.Length);

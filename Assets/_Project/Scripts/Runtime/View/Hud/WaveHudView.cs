@@ -76,7 +76,7 @@ namespace Game.View
             Track(stateChanged.Subscribe(OnStateChanged));
         }
 
-        private void Awake()
+        protected override void InitializeView()
         {
             int n = _lightningBolts != null ? _lightningBolts.Length : 0;
             _boltBaseY = new float[n];
@@ -346,7 +346,7 @@ namespace Game.View
                 .SetLink(gameObject);
         }
 
-        protected override void OnDestroy()
+        protected override void DisposeView()
         {
             _fillTween?.Kill();
             _punchTween?.Kill();
@@ -358,7 +358,7 @@ namespace Game.View
             _calmTween?.Kill();
             _sparkStopTween?.Kill();
             if (_boltTweens != null) { foreach (var t in _boltTweens) { t?.Kill(); } }
-            base.OnDestroy();
+            base.DisposeView();
         }
     }
 }

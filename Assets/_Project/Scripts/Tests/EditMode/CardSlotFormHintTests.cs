@@ -21,7 +21,7 @@ namespace Game.Tests
         [SetUp]
         public void SetUp()
         {
-            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/UI/CardSelect.prefab");
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/UI/Stage/CardSelect.prefab");
             _root = Object.Instantiate(prefab);
             _texture = new Texture2D(2, 2);
             _sprite = Sprite.Create(_texture, new Rect(0, 0, 2, 2), Vector2.zero);

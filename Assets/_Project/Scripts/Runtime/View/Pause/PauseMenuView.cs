@@ -45,7 +45,7 @@ namespace Game.View
             Track(stateChanged.Subscribe(OnStateChanged));
         }
 
-        private void Awake()
+        protected override void InitializeView()
         {
             _panel.SetActive(false);
             _resumeButton.onClick.AddListener(() => _stageManager.Resume());

@@ -28,7 +28,7 @@ namespace Game.View
             Track(submitFailed.Subscribe(_ => Hide()));
         }
 
-        private void Awake()
+        protected override void InitializeView()
         {
             _panel.SetActive(false);
         }

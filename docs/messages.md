@@ -40,6 +40,8 @@
 
 로비 메시지(`WalletChanged`, `EnergyChanged`, `UpgradeChanged`, `ProgressChanged`, `LobbyRequestFailed`)는 새 파일 `Core/Messages/LobbyMessages.cs`에 둔다.
 
+`WalletChanged.HasValue`는 실제 발행된 잔액인지 구분한다. 생성자로 만든 메시지는 금액이 0이어도 true이며, 미발행 버퍼가 전달하는 `default(WalletChanged)`는 false다. 재화 UI는 false인 메시지를 무시하고 첫 실제 잔액은 카운트 효과 없이 표시한다.
+
 `EnemyDied.IsSummoned`가 true이면 주기 소환으로 생긴 적이다(분열체는 false). 소환체는 게이지 총량에 포함되지 않으므로 `WaveProgress`는 세지 않고, `BattleStats`의 처치 수에는 센다.
 
 ## 구독처 확인: MessagePipe Diagnostics
@@ -62,12 +64,8 @@ builder.RegisterBuildCallback(c => GlobalMessagePipe.SetProvider(c.AsServiceProv
 
 언제 메시지를 쓰고 언제 직접 읽는지는 [architecture.md](architecture.md)의 소통 규칙을 본다. 상태를 나타내는 메시지(`~Changed`)는 Buffered로 만들어서, 늦게 구독한 뷰도 현재 값을 바로 받게 한다.
 
-## 발행 확인: Message Debugger
+## 실제 흐름 확인
 
-Diagnostics 창은 구독만 보여주고 발행은 못 한다. 내 UI나 로직이 메시지를 제대로 받는지 보려면 플레이 중에 **Tools → Project Nova → Message Debugger**를 연다. 버튼으로 메시지를 직접 발행한다.
+재생 중 `Tools > Project Nova > Playtest`를 연다. 전투 입장, 일시정지·재개·포기, 방벽 파괴, 카드 선택, Local 백엔드의 결과 제출 실패·재시도를 실제 게임 서비스로 실행한다. 에너지 소모와 결과 보상도 실제 로컬 저장에 반영된다.
 
-- 사용법: Boot 씬에서 재생해 Stage 씬까지 들어간 뒤 연다. `EnemyDied x5`를 누르면 웨이브 1이 끝나 카드 선택까지 이어진다
-- 판정(`StageEnded`)은 StageJudge를 거치지 않고 바로 발행된다. 판정 로직 자체를 확인할 때는 `WallDestroyed`(실패)나 `AllEnemiesCleared`(클리어)를 쓴다. 클리어는 마지막 웨이브 스폰이 끝나고 필드의 적이 모두 처치됐을 때 EnemySpawner가 `AllEnemiesCleared`를 발행하고 StageJudge가 받아 판정한다. `WaveGaugeFilled (마지막 웨이브)`로는 클리어되지 않는다
-- `StageResult`(결과 팝업이 구독)는 서버 제출을 거치지 않고 표시만 확인할 때 쓴다. 제출까지 실제로 확인하려면 로비에서 **전투 발급 후 Stage 진입** 버튼으로 들어간 뒤 `AllEnemiesCleared (클리어 판정)`(클리어)나 `Pause` → `Forfeit`(포기)를 쓴다. 이 버튼은 로비가 `BattleLauncher`에 연결되기 전에도 실제 전투 발급으로 Stage에 들어간다. 에너지 소모와 골드 지급이 로컬 저장에 실제로 기록된다
-- Buffered 메시지(`WallHpChanged`)는 `IBufferedPublisher`로 발행한다. 새 메시지를 추가하면 `Scripts/Editor/MessageDebugWindow.cs`에 버튼을 같이 넣는다
-- 에디터 전용 어셈블리(`Game.Editor`)라 빌드에는 포함되지 않는다
+임의 메시지를 발행하던 Message Debugger는 삭제했다. 표시만 바꾸는 메시지를 직접 보내면 UI와 모델이 서로 다른 상태가 될 수 있다. 구독 현황은 MessagePipe의 Diagnostics 창에서, 메시지의 계약은 EditMode 테스트에서 확인한다. 새 메시지를 추가할 때 디버그 버튼을 함께 만들 필요는 없다.

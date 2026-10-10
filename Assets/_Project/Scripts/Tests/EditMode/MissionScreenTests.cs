@@ -14,6 +14,7 @@ namespace Game.Tests
         private const BindingFlags Private = BindingFlags.NonPublic | BindingFlags.Instance;
         private GameObject _root;
         private GameObject _rewardRoot;
+        private GameObject _detailsRoot, _rewardInfoRoot;
         private MissionScreenView _screen;
         private PlayerProfile _profile;
         private GameDataStore _data;
@@ -75,13 +76,21 @@ namespace Game.Tests
             _profile = new PlayerProfile(_data);
             _profile.Apply(Snapshot(3, 1));
             _api = new DeferredStageApi();
-            _root = UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/UI/MissionScreen.prefab"));
+            _root = UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/UI/Lobby/MissionScreen.prefab"));
             _screen = _root.GetComponent<MissionScreenView>();
             Set(_screen, "_profile", _profile);
             Set(_screen, "_data", _data);
             Set(_screen, "_stageApi", _api);
-            _rewardRoot = UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/UI/RewardPopup.prefab"));
+            _rewardRoot = UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/UI/Lobby/RewardPopup.prefab"));
             Set(_screen, "_rewardPopup", _rewardRoot.GetComponent<RewardPopupView>());
+            _detailsRoot = UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/UI/Lobby/MissionDetailsPopup.prefab"));
+            _rewardInfoRoot = UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/UI/Lobby/MissionRewardInfoPopup.prefab"));
+            var details = _detailsRoot.GetComponent<MissionPopupView>();
+            var info = _rewardInfoRoot.GetComponent<MissionRewardInfoPopupView>();
+            details.Initialize();
+            info.Initialize();
+            Set(_screen, "_detailsPopup", details);
+            Set(_screen, "_rewardInfoPopup", info);
             typeof(MissionScreenView).GetMethod("Awake", Private).Invoke(_screen, null);
             _screen.Open();
         }
@@ -92,6 +101,8 @@ namespace Game.Tests
             DOTween.KillAll();
             UnityEngine.Object.DestroyImmediate(_root);
             UnityEngine.Object.DestroyImmediate(_rewardRoot);
+            UnityEngine.Object.DestroyImmediate(_detailsRoot);
+            UnityEngine.Object.DestroyImmediate(_rewardInfoRoot);
         }
 
         [Test]

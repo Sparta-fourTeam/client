@@ -2,6 +2,8 @@
 
 브랜치: `feat/missing-game-assets`. 초기 3장 그림체는 사용자 승인 완료.
 
+현재 상태 (2026-10-11): `LayeredAssets`의 제작용 조합 프리팹 117개는 씬·에셋·코드에서 참조하지 않아 폴더째 삭제했다. 원화와 Sprite, 실제 화면에 연결된 `Art_*` 레이어는 유지한다. 아래의 프리팹 경로·개수와 JSON·갤러리는 당시 제작 기록이며 현재 런타임 에셋 목록이 아니다. 현재 구조는 [UI 시스템](../ui-system.md)을 참고한다.
+
 ## 시트 재제작: 독립 레이어 구성
 
 후속 요청에 따라 기존 `2-Sheet`~`6-Sheet`도 재제작했다. 원본의 컨셉을 유지하면서 배경색, 테두리, 아이콘, 상태 표시를 분리했다. 하늘·잔디·결과 조명도 각각 별도 레이어다. **PNG 11장 안에 독립 Sprite 71개**, 기존 시트 조각 117개에 대응하는 조합 프리팹 117개를 준비했다. 활성 원화 PNG는 전체 88장이다. PSD는 제외했다.
@@ -70,6 +72,6 @@ PNG는 생성기의 투명 알파를 보존한다. UI 스프라이트는 Single,
 
 프롬프트 기록은 `prompts.json`(초기 승인), `production-prompts.json`(초기 제작), `equipment-revision-prompts.json`·`seal-prompts.json`(장비 수정), `equipment-scroll-prompts.json`(초기 주문서), `shared-scroll-prompts.json`(공통 틀), `consistent-scroll-prompts.json`(최종 완성 주문서)이다. 교체된 장비 책/주문서 시안과 공통 틀 작업 파일은 `superseded-equipment`에 보관하며 게임 Assets에는 포함하지 않는다.
 
-Unity 실제 임포트·테이블·프리팹 검사 결과는 `unity-validation.json`에 저장한다. 에디터 메뉴 `Tools > Assets > Validate Generated Artwork`에서 다시 검사할 수 있다. 정적 파일 검사 결과는 `static-validation.json`에 저장한다. 플레이 모드에서 전체 화면을 실행한 검증은 별도다.
+Unity 실제 임포트·테이블·프리팹 검사 결과는 `unity-validation.json`에 저장한다. 당시의 고정 목록 검사 메뉴는 삭제했다. 현재 UI 연결은 `Tools > Project Nova > UI Workspace`의 문제 검사와 Test Runner의 에셋 바인딩 테스트로 확인한다. 정적 파일 검사 결과는 `static-validation.json`에 저장한다. 플레이 모드에서 전체 화면을 실행한 검증은 별도다.
 
-`export_psd_composites.py`는 PSD 원본 합성 픽셀의 포맷 변환 도구다. `connect_assets.py`는 최초 연결에 사용한 작업 기록이며 이미 연결된 프로젝트에 반복 실행하지 않는다.
+이 폴더의 최초 생성·복사·연결·출력용 Python 스크립트 7개는 완료된 작업을 덮어쓰는 일회성 도구여서 삭제했다. 원화·프리팹·갤러리·매니페스트와 검증 기록은 유지한다.

@@ -9,23 +9,31 @@ using VContainer;
 
 namespace Game.View
 {
-    public class MissionScreenView : HudView
+    public class MissionScreenView : HudView, IUiBindable
     {
+        public void BindUi(IUiRegistry registry)
+        {
+            _recoverPopup = registry.Get<EnergyRecoverPopupView>();
+            _rewardPopup = registry.Get<RewardPopupView>();
+            _detailsPopup = registry.Get<MissionPopupView>();
+            _rewardInfoPopup = registry.Get<MissionRewardInfoPopupView>();
+        }
+
         [SerializeField] private GameObject _panel;
         [SerializeField] private TMP_Text _stageText;
         [SerializeField] private GameObject _lockOverlay;
         [SerializeField] private Button _prevButton, _nextButton, _backButton, _enterButton;
         [SerializeField] private TMP_Text _costText;
         [SerializeField] private Image _rewardFill;             // RewardTrack/Bar/Fill
-        [SerializeField] private EnergyRecoverPopupView _recoverPopup;
+        private EnergyRecoverPopupView _recoverPopup;
         [SerializeField] private MissionRewardNodeView[] _rewardNodes;
         [SerializeField] private Button _rewardAreaButton;
         [SerializeField] private Button _infoButton;
         [SerializeField] private GameObject _rewardBadge;
         [SerializeField] private TMP_Text _rewardStatus;
-        [SerializeField] private MissionPopupView _detailsPopup;
-        [SerializeField] private RewardPopupView _rewardPopup;
-        [SerializeField] private MissionRewardInfoPopupView _rewardInfoPopup;
+        private MissionPopupView _detailsPopup;
+        private RewardPopupView _rewardPopup;
+        private MissionRewardInfoPopupView _rewardInfoPopup;
         [SerializeField] private ItemIconTable _itemIcons;
 
         private PlayerProfile _profile;
@@ -50,7 +58,7 @@ namespace Game.View
             Track(startFailed.Subscribe(OnStartFailed));
         }
 
-        private void Awake()
+        protected override void InitializeView()
         {
             _panel.SetActive(false);
             _prevButton.onClick.AddListener(() => Move(-1));
@@ -207,10 +215,10 @@ namespace Game.View
             Debug.LogWarning($"[Mission] 입장 거절: {message.Code}");
         }
 
-        protected override void OnDestroy()
+        protected override void DisposeView()
         {
             if (_profile != null) { _profile.Changed -= OnProfileChanged; }
-            base.OnDestroy();
+            base.DisposeView();
         }
     }
 }
