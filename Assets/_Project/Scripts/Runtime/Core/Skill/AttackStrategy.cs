@@ -14,6 +14,16 @@ namespace Game.Core
 
         /// <summary>매 프레임 추가로 처리할 일(예: 예비 시전). 없으면 비워 둔다</summary>
         void Tick(SkillConfig config, AttackEnvironment environment, float deltaTime);
+
+        /// <summary>지금 시전하면 노릴 살아 있는 적이 사거리 안에 있는지. 시전 자세를 낼지 정할 때 쓴다. 사거리를 재는 방식이 다른 공격은 이를 덮어쓴다</summary>
+        bool HasTargets(SkillConfig config, AttackEnvironment environment)
+        {
+            foreach (var target in environment.FindTargets(config.Attack.Range))
+            {
+                if (!target.IsDead) { return true; }
+            }
+            return false;
+        }
     }
 
     /// <summary>시전에 필요한 주변 정보. Origin이 시전 위치이며, 자식 스킬은 이벤트 위치를 Origin으로 시전한다.</summary>
