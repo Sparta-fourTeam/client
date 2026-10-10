@@ -88,7 +88,8 @@ namespace Game.Core
                 var path = fan
                     ? ProjectileLaunchPath.Fan(environment.Origin, environment.Direction, current.Projectile.PierceCount, i, count)
                     : ProjectileLaunchPath.Calculate(config.Attack.Path, environment.Origin, aim,
-                        wall != null ? wall.AttackLineY : (float?)null, config.Attack.Range, current.Projectile.Speed, current.Projectile.PierceCount, i, count);
+                        wall != null ? wall.AttackLineY : (float?)null,
+                        config.Attack.Path == ProjectilePath.RollingLane ? ProjectileLaunchPath.RollingTravelDistance : config.Attack.Range, current.Projectile.Speed, current.Projectile.PierceCount, i, count);
                 spawnRules.SpawnMain(path.Start, path.Direction, path.Lifetime, path.PierceCount, environment.Exclude);
             }
 

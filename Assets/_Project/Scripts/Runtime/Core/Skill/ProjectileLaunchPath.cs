@@ -10,6 +10,8 @@ namespace Game.Core
         public float Lifetime { get; }
         public int PierceCount { get; }
         public const float RollingWallFrontOffset = .2f;
+        /// <summary>굴러가는 공격이 벽 앞선에서 위로 굴러가는 거리. 사정거리는 시전을 일으키는 조건일 뿐이라 이 거리와 별개다</summary>
+        public const float RollingTravelDistance = 12f;
 
         private ProjectileLaunchPath(Vector3 start, Vector3 direction, float lifetime, int pierceCount)
         { Start = start; Direction = direction; Lifetime = lifetime; PierceCount = pierceCount; }

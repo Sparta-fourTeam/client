@@ -32,6 +32,10 @@ namespace Game.Tests
             public void TakeDamage(int amount) { }
         }
 
+        // 나무뿌리의 사정거리(데이터 값)와 테스트의 벽 앞선 높이
+        private static float LogRange => new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 5).baseStats.cast.range;
+        private const float WallLineY = -2f;
+
         private int LogsFiredAt(float x, float y)
         {
             var go = new GameObject("LogLaneRange"); go.AddComponent<Projectile>(); created.Add(go);
@@ -49,16 +53,16 @@ namespace Game.Tests
             return count;
         }
 
-        [Test(Description = "나무뿌리는 가로 위치와 상관없이 벽 앞선에서 사정거리(12) 높이 안의 적이 있으면 굴러간다")]
+        [Test(Description = "나무뿌리는 가로 위치와 상관없이 벽 앞선에서 사정거리 높이 안의 적이 있으면 굴러간다")]
         public void Log_FiresWhenAnEnemyIsWithinRangeAboveTheWallLineRegardlessOfX()
         {
-            Assert.AreEqual(1, LogsFiredAt(50, 8), "가로로 아주 멀어도 벽 앞선에서 10 위라 사정거리 안이다");
+            Assert.AreEqual(1, LogsFiredAt(50, WallLineY + LogRange - 1), "가로로 아주 멀어도 벽 앞선에서 사정거리 안쪽 높이다");
         }
 
-        [Test(Description = "벽 앞선에서 사정거리(12)보다 높이 있는 적만 있으면 굴러가지 않는다")]
+        [Test(Description = "벽 앞선에서 사정거리보다 높이 있는 적만 있으면 굴러가지 않는다")]
         public void Log_DoesNotFireWhenEveryEnemyIsHigherThanTheRange()
         {
-            Assert.AreEqual(0, LogsFiredAt(0, 11), "벽 앞선(-2)에서 13 위라 사정거리 밖이다");
+            Assert.AreEqual(0, LogsFiredAt(0, WallLineY + LogRange + 1), "벽 앞선에서 사정거리보다 위라 사정거리 밖이다");
         }
     }
 }
