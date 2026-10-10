@@ -1,0 +1,50 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+  <ui:Style src="Tools.uss" />
+  <ui:VisualElement class="tool-root">
+    <ui:Label text="플레이 검증" class="heading" />
+    <ui:Label text="실제 게임 서비스를 통해 조작합니다. 전투 입장·결과 보상은 로컬 저장에도 반영됩니다." class="note" />
+    <ui:Label name="runtimeStatus" class="runtime-status" />
+    <ui:ScrollView class="playtest-scroll">
+      <ui:VisualElement class="section">
+        <ui:Label text="전투 입장" class="section-title" />
+        <ui:DropdownField name="stageField" label="관문" />
+        <ui:Button name="launchButton" text="선택한 관문 입장" class="primary" />
+        <ui:Label name="launchStatus" class="status" />
+      </ui:VisualElement>
+      <ui:VisualElement class="section">
+        <ui:Label text="전투 조작" class="section-title" />
+        <ui:VisualElement class="row">
+          <ui:Button name="pauseButton" text="일시정지" />
+          <ui:Button name="resumeButton" text="계속하기" />
+          <ui:Button name="forfeitButton" text="포기하고 결과 제출" />
+        </ui:VisualElement>
+        <ui:VisualElement class="row">
+          <ui:Button name="speedOneButton" text="1배속" />
+          <ui:Button name="speedTwoButton" text="2배속" />
+          <ui:Button name="breakWallButton" text="방벽 파괴 → 패배 검증" />
+        </ui:VisualElement>
+        <ui:Label name="wallStatus" class="status" />
+        <ui:VisualElement name="cardChoices" class="card-choices" />
+      </ui:VisualElement>
+      <ui:VisualElement class="section">
+        <ui:Label text="결과 제출 실패 / 재시도" class="section-title" />
+        <ui:Label text="Local 백엔드에서 다음 결과 제출을 실패시킵니다. 오류 팝업은 실제 제출 흐름으로 표시됩니다." class="note" />
+        <ui:VisualElement class="row">
+          <ui:Button name="failButton" text="자동 재시도까지 실패시키기" />
+          <ui:Button name="clearFaultButton" text="실패 설정 해제" />
+          <ui:Button name="retryButton" text="결과 다시 제출" />
+        </ui:VisualElement>
+        <ui:Label name="faultStatus" class="status" />
+      </ui:VisualElement>
+      <ui:VisualElement class="section">
+        <ui:Label text="로컬 저장 데이터" class="section-title" />
+        <ui:Label name="savePath" class="note" />
+        <ui:VisualElement class="row">
+          <ui:Button name="saveFolderButton" text="저장 폴더 열기" />
+          <ui:Button name="resetSaveButton" text="백업 후 초기화" />
+        </ui:VisualElement>
+        <ui:Label name="saveStatus" class="status" />
+      </ui:VisualElement>
+    </ui:ScrollView>
+  </ui:VisualElement>
+</ui:UXML>

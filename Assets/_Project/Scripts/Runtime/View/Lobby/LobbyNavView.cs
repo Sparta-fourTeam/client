@@ -4,13 +4,20 @@ using UnityEngine.UI;
 namespace Game.View
 {
     /// <summary>하단 메뉴. 캐릭터·스킬 탭은 해당 화면을 열고, 홈은 모두 닫고, 상점·뽑기는 미완성 안내를 띄운다</summary>
-    public sealed class LobbyNavView : MonoBehaviour
+    public sealed class LobbyNavView : MonoBehaviour, IUiBindable
     {
+        public void BindUi(IUiRegistry registry)
+        {
+            _characterScreen = registry.Get<CharacterScreenView>();
+            _skillScreen = registry.Get<SkillScreenView>();
+            _toast = registry.Get<ComingSoonToastView>();
+        }
+
         [SerializeField] private Button _shopTab, _characterTab, _homeTab, _skillTab, _gachaTab;
         [SerializeField] private GameObject _characterSelected, _homeSelected, _skillSelected;
-        [SerializeField] private CharacterScreenView _characterScreen;
-        [SerializeField] private SkillScreenView _skillScreen;
-        [SerializeField] private ComingSoonToastView _toast;
+        private CharacterScreenView _characterScreen;
+        private SkillScreenView _skillScreen;
+        private ComingSoonToastView _toast;
 
         private enum Tab
         {

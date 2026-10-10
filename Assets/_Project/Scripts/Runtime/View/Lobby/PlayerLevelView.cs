@@ -23,14 +23,14 @@ namespace Game.View
             Refresh();
         }
 
-        protected override void OnDestroy()
+        protected override void DisposeView()
         {
             if (_profile != null)
             {
                 _profile.Changed -= OnProfileChanged;
             }
 
-            base.OnDestroy();
+            base.DisposeView();
         }
 
         private void OnProfileChanged(PlayerProfile _) => Refresh();

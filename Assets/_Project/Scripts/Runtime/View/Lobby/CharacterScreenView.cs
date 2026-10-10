@@ -8,12 +8,17 @@ namespace Game.View
 {
     /// <summary>캐릭터 화면. 열 때 IGrowthCatalog에서 캐릭터·장비 정보를 읽어 채우고, 열린 장비 칸을 누르면 장비 강화 팝업을 연다.
     /// 아래 캐릭터 목록(카드)은 아직 데이터가 없어 프리팹 그대로 둔다</summary>
-    public sealed class CharacterScreenView : HudView
+    public sealed class CharacterScreenView : HudView, IUiBindable
     {
+        public void BindUi(IUiRegistry registry)
+        {
+            _equipPopup = registry.Get<EquipUpgradePopupView>();
+        }
+
         [SerializeField] private GameObject _panel;
         [SerializeField] private TMP_Text _nameText, _rankText, _powerText;
         [SerializeField] private EquipSlotView[] _equipSlots;   // IGrowthCatalog.Equips와 같은 순서
-        [SerializeField] private EquipUpgradePopupView _equipPopup;
+        private EquipUpgradePopupView _equipPopup;
 
         private IGrowthCatalog _catalog;
         private PlayerProfile _profile;
@@ -27,14 +32,14 @@ namespace Game.View
             _profile.Changed += OnProfileChanged;
         }
 
-        protected override void OnDestroy()
+        protected override void DisposeView()
         {
             if (_profile != null)
             {
                 _profile.Changed -= OnProfileChanged;
             }
 
-            base.OnDestroy();
+            base.DisposeView();
         }
 
         // 화면이 열려 있는 동안 프로필이 바뀌면(장비 강화 등) 장비 칸의 레벨·잠금을 다시 그린다
@@ -46,7 +51,7 @@ namespace Game.View
             }
         }
 
-        private void Awake()
+        protected override void InitializeView()
         {
             _panel.SetActive(false);
         }

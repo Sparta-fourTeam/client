@@ -82,11 +82,11 @@ namespace Game.View
             _hitTween = seq;
         }
 
-        protected override void OnDestroy()
+        protected override void DisposeView()
         {
             _fillTween?.Kill();
             _hitTween?.Kill();
-            base.OnDestroy();
+            base.DisposeView();
         }
     }
 }

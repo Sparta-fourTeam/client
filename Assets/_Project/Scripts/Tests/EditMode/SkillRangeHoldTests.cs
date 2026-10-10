@@ -91,7 +91,7 @@ namespace Game.Tests
 
         private SkillSlotView Slot()
         {
-            hud = Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/UI/SkillHud.prefab"));
+            hud = Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/UI/Stage/SkillHud.prefab"));
             return hud.GetComponentsInChildren<SkillSlotView>(true)[0];
         }
 

@@ -19,7 +19,17 @@ namespace Game.View
 
         public async UniTask Close()
         {
+            if (this == null)
+            {
+                return;
+            }
+
             gameObject.SetActive(true);
+            if (_group == null)
+            {
+                _group = GetComponent<CanvasGroup>();
+            }
+
             _group.blocksRaycasts = true;
             await Fade(0f, 1f);
         }
@@ -27,22 +37,40 @@ namespace Game.View
         public async UniTask Open()
         {
             await Fade(1f, 0f);
+            if (_group == null)
+            {
+                return;
+            }
+
             _group.blocksRaycasts = false;
             gameObject.SetActive(false);
         }
 
         private async UniTask Fade(float from, float to)
         {
+            if (_group == null)
+            {
+                return;
+            }
+
             _group.alpha = from;
             float elapsed = 0f;
             while (elapsed < fadeSeconds)
             {
+                if (_group == null)
+                {
+                    return;
+                }
+
                 elapsed += Time.unscaledDeltaTime;
                 _group.alpha = Mathf.Lerp(from, to, elapsed / fadeSeconds);
                 await UniTask.Yield();
             }
 
-            _group.alpha = to;
+            if (_group != null)
+            {
+                _group.alpha = to;
+            }
         }
     }
 }

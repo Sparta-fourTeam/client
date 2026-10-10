@@ -6,12 +6,17 @@ using VContainer;
 namespace Game.View
 {
     /// <summary>스킬 화면. 열 때 IGrowthCatalog에서 스킬 목록을 읽어 칸을 채우고, 열린 칸을 누르면 스킬 강화 팝업을 연다</summary>
-    public sealed class SkillScreenView : HudView
+    public sealed class SkillScreenView : HudView, IUiBindable
     {
+        public void BindUi(IUiRegistry registry)
+        {
+            _upgradePopup = registry.Get<SkillUpgradePopupView>();
+        }
+
         [SerializeField] private GameObject _panel;
         [SerializeField] private SkillListSlotView[] _slots;        // 화면의 칸 전부 (목록보다 많으면 남는 칸은 숨김)
         [SerializeField] private TMP_Text _goldText, _gemText, _ticketText;
-        [SerializeField] private SkillUpgradePopupView _upgradePopup;
+        private SkillUpgradePopupView _upgradePopup;
         [SerializeField] private SkillAssetTable _assets;
 
         private IGrowthCatalog _catalog;
@@ -25,14 +30,14 @@ namespace Game.View
             _profile.Changed += OnProfileChanged;
         }
 
-        protected override void OnDestroy()
+        protected override void DisposeView()
         {
             if (_profile != null)
             {
                 _profile.Changed -= OnProfileChanged;
             }
 
-            base.OnDestroy();
+            base.DisposeView();
         }
 
         // 화면이 열려 있는 동안 프로필이 바뀌면(스킬 강화 등) 칸의 레벨·잠금과 골드 표시를 다시 그린다
@@ -44,7 +49,7 @@ namespace Game.View
             }
         }
 
-        private void Awake()
+        protected override void InitializeView()
         {
             _panel.SetActive(false);
         }

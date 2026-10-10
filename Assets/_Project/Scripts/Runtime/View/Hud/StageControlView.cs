@@ -30,7 +30,7 @@ namespace Game.View
             Track(stateChangedSubscriber.Subscribe(OnStateChanged));
         }
 
-        private void Awake()
+        protected override void InitializeView()
         {
             // 첫 StageStateChanged가 오기 전까지는 누를 수 없게 시작한다
             buttonImage.sprite = _buttonimages[0];

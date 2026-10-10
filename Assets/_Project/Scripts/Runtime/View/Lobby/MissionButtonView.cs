@@ -9,11 +9,16 @@ using VContainer;
 
 namespace Game.View
 {
-    public class MissionButtonView : HudView
+    public class MissionButtonView : HudView, IUiBindable
     {
+        public void BindUi(IUiRegistry registry)
+        {
+            _missionScreen = registry.Get<MissionScreenView>();
+        }
+
         [SerializeField] private Button _button;
         [SerializeField] private TMP_Text _stageText;
-        [SerializeField] private MissionScreenView _missionScreen;   // 씬의 MissionScreen을 연결
+        private MissionScreenView _missionScreen;   // 씬의 MissionScreen을 연결
 
         [Inject]
         public void Construct(IBufferedSubscriber<ProgressChanged> progressChanged, LobbyProfileRefresher refresher)
@@ -22,7 +27,7 @@ namespace Game.View
             EnableWhenLoaded(refresher).Forget();
         }
 
-        private void Awake()
+        protected override void InitializeView()
         {
             // 전투에서 돌아온 직후엔 해금 정보가 이전 값이라, 프로필을 다시 받을 때까지 막는다
             _button.interactable = false;

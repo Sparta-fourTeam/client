@@ -61,7 +61,7 @@ namespace Game.View
             Track(stageResult.Subscribe(OnStageResult));
         }
 
-        private void Awake()
+        protected override void InitializeView()
         {
             _panel.SetActive(false);
             _lobbyButton.onClick.AddListener(OnLobbyClicked);

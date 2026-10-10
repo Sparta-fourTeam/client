@@ -37,7 +37,7 @@ namespace Game.Tests
         private T Load<T>(string name) where T : Component
         {
             _root = Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(
-                $"Assets/_Project/Prefabs/UI/{name}.prefab"));
+                $"Assets/_Project/Prefabs/UI/{(name == "SkillListSlot" ? "Common" : "Lobby")}/{name}.prefab"));
             return _root.GetComponent<T>();
         }
 
@@ -77,7 +77,7 @@ namespace Game.Tests
         public void SkillPopup_ChangingSelectionReplacesSkillAndMaterialSprites()
         {
             var popup = Load<SkillUpgradePopupView>("SkillUpgradePopup");
-            popup.Construct(_catalog, _profile, null, _data);
+            popup.Construct(_catalog, _profile, _data);
             typeof(SkillUpgradePopupView).GetMethod("Awake", Private).Invoke(popup, null);
             var assets = AssetDatabase.LoadAssetAtPath<SkillAssetTable>("Assets/_Project/Data/SkillAssetTable.asset");
             var items = AssetDatabase.LoadAssetAtPath<ItemIconTable>("Assets/_Project/Data/ItemIconTable.asset");

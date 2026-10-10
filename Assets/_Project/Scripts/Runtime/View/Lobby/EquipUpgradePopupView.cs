@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using Cysharp.Threading.Tasks;
 using Game.Core;
 using TMPro;
 using UnityEngine;
@@ -14,7 +12,7 @@ namespace Game.View
     /// 강화 버튼은 한 번, 일괄 강화 버튼은 재화가 허락하는 만큼 연속으로 IUpgradeApi를 부른다.
     /// 코인이나 재료가 모자라면 비용이 빨갛게 보이고 버튼이 눌리지 않으며, 최대 레벨이면 다음 블록·비용·버튼 대신 "최대 레벨"을 보여준다.
     /// 장비에는 장착·해제가 없고 강화만 있다</summary>
-    public sealed class EquipUpgradePopupView : HudView
+    public sealed class EquipUpgradePopupView : HudView, IUiBindable
     {
         private const string IncreaseColor = "#7BE05A";
 
@@ -43,25 +41,25 @@ namespace Game.View
         private IGrowthCatalog _catalog;
         private PlayerProfile _profile;
         private GameDataStore _data;
-        private IUpgradeApi _upgradeApi;
         private int _slot;
-        private bool _busy;
+        private UpgradeConfirmPopupView _confirmation;
+        public void BindUi(IUiRegistry registry) => _confirmation = registry.Get<UpgradeConfirmPopupView>();
 
         [Inject]
-        public void Construct(IGrowthCatalog catalog, PlayerProfile profile, GameDataStore data, IUpgradeApi upgradeApi)
+        public void Construct(IGrowthCatalog catalog, PlayerProfile profile, GameDataStore data)
         {
             _catalog = catalog;
             _profile = profile;
             _data = data;
-            _upgradeApi = upgradeApi;
+            _profile.Changed += OnProfileChanged;
         }
 
-        private void Awake()
+        protected override void InitializeView()
         {
             _panel.SetActive(false);
             _closeButton.onClick.AddListener(() => PopupPanel.Set(_panel, _transition, false));
-            _upgradeButton.onClick.AddListener(() => UpgradeAsync(all: false).Forget(Debug.LogException));
-            _upgradeAllButton.onClick.AddListener(() => UpgradeAsync(all: true).Forget(Debug.LogException));
+            _upgradeButton.onClick.AddListener(() => RequestUpgrade(false));
+            _upgradeAllButton.onClick.AddListener(() => RequestUpgrade(true));
         }
 
         public void Open(int slot)
@@ -107,7 +105,7 @@ namespace Game.View
             _materialText.text = CostFormat.HaveNeed(Material(info), info.MaterialCost);
             _materialNameText.text = info.MaterialItemId != null ? _data.Items.GetOrThrow(info.MaterialItemId).Name : string.Empty;
 
-            bool canUpgrade = !_busy && CanUpgrade(info);
+            bool canUpgrade = CanUpgrade(info);
             _upgradeButton.interactable = canUpgrade;
             _upgradeAllButton.interactable = canUpgrade;
         }
@@ -134,7 +132,7 @@ namespace Game.View
         private int Material(EquipInfo info) => info.MaterialItemId != null ? _profile.ItemQuantity(info.MaterialItemId) : 0;
 
         private bool CanUpgrade(EquipInfo info) =>
-            info.IsUnlocked && !info.IsMaxLevel && _profile.Gold >= info.CoinCost && Material(info) >= info.MaterialCost;
+            LobbyAvailability.CanUpgrade(_profile, info);
 
         private static void SetIcon(Image image, Sprite sprite)
         {
@@ -143,41 +141,29 @@ namespace Game.View
             image.enabled = sprite != null;
         }
 
-        // all이면 재화가 모자라거나 최대 레벨이 될 때까지 한 단계씩 연속으로 강화한다
-        private async UniTask UpgradeAsync(bool all)
+        private void RequestUpgrade(bool all)
         {
-            if (_busy)
+            var info = _catalog.Equips[_slot];
+            if (CanUpgrade(info))
             {
-                return;
-            }
-
-            // 연타로 두 번 요청하지 않게 응답이 올 때까지 막는다. 매 요청마다 새 키를 쓴다
-            _busy = true;
-            _upgradeButton.interactable = false;
-            _upgradeAllButton.interactable = false;
-            string upgradeId = _catalog.Equips[_slot].UpgradeId;
-            try
-            {
-                do
-                {
-                    var snapshot = await _upgradeApi.Purchase(upgradeId, Guid.NewGuid().ToString("N"));
-                    _profile.Apply(snapshot);
-                }
-                while (all && CanUpgrade(_catalog.Equips[_slot]));
-            }
-            catch (ApiException ex)
-            {
-                // 버튼이 막혀 있어 보통은 오지 않는다(다른 곳에서 재화가 바뀐 경우 등). 최신 상태로 다시 그린다
-                Debug.LogWarning($"장비 강화 거절: {ex.Code}");
-            }
-            finally
-            {
-                _busy = false;
-                if (_panel.activeSelf)
-                {
-                    Refresh();
-                }
+                _confirmation.Show(info.Name, info.UpgradeId, all);
             }
         }
+
+        private void OnProfileChanged(PlayerProfile _)
+        {
+            if (_panel.activeSelf)
+            {
+                Refresh();
+            }
+        }
+        protected override void DisposeView()
+        {
+            if (_profile != null)
+            {
+                _profile.Changed -= OnProfileChanged;
+            }
+        }
+
     }
 }

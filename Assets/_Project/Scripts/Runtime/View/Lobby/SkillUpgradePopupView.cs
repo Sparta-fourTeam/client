@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using Cysharp.Threading.Tasks;
 using Game.Core;
 using TMPro;
 using UnityEngine;
@@ -12,7 +10,7 @@ namespace Game.View
     /// <summary>스킬 강화 팝업. IGrowthCatalog의 스킬 정보로 능력치·레벨별 보상·비용을 채우고, 레벨업 버튼으로 IUpgradeApi를 부른다.
     /// 코인이나 마법북이 모자라면 비용이 빨갛게 보이고 버튼이 눌리지 않으며, 최대 레벨이면 비용 대신 "최대 레벨"을 보여준다.
     /// 강화 데이터가 없는 스킬은 레벨업 버튼이 눌리지 않는다</summary>
-    public sealed class SkillUpgradePopupView : HudView
+    public sealed class SkillUpgradePopupView : HudView, IUiBindable
     {
         [SerializeField] private GameObject _panel;
         [SerializeField] private PopupTransition _transition;
@@ -32,25 +30,25 @@ namespace Game.View
 
         private IGrowthCatalog _catalog;
         private PlayerProfile _profile;
-        private IUpgradeApi _upgradeApi;
         private GameDataStore _data;
         private int _index;
-        private bool _busy;
+        private UpgradeConfirmPopupView _confirmation;
+        public void BindUi(IUiRegistry registry) => _confirmation = registry.Get<UpgradeConfirmPopupView>();
 
         [Inject]
-        public void Construct(IGrowthCatalog catalog, PlayerProfile profile, IUpgradeApi upgradeApi, GameDataStore data)
+        public void Construct(IGrowthCatalog catalog, PlayerProfile profile, GameDataStore data)
         {
             _catalog = catalog;
             _profile = profile;
-            _upgradeApi = upgradeApi;
             _data = data;
+            _profile.Changed += OnProfileChanged;
         }
 
-        private void Awake()
+        protected override void InitializeView()
         {
             _panel.SetActive(false);
             _closeButton.onClick.AddListener(() => PopupPanel.Set(_panel, _transition, false));
-            _upgradeButton.onClick.AddListener(() => UpgradeAsync().Forget(Debug.LogException));
+            _upgradeButton.onClick.AddListener(() => RequestUpgrade());
 
             // 프리팹에 미리 만들어 둔 행을 재사용하고, 모자라면 BindRewards에서 복제한다
             _rewardRows.AddRange(_rewardContent.GetComponentsInChildren<LevelRewardRowView>(true));
@@ -108,8 +106,7 @@ namespace Game.View
             int material = info.MaterialItemId != null ? _profile.ItemQuantity(info.MaterialItemId) : 0;
             _bookText.text = CostFormat.HaveNeed(material, info.MaterialCost);
             _coinText.text = CostFormat.HaveNeed(coin, info.CoinCost);
-            _upgradeButton.interactable = !_busy && info.IsUnlocked
-                && coin >= info.CoinCost && material >= info.MaterialCost;
+            _upgradeButton.interactable = LobbyAvailability.CanUpgrade(_profile, info);
         }
 
         private static void SetIcon(Image image, Sprite sprite)
@@ -119,34 +116,27 @@ namespace Game.View
             image.enabled = sprite != null;
         }
 
-        private async UniTask UpgradeAsync()
+        private void RequestUpgrade()
         {
-            string upgradeId = _catalog.Skills[_index].UpgradeId;
-            if (_busy || upgradeId == null)
+            var info = _catalog.Skills[_index];
+            if (LobbyAvailability.CanUpgrade(_profile, info))
             {
-                return;
+                _confirmation.Show(info.Name, info.UpgradeId, false);
             }
+        }
 
-            // 연타로 두 번 요청하지 않게 응답이 올 때까지 막는다. 매 요청마다 새 키를 쓴다
-            _busy = true;
-            _upgradeButton.interactable = false;
-            try
+        private void OnProfileChanged(PlayerProfile _)
+        {
+            if (_panel.activeSelf)
             {
-                var snapshot = await _upgradeApi.Purchase(upgradeId, Guid.NewGuid().ToString("N"));
-                _profile.Apply(snapshot); // 카탈로그와 스킬 화면이 프로필 변경을 받아 레벨·비용을 다시 계산한다
+                Refresh();
             }
-            catch (ApiException ex)
+        }
+        protected override void DisposeView()
+        {
+            if (_profile != null)
             {
-                // 버튼이 막혀 있어 보통은 오지 않는다(다른 곳에서 재화가 바뀐 경우 등). 최신 상태로 다시 그린다
-                Debug.LogWarning($"스킬 강화 거절: {ex.Code}");
-            }
-            finally
-            {
-                _busy = false;
-                if (_panel.activeSelf)
-                {
-                    Refresh();
-                }
+                _profile.Changed -= OnProfileChanged;
             }
         }
 

@@ -18,7 +18,7 @@ namespace Game.Tests
         [Test]
         public void Reuse_FromStageToMail_ReplacesRowsAndTextAndResetsScroll()
         {
-            var root = Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/UI/RewardPopup.prefab"));
+            var root = Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/UI/Lobby/RewardPopup.prefab"));
             var canvasRoot = new GameObject("RewardPopupTestCanvas", typeof(RectTransform), typeof(Canvas));
             canvasRoot.GetComponent<Canvas>().renderMode = RenderMode.ScreenSpaceOverlay;
             root.transform.SetParent(canvasRoot.transform, false);

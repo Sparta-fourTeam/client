@@ -31,7 +31,7 @@ namespace Game.View
             Track(stateChanged.Subscribe(OnStateChanged));
         }
 
-        private void Awake()
+        protected override void InitializeView()
         {
             _panel.SetActive(false);
         }
@@ -120,10 +120,10 @@ namespace Game.View
             }, ignoreTimeScale: true).SetLink(gameObject);
         }
 
-        protected override void OnDestroy()
+        protected override void DisposeView()
         {
             _pickTween?.Kill();
-            base.OnDestroy();
+            base.DisposeView();
         }
     }
 }

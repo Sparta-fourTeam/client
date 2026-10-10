@@ -1,0 +1,30 @@
+.tool-root { flex-grow: 1; padding: 12px; background-color: #25282e; color: #e8edf5; }
+.heading { font-size: 18px; -unity-font-style: bold; margin-bottom: 6px; color: #e8edf5; }
+.note { white-space: normal; color: #b9c3d1; margin-bottom: 10px; }
+.row { flex-direction: row; align-items: center; margin-bottom: 8px; }
+.row > Button { margin-right: 6px; }
+.row > .grow { flex-grow: 1; }
+.primary { background-color: #356baf; color: #ffffff; }
+.primary:hover { background-color: #417dbf; }
+.body { flex-grow: 1; flex-direction: row; }
+.browser { width: 240px; margin-right: 12px; flex-shrink: 0; }
+.asset-list { flex-grow: 1; min-height: 180px; background-color: #303640; }
+.asset-name { padding: 5px 8px; color: #e8edf5; }
+.details { flex-grow: 1; min-width: 320px; }
+.asset-title { font-size: 16px; -unity-font-style: bold; color: #e8edf5; }
+.asset-path { color: #b9c3d1; white-space: normal; margin-bottom: 8px; }
+.preview { flex-grow: 1; background-color: #171a20; min-height: 240px; }
+.device { flex-grow: 1; }
+.device > Label { min-width: 60px; }
+.sample > Label { min-width: 40px; }
+.preview-message { white-space: normal; color: #b9c3d1; padding: 8px; }
+.status { white-space: normal; color: #b9c3d1; margin-top: 6px; }
+.status-error { color: #ff9a90; }
+.hidden { display: none; }
+.audit { margin-top: 10px; max-height: 220px; }
+.issue-button { -unity-text-align: middle-left; white-space: normal; height: auto; padding: 6px; }
+.section { background-color: #303640; padding: 12px; margin-bottom: 10px; }
+.section-title { -unity-font-style: bold; color: #e8edf5; margin-bottom: 8px; }
+.card-choices > Button { -unity-text-align: middle-left; white-space: normal; height: auto; padding: 8px; margin-bottom: 4px; }
+.runtime-status { white-space: normal; color: #e8edf5; margin-bottom: 10px; }
+.playtest-scroll { flex-grow: 1; }

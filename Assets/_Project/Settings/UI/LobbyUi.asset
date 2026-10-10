@@ -1,0 +1,87 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 89e6732b0b81d4055a15f7e6cb13ec12, type: 3}
+  m_Name: LobbyUi
+  m_EditorClassIdentifier: Game.View::Game.View.UiComposition
+  Entries:
+  - Id: LobbyBackground
+    Prefab: {fileID: 2032281216697883631, guid: 1b24785e9c988084da9905a131f8d00e, type: 3}
+    ParentPath: NavUI/SafeArea
+    SiblingIndex: 0
+  - Id: LobbyTopBar
+    Prefab: {fileID: 2270996526324406936, guid: a64996367a387c644a84a4908a4c0289, type: 3}
+    ParentPath: NavUI/SafeArea
+    SiblingIndex: 1
+  - Id: LobbyMissionButton
+    Prefab: {fileID: 3925262067512022777, guid: 8a3eb87645ca3564bb2b1afcf63d6e70, type: 3}
+    ParentPath: NavUI/SafeArea
+    SiblingIndex: 2
+  - Id: LobbyBottomNav
+    Prefab: {fileID: 1797458558741373724, guid: 6e4da5ee5bd920c459dacf1437cb3ce3, type: 3}
+    ParentPath: NavUI/SafeArea
+    SiblingIndex: 3
+  - Id: LobbySideMenu
+    Prefab: {fileID: 8676935129578656434, guid: 5911b43df9e449d4ba96fbea58cbe925, type: 3}
+    ParentPath: NavUI/SafeArea
+    SiblingIndex: 4
+  - Id: LobbyEventBanner
+    Prefab: {fileID: 4337374275556672016, guid: d495b274452afc84ebe4f58a5a5fd02b, type: 3}
+    ParentPath: NavUI/SafeArea
+    SiblingIndex: 5
+  - Id: CharacterScreen
+    Prefab: {fileID: 9200070561298085480, guid: e79f4c84097498b48ac78d2a3d2ce3a9, type: 3}
+    ParentPath: NavUI/Screens
+    SiblingIndex: 0
+  - Id: SkillScreen
+    Prefab: {fileID: 5206714037083988636, guid: 0e42460100744fa44b697372d9515003, type: 3}
+    ParentPath: NavUI/Screens
+    SiblingIndex: 1
+  - Id: MissionScreen
+    Prefab: {fileID: 672039837340624520, guid: 412c72eb7c9d6d44dbac4ba5448a874b, type: 3}
+    ParentPath: NavUI/Screens
+    SiblingIndex: 2
+  - Id: EnergyRecoverPopup
+    Prefab: {fileID: 4260994921643240741, guid: 0d5a2b02550e11248934c749f2c099b1, type: 3}
+    ParentPath: NavUI/Popups
+    SiblingIndex: 0
+  - Id: SkillUpgradePopup
+    Prefab: {fileID: 7069128086345914554, guid: 3e27697522b2fc94991b55e2f489e443, type: 3}
+    ParentPath: NavUI/Popups
+    SiblingIndex: 1
+  - Id: ProfilePopup
+    Prefab: {fileID: 4628841233367791212, guid: bcc52cd592aa4174a9997ae0d1bd2b63, type: 3}
+    ParentPath: NavUI/Popups
+    SiblingIndex: 2
+  - Id: EquipUpgradePopup
+    Prefab: {fileID: 8636699274896945760, guid: 6c8895c4d66e7b64d8d4c73af0e31898, type: 3}
+    ParentPath: NavUI/Popups
+    SiblingIndex: 3
+  - Id: RewardPopup
+    Prefab: {fileID: 9063590483577428516, guid: b1a23b3ed48d647a8af356ce14cdb872, type: 3}
+    ParentPath: NavUI/Popups
+    SiblingIndex: 4
+  - Id: ComingSoonToast
+    Prefab: {fileID: 5785140231864902825, guid: 67e5381c61604234aa3d7dd557b8e446, type: 3}
+    ParentPath: NavUI/Overlays
+    SiblingIndex: 0
+  - Id: MissionDetailsPopup
+    Prefab: {fileID: 8312989075400105563, guid: b1746890994744ddb8471d3603a7d471, type: 3}
+    ParentPath: NavUI/Popups
+    SiblingIndex: 5
+  - Id: MissionRewardInfoPopup
+    Prefab: {fileID: 9063590483577428516, guid: f68a817ca6e5d4a2cbefc8c75014b3b1, type: 3}
+    ParentPath: NavUI/Popups
+    SiblingIndex: 6
+  - Id: UpgradeConfirmPopup
+    Prefab: {fileID: 3468135605265646659, guid: 5199c8eae3bc54c5380f858bf9e60bd1, type: 3}
+    ParentPath: NavUI/Overlays
+    SiblingIndex: 1

@@ -58,7 +58,7 @@ namespace Game.View
             _rangeIndicator.Show(range);
         }
 
-        protected override void OnDestroy()
+        protected override void DisposeView()
         {
             foreach (var slot in _slots)
             {
@@ -67,10 +67,10 @@ namespace Game.View
                 slot.HoldEnded -= OnHoldEnded;
             }
             if (_rangeIndicator != null) { Destroy(_rangeIndicator.gameObject); }
-            base.OnDestroy();
+            base.DisposeView();
         }
 
-        private void Awake()
+        protected override void InitializeView()
         {
             // 슬롯 수의 출처는 SkillSlotLimit 하나다. 프리팹의 슬롯이 다르면 스킬이 보이지 않거나 빈 칸이 남는다
             if (_slots != null && _slots.Length != SkillSlotLimit.Max)

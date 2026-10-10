@@ -1,0 +1,43 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:ue="UnityEditor.UIElements">
+  <ui:Style src="Tools.uss" />
+  <ui:VisualElement class="tool-root">
+    <ui:Label text="UI 작업실" class="heading" />
+    <ui:Label text="화면을 골라 프리팹을 편집하고, 로비·전투 구성 안에서 배치를 확인합니다." class="note" />
+    <ui:VisualElement class="body">
+      <ui:VisualElement class="browser">
+        <ui:DropdownField name="groupField" />
+        <ue:ToolbarSearchField name="searchField" />
+        <ui:ListView name="assetList" class="asset-list" />
+        <ui:VisualElement class="row">
+          <ui:Button name="compositionButton" text="화면 구성 선택" />
+          <ui:Button name="refreshButton" text="새로고침" />
+        </ui:VisualElement>
+      </ui:VisualElement>
+      <ui:ScrollView class="details">
+        <ui:Label name="assetTitle" class="asset-title" />
+        <ui:Label name="assetPath" class="asset-path" />
+        <ui:VisualElement class="row">
+          <ui:Button name="editButton" text="프리팹 편집" class="primary" />
+          <ui:Button name="locateButton" text="Project에서 찾기" />
+        </ui:VisualElement>
+        <ui:VisualElement class="row">
+          <ui:DropdownField name="deviceField" label="화면" class="device" />
+          <ui:Toggle name="safeAreaToggle" label="Safe Area" value="true" />
+        </ui:VisualElement>
+        <ui:VisualElement class="row">
+          <ui:DropdownField name="sampleField" label="상태" class="sample grow" />
+          <ui:Button name="previewButton" text="미리보기 갱신" />
+          <ui:Button name="saveButton" text="PNG 저장" />
+        </ui:VisualElement>
+        <ui:Label text="편집 미리보기 · 수치와 아이콘은 프리팹 기본값 · 실제 터치는 Game / Device Simulator에서 확인" class="note" />
+        <ui:Image name="previewImage" class="preview" />
+        <ui:Label name="statusLabel" class="status" />
+        <ui:Foldout name="auditFoldout" text="UI 문제 검사" value="false" class="audit">
+          <ui:Button name="auditButton" text="전체 UI 검사" />
+          <ui:Label name="auditSummary" class="status" />
+          <ui:ScrollView name="issueList" />
+        </ui:Foldout>
+      </ui:ScrollView>
+    </ui:VisualElement>
+  </ui:VisualElement>
+</ui:UXML>

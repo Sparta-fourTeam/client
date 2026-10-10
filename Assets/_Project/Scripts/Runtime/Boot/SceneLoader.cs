@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using Game.Core;
+using Game.View;
 using UnityEngine.SceneManagement;
 using VContainer.Unity;
 
@@ -48,11 +49,25 @@ namespace Game.Boot
             try
             {
                 await _curtain.Close();
+                // Stopping Play Mode can destroy the root while the curtain is still fading.
+                if (_root == null)
+                {
+                    return;
+                }
+
                 try
                 {
                     using (LifetimeScope.EnqueueParent(_root))
                     {
                         await SceneManager.LoadSceneAsync(next.ToString(), LoadSceneMode.Single).ToUniTask();
+                    }
+
+                    foreach (var root in SceneManager.GetActiveScene().GetRootGameObjects())
+                    {
+                        foreach (var host in root.GetComponentsInChildren<UiHost>(true))
+                        {
+                            await host.WhenReady;
+                        }
                     }
 
                     Current = next;

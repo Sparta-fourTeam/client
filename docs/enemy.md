@@ -39,8 +39,8 @@ flowchart LR
 
 ## 새 몬스터 추가 절차
 
-1. **아트 확인**: `Prefabs/Monsters/<이름>_Animated.prefab`(리그)과 `Animations/<이름>.controller`, `<이름>_Move/Attack/Die.anim`이 있어야 한다. **컨트롤러에 상태가 실제로 채워져 있는지 연다.** 파일만 있고 레이어가 비어 있으면 클립이 있어도 재생되지 않는다(ArmoredCrab, BrainSpider, EyeJelly가 그랬다). `Tools/Monster/Bake Animations`가 만드는 컨트롤러는 `Idle/Move/Hit/Die` 구조(`Attack` 상태 없음, `Moving` 파라미터 있음)라서 지금 몬스터들이 쓰는 구조와 다르다. 새 몬스터는 `Ghost.controller`와 같은 구조로 직접 만든다: 파라미터 `Attack`·`Die`(트리거), `Move`(기본, 반복) → `Attack` 트리거로 `Attack` → 끝나면 `Move`, 어느 상태에서든 `Die` 트리거로 `Die`.
-2. **웨이브 프리팹**: `Prefabs/Stage/Skeleton.prefab`을 복사해 `Prefabs/Stage/<이름>.prefab`을 만든다. `Scripts/Editor/WaveMonsterVisualLinker.cs`의 `Links`에 `("<이름>", "<이름>_Animated", false)`를 더하고 메뉴 `Tools/Monster/Link Visuals To Wave Prefabs`를 실행하면 리그가 `Visual` 자식으로 붙는다(엘리트는 세 번째 값을 `true`로, 1.2배 크기에 원래 색).
+1. **아트 확인**: `Prefabs/Monsters/<이름>_Animated.prefab`(리그)과 `Animations/<이름>.controller`, `<이름>_Move/Attack/Die.anim`이 있어야 한다. **컨트롤러에 상태가 실제로 채워져 있는지 연다.** 파일만 있고 레이어가 비어 있으면 클립이 있어도 재생되지 않는다(ArmoredCrab, BrainSpider, EyeJelly가 그랬다). 예전 일괄 애니메이션 베이커는 현재 상태 구조와 맞지 않아 삭제했다. 새 몬스터는 `Ghost.controller`와 같은 구조로 직접 만든다: 파라미터 `Attack`·`Die`(트리거), `Move`(기본, 반복) → `Attack` 트리거로 `Attack` → 끝나면 `Move`, 어느 상태에서든 `Die` 트리거로 `Die`.
+2. **웨이브 프리팹**: `Prefabs/Stage/Skeleton.prefab`을 복사해 `Prefabs/Stage/<이름>.prefab`을 만든다. Prefab Mode에서 기존 `Visual`을 새 리그 프리팹으로 교체하고 이름을 `Visual`로 맞춘다. 기존 Visual의 위치·크기·레이어·SortingGroup 설정을 기준으로 조정한다. 일반 몬스터는 `Monster_Desaturate` 재질, 엘리트는 원래 재질과 1.2배 크기를 사용한다. 기존 루트 SpriteRenderer는 비활성 상태를 유지한다. 연결 목록을 코드에 추가하는 일괄 덮어쓰기 도구는 삭제했다.
 3. **`Monsters.json` 행**: [필드](#monsters-json-필드)와 [패시브](#passives)를 보고 새 `Id`로 행을 더한다. 지금은 일반 1~6과 21 이후, 엘리트 11~12, 보스 100을 쓰고 있다.
 4. **`MonsterAssetTable.asset`**(`Data/`): 인스펙터의 표에 `Key`(= `MonsterId`)와 `prefab`(웨이브 프리팹의 `Enemy`)을 더한다. 원거리(`ProjectileSpeed > 0`)면 `projectilePrefab`도 연결한다(예: `Slime_Projectile`).
 5. **스테이지 배치**: 웨이브에 나오게 하려면 `Stages.json`의 해당 스테이지 `Waves[].Spawns`에 `{MonsterId, Count}`를 더한다. 소환·분열로만 나오는 몬스터는 넣지 않는다.

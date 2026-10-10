@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 89e6732b0b81d4055a15f7e6cb13ec12, type: 3}
+  m_Name: StageUi
+  m_EditorClassIdentifier: Game.View::Game.View.UiComposition
+  Entries:
+  - Id: HudCanvas
+    Prefab: {fileID: 7447173283495688033, guid: 6e68198728ace4313b314fddb193ff9b, type: 3}
+    ParentPath: HudLayer/SafeArea
+    SiblingIndex: 0
+  - Id: CardSelect
+    Prefab: {fileID: 2623478426771160343, guid: 8b576da597e1140698c4cca92d3e9533, type: 3}
+    ParentPath: PopupCanvas/Popups
+    SiblingIndex: 0
+  - Id: PauseMenu
+    Prefab: {fileID: 7657490957184661632, guid: ffe01181f8a09c84fa8ea65bb7a6aba0, type: 3}
+    ParentPath: PopupCanvas/Popups
+    SiblingIndex: 1
+  - Id: ResultPopup
+    Prefab: {fileID: 4021408085677271295, guid: 448cd638b25c17845850c678fc547da5, type: 3}
+    ParentPath: PopupCanvas/Popups
+    SiblingIndex: 2
+  - Id: SubmittingOverlay
+    Prefab: {fileID: 23004793906220327, guid: 155cf7c87bf4544639687443584385f4, type: 3}
+    ParentPath: PopupCanvas/Overlays
+    SiblingIndex: 0
+  - Id: SubmitRejectedPopup
+    Prefab: {fileID: 822653004983953784, guid: 8d63956c823c7435881a309c88574c7a, type: 3}
+    ParentPath: PopupCanvas/Overlays
+    SiblingIndex: 1
+  - Id: SkillHud
+    Prefab: {fileID: 3185226631231836932, guid: a2c00fc96abef4be0933fc23a80ad26e, type: 3}
+    ParentPath: HudLayer/SafeArea
+    SiblingIndex: 1
+  - Id: StageControls
+    Prefab: {fileID: 8761041663258074451, guid: 56bf8d5c14d693d4a890a9de367b0f2b, type: 3}
+    ParentPath: HudLayer/SafeArea
+    SiblingIndex: 2
