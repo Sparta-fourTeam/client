@@ -68,6 +68,7 @@ namespace Game.Core
             => _status.ApplyBurn(damagePerSecond, duration, maxHpRatio, onDeath);
         public void ApplyFrostbite(float damagePerSecond) => _status.ApplyFrostbite(damagePerSecond);
         public void ApplyFreeze(float duration) => _status.ApplyFreeze(duration);
+        public void ApplyFreezeMaxHpDot(float maxHpRatio) => _status.ApplyFreezeMaxHpDot(maxHpRatio);
         public void TickStatus(float deltaTime) => _status.Tick(deltaTime);
 
         // 밀치기로 실제 움직일 거리. 적용(위치 이동)은 Enemy가 한다

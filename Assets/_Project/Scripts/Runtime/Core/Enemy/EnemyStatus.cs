@@ -176,6 +176,16 @@ namespace Game.Core
             FreezeRemaining = Math.Max(FreezeRemaining, duration);
         }
 
+        private float freezeDotRatio;
+        private float freezeDotElapsed;
+
+        /// <summary>빙결이 유지되는 동안 매초 최대 HP의 일정 비율을 피해로 입는다 (매서운 서리). 빙결이 걸려 있을 때만 걸리고 빙결이 풀리면 끝난다</summary>
+        public void ApplyFreezeMaxHpDot(float maxHpRatio)
+        {
+            if (IsDead || !IsFrozen || !PositiveFinite(maxHpRatio)) { return; }
+            freezeDotRatio = Math.Max(freezeDotRatio, maxHpRatio);
+        }
+
         // 취약 상태면 받는 피해를 늘린다
         public int AmplifyDamage(int amount)
         {
@@ -196,6 +206,7 @@ namespace Game.Core
             areaSlows.Clear();
             StunRemaining = SlowRemaining = VulnerabilityRemaining = 0;
             slowRatio = VulnerabilityRatio = 0;
+            freezeDotRatio = freezeDotElapsed = 0;
             _grants.Clear();
             _boosts.Clear();
             return deathExplosion;
@@ -325,12 +336,26 @@ namespace Game.Core
             }
         }
 
+        // 빙결이 유지된 시간만큼 모아 1초마다 최대 HP 비례 피해를 준다
+        private void TickFreezeMaxHpDot(float frozenTime)
+        {
+            if (freezeDotRatio <= 0 || frozenTime <= 0) { return; }
+            freezeDotElapsed += frozenTime;
+            while (freezeDotElapsed >= 1 && !IsDead)
+            {
+                freezeDotElapsed -= 1;
+                _dealDamage(Math.Max(1, (int)Math.Round(_maxHp * freezeDotRatio)));
+            }
+        }
+
         private void TickSlice(float deltaTime)
         {
             StunRemaining = Math.Max(0, StunRemaining - deltaTime);
             SlowRemaining = Math.Max(0, SlowRemaining - deltaTime);
             if (SlowRemaining <= 0) { slowRatio = 0; }
+            TickFreezeMaxHpDot(Math.Min(deltaTime, FreezeRemaining));
             FreezeRemaining = Math.Max(0, FreezeRemaining - deltaTime);
+            if (FreezeRemaining <= 0) { freezeDotRatio = 0; freezeDotElapsed = 0; }
             ParalysisRemaining = Math.Max(0, ParalysisRemaining - deltaTime);
             TickBurn(deltaTime);
             if (IsDead) { frostbite.Clear(); return; }

@@ -31,9 +31,14 @@ namespace Game.Core
         public int Refractions { get; }
         /// <summary>집중 광선 방식: 광선 길이가 메인 대상까지의 거리이고, 메인이 죽으면 가장 가까운 살아 있는 적이 새 메인이 된다. 적이 없으면 광선이 사라진다</summary>
         public bool FocusAim { get; }
+        /// <summary>영역이 시작될 때 중심부에 같은 적중을 더 거는 횟수와 중심부 반경, 그 적중의 빙결 지속 배율</summary>
+        public int CoreHits { get; }
+        public float CoreRadius { get; }
+        public float CoreFreezeScale { get; }
 
         public AreaSettings(float radius, float duration, float pulseInterval, float moveSpeed = 0, float pull = 0, float length = 0, float width = 0,
-            float focusBonus = 0, float baseDamage = 0, float focusRampMax = 0, float focusBlastRadius = 0, float focusBlastRatio = 0, int refractions = 0, bool focusAim = false)
+            float focusBonus = 0, float baseDamage = 0, float focusRampMax = 0, float focusBlastRadius = 0, float focusBlastRatio = 0, int refractions = 0, bool focusAim = false,
+            int coreHits = 0, float coreRadius = 0, float coreFreezeScale = 1)
         {
             Radius = radius;
             Duration = duration;
@@ -49,10 +54,14 @@ namespace Game.Core
             FocusBlastRatio = focusBlastRatio;
             Refractions = refractions;
             FocusAim = focusAim;
+            CoreHits = coreHits;
+            CoreRadius = coreRadius;
+            CoreFreezeScale = coreFreezeScale;
         }
 
         public static AreaSettings From(AreaStats area) =>
-            new AreaSettings(area.Radius, area.Duration, area.PulseInterval, area.MoveSpeed, area.Pull);
+            new AreaSettings(area.Radius, area.Duration, area.PulseInterval, area.MoveSpeed, area.Pull,
+                coreHits: area.CoreHits, coreRadius: area.Radius * area.CoreRadiusRatio, coreFreezeScale: area.CoreFreezeScale);
 
         /// <summary>광선: 지속 시간 동안 공격 횟수(pulses)만큼 고르게 피해를 준다</summary>
         public static AreaSettings From(BeamStats beam, float baseDamage = 0) =>
@@ -75,6 +84,9 @@ namespace Game.Core
         private float radius, duration, pulseInterval, moveSpeed, pull, length, width, focusBonus, baseDamage, focusRampMax, focusBlastRadius, focusBlastRatio;
         private int mainHits, refractions;
         private bool focusAim;
+        private int coreHits;
+        private float coreRadius, coreFreezeScale;
+        private bool coreDone;
         private readonly List<Vector2> path = new();
         private readonly List<IEnemyTarget> visited = new();
         private readonly List<Transform> segmentVisuals = new();
@@ -113,6 +125,10 @@ namespace Game.Core
             mainHits = 0;
             refractions = Mathf.Max(0, settings.Refractions);
             focusAim = settings.FocusAim;
+            coreHits = Mathf.Max(0, settings.CoreHits);
+            coreRadius = Mathf.Max(0, settings.CoreRadius);
+            coreFreezeScale = Mathf.Max(1, settings.CoreFreezeScale);
+            coreDone = false;
             path.Clear();
             moveTarget = null;
             aim = aimTarget;
@@ -157,6 +173,7 @@ namespace Game.Core
             {
                 sincePulse -= pulseInterval;
                 Pulse(center);
+                if (!coreDone) { coreDone = true; CorePulse(center); }
             }
 
             if (elapsed + 0.0000001f >= duration)
@@ -324,6 +341,27 @@ namespace Game.Core
             if (focusBlastRadius > 0 && focusBlastRatio > 0 && baseDamage > 0)
             {
                 SkillReactionEffects.Explode(provider, target.Position, focusBlastRadius, baseDamage * focusBlastRatio);
+            }
+        }
+
+        // 영역이 시작될 때 첫 펄스 뒤에 중심부의 적에게 같은 적중을 coreHits번 더 건다 (빙결핵). 빙결 지속은 coreFreezeScale배다 (절대 영도).
+        // 중심부는 원형 영역의 중심에서 coreRadius 이내다
+        private void CorePulse(Vector2 center)
+        {
+            if (IsLine || coreHits <= 0 || coreRadius <= 0) { return; }
+            candidates.Clear();
+            provider.GetNearest(center, int.MaxValue, candidates);
+            float radiusSquared = coreRadius * coreRadius;
+            foreach (var target in candidates)
+            {
+                if (target == null || target.IsDead || (target.Position - center).sqrMagnitude > radiusSquared) { continue; }
+                for (int i = 0; i < coreHits && !target.IsDead; i++)
+                {
+                    var context = new AttackContext(target.Position, Direction, target, randomValue, freezeScale: coreFreezeScale);
+                    hitReactions.Raise(AttackEvent.Hit, context);
+                    reactions.Raise(AttackEvent.Hit, context);
+                    if (target.IsDead) { reactions.Raise(AttackEvent.Kill, context); }
+                }
             }
         }
 

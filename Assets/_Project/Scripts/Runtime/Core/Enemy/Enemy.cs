@@ -10,7 +10,7 @@ namespace Game.Core
     // 적 한 마리. 위치와 이동(Transform)을 갖고, 규칙은 EnemyModel에 맡긴다.
     // 스킬이 겨누는 대상(IEnemyTarget)이고, 상태이상·밀치기 대상 인터페이스를 모델에 위임해서 구현한다
     public class Enemy : MonoBehaviour, IEnemyTarget, IFreezableTarget, IKnockbackTarget, IFrostbiteTarget,
-        IParalyzableTarget, IBurnableTarget, IAreaSlowTarget, IStunnableTarget, ISlowableTarget, IVulnerableTarget
+        IParalyzableTarget, IFreezeMaxHpDotTarget, IBurnableTarget, IAreaSlowTarget, IStunnableTarget, ISlowableTarget, IVulnerableTarget
     {
         private static readonly int MovingHash = Animator.StringToHash("Moving");
         private static readonly int HitHash = Animator.StringToHash("Hit");
@@ -287,6 +287,7 @@ namespace Game.Core
         public void ApplyParalysis(float duration) => _enemyModel?.ApplyParalysis(duration);
         public void ApplyFreeze(float duration) => _enemyModel.ApplyFreeze(duration);
         public void ApplyFrostbite(float damagePerSecond) => _enemyModel.ApplyFrostbite(damagePerSecond);
+        public void ApplyFreezeMaxHpDot(float maxHpRatio) => _enemyModel.ApplyFreezeMaxHpDot(maxHpRatio);
         public void ApplyStun(float duration) => _enemyModel.ApplyStun(duration);
         public void ApplySlow(float ratio, float duration) => _enemyModel.ApplySlow(ratio, duration);
         public void ApplyVulnerability(float ratio, float duration) => _enemyModel.ApplyVulnerability(ratio, duration);

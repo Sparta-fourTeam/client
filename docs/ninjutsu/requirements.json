@@ -4116,9 +4116,9 @@
       "runtime": {
         "weaponId": 6,
         "cardId": "cold_zone_core",
-        "enabled": false,
-        "state": "disabled",
-        "conditionMapping": "partial",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "connected",
         "variantConnected": false
       },
       "decisionStatus": "source-defined",
@@ -4154,9 +4154,9 @@
       "runtime": {
         "weaponId": 6,
         "cardId": "cold_zone_zero",
-        "enabled": false,
-        "state": "disabled",
-        "conditionMapping": "partial",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "connected",
         "variantConnected": false
       },
       "decisionStatus": "source-defined",
@@ -4274,10 +4274,14 @@
       "runtime": {
         "weaponId": 6,
         "cardId": "cold_zone_polish",
-        "enabled": false,
-        "state": "disabled",
-        "conditionMapping": "partial",
-        "variantConnected": false
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "connected",
+        "variantConnected": false,
+        "companion": {
+          "weaponId": 4,
+          "cardId": "frost_crystal_polish"
+        }
       },
       "decisionStatus": "source-defined",
       "readyForProduction": false
@@ -4316,9 +4320,9 @@
       "runtime": {
         "weaponId": 6,
         "cardId": "cold_zone_bitter",
-        "enabled": false,
-        "state": "disabled",
-        "conditionMapping": "partial",
+        "enabled": true,
+        "state": "prototype-active",
+        "conditionMapping": "connected",
         "variantConnected": false
       },
       "decisionStatus": "source-defined",
