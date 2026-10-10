@@ -114,6 +114,16 @@ namespace Game.Core
         /// <summary>보유 스킬의 현재 상태(레벨 등)를 HUD에 다시 알린다. 카드를 선택 흐름 밖에서 직접 적용하는 도구(샌드박스)가 적용 뒤에 쓴다</summary>
         public void PublishSkillStatus() => PublishSkills();
 
+        /// <summary>보유 스킬의 사정거리를 화면에 그릴 모양으로 돌려준다 (HUD에서 스킬을 누르고 있을 때). 보유하지 않은 스킬이면 false</summary>
+        public bool TryGetRange(int skillId, out SkillRange range)
+        {
+            range = default;
+            var skill = skills.Find(w => w.Data.id == skillId);
+            if (skill == null) { return false; }
+            range = SkillRangeResolver.For(skill.Data, skill.Config.Attack.Range, transform.position, wall != null ? wall.AttackLineY : (float?)null);
+            return true;
+        }
+
         /// <summary>보유 스킬 (조회용)</summary>
         public IReadOnlyList<SkillBase> Skills => skills;
 

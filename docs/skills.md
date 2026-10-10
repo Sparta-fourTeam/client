@@ -73,6 +73,8 @@ flowchart TD
 
 `baseStats` 묶음: `cast`(cooldown, baseDamage, range, projectileCount, castCount, castInterval), `projectile`, `reserve`, `status`, `explosion`, `field`, `area`, `beam`, `chain`. 적지 않은 묶음과 값은 클래스의 기본값(`castCount` 1, 확률 1 등)을 쓴다. 정의는 `SkillBaseStats`.
 
+**사정거리(`cast.range`)**: 공격이 닿는 거리가 아니라 시전을 일으키는 조건이다. 시전 위치(플레이어)에서 이 거리 안에 살아 있는 적이 있어야 시전하고, 없으면 쿨타임을 쓰지 않고 기다린다. 굴러가는 공격(나무뿌리, `projectilePath: RollingLane`)은 플레이어에서 발사되지 않으므로 가로 위치(x)는 보지 않고 **벽 앞선에서 위로의 높이(y)** 가 이 거리 이내인 적을 노린다(벽에 가까운 순). 스킬 HUD 슬롯을 누르고 있는 동안 이 사정거리가 점선으로 보인다: 플레이어 기준 스킬은 플레이어를 중심으로 한 반원, 나무뿌리는 벽 앞선에서 사정거리만큼 위의 가로선이다(`SkillRangeResolver`, `SkillRangeIndicator`). 표시는 실제 판정 값 그대로라, 사정거리가 화면보다 길면 화면 밖으로 나가 보이지 않는다.
+
 ### 카드 (`upgrades`의 항목)
 
 ```json

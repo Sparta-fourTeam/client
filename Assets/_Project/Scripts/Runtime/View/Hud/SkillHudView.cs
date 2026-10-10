@@ -7,17 +7,67 @@ using VContainer;
 
 namespace Game.View
 {
-    /// <summary>보유 스킬을 슬롯에 채운다. 스킬이 바뀔 때만 SkillChanged를 받고, 남는 칸은 빈 틀로 둔다</summary>
+    /// <summary>보유 스킬을 슬롯에 채운다. 스킬이 바뀔 때만 SkillChanged를 받고, 남는 칸은 빈 틀로 둔다.
+    /// 슬롯을 누르고 있는 동안은 그 스킬의 사정거리를 점선으로 보여 준다</summary>
     public sealed class SkillHudView : HudView
     {
         [SerializeField] private SkillSlotView[] _slots;
         [FormerlySerializedAs("_iconTable")]
         [SerializeField] private SkillAssetTable _assets;
+        [Tooltip("슬롯을 누르고 있는 동안 사정거리를 그리는 점선 표시. 월드에 한 번 만들어 쓴다")]
+        [SerializeField] private SkillRangeIndicator _rangeIndicatorPrefab;
+
+        private SkillController _skills;
+        private SkillRangeIndicator _rangeIndicator;
+        private int _heldSkillId;
 
         [Inject]
-        public void Construct(IBufferedSubscriber<SkillChanged> skillChanged)
+        public void Construct(IBufferedSubscriber<SkillChanged> skillChanged, SkillController skills)
         {
+            _skills = skills;
             Track(skillChanged.Subscribe(OnSkillChanged));
+            foreach (var slot in _slots)
+            {
+                slot.HoldStarted += OnHoldStarted;
+                slot.HoldEnded += OnHoldEnded;
+            }
+        }
+
+        private void OnHoldStarted(ISkillStatus status)
+        {
+            _heldSkillId = status.Id;
+            ShowRange();
+        }
+
+        private void OnHoldEnded()
+        {
+            _heldSkillId = 0;
+            if (_rangeIndicator != null) { _rangeIndicator.Hide(); }
+        }
+
+        // 누르는 동안 매 프레임 다시 그려 플레이어 위치나 사정거리가 바뀌어도 따라간다
+        private void Update()
+        {
+            if (_heldSkillId != 0) { ShowRange(); }
+        }
+
+        private void ShowRange()
+        {
+            if (_skills == null || _rangeIndicatorPrefab == null || !_skills.TryGetRange(_heldSkillId, out var range)) { return; }
+            if (_rangeIndicator == null) { _rangeIndicator = Instantiate(_rangeIndicatorPrefab); }
+            _rangeIndicator.Show(range);
+        }
+
+        protected override void OnDestroy()
+        {
+            foreach (var slot in _slots)
+            {
+                if (slot == null) { continue; }
+                slot.HoldStarted -= OnHoldStarted;
+                slot.HoldEnded -= OnHoldEnded;
+            }
+            if (_rangeIndicator != null) { Destroy(_rangeIndicator.gameObject); }
+            base.OnDestroy();
         }
 
         private void OnSkillChanged(SkillChanged message)
