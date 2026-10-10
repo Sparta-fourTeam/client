@@ -11,7 +11,6 @@ namespace Game.Tests
     /// 게임에서 WeaponController가 하는 일(스킬별 프리팹 연결, 자식 시전기 연결)을 같은 방식으로 한다.</summary>
     internal sealed class CatalogWorld : IDisposable
     {
-        private const string PlayerPrefab = "Assets/_Project/Prefabs/Stage/Player_Animated.prefab";
 
         public sealed class Targets : IEnemyTargetProvider
         {
@@ -97,7 +96,6 @@ namespace Game.Tests
         {
             children.Dispose();
             foreach (var caster in casters) { caster.Dispose(); }
-            foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None)) { Object.DestroyImmediate(projectile.gameObject); }
             foreach (var owner in owners) { if (owner != null) { Object.DestroyImmediate(owner); } }
         }
     }

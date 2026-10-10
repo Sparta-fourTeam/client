@@ -36,9 +36,9 @@ namespace Game.Tests
             public void Publish(T message) { }
         }
 
-        private static Game.Core.Enemy Enemy(int hp) =>
-            TestEnemy.Create(new EnemyModel(1, 0f, EnemyType.Normal, hp, new EnemyAttackStats(AttackType.Melee, 10, 1f, 0f),
-                new Publisher<EnemyHpChanged>(), new Publisher<EnemyDied>()));
+        private static EnemyModel Enemy(int hp) =>
+            new EnemyModel(1, 0f, EnemyType.Normal, hp, new EnemyAttackStats(AttackType.Melee, 10, 1f, 0f),
+                new Publisher<EnemyHpChanged>(), new Publisher<EnemyDied>());
 
         [Test(Description = "스킬 밖에서 받은 피해는 기록하지 않는다")]
         public void Damage_OutsideScope_IsNotRecorded()
@@ -69,7 +69,7 @@ namespace Game.Tests
             try
             {
                 var field = go.AddComponent<ElectromagneticField>();
-                var enemy = Enemy(100);
+                var enemy = TestEnemy.Create(Enemy(100));
                 var provider = new Provider(enemy);
                 var pool = new ObjectPool<ElectromagneticField>(() => field);
                 using (DamageAttribution.Begin(42)) { pool.Get().Init(pool, provider, Vector2.zero, 5f, 10f, 3, 0.3f); }

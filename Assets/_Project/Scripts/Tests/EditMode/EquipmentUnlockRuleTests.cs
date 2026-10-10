@@ -17,6 +17,12 @@ namespace Game.Tests
         public void SetUp()
         {
             _data = new GameDataStore();
+            // 테스트 입력: 사원증만 Lv 1, 나머지는 Lv 2에서 열린다.
+            foreach (var material in ItemIds.EquipmentMaterials)
+            {
+                var target = _data.Items.GetOrThrow(material).TargetId;
+                _data.Upgrades.GetOrThrow(target).UnlockLevel = material == ItemIds.EmployeeIdBook ? 1 : 2;
+            }
             _path = Path.Combine(Path.GetTempPath(), $"equipment-unlock-{Guid.NewGuid()}.json");
             _store = new LocalSaveStore(_path);
         }
@@ -34,12 +40,12 @@ namespace Game.Tests
             return exp;
         }
 
-        [Test(Description = "랜덤 장비재료는 열린 장비의 재료만 준다 (레벨 1이면 사원증 재료뿐)")]
+        [Test(Description = "랜덤 장비재료는 열린 장비의 재료만 준다")]
         public void RandomEquipmentReward_OnlyFromUnlockedEquipment()
         {
             var save = _store.Load();
             save.exp = ExpFor(1);
-            save.wallet.energyStored = 10; save.wallet.energyUpdatedAt = DateTime.UtcNow.ToString("O");
+            save.wallet.energyStored = _data.Energy.Cost; save.wallet.energyUpdatedAt = DateTime.UtcNow.ToString("O");
             _store.Flush(save);
             _data.StageRewards.GetOrThrow(1).Items = new() { new() { itemId = ItemIds.RandomEquipmentMaterial, finalAmount = 1 } };
             var api = new LocalBattleApi(_store, _data)
@@ -59,7 +65,7 @@ namespace Game.Tests
 
                 save = _store.Load();
                 save.exp = ExpFor(1); // 반복 보상 검증 중 계정 레벨은 1로 고정한다.
-                save.wallet.energyStored = 10; save.wallet.energyUpdatedAt = DateTime.UtcNow.ToString("O");
+                save.wallet.energyStored = _data.Energy.Cost; save.wallet.energyUpdatedAt = DateTime.UtcNow.ToString("O");
                 _store.Flush(save);
             }
         }

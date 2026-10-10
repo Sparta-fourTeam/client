@@ -38,11 +38,11 @@ namespace Game.Tests
         private static PassiveDefinition Immune(params string[] statuses) =>
             new PassiveDefinition { Kind = PassiveKind.Immunity, Statuses = statuses };
 
-        private static Enemy Create(Vector2 position, params IPassive[] passives)
+        private static EnemyModel Create(params IPassive[] passives)
         {
             var model = new EnemyModel(1, 0f, EnemyType.Normal, 10, Attack,
                 new Recorder<EnemyHpChanged>(), new Recorder<EnemyDied>(), passives);
-            return TestEnemy.Create(model, position);
+            return model;
         }
 
         // ───────── 정의 검증 ─────────
@@ -124,31 +124,35 @@ namespace Game.Tests
         [Test(Description = "주기가 지나면 count마리를 가로로 벌려 요청하고 주기가 지나기 전에는 요청하지 않는다")]
         public void Summon_RequestsAfterInterval()
         {
-            var enemy = Create(new Vector2(2f, 4f), new SpawnPassive(SpawnTrigger.Interval, 6, 2, interval: 5f, maxTotal: 10));
-            var requests = new List<EnemySpawnRequest>();
-            enemy.SpawnRequested += requests.Add;
+            var enemy = Create(new SpawnPassive(SpawnTrigger.Interval, 6, 2, interval: 5f, maxTotal: 10));
+            var requests = new List<(int MonsterId, Vector2 Offset, bool IsSummon)>();
+            enemy.SpawnRequested += (id, offset, isSummon) => requests.Add((id, offset, isSummon));
 
-            enemy.Model.TickPassives(4.9f);
+            enemy.TickPassives(4.9f);
             Assert.IsEmpty(requests);
 
-            enemy.Model.TickPassives(0.2f);
+            enemy.TickPassives(0.2f);
 
             Assert.AreEqual(2, requests.Count);
             Assert.AreEqual(6, requests[0].MonsterId);
-            Assert.AreEqual(1.8f, requests[0].Position.x, 0.0001f);
-            Assert.AreEqual(2.2f, requests[1].Position.x, 0.0001f);
+            Assert.AreEqual(6, requests[1].MonsterId);
+            Assert.AreEqual(0f, requests[0].Offset.y);
+            Assert.AreEqual(0f, requests[1].Offset.y);
+            Assert.IsTrue(requests.TrueForAll(r => r.IsSummon));
+            Assert.AreEqual(-0.2f, requests[0].Offset.x, 0.0001f);
+            Assert.AreEqual(0.2f, requests[1].Offset.x, 0.0001f);
         }
 
         [Test(Description = "총량 상한까지만 소환하고 더 이상 요청하지 않는다")]
         public void Summon_StopsAtMaxTotal()
         {
-            var enemy = Create(Vector2.zero, new SpawnPassive(SpawnTrigger.Interval, 6, 2, interval: 1f, maxTotal: 3));
-            var requests = new List<EnemySpawnRequest>();
-            enemy.SpawnRequested += requests.Add;
+            var enemy = Create(new SpawnPassive(SpawnTrigger.Interval, 6, 2, interval: 1f, maxTotal: 3));
+            var requests = new List<(int MonsterId, Vector2 Offset, bool IsSummon)>();
+            enemy.SpawnRequested += (id, offset, isSummon) => requests.Add((id, offset, isSummon));
 
             for (int i = 0; i < 6; i++)
             {
-                enemy.Model.TickPassives(1f);
+                enemy.TickPassives(1f);
             }
 
             Assert.AreEqual(3, requests.Count); // 2 + (남은 1)
@@ -158,28 +162,28 @@ namespace Game.Tests
         [Test(Description = "기절·빙결·마비 중에는 소환 시간이 흐르지 않는다")]
         public void Summon_PausedWhileDisabled()
         {
-            var enemy = Create(Vector2.zero, new SpawnPassive(SpawnTrigger.Interval, 6, 1, interval: 1f, maxTotal: 5));
-            var requests = new List<EnemySpawnRequest>();
-            enemy.SpawnRequested += requests.Add;
+            var enemy = Create(new SpawnPassive(SpawnTrigger.Interval, 6, 1, interval: 1f, maxTotal: 5));
+            var requests = new List<(int MonsterId, Vector2 Offset, bool IsSummon)>();
+            enemy.SpawnRequested += (id, offset, isSummon) => requests.Add((id, offset, isSummon));
 
             enemy.ApplyStun(5f);
-            enemy.Model.TickPassives(3f);
+            enemy.TickPassives(3f);
             Assert.IsEmpty(requests);
 
             enemy.TickStatus(5f); // 기절이 풀린다
-            enemy.Model.TickPassives(1f);
+            enemy.TickPassives(1f);
             Assert.AreEqual(1, requests.Count);
         }
 
         [Test(Description = "죽은 몬스터는 소환하지 않는다")]
         public void Summon_NotWhenDead()
         {
-            var enemy = Create(Vector2.zero, new SpawnPassive(SpawnTrigger.Interval, 6, 1, interval: 1f, maxTotal: 5));
-            var requests = new List<EnemySpawnRequest>();
-            enemy.SpawnRequested += requests.Add;
+            var enemy = Create(new SpawnPassive(SpawnTrigger.Interval, 6, 1, interval: 1f, maxTotal: 5));
+            var requests = new List<(int MonsterId, Vector2 Offset, bool IsSummon)>();
+            enemy.SpawnRequested += (id, offset, isSummon) => requests.Add((id, offset, isSummon));
 
             enemy.TakeDamage(10);
-            enemy.Model.TickPassives(5f);
+            enemy.TickPassives(5f);
 
             Assert.IsEmpty(requests);
         }
@@ -195,11 +199,11 @@ namespace Game.Tests
         [Test(Description = "OnDeath 트리거는 주기를 요구하지 않고 시간이 흘러도 요청하지 않는다")]
         public void OnDeath_IgnoresTicks()
         {
-            var enemy = Create(Vector2.zero, new SpawnPassive(SpawnTrigger.OnDeath, 3, 2));
-            var requests = new List<EnemySpawnRequest>();
-            enemy.SpawnRequested += requests.Add;
+            var enemy = Create(new SpawnPassive(SpawnTrigger.OnDeath, 3, 2));
+            var requests = new List<(int MonsterId, Vector2 Offset, bool IsSummon)>();
+            enemy.SpawnRequested += (id, offset, isSummon) => requests.Add((id, offset, isSummon));
 
-            enemy.Model.TickPassives(100f);
+            enemy.TickPassives(100f);
 
             Assert.IsEmpty(requests);
         }
@@ -207,9 +211,9 @@ namespace Game.Tests
         [Test(Description = "Interval 트리거는 죽을 때 요청하지 않는다")]
         public void Interval_IgnoresDeath()
         {
-            var enemy = Create(Vector2.zero, new SpawnPassive(SpawnTrigger.Interval, 6, 1, interval: 5f, maxTotal: 2));
-            var requests = new List<EnemySpawnRequest>();
-            enemy.SpawnRequested += requests.Add;
+            var enemy = Create(new SpawnPassive(SpawnTrigger.Interval, 6, 1, interval: 5f, maxTotal: 2));
+            var requests = new List<(int MonsterId, Vector2 Offset, bool IsSummon)>();
+            enemy.SpawnRequested += (id, offset, isSummon) => requests.Add((id, offset, isSummon));
 
             enemy.TakeDamage(10);
 

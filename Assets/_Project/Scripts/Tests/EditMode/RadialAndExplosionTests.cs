@@ -21,7 +21,7 @@ namespace Game.Tests
         }
 
         [Test]
-        public void RadialStrategy_FiresAllShotsEvenWithNoEnemiesAndStartsAtTheOrigin()
+        public void RadialStrategy_FireAtUsesOriginAndTemporaryDamageWithoutConsumingNormalCast()
         {
             var prefab = new GameObject("RadialPrefab"); prefab.AddComponent<Projectile>();
             var owner = new GameObject("RadialOwner");
@@ -32,25 +32,48 @@ namespace Game.Tests
                 maxLevel = 5,
                 upgrades = new List<SkillUpgradeOption>(),
                 projectilePath = ProjectilePath.Radial,
-                baseStats = new SkillBaseStats { cast = { baseDamage = 5, cooldown = 1, range = 10, projectileCount = 6 }, projectile = { speed = 10 } }
+                baseStats = new SkillBaseStats { cast = { baseDamage = 20, cooldown = 1, range = 10, projectileCount = 6 }, projectile = { speed = 10 } }
             };
             SkillCaster caster = null;
             try
             {
                 caster = Casters.Projectile(data, prefab, owner.transform, new Provider());
-                caster.FireAt(new Vector3(2, 3, 0), config => config);
+                caster.FireAt(new Vector3(2, 3, 0), .5f);
                 var shots = Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None)
                     .Where(p => p.gameObject.scene.IsValid() && p.gameObject.activeInHierarchy && p.name.Contains("Clone")).ToList();
                 Assert.AreEqual(6, shots.Count, "적이 없어도 사방으로 쏜다");
-                foreach (var shot in shots) { Assert.AreEqual(new Vector3(2, 3, 0), shot.transform.position); }
+                foreach (var shot in shots)
+                {
+                    Assert.AreEqual(new Vector3(2, 3, 0), shot.transform.position);
+                    Assert.AreEqual(10, HitRecorder.Hit(shot).Damage);
+                }
                 var distinct = shots.Select(p => Mathf.RoundToInt(Mathf.Atan2(((Vector3)typeof(Projectile).GetField("direction", Flags).GetValue(p)).y,
                     ((Vector3)typeof(Projectile).GetField("direction", Flags).GetValue(p)).x) * 100)).Distinct().Count();
                 Assert.AreEqual(6, distinct);
+                caster.FireAt(new Vector3(8, 9, 0));
+                var restored = Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None)
+                    .Where(p => p.gameObject.scene.IsValid() && p.gameObject.activeInHierarchy && p.name.Contains("Clone") && !shots.Contains(p)).ToList();
+                Assert.AreEqual(6, restored.Count);
+                foreach (var shot in restored)
+                {
+                    Assert.AreEqual(new Vector3(8, 9, 0), shot.transform.position);
+                    Assert.AreEqual(20, HitRecorder.Hit(shot).Damage, "자식 시전 배율은 다음 시전에 남지 않는다");
+                }
+                caster.Tick(.1f);
+                var normal = Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None)
+                    .Where(p => p.gameObject.scene.IsValid() && p.gameObject.activeInHierarchy && p.name.Contains("Clone")
+                        && !shots.Contains(p) && !restored.Contains(p)).ToList();
+                Assert.AreEqual(6, normal.Count, "FireAt 뒤에도 일반 시전의 쿨타임은 준비 상태다");
+                foreach (var shot in normal)
+                {
+                    Assert.AreEqual(owner.transform.position, shot.transform.position);
+                    Assert.AreEqual(20, HitRecorder.Hit(shot).Damage);
+                }
             }
             finally
             {
                 caster?.Dispose();
-                foreach (var p in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None)) { Object.DestroyImmediate(p.gameObject); }
+
                 Object.DestroyImmediate(prefab); Object.DestroyImmediate(owner);
             }
         }

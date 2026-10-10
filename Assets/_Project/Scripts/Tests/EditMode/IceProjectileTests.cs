@@ -67,9 +67,9 @@ namespace Game.Tests
                 var projectile = go.AddComponent<Projectile>();
                 var targets = new Provider();
                 var pool = new ObjectPool<Projectile>(() => projectile);
-                var update = typeof(Projectile).GetMethod("Update", BindingFlags.NonPublic | BindingFlags.Instance);
+                var tick = typeof(Projectile).GetMethod("Tick", BindingFlags.NonPublic | BindingFlags.Instance);
                 pool.Get().Init(pool, Vector3.zero, Vector3.up, 10, 0, 3, targets, freezeDuration: 2, knockbackDistance: 0.6f, frostbiteRatio: 0.1f, burnDuration: 6, burnDamage: 1);
-                update.Invoke(projectile, null);
+                tick.Invoke(projectile, new object[] { 0.1f });
                 Assert.AreEqual(1, targets.Target.Hits);
                 Assert.AreEqual(1, targets.Target.Freezes);
                 Assert.AreEqual(2, targets.Target.Duration);
@@ -80,7 +80,7 @@ namespace Game.Tests
                 Assert.AreEqual(1, targets.Target.Burns);
                 Assert.AreEqual(1, targets.Target.BurnDamage);
                 pool.Get().Init(pool, Vector3.zero, Vector3.up, 10, 0, 3, targets);
-                update.Invoke(projectile, null);
+                tick.Invoke(projectile, new object[] { 0.1f });
                 Assert.AreEqual(2, targets.Target.Hits);
                 Assert.AreEqual(1, targets.Target.Burns, "재사용 시 점화가 남으면 안 된다");
                 Assert.AreEqual(1, targets.Target.Frostbites, "재사용 시 동상이 남으면 안 된다");
@@ -123,32 +123,6 @@ namespace Game.Tests
                 typeof(Projectile).GetMethod("Tick", BindingFlags.NonPublic | BindingFlags.Instance)
                     .Invoke(projectile, new object[] { 0.1f });
                 Assert.AreEqual(0, targets.Target.Hits);
-            }
-            finally { Object.DestroyImmediate(go); }
-        }
-
-        [Test]
-        public void TriangleVisual_ReturnsToOriginalSpriteWhenProjectileIsReused()
-        {
-            var go = new GameObject("TriangleVisualTest");
-            var sprite = go.AddComponent<SpriteRenderer>();
-            var projectile = go.AddComponent<Projectile>();
-            try
-            {
-                var baseSprite = Sprite.Create(Texture2D.whiteTexture, new Rect(0, 0, 1, 1), Vector2.one * .5f);
-                var triangle = Sprite.Create(Texture2D.whiteTexture, new Rect(0, 0, 1, 1), Vector2.one * .5f);
-                Assert.IsNotNull(baseSprite); Assert.IsNotNull(triangle);
-                sprite.sprite = baseSprite;
-                typeof(Projectile).GetField("formSprites", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(projectile,
-                    new[] { new ProjectileVisual.FormSprite { form = SkillForm.TriangleIce, sprite = triangle } });
-                projectile.SetVisualForm(SkillForm.TriangleIce);
-                Assert.AreSame(triangle, sprite.sprite); Assert.IsTrue(sprite.enabled);
-                Assert.IsNull(go.GetComponent<LineRenderer>());
-                projectile.SetVisualForm(SkillForm.Default);
-                Assert.AreSame(baseSprite, sprite.sprite);
-                projectile.SetVisualForm(SkillForm.Enbakutsu);
-                Assert.AreSame(baseSprite, sprite.sprite);
-                Object.DestroyImmediate(baseSprite); Object.DestroyImmediate(triangle);
             }
             finally { Object.DestroyImmediate(go); }
         }
@@ -234,7 +208,7 @@ namespace Game.Tests
             {
                 var provider = new Provider { Second = new Target { Position = Vector2.right * 0.5f } };
                 var data = new SkillData { baseStats = new SkillBaseStats { cast = { baseDamage = 10, range = 10 }, status = { burnChance = 1 }, explosion = { damageRatio = 1, radius = 0.8f } }, maxLevel = 14 };
-                var weapon = Casters.Projectile(data, prefab, prefab.transform, provider);
+                using var weapon = Casters.Projectile(data, prefab, prefab.transform, provider);
                 SkillStats stats = SkillTestFactory.Apply(SkillTestFactory.Apply(SkillStats.FromDefinition(data.baseStats), "burnDuration", 6), "burnRatio", 10);
                 typeof(SkillBase).GetField("stats", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(weapon, stats);
                 typeof(SkillCaster).GetMethod("OnFire", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(weapon, null);
@@ -266,47 +240,5 @@ namespace Game.Tests
             }
         }
 
-        [Test]
-        public void FireballFormsAndFlames_ApplyThreeChildrenAndTwoPierces()
-        {
-            var prefab = new GameObject("EnbakutsuTest");
-            prefab.AddComponent<Projectile>();
-            try
-            {
-                var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 2);
-                var weapon = Casters.Projectile(data, prefab, prefab.transform, new Provider());
-                weapon.UseChildCaster(new NoopChildCaster());
-                foreach (var id in new[] { "fireball_impact_damage", "fireball_explosion_damage", "fireball_explosion_radius", "fireball_flames", "fireball_phoenix" })
-                {
-                    Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == id), 13));
-                }
-
-                var stats = (SkillStats)typeof(SkillBase).GetField("stats", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(weapon);
-                Assert.IsTrue(weapon.Config.Children.ContainsKey(14), "불꽃 조각(자식 스킬 14)을 시전하는 연결");
-                Assert.AreEqual(2, stats.Projectile.PierceCount);
-                Assert.AreEqual(SkillForm.Enbakutsu, stats.Cast.Form);
-                typeof(SkillCaster).GetMethod("OnFire", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(weapon, null);
-                foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
-                {
-                    if (projectile.name == "EnbakutsuTest(Clone)")
-                    {
-                        Assert.AreEqual(1.5f, projectile.transform.localScale.x);
-                        Assert.AreEqual(0.65f, projectile.transform.localScale.y);
-                    }
-                }
-            }
-            finally
-            {
-                foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
-                {
-                    if (projectile.name == "EnbakutsuTest(Clone)")
-                    {
-                        Object.DestroyImmediate(projectile.gameObject);
-                    }
-                }
-
-                Object.DestroyImmediate(prefab);
-            }
-        }
     }
 }

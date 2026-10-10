@@ -41,18 +41,13 @@ namespace Game.Tests
             Assert.AreEqual(1, loaded.upgrades.Count);
             Assert.AreEqual("atk", loaded.upgrades[0].upgradeId);
             Assert.AreEqual(3, loaded.upgrades[0].level);
-        }
 
-        [Test(Description = "Flush()를 두 번 호출하면 이전 저장 내용이 최신 값으로 덮어써진다")]
-        public void Flush_Twice_OverwritesPreviousSave()
-        {
-            var store = new LocalSaveStore(_filePath);
-            store.Flush(new LocalSave { wallet = new WalletRow { gold = 10 } });
-
-            store.Flush(new LocalSave { wallet = new WalletRow { gold = 20 } });
-            var loaded = store.Load();
-
-            Assert.AreEqual(20, loaded.wallet.gold);
+            save.wallet.gold = 20;
+            save.upgrades.Clear();
+            store.Flush(save);
+            var overwritten = new LocalSaveStore(_filePath).Load();
+            Assert.AreEqual(20, overwritten.wallet.gold);
+            Assert.IsEmpty(overwritten.upgrades);
         }
 
         [Test(Description = "Load()를 여러 번 반복해도 stageProgress의 기본 시드 행이 중복되지 않는다 " +
@@ -67,20 +62,12 @@ namespace Game.Tests
             var loaded = store.Load();
 
             Assert.AreEqual(1, loaded.stageProgress.Count);
+            loaded.stageProgress[0].clearRating = 3;
+            store.Flush(loaded);
+            var restored = new LocalSaveStore(_filePath).Load();
+            Assert.AreEqual(1, restored.stageProgress.Count);
+            Assert.AreEqual(3, restored.stageProgress[0].clearRating);
         }
 
-        [Test(Description = "저장된 stageProgress 값을 수정하고 다시 불러오면 중복 없이 수정된 값 그대로 읽힌다")]
-        public void Load_AfterMutatingStageProgress_RoundTripsWithoutDuplication()
-        {
-            var store = new LocalSaveStore(_filePath);
-            var save = store.Load();
-            save.stageProgress[0].clearRating = 3;
-            store.Flush(save);
-
-            var loaded = store.Load();
-
-            Assert.AreEqual(1, loaded.stageProgress.Count);
-            Assert.AreEqual(3, loaded.stageProgress[0].clearRating);
-        }
     }
 }

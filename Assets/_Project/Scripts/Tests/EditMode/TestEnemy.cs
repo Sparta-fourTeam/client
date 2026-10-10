@@ -8,7 +8,8 @@ using UnityEngine;
 
 namespace Game.Tests
 {
-    // 테스트용 Enemy. 위치는 Enemy(Transform)가 갖고 규칙은 EnemyModel이 가진다.
+    // Transform·IEnemyTarget·IEnemyFactory 어댑터 계약을 검증할 때만 생성한다.
+    // HP·상태이상·공격·패시브 규칙만 검증할 때는 EnemyModel을 직접 사용한다.
     // 만든 GameObject는 각 테스트가 끝날 때 CleanUpTestEnemies가 지운다
     internal static class TestEnemy
     {
@@ -35,7 +36,6 @@ namespace Game.Tests
             }
 
             Created.Clear();
-            DamagePopupPool.Clear();
         }
     }
 

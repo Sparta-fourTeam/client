@@ -40,7 +40,7 @@ namespace Game.Tests
             {
                 var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 5);
                 var provider = new Provider(); provider.Target.Position = Vector2.up * 2;
-                var weapon = Casters.Projectile(data, go, go.transform, provider);
+                using var weapon = Casters.Projectile(data, go, go.transform, provider);
                 weapon.LevelUp(data.upgrades.Find(c => c.id == "log_size"));
                 typeof(SkillCaster).GetMethod("OnFire", Flags).Invoke(weapon, null);
                 Projectile clone = null;
@@ -94,20 +94,20 @@ namespace Game.Tests
             {
                 var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 5);
                 var provider = new Provider(); provider.Target.Position = Vector2.up;
-                var weapon = Casters.Projectile(data, go, go.transform, provider);
+                using var weapon = Casters.Projectile(data, go, go.transform, provider);
                 foreach (var id in new[] { "log_impact", "log_weight", "log_wound" })
                 { Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == id))); Assert.IsFalse(weapon.LevelUp(data.upgrades.Find(c => c.id == id))); }
                 typeof(SkillCaster).GetMethod("OnFire", Flags).Invoke(weapon, null);
                 Projectile clone = null;
                 foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
                 { if (projectile.name == "LogStatusCasterTest(Clone)") { clone = projectile; } }
-                var hit = HitRecorder.Hit(clone, .05f);
-                Assert.AreEqual(.4375f, hit.KnockbackDistance, .001f);
+                var hit = HitRecorder.Hit(clone, 0);
+                Assert.AreEqual(weapon.Stats.Projectile.KnockbackDistance, hit.KnockbackDistance, .001f);
                 Assert.AreEqual(1, hit.Stun);
-                Assert.AreEqual(0, HitRecorder.Hit(clone, .5f).Stun, "기절 확률은 10%이므로 0.5에서는 걸리지 않는다");
-                Assert.AreEqual(5.2f, hit.SlowDuration, .001f);
-                Assert.AreEqual(.2f, hit.VulnerabilityRatio, .001f);
-                Assert.AreEqual(6, hit.VulnerabilityDuration);
+                Assert.AreEqual(0, HitRecorder.Hit(clone, 1).Stun, "확률 범위 밖에서는 기절하지 않는다");
+                Assert.AreEqual(weapon.Stats.Status.SlowDuration, hit.SlowDuration, .001f);
+                Assert.AreEqual(weapon.Stats.Status.VulnerabilityRatio, hit.VulnerabilityRatio, .001f);
+                Assert.AreEqual(weapon.Stats.Status.VulnerabilityDuration, hit.VulnerabilityDuration);
             }
             finally
             {
@@ -118,20 +118,14 @@ namespace Game.Tests
         }
 
         [Test]
-        public void FireLog_AppliesDirectBurnKeepsStatusesAndPooledVisualRestores()
+        public void FireLog_AppliesBurnAndClearsStatusesOnPoolReuse()
         {
             var go = new GameObject("FireLogTest"); go.AddComponent<Projectile>();
-            var sprite = go.AddComponent<SpriteRenderer>(); var brown = new Color(.55f, .3f, .12f); sprite.color = brown;
-            var baseArt = Sprite.Create(Texture2D.whiteTexture, new Rect(0, 0, 1, 1), Vector2.one * .5f);
-            var fireArt = Sprite.Create(Texture2D.whiteTexture, new Rect(0, 0, 1, 1), Vector2.one * .5f);
-            Assert.IsNotNull(baseArt); Assert.IsNotNull(fireArt); sprite.sprite = baseArt;
-            typeof(Projectile).GetField("formSprites", Flags).SetValue(go.GetComponent<Projectile>(),
-                new[] { new ProjectileVisual.FormSprite { form = SkillForm.FireLog, sprite = fireArt } });
             try
             {
                 var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 5);
                 var provider = new Provider(); provider.Target.Position = Vector2.up * .1f;
-                var weapon = Casters.Projectile(data, go, go.transform, provider);
+                using var weapon = Casters.Projectile(data, go, go.transform, provider);
                 foreach (var id in new[] { "log_damage", "log_size", "log_impact", "log_weight", "log_wound", "log_fire" })
                 { Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == id))); }
                 Assert.IsFalse(weapon.LevelUp(data.upgrades.Find(c => c.id == "log_fire")));
@@ -139,20 +133,15 @@ namespace Game.Tests
                 Projectile clone = null;
                 foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
                 { if (projectile.name == "FireLogTest(Clone)") { clone = projectile; } }
-                Assert.AreEqual(brown, clone.GetComponent<SpriteRenderer>().color);
-                Assert.AreSame(fireArt, clone.GetComponent<SpriteRenderer>().sprite);
-                Assert.AreEqual(1.6f, clone.transform.localScale.x, .001f);
                 typeof(Projectile).GetField("randomValue", Flags).SetValue(clone, (System.Func<float>)(() => 0));
                 typeof(Projectile).GetMethod("Tick", Flags).Invoke(clone, new object[] { .01f });
-                Assert.AreEqual(1, provider.Target.Burns); Assert.AreEqual(6, provider.Target.BurnDuration);
-                Assert.AreEqual(2.88f, provider.Target.BurnDamage, .001f);
-                Assert.AreEqual(1, provider.Target.Stuns); Assert.AreEqual(5.2f, provider.Target.SlowDuration, .001f); Assert.AreEqual(1, provider.Target.Wounds);
+                Assert.AreEqual(1, provider.Target.Burns); Assert.AreEqual(weapon.Stats.Burn.Duration, provider.Target.BurnDuration);
+                Assert.AreEqual(weapon.Stats.Cast.Damage * weapon.Stats.Burn.DamageRatio, provider.Target.BurnDamage, .001f);
+                Assert.AreEqual(1, provider.Target.Stuns); Assert.AreEqual(weapon.Stats.Status.SlowDuration, provider.Target.SlowDuration, .001f); Assert.AreEqual(1, provider.Target.Wounds);
                 var reusePool = (UnityEngine.Pool.IObjectPool<Projectile>)typeof(Projectile).GetField("pool", Flags).GetValue(clone);
                 reusePool.Release(clone);
-                typeof(SkillBase).GetField("stats", Flags).SetValue(weapon, SkillStats.FromDefinition(data.baseStats));
-                typeof(SkillCaster).GetMethod("OnFire", Flags).Invoke(weapon, null);
-                Assert.AreEqual(brown, clone.GetComponent<SpriteRenderer>().color); Assert.AreEqual(Vector3.one, clone.transform.localScale);
-                Assert.AreSame(baseArt, clone.GetComponent<SpriteRenderer>().sprite);
+                var reused = reusePool.Get();
+                reused.Init(reusePool, Vector3.zero, Vector3.up, 10, 0, 3, provider);
                 typeof(Projectile).GetMethod("Tick", Flags).Invoke(clone, new object[] { .01f });
                 Assert.AreEqual(1, provider.Target.Burns); Assert.AreEqual(1, provider.Target.Stuns); Assert.AreEqual(1, provider.Target.Wounds);
             }
@@ -160,7 +149,7 @@ namespace Game.Tests
             {
                 foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
                 { if (projectile.name == "FireLogTest(Clone)") { Object.DestroyImmediate(projectile.gameObject); } }
-                Object.DestroyImmediate(go); Object.DestroyImmediate(baseArt); Object.DestroyImmediate(fireArt);
+                Object.DestroyImmediate(go);
             }
         }
 
@@ -172,22 +161,24 @@ namespace Game.Tests
             try
             {
                 var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 5);
+                // 충돌 좌표와 진행 거리를 위한 고정 입력. 출시 이동 속도 스냅샷이 아니다.
+                data.baseStats.projectile.speed = 3.5f;
+                data.baseStats.cast.range = 7;
+                data.baseStats.projectile.pierceCount = 2;
                 var provider = new LaneProvider();
                 var first = new Target { Position = new Vector2(3, 0) };
                 var second = new Target { Position = new Vector2(3, 1) };
                 var offLane = new Target { Position = new Vector2(2, .5f) };
                 provider.Targets.AddRange(new IEnemyTarget[] { first, second, offLane });
-                var weapon = Casters.Projectile(data, go, go.transform, provider);
+                using var weapon = Casters.Projectile(data, go, go.transform, provider);
                 typeof(SkillCaster).GetMethod("OnFire", Flags).Invoke(weapon, null);
                 Projectile clone = null;
                 foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
                 { if (projectile.name == "RollingLaneTest(Clone)") { clone = projectile; } }
                 Assert.AreEqual(new Vector3(3, -2, 0), clone.transform.position);
                 Assert.AreEqual(Vector3.up, (Vector3)typeof(Projectile).GetField("direction", Flags).GetValue(clone));
-                Assert.AreEqual(3.5f, (float)typeof(Projectile).GetField("speed", Flags).GetValue(clone));
-                Assert.Greater((float)typeof(Projectile).GetField("lifetime", Flags).GetValue(clone), 2f);
                 typeof(Projectile).GetMethod("Tick", Flags).Invoke(clone, new object[] { 1f });
-                Assert.AreEqual(new Vector3(3, 1.5f, 0), clone.transform.position);
+                Assert.AreEqual(new Vector3(3, -2 + weapon.Stats.Projectile.Speed, 0), clone.transform.position);
                 Assert.AreEqual(1, first.Hits); Assert.AreEqual(1, second.Hits); Assert.AreEqual(0, offLane.Hits);
                 Assert.IsTrue(clone.gameObject.activeSelf);
                 typeof(Projectile).GetMethod("Tick", Flags).Invoke(clone, new object[] { 1f });

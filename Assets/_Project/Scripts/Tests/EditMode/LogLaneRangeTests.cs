@@ -16,8 +16,6 @@ namespace Game.Tests
         {
             foreach (var go in created) { if (go != null) { Object.DestroyImmediate(go); } }
             created.Clear();
-            foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
-            { if (projectile.name.Contains("(Clone)")) { Object.DestroyImmediate(projectile.gameObject); } }
         }
 
         private sealed class Provider : IEnemyTargetProvider
@@ -44,7 +42,7 @@ namespace Game.Tests
             var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 5);
             var provider = new Provider();
             provider.All.Add(new Target { Position = new Vector2(x, y) });
-            var weapon = Casters.Projectile(data, go, go.transform, provider, wall);
+            using var weapon = Casters.Projectile(data, go, go.transform, provider, wall);
 
             typeof(SkillCaster).GetMethod("OnFire", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Invoke(weapon, null);
 

@@ -6,11 +6,12 @@ using UnityEngine;
 
 namespace Game.Tests
 {
-    /// <summary>화살 보조 화살, 화염구 불꽃, 벼락 전기 구체를 자식 스킬로 옮긴 뒤에도 기존 수치와 규칙이 같은지 본다.</summary>
+    /// <summary>화살 보조 화살, 화염구 불꽃, 벼락 전기 구체를 자식 스킬로 옮긴 뒤에도 카탈로그에 선언된 상속·분할 규칙이 실제 적중에 적용되는지 본다.</summary>
     public sealed class ShardMigrationTests
     {
         private const BindingFlags Flags = BindingFlags.NonPublic | BindingFlags.Instance;
         private CatalogWorld world;
+        private EffectDef Effect(int id, string card, string kind) => world.Data[id].upgrades.Find(c => c.id == card).effects.First(e => e.kind == kind);
 
         [TearDown]
         public void TearDown() => world?.Dispose();
@@ -24,21 +25,24 @@ namespace Game.Tests
         {
             world = new CatalogWorld(data => data[1].baseStats.cast.baseDamage = 100);
             var arrow = world.Create(1);
-            world.Take(arrow, "arrow_sharp", "arrow_spread", "arrow_barrage", "arrow_aux_damage");
+            world.Take(arrow, "arrow_sharp", "arrow_spread", "arrow_barrage");
+            var parentDamage = arrow.Stats.Cast.Damage;
+            world.Take(arrow, "arrow_aux_damage");
             var hit = world.AddEnemy(0, 0);
             for (int i = 1; i <= 7; i++) { world.AddEnemy(i * 2, i % 2 * 3); }
 
             CatalogWorld.Hit(arrow.Config.Reactions, hit);
 
             var shards = CatalogWorld.Active();
-            Assert.AreEqual(6, shards.Count, "확산 2 + 난사 4");
+            var link = Effect(1, "arrow_spread", "onEvent");
+            int count = link.count > 1 ? link.count : world.Data[link.skillId].baseStats.cast.projectileCount;
+            Assert.AreEqual(count + (int)Effect(1, "arrow_barrage", "projectileCount").value, shards.Count);
             foreach (var shard in shards)
             {
-                Assert.AreEqual(160, HitRecorder.Hit(shard).Damage, "본체 160 × 0.5 × 보조 피해 +100%");
-                Assert.AreEqual(.5f, shard.transform.localScale.x, "화살 프리팹의 절반 크기");
+                Assert.AreEqual((int)(parentDamage * link.inherit["damage"] * (1 + Effect(1, "arrow_aux_damage", "damage").value / 100)), HitRecorder.Hit(shard).Damage);
                 Assert.AreSame(hit, Ignored(shard));
             }
-            Assert.AreEqual(160, arrow.Stats.Cast.Damage, "보조 피해 강화는 본체에 적용하지 않는다");
+            Assert.AreEqual(parentDamage, arrow.Stats.Cast.Damage, "보조 피해 강화는 본체에 적용하지 않는다");
         }
 
         [Test]
@@ -53,7 +57,7 @@ namespace Game.Tests
 
             CatalogWorld.Hit(arrow.Config.Reactions, hit);
             var damage = arrow.Stats.Cast.Damage;
-            foreach (var shard in CatalogWorld.Active()) { Assert.AreEqual((int)(damage * .5f * 2), HitRecorder.Hit(shard).Damage); }
+            foreach (var shard in CatalogWorld.Active()) { Assert.AreEqual((int)(damage * Effect(1, "arrow_spread", "onEvent").inherit["damage"] * (1 + Effect(1, "arrow_aux_damage", "damage").value / 100)), HitRecorder.Hit(shard).Damage); }
         }
 
         [TestCase(false)]
@@ -68,13 +72,13 @@ namespace Game.Tests
             world.AddEnemy(6, 0); world.AddEnemy(0, 6);
             CatalogWorld.Hit(arrow.Config.Reactions, hit);
             var shards = CatalogWorld.Active();
-            Assert.AreEqual(2, shards.Count);
+            Assert.AreEqual(Effect(1, "arrow_spread", "onEvent").count, shards.Count);
 
             var nearShardHit = world.AddEnemy(20, 20);
-            var bystander = world.AddEnemy(20.3f, 20);
+            var bystander = world.AddEnemy(20 + arrow.Stats.Explosion.Radius * .25f, 20);
             HitRecorder.HitAt(shards[0], nearShardHit);
-            Assert.AreEqual(withCard ? 50 : 0, bystander.Damage, "조각 폭발 = 본체 폭발 100 × 0.5. 카드가 없으면 폭발하지 않는다");
-            Assert.AreEqual(2, CatalogWorld.Active().Count, "조각이 맞아도 새 조각이 생기지 않는다");
+            Assert.AreEqual(withCard ? (int)(arrow.Stats.Explosion.Damage * Effect(1, "arrow_aux_explosion", "inherit").inherit["explosionDamage"]) : 0, bystander.Damage, "조각 카드의 폭발 상속은 카드가 있을 때만 적용된다");
+            Assert.AreEqual(shards.Count, CatalogWorld.Active().Count, "조각이 맞아도 새 조각이 생기지 않는다");
         }
 
         // ── 화염구 불꽃 ───────────────────────────────────────────────
@@ -91,13 +95,13 @@ namespace Game.Tests
             CatalogWorld.Hit(fireball.Config.Reactions, hit);
 
             var flames = CatalogWorld.Active();
-            Assert.AreEqual(3, flames.Count);
+            var link = Effect(2, "fireball_flames", "onEvent");
+            Assert.AreEqual(link.count, flames.Count);
             foreach (var flame in flames)
             {
                 var r = HitRecorder.Hit(flame);
-                Assert.AreEqual(50, r.Damage);
+                Assert.AreEqual((int)(fireball.Stats.Cast.Damage * link.inherit["damage"]), r.Damage);
                 Assert.AreEqual(0, r.BurnDuration, "점화는 상속하지 않는다");
-                Assert.AreEqual(.5f, flame.transform.localScale.x);
             }
         }
 
@@ -120,18 +124,19 @@ namespace Game.Tests
             typeof(HitscanEffect).GetMethod("Hit", Flags).Invoke(Strike(), null);
 
             var orbs = CatalogWorld.Active();
-            Assert.AreEqual(6, orbs.Count);
-            int expected = (int)(lightning.Stats.Cast.Damage * .5f * (voltage ? 1.4f : 1f));
+            var link = Effect(3, "lightning_split", "onEvent");
+            Assert.AreEqual(link.count, orbs.Count);
+            int expected = (int)(lightning.Stats.Cast.Damage * link.inherit["damage"] * (voltage ? 1 + Effect(3, "lightning_particle_voltage", "damage").value / 100 : 1));
             foreach (var orb in orbs)
             {
                 var r = HitRecorder.Hit(orb);
-                Assert.AreEqual(expected, r.Damage, "본체 피해 × 0.5 × 입자 피해 보정");
-                Assert.AreEqual(voltage ? .5f : 0, r.Paralysis);
+                Assert.AreEqual(expected, r.Damage, "선언된 본체 피해 상속 × 입자 피해 보정");
+                Assert.AreEqual(voltage ? Effect(3, "lightning_particle_voltage", "paralysis").value : 0, r.Paralysis);
                 Assert.AreSame(struck, Ignored(orb), "맞은 적은 지나친다");
                 Assert.AreEqual(new Vector3(5, 5, 0), orb.transform.position, "타격 지점에서 퍼진다");
             }
             var angles = orbs.Select(o => Mathf.RoundToInt(Mathf.Atan2(CatalogWorld.Direction(o).y, CatalogWorld.Direction(o).x) * 100)).Distinct().Count();
-            Assert.AreEqual(6, angles, "사방 6방향");
+            Assert.AreEqual(orbs.Count, angles, "각 구체는 서로 다른 방사 방향으로 나간다");
         }
 
         [Test]

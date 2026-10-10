@@ -4,7 +4,7 @@ using NUnit.Framework;
 
 namespace Game.Tests
 {
-    /// <summary>하드코딩 데이터가 화면이 기대하는 모양을 지키는지 확인한다 (실제 구현으로 바꿀 때도 같은 규칙을 지켜야 한다)</summary>
+    /// <summary>프로필 변경과 구독 종료 시 카탈로그의 해금 상태가 올바르게 갱신되는지 확인한다</summary>
     public sealed class DummyGrowthCatalogTests
     {
         private GameDataStore _data;
@@ -19,6 +19,9 @@ namespace Game.Tests
             _catalog = new DummyGrowthCatalog(_profile, _data);
         }
 
+        [TearDown]
+        public void TearDown() => _catalog.Dispose();
+
         // 레벨 level에 막 도달하는 누적 경험치
         private int ExpFor(int level)
         {
@@ -27,39 +30,33 @@ namespace Game.Tests
             return exp;
         }
 
-        [Test(Description = "장비·스킬 칸의 해금 여부가 프로필 레벨에 맞춰 다시 계산된다 (레벨 1: 잠김, 5: 해당 레벨까지 열림)")]
+        [Test(Description = "장비·스킬 해금 상태는 프로필 변경과 감소에도 각 선언된 경계를 따른다")]
         public void Unlocks_RecomputeWhenProfileChanges()
         {
-            // 레벨 1: 마지막 장비 칸과 처음부터 열린 스킬만 열려 있다
-            Assert.IsFalse(_catalog.Equips[0].IsUnlocked);
-            Assert.IsTrue(_catalog.Equips[_catalog.Equips.Count - 1].IsUnlocked);
-            Assert.IsFalse(_catalog.Skills.First(s => s.UnlockLevel == 4).IsUnlocked);
-            Assert.IsTrue(_catalog.Skills.First(s => s.UnlockLevel == 1).IsUnlocked);
-
-            _profile.Apply(new PlayerSnapshot { exp = ExpFor(5) });
-
-            Assert.IsTrue(_catalog.Equips[0].IsUnlocked);           // 해금 레벨 2
-            Assert.IsFalse(_catalog.Equips[4].IsUnlocked);          // 해금 레벨 6
-            Assert.IsTrue(_catalog.Skills.First(s => s.UnlockLevel == 4).IsUnlocked);
-            Assert.IsTrue(_catalog.Skills.First(s => s.UnlockLevel == 5).IsUnlocked);
-            Assert.IsFalse(_catalog.Skills.First(s => s.UnlockLevel == 6).IsUnlocked);
-
-            // 레벨이 내려가면(다른 스냅샷으로 교체) 다시 잠긴다
+            var locked = _catalog.Skills.First(s => s.UnlockLevel > _profile.Level);
+            AssertUnlocks();
+            _profile.Apply(new PlayerSnapshot { exp = ExpFor(locked.UnlockLevel) });
+            Assert.IsTrue(locked.IsUnlocked);
+            AssertUnlocks();
             _profile.Apply(new PlayerSnapshot { exp = 0 });
-
-            Assert.IsFalse(_catalog.Equips[0].IsUnlocked);
-            Assert.IsFalse(_catalog.Skills.First(s => s.UnlockLevel == 4).IsUnlocked);
-        }
-
-        [Test(Description = "Dispose한 뒤에는 프로필이 바뀌어도 스킬 칸의 해금이 갱신되지 않는다")]
-        public void Dispose_StopsFollowingProfile()
-        {
-            var locked = _catalog.Skills.First(s => s.UnlockLevel == 4);
-            _catalog.Dispose();
-
-            _profile.Apply(new PlayerSnapshot { exp = ExpFor(5) });
-
             Assert.IsFalse(locked.IsUnlocked);
+            AssertUnlocks();
+            _catalog.Dispose();
+            _profile.Apply(new PlayerSnapshot { exp = ExpFor(locked.UnlockLevel) });
+            Assert.IsFalse(locked.IsUnlocked, "종료된 카탈로그는 새 프로필을 따라가지 않는다");
         }
+
+        private void AssertUnlocks()
+        {
+            foreach (var skill in _catalog.Skills)
+            {
+                Assert.AreEqual(skill.UnlockLevel <= _profile.Level, skill.IsUnlocked, skill.UpgradeId);
+            }
+            foreach (var equip in _catalog.Equips)
+            {
+                Assert.AreEqual(equip.UnlockLevel <= _profile.Level, equip.IsUnlocked, equip.UpgradeId);
+            }
+        }
+
     }
 }

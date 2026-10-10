@@ -11,13 +11,15 @@ namespace Game.Tests
         private string _filePath;
         private LocalSaveStore _store;
         private LocalUpgradeApi _api;
+        private GameDataStore _data;
 
         [SetUp]
         public void SetUp()
         {
             _filePath = Path.Combine(Path.GetTempPath(), $"local-upgrade-test-{Guid.NewGuid()}.json");
             _store = new LocalSaveStore(_filePath);
-            _api = new LocalUpgradeApi(_store, new GameDataStore());
+            _data = new GameDataStore();
+            _api = new LocalUpgradeApi(_store, _data);
         }
 
         [TearDown]
@@ -39,18 +41,22 @@ namespace Game.Tests
         [Test(Description = "골드가 충분하면 레벨을 올리고 비용만큼 차감한다")]
         public void Purchase_WithEnoughGold_LevelsUpAndSpendsGold()
         {
-            SeedGold(200);
+            SeedGold(_data.Upgrades.GetOrThrow("atk").CostAt(1) + 73);
 
             var snap = _api.Purchase("atk", "key-1").GetAwaiter().GetResult();
 
             Assert.AreEqual(1, snap.upgrades.Find(u => u.upgradeId == "atk").level);
-            Assert.AreEqual(100, snap.gold); // CostAt(1) = 100
+            Assert.AreEqual(73, snap.gold);
+
+            var second = _api.Purchase("atk", "key-1").GetAwaiter().GetResult();
+            Assert.AreEqual(73, second.gold);
+            Assert.AreEqual(1, second.upgrades.Find(u => u.upgradeId == "atk").level);
         }
 
         [Test(Description = "골드가 부족하면 INSUFFICIENT_GOLD로 거절한다")]
         public void Purchase_WithoutEnoughGold_ThrowsInsufficientGold()
         {
-            SeedGold(50);
+            SeedGold(_data.Upgrades.GetOrThrow("atk").CostAt(1) - 1);
 
             var ex = Assert.Throws<ApiException>(() => _api.Purchase("atk", "key-1").GetAwaiter().GetResult());
 
@@ -60,26 +66,14 @@ namespace Game.Tests
         [Test(Description = "최대 레벨에서 구매하면 ALREADY_MAX로 거절한다")]
         public void Purchase_AtMaxLevel_ThrowsAlreadyMax()
         {
-            SeedGold(10_000);
-            _api.Purchase("atk", "key-1").GetAwaiter().GetResult();
-            _api.Purchase("atk", "key-2").GetAwaiter().GetResult();
-            _api.Purchase("atk", "key-3").GetAwaiter().GetResult(); // MaxLevel = 3
+            var save = _store.Load();
+            save.upgrades = new() { new() { upgradeId = "atk", level = _data.Upgrades.GetOrThrow("atk").MaxLevel } };
+            _store.Flush(save);
 
             var ex = Assert.Throws<ApiException>(() => _api.Purchase("atk", "key-4").GetAwaiter().GetResult());
 
             Assert.AreEqual("ALREADY_MAX", ex.Code);
         }
 
-        [Test(Description = "같은 idempotencyKey로 연타해도 한 번만 차감된다")]
-        public void Purchase_SameIdempotencyKeyTwice_ChargesOnce()
-        {
-            SeedGold(200);
-            _api.Purchase("atk", "same-key").GetAwaiter().GetResult();
-
-            var second = _api.Purchase("atk", "same-key").GetAwaiter().GetResult();
-
-            Assert.AreEqual(100, second.gold);
-            Assert.AreEqual(1, second.upgrades.Find(u => u.upgradeId == "atk").level);
-        }
     }
 }

@@ -95,19 +95,10 @@ namespace Game.Tests
             Assert.IsTrue(ok);
             Assert.AreEqual(1, _api.CallCount);
             Assert.AreEqual(EnergySource.Ad, _api.LastSource);
+            Assert.IsFalse(string.IsNullOrEmpty(_api.LastKey));
             Assert.AreEqual(7, _profile.EnergyStored);
             Assert.AreEqual(0, _failed.Count);
             Assert.AreEqual(1, changed, "회복한 프로필을 로비와 에너지 시계에 한 번 알린다");
-        }
-
-        [Test(Description = "광고 회복은 중복 지급 방지용 키를 함께 보낸다")]
-        public void Recover_Ad_SendsIdempotencyKey()
-        {
-            _api.Response = Snapshot(7);
-
-            Recover(EnergySource.Ad);
-
-            Assert.IsFalse(string.IsNullOrEmpty(_api.LastKey));
         }
 
         [Test(Description = "구매 회복에 성공하면 서버 스냅샷으로 프로필을 바꾸고, 키는 보내지 않는다")]

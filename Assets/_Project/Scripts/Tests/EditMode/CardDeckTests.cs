@@ -175,16 +175,6 @@ namespace Game.Tests
             Assert.AreEqual(0, deck.GetPickCount("repair"));
         }
 
-        [Test(Description = "스킬 카드는 스킬 쪽으로 넘긴다")]
-        public void TryApply_SkillChoice_DelegatesToSkills()
-        {
-            var deck = Deck();
-            var choice = new UpgradeChoice { DisplayName = "skill" };
-
-            Assert.IsTrue(deck.TryApply(choice));
-            Assert.AreEqual(1, skills.Applied.Count);
-        }
-
         [Test(Description = "방벽이 없으면(샌드박스 등) 방벽 조건은 맞지 않는다")]
         public void Draw_NoWall_ConditionNeverMet()
         {

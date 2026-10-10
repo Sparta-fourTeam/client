@@ -53,8 +53,9 @@ namespace Game.Tests
         public void TearDown()
         {
             children.Dispose();
-            foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None)) { Object.DestroyImmediate(projectile.gameObject); }
+
             foreach (var go in created) { if (go != null) { Object.DestroyImmediate(go); } }
+            created.Clear();
         }
 
         private SkillConfig ParentWithLink(int count, bool excludeHit)

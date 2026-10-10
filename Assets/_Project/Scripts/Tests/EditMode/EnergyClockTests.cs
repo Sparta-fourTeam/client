@@ -14,11 +14,6 @@ namespace Game.Tests
             public DateTime UtcNow { get; set; }
         }
 
-        private sealed class FakeEnergyApi
-        {
-
-        }
-
         private static readonly DateTime T0 = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         private FakeClock _clock;
@@ -64,69 +59,37 @@ namespace Game.Tests
             });
         }
 
-        [Test(Description = "처음 Tick하면 현재 에너지를 한 번 발행한다")]
-        public void FirstTick_PublishesCurrentEnergy()
+        [Test(Description = "첫 발행 후 회복 직전에는 무신호, 주기 경계에서 증가한 값을 한 번 발행한다")]
+        public void TickPublishesRecoveryBoundariesCapAndChangedProfileWithoutDuplicates()
         {
             ApplyEnergy(7, T0);
-
             _energyClock.Tick();
-
             Assert.AreEqual(1, _published.Count);
             Assert.AreEqual(7, _published[0].Current);
             Assert.AreEqual(Max, _published[0].Max);
-        }
 
-        [Test(Description = "값이 그대로면 여러 번 Tick해도 다시 발행하지 않는다")]
-        public void Tick_WhenValueUnchanged_DoesNotPublishAgain()
-        {
-            ApplyEnergy(7, T0);
-
-            _energyClock.Tick();
             _clock.UtcNow = T0.AddSeconds(RegenSeconds - 1);
             _energyClock.Tick();
             _energyClock.Tick();
-
             Assert.AreEqual(1, _published.Count);
-        }
 
-        [Test(Description = "회복 주기가 지나면 1 오른 값으로 한 번 더 발행한다")]
-        public void Tick_AfterRegenPeriod_PublishesIncreasedEnergy()
-        {
-            ApplyEnergy(7, T0);
-
-            _energyClock.Tick();
             _clock.UtcNow = T0.AddSeconds(RegenSeconds);
             _energyClock.Tick();
-
+            _energyClock.Tick();
             Assert.AreEqual(2, _published.Count);
             Assert.AreEqual(8, _published[1].Current);
-        }
-
-        [Test(Description = "오래 지나도 최대치에서 멈추고, 그 뒤로는 발행하지 않는다")]
-        public void Tick_AfterLongTime_StopsAtMax()
-        {
-            ApplyEnergy(7, T0);
-
             _clock.UtcNow = T0.AddSeconds(RegenSeconds * Max * 2);
             _energyClock.Tick();
+            Assert.AreEqual(Max, _published[_published.Count - 1].Current);
+            int count = _published.Count;
             _clock.UtcNow = _clock.UtcNow.AddHours(1);
             _energyClock.Tick();
-
-            Assert.AreEqual(1, _published.Count);
-            Assert.AreEqual(Max, _published[0].Current);
+            Assert.AreEqual(count, _published.Count);
+            ApplyEnergy(5, _clock.UtcNow);
+            _energyClock.Tick();
+            Assert.AreEqual(count + 1, _published.Count);
+            Assert.AreEqual(5, _published[_published.Count - 1].Current);
         }
 
-        [Test(Description = "프로필이 새 값으로 바뀌면(스테이지 입장으로 소모 등) 다음 Tick에 바뀐 값을 발행한다")]
-        public void Tick_AfterProfileChanged_PublishesNewValue()
-        {
-            ApplyEnergy(10, T0);
-            _energyClock.Tick();
-
-            ApplyEnergy(5, T0);
-            _energyClock.Tick();
-
-            Assert.AreEqual(2, _published.Count);
-            Assert.AreEqual(5, _published[1].Current);
-        }
     }
 }

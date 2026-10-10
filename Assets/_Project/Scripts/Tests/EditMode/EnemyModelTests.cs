@@ -31,78 +31,81 @@ namespace Game.Tests
         // 위치(Transform)는 Enemy가, 규칙(HP, 상태이상)은 enemy.Model이 갖는다
         private Enemy CreateEnemy(int id = 1, int maxHp = 10, float speed = 0f, Vector2 position = default)
         {
-            return TestEnemy.Create(new EnemyModel(id, speed, EnemyType.Normal, maxHp, TestAttack, _hpChanged, _died), position);
+            return TestEnemy.Create(CreateModel(id, maxHp, speed), position);
         }
+
+        private EnemyModel CreateModel(int id = 1, int maxHp = 10, float speed = 0f) =>
+            new EnemyModel(id, speed, EnemyType.Normal, maxHp, TestAttack, _hpChanged, _died);
 
         [Test]
         public void AreaSlow_StrongestSourceWinsAndRemovalRestoresMovement()
         {
-            var enemy = CreateEnemy(speed: 10, position: Vector2.up * 100);
+            var enemy = CreateModel(speed: 10);
             var weak = new object(); var strong = new object();
             enemy.SetAreaSlow(weak, .3f); enemy.SetAreaSlow(strong, .6f);
-            Assert.AreEqual(.4f, enemy.Model.MovementMultiplier, .001f);
-            enemy.Move(1); Assert.AreEqual(96, enemy.Position.y, .001f);
-            enemy.RemoveAreaSlow(strong); enemy.Move(1);
-            Assert.AreEqual(89, enemy.Position.y, .001f);
-            enemy.RemoveAreaSlow(weak); Assert.AreEqual(1, enemy.Model.MovementMultiplier);
+            Assert.AreEqual(.4f, enemy.MovementMultiplier, .001f);
+            Assert.AreEqual(4, enemy.MoveSpeed, .001f);
+            enemy.RemoveAreaSlow(strong);
+            Assert.AreEqual(7, enemy.MoveSpeed, .001f);
+            enemy.RemoveAreaSlow(weak); Assert.AreEqual(1, enemy.MovementMultiplier);
             enemy.SetAreaSlow(weak, float.NaN); enemy.SetAreaSlow(weak, 1); enemy.SetAreaSlow(null, .3f);
-            Assert.AreEqual(1, enemy.Model.MovementMultiplier);
+            Assert.AreEqual(1, enemy.MovementMultiplier);
             enemy.SetAreaSlow(weak, .3f); enemy.TakeDamage(100);
-            Assert.AreEqual(1, enemy.Model.MovementMultiplier);
+            Assert.AreEqual(1, enemy.MovementMultiplier);
         }
 
         [Test]
         public void Stun_StopsMovementAndAttackIndependentlyOfParalysisAndExpires()
         {
-            var enemy = CreateEnemy(speed: 1, position: Vector2.up * 100);
+            var enemy = CreateModel(speed: 1);
             enemy.ApplyStun(1);
-            Assert.DoesNotThrow(() => enemy.Attack(1, null, null));
+            Assert.DoesNotThrow(() => enemy.Attack(1, Vector2.zero, null, null));
             enemy.ApplyParalysis(2);
-            enemy.Move(1); Assert.AreEqual(100, enemy.Position.y);
-            enemy.ApplyStun(.5f); Assert.AreEqual(1, enemy.Model.StunRemaining);
-            enemy.TickStatus(1); Assert.IsFalse(enemy.Model.IsStunned); Assert.IsTrue(enemy.Model.IsParalyzed);
-            enemy.TickStatus(1); enemy.Move(1); Assert.AreEqual(99, enemy.Position.y);
-            enemy.ApplyStun(float.NaN); enemy.ApplyStun(-1); Assert.AreEqual(0, enemy.Model.StunRemaining);
+            Assert.AreEqual(0, enemy.MoveSpeed);
+            enemy.ApplyStun(.5f); Assert.AreEqual(1, enemy.StunRemaining);
+            enemy.TickStatus(1); Assert.IsFalse(enemy.IsStunned); Assert.IsTrue(enemy.IsParalyzed);
+            enemy.TickStatus(1); Assert.AreEqual(1, enemy.MoveSpeed);
+            enemy.ApplyStun(float.NaN); enemy.ApplyStun(-1); Assert.AreEqual(0, enemy.StunRemaining);
         }
 
         [Test]
         public void TimedSlow_DoesNotStackWithAreaSlowAndRestoresStrongestRemainingSource()
         {
-            var enemy = CreateEnemy(speed: 10, position: Vector2.up * 100);
+            var enemy = CreateModel(speed: 10);
             var source = new object(); enemy.SetAreaSlow(source, .6f); enemy.ApplySlow(.3f, 2);
-            Assert.AreEqual(.4f, enemy.Model.MovementMultiplier, .001f);
-            enemy.RemoveAreaSlow(source); Assert.AreEqual(.7f, enemy.Model.MovementMultiplier, .001f);
-            enemy.ApplySlow(.2f, 1); Assert.AreEqual(2, enemy.Model.SlowRemaining);
-            enemy.Move(1); Assert.AreEqual(93, enemy.Position.y, .001f);
-            enemy.TickStatus(2); Assert.AreEqual(1, enemy.Model.MovementMultiplier);
-            enemy.ApplySlow(float.NaN, 1); enemy.ApplySlow(1, 2); Assert.AreEqual(0, enemy.Model.SlowRemaining);
+            Assert.AreEqual(.4f, enemy.MovementMultiplier, .001f);
+            enemy.RemoveAreaSlow(source); Assert.AreEqual(.7f, enemy.MovementMultiplier, .001f);
+            enemy.ApplySlow(.2f, 1); Assert.AreEqual(2, enemy.SlowRemaining);
+            Assert.AreEqual(7, enemy.MoveSpeed, .001f);
+            enemy.TickStatus(2); Assert.AreEqual(1, enemy.MovementMultiplier);
+            enemy.ApplySlow(float.NaN, 1); enemy.ApplySlow(1, 2); Assert.AreEqual(0, enemy.SlowRemaining);
         }
 
         [Test]
         public void Vulnerability_AmplifiesAllReceivedDamageWithoutStackingAndExpires()
         {
-            var enemy = CreateEnemy(maxHp: 1000);
-            enemy.TakeDamage(10); Assert.AreEqual(990, enemy.Model.Hp);
+            var enemy = CreateModel(maxHp: 1000);
+            enemy.TakeDamage(10); Assert.AreEqual(990, enemy.Hp);
             enemy.ApplyVulnerability(.2f, 6); enemy.ApplyVulnerability(.2f, 6);
-            enemy.TakeDamage(10); Assert.AreEqual(978, enemy.Model.Hp);
+            enemy.TakeDamage(10); Assert.AreEqual(978, enemy.Hp);
             enemy.ApplyBurn(10, 1); enemy.ApplyFrostbite(10);
-            enemy.TickStatus(1); Assert.AreEqual(954, enemy.Model.Hp);
-            Assert.AreEqual(5, enemy.Model.VulnerabilityRemaining);
+            enemy.TickStatus(1); Assert.AreEqual(954, enemy.Hp);
+            Assert.AreEqual(5, enemy.VulnerabilityRemaining);
             enemy.TickStatus(5);
-            enemy.TakeDamage(10); Assert.AreEqual(884, enemy.Model.Hp);
-            Assert.AreEqual(0, enemy.Model.VulnerabilityRatio);
-            enemy.ApplyVulnerability(float.NaN, 1); Assert.AreEqual(0, enemy.Model.VulnerabilityRemaining);
+            enemy.TakeDamage(10); Assert.AreEqual(884, enemy.Hp);
+            Assert.AreEqual(0, enemy.VulnerabilityRatio);
+            enemy.ApplyVulnerability(float.NaN, 1); Assert.AreEqual(0, enemy.VulnerabilityRemaining);
             enemy.ApplyVulnerability(.2f, 1); enemy.TakeDamage(1000);
-            Assert.IsTrue(enemy.IsDead); Assert.AreEqual(0, enemy.Model.VulnerabilityRemaining);
+            Assert.IsTrue(enemy.IsDead); Assert.AreEqual(0, enemy.VulnerabilityRemaining);
         }
 
         [Test]
         public void Vulnerability_LargeStatusTickOnlyAmplifiesDamageBeforeExpiry()
         {
-            var enemy = CreateEnemy(maxHp: 100);
+            var enemy = CreateModel(maxHp: 100);
             enemy.ApplyBurn(10, 3); enemy.ApplyVulnerability(.2f, 1);
             enemy.TickStatus(3);
-            Assert.AreEqual(68, enemy.Model.Hp); Assert.AreEqual(0, enemy.Model.VulnerabilityRemaining);
+            Assert.AreEqual(68, enemy.Hp); Assert.AreEqual(0, enemy.VulnerabilityRemaining);
         }
 
         private class LightningProvider : IEnemyTargetProvider
@@ -131,7 +134,7 @@ namespace Game.Tests
                 typeof(HitscanEffect).GetField("targetMask", flags).SetValue(template, (LayerMask)(-1));
                 var provider = new LightningProvider(); provider.Targets.AddRange(new IEnemyTarget[] { victim, farther, dead, neighbour });
                 var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 3);
-                var weapon = Casters.Hitscan(data, prefab, prefab.transform, provider);
+                using var weapon = Casters.Hitscan(data, prefab, prefab.transform, provider);
                 Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == "lightning_sanction")));
                 Assert.IsFalse(weapon.LevelUp(data.upgrades.Find(c => c.id == "lightning_sanction")));
                 typeof(SkillCaster).GetMethod("OnFire", flags).Invoke(weapon, null);
@@ -142,18 +145,17 @@ namespace Game.Tests
                 weapon.LevelUp(data.upgrades.Find(c => c.id == "lightning_voltage"));
                 Physics2D.SyncTransforms();
                 var hit = typeof(HitscanEffect).GetMethod("Hit", flags);
+                int deathsBeforeHit = _died.Published.Count;
                 hit.Invoke(main, null); hit.Invoke(main, null);
                 Assert.IsTrue(victim.IsDead);
                 HitscanEffect secondary = null; int count = 0;
                 foreach (var effect in UnityEngine.Object.FindObjectsByType<HitscanEffect>(FindObjectsSortMode.None))
                 { if (effect.name == "KillLightningTest(Clone)") { count++; if (effect != main) { secondary = effect; } } }
                 Assert.AreEqual(2, count);
-                Assert.AreEqual(40f, (float)typeof(HitscanEffect).GetField("damage", flags).GetValue(secondary));
-                Assert.AreEqual(Vector3.one * .5f, secondary.transform.localScale);
                 hit.Invoke(secondary, null); hit.Invoke(secondary, null);
                 Assert.IsTrue(neighbour.IsDead); Assert.AreEqual(100, farther.Model.Hp);
                 Assert.AreEqual(0, neighbour.Model.ParalysisRemaining);
-                Assert.AreSame(AttackReactions.Empty, typeof(HitscanEffect).GetField("reactions", flags).GetValue(secondary));
+                Assert.AreEqual(deathsBeforeHit + 2, _died.Published.Count, "연쇄 처치 뒤 추가 사망을 만들지 않는다");
             }
             finally
             {
@@ -179,9 +181,18 @@ namespace Game.Tests
                     reactions: new HitReactionBuilder().On(AttackEvent.Kill, new CastSkillReaction(_ => kills++)).Build());
                 hit.Invoke(effect, null);
                 Assert.AreEqual(1, _died.Published.Count); Assert.AreEqual(0, kills);
-                pool.Release(effect); pool.Get().Init(pool, Vector3.zero, 1);
-                Assert.IsNull(typeof(HitscanEffect).GetField("directTarget", flags).GetValue(effect));
-                Assert.AreSame(AttackReactions.Empty, typeof(HitscanEffect).GetField("reactions", flags).GetValue(effect));
+                pool.Release(effect);
+                var next = CreateEnemy(2, 10, position: Vector2.one * 2000);
+                next.gameObject.AddComponent<CircleCollider2D>();
+                typeof(HitscanEffect).GetField("radius", flags).SetValue(effect, .5f);
+                typeof(HitscanEffect).GetField("targetMask", flags).SetValue(effect, (LayerMask)(-1));
+                pool.Get().Init(pool, next.transform.position, 10);
+                Physics2D.SyncTransforms();
+                hit.Invoke(effect, null);
+                hit.Invoke(effect, null);
+                Assert.IsTrue(next.IsDead, "이전 직접 대상이 남지 않고 새 영역 피해를 처리한다");
+                Assert.AreEqual(2, _died.Published.Count);
+                Assert.AreEqual(0, kills, "이전 처치 callback은 재사용 후 실행되지 않는다");
             }
             finally { UnityEngine.Object.DestroyImmediate(go); }
         }
@@ -195,7 +206,7 @@ namespace Game.Tests
                 var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 3);
                 var provider = new LightningProvider();
                 provider.Targets.Add(CreateEnemy(position: Vector2.right * (data.baseStats.cast.range + 1)));
-                var weapon = Casters.Hitscan(data, go, go.transform, provider);
+                using var weapon = Casters.Hitscan(data, go, go.transform, provider);
                 weapon.LevelUp(data.upgrades.Find(c => c.id == "lightning_sanction"));
                 var pool = (UnityEngine.Pool.ObjectPool<HitscanEffect>)Casters.Hitscan(weapon).Pool;
                 var callback = new HitscanCastEffects(weapon.Stats, data.baseStats.cast.range, provider, pool, null, Vector3.one)
@@ -226,36 +237,36 @@ namespace Game.Tests
         [Test]
         public void Frostbite_StacksToFiveTicksEachSecondAndExpiresAtTenSeconds()
         {
-            var enemy = CreateEnemy(maxHp: 1000);
+            var enemy = CreateModel(maxHp: 1000);
             for (int i = 0; i < 6; i++)
             {
                 enemy.ApplyFrostbite(2);
             }
 
-            Assert.AreEqual(5, enemy.Model.FrostbiteStacks);
+            Assert.AreEqual(5, enemy.FrostbiteStacks);
             enemy.TickStatus(0);
-            Assert.AreEqual(1000, enemy.Model.Hp);
+            Assert.AreEqual(1000, enemy.Hp);
             enemy.TickStatus(0.5f);
-            Assert.AreEqual(1000, enemy.Model.Hp);
+            Assert.AreEqual(1000, enemy.Hp);
             enemy.TickStatus(0.5f);
-            Assert.AreEqual(990, enemy.Model.Hp);
+            Assert.AreEqual(990, enemy.Hp);
             enemy.TickStatus(20);
-            Assert.AreEqual(900, enemy.Model.Hp);
-            Assert.AreEqual(0, enemy.Model.FrostbiteStacks);
+            Assert.AreEqual(900, enemy.Hp);
+            Assert.AreEqual(0, enemy.FrostbiteStacks);
         }
 
         [Test]
         public void Frostbite_DeathPublishesOnceAndRejectsInvalidDamage()
         {
-            var enemy = CreateEnemy();
+            var enemy = CreateModel();
             enemy.ApplyFrostbite(float.NaN);
             enemy.ApplyFrostbite(-1);
-            Assert.AreEqual(0, enemy.Model.FrostbiteStacks);
+            Assert.AreEqual(0, enemy.FrostbiteStacks);
             enemy.ApplyFrostbite(20);
             enemy.TickStatus(10);
             enemy.TickStatus(10);
             Assert.AreEqual(1, _died.Published.Count);
-            Assert.AreEqual(0, enemy.Model.FrostbiteStacks);
+            Assert.AreEqual(0, enemy.FrostbiteStacks);
         }
 
         // ───────── 생성 ─────────
@@ -263,79 +274,79 @@ namespace Game.Tests
         [Test]
         public void Paralysis_StopsMovementAndAttackExpiresAndRemainsIndependentOfFreeze()
         {
-            var enemy = CreateEnemy(speed: 1, position: Vector2.up * 5);
+            var enemy = CreateModel(speed: 1);
             enemy.ApplyParalysis(1);
             enemy.ApplyParalysis(0.1f);
-            enemy.Move(1);
-            enemy.Attack(1, null, null);
-            Assert.AreEqual(5, enemy.Position.y);
+            enemy.Attack(1, Vector2.zero, null, null);
+            Assert.AreEqual(0, enemy.MoveSpeed);
             enemy.TickStatus(0);
-            Assert.AreEqual(1, enemy.Model.ParalysisRemaining);
+            Assert.AreEqual(1, enemy.ParalysisRemaining);
             enemy.ApplyFreeze(2);
             enemy.TickStatus(1);
-            Assert.IsFalse(enemy.Model.IsParalyzed);
-            Assert.IsTrue(enemy.Model.IsFrozen);
+            Assert.IsFalse(enemy.IsParalyzed);
+            Assert.IsTrue(enemy.IsFrozen);
             enemy.TickStatus(1);
-            enemy.Move(1);
-            Assert.AreEqual(4, enemy.Position.y);
+            Assert.AreEqual(1, enemy.MoveSpeed);
         }
 
         [Test]
         public void Burn_RefreshDoesNotResetTickProgressOrStackAndExpires()
         {
-            var enemy = CreateEnemy(maxHp: 100);
+            var enemy = CreateModel(maxHp: 100);
             enemy.ApplyBurn(2, 6);
             enemy.TickStatus(0.5f);
             enemy.ApplyBurn(1, 6);
             enemy.TickStatus(0);
-            Assert.AreEqual(100, enemy.Model.Hp);
+            Assert.AreEqual(100, enemy.Hp);
             enemy.TickStatus(0.5f);
-            Assert.AreEqual(98, enemy.Model.Hp);
+            Assert.AreEqual(98, enemy.Hp);
             enemy.TickStatus(20);
-            Assert.AreEqual(88, enemy.Model.Hp);
-            Assert.AreEqual(0, enemy.Model.BurnRemaining);
+            Assert.AreEqual(88, enemy.Hp);
+            Assert.AreEqual(0, enemy.BurnRemaining);
         }
 
         [Test]
         public void Burn_CoexistsWithFreezeAndFrostbiteAndPublishesDeathOnce()
         {
-            var enemy = CreateEnemy(maxHp: 10);
+            var enemy = CreateModel(maxHp: 10);
             enemy.ApplyBurn(float.NaN, 6);
-            Assert.AreEqual(0, enemy.Model.BurnRemaining);
+            Assert.AreEqual(0, enemy.BurnRemaining);
             enemy.ApplyBurn(3, 6);
             enemy.ApplyFreeze(2);
             enemy.ApplyFrostbite(2);
             enemy.TickStatus(1);
-            Assert.AreEqual(5, enemy.Model.Hp);
-            Assert.IsTrue(enemy.Model.IsFrozen);
+            Assert.AreEqual(5, enemy.Hp);
+            Assert.IsTrue(enemy.IsFrozen);
             enemy.TickStatus(20);
             enemy.TickStatus(20);
             Assert.AreEqual(1, _died.Published.Count);
-            Assert.AreEqual(0, enemy.Model.BurnRemaining);
+            Assert.AreEqual(0, enemy.BurnRemaining);
         }
 
         [Test]
         public void Inferno_AddsMaxHpDamagePerBurnTick()
         {
-            var enemy = CreateEnemy(maxHp: 100);
+            var enemy = CreateModel(maxHp: 100);
             enemy.ApplyBurn(2, 6, 0.03f);
             enemy.TickStatus(1);
-            Assert.AreEqual(95, enemy.Model.Hp);
+            Assert.AreEqual(95, enemy.Hp);
             enemy.TickStatus(5);
-            Assert.AreEqual(70, enemy.Model.Hp);
+            Assert.AreEqual(70, enemy.Hp);
         }
 
         [Test]
         public void BurnDeathExplosion_TriggersOnceIncludingLastTickAndNotAfterExpiry()
         {
-            var enemy = CreateEnemy(maxHp: 6);
+            var enemy = CreateModel(maxHp: 6);
             int explosions = 0;
+            enemy.DeathExplosionRequested += explosion => explosion(Vector2.zero);
             enemy.ApplyBurn(1, 6, onDeath: position => { explosions++; enemy.TakeDamage(10); });
             enemy.TickStatus(6);
             enemy.TakeDamage(10);
             Assert.AreEqual(1, explosions);
             Assert.AreEqual(1, _died.Published.Count);
-            var expired = CreateEnemy(id: 2, maxHp: 100);
+            var expired = CreateModel(id: 2, maxHp: 100);
+            expired.DeathExplosionRequested += explosion => explosion(Vector2.zero);
             expired.ApplyBurn(1, 6, onDeath: position => explosions++);
             expired.TickStatus(6);
             expired.TakeDamage(100);
@@ -431,46 +442,44 @@ namespace Game.Tests
         [Test]
         public void Freeze_StopsMovementRefreshesWithoutStackingAndExpires()
         {
-            var enemy = CreateEnemy(speed: 1, position: new Vector2(0, 5));
+            var enemy = CreateModel(speed: 1);
             enemy.ApplyFreeze(2);
-            enemy.Move(1);
-            Assert.AreEqual(5, enemy.Position.y);
+            Assert.AreEqual(0, enemy.MoveSpeed);
             enemy.TickStatus(1);
             enemy.ApplyFreeze(0.5f);
-            Assert.AreEqual(1, enemy.Model.FreezeRemaining);
+            Assert.AreEqual(1, enemy.FreezeRemaining);
             enemy.TickStatus(0);
-            Assert.IsTrue(enemy.Model.IsFrozen);
+            Assert.IsTrue(enemy.IsFrozen);
             enemy.TickStatus(1);
-            Assert.IsFalse(enemy.Model.IsFrozen);
-            enemy.Move(0.5f);
-            Assert.AreEqual(4.5f, enemy.Position.y);
+            Assert.IsFalse(enemy.IsFrozen);
+            Assert.AreEqual(1, enemy.MoveSpeed);
         }
 
         [Test]
         public void Freeze_StopsAttackAndRejectsInvalidOrDeadTarget()
         {
-            var enemy = CreateEnemy();
+            var enemy = CreateModel();
             int attacks = 0;
-            enemy.Model.Attacked += () => attacks++;
+            enemy.Attacked += () => attacks++;
             enemy.ApplyFreeze(2);
             // 빙결 중에는 벽/투사체를 접근하거나 공격 타이머를 진행하지 않는다.
-            enemy.Attack(1, null, null);
+            enemy.Attack(1, Vector2.zero, null, null);
             Assert.AreEqual(0, attacks);
             enemy.ApplyFreeze(float.NaN);
             enemy.ApplyFreeze(float.PositiveInfinity);
             enemy.ApplyFreeze(-1);
-            Assert.AreEqual(2, enemy.Model.FreezeRemaining);
+            Assert.AreEqual(2, enemy.FreezeRemaining);
             enemy.TickStatus(2);
             enemy.TakeDamage(10);
             enemy.ApplyFreeze(2);
-            Assert.IsFalse(enemy.Model.IsFrozen);
+            Assert.IsFalse(enemy.IsFrozen);
         }
 
         [TestCase(0)]
         [TestCase(-5)]
         public void Constructor_NonPositiveMaxHp_Throws(int maxHp)
         {
-            Assert.Throws<ArgumentOutOfRangeException>(() => CreateEnemy(maxHp: maxHp));
+            Assert.Throws<ArgumentOutOfRangeException>(() => CreateModel(maxHp: maxHp));
         }
 
         // ───────── 체력 감소 ─────────
@@ -478,11 +487,11 @@ namespace Game.Tests
         [Test]
         public void TakeDamage_ReducesHp_AndPublishesHpChanged()
         {
-            var enemy = CreateEnemy(id: 7, maxHp: 10);
+            var enemy = CreateModel(id: 7, maxHp: 10);
 
             enemy.TakeDamage(3);
 
-            Assert.AreEqual(7, enemy.Model.Hp);
+            Assert.AreEqual(7, enemy.Hp);
             Assert.AreEqual(1, _hpChanged.Published.Count);
             Assert.AreEqual(7, _hpChanged.Published[0].EnemyId);
             Assert.AreEqual(7, _hpChanged.Published[0].Current);
@@ -494,11 +503,11 @@ namespace Game.Tests
         [TestCase(-3)]
         public void TakeDamage_NonPositive_Ignored(int amount)
         {
-            var enemy = CreateEnemy(maxHp: 10);
+            var enemy = CreateModel(maxHp: 10);
 
             enemy.TakeDamage(amount);
 
-            Assert.AreEqual(10, enemy.Model.Hp);
+            Assert.AreEqual(10, enemy.Hp);
             Assert.AreEqual(0, _hpChanged.Published.Count);
             Assert.AreEqual(0, _died.Published.Count);
         }
@@ -508,11 +517,11 @@ namespace Game.Tests
         [Test]
         public void TakeDamage_ExactlyToZero_Dies_AndPublishesEnemyDied()
         {
-            var enemy = CreateEnemy(id: 5, maxHp: 10);
+            var enemy = CreateModel(id: 5, maxHp: 10);
 
             enemy.TakeDamage(10);
 
-            Assert.AreEqual(0, enemy.Model.Hp);
+            Assert.AreEqual(0, enemy.Hp);
             Assert.IsTrue(enemy.IsDead);
             Assert.AreEqual(1, _died.Published.Count);
             Assert.AreEqual(5, _died.Published[0].EnemyId);
@@ -521,12 +530,18 @@ namespace Game.Tests
         [Test]
         public void TakeDamage_Overkill_ClampsToZero()
         {
-            var enemy = CreateEnemy(maxHp: 10);
+            var enemy = CreateModel(maxHp: 10);
 
             enemy.TakeDamage(999);
 
-            Assert.AreEqual(0, enemy.Model.Hp);
+            Assert.AreEqual(0, enemy.Hp);
             Assert.AreEqual(0, _hpChanged.Published[0].Current); // 음수로 안 나감
+            Assert.IsTrue(enemy.IsDead);
+            enemy.TakeDamage(5);
+            enemy.TakeDamage(5);
+            Assert.AreEqual(0, enemy.Hp);
+            Assert.AreEqual(1, _hpChanged.Published.Count);
+            Assert.AreEqual(1, _died.Published.Count);
         }
 
         [Test]
@@ -542,32 +557,7 @@ namespace Game.Tests
             CollectionAssert.AreEqual(new[] { "hp", "died" }, order); // Wall과 같은 순서
         }
 
-        [Test]
-        public void TakeDamage_AfterDeath_IgnoredAndNoMorePublishes()
-        {
-            var enemy = CreateEnemy(maxHp: 10);
-            enemy.TakeDamage(10);
-
-            enemy.TakeDamage(5);
-            enemy.TakeDamage(5);
-
-            Assert.AreEqual(0, enemy.Model.Hp);
-            Assert.AreEqual(1, _hpChanged.Published.Count);
-            Assert.AreEqual(1, _died.Published.Count); // 사망은 한 번만
-        }
-
         // ───────── 이동 ─────────
-
-        [Test]
-        public void Move_AfterDeath_DoesNotMove()
-        {
-            var enemy = CreateEnemy(maxHp: 10, speed: 3f, position: new Vector2(0f, 5f));
-            enemy.TakeDamage(10);
-
-            enemy.Move(1f);
-
-            Assert.AreEqual(5f, enemy.Position.y, 0.0001f);
-        }
 
         [Test]
         public void Move_Alive_MovesDown()
@@ -576,6 +566,9 @@ namespace Game.Tests
 
             enemy.Move(1f);
 
+            Assert.AreEqual(2f, enemy.Position.y, 0.0001f);
+            enemy.TakeDamage(10);
+            enemy.Move(1f);
             Assert.AreEqual(2f, enemy.Position.y, 0.0001f);
         }
 

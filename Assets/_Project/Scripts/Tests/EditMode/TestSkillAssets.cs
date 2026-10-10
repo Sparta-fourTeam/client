@@ -35,6 +35,15 @@ namespace Game.Tests
             Set(controller, SkillAssetTable.Create(entries));
         }
 
+        /// <summary>규칙 검사에 필요한 카탈로그만 주입한다. Start/자식 시전/프레임 초기화를 실행한 것으로 간주하지 않는다.</summary>
+        public static void PrepareForRules(SkillController controller, params int[] ownedIds)
+        {
+            var catalog = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().ToDictionary(w => w.id);
+            typeof(SkillController).GetField("dataTable", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(controller, catalog);
+            controller.RefreshPermanentLevels();
+            foreach (int id in ownedIds) { controller.AddWeapon(id); }
+        }
+
         private static void Set(SkillController controller, SkillAssetTable table) =>
             typeof(SkillController).GetField("assets", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(controller, table);
     }
