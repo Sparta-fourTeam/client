@@ -191,14 +191,10 @@ namespace Game.Core
                         pulled.ApplyKnockback(center - target.Position, Mathf.Min(pull, Mathf.Sqrt(distanceSquared)));
                     }
                 }
-                var context = new AttackContext(target.Position, Direction, target, randomValue);
+                // 광선이 겨눈 메인 대상은 같은 적중의 충격 피해가 커진다 (집중 광선의 초점). 별도 피해로 주면 타격 횟수형 방어막이 두 번으로 세거나 추가 피해만 통과한다
+                float scale = IsLine && focusBonus > 0 && ReferenceEquals(target, aim) ? 1f + focusBonus : 1f;
+                var context = new AttackContext(target.Position, Direction, target, randomValue, damageScale: scale);
                 hitReactions.Raise(AttackEvent.Hit, context);
-                // 광선이 겨눈 메인 대상은 공격마다 추가 피해를 받는다 (집중 광선의 초점)
-                if (IsLine && focusBonus > 0 && baseDamage > 0 && ReferenceEquals(target, aim))
-                {
-                    // 같은 적중의 일부라 충격(IsImpact)으로 주지 않는다. 충격으로 주면 타격 횟수형 방어막이 한 번의 광선 공격을 두 번 맞은 것으로 센다
-                    new DamageReaction(baseDamage * focusBonus).Execute(context);
-                }
                 reactions.Raise(AttackEvent.Hit, context);
                 if (target.IsDead) { reactions.Raise(AttackEvent.Kill, context); }
             }
