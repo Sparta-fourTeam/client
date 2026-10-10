@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using Cysharp.Threading.Tasks;
 using Game.Core;
 using Game.Core.Messages;
@@ -63,9 +62,17 @@ namespace Game.Tests
         private readonly List<SubmitFailed> _failed = new();
         private readonly List<IDisposable> _subscriptions = new();
 
+        private bool _hadSpeedPreference;
+        private float _speedPreference;
+        private float _timeScale;
+
         [SetUp]
         public void SetUp()
         {
+            _hadSpeedPreference = PlayerPrefs.HasKey("stage_speed");
+            _speedPreference = PlayerPrefs.GetFloat("stage_speed");
+            _timeScale = Time.timeScale;
+            PlayerPrefs.DeleteKey("stage_speed");
             _states.Clear();
             _results.Clear();
             _rejected.Clear();
@@ -113,10 +120,9 @@ namespace Game.Tests
             _objects.Add(player);
             _skills = player.AddComponent<SkillController>();
             TestSkillAssets.Attach(_skills, new[] { 1, 2, 3 }, _objects);
-            const BindingFlags Private = BindingFlags.NonPublic | BindingFlags.Instance;
             _skills.Construct(new NullEnemyTargetProvider(),
                 provider.GetRequiredService<IBufferedPublisher<SkillChanged>>(), new DefaultSkillDataProvider(new GameDataStore()));
-            typeof(SkillController).GetMethod("Start", Private).Invoke(_skills, null);
+            TestSkillAssets.PrepareForRules(_skills, 3);
 
             _manager = new StageManager(
                 provider.GetRequiredService<IBufferedPublisher<StageStateChanged>>(),
@@ -145,8 +151,9 @@ namespace Game.Tests
                 subscription.Dispose();
             }
 
-            PlayerPrefs.DeleteKey("stage_speed");
-            Time.timeScale = 1f;
+            if (_hadSpeedPreference) { PlayerPrefs.SetFloat("stage_speed", _speedPreference); }
+            else { PlayerPrefs.DeleteKey("stage_speed"); }
+            Time.timeScale = _timeScale;
         }
 
         private void FillGauge(bool isFinalWave)
@@ -294,6 +301,7 @@ namespace Game.Tests
             _stageEnded.Publish(new StageEnded(StageOutcome.Fail));
 
             Assert.AreEqual(1, _rejected.Count);
+            Assert.AreEqual(1, _api.Requests.Count);
             Assert.AreEqual("DUPLICATE_SUBMIT", _rejected[0].Code);
             Assert.AreEqual(0, _failed.Count);
             Assert.AreEqual(0, _results.Count);
@@ -310,23 +318,13 @@ namespace Game.Tests
             _stageEnded.Publish(new StageEnded(StageOutcome.Clear));
 
             Assert.AreEqual(1 + StageManager.AutoRetryCount, _api.Requests.Count);
+            Assert.That(_api.Requests, Is.All.SameAs(_api.Requests[0]));
             Assert.AreEqual(1, _failed.Count);
             Assert.AreEqual(code, _failed[0].Code);
             Assert.IsTrue(_failed[0].Retryable);
             Assert.AreEqual(0, _rejected.Count);
             Assert.AreEqual(0, _results.Count);
             Assert.AreEqual(StageState.Submitting, _manager.State);
-        }
-
-        [Test(Description = "자동 재시도는 처음 만든 요청을 그대로 다시 보낸다 (playTime, createdAt이 달라지면 다른 요청이 된다)")]
-        public void AutoRetry_SendsSameRequestEveryTime()
-        {
-            _api.ToThrow = new ApiException(ApiErrorKind.Transient, "SERVER_BUSY");
-
-            _stageEnded.Publish(new StageEnded(StageOutcome.Clear));
-
-            Assert.AreEqual(1 + StageManager.AutoRetryCount, _api.Requests.Count);
-            Assert.That(_api.Requests, Is.All.SameAs(_api.Requests[0]));
         }
 
         [Test(Description = "자동 재시도 중에 성공하면 실패를 알리지 않고 결과를 발행한다")]
@@ -343,18 +341,6 @@ namespace Game.Tests
             Assert.AreEqual(StageState.Finished, _manager.State);
         }
 
-        [Test(Description = "거절은 다시 보내도 같은 결과라 재시도하지 않는다")]
-        public void Rejected_IsNotRetried()
-        {
-            _api.ToThrow = new ApiException(ApiErrorKind.Rejected, "INVALID_ID");
-
-            _stageEnded.Publish(new StageEnded(StageOutcome.Fail));
-
-            Assert.AreEqual(1, _api.Requests.Count);
-            Assert.AreEqual(1, _rejected.Count);
-            Assert.AreEqual(0, _failed.Count);
-        }
-
         [Test(Description = "자동 재시도가 모두 실패한 뒤 RetrySubmit하면 같은 요청을 다시 보내고, 성공하면 결과를 발행하고 Finished가 된다")]
         public void RetrySubmit_AfterFailure_SendsSameRequestAndFinishes()
         {
@@ -363,7 +349,9 @@ namespace Game.Tests
             var first = _api.Requests[0];
             _api.ToThrow = null;
 
+            _states.Clear();
             _manager.RetrySubmit();
+            Assert.AreEqual(StageState.Submitting, _states[0]);
 
             Assert.AreEqual(1 + StageManager.AutoRetryCount + 1, _api.Requests.Count);
             Assert.AreSame(first, _api.LastRequest);
@@ -384,18 +372,6 @@ namespace Game.Tests
             Assert.AreEqual(before + 1, _api.Requests.Count);
             Assert.AreEqual(2, _failed.Count);
             Assert.AreEqual(StageState.Submitting, _manager.State);
-        }
-
-        [Test(Description = "수동 재시도는 Submitting 상태를 다시 발행해 전송 중 표시가 다시 뜨게 한다")]
-        public void RetrySubmit_RepublishesSubmitting()
-        {
-            _api.ToThrow = new ApiException(ApiErrorKind.Network, "NETWORK");
-            _stageEnded.Publish(new StageEnded(StageOutcome.Clear));
-            _states.Clear();
-
-            _manager.RetrySubmit();
-
-            Assert.AreEqual(StageState.Submitting, _states[0]);
         }
 
         [Test(Description = "제출할 요청이 없거나 이미 끝났으면 RetrySubmit은 무시된다")]
@@ -436,15 +412,7 @@ namespace Game.Tests
             _stageEnded.Publish(new StageEnded(StageOutcome.Fail));
 
             Assert.AreEqual(0f, Time.timeScale);
-        }
-
-        [Test(Description = "전투가 끝난 뒤에는 SetSpeed가 시간을 다시 흐르게 하지 않는다")]
-        public void SetSpeed_AfterStageEnded_KeepsTimeStopped()
-        {
-            _stageEnded.Publish(new StageEnded(StageOutcome.Clear));
-
             _manager.SetSpeed(2f);
-
             Assert.AreEqual(0f, Time.timeScale);
         }
 

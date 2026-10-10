@@ -21,6 +21,12 @@ namespace Game.Tests
         {
             _path = Path.Combine(Path.GetTempPath(), $"local-upgrade-material-test-{Guid.NewGuid()}.json");
             _data = new GameDataStore();
+            // 구매 경계 검사용 입력이며 출시 가격·상한에 의존하지 않는다.
+            var fixtureDef = _data.Upgrades.GetOrThrow(Hat);
+            fixtureDef.MaxLevel = 3;
+            fixtureDef.UnlockLevel = 2;
+            fixtureDef.LevelCosts = new[] { 17, 31, 53 };
+            fixtureDef.MaterialCosts = new[] { 2, 3, 4 };
             _store = new LocalSaveStore(_path);
             _api = new LocalUpgradeApi(_store, _data);
         }
@@ -63,6 +69,11 @@ namespace Game.Tests
             Assert.AreEqual(1, snap.upgrades.Find(u => u.upgradeId == Hat).level);
             Assert.AreEqual(1000 - def.CostAt(1), snap.gold);
             Assert.AreEqual(10 - def.MaterialAt(1), snap.items.Find(i => i.itemId == ItemIds.HatBook).quantity);
+
+            var reloaded = new LocalSaveStore(_path).Load();
+            Assert.AreEqual(1, reloaded.upgrades.Find(u => u.upgradeId == Hat).level);
+            Assert.AreEqual(snap.gold, reloaded.wallet.gold);
+            Assert.AreEqual(10 - def.MaterialAt(1), LocalItemSpend.Owned(reloaded, ItemIds.HatBook));
         }
 
         [Test(Description = "이미 강화한 장비는 다음 레벨의 비용을 낸다")]
@@ -137,17 +148,7 @@ namespace Game.Tests
 
             Assert.AreEqual(1, second.upgrades.Find(u => u.upgradeId == Hat).level);
             Assert.AreEqual(1000 - _data.Upgrades.GetOrThrow(Hat).CostAt(1), second.gold);
-        }
-
-        [Test(Description = "강화 결과는 저장 파일에 남아 다시 읽어도 유지된다")]
-        public void Upgrade_PersistsAcrossStoreReload()
-        {
-            Seed(gold: 1000, materials: 10);
-
-            Upgrade();
-
-            var reloaded = new LocalSaveStore(_path).Load();
-            Assert.AreEqual(1, reloaded.upgrades.Find(u => u.upgradeId == Hat).level);
+            Assert.AreEqual(10 - _data.Upgrades.GetOrThrow(Hat).MaterialAt(1), LocalItemSpend.Owned(_store.Load(), ItemIds.HatBook));
         }
 
         [Test(Description = "없는 장비 ID는 UNKNOWN_DATA_ID로 거절한다")]

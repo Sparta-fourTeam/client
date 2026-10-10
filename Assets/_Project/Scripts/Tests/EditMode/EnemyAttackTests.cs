@@ -46,15 +46,15 @@ namespace Game.Tests
             Object.DestroyImmediate(_wallGo);
         }
 
-        private static Enemy CreateEnemy(
-            float y, AttackType type = AttackType.Melee,
+        private static EnemyModel CreateEnemy(
+            AttackType type = AttackType.Melee,
             int damage = 10, float interval = 1f, float range = 0f,
-            float x = 0f, float speed = 5f, int maxHp = 10)
+            float speed = 5f, int maxHp = 10)
         {
             var model = new EnemyModel(1, speed, EnemyType.Normal, maxHp,
                 new EnemyAttackStats(type, damage, interval, range, type == AttackType.Ranged ? ProjectileSpeed : 0f),
                 new FakePublisher<EnemyHpChanged>(), new FakePublisher<EnemyDied>());
-            return TestEnemy.Create(model, new Vector2(x, y));
+            return model;
         }
 
         // ───────── 근거리 공격 ─────────
@@ -62,11 +62,11 @@ namespace Game.Tests
         [Test]
         public void Melee_DamagesWallExactlyEveryInterval()
         {
-            var enemy = CreateEnemy(y: 0f, damage: 10, interval: 1f);
+            var enemy = CreateEnemy(damage: 10, interval: 1f);
 
-            enemy.Attack(1f, _wall, _projectiles);
-            enemy.Attack(1f, _wall, _projectiles);
-            enemy.Attack(1f, _wall, _projectiles);
+            enemy.Attack(1f, Vector2.zero, _wall, _projectiles);
+            enemy.Attack(1f, Vector2.zero, _wall, _projectiles);
+            enemy.Attack(1f, Vector2.zero, _wall, _projectiles);
 
             Assert.AreEqual(WallMaxHp - 30, _wall.CurrentHp);
         }
@@ -74,22 +74,22 @@ namespace Game.Tests
         [Test]
         public void Melee_PartialDeltaTimes_Accumulate()
         {
-            var enemy = CreateEnemy(y: 0f, damage: 10, interval: 1f);
+            var enemy = CreateEnemy(damage: 10, interval: 1f);
 
-            enemy.Attack(0.5f, _wall, _projectiles);
+            enemy.Attack(0.5f, Vector2.zero, _wall, _projectiles);
             Assert.AreEqual(WallMaxHp, _wall.CurrentHp);
 
-            enemy.Attack(0.5f, _wall, _projectiles); // 누적 1초
+            enemy.Attack(0.5f, Vector2.zero, _wall, _projectiles); // 누적 1초
             Assert.AreEqual(WallMaxHp - 10, _wall.CurrentHp);
         }
 
         [Test]
         public void Melee_WhenDead_DoesNotAttack()
         {
-            var enemy = CreateEnemy(y: 0f, maxHp: 10);
+            var enemy = CreateEnemy(maxHp: 10);
             enemy.TakeDamage(10);
 
-            enemy.Attack(5f, _wall, _projectiles);
+            enemy.Attack(5f, Vector2.zero, _wall, _projectiles);
 
             Assert.AreEqual(WallMaxHp, _wall.CurrentHp);
         }
@@ -98,11 +98,11 @@ namespace Game.Tests
         public void Melee_WallDestroyed_NoMoreDamage_DestroyedPublishedOnce()
         {
             _wall.Initialize(15);
-            var enemy = CreateEnemy(y: 0f, damage: 10, interval: 1f);
+            var enemy = CreateEnemy(damage: 10, interval: 1f);
 
-            enemy.Attack(1f, _wall, _projectiles); // 15 → 5
-            enemy.Attack(1f, _wall, _projectiles); // 5 → 0, 파괴
-            enemy.Attack(1f, _wall, _projectiles); // 파괴 후 무시
+            enemy.Attack(1f, Vector2.zero, _wall, _projectiles); // 15 → 5
+            enemy.Attack(1f, Vector2.zero, _wall, _projectiles); // 5 → 0, 파괴
+            enemy.Attack(1f, Vector2.zero, _wall, _projectiles); // 파괴 후 무시
 
             Assert.AreEqual(0, _wall.CurrentHp);
             Assert.IsTrue(_wall.IsDestroyed);
@@ -114,11 +114,11 @@ namespace Game.Tests
         [Test]
         public void Ranged_Attack_FiresProjectile_WithoutImmediateDamage()
         {
-            var enemy = CreateEnemy(y: 4f, AttackType.Ranged, damage: 10, interval: 1f, range: 4f);
+            var enemy = CreateEnemy(AttackType.Ranged, damage: 10, interval: 1f, range: 4f);
             EnemyProjectileModel fired = null;
-            enemy.Model.ProjectileFired += p => fired = p;
+            enemy.ProjectileFired += p => fired = p;
 
-            enemy.Attack(1f, _wall, _projectiles);
+            enemy.Attack(1f, Vector2.up * 4f, _wall, _projectiles);
 
             Assert.IsNotNull(fired);
             Assert.AreEqual(4f, fired.Position.y, 0.0001f); // 적 위치에서 발사
@@ -129,8 +129,8 @@ namespace Game.Tests
         [Test]
         public void Ranged_ProjectileReachesWall_DamagesOnce()
         {
-            var enemy = CreateEnemy(y: 4f, AttackType.Ranged, damage: 10, interval: 1f, range: 4f);
-            enemy.Attack(1f, _wall, _projectiles);
+            var enemy = CreateEnemy(AttackType.Ranged, damage: 10, interval: 1f, range: 4f);
+            enemy.Attack(1f, Vector2.up * 4f, _wall, _projectiles);
 
             _projectiles.Tick(4f / Speed, _wall); // 거리 4 ÷ 탄속 8 = 0.5초
             _projectiles.Tick(1f, _wall);         // 이미 사라진 탄
@@ -142,13 +142,13 @@ namespace Game.Tests
         [Test]
         public void Ranged_FiresOncePerInterval()
         {
-            var enemy = CreateEnemy(y: 4f, AttackType.Ranged, damage: 10, interval: 1f, range: 4f);
+            var enemy = CreateEnemy(AttackType.Ranged, damage: 10, interval: 1f, range: 4f);
             int fired = 0;
-            enemy.Model.ProjectileFired += _ => fired++;
+            enemy.ProjectileFired += _ => fired++;
 
-            enemy.Attack(0.5f, _wall, _projectiles); // 간격 전
-            enemy.Attack(0.5f, _wall, _projectiles); // 1발
-            enemy.Attack(1f, _wall, _projectiles);   // 2발
+            enemy.Attack(0.5f, Vector2.up * 4f, _wall, _projectiles); // 간격 전
+            enemy.Attack(0.5f, Vector2.up * 4f, _wall, _projectiles); // 1발
+            enemy.Attack(1f, Vector2.up * 4f, _wall, _projectiles);   // 2발
 
             Assert.AreEqual(2, fired);
             Assert.AreEqual(2, _projectiles.ActiveCount);
@@ -157,11 +157,11 @@ namespace Game.Tests
         [Test]
         public void Ranged_EnemyDiesAfterFiring_InFlightProjectileStillHits()
         {
-            var enemy = CreateEnemy(y: 4f, AttackType.Ranged, damage: 10, interval: 1f, range: 4f);
-            enemy.Attack(1f, _wall, _projectiles); // 발사
+            var enemy = CreateEnemy(AttackType.Ranged, damage: 10, interval: 1f, range: 4f);
+            enemy.Attack(1f, Vector2.up * 4f, _wall, _projectiles); // 발사
 
             enemy.TakeDamage(999);                  // 발사한 적 사망
-            enemy.Attack(5f, _wall, _projectiles);  // 새 발사 없음
+            enemy.Attack(5f, Vector2.up * 4f, _wall, _projectiles);  // 새 발사 없음
             Assert.AreEqual(1, _projectiles.ActiveCount);
 
             _projectiles.Tick(1f, _wall);           // 이미 쏜 탄은 명중

@@ -2,7 +2,6 @@ using Game.Core;
 using Game.Core.Messages;
 using MessagePipe;
 using NUnit.Framework;
-using UnityEngine;
 
 namespace Game.Tests
 {
@@ -16,39 +15,35 @@ namespace Game.Tests
             public void Publish(T message) { }
         }
 
-        private static Enemy Create(StatusImmunity immunities)
+        private static EnemyModel Create(StatusImmunity immunities)
         {
             var model = new EnemyModel(1, 1f, EnemyType.Normal, 10, Attack,
                 new Recorder<EnemyHpChanged>(), new Recorder<EnemyDied>(),
                 passives: null, isSummoned: false, immunities: immunities);
-            return TestEnemy.Create(model, new Vector2(0f, 10f));
+            return model;
         }
 
         [Test(Description = "기절 면역이면 기절에 걸리지 않고 계속 움직인다")]
         public void StunImmune_IgnoresStun()
         {
             var enemy = Create(StatusImmunity.Stun);
-            var before = enemy.Position;
 
             enemy.ApplyStun(2f);
-            enemy.Move(1f);
 
-            Assert.IsFalse(enemy.Model.IsStunned);
-            Assert.AreEqual(0f, enemy.Model.StunRemaining);
-            Assert.Less(enemy.Position.y, before.y);
+            Assert.IsFalse(enemy.IsStunned);
+            Assert.AreEqual(0f, enemy.StunRemaining);
+            Assert.AreEqual(1f, enemy.MoveSpeed);
         }
 
         [Test(Description = "면역이 없으면 기절에 걸려 움직이지 못한다")]
         public void NotImmune_IsStunned()
         {
             var enemy = Create(StatusImmunity.None);
-            var before = enemy.Position;
 
             enemy.ApplyStun(2f);
-            enemy.Move(1f);
 
-            Assert.IsTrue(enemy.Model.IsStunned);
-            Assert.AreEqual(before, enemy.Position);
+            Assert.IsTrue(enemy.IsStunned);
+            Assert.AreEqual(0f, enemy.MoveSpeed);
         }
 
         [Test(Description = "기절 면역은 다른 상태이상(빙결)까지 막지 않는다")]
@@ -58,7 +53,7 @@ namespace Game.Tests
 
             enemy.ApplyFreeze(2f);
 
-            Assert.IsTrue(enemy.Model.IsFrozen);
+            Assert.IsTrue(enemy.IsFrozen);
         }
     }
 }

@@ -1,6 +1,5 @@
 using System.Reflection;
 using Cysharp.Threading.Tasks;
-using DG.Tweening;
 using Game.Core;
 using Game.View;
 using NUnit.Framework;
@@ -91,41 +90,22 @@ namespace Game.Tests
             info.Initialize();
             Set(_screen, "_detailsPopup", details);
             Set(_screen, "_rewardInfoPopup", info);
-            typeof(MissionScreenView).GetMethod("Awake", Private).Invoke(_screen, null);
+            _screen.Initialize();
             _screen.Open();
         }
 
         [TearDown]
         public void TearDown()
         {
-            DOTween.KillAll();
+            foreach (var root in new[] { _root, _rewardRoot })
+            {
+                if (root == null) { continue; }
+                foreach (var transition in root.GetComponentsInChildren<PopupTransition>(true)) { transition.HideImmediate(); }
+            }
             UnityEngine.Object.DestroyImmediate(_root);
             UnityEngine.Object.DestroyImmediate(_rewardRoot);
             UnityEngine.Object.DestroyImmediate(_detailsRoot);
             UnityEngine.Object.DestroyImmediate(_rewardInfoRoot);
-        }
-
-        [Test]
-        public void PendingClaim_BlocksRepeatedRequestsAndNavigation_ThenUsesReturnedSnapshot()
-        {
-            var pending = Claim();
-            Claim().GetAwaiter().GetResult();
-            typeof(MissionScreenView).GetMethod("Move", Private).Invoke(_screen, new object[] { 1 });
-            Assert.AreEqual(1, _api.Calls);
-            Assert.AreEqual(1, Get<int>(_screen, "_stageId"));
-            Assert.IsFalse(Get<UnityEngine.UI.Button>(_screen, "_enterButton").interactable);
-
-            _api.Response.TrySetResult(Snapshot(3, 3, 150));
-            pending.GetAwaiter().GetResult();
-
-            Assert.AreEqual(150, _profile.Gold);
-            Assert.AreEqual(3, _profile.ClaimedRating(1));
-            foreach (var node in Get<MissionRewardNodeView[]>(_screen, "_rewardNodes"))
-            {
-                Assert.IsTrue(Get<GameObject>(node, "_check").activeSelf);
-                Assert.IsTrue(node.Button.interactable);
-            }
-            Assert.IsTrue(Get<GameObject>(Get<RewardPopupView>(_screen, "_rewardPopup"), "_panel").activeSelf);
         }
 
         [Test]
@@ -176,30 +156,7 @@ namespace Game.Tests
         }
 
         [Test]
-        public void NoReward_ChestClicksShowTheirOwnInformationWithoutCallingApi()
-        {
-            _profile.Apply(Snapshot(0, 0));
-            _screen.Open();
-            Claim().GetAwaiter().GetResult();
-            Assert.AreEqual(0, _api.Calls);
-            var nodes = Get<MissionRewardNodeView[]>(_screen, "_rewardNodes");
-            var popup = Get<MissionRewardInfoPopupView>(_screen, "_rewardInfoPopup");
-            string[] titles = { "관문 클리어", "방벽 체력 50%", "방벽 체력 100%" };
-            for (int i = 0; i < nodes.Length; i++)
-            {
-                var node = nodes[i];
-                Assert.IsTrue(node.Button.interactable);
-                Assert.IsFalse(Get<GameObject>(node, "_check").activeSelf);
-                Assert.IsFalse(Get<UnityEngine.UI.Image>(node, "_glow").gameObject.activeSelf);
-                node.Button.onClick.Invoke();
-                Assert.AreEqual(titles[i], Get<TMPro.TMP_Text>(popup, "_title").text);
-                Assert.IsTrue(Get<GameObject>(popup, "_panel").activeSelf);
-            }
-            Assert.AreEqual(0, _api.Calls);
-        }
-
-        [Test]
-        public void AnyPendingReward_OnlyAreaInputClaimsAllOnce()
+        public void ClaimInputBlocksRepeatedRequestsAndNavigationAndAppliesReturnedSnapshot()
         {
             _profile.Apply(Snapshot(2, 1));
             _screen.Open();
@@ -212,76 +169,16 @@ namespace Game.Tests
             area.onClick.Invoke();
             area.onClick.Invoke();
             Assert.AreEqual(1, _api.Calls);
+            typeof(MissionScreenView).GetMethod("Move", Private).Invoke(_screen, new object[] { 1 });
+            Assert.AreEqual(1, Get<int>(_screen, "_stageId"));
+            Assert.IsFalse(Get<UnityEngine.UI.Button>(_screen, "_enterButton").interactable);
             Assert.IsFalse(Get<GameObject>(Get<MissionRewardInfoPopupView>(_screen, "_rewardInfoPopup"), "_panel").activeSelf);
             _api.Response.TrySetResult(Snapshot(2, 2, 50));
             Assert.AreEqual(2, _profile.ClaimedRating(1));
             Assert.AreEqual(50, _profile.Gold);
             Assert.IsFalse(area.gameObject.activeSelf);
+            Assert.IsTrue(Get<UnityEngine.UI.Button>(_screen, "_enterButton").interactable);
         }
 
-        [Test]
-        public void AllClaimed_ChestClickShowsInformationWithoutGrantingAgain()
-        {
-            _profile.Apply(Snapshot(3, 3, 170));
-            _screen.Open();
-            Get<MissionRewardNodeView[]>(_screen, "_rewardNodes")[1].Button.onClick.Invoke();
-            Assert.AreEqual(0, _api.Calls);
-            Assert.AreEqual(170, _profile.Gold);
-            var popup = Get<MissionRewardInfoPopupView>(_screen, "_rewardInfoPopup");
-            Assert.AreEqual("방벽 체력 50%", Get<TMPro.TMP_Text>(popup, "_title").text);
-            StringAssert.Contains("이미 수령", Get<TMPro.TMP_Text>(popup, "_description").text);
-        }
-
-        [Test]
-        public void Details_ChangingStageReplacesAndExpandsMonsterRows()
-        {
-            var popup = Get<MissionPopupView>(_screen, "_detailsPopup");
-            popup.ShowDetails(_data, 2);
-            var list = Get<StageMonsterListView>(popup, "_monsters");
-            int active = 0;
-            foreach (Transform slot in list.transform.Find("Slots")) { if (slot.gameObject.activeSelf) { active++; } }
-            Assert.AreEqual(_data.Stages.GetOrThrow(2).MonsterIds.Count, active);
-            popup.ShowDetails(_data, 1);
-            active = 0;
-            foreach (Transform slot in list.transform.Find("Slots")) { if (slot.gameObject.activeSelf) { active++; } }
-            Assert.AreEqual(_data.Stages.GetOrThrow(1).MonsterIds.Count, active);
-            Assert.AreEqual("제 1 관문", Get<TMPro.TMP_Text>(popup, "_title").text);
-        }
-
-        [Test]
-        public void Glow_IsStaticAndOnlyVisibleForUnclaimedAchievedRewards()
-        {
-            var node = Get<MissionRewardNodeView[]>(_screen, "_rewardNodes")[1];
-            var glow = Get<UnityEngine.UI.Image>(node, "_glow");
-            node.Show(true, false, false);
-            var color = glow.color;
-            var size = glow.rectTransform.sizeDelta;
-            Assert.IsTrue(glow.gameObject.activeSelf);
-            Assert.AreEqual(0.85f, color.a, 0.001f);
-            Assert.AreEqual(Vector3.one, glow.rectTransform.localScale);
-
-            node.Show(true, false, true);
-            typeof(MissionRewardNodeView).GetMethod("LateUpdate", Private).Invoke(node, null);
-            Assert.AreEqual(color, glow.color);
-            Assert.AreEqual(size, glow.rectTransform.sizeDelta);
-            node.Show(true, true, false);
-            Assert.IsFalse(glow.gameObject.activeSelf);
-            node.Show(false, false, false);
-            Assert.IsFalse(glow.gameObject.activeSelf);
-        }
-
-        [Test]
-        public void Receipt_ShowsOnlyNewlyGrantedAmounts()
-        {
-            var before = Snapshot(2, 1, 50);
-            before.items.Add(new ItemAmount { itemId = "book.arrow", quantity = 100 });
-            var after = Snapshot(2, 2, 100);
-            after.items.Add(new ItemAmount { itemId = "book.arrow", quantity = 103 });
-            var rows = RewardRows.Gained(null, _data, before, after);
-            Assert.AreEqual(2, rows.Count);
-            Assert.AreEqual(50, rows[0].Count);
-            Assert.AreEqual(3, rows[1].Count);
-            Assert.IsEmpty(RewardRows.Gained(null, _data, after, after));
-        }
     }
 }

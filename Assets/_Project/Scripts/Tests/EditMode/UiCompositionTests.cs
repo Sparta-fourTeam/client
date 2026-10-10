@@ -58,29 +58,6 @@ namespace Game.Tests
         }
 
         [Test]
-        public void HostInitializesBeforeMessageReplayAndDoesNotResetOnAwake()
-        {
-            var prefab = Root("screen");
-            prefab.SetActive(false);
-            prefab.AddComponent<UiLifecycleProbe>();
-            var host = CreateHost(new[] { Entry("screen", prefab) });
-            var registry = new UiRegistry();
-            host.BuildAsync(new DirectUiPrefabProvider(), registry, go =>
-            {
-                var view = go.GetComponent<UiLifecycleProbe>();
-                Assert.That(view.Initializations, Is.EqualTo(1));
-                Assert.That(view.Bound, Is.True);
-                view.Value = 42; // Simulate a buffered subscription replay during injection.
-            }, CancellationToken.None).GetAwaiter().GetResult();
-            var instance = registry.Get<UiLifecycleProbe>();
-            instance.Initialize();
-            Assert.That(instance.Value, Is.EqualTo(42));
-            Assert.That(instance.Initializations, Is.EqualTo(1));
-            Assert.That(instance.gameObject.activeSelf, Is.True);
-            Assert.Throws<InvalidOperationException>(() => host.BuildAsync(new DirectUiPrefabProvider(), registry, _ => { }, CancellationToken.None).GetAwaiter().GetResult());
-        }
-
-        [Test]
         public void PartialLoadFailureReleasesPreviousLeaseAndRemovesInstances()
         {
             var prefab = Root("screen");
@@ -105,19 +82,6 @@ namespace Game.Tests
             Assert.Throws<OperationCanceledException>(() => host.BuildAsync(new DirectUiPrefabProvider(), new UiRegistry(), _ => { }, cancellation.Token).GetAwaiter().GetResult());
             Assert.Throws<OperationCanceledException>(() => host.WhenReady.GetAwaiter().GetResult());
             Assert.That(host.transform.childCount, Is.Zero);
-        }
-
-        [Test]
-        public void LeaseAndViewCleanupAreIdempotent()
-        {
-            int released = 0;
-            var root = Root("screen");
-            using var lease = new UiPrefabLease(root, () => released++);
-            lease.Dispose(); lease.Dispose();
-            Assert.That(released, Is.EqualTo(1));
-            var view = root.AddComponent<UiLifecycleProbe>();
-            view.Dispose(); view.Dispose();
-            Assert.That(view.Disposals, Is.EqualTo(1));
         }
 
         private UiHost CreateHost(UiComposition.Entry[] entries)

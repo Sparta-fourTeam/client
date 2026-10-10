@@ -59,35 +59,23 @@ namespace Game.Tests
         }
 
         [Test]
-        public void Initialize_StartsFirstWaveFromStageTable()
+        public void WaveCompleted_AdvancesThroughWavesAndMarksLastAsFinal()
         {
             Assert.AreEqual(1, _started.Count);
             Assert.AreEqual(1, _started[0].WaveIndex);
             Assert.AreEqual(5, _started[0].EnemyCount);
             Assert.IsFalse(_started[0].IsFinalWave);
-        }
 
-        [Test]
-        public void WaveCompleted_AdvancesThroughWavesAndMarksLastAsFinal()
-        {
             _waveCompleted.Publish(new WaveCompleted(1, false));
             _waveCompleted.Publish(new WaveCompleted(2, false));
-
             Assert.AreEqual(3, _started.Count);
             Assert.AreEqual(8, _started[1].EnemyCount);
             CollectionAssert.AreEqual(new[] { 1, 11, 12 }, _started[1].Spawns.Select(s => s.MonsterId).ToArray());
             Assert.AreEqual(10, _started[2].EnemyCount);
             Assert.AreEqual(EnemyType.Boss, _started[2].Spawns[1].Type);
             Assert.IsTrue(_started[2].IsFinalWave);
-        }
 
-        [Test]
-        public void WaveCompleted_AfterFinalWave_StartsNothingMore()
-        {
-            _waveCompleted.Publish(new WaveCompleted(1, false));
-            _waveCompleted.Publish(new WaveCompleted(2, false));
             _waveCompleted.Publish(new WaveCompleted(3, true));
-
             Assert.AreEqual(3, _started.Count);
         }
 

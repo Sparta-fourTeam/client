@@ -17,15 +17,16 @@ namespace Game.Tests
             _api = new HttpDataVersionApi(client);
         }
 
-        [Test(Description = "GET /api/data/version을 호출한다")]
+        [Test(Description = "버전 endpoint의 정상 응답에서 테이블 버전을 복원한다")]
         public void GetVersions_CallsVersionEndpoint()
         {
             _transport.Response = new HttpResponseData(200, "{\"revision\":3,\"tables\":{\"Skills\":2}}");
 
-            _api.GetVersions().GetAwaiter().GetResult();
+            var versions = _api.GetVersions().GetAwaiter().GetResult();
 
             Assert.AreEqual("https://example.test/api/data/version", _transport.Requests[0].Url);
             Assert.AreEqual(HttpVerb.Get, _transport.Requests[0].Verb);
+            Assert.AreEqual(2, versions.revisions["Skills"]);
         }
 
         [Test(Description = "tables가 빠진 응답은 계약과 다른 응답으로 거절한다")]

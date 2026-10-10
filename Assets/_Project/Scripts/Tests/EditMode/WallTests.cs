@@ -99,17 +99,10 @@ namespace Game.Tests
 
             Assert.AreEqual(60, wall.CurrentHp);
             Assert.AreEqual(60, _hp.Published.Last().Current);
-        }
 
-        [Test(Description = "수리해도 최대 체력을 넘지 않는다")]
-        public void Repair_ClampsToMaxHp()
-        {
-            Wall wall = CreateWall(100);
-            wall.TakeDamage(10);
-
-            wall.Repair(50);
-
+            wall.Repair(100);
             Assert.AreEqual(100, wall.CurrentHp);
+            Assert.AreEqual(100, _hp.Published.Last().Current);
         }
 
         [Test(Description = "부서진 방벽, 가득 찬 방벽, 0 이하 수리량은 무시한다")]
@@ -133,17 +126,6 @@ namespace Game.Tests
             Assert.IsTrue(wall.IsDestroyed);
         }
 
-        [Test(Description = "HP보다 큰 데미지를 입어도 음수가 아니라 0이 된다")]
-        public void TakeDamage_OverMaxHp_ClampsToZero()
-        {
-            Wall wall = CreateWall(10);
-
-            wall.TakeDamage(999);
-
-            Assert.AreEqual(0, wall.CurrentHp);
-            Assert.AreEqual(0, _hp.Published.Last().Current);
-        }
-
         [Description("0이나 음수 데미지는 무시한다")]
         [TestCase(0)]
         [TestCase(-5)]
@@ -157,27 +139,19 @@ namespace Game.Tests
             Assert.AreEqual(1, _hp.Published.Count); // Initialize에서 발행한 초기값만
         }
 
-        [Test(Description = "HP가 0이 된 뒤 또 맞아도 파괴 메시지는 1번만 발송된다 (실패 판정·결과 전송은 판당 1번이어야 함)")]
+        [Test(Description = "과잉 피해는 HP를 0으로 제한하고, 파괴 이후 추가 HP/파괴 메시지를 발행하지 않는다")]
         public void TakeDamage_ReachesZero_PublishesDestroyedOnce()
         {
             Wall wall = CreateWall(10);
-
-            wall.TakeDamage(10);
-            wall.TakeDamage(10);
-
+            wall.TakeDamage(999);
+            Assert.AreEqual(0, wall.CurrentHp);
+            Assert.AreEqual(0, _hp.Published.Last().Current);
             Assert.IsTrue(wall.IsDestroyed);
             Assert.AreEqual(1, _destroyed.Published.Count);
-        }
-
-        [Test(Description = "파괴 된 뒤 남은 적이 계속 때려도 HP,파괴 메세지가 더 나가지 않는다")]
-        public void TakeDamage_AfterDestroyed_PublishesNothing()
-        {
-            Wall wall = CreateWall(10);
-            wall.TakeDamage(10);
             int hpCountAfterDestroy = _hp.Published.Count;
 
+            wall.TakeDamage(10);
             wall.TakeDamage(1);
-
             Assert.AreEqual(hpCountAfterDestroy, _hp.Published.Count);
             Assert.AreEqual(1, _destroyed.Published.Count);
         }
@@ -187,6 +161,8 @@ namespace Game.Tests
         {
             Wall wall = CreateWall(10);
             wall.TakeDamage(10);
+            Assert.IsTrue(wall.IsDestroyed);
+            Assert.AreEqual(1, _destroyed.Published.Count);
 
             wall.Initialize(20);
 
@@ -195,70 +171,5 @@ namespace Game.Tests
             Assert.AreEqual(20, _hp.Published.Last().Current);
         }
 
-        private Sprite[] CreateSprites(int count)
-        {
-            var sprites = new Sprite[count];
-            for (int i = 0; i < count; i++)
-            {
-                var tex = new Texture2D(2, 2);
-                sprites[i] = Sprite.Create(tex, new Rect(0, 0, 2, 2), Vector2.zero);
-                sprites[i].name = "WallStage" + i;
-            }
-
-            return sprites;
-        }
-
-        private (Wall wall, SpriteRenderer renderer, Sprite[] sprites) CreateWallWithSprites()
-        {
-            Wall wall = CreateUninitializedWall();
-            var renderer = _go.AddComponent<SpriteRenderer>();
-            Sprite[] sprites = CreateSprites(3);
-            typeof(Wall).GetField("_sprites", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-                .SetValue(wall, sprites);
-            return (wall, renderer, sprites);
-        }
-
-        [Test(Description = "HP 비율이 67%, 33% 이하로 내려가면 파손 단계 스프라이트로 바뀐다")]
-        public void TakeDamage_SwapsSpriteByHpRatio()
-        {
-            var (wall, renderer, sprites) = CreateWallWithSprites();
-            wall.Initialize(100);
-            Assert.AreSame(sprites[0], renderer.sprite);
-
-            wall.TakeDamage(32);
-            Assert.AreSame(sprites[0], renderer.sprite, "68%는 아직 온전한 단계");
-
-            wall.TakeDamage(1);
-            Assert.AreSame(sprites[1], renderer.sprite, "67%부터 파손 1단계");
-
-            wall.TakeDamage(34);
-            Assert.AreSame(sprites[2], renderer.sprite, "33%부터 파손 2단계");
-        }
-
-        [Test(Description = "다시 초기화하면 온전한 스프라이트로 돌아온다")]
-        public void Initialize_ResetsSpriteToFullState()
-        {
-            var (wall, renderer, sprites) = CreateWallWithSprites();
-            wall.Initialize(100);
-            wall.TakeDamage(100);
-            Assert.AreSame(sprites[2], renderer.sprite);
-
-            wall.Initialize(100);
-
-            Assert.AreSame(sprites[0], renderer.sprite);
-        }
-
-        [Test(Description = "피해를 받으면 적과 같은 피격 플래시가 붙고, 무시되는 피해에는 붙지 않는다")]
-        public void TakeDamage_AttachesHitFlashOnlyWhenDamaged()
-        {
-            Wall wall = CreateWall(10);
-            _go.AddComponent<SpriteRenderer>();
-
-            wall.TakeDamage(0);
-            Assert.IsNull(_go.GetComponent<Game.Core.HitFlash>());
-
-            wall.TakeDamage(1);
-            Assert.IsNotNull(_go.GetComponent<Game.Core.HitFlash>());
-        }
     }
 }

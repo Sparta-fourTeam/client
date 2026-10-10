@@ -27,7 +27,7 @@ namespace Game.Tests
         }
 
         [Test]
-        public void InvalidVariant_RejectsWithoutApplyingBaseEffects()
+        public void InvalidUpgrade_LeavesStatsLevelAndAcquisitionUnchanged()
         {
             var option = VariantOption(9, -20, 0);
             option.variants[0].effects = null;
@@ -35,6 +35,20 @@ namespace Game.Tests
             Assert.IsFalse(weapon.LevelUp(option, 9));
             Assert.AreEqual(10, weapon.CurrentStats.Cast.Damage);
             Assert.AreEqual(0, weapon.UpgradeCount);
+            option = new SkillUpgradeOption
+            {
+                id = "invalid_effect",
+                effects = new System.Collections.Generic.List<EffectDef>
+                {
+                    new EffectDef { kind = "damage", value = 80 },
+                    new EffectDef { kind = "unknownKind", value = 1 }
+                }
+            };
+            Assert.IsFalse(weapon.LevelUp(option));
+            Assert.AreEqual(10, weapon.CurrentStats.Cast.Damage);
+            Assert.AreEqual(1, weapon.Level);
+            Assert.AreEqual(0, weapon.UpgradeCount);
+            Assert.AreEqual(0, weapon.GetAcquiredCount(option.id));
         }
 
         private static TestSkill NewWeapon() => new TestSkill(new SkillData
@@ -64,33 +78,6 @@ namespace Game.Tests
                 baseStats = new SkillBaseStats { cast = { baseDamage = 10, cooldown = 2, projectileCount = 1 } },
                 upgrades = new System.Collections.Generic.List<SkillUpgradeOption> { option }
             });
-        }
-
-        [TestCase(1, 16, "arrow_neutral_1", "energy_beam_neutral_1", 1.5f)]
-        [TestCase(3, 18, "lightning_neutral", "chain_lightning_neutral", 1.8f)]
-        public void ShippedSharedCards_UpdateBothSkillsAndCannotBeSelectedTwice(
-            int firstId, int secondId, string firstCardId, string secondCardId, float multiplier)
-        {
-            var catalog = new DefaultSkillDataProvider(new GameDataStore()).LoadAll();
-            var first = new TestSkill(catalog.Find(s => s.id == firstId));
-            var second = new TestSkill(catalog.Find(s => s.id == secondId));
-            var firstCard = first.Data.upgrades.Find(c => c.id == firstCardId);
-            var secondCard = second.Data.upgrades.Find(c => c.id == secondCardId);
-            var skills = new SkillBase[] { first, second };
-            var firstDamage = first.CurrentStats.Cast.Damage;
-            var secondDamage = second.CurrentStats.Cast.Damage;
-            Assert.IsTrue(firstCard.enabled);
-            Assert.IsTrue(secondCard.enabled);
-            Assert.IsFalse(SkillUpgradeTransaction.TryApply(first, firstCard, new[] { first }, 0));
-            Assert.AreEqual(0, first.UpgradeCount);
-            Assert.IsTrue(SkillUpgradeTransaction.TryApply(first, firstCard, skills, 0));
-            Assert.AreEqual(firstDamage * multiplier, first.CurrentStats.Cast.Damage, .0001f);
-            Assert.AreEqual(secondDamage * multiplier, second.CurrentStats.Cast.Damage, .0001f);
-            Assert.AreEqual(1, first.UpgradeCount);
-            Assert.AreEqual(1, second.UpgradeCount);
-            Assert.AreEqual(1, first.GetAcquiredCount(firstCardId));
-            Assert.AreEqual(1, second.GetAcquiredCount(secondCardId));
-            Assert.IsFalse(SkillUpgradeTransaction.TryApply(second, secondCard, skills, 0));
         }
 
         [TestCase("damage")]

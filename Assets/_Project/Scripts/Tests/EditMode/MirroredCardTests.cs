@@ -24,7 +24,7 @@ namespace Game.Tests
 
         private static string Describe(IEnumerable<EffectDef> effects) => string.Join(",", effects.Select(e => $"{e.kind}:{e.value}"));
 
-        [Test(Description = "화살 일제 사격을 얻은 횟수만큼 그 효과(발사 수 +1, 공격력 -20%)가 쌓인다")]
+        [Test(Description = "화살 일제 사격을 얻은 횟수만큼 선언된 효과가 쌓인다")]
         public void For_RepeatsTheMirroredCardEffectsByAcquiredCount()
         {
             var catalog = Catalog();
@@ -33,17 +33,18 @@ namespace Game.Tests
 
             var effects = MirroredEffects.For(catalog[FocusArrowId], catalog, state);
 
-            Assert.AreEqual("projectileCount:1,damage:-20,projectileCount:1,damage:-20", Describe(effects));
+            Assert.AreEqual(Describe(Enumerable.Repeat(catalog[ArrowId].upgrades.Find(c => c.id == "arrow_multishot").effects, 2).SelectMany(e => e)), Describe(effects));
         }
 
-        [Test(Description = "영구 Lv 9부터는 화살 일제 사격(+) 변형을 따라 공격력 감소가 없다")]
+        [Test(Description = "영구 레벨 변형의 해금 경계에 도달하면 변형 효과를 복제한다")]
         public void For_FollowsThePermanentLevelVariant()
         {
             var catalog = Catalog();
-            var state = new State { Permanent = 9 };
+            var variant = catalog[ArrowId].upgrades.Find(c => c.id == "arrow_multishot").variants[0];
+            var state = new State { Permanent = variant.minPermanentLevel };
             state.Counts[(ArrowId, "arrow_multishot")] = 1;
 
-            Assert.AreEqual("projectileCount:1", Describe(MirroredEffects.For(catalog[FocusArrowId], catalog, state)));
+            Assert.AreEqual(Describe(variant.effects), Describe(MirroredEffects.For(catalog[FocusArrowId], catalog, state)));
         }
 
         [Test(Description = "카드를 얻지 않았거나 가져올 카드가 없는 스킬은 효과가 없다")]
@@ -76,7 +77,7 @@ namespace Game.Tests
         [Test(Description = "집중 화살: 집중 광선이 시전되면 화살 한 발에 화살 일제 사격을 얻은 횟수만큼 더해 쏜다")]
         public void FocusArrow_FiresWithTheArrowSkillsMultishotCount()
         {
-            using var world = new CatalogWorld();
+            using var world = new CatalogWorld(data => data[ArrowId].upgrades.Find(c => c.id == "arrow_multishot").maxPickCount = 2);
             var arrow = world.Create(ArrowId);
             world.Take(arrow, "arrow_multishot", "arrow_multishot");
             var beam = world.Create(FocusBeamId);
@@ -85,7 +86,8 @@ namespace Game.Tests
 
             typeof(SkillCaster).GetMethod("OnFire", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Invoke(beam, null);
 
-            Assert.AreEqual(1 + 2, CatalogWorld.Active().Count, "기본 1발 + 일제 사격 2번");
+            var extra = world.Data[ArrowId].upgrades.Find(c => c.id == "arrow_multishot").effects.First(e => e.kind == "projectileCount").value;
+            Assert.AreEqual(world.Data[FocusArrowId].baseStats.cast.projectileCount + 2 * (int)extra, CatalogWorld.Active().Count);
         }
 
         [Test(Description = "화살 일제 사격이 없으면 집중 화살은 기본 1발이다")]
@@ -99,7 +101,7 @@ namespace Game.Tests
 
             typeof(SkillCaster).GetMethod("OnFire", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Invoke(beam, null);
 
-            Assert.AreEqual(1, CatalogWorld.Active().Count);
+            Assert.AreEqual(world.Data[FocusArrowId].baseStats.cast.projectileCount, CatalogWorld.Active().Count);
         }
     }
 }

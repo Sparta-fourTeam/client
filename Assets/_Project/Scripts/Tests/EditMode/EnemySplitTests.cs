@@ -150,25 +150,16 @@ namespace Game.Tests
 
         // ───────── SpawnPassive (OnDeath) ─────────
 
-        [Test(Description = "치명상이 아닌 피해에는 분열을 요청하지 않는다")]
-        public void NonLethalDamage_DoesNotRequestSpawn()
-        {
-            var enemy = CreateSplitter(Vector2.zero);
-            var requests = new List<EnemySpawnRequest>();
-            enemy.SpawnRequested += requests.Add;
-
-            enemy.TakeDamage(5);
-
-            Assert.IsEmpty(requests);
-        }
-
-        [Test(Description = "죽는 순간 지정한 몬스터를 count마리, 죽은 자리에 가로로 벌려 요청한다")]
+        [Test(Description = "치명상 전에는 분열하지 않고 사망 위치 주변에 한 번만 분열체를 요청한다")]
         public void LethalDamage_RequestsChildrenAroundDeathPosition()
         {
             var enemy = CreateSplitter(new Vector2(3f, 5f), count: 2);
             var requests = new List<EnemySpawnRequest>();
             enemy.SpawnRequested += requests.Add;
 
+            enemy.TakeDamage(5);
+            Assert.IsEmpty(requests);
+            enemy.TakeDamage(5);
             enemy.TakeDamage(10);
 
             Assert.AreEqual(2, requests.Count);
@@ -179,19 +170,6 @@ namespace Game.Tests
             Assert.AreEqual(5f, requests[0].Position.y, 0.0001f);
             Assert.AreEqual(5f, requests[1].Position.y, 0.0001f);
             Assert.IsFalse(requests[0].IsSummon); // 분열체는 게이지에 센다
-        }
-
-        [Test(Description = "이미 죽은 적에게 다시 피해가 와도 분열은 한 번만 요청한다")]
-        public void DamageAfterDeath_DoesNotRequestAgain()
-        {
-            var enemy = CreateSplitter(Vector2.zero);
-            var requests = new List<EnemySpawnRequest>();
-            enemy.SpawnRequested += requests.Add;
-
-            enemy.TakeDamage(10);
-            enemy.TakeDamage(10);
-
-            Assert.AreEqual(2, requests.Count);
         }
 
         [Test(Description = "분열 수는 1 이상이어야 한다")]

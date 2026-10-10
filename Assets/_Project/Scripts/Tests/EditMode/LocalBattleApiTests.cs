@@ -46,13 +46,13 @@ namespace Game.Tests
         [Test(Description = "에너지가 충분하면 전투를 발급하고 입장 비용만큼 에너지를 차감한다")]
         public void StartBattle_WithEnoughEnergy_IssuesBattleAndConsumesEnergy()
         {
-            SeedEnergy(10);
+            SeedEnergy(_data.Energy.Cost * 2);
 
             var response = _api.StartBattle(1, 1).GetAwaiter().GetResult();
 
             Assert.IsNotEmpty(response.battleId);
             var save = _store.Load();
-            Assert.AreEqual(5, save.wallet.energyStored); // Energy.Cost = 5
+            Assert.AreEqual(_data.Energy.Cost, save.wallet.energyStored);
             Assert.AreEqual(1, save.battles.Count);
             Assert.AreEqual("Issued", save.battles[0].status);
         }
@@ -70,7 +70,7 @@ namespace Game.Tests
         [Test(Description = "진행 기록이 없는 스테이지는 STAGE_LOCKED로 거절한다")]
         public void StartBattle_StageWithoutProgress_ThrowsStageLocked()
         {
-            SeedEnergy(10);
+            SeedEnergy(_data.Energy.Cost * 2);
 
             var ex = Assert.Throws<ApiException>(() => _api.StartBattle(2, 1).GetAwaiter().GetResult());
 
@@ -80,7 +80,7 @@ namespace Game.Tests
         [Test(Description = "마지막 스테이지를 클리어해도 테이블에 없는 다음 스테이지의 진행 기록은 만들지 않는다")]
         public void SubmitResult_ClearingLastStage_DoesNotCreateProgressForMissingNextStage()
         {
-            SeedEnergy(10);
+            SeedEnergy(_data.Energy.Cost * 2);
             var save = _store.Load();
             save.stageProgress.Add(new StageProgressRow { stageId = 3, clearRating = 0 });
             _store.Flush(save);
@@ -107,7 +107,7 @@ namespace Game.Tests
         [Test(Description = "제출 실패 스위치를 켜면 그 횟수만큼 네트워크 오류로 실패하고 저장소는 그대로이며, 그 뒤 같은 요청은 성공한다")]
         public void SubmitResult_WithFaultSwitch_FailsThenSucceedsWithSameRequest()
         {
-            SeedEnergy(10);
+            SeedEnergy(_data.Energy.Cost * 2);
             var start = _api.StartBattle(1, 1).GetAwaiter().GetResult();
             var request = new SubmitResultRequest { battleId = start.battleId, cleared = true, completedWaves = 20, reachedWave = 20, wallHpPercent = 100 };
             _api.FailNextSubmits = 2;
@@ -133,7 +133,7 @@ namespace Game.Tests
         [Test(Description = "벽 체력 100%로 클리어하면 누적 보상을 지급하고 rating 3, 다음 스테이지 진행도를 만든다")]
         public void SubmitResult_ClearedAtFullWallHp_GrantsGoldAndTopRatingAndUnlocksNextStage()
         {
-            SeedEnergy(10);
+            SeedEnergy(_data.Energy.Cost * 2);
             var start = _api.StartBattle(1, 1).GetAwaiter().GetResult();
 
             var result = _api.SubmitResult(new SubmitResultRequest { battleId = start.battleId, cleared = true, completedWaves = 20, reachedWave = 20, wallHpPercent = 100 })
@@ -150,21 +150,21 @@ namespace Game.Tests
         [Test(Description = "실패 제출은 시작 보상을 지급하고 clearRating은 바꾸지 않는다")]
         public void SubmitResult_Failed_GrantsStartRewardAndKeepsRating()
         {
-            SeedEnergy(10);
+            SeedEnergy(_data.Energy.Cost * 2);
             var start = _api.StartBattle(1, 1).GetAwaiter().GetResult();
 
             var result = _api.SubmitResult(new SubmitResultRequest { battleId = start.battleId, cleared = false })
                 .GetAwaiter().GetResult();
 
             Assert.IsFalse(result.cleared);
-            Assert.AreEqual(25, result.rewardGold);
+            Assert.AreEqual(StageRewardRules.Calculate(_data.StageRewards.GetOrThrow(1), 0, false, 0).Coin, result.rewardGold);
             Assert.AreEqual(0, _store.Load().stageProgress.Find(p => p.stageId == 1).clearRating);
         }
 
         [Test(Description = "같은 battleId로 두 번 제출하면 처음 확정된 결과를 그대로 재반환하고 중복 지급하지 않는다")]
         public void SubmitResult_SubmittedTwice_ReturnsStoredResultWithoutDoublePay()
         {
-            SeedEnergy(10);
+            SeedEnergy(_data.Energy.Cost * 2);
             var start = _api.StartBattle(1, 1).GetAwaiter().GetResult();
             var req = new SubmitResultRequest { battleId = start.battleId, cleared = true, completedWaves = 20, reachedWave = 20, wallHpPercent = 100 };
             _api.SubmitResult(req).GetAwaiter().GetResult();

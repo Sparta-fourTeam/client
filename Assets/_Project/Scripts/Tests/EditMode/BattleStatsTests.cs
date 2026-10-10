@@ -54,31 +54,19 @@ namespace Game.Tests
             _stageEnded.Publish(new StageEnded(StageOutcome.Clear));
         }
 
-        [Test(Description = "적이 죽을 때마다 처치 수가 1씩 오른다")]
+        [Test(Description = "전투 중 처치·최대 웨이브·플레이 시간을 기록하고 낮은 웨이브로 되돌리지 않는다")]
         public void EnemyDied_IncreasesKills()
         {
             _enemyDied.Publish(new EnemyDied());
             _enemyDied.Publish(new EnemyDied());
-
-            Assert.AreEqual(2, _stats.Kills);
-        }
-
-        [Test(Description = "게이지가 채우는 웨이브 중 가장 높은 번호를 도달 웨이브로 남긴다")]
-        public void WaveGaugeChanged_KeepsHighestGaugeWave()
-        {
             GaugeOnWave(1);
-            GaugeOnWave(2);
             GaugeOnWave(3);
-
-            Assert.AreEqual(3, _stats.ReachedWave);
-        }
-
-        [Test(Description = "흐른 시간만큼 플레이 시간이 쌓인다")]
-        public void Advance_AccumulatesPlayTime()
-        {
+            GaugeOnWave(2);
             _stats.Advance(1.5f);
             _stats.Advance(0.5f);
 
+            Assert.AreEqual(2, _stats.Kills);
+            Assert.AreEqual(3, _stats.ReachedWave);
             Assert.AreEqual(2f, _stats.PlayTime, 0.0001f);
         }
 
@@ -105,6 +93,8 @@ namespace Game.Tests
             _stats.Advance(5f);
 
             Assert.IsTrue(_stats.IsEnded);
+            using (Game.Core.Combat.DamageAttribution.Begin(1)) { Game.Core.Combat.DamageAttribution.Report(10); }
+            Assert.IsEmpty(_stats.SkillDamageRanking());
             Assert.AreEqual(1, _stats.Kills);
             Assert.AreEqual(2, _stats.ReachedWave);
             Assert.AreEqual(10f, _stats.PlayTime, 0.0001f);
@@ -118,6 +108,8 @@ namespace Game.Tests
             _enemyDied.Publish(new EnemyDied());
             GaugeOnWave(2);
 
+            using (Game.Core.Combat.DamageAttribution.Begin(1)) { Game.Core.Combat.DamageAttribution.Report(10); }
+            Assert.IsEmpty(_stats.SkillDamageRanking());
             Assert.AreEqual(0, _stats.Kills);
             Assert.AreEqual(0, _stats.ReachedWave);
         }
@@ -145,24 +137,5 @@ namespace Game.Tests
             CollectionAssert.AreEqual(new[] { 50, 10, 10 }, ranking.Select(r => r.Damage).ToList());
         }
 
-        [Test(Description = "스테이지가 끝난 뒤의 피해는 집계하지 않는다")]
-        public void SkillDamage_IgnoredAfterStageEnded()
-        {
-            EndStage();
-
-            using (Game.Core.Combat.DamageAttribution.Begin(1)) { Game.Core.Combat.DamageAttribution.Report(10); }
-
-            Assert.IsEmpty(_stats.SkillDamageRanking());
-        }
-
-        [Test(Description = "Dispose하면 피해 알림 구독을 풀어서 이후 피해가 쌓이지 않는다")]
-        public void SkillDamage_StopsAfterDispose()
-        {
-            _stats.Dispose();
-
-            using (Game.Core.Combat.DamageAttribution.Begin(1)) { Game.Core.Combat.DamageAttribution.Report(10); }
-
-            Assert.IsEmpty(_stats.SkillDamageRanking());
-        }
     }
 }

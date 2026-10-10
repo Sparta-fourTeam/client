@@ -55,7 +55,14 @@ namespace Game.Tests
                 prefab.transform.position = new Vector3(-5, -4, 0);
                 var provider = new Provider();
                 var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 5);
-                var weapon = SkillFactory.Create(data, prefab, prefab.transform, provider, wall);
+                // 이 시나리오의 간격·접근 거리·연속 시전 수는 테스트 입력이다.
+                data.baseStats.cast.cooldown = 100;
+                data.baseStats.cast.range = 7;
+                data.baseStats.reserve.distance = 1;
+                data.baseStats.reserve.interval = .1f;
+                data.baseStats.reserve.cooldown = 10;
+                data.upgrades.Find(c => c.id == "log_reserve").effects.Find(e => e.kind == "reserveCasts").value = 3;
+                using var weapon = SkillFactory.Create(data, prefab, prefab.transform, provider, wall);
                 Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == "log_reserve")));
                 Assert.IsFalse(weapon.LevelUp(data.upgrades.Find(c => c.id == "log_reserve")));
                 weapon.Tick(0); Assert.AreEqual(1, CountLogs());
@@ -67,7 +74,7 @@ namespace Game.Tests
                 foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
                 {
                     if (projectile.name != "ReserveLogTest(Clone)") { continue; }
-                    Assert.AreEqual(new Vector3(3, .2f, 0), projectile.transform.position);
+                    Assert.AreEqual(new Vector3(3, wall.AttackLineY + .2f, 0), projectile.transform.position);
                     Assert.AreEqual(Vector3.up, (Vector3)typeof(Projectile).GetField("direction", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(projectile));
                 }
                 weapon.Tick(.5f); Assert.AreEqual(4, CountLogs());

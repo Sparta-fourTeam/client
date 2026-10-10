@@ -24,7 +24,7 @@ namespace Game.Tests
             world = null;
             foreach (var go in created) { if (go != null) { Object.DestroyImmediate(go); } }
             created.Clear();
-            foreach (var bolt in Object.FindObjectsByType<ChainBolt>(FindObjectsSortMode.None)) { Object.DestroyImmediate(bolt.gameObject); }
+
         }
 
         private ObjectPool<ChainBolt> Pool() => new ObjectPool<ChainBolt>(

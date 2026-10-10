@@ -10,12 +10,15 @@ namespace Game.Tests
     public class GameDataStoreTests
     {
 
-        [Test(Description = "스킬 정의는 가변이라 호출마다 새 객체를 돌려준다")]
+        [Test(Description = "한 전투에서 변경한 스킬 정의가 다음 로딩의 기본 정의를 오염시키지 않는다")]
         public void LoadSkills_ReturnsFreshObjectsEachCall()
         {
             var store = new GameDataStore();
+            var first = store.LoadSkills()[0];
+            float originalDamage = first.baseStats.cast.baseDamage;
+            first.baseStats.cast.baseDamage = originalDamage + 123;
 
-            Assert.AreNotSame(store.LoadSkills()[0], store.LoadSkills()[0]);
+            Assert.AreEqual(originalDamage, store.LoadSkills()[0].baseStats.cast.baseDamage);
         }
 
         private static WaveDefinition Wave(int monsterA, int countA, int monsterB, int countB) => new()

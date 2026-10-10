@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using Game.Core;
 using Game.Network;
 using NUnit.Framework;
@@ -11,13 +12,15 @@ namespace Game.Tests
         private string _filePath;
         private LocalSaveStore _store;
         private LocalStageApi _api;
+        private GameDataStore _data;
 
         [SetUp]
         public void SetUp()
         {
             _filePath = Path.Combine(Path.GetTempPath(), $"local-stage-test-{Guid.NewGuid()}.json");
             _store = new LocalSaveStore(_filePath);
-            _api = new LocalStageApi(_store, new GameDataStore());
+            _data = new GameDataStore();
+            _api = new LocalStageApi(_store, _data);
         }
 
         [TearDown]
@@ -36,10 +39,10 @@ namespace Game.Tests
             save.stageProgress[0].clearRating = 2;
             _store.Flush(save);
 
-            // Stage 1 RatingRewards = [20, 50, 100] -> rating 1+2 = 20+50
+            int expectedGold = save.wallet.gold + _data.Stages.GetOrThrow(1).RatingRewards.Take(2).Sum();
             var snap = _api.ClaimRatingReward(1).GetAwaiter().GetResult();
 
-            Assert.AreEqual(70, snap.gold);
+            Assert.AreEqual(expectedGold, snap.gold);
             Assert.AreEqual(2, _store.Load().stageProgress[0].claimedRating);
         }
 

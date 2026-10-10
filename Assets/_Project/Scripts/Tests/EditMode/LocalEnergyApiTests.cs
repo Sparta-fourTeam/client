@@ -47,12 +47,12 @@ namespace Game.Tests
         {
             var save = _store.Load();
             save.wallet.energyStored = 0;
-            save.wallet.energyUpdatedAt = DateTime.UtcNow.AddSeconds(-600).ToString("O"); // RegenSeconds=300 -> 2회복
+            save.wallet.energyUpdatedAt = DateTime.UtcNow.AddSeconds(-Config.RegenSeconds * 2).ToString("O");
             _store.Flush(save);
 
             var snap = _api.Recover(EnergySource.Natural).GetAwaiter().GetResult();
 
-            Assert.AreEqual(2, snap.energyStored);
+            Assert.AreEqual(Math.Min(2, Config.Max), snap.energyStored);
         }
 
         [Test(Description = "구매 회복은 PurchaseRecoverAmount만큼 더한다 (보석 차감은 서버 연동 전까지 생략)")]

@@ -66,17 +66,12 @@ namespace Game.Tests
         private class FakeRandomProvider : IRandomProvider
         {
             private readonly float _fixedValue;
+            private readonly bool _sampleBounds;
 
-            // Range가 어떤 min/max로 호출됐는지 순서대로 기록
-            public readonly List<(float Min, float Max)> Calls = new();
+            public FakeRandomProvider(float fixedValue, bool sampleBounds = false)
+            { _fixedValue = fixedValue; _sampleBounds = sampleBounds; }
 
-            public FakeRandomProvider(float fixedValue) => _fixedValue = fixedValue;
-
-            public float Range(float min, float max)
-            {
-                Calls.Add((min, max));
-                return _fixedValue; // 항상 이 값만 반환
-            }
+            public float Range(float min, float max) => _sampleBounds ? Mathf.Lerp(min, max, .25f) : _fixedValue;
         }
 
         // 테스트에서 WaveStarted를 직접 발행할 수 있게 해주는 가짜 구독자
@@ -268,15 +263,15 @@ namespace Game.Tests
         {
             var spawnArea = CreateTestSpawnArea();
             spawnArea.transform.position = new Vector3(2f, 5f, 0f); // X, Y를 다르게 둬서 뒤바뀜을 잡음
-            var random = new FakeRandomProvider(1f);
-            var factory = new FakeEnemyViewFactory(3f);
+            var random = new FakeRandomProvider(1f, sampleBounds: true);
+            var factory = new FakeEnemyViewFactory(0f);
             var spawner = CreateSpawner(factory, out var waveStarted, out _, spawnArea: spawnArea, random: random);
             StartWave(waveStarted, enemyCount: 5);
 
             spawner.Advance(1f); // 스폰
 
-            CollectionAssert.Contains(random.Calls, (spawnArea.Min.x, spawnArea.Max.x));
-            CollectionAssert.Contains(random.Calls, (spawnArea.Min.y, spawnArea.Max.y));
+            Assert.AreEqual(Mathf.Lerp(spawnArea.Min.x, spawnArea.Max.x, .25f), factory.LastCreatedEnemy.Position.x, .0001f);
+            Assert.AreEqual(Mathf.Lerp(spawnArea.Min.y, spawnArea.Max.y, .25f), factory.LastCreatedEnemy.Position.y, .0001f);
         }
 
         [Test]
@@ -315,65 +310,27 @@ namespace Game.Tests
         }
 
         [Test]
-        public void GetNearest_ClearsResultsFirst()
-        {
-            var spawner = CreateSpawnerWithEnemies(out _, new Vector2(0f, 1f));
-            var stale = CreateStandaloneEnemy();
-            var results = new List<IEnemyTarget> { stale, stale }; // 이전 결과가 남아 있는 상태
-
-            int filled = spawner.GetNearest(Vector2.zero, 3, results);
-
-            Assert.AreEqual(1, filled);
-            Assert.AreEqual(1, results.Count);
-            CollectionAssert.DoesNotContain(results, stale);
-        }
-
-        [Test]
         public void GetNearest_SortsByDistanceFromOrigin()
         {
             var spawner = CreateSpawnerWithEnemies(out _,
-                new Vector2(0f, 10f),
-                new Vector2(0f, 2f),
-                new Vector2(0f, 5f));
-            var results = new List<IEnemyTarget>();
+                new Vector2(0f, 0f),
+                new Vector2(5f, 3f),
+                new Vector2(5f, 8f));
+            var stale = CreateStandaloneEnemy();
+            var results = new List<IEnemyTarget> { stale, stale };
+            var origin = new Vector2(5f, 0f);
 
-            int filled = spawner.GetNearest(Vector2.zero, 3, results);
-
-            Assert.AreEqual(3, filled);
-            Assert.AreEqual(2f, results[0].Position.y, 0.0001f);
-            Assert.AreEqual(5f, results[1].Position.y, 0.0001f);
-            Assert.AreEqual(10f, results[2].Position.y, 0.0001f);
-        }
-
-        [Test]
-        public void GetNearest_LimitsToCount_KeepsClosest()
-        {
-            var spawner = CreateSpawnerWithEnemies(out _,
-                new Vector2(0f, 10f),
-                new Vector2(0f, 2f),
-                new Vector2(0f, 5f));
-            var results = new List<IEnemyTarget>();
-
-            int filled = spawner.GetNearest(Vector2.zero, 2, results);
-
-            Assert.AreEqual(2, filled);
+            Assert.AreEqual(2, spawner.GetNearest(origin, 2, results));
             Assert.AreEqual(2, results.Count);
-            Assert.AreEqual(2f, results[0].Position.y, 0.0001f);
-            Assert.AreEqual(5f, results[1].Position.y, 0.0001f);
-        }
+            CollectionAssert.DoesNotContain(results, stale);
+            Assert.AreEqual(new Vector2(5f, 3f), results[0].Position);
+            Assert.AreEqual(Vector2.zero, results[1].Position);
 
-        [Test]
-        public void GetNearest_CountGreaterThanEnemies_ReturnsAllEnemies()
-        {
-            var spawner = CreateSpawnerWithEnemies(out _,
-                new Vector2(0f, 1f),
-                new Vector2(0f, 2f));
-            var results = new List<IEnemyTarget>();
-
-            int filled = spawner.GetNearest(Vector2.zero, 10, results);
-
-            Assert.AreEqual(2, filled);
-            Assert.AreEqual(2, results.Count);
+            Assert.AreEqual(3, spawner.GetNearest(origin, 10, results));
+            Assert.AreEqual(3, results.Count);
+            Assert.AreEqual(new Vector2(5f, 3f), results[0].Position);
+            Assert.AreEqual(Vector2.zero, results[1].Position);
+            Assert.AreEqual(new Vector2(5f, 8f), results[2].Position);
         }
 
         [TestCase(0)]
@@ -387,19 +344,6 @@ namespace Game.Tests
 
             Assert.AreEqual(0, filled);
             Assert.AreEqual(0, results.Count); // count가 0 이하여도 비우는 건 해야 함
-        }
-
-        [Test]
-        public void GetNearest_UsesBothXAndYDistance()
-        {
-            var spawner = CreateSpawnerWithEnemies(out _,
-                new Vector2(0f, 0f),  // from(5,0)까지 거리 5
-                new Vector2(5f, 3f)); // from(5,0)까지 거리 3
-            var results = new List<IEnemyTarget>();
-
-            spawner.GetNearest(new Vector2(5f, 0f), 1, results);
-
-            Assert.AreEqual(new Vector2(5f, 3f), results[0].Position);
         }
 
         // ───────── 사망 ─────────

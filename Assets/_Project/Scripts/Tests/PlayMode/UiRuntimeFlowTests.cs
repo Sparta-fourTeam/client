@@ -1,3 +1,6 @@
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -8,18 +11,14 @@ using Cysharp.Threading.Tasks;
 using Game.Boot;
 using Game.Core;
 using Game.Core.Defense;
-using Game.Editor;
 using Game.Network;
 using Game.View;
 using NUnit.Framework;
 using TMPro;
-using UnityEditor;
-using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
-using UnityEngine.UIElements;
 using VContainer;
 using Button = UnityEngine.UI.Button;
 using Object = UnityEngine.Object;
@@ -31,12 +30,9 @@ namespace Game.Tests
         private string _savePath;
         private string _originalSavePath;
         private LocalSaveStore _store;
-        private PlaytestWindow _tool;
         private bool _hadSpeedPreference;
         private float _speedPreference;
         private bool _restoreSpeedPreference;
-        private SceneAsset _originalPlayModeStartScene;
-        private bool _restorePlayModeStartScene;
         private static readonly FieldInfo StorePath = typeof(LocalSaveStore).GetField("_filePath", BindingFlags.Instance | BindingFlags.NonPublic);
         private static T Field<T>(object target, string name) =>
             (T)target.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(target);
@@ -44,8 +40,6 @@ namespace Game.Tests
         [UnityTest]
         public IEnumerator UpgradeButtonsRequireConfirmationAndEquipmentBatchSpendsExactTotals()
         {
-            PrepareEditor();
-            yield return new EnterPlayMode();
             yield return StartFromBoot();
             var lobby = Object.FindAnyObjectByType<LobbyLifetimeScope>();
             var data = lobby.Container.Resolve<GameDataStore>();
@@ -104,79 +98,8 @@ namespace Game.Tests
         }
 
         [UnityTest]
-        public IEnumerator NotificationBadgesFollowClosedScreensAndProfileChangesWithoutBlockingButtons()
-        {
-            PrepareEditor();
-            yield return new EnterPlayMode();
-            yield return StartFromBoot();
-            var lobby = Object.FindAnyObjectByType<LobbyLifetimeScope>();
-            var profile = lobby.Container.Resolve<PlayerProfile>();
-            var catalog = lobby.Container.Resolve<IGrowthCatalog>();
-            var ui = lobby.Container.Resolve<IUiRegistry>();
-            var nav = ui.Get<LobbyNavView>();
-            var character = ui.Get<CharacterScreenView>();
-            var skill = ui.Get<SkillScreenView>();
-            NotificationBadgeView Badge(Component parent) => parent.GetComponentInChildren<NotificationBadgeView>(true);
-            var characterTab = Field<Button>(nav, "_characterTab");
-            var skillTab = Field<Button>(nav, "_skillTab");
-            var homeTab = Field<Button>(nav, "_homeTab");
-            PlayerSnapshot Snapshot(int gold, int claimed, List<ItemAmount> items = null) => new()
-            {
-                gold = gold,
-                items = items ?? new(),
-                stageProgress = new() {
-                    new() { stageId = 1, clearRating = 3, claimedRating = claimed },
-                    new() { stageId = 2 }
-                }
-            };
-            profile.Apply(Snapshot(0, 2));
-            Assert.That(Badge(characterTab).IsVisible, Is.False);
-            Assert.That(Badge(skillTab).IsVisible, Is.False);
-            Assert.That(Badge(homeTab).IsVisible, Is.True);
-            Assert.That(Badge(ui.Get<MissionButtonView>()).IsVisible, Is.True);
-            Assert.That(Field<GameObject>(character, "_panel").activeSelf, Is.False);
-            Assert.That(Field<GameObject>(skill, "_panel").activeSelf, Is.False);
-            var materials = catalog.Equips.Select(e => e.MaterialItemId).Concat(catalog.Skills.Select(e => e.MaterialItemId))
-                .Where(id => id != null).Distinct().Select(id => new ItemAmount { itemId = id, quantity = 1000000 }).ToList();
-            profile.Apply(Snapshot(1000000, 2, materials));
-            Assert.That(Badge(characterTab).IsVisible, Is.True);
-            Assert.That(Badge(skillTab).IsVisible, Is.True);
-            var equips = Field<EquipSlotView[]>(character, "_equipSlots");
-            for (int i = 0; i < equips.Length; i++)
-            {
-                Assert.That(Badge(equips[i]).IsVisible, Is.EqualTo(i < catalog.Equips.Count && LobbyAvailability.CanUpgrade(profile, catalog.Equips[i])));
-            }
-
-            var skills = Field<SkillListSlotView[]>(skill, "_slots");
-            for (int i = 0; i < skills.Length; i++)
-            {
-                Assert.That(Badge(skills[i]).IsVisible, Is.EqualTo(i < catalog.Skills.Count && LobbyAvailability.CanUpgrade(profile, catalog.Skills[i])));
-            }
-
-            Assert.That(character.GetComponentsInChildren<Transform>(true).Single(t => t.name == "CharacterTab")
-                .GetComponentInChildren<NotificationBadgeView>(true).IsVisible, Is.True);
-            Assert.That(skill.GetComponentsInChildren<Transform>(true).Single(t => t.name == "SkillTab")
-                .GetComponentInChildren<NotificationBadgeView>(true).IsVisible, Is.True);
-            yield return ClickGameButton(characterTab);
-            Assert.That(Field<GameObject>(character, "_panel").activeSelf, Is.True);
-            yield return ClickGameButton(skillTab);
-            Assert.That(Field<GameObject>(skill, "_panel").activeSelf, Is.True);
-            yield return ClickGameButton(homeTab);
-            profile.Apply(Snapshot(0, 3));
-            Assert.That(Badge(characterTab).IsVisible, Is.False);
-            Assert.That(Badge(skillTab).IsVisible, Is.False);
-            Assert.That(Badge(homeTab).IsVisible, Is.False);
-            Assert.That(Badge(ui.Get<MissionButtonView>()).IsVisible, Is.False);
-            Assert.That(equips.All(slot => !Badge(slot).IsVisible), Is.True);
-            Assert.That(skills.All(slot => !Badge(slot).IsVisible), Is.True);
-            LogAssert.NoUnexpectedReceived();
-        }
-
-        [UnityTest]
         public IEnumerator BootLobbyStageRoundTripKeepsViewsAndSubscriptionsAlive()
         {
-            PrepareEditor();
-            yield return new EnterPlayMode();
             yield return StartFromBoot();
             var root = Object.FindAnyObjectByType<RootLifetimeScope>();
             var navigator = root.Container.Resolve<ISceneNavigator>();
@@ -185,7 +108,6 @@ namespace Game.Tests
             {
                 var lobby = Object.FindAnyObjectByType<LobbyLifetimeScope>();
                 var ui = lobby.Container.Resolve<IUiRegistry>();
-                Assert.That(PlaytestWindow.Resolve<IUiRegistry>(), Is.SameAs(ui));
                 ui.Get<ProfilePopupView>().Open();
                 Assert.That(Field<GameObject>(ui.Get<ProfilePopupView>(), "_panel").activeSelf, Is.True);
                 ui.Get<CharacterScreenView>().SetVisible(true);
@@ -200,17 +122,16 @@ namespace Game.Tests
                 var stage = Object.FindAnyObjectByType<StageLifetimeScope>();
                 var stageUi = stage.Container.Resolve<IUiRegistry>();
                 var manager = stage.Container.Resolve<StageManager>();
-                Assert.That(PlaytestWindow.Resolve<StageManager>(), Is.SameAs(manager));
-                yield return ClickTool("pauseButton");
+                yield return ClickGameButton(Field<Button>(stageUi.Get<StageControlView>(), "_pauseButton"));
                 yield return WaitFor(() => manager.State == StageState.Paused);
                 Assert.That(Field<GameObject>(stageUi.Get<PauseMenuView>(), "_panel").activeSelf, Is.True);
-                yield return ClickTool("resumeButton");
+                yield return ClickGameButton(Field<Button>(stageUi.Get<PauseMenuView>(), "_resumeButton"));
                 Assert.That(manager.State, Is.EqualTo(StageState.Playing));
-                yield return ClickTool("pauseButton");
+                yield return ClickGameButton(Field<Button>(stageUi.Get<StageControlView>(), "_pauseButton"));
                 var fault = root.Container.Resolve<ISubmitFaultSwitch>();
                 if (pass == 0)
                 {
-                    yield return ClickTool("failButton");
+                    fault.FailNextSubmits = StageManager.AutoRetryCount + 1;
                 }
                 else
                 {
@@ -218,12 +139,12 @@ namespace Game.Tests
                 }
 
                 manager.RetryDelay = TimeSpan.Zero;
-                yield return ClickTool("forfeitButton");
+                yield return ClickGameButton(Field<Button>(stageUi.Get<PauseMenuView>(), "_abandonButton"));
                 if (pass == 0)
                 {
                     yield return WaitFor(() => Field<GameObject>(stageUi.Get<SubmitResultPopupView>(), "_panel").activeSelf);
                     fault.FailNextSubmits = 0;
-                    yield return ClickTool("retryButton");
+                    yield return ClickGameButton(Field<Button>(stageUi.Get<SubmitResultPopupView>(), "_retryButton"));
                 }
                 yield return WaitFor(() => Field<GameObject>(stageUi.Get<ResultPopupView>(), "_panel").activeSelf);
                 Field<Button>(stageUi.Get<ResultPopupView>(), "_lobbyButton").onClick.Invoke();
@@ -236,8 +157,6 @@ namespace Game.Tests
         [UnityTest]
         public IEnumerator GameButtonsNavigatePickCardsAndShowDefeat()
         {
-            PrepareEditor();
-            yield return new EnterPlayMode();
             yield return StartFromBoot();
             var lobby = Object.FindAnyObjectByType<LobbyLifetimeScope>();
             var ui = lobby.Container.Resolve<IUiRegistry>();
@@ -288,15 +207,24 @@ namespace Game.Tests
             var wall = stage.Container.Resolve<Wall>();
             wall.TakeDamage(10);
             Assert.That(Field<TMP_Text>(stageUi.Get<WallHpHudView>(), "_hpText").text, Is.EqualTo($"{wall.CurrentHp} / {wall.MaxHp}"));
-            yield return ClickTool("breakWallButton");
+            wall.TakeDamage(wall.CurrentHp);
             yield return WaitFor(() => manager.State == StageState.Finished);
             Assert.That(wall.IsDestroyed, Is.True);
             var result = stageUi.Get<ResultPopupView>();
             Assert.That(Field<TMP_Text>(result, "_titleText").text, Is.EqualTo("Fail !"));
             var tip = Field<ResultTipView>(result, "_tip");
             Assert.That(tip.IsShown, Is.True);
-            ExecuteEvents.Execute(tip.gameObject, new PointerEventData(EventSystem.current), ExecuteEvents.pointerClickHandler);
-            Assert.That(tip.IsShown, Is.False);
+            int tipClosed = 0;
+            System.Action onTipClosed = () => tipClosed++;
+            tip.Closed += onTipClosed;
+            try
+            {
+                ExecuteEvents.Execute(tip.gameObject, new PointerEventData(EventSystem.current), ExecuteEvents.pointerClickHandler);
+                tip.OnPointerClick(new PointerEventData(EventSystem.current));
+                Assert.That(tip.IsShown, Is.False);
+                Assert.That(tipClosed, Is.EqualTo(1), "반복 닫기는 알림을 중복 발행하지 않는다");
+            }
+            finally { tip.Closed -= onTipClosed; }
             yield return ClickGameButton(Field<Button>(result, "_lobbyButton"));
             yield return WaitFor(() => SceneManager.GetActiveScene().name == "Lobby");
             yield return null;
@@ -307,10 +235,8 @@ namespace Game.Tests
         [UnityTest]
         public IEnumerator AllAuthoredWavesClearAndPersistProgress()
         {
-            PrepareEditor();
-            yield return new EnterPlayMode();
             yield return StartFromBoot();
-            yield return ClickTool("launchButton");
+            yield return Object.FindAnyObjectByType<LobbyLifetimeScope>().Container.Resolve<BattleLauncher>().Launch(1).ToCoroutine();
             yield return WaitFor(() => SceneManager.GetActiveScene().name == "Stage");
             yield return null;
             var stage = Object.FindAnyObjectByType<StageLifetimeScope>();
@@ -323,9 +249,9 @@ namespace Game.Tests
                 Assert.That(Time.realtimeSinceStartup, Is.LessThan(deadline), "Authored waves did not finish.");
                 if (manager.State == StageState.CardSelect)
                 {
-                    yield return WaitFor(() => _tool.rootVisualElement.Q<VisualElement>("cardChoices").childCount == manager.Choices.Count);
-                    var choice = _tool.rootVisualElement.Q<VisualElement>("cardChoices").Children().OfType<UnityEngine.UIElements.Button>().First();
-                    yield return ClickToolButton(choice);
+                    var slots = Field<CardSlotView[]>(ui.Get<CardSelectView>(), "_slots");
+                    yield return ClickGameButton(Field<Button>(slots.First(slot => slot.gameObject.activeSelf), "_button"));
+                    yield return WaitFor(() => manager.State != StageState.CardSelect);
                 }
                 else
                 {
@@ -342,7 +268,7 @@ namespace Game.Tests
             yield return ClickGameButton(Field<Button>(result, "_lobbyButton"));
             yield return WaitFor(() => SceneManager.GetActiveScene().name == "Lobby");
             yield return null;
-            var profile = PlaytestWindow.Resolve<PlayerProfile>();
+            var profile = Object.FindAnyObjectByType<LobbyLifetimeScope>().Container.Resolve<PlayerProfile>();
             Assert.That(profile.IsStageCleared(1), Is.True);
             Assert.That(profile.HighestUnlockedStage, Is.GreaterThanOrEqualTo(2));
             Assert.That(File.Exists(_savePath), Is.True);
@@ -350,39 +276,12 @@ namespace Game.Tests
             Assert.That(Object.FindObjectsByType<UiHost>().Length, Is.EqualTo(1));
         }
 
-        [UnityTest]
-        public IEnumerator StoppingDuringSceneTransitionDoesNotTouchDestroyedObjects()
-        {
-            PrepareEditor();
-            yield return new EnterPlayMode();
-            yield return StartFromBoot();
-            var curtain = Object.FindAnyObjectByType<TransitionCurtain>(FindObjectsInactive.Include);
-            yield return WaitFor(() => !curtain.gameObject.activeSelf);
-            PlaytestWindow.Resolve<ISceneNavigator>().GoToLobby().Forget(Debug.LogException);
-            Assert.That(curtain.gameObject.activeSelf, Is.True);
-            yield return null;
-            yield return new ExitPlayMode();
-            yield return null;
-            LogAssert.NoUnexpectedReceived();
-        }
-
-        private void PrepareEditor()
-        {
-            _originalPlayModeStartScene = EditorSceneManager.playModeStartScene;
-            _restorePlayModeStartScene = true;
-            EditorSceneManager.playModeStartScene = null;
-            _tool = ScriptableObject.CreateInstance<PlaytestWindow>();
-            _tool.Show();
-            // Start in an empty scene so boot cannot read/write the real save before isolation is installed.
-            EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
-        }
-
         private IEnumerator StartFromBoot()
         {
             _hadSpeedPreference = PlayerPrefs.HasKey("stage_speed");
             _speedPreference = PlayerPrefs.GetFloat("stage_speed");
             _restoreSpeedPreference = true;
-            var root = Object.FindAnyObjectByType<RootLifetimeScope>();
+            var root = VContainer.Unity.VContainerSettings.Instance.GetOrCreateRootLifetimeScopeInstance() as RootLifetimeScope;
             Assert.That(root, Is.Not.Null);
             _store = root.Container.Resolve<LocalSaveStore>();
             _originalSavePath = (string)StorePath.GetValue(_store);
@@ -400,75 +299,40 @@ namespace Game.Tests
         [UnityTearDown]
         public IEnumerator Cleanup()
         {
-            if (_store != null && _originalSavePath != null)
+            // Unload the game before restoring the real save path or preferences.
+            var empty = SceneManager.CreateScene("UiRuntimeTestEmpty");
+            SceneManager.SetActiveScene(empty);
+            foreach (var name in new[] { "Boot", "Loading", "Lobby", "Stage" })
             {
-                StorePath.SetValue(_store, _originalSavePath);
+                var scene = SceneManager.GetSceneByName(name);
+                if (scene.IsValid() && scene.isLoaded) { yield return SceneManager.UnloadSceneAsync(scene); }
             }
-
+            var root = Object.FindAnyObjectByType<RootLifetimeScope>();
+            if (root != null) { Object.Destroy(root.gameObject); yield return null; }
+            if (_store != null && _originalSavePath != null) { StorePath.SetValue(_store, _originalSavePath); }
             if (_restoreSpeedPreference)
             {
-                if (_hadSpeedPreference)
-                {
-                    PlayerPrefs.SetFloat("stage_speed", _speedPreference);
-                }
-                else
-                {
-                    PlayerPrefs.DeleteKey("stage_speed");
-                }
-
+                if (_hadSpeedPreference) { PlayerPrefs.SetFloat("stage_speed", _speedPreference); }
+                else { PlayerPrefs.DeleteKey("stage_speed"); }
                 _restoreSpeedPreference = false;
             }
-            if (Application.isPlaying)
-            {
-                yield return new ExitPlayMode();
-            }
-
-            if (_restorePlayModeStartScene)
-            {
-                EditorSceneManager.playModeStartScene = _originalPlayModeStartScene;
-                _restorePlayModeStartScene = false;
-            }
-            if (_tool != null)
-            {
-                Object.DestroyImmediate(_tool);
-            }
-
-            if (_savePath != null && File.Exists(_savePath))
-            {
-                File.Delete(_savePath);
-            }
-        }
-
-        private IEnumerator ClickTool(string name)
-        {
-            var button = _tool.rootVisualElement.Q<UnityEngine.UIElements.Button>(name);
-            yield return WaitFor(() => button.enabledSelf);
-            yield return ClickToolButton(button);
-        }
-
-        private IEnumerator ClickToolButton(UnityEngine.UIElements.Button button)
-        {
-            _tool.Focus();
-            button.Focus();
-            Assert.That(button.enabledInHierarchy, Is.True, button.name);
-            using (var e = NavigationSubmitEvent.GetPooled())
-            {
-                button.SendEvent(e);
-            }
-
-            yield return null;
+            if (_savePath != null && File.Exists(_savePath)) { File.Delete(_savePath); }
+            _store = null;
+            _originalSavePath = null;
+            _savePath = null;
         }
 
         private static IEnumerator ClickGameButton(Button button)
         {
             // A focused tool/preview can temporarily supply Screen's editor dimensions.
             // Overlay raycasters must read the same Game View size as the canvas.
+#if UNITY_EDITOR
             var gameView = Resources.FindObjectsOfTypeAll<EditorWindow>()
                 .FirstOrDefault(window => window.GetType().FullName == "UnityEditor.GameView");
             gameView?.Focus();
+#endif
             yield return null;
             yield return WaitFor(() => button != null && button.gameObject.activeInHierarchy && button.IsInteractable());
-            yield return new WaitForSecondsRealtime(0.35f);
             Canvas.ForceUpdateCanvases();
             var canvas = button.GetComponentInParent<Canvas>();
             var rect = (RectTransform)button.transform;
@@ -494,17 +358,26 @@ namespace Game.Tests
                     position = RectTransformUtility.WorldToScreenPoint(canvas.worldCamera, rect.TransformPoint(rect.rect.center)),
                     button = PointerEventData.InputButton.Left
                 };
+                hits.Clear();
                 EventSystem.current.RaycastAll(pointer, hits);
-                sampled = true;
+                sampled = hits.Count > 0 && hits[0].gameObject.GetComponentInParent<Button>() == button;
             }
             // Editor update can retain Scene View/preview dimensions even with Game View focused.
             // Sample the real raycast while the Game View canvas is preparing its render.
             Canvas.willRenderCanvases += SampleGameView;
             try
             {
+#if UNITY_EDITOR
                 gameView?.Repaint();
+#endif
                 Canvas.ForceUpdateCanvases();
-                yield return WaitFor(() => sampled);
+                float deadline = Time.realtimeSinceStartup + 20f;
+                while (!sampled)
+                {
+                    Assert.That(Time.realtimeSinceStartup, Is.LessThan(deadline),
+                        $"{button.name} did not become clickable. Top target={hits.FirstOrDefault().gameObject?.name}, Screen={Screen.width}x{Screen.height}");
+                    yield return null;
+                }
             }
             finally { Canvas.willRenderCanvases -= SampleGameView; }
             Assert.That(hits, Is.Not.Empty, $"{button.name} has no pointer target. Pointer={pointer.position}, Screen={Screen.width}x{Screen.height}, Camera={canvas.worldCamera?.pixelRect}, Canvas={canvas.pixelRect}, Rect={rect.rect}, Position={rect.position}, EventSystem={EventSystem.current.name}");

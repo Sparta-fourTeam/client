@@ -5,8 +5,6 @@
         "Game.Core",
         "Game.Network",
         "Game.View",
-        "Game.Boot",
-        "Game.Sandbox",
         "Game.Editor",
         "Unity.TextMeshPro",
         "MessagePipe",
@@ -23,7 +21,6 @@
     "overrideReferences": true,
     "precompiledReferences": [
         "nunit.framework.dll",
-        "DOTween.dll",
         "Newtonsoft.Json.dll"
     ],
     "autoReferenced": false,

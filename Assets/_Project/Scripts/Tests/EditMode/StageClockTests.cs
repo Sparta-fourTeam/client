@@ -35,14 +35,6 @@ namespace Game.Tests
             _stateChanged.Publish(new StageStateChanged(state));
         }
 
-        [Test(Description = "Playing 상태가 되기 전에는 시간이 쌓이지 않는다")]
-        public void BeforePlaying_DoesNotAccumulate()
-        {
-            _clock.Accumulate(1f);
-
-            Assert.AreEqual(0f, _clock.ElapsedSeconds);
-        }
-
         [Description("Playing이 아닌 상태에서는 시간이 멈춘다")]
         [TestCase(StageState.Paused)]
         [TestCase(StageState.CardSelect)]
@@ -62,6 +54,9 @@ namespace Game.Tests
         [Test(Description = "멈췄다가 Playing으로 돌아오면 다시 쌓이고 이전 기록은 유지된다")]
         public void ResumePlaying_ContinuesFromPreviousTime()
         {
+            _clock.Accumulate(1f);
+            Assert.AreEqual(0f, _clock.ElapsedSeconds);
+
             Enter(StageState.Playing);
             _clock.Accumulate(1f);
             Enter(StageState.Paused);

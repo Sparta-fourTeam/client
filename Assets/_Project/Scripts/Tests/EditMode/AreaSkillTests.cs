@@ -26,20 +26,17 @@ namespace Game.Tests
             { results.Clear(); results.AddRange(Targets); return results.Count; }
         }
 
-        private sealed class FakeCaster : IChildSkillCaster
-        {
-            public readonly List<(int id, Vector2 position, float scale, int count)> Casts = new List<(int, Vector2, float, int)>();
-            public void Cast(ChildCast cast, AttackContext context) => Casts.Add((cast.SkillId, context.Position, cast.DamageScale, cast.Count));
-        }
-
         private readonly List<GameObject> created = new List<GameObject>();
+        private readonly List<SkillCaster> casters = new();
 
         [TearDown]
         public void TearDown()
         {
+            foreach (var caster in casters) { caster.Dispose(); }
+            casters.Clear();
             foreach (var go in created) { if (go != null) { Object.DestroyImmediate(go); } }
             created.Clear();
-            foreach (var zone in Object.FindObjectsByType<AreaZone>(FindObjectsSortMode.None)) { Object.DestroyImmediate(zone.gameObject); }
+
         }
 
         private ObjectPool<AreaZone> ZonePool()
@@ -123,7 +120,9 @@ namespace Game.Tests
             prefab = asset;
             var owner = new GameObject("AreaCasterOwner");
             created.Add(owner);
-            return SkillFactory.Create(data, asset, owner.transform, provider);
+            var caster = SkillFactory.Create(data, asset, owner.transform, provider);
+            casters.Add(caster);
+            return caster;
         }
 
         private static List<Projectile> ActiveProjectiles() => Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None)
@@ -146,34 +145,9 @@ namespace Game.Tests
             Assert.AreEqual(1, zones.Count);
             Assert.AreEqual(new Vector3(2, 3, 0), zones[0].transform.position);
             Tick(zones[0], .1f);
-            Assert.AreEqual(4, target.Damage, "기본 피해 4");
-            Assert.AreEqual(.35f, target.SlowRatio, .001f);
-            Assert.AreEqual(.6f, target.SlowDuration);
-        }
-
-        [Test]
-        public void ShatterCard_CastsSmallFrostCrystalsWhenZoneExpires()
-        {
-            var data = FrostPrison();
-            var target = new HitRecorder { Position = new Vector2(1, 1) };
-            var provider = new Provider(); provider.Targets.Add(target);
-            var caster = CreateCaster(data, provider, out _);
-            var fake = new FakeCaster();
-            caster.UseChildCaster(fake);
-            Assert.IsTrue(caster.LevelUp(data.upgrades.Find(c => c.id == "cold_zone_shatter")));
-
-            typeof(SkillCaster).GetMethod("OnFire", Flags).Invoke(caster, null);
-            var zone = Zones().Single();
-            Tick(zone, 1f);
-            Assert.AreEqual(0, fake.Casts.Count, "지속 시간 중에는 시전하지 않는다");
-            Tick(zone, 5f);
-
-            Assert.AreEqual(1, fake.Casts.Count, "한 번 시전하고 그 안에서 2발을 쏜다");
-            var cast = fake.Casts[0];
-            Assert.AreEqual(4, cast.id, "서리 결정(얼음창)을 자식으로 시전한다");
-            Assert.AreEqual(new Vector2(1, 1), cast.position, "영역이 사라진 자리에서 시전한다");
-            Assert.AreEqual(.5f, cast.scale);
-            Assert.AreEqual(2, cast.count);
+            Assert.AreEqual((int)caster.Stats.Cast.Damage, target.Damage);
+            Assert.AreEqual(caster.Stats.Status.SlowRatio, target.SlowRatio, .001f);
+            Assert.AreEqual(caster.Stats.Status.SlowDuration, target.SlowDuration);
         }
 
         [Test]
@@ -182,7 +156,8 @@ namespace Game.Tests
             const string IceSpearPrefab = "Assets/_Project/Prefabs/Skills/IceSpear.prefab";
             var data = FrostPrison();
             var all = new DefaultSkillDataProvider(new GameDataStore()).LoadAll();
-            var iceData = all.Find(w => w.id == 4);
+            var link = data.upgrades.Find(c => c.id == "cold_zone_shatter").effects.Single(e => e.kind == "onEvent");
+            var iceData = all.Find(w => w.id == link.skillId);
             var icePrefab = AssetDatabase.LoadAssetAtPath<GameObject>(IceSpearPrefab);
             Assert.IsNotNull(icePrefab, IceSpearPrefab);
 
@@ -191,7 +166,7 @@ namespace Game.Tests
             var caster = CreateCaster(data, provider, out _);
             var children = new ChildSkillCaster(id =>
             {
-                Assert.AreEqual(4, id);
+                Assert.AreEqual(link.skillId, id);
                 var owner = new GameObject("ChildOwner"); created.Add(owner);
                 return SkillFactory.Create(iceData, icePrefab, owner.transform, provider);
             });
@@ -201,14 +176,22 @@ namespace Game.Tests
                 Assert.IsTrue(caster.LevelUp(data.upgrades.Find(c => c.id == "cold_zone_shatter")));
                 typeof(SkillCaster).GetMethod("OnFire", Flags).Invoke(caster, null);
                 Assert.AreEqual(0, ActiveProjectiles().Count, "영역이 유지되는 동안에는 얼음창이 없다");
-                Tick(Zones().Single(), 10f);
-
-                Assert.AreEqual(2, ActiveProjectiles().Count, "소형 서리 결정 2개가 실제로 발사된다");
+                var zone = Zones().Single();
+                Tick(zone, caster.Stats.Area.Duration * .5f);
+                Assert.IsEmpty(ActiveProjectiles(), "영역 만료 전에는 자식 발사가 없다");
+                Tick(zone, caster.Stats.Area.Duration);
+                var shots = ActiveProjectiles();
+                Assert.AreEqual(link.count > 1 ? link.count : iceData.baseStats.cast.projectileCount, shots.Count);
+                foreach (var shot in shots)
+                {
+                    Assert.AreEqual(new Vector3(1, 1, 0), shot.transform.position);
+                    Assert.AreEqual((int)(iceData.baseStats.cast.baseDamage * link.damageScale), HitRecorder.Hit(shot).Damage);
+                }
             }
             finally
             {
                 children.Dispose();
-                foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None)) { Object.DestroyImmediate(projectile.gameObject); }
+
             }
         }
 
@@ -286,30 +269,6 @@ namespace Game.Tests
         }
 
         [Test]
-        public void GuideCard_CastsLightningOnHitWithFivePercentChance()
-        {
-            var data = Cloud();
-            var fake = new FakeCaster();
-            var builder = new SkillConfigBuilder(SkillConfig.FromDefinition(data).WithChildCaster(fake));
-            Assert.IsTrue(builder.TryApplyCatalog(data.upgrades.Find(c => c.id == "lightning_cloud_guide").effects));
-            var reactions = builder.Build().Reactions;
-
-            var target = new HitRecorder { Position = new Vector2(1, 1) };
-            var provider = new Provider(); provider.Targets.Add(target);
-            var pool = ZonePool();
-            var zone = pool.Get();
-            zone.Init(pool, provider, Vector2.zero, new AreaSettings(3, 10, 1), AttackReactions.Empty, reactions, () => .04f);
-            Tick(zone, .1f);
-            Assert.AreEqual(1, fake.Casts.Count, "5% 미만이면 시전한다");
-            Assert.AreEqual(LightningId, fake.Casts[0].id);
-
-            var zone2 = pool.Get();
-            zone2.Init(pool, provider, Vector2.zero, new AreaSettings(3, 10, 1), AttackReactions.Empty, reactions, () => .05f);
-            Tick(zone2, .1f);
-            Assert.AreEqual(1, fake.Casts.Count, "5% 이상이면 시전하지 않는다");
-        }
-
-        [Test]
         public void GuideCard_EndToEnd_SpawnsRealLightningStrikeFromAreaHit()
         {
             var data = Cloud();
@@ -327,10 +286,17 @@ namespace Game.Tests
             try
             {
                 var builder = new SkillConfigBuilder(SkillConfig.FromDefinition(data).WithChildCaster(children));
-                Assert.IsTrue(builder.TryApplyCatalog(data.upgrades.Find(c => c.id == "lightning_cloud_guide").effects));
+                var effects = data.upgrades.Find(c => c.id == "lightning_cloud_guide").effects;
+                var chance = effects.Single(e => e.kind == "onEvent").chance;
+                Assert.IsTrue(builder.TryApplyCatalog(effects));
                 var pool = ZonePool();
                 var zone = pool.Get();
-                zone.Init(pool, provider, Vector2.zero, new AreaSettings(3, 10, 1), AttackReactions.Empty, builder.Build().Reactions, () => 0f);
+                var reactions = builder.Build().Reactions;
+                zone.Init(pool, provider, Vector2.zero, new AreaSettings(3, 10, 1), AttackReactions.Empty, reactions, () => chance);
+                Tick(zone, .1f);
+                Assert.IsEmpty(ActiveStrikes(), "확률의 정확한 경계는 발사하지 않는다");
+                zone = pool.Get();
+                zone.Init(pool, provider, Vector2.zero, new AreaSettings(3, 10, 1), AttackReactions.Empty, reactions, () => chance * .5f);
                 Assert.AreEqual(0, ActiveStrikes().Count);
                 Tick(zone, .1f);
                 Assert.AreEqual(1, ActiveStrikes().Count, "벼락이 실제로 하나 떨어진다");
@@ -339,7 +305,7 @@ namespace Game.Tests
             finally
             {
                 children.Dispose();
-                foreach (var strike in Object.FindObjectsByType<HitscanEffect>(FindObjectsSortMode.None)) { Object.DestroyImmediate(strike.gameObject); }
+
             }
         }
 

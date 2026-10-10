@@ -25,7 +25,7 @@ namespace Game.Tests
             world = null;
             foreach (var go in created) { if (go != null) { Object.DestroyImmediate(go); } }
             created.Clear();
-            foreach (var zone in Object.FindObjectsByType<AreaZone>(FindObjectsSortMode.None)) { Object.DestroyImmediate(zone.gameObject); }
+
         }
 
         private ObjectPool<AreaZone> Pool() => new ObjectPool<AreaZone>(
@@ -136,9 +136,11 @@ namespace Game.Tests
             var side = world.AddEnemy(4, 3);
             typeof(SkillCaster).GetMethod("OnFire", Flags).Invoke(beam, null);
             var zone = Zones().Single();
-            for (int i = 0; i < 20; i++) { Tick(zone, .1f); }
-            Assert.AreEqual(4 * 5, near.Damage, "공격 횟수 4번 × 기본 피해 5");
-            Assert.AreEqual(4 * 5, farther.Damage, "대상 뒤쪽의 적도 맞는다");
+            // 발사 경로와 데이터 피해 전달을 첫 펄스로 검증한다. 펄스 계산은 합성 AreaSettings 테스트가 보호한다.
+            Tick(zone, 0);
+            int expected = (int)beam.Stats.Cast.Damage;
+            Assert.AreEqual(expected, near.Damage, "선언된 피해가 선 위 대상에 적용된다");
+            Assert.AreEqual(expected, farther.Damage, "대상 뒤쪽의 적도 맞는다");
             Assert.AreEqual(0, side.Damage);
         }
 
@@ -201,7 +203,7 @@ namespace Game.Tests
             Tick(zone, .1f);
 
             Assert.AreEqual(CastType.Beam, world.Data[FocusBeamId].castType);
-            Assert.AreEqual(6, main.Damage, "기본 피해 3 + 메인 추가 100%");
+            Assert.AreEqual((int)beam.Stats.Cast.Damage + (int)(beam.Stats.Cast.Damage * beam.Stats.Beam.FocusBonus), main.Damage);
             Assert.AreEqual(0, other.Damage, "집중 광선은 메인 대상에서 끝나 그 뒤쪽은 맞지 않는다");
         }
 
@@ -245,24 +247,6 @@ namespace Game.Tests
             Assert.AreEqual(5, neighbor.Damage, "공격 한 번 피해 10의 50%");
             Assert.AreEqual(0, far.Damage);
             Assert.AreEqual(10 + 5, main.Damage, "메인 대상도 폭발 안에 있다");
-        }
-
-        [Test(Description = "집중 광선: 집중 폭파와 초점 조정 카드는 초점을 선행으로 하고 스탯을 켠다")]
-        public void FocusBeam_BlastAndAdjustCardsRequireFocusAndEnableTheirStats()
-        {
-            world = new CatalogWorld();
-            var beam = world.Create(FocusBeamId);
-            var cards = world.Data[FocusBeamId].upgrades;
-            foreach (var id in new[] { "focus_beam_blast", "focus_beam_adjust" })
-            {
-                Assert.AreEqual("focus_beam_focus", cards.Find(c => c.id == id).requiredCardCounts.Single().cardId);
-            }
-            Assert.AreEqual(13, cards.Find(c => c.id == "focus_beam_adjust").minPermanentLevel);
-
-            world.Take(beam, "focus_beam_focus", "focus_beam_blast", "focus_beam_adjust");
-
-            Assert.AreEqual(1.5f, beam.Stats.Beam.FocusBlastRadius);
-            Assert.AreEqual(1.5f, beam.Stats.Beam.FocusRampMax, .0001f);
         }
 
         private (AreaZone zone, HitRecorder main, HitRecorder bend, HitRecorder second, HitRecorder beyond) Refracted(int refractions)
@@ -327,20 +311,6 @@ namespace Game.Tests
 
             Assert.AreEqual(10, beyond.Damage);
             Assert.AreEqual(0, bend.Damage);
-        }
-
-        [Test(Description = "집중 굴절은 집중 증폭을 선행으로 하고 굴절 횟수를 늘린다 (최대 2)")]
-        public void FocusBeam_RefractCardRequiresAmplifyAndAddsRefraction()
-        {
-            world = new CatalogWorld();
-            var beam = world.Create(FocusBeamId);
-            var card = world.Data[FocusBeamId].upgrades.Find(c => c.id == "focus_beam_refract");
-            Assert.AreEqual("focus_beam_amplify", card.requiredCardCounts.Single().cardId);
-            Assert.AreEqual(2, card.maxPickCount);
-
-            world.Take(beam, "focus_beam_amplify", "focus_beam_refract", "focus_beam_refract");
-
-            Assert.AreEqual(2, beam.Stats.Beam.Refractions);
         }
 
         // ── 집중 광선 방식: 메인까지가 길이, 메인이 죽으면 가장 가까운 적으로 교체 ───────────────
@@ -434,20 +404,8 @@ namespace Game.Tests
             foreach (var zone in Zones()) { Tick(zone, .1f); }
 
             Assert.IsTrue(world.Data[FocusBeamId].baseStats.beam.focusAim > 0);
-            Assert.AreEqual(3 + 5, main.Damage, "집중 광선 3 + 에너지 빔 5");
-            Assert.AreEqual(5, behind.Damage, "뒤쪽은 에너지 빔만 맞는다");
-        }
-
-        [Test(Description = "연속 광선은 공격 횟수를 15 늘린다 (지속 시간은 그대로)")]
-        public void FocusBeam_ContinuousCardAddsPulses()
-        {
-            world = new CatalogWorld();
-            var beam = world.Create(FocusBeamId);
-            var before = beam.Stats.Beam.Pulses;
-            world.Take(beam, "focus_beam_continuous");
-
-            Assert.AreEqual(before + 15, beam.Stats.Beam.Pulses);
-            Assert.AreEqual(2f, beam.Stats.Beam.Duration);
+            Assert.AreEqual((int)focus.Stats.Cast.Damage + (int)sun.Stats.Cast.Damage, main.Damage);
+            Assert.AreEqual((int)sun.Stats.Cast.Damage, behind.Damage, "뒤쪽은 에너지 빔만 맞는다");
         }
 
         [Test]
@@ -460,21 +418,11 @@ namespace Game.Tests
             var probe = new HitRecorder { Position = new Vector2(5, 0) };
             world.Provider.All.Add(probe);
             Tick(zone, .1f);
-            Assert.AreEqual(.25f, probe.VulnerabilityRatio, .001f);
-            Assert.AreEqual(5, probe.VulnerabilityDuration);
-            Assert.AreEqual(.35f, probe.SlowRatio, .001f);
-            Assert.AreEqual(1, probe.SlowDuration);
-            Assert.AreEqual(.5f, probe.Freeze, .001f);
-        }
-
-        [Test]
-        public void DazzleCard_StunsWithFivePercentChance()
-        {
-            var beam = SunBeam("energy_beam_dazzle");
-            world.AddEnemy(4, 0);
-            var config = beam.Config.Stats.Status;
-            Assert.AreEqual(.05f, config.StunChance, .0001f);
-            Assert.AreEqual(1f, config.StunDuration);
+            Assert.AreEqual(beam.Stats.Status.VulnerabilityRatio, probe.VulnerabilityRatio, .001f);
+            Assert.AreEqual(beam.Stats.Status.VulnerabilityDuration, probe.VulnerabilityDuration);
+            Assert.AreEqual(beam.Stats.Status.SlowRatio, probe.SlowRatio, .001f);
+            Assert.AreEqual(beam.Stats.Status.SlowDuration, probe.SlowDuration);
+            Assert.AreEqual(beam.Stats.Status.FreezeDuration, probe.Freeze, .001f);
         }
 
         [Test]

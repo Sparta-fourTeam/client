@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Reflection;
 using Cysharp.Threading.Tasks;
-using DG.Tweening;
 using Game.Core;
 using Game.Network;
 using Game.View;
@@ -51,6 +50,12 @@ namespace Game.Tests
         public void SetUp()
         {
             _data = new GameDataStore();
+            // 구매 경계 검사용 입력이며 출시 가격·상한에 의존하지 않는다.
+            var fixtureDef = _data.Upgrades.GetOrThrow(Id);
+            fixtureDef.MaxLevel = 3;
+            fixtureDef.UnlockLevel = 2;
+            fixtureDef.LevelCosts = new[] { 17, 31, 53 };
+            fixtureDef.MaterialCosts = new[] { 2, 3, 4 };
             _profile = new PlayerProfile(_data);
             _path = Path.Combine(Path.GetTempPath(), "nova-upgrade-" + Guid.NewGuid().ToString("N") + ".json");
             _store = new LocalSaveStore(_path);
@@ -68,6 +73,10 @@ namespace Game.Tests
             _store.Flush(save);
             _profile.Apply(new LocalPlayerApi(_store).GetMe().GetAwaiter().GetResult());
             _api = new SpyApi { Inner = new LocalUpgradeApi(_store, _data) };
+        }
+
+        private void CreatePopup()
+        {
             _root = Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/UI/Lobby/UpgradeConfirmPopup.prefab"));
             _view = _root.GetComponent<UpgradeConfirmPopupView>();
             _view.Initialize();
@@ -76,7 +85,12 @@ namespace Game.Tests
         [TearDown]
         public void TearDown()
         {
-            DOTween.KillAll(); Object.DestroyImmediate(_root); if (File.Exists(_path))
+            if (_root != null)
+            {
+                foreach (var transition in _root.GetComponentsInChildren<PopupTransition>(true)) { transition.HideImmediate(); }
+                Object.DestroyImmediate(_root);
+            }
+            if (File.Exists(_path))
             {
                 File.Delete(_path);
             }
@@ -95,6 +109,7 @@ namespace Game.Tests
         [Test]
         public void CancelIncludingLateConfirmNeverPurchases()
         {
+            CreatePopup();
             _view.Show("후드", Id, true);
             Assert.That(_api.Calls, Is.Zero);
             Field<Button>(_view, "_cancelButton").onClick.Invoke();
@@ -105,6 +120,7 @@ namespace Game.Tests
         [Test]
         public void ConfirmedBatchPurchasesExactlyTheQuoteOnce()
         {
+            CreatePopup();
             var plan = UpgradePurchasePlan.Create(_profile, _data, Id, true);
             int gold = _profile.Gold, material = _profile.ItemQuantity(plan.MaterialItemId);
             _view.Show("후드", Id, true); Confirm(); Confirm();
@@ -116,16 +132,25 @@ namespace Game.Tests
         [Test]
         public void ChangedQuoteRequiresAnotherConfirmationWithoutSpending()
         {
+            CreatePopup();
             _view.Show("후드", Id, true);
             var snapshot = _profile.Snapshot();
             snapshot.gold = _data.Upgrades.GetOrThrow(Id).CostAt(1);
             _profile.Apply(snapshot);
+            var save = _store.Load();
+            save.wallet.gold = snapshot.gold;
+            _store.Flush(save);
             Confirm(); Assert.That(_api.Calls, Is.Zero);
+            Assert.That(_profile.UpgradeLevel(Id), Is.Zero);
+            Assert.That(_profile.Gold, Is.EqualTo(snapshot.gold));
             Confirm(); Assert.That(_api.Calls, Is.EqualTo(1));
+            Assert.That(_profile.UpgradeLevel(Id), Is.EqualTo(1));
+            Assert.That(_profile.Gold, Is.Zero);
         }
         [Test]
         public void InFlightRequestBlocksRepeatedConfirmAndCancel()
         {
+            CreatePopup();
             _api.Pending = new UniTaskCompletionSource<PlayerSnapshot>();
             _view.Show("후드", Id, false); Confirm(); Confirm();
             Field<Button>(_view, "_cancelButton").onClick.Invoke();
@@ -139,6 +164,7 @@ namespace Game.Tests
         [Test]
         public void PartialFailureKeepsCompletedUpgradeAndShowsRemainingQuote()
         {
+            CreatePopup();
             _api.FailAt = 2;
             _view.Show("후드", Id, true); Confirm();
             Assert.That(_profile.UpgradeLevel(Id), Is.EqualTo(1));

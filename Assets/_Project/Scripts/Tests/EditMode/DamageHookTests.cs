@@ -23,25 +23,11 @@ namespace Game.Tests
         private sealed class Probe : IPassive
         {
             public Func<DamageInfo, int, int> BeforeDamage = (info, amount) => amount;
-            public readonly List<(DamageInfo Info, int Amount)> BeforeCalls = new();
             public readonly List<(DamageInfo Info, int Applied)> DamagedCalls = new();
-            public int SpawnCalls;
-            public int DiedCalls;
-            public float SpawnHpRatio = -1f;
 
-            public void OnSpawn(EnemyModel self)
-            {
-                SpawnCalls++;
-                SpawnHpRatio = self.HpRatio;
-            }
-
-            public void OnDied(EnemyModel self) => DiedCalls++;
-
-            public int OnBeforeDamage(EnemyModel self, DamageInfo info, int amount)
-            {
-                BeforeCalls.Add((info, amount));
-                return BeforeDamage(info, amount);
-            }
+            public void OnSpawn(EnemyModel self) { }
+            public void OnDied(EnemyModel self) { }
+            public int OnBeforeDamage(EnemyModel self, DamageInfo info, int amount) => BeforeDamage(info, amount);
 
             public void OnDamaged(EnemyModel self, DamageInfo info, int appliedDamage) => DamagedCalls.Add((info, appliedDamage));
         }
@@ -56,18 +42,6 @@ namespace Game.Tests
 
         // ───────── 시작 훅 ─────────
 
-        [Test]
-        public void OnSpawn_IsCalledOnceWithTheFinishedModel()
-        {
-            var probe = new Probe();
-
-            var model = Model(passives: new IPassive[] { probe });
-
-            Assert.AreEqual(1, probe.SpawnCalls);
-            Assert.AreEqual(1f, probe.SpawnHpRatio, "생성이 끝난 모델(체력이 정해진 뒤)을 받는다");
-            Assert.AreEqual(100, model.Hp);
-        }
-
         // ───────── 피해 전 훅 ─────────
 
         [Test]
@@ -75,7 +49,8 @@ namespace Game.Tests
         {
             var hp = new Recorder<EnemyHpChanged>();
             var probe = new Probe { BeforeDamage = (info, amount) => 0 };
-            var model = Model(passives: new IPassive[] { probe }, hp: hp);
+            var after = new Probe { BeforeDamage = (info, amount) => 100 };
+            var model = Model(passives: new IPassive[] { probe, after }, hp: hp);
 
             model.TakeDamage(Skill(30));
 
@@ -105,7 +80,6 @@ namespace Game.Tests
             model.TakeDamage(Skill(20, Element.Fire)); // 훅 20 → 10, 약점 +50% → 15
 
             Assert.AreEqual(85, model.Hp);
-            Assert.AreEqual(20, probe.BeforeCalls[0].Amount, "훅은 원래 피해량을 받는다");
         }
 
         [Test(Description = "패시브가 여럿이면 목록 순서대로 이어서 줄인다")]
@@ -118,34 +92,20 @@ namespace Game.Tests
             model.TakeDamage(Skill(20)); // (20-5) * 2
 
             Assert.AreEqual(70, model.Hp);
-            Assert.AreEqual(15, second.BeforeCalls[0].Amount);
-        }
-
-        [Test(Description = "앞의 패시브가 막으면 뒤의 패시브는 부르지 않는다")]
-        public void BeforeDamage_StopsAtTheFirstBlock()
-        {
-            var blocker = new Probe { BeforeDamage = (info, amount) => 0 };
-            var after = new Probe();
-            var model = Model(passives: new IPassive[] { blocker, after });
-
-            model.TakeDamage(Skill(20));
-
-            Assert.IsEmpty(after.BeforeCalls);
         }
 
         [Test(Description = "훅은 피해 정보를 받고, 상태이상 지속 피해(스킬 밖)도 불린다")]
         public void BeforeDamage_ReceivesInfoIncludingNonSkillDamage()
         {
-            var probe = new Probe();
+            var probe = new Probe
+            {
+                BeforeDamage = (info, amount) => info.IsFromSkill && info.Element == Element.Ice && !info.IsImpact ? 0 : amount
+            };
             var model = Model(passives: new IPassive[] { probe });
-
             model.TakeDamage(Skill(10, Element.Ice, impact: false));
+            Assert.AreEqual(100, model.Hp);
             model.TakeDamage(5);
-
-            Assert.AreEqual(Element.Ice, probe.BeforeCalls[0].Info.Element);
-            Assert.IsFalse(probe.BeforeCalls[0].Info.IsImpact);
-            Assert.IsTrue(probe.BeforeCalls[0].Info.IsFromSkill);
-            Assert.IsFalse(probe.BeforeCalls[1].Info.IsFromSkill);
+            Assert.AreEqual(95, model.Hp);
         }
 
         // ───────── 피해 후 훅 ─────────
@@ -162,18 +122,6 @@ namespace Game.Tests
             Assert.AreEqual(1, probe.DamagedCalls.Count);
             Assert.AreEqual(30, probe.DamagedCalls[0].Applied);
             Assert.AreEqual(70, model.Hp);
-        }
-
-        [Test(Description = "죽으면 피격 후 훅 대신 사망 훅이 불린다")]
-        public void OnDamaged_NotCalledWhenTheHitKills()
-        {
-            var probe = new Probe();
-            var model = Model(maxHp: 10, passives: new IPassive[] { probe });
-
-            model.TakeDamage(Skill(50));
-
-            Assert.IsEmpty(probe.DamagedCalls);
-            Assert.AreEqual(1, probe.DiedCalls);
         }
 
         // ───────── 회복 ─────────

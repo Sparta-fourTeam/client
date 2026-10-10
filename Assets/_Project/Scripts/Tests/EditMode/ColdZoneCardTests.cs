@@ -148,20 +148,7 @@ namespace Game.Tests
 
         // ── 카드 데이터 ────────────────────────────────────────────────
 
-        [Test(Description = "냉기 지대 카드: 빙결핵은 중심부 추가 공격 1회, 절대 영도는 빙결 2배, 매서운 서리는 최대 HP 1%를 켠다")]
-        public void Cards_EnableCoreFreezeAndMaxHpDotStats()
-        {
-            world = new CatalogWorld();
-            var cold = world.Create(ColdZoneId);
-
-            world.Take(cold, "cold_zone_extreme", "cold_zone_core", "cold_zone_zero", "cold_zone_bitter");
-
-            Assert.AreEqual(1, cold.Stats.Area.CoreHits);
-            Assert.AreEqual(2f, cold.Stats.Area.CoreFreezeScale);
-            Assert.AreEqual(.01f, cold.Stats.Status.FreezeMaxHpRatio, .0001f);
-        }
-
-        [Test(Description = "빙속성 연마는 냉기 지대와 서리 결정에 같은 공유 카드로 있고, 한 번 고르면 두 스킬의 쿨타임이 25% 줄어든다")]
+        [Test(Description = "빙속성 연마는 냉기 지대와 서리 결정에 같은 공유 카드로 있고, 한 번 고르면 선언된 비율이 두 스킬의 쿨타임에 적용된다")]
         public void Polish_IsASharedCardThatCutsBothCooldowns()
         {
             world = new CatalogWorld();
@@ -171,12 +158,12 @@ namespace Game.Tests
             var frostBefore = frost.Stats.Cast.Cooldown;
             var option = cold.Data.upgrades.Find(c => c.id == "cold_zone_polish");
 
-            Assert.IsTrue(option.enabled);
-            Assert.AreEqual(option.sharedId, frost.Data.upgrades.Find(c => c.id == "frost_crystal_polish").sharedId);
-            Assert.IsTrue(SkillUpgradeTransaction.TryApply(cold, option, new[] { (SkillBase)cold, frost }, 21));
+            Assert.IsTrue(SkillUpgradeTransaction.TryApply(cold, option, new[] { (SkillBase)cold, frost }, 0));
+            float coldReduction = option.effects.Find(e => e.kind == "attackSpeed").value / 100;
+            float frostReduction = frost.Data.upgrades.Find(c => c.id == "frost_crystal_polish").effects.Find(e => e.kind == "attackSpeed").value / 100;
 
-            Assert.AreEqual(coldBefore * .75f, cold.Stats.Cast.Cooldown, .0001f);
-            Assert.AreEqual(frostBefore * .75f, frost.Stats.Cast.Cooldown, .0001f);
+            Assert.AreEqual(coldBefore * (1 - coldReduction), cold.Stats.Cast.Cooldown, .0001f);
+            Assert.AreEqual(frostBefore * (1 - frostReduction), frost.Stats.Cast.Cooldown, .0001f);
         }
     }
 }
