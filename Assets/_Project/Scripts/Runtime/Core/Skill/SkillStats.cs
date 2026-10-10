@@ -15,7 +15,7 @@ namespace Game.Core
         KillLightningRatio, LightningStrikeRatio,
         FieldDuration, FieldDamageRatio, FieldFlatDamage, FieldDamageMultiplier, FieldRadius, FieldSlowRatio,
         AreaRadius, AreaDuration, AreaPulseInterval, AreaMoveSpeed, AreaPull,
-        BeamLength, BeamWidth, BeamDuration, BeamPulses, BeamFocusBonus, BeamFocusRampMax, BeamFocusBlastRadius, BeamFocusBlastRatio, BeamRefractions,
+        BeamLength, BeamWidth, BeamDuration, BeamPulses, BeamFocusBonus, BeamFocusRampMax, BeamFocusBlastRadius, BeamFocusBlastRatio, BeamRefractions, BeamFocusAim,
         ChainBounces, ChainJumpRange, ChainHopInterval, ChainPathWidth,
         Count
     }
@@ -95,6 +95,7 @@ namespace Game.Core
             Def(Stat.BeamFocusBlastRadius, d => d.beam.focusBlastRadius);
             Def(Stat.BeamFocusBlastRatio, d => d.beam.focusBlastRatio);
             Def(Stat.BeamRefractions, d => d.beam.refractions);
+            Def(Stat.BeamFocusAim, d => d.beam.focusAim);
             Def(Stat.ChainBounces, d => d.chain.bounces);
             Def(Stat.ChainJumpRange, d => d.chain.jumpRange);
             Def(Stat.ChainHopInterval, d => d.chain.hopInterval);
@@ -269,6 +270,8 @@ namespace Game.Core
         public float FocusBlastRatio => v[(int)Stat.BeamFocusBlastRatio];
         /// <summary>광선이 메인 대상에서 꺾여 다른 적으로 이어지는 횟수</summary>
         public int Refractions => (int)v[(int)Stat.BeamRefractions];
+        /// <summary>집중 광선 방식인지 (메인 대상까지가 광선 길이, 메인이 죽으면 가장 가까운 적으로 교체)</summary>
+        public bool FocusAim => v[(int)Stat.BeamFocusAim] > 0;
     }
 
     public readonly struct ChainStats

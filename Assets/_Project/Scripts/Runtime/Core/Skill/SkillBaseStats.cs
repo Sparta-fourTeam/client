@@ -99,6 +99,8 @@ namespace Game.Core
             public float focusBlastRatio = 0.5f;
             /// <summary>광선이 메인 대상에서 꺾여 다른 적으로 이어지는 횟수(굴절). 0이면 곧게 뻗는다</summary>
             public float refractions;
+            /// <summary>0보다 크면 집중 광선 방식이다. 광선 길이가 메인 대상까지의 거리이고(메인에서 끝난다), 메인이 죽으면 거리와 상관없이 가장 가까운 살아 있는 적이 새 메인이 된다. 살아 있는 적이 없으면 광선이 사라진다</summary>
+            public float focusAim;
         }
 
         public class FieldBase
