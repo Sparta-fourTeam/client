@@ -162,6 +162,31 @@ namespace Game.Tests
             Assert.AreEqual(10, other.Damage);
         }
 
+        private sealed class ImpactCounter : IEnemyTarget
+        {
+            public Vector2 Position { get; set; }
+            public int Impacts, Total;
+            public void TakeDamage(int amount) => Total += amount;
+            public void TakeDamage(Game.Core.Combat.DamageInfo info) { Total += info.Amount; if (info.IsImpact) { Impacts++; } }
+        }
+
+        [Test(Description = "메인 대상 추가 피해는 같은 적중의 일부라 충격 피해로 세지 않는다 (타격 횟수형 방어막이 두 번으로 세지 않게)")]
+        public void FocusBonus_IsNotCountedAsASecondImpactHit()
+        {
+            var main = new ImpactCounter { Position = new Vector2(4, 0) };
+            var provider = new CatalogWorld.Targets();
+            provider.All.Add(main);
+            var pool = Pool();
+            var zone = pool.Get();
+            zone.Init(pool, provider, Vector2.zero, new AreaSettings(0, 1, 1, length: 10, width: 1, focusBonus: 1f, baseDamage: 10), Damage(10),
+                AttackReactions.Empty, aimTarget: main);
+
+            Tick(zone, .1f);
+
+            Assert.AreEqual(20, main.Total, "공격력 10 + 메인 추가 100%");
+            Assert.AreEqual(1, main.Impacts, "광선 한 번의 적중은 충격 한 번이다");
+        }
+
         [Test(Description = "집중 광선: 초점 카드를 얻으면 메인 대상이 공격력의 두 배를 받는다")]
         public void FocusBeam_FocusCardDoublesDamageOnTheMainTarget()
         {

@@ -196,7 +196,8 @@ namespace Game.Core
                 // 광선이 겨눈 메인 대상은 공격마다 추가 피해를 받는다 (집중 광선의 초점)
                 if (IsLine && focusBonus > 0 && baseDamage > 0 && ReferenceEquals(target, aim))
                 {
-                    new DamageReaction(baseDamage * focusBonus, isImpact: true).Execute(context);
+                    // 같은 적중의 일부라 충격(IsImpact)으로 주지 않는다. 충격으로 주면 타격 횟수형 방어막이 한 번의 광선 공격을 두 번 맞은 것으로 센다
+                    new DamageReaction(baseDamage * focusBonus).Execute(context);
                 }
                 reactions.Raise(AttackEvent.Hit, context);
                 if (target.IsDead) { reactions.Raise(AttackEvent.Kill, context); }
