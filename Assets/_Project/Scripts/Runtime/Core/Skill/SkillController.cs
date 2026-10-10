@@ -111,6 +111,9 @@ namespace Game.Core
             return true;
         }
 
+        /// <summary>보유 스킬의 현재 상태(레벨 등)를 HUD에 다시 알린다. 카드를 선택 흐름 밖에서 직접 적용하는 도구(샌드박스)가 적용 뒤에 쓴다</summary>
+        public void PublishSkillStatus() => PublishSkills();
+
         /// <summary>보유 스킬 (조회용)</summary>
         public IReadOnlyList<SkillBase> Skills => skills;
 

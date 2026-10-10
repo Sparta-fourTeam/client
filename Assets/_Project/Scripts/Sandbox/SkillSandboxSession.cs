@@ -143,7 +143,11 @@ namespace Game.Sandbox
         /// <summary>마지막으로 얻은 해당 카드를 하나 뺀다. 이 카드가 선행인 카드는 다시 쌓을 때 함께 빠진다.</summary>
         public bool RemoveCard(int skillId, string cardId)
         {
-            int index = Build.steps.FindLastIndex(s => s.skillId == skillId && s.cardId == cardId);
+            // 공유 카드는 한 번 고르면 두 스킬의 행에 모두 횟수가 올라가므로, 어느 쪽 행에서 빼도 같은 공유 카드의 마지막 선택을 뺀다
+            string shared = FindOption(skillId, cardId)?.sharedId;
+            int index = Build.steps.FindLastIndex(s => !s.IsSkill
+                && ((s.skillId == skillId && s.cardId == cardId)
+                    || (!string.IsNullOrEmpty(shared) && FindOption(s.skillId, s.cardId)?.sharedId == shared)));
             if (index < 0) { return false; }
             Build.steps.RemoveAt(index);
             Rebuild();
@@ -170,6 +174,9 @@ namespace Game.Sandbox
         }
 
         private SkillBase FindWeapon(int skillId) => controller.Skills.FirstOrDefault(w => w.Data.id == skillId);
+
+        private SkillUpgradeOption FindOption(int skillId, string cardId) =>
+            catalog.TryGetValue(skillId, out var data) ? data.upgrades?.Find(c => c.id == cardId) : null;
 
         private string BlockedReason(SkillBase weapon, SkillUpgradeOption option)
         {
@@ -254,6 +261,8 @@ namespace Game.Sandbox
                 if (!Apply(step, out string label)) { rejected.Add(label); Build.steps.Remove(step); }
             }
             if (rejected.Count > 0) { LastError = "적용하지 못한 항목: " + string.Join(", ", rejected); }
+            // 카드를 직접 적용하면 선택 흐름이 SkillChanged를 발행하지 않으므로, 적용이 끝난 뒤 HUD에 올라간 레벨을 알린다
+            controller.PublishSkillStatus();
             Changed?.Invoke();
         }
 
