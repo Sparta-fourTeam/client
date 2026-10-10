@@ -1,5 +1,6 @@
 using Game.Core;
 using Game.Core.Defense;
+using Game.View;
 using MessagePipe;
 using VContainer;
 using VContainer.Unity;
@@ -20,6 +21,8 @@ namespace Game.Sandbox
             builder.RegisterComponentInHierarchy<SkillController>();
             builder.RegisterComponentInHierarchy<SandboxEnemyField>().AsSelf().As<IEnemyTargetProvider>();
             builder.RegisterComponentInHierarchy<SandboxController>();
+            // 인게임 HUD와 같은 SkillHud 프리팹: SkillController가 발행하는 SkillChanged를 받아 쿨타임을 그린다
+            builder.RegisterComponentInHierarchy<SkillHudView>();
             builder.Register<ISkillDataProvider, DefaultSkillDataProvider>(Lifetime.Scoped);
             builder.Register<IStartingSkills, NoStartingSkills>(Lifetime.Scoped);
             builder.Register<ISkillUnlock, AllSkillsUnlocked>(Lifetime.Scoped);
@@ -31,6 +34,7 @@ namespace Game.Sandbox
                 resolver.Resolve<SkillController>();
                 resolver.Resolve<SandboxEnemyField>();
                 resolver.Resolve<SandboxController>();
+                resolver.Resolve<SkillHudView>();
             });
         }
     }

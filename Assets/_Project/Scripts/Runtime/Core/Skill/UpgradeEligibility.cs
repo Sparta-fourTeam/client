@@ -3,12 +3,13 @@ namespace Game.Core
     /// <summary>후보 생성과 실제 습득에서 공유하는, 상태를 변경하지 않는 조건 판정.</summary>
     public static class UpgradeEligibility
     {
-        public static bool CanAcquire(SkillUpgradeOption option, int weaponId, IUpgradeState state)
+        /// <param name="ignorePermanentLevel">true면 카드의 영구 레벨 조건(minPermanentLevel)을 보지 않는다. 영구 레벨을 따로 정할 수 있는 도구(샌드박스)가 조건을 표시만 하고 막지 않을 때 쓴다</param>
+        public static bool CanAcquire(SkillUpgradeOption option, int weaponId, IUpgradeState state, bool ignorePermanentLevel = false)
         {
             if (option == null || state == null || !option.enabled || string.IsNullOrEmpty(option.id)
                 || option.maxPickCount <= 0 || option.minBattleLevel < 1 || option.minPermanentLevel < 0
                 || state.GetWeaponLevel(weaponId) < option.minBattleLevel
-                || state.GetPermanentWeaponLevel(weaponId) < option.minPermanentLevel
+                || (!ignorePermanentLevel && state.GetPermanentWeaponLevel(weaponId) < option.minPermanentLevel)
                 || state.GetAcquiredCount(weaponId, option.id) >= option.maxPickCount)
             {
                 return false;

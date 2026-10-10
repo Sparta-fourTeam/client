@@ -3,6 +3,7 @@
     "rootNamespace": "Game.Sandbox",
     "references": [
         "Game.Core",
+        "Game.View",
         "MessagePipe",
         "MessagePipe.VContainer",
         "UniTask",
