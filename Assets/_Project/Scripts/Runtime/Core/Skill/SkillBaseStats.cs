@@ -42,6 +42,8 @@ namespace Game.Core
         {
             public float freezeDuration;
             public float freezeChance = 1;
+            /// <summary>빙결이 유지되는 동안 매초 입히는 최대 HP 비례 피해 비율 (0이면 없음)</summary>
+            public float freezeMaxHpRatio;
             public float frostbiteChance = 1;
             public float paralysisDuration;
             public float paralysisChance = 1;
@@ -67,6 +69,12 @@ namespace Game.Core
             public float moveSpeed;
             /// <summary>펄스마다 범위 안의 적을 중심으로 끌어당기는 거리 (0이면 끌어당기지 않는다)</summary>
             public float pull;
+            /// <summary>영역이 시작될 때 중심부에 같은 적중을 더 거는 횟수 (0이면 없음)</summary>
+            public float coreHits;
+            /// <summary>중심부 반경이 영역 반경에서 차지하는 비율</summary>
+            public float coreRadiusRatio = 0.4f;
+            /// <summary>중심부 적중에서 빙결 지속에 곱하는 배율</summary>
+            public float coreFreezeScale = 1;
         }
 
         public class ChainBase

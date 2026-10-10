@@ -20,7 +20,11 @@ namespace Game.Core
         public HitReactionBuilder Damage(float damage) => Add(new DamageReaction(damage, isImpact: true));
 
         public HitReactionBuilder Freeze(float duration, float chance = 1) =>
-            duration > 0 ? Add(new StatusReaction<IFreezableTarget>(chance, (t, _) => t.ApplyFreeze(duration))) : this;
+            duration > 0 ? Add(new StatusReaction<IFreezableTarget>(chance, (t, c) => t.ApplyFreeze(duration * c.FreezeScale))) : this;
+
+        /// <summary>빙결이 유지되는 동안 매초 최대 HP 비례 피해를 건다. 빙결이 걸린 대상에만 걸리므로 빙결 반응 뒤에 둔다</summary>
+        public HitReactionBuilder FreezeMaxHpDot(float ratio) =>
+            ratio > 0 ? Add(new StatusReaction<IFreezeMaxHpDotTarget>(1, (t, _) => t.ApplyFreezeMaxHpDot(ratio))) : this;
 
         public HitReactionBuilder Knockback(float distance) =>
             distance > 0 ? Add(new StatusReaction<IKnockbackTarget>(1, (t, c) => t.ApplyKnockback(c.Direction, distance))) : this;
@@ -84,6 +88,7 @@ namespace Game.Core
             return new HitReactionBuilder()
                 .Damage(damage)
                 .Freeze(status.FreezeDuration, status.FreezeChance)
+                .FreezeMaxHpDot(status.FreezeMaxHpRatio)
                 .Knockback(stats.Projectile.KnockbackDistance)
                 .Frostbite(damage * status.FrostbiteRatio, status.FrostbiteChance)
                 .Paralysis(status.ParalysisDuration, status.ParalysisChance)

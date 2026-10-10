@@ -8,13 +8,13 @@ namespace Game.Core
         Cooldown, Damage, ProjectileCount, CastCount, ReserveCastCount, Form, CastInterval,
         ReserveDistance, ReserveCooldown, ReserveInterval,
         PierceCount, ProjectileSpeed, ProjectileSizeMultiplier, KnockbackDistance,
-        FreezeDuration, FreezeChance, FrostbiteRatio, FrostbiteChance, ParalysisDuration, ParalysisChance,
+        FreezeDuration, FreezeChance, FrostbiteRatio, FrostbiteChance, FreezeMaxHpRatio, ParalysisDuration, ParalysisChance,
         StunDuration, StunChance, SlowDuration, SlowRatio, VulnerabilityRatio, VulnerabilityDuration,
         BurnDuration, BurnRatio, BurnMaxHpRatio, BurnDeathExplosion, BurnChance,
         ExplosionRadius, ExplosionDamage,
         KillLightningRatio, LightningStrikeRatio,
         FieldDuration, FieldDamageRatio, FieldFlatDamage, FieldDamageMultiplier, FieldRadius, FieldSlowRatio,
-        AreaRadius, AreaDuration, AreaPulseInterval, AreaMoveSpeed, AreaPull,
+        AreaRadius, AreaDuration, AreaPulseInterval, AreaMoveSpeed, AreaPull, AreaCoreHits, AreaCoreRadiusRatio, AreaCoreFreezeScale,
         BeamLength, BeamWidth, BeamDuration, BeamPulses, BeamFocusBonus, BeamFocusRampMax, BeamFocusBlastRadius, BeamFocusBlastRatio, BeamRefractions, BeamFocusAim,
         ChainBounces, ChainJumpRange, ChainHopInterval, ChainPathWidth,
         Count
@@ -56,6 +56,7 @@ namespace Game.Core
             Def(Stat.KnockbackDistance, d => d.projectile.knockbackDistance);
             Def(Stat.FreezeDuration, d => d.status.freezeDuration);
             Def(Stat.FreezeChance, d => d.status.freezeChance);
+            Def(Stat.FreezeMaxHpRatio, d => d.status.freezeMaxHpRatio);
             Def(Stat.FrostbiteRatio, _ => 0);
             Def(Stat.FrostbiteChance, d => d.status.frostbiteChance);
             Def(Stat.ParalysisDuration, d => d.status.paralysisDuration);
@@ -86,6 +87,9 @@ namespace Game.Core
             Def(Stat.AreaPulseInterval, d => d.area.pulseInterval);
             Def(Stat.AreaMoveSpeed, d => d.area.moveSpeed);
             Def(Stat.AreaPull, d => d.area.pull);
+            Def(Stat.AreaCoreHits, d => d.area.coreHits);
+            Def(Stat.AreaCoreRadiusRatio, d => d.area.coreRadiusRatio);
+            Def(Stat.AreaCoreFreezeScale, d => d.area.coreFreezeScale);
             Def(Stat.BeamLength, d => d.beam.length);
             Def(Stat.BeamWidth, d => d.beam.width);
             Def(Stat.BeamDuration, d => d.beam.duration);
@@ -181,6 +185,8 @@ namespace Game.Core
 
         public float FreezeDuration => v[(int)Stat.FreezeDuration];
         public float FreezeChance => v[(int)Stat.FreezeChance];
+        /// <summary>빙결이 유지되는 동안 매초 입히는 최대 HP 비례 피해 비율</summary>
+        public float FreezeMaxHpRatio => v[(int)Stat.FreezeMaxHpRatio];
         public float FrostbiteRatio => v[(int)Stat.FrostbiteRatio];
         public float FrostbiteChance => v[(int)Stat.FrostbiteChance];
         public float ParalysisDuration => v[(int)Stat.ParalysisDuration];
@@ -248,6 +254,11 @@ namespace Game.Core
         public float PulseInterval => v[(int)Stat.AreaPulseInterval];
         public float MoveSpeed => v[(int)Stat.AreaMoveSpeed];
         public float Pull => v[(int)Stat.AreaPull];
+        /// <summary>영역이 시작될 때 중심부에 같은 적중을 더 거는 횟수</summary>
+        public int CoreHits => (int)v[(int)Stat.AreaCoreHits];
+        public float CoreRadiusRatio => v[(int)Stat.AreaCoreRadiusRatio];
+        /// <summary>중심부 적중에서 빙결 지속에 곱하는 배율</summary>
+        public float CoreFreezeScale => v[(int)Stat.AreaCoreFreezeScale];
     }
 
     public readonly struct BeamStats

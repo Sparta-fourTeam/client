@@ -1548,6 +1548,24 @@
             "skillId": 0
           }
         ]
+      },
+      {
+        "id": "frost_crystal_polish",
+        "name": "빙속성 연마",
+        "desc": "냉기 지대와 서리 결정 쿨타임 -25%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "attackSpeed",
+            "value": 25
+          }
+        ],
+        "enabled": true,
+        "sharedId": "shared_cold_frost_cooldown",
+        "requiredWeaponIds": [
+          6
+        ],
+        "minPermanentLevel": 21
       }
     ],
     "desc": "적을 관통하는 서리 결정을 발사하고 잠시 얼립니다."
@@ -1906,9 +1924,13 @@
         "name": "빙결핵",
         "desc": "중심부 1회 추가 공격",
         "maxPickCount": 1,
-        "effects": [],
-        "enabled": false,
-        "disabledReason": "중심부 추가 공격(영역 중심 타격)이 구현되지 않았다",
+        "effects": [
+          {
+            "kind": "areaCore",
+            "value": 1
+          }
+        ],
+        "enabled": true,
         "requiredCardCounts": [
           {
             "cardId": "cold_zone_extreme",
@@ -1922,9 +1944,13 @@
         "name": "절대 영도",
         "desc": "중심부 빙결 지속 2배",
         "maxPickCount": 1,
-        "effects": [],
-        "enabled": false,
-        "disabledReason": "빙결핵(중심부 추가 공격)이 구현되지 않았다",
+        "effects": [
+          {
+            "kind": "areaCoreFreeze",
+            "value": 2
+          }
+        ],
+        "enabled": true,
         "requiredCardCounts": [
           {
             "cardId": "cold_zone_core",
@@ -1975,22 +2001,31 @@
         "name": "빙속성 연마",
         "desc": "냉기 지대과 서리 결정 쿨타임 -25%",
         "maxPickCount": 1,
-        "effects": [],
-        "enabled": false,
-        "disabledReason": "두 스킬의 습득 수가 함께 늘고 증폭 횟수를 공유하는 공유 카드가 연결되지 않았다",
+        "effects": [
+          {
+            "kind": "attackSpeed",
+            "value": 25
+          }
+        ],
+        "enabled": true,
         "requiredWeaponIds": [
           4
         ],
-        "minPermanentLevel": 21
+        "minPermanentLevel": 21,
+        "sharedId": "shared_cold_frost_cooldown"
       },
       {
         "id": "cold_zone_bitter",
         "name": "매서운 서리",
         "desc": "빙결 지속 동안 매초 최대 HP 1% 피해",
         "maxPickCount": 1,
-        "effects": [],
-        "enabled": false,
-        "disabledReason": "빙결 중 최대 HP 비례 지속 피해가 구현되지 않았다",
+        "effects": [
+          {
+            "kind": "freezeMaxHpDot",
+            "value": 1
+          }
+        ],
+        "enabled": true,
         "requiredWeaponIds": [
           4
         ],

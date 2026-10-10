@@ -17,9 +17,11 @@ namespace Game.Core
         public float Elapsed { get; }
         /// <summary>이 적중에서 충격(직접) 피해에 곱하는 배율. 메인 대상 추가 피해처럼 같은 적중의 피해를 키울 때 쓴다. 1이면 그대로다</summary>
         public float DamageScale { get; }
+        /// <summary>이 적중에서 빙결 지속에 곱하는 배율. 영역 중심부 적중처럼 같은 반응의 빙결을 길게 할 때 쓴다. 1이면 그대로다</summary>
+        public float FreezeScale { get; }
 
         public AttackContext(Vector2 position, Vector3 direction, IEnemyTarget target = null, Func<float> randomValue = null,
-            float deltaTime = 0, float elapsed = 0, float damageScale = 1)
+            float deltaTime = 0, float elapsed = 0, float damageScale = 1, float freezeScale = 1)
         {
             Position = position;
             Direction = direction;
@@ -28,6 +30,7 @@ namespace Game.Core
             DeltaTime = deltaTime;
             Elapsed = elapsed;
             DamageScale = damageScale;
+            FreezeScale = freezeScale;
         }
     }
 

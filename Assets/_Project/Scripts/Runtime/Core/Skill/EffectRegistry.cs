@@ -112,6 +112,8 @@ namespace Game.Core
 
             // 상태 이상: 마비만 Hitscan도 쓴다.
             Add("freezeDuration", Reaction, ProjectileArea, (s, v) => s[Stat.FreezeDuration] = Math.Max(s[Stat.FreezeDuration], v), Positive);
+            // 빙결이 유지되는 동안 매초 최대 HP의 v%를 피해로 준다 (매서운 서리)
+            Add("freezeMaxHpDot", Reaction, ProjectileArea, (s, v) => s[Stat.FreezeMaxHpRatio] = Math.Max(s[Stat.FreezeMaxHpRatio], v * .01f), Positive);
             Add("frostbite", Reaction, ProjectileArea, (s, v) => s[Stat.FrostbiteRatio] = v * .01f, Positive);
             Add("paralysis", Reaction, All, (s, v) => s[Stat.ParalysisDuration] = Math.Max(s[Stat.ParalysisDuration], v), Positive);
             Add("paralysisDuration", Plain, All, (s, v) => s[Stat.ParalysisDuration] += v, Positive);
@@ -141,6 +143,9 @@ namespace Game.Core
             Add("areaDuration", Plain, Area, (s, v) => s[Stat.AreaDuration] *= Factor(v), Positive);
             Add("areaMoveSpeed", Plain, Area, (s, v) => s[Stat.AreaMoveSpeed] *= Factor(v), Positive);
             Add("areaPull", Plain, Area, (s, v) => s[Stat.AreaPull] *= Factor(v), Positive);
+            // 영역이 시작될 때 중심부에 같은 적중을 v번 더 건다 (빙결핵). 중심부 적중의 빙결 지속에 v배를 곱한다 (절대 영도)
+            Add("areaCore", Plain, Area, (s, v) => s[Stat.AreaCoreHits] += (int)v, PositiveInteger);
+            Add("areaCoreFreeze", Plain, Area, (s, v) => s[Stat.AreaCoreFreezeScale] = Math.Max(s[Stat.AreaCoreFreezeScale], v), Positive);
 
             // 광선: 지속 시간 동안 닿는 모든 적을 공격하는 공격만 쓴다. 공격 횟수는 지속 시간 안의 펄스 수다.
             Add("beamLength", Plain, Beam, (s, v) => s[Stat.BeamLength] *= Factor(v), Positive);
