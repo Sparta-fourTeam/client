@@ -78,6 +78,7 @@ namespace Game.Core
         private readonly List<Vector2> path = new();
         private readonly List<IEnemyTarget> visited = new();
         private readonly List<Transform> segmentVisuals = new();
+        private Vector2? lineVisualSize;
         private float elapsed, sincePulse;
         private Vector2? moveTarget;
         private IEnemyTarget aim;
@@ -193,7 +194,9 @@ namespace Game.Core
                     float angle = Mathf.Atan2(along.y, along.x) * Mathf.Rad2Deg;
                     segment.position = from + along * .5f;
                     segment.rotation = Quaternion.Euler(0, 0, angle);
-                    segment.localScale = new Vector3(segmentLength, width, 1);
+                    // 스프라이트는 원래 크기(PPU에 따라 1유닛이 아니다)가 있으므로, 그 크기로 나눠야 실제 길이와 폭이 된다
+                    var native = NativeVisualSize();
+                    segment.localScale = new Vector3(segmentLength / native.x, width / native.y, 1);
                 }
                 // 복제본 k는 k + 1번째 구간의 모양이다. 쓰지 않는 구간의 복제본은 숨긴다
                 for (int i = Mathf.Max(0, segments - 1); i < segmentVisuals.Count; i++) { segmentVisuals[i].gameObject.SetActive(false); }
@@ -202,6 +205,16 @@ namespace Game.Core
             {
                 visual.localScale = Vector3.one * (radius * 2f);
             }
+        }
+
+        // 광선 모양 스프라이트가 배율 1일 때 차지하는 월드 크기. 스프라이트가 없으면 1유닛으로 본다
+        private Vector2 NativeVisualSize()
+        {
+            if (lineVisualSize.HasValue) { return lineVisualSize.Value; }
+            var renderer = visual.GetComponent<SpriteRenderer>();
+            Vector2 size = renderer != null && renderer.sprite != null ? (Vector2)renderer.sprite.bounds.size : Vector2.one;
+            lineVisualSize = new Vector2(Mathf.Max(size.x, .0001f), Mathf.Max(size.y, .0001f));
+            return lineVisualSize.Value;
         }
 
         // 굴절한 구간마다 광선 모양이 하나씩 필요하다. 첫 구간은 프리팹의 visual을 쓰고 나머지는 그것을 복제해 둔다
