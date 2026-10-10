@@ -265,6 +265,84 @@ namespace Game.Tests
             Assert.AreEqual(1.5f, beam.Stats.Beam.FocusRampMax, .0001f);
         }
 
+        private (AreaZone zone, HitRecorder main, HitRecorder bend, HitRecorder second, HitRecorder beyond) Refracted(int refractions)
+        {
+            var main = new HitRecorder { Position = new Vector2(4, 0) };
+            var bend = new HitRecorder { Position = new Vector2(4, 2.5f) };       // 메인 대상에서 가장 가까운 다른 적: 첫 굴절 끝
+            var second = new HitRecorder { Position = new Vector2(8, 2.5f) };      // 첫 굴절 끝에서 가장 가까운 적: 두 번째 굴절 끝
+            var beyond = new HitRecorder { Position = new Vector2(9, 0) };         // 곧게 뻗었다면 맞았을 메인 대상 뒤쪽
+            var provider = new CatalogWorld.Targets();
+            provider.All.AddRange(new[] { main, bend, second, beyond });
+            var pool = Pool();
+            var zone = pool.Get();
+            zone.Init(pool, provider, Vector2.zero, new AreaSettings(0, 1, 1, length: 14, width: 1, refractions: refractions), Damage(10),
+                AttackReactions.Empty, aimTarget: main);
+            return (zone, main, bend, second, beyond);
+        }
+
+        [Test(Description = "굴절 1: 광선이 메인 대상에서 끝나 가까운 다른 적으로 꺾이고, 메인 대상 뒤쪽과 굴절 횟수를 넘은 적은 맞지 않는다")]
+        public void Refraction_BendsAtTheMainTargetTowardTheNearestOtherEnemy()
+        {
+            var (zone, main, bend, second, beyond) = Refracted(1);
+
+            Tick(zone, .1f);
+
+            Assert.AreEqual(10, main.Damage);
+            Assert.AreEqual(10, bend.Damage);
+            Assert.AreEqual(0, second.Damage, "굴절 횟수를 넘은 적은 맞지 않는다");
+            Assert.AreEqual(0, beyond.Damage, "굴절하면 메인 대상 뒤로 뻗지 않는다");
+        }
+
+        [Test(Description = "굴절 2: 두 번째 굴절 끝의 적까지 이어진다")]
+        public void Refraction_TwoBendsReachTheSecondEnemy()
+        {
+            var (zone, main, bend, second, beyond) = Refracted(2);
+
+            Tick(zone, .1f);
+
+            Assert.AreEqual(10, main.Damage);
+            Assert.AreEqual(10, bend.Damage);
+            Assert.AreEqual(10, second.Damage);
+            Assert.AreEqual(0, beyond.Damage);
+        }
+
+        [Test(Description = "겨눈 적이 죽으면 굴절 없이 마지막 방향으로 곧게 뻗는다")]
+        public void Refraction_FallsBackToStraightWhenTheMainTargetIsDead()
+        {
+            var (zone, main, bend, _, beyond) = Refracted(1);
+            main.Dead = true;
+
+            Tick(zone, .1f);
+
+            Assert.AreEqual(10, beyond.Damage, "곧게 뻗어 선 위의 적을 맞힌다");
+            Assert.AreEqual(0, bend.Damage);
+        }
+
+        [Test(Description = "굴절이 없으면 지금처럼 곧게 뻗어 메인 대상 뒤쪽도 맞는다")]
+        public void Refraction_NoneKeepsTheStraightBeam()
+        {
+            var (zone, _, bend, _, beyond) = Refracted(0);
+
+            Tick(zone, .1f);
+
+            Assert.AreEqual(10, beyond.Damage);
+            Assert.AreEqual(0, bend.Damage);
+        }
+
+        [Test(Description = "집중 굴절은 집중 증폭을 선행으로 하고 굴절 횟수를 늘린다 (최대 2)")]
+        public void FocusBeam_RefractCardRequiresAmplifyAndAddsRefraction()
+        {
+            world = new CatalogWorld();
+            var beam = world.Create(FocusBeamId);
+            var card = world.Data[FocusBeamId].upgrades.Find(c => c.id == "focus_beam_refract");
+            Assert.AreEqual("focus_beam_amplify", card.requiredCardCounts.Single().cardId);
+            Assert.AreEqual(2, card.maxPickCount);
+
+            world.Take(beam, "focus_beam_amplify", "focus_beam_refract", "focus_beam_refract");
+
+            Assert.AreEqual(2, beam.Stats.Beam.Refractions);
+        }
+
         [Test(Description = "연속 광선은 공격 횟수를 15 늘린다 (지속 시간은 그대로)")]
         public void FocusBeam_ContinuousCardAddsPulses()
         {

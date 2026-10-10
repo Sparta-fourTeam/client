@@ -97,6 +97,8 @@ namespace Game.Core
             public float focusBlastRadius;
             /// <summary>메인 대상 주변 폭발 피해 비율(공격 한 번 피해 대비)</summary>
             public float focusBlastRatio = 0.5f;
+            /// <summary>광선이 메인 대상에서 꺾여 다른 적으로 이어지는 횟수(굴절). 0이면 곧게 뻗는다</summary>
+            public float refractions;
         }
 
         public class FieldBase

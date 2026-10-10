@@ -27,9 +27,11 @@ namespace Game.Core
         /// <summary>메인 대상 주변 폭발 반경과 피해 비율(공격 한 번 피해 대비)</summary>
         public float FocusBlastRadius { get; }
         public float FocusBlastRatio { get; }
+        /// <summary>광선이 메인 대상에서 꺾여 다른 적으로 이어지는 횟수</summary>
+        public int Refractions { get; }
 
         public AreaSettings(float radius, float duration, float pulseInterval, float moveSpeed = 0, float pull = 0, float length = 0, float width = 0,
-            float focusBonus = 0, float baseDamage = 0, float focusRampMax = 0, float focusBlastRadius = 0, float focusBlastRatio = 0)
+            float focusBonus = 0, float baseDamage = 0, float focusRampMax = 0, float focusBlastRadius = 0, float focusBlastRatio = 0, int refractions = 0)
         {
             Radius = radius;
             Duration = duration;
@@ -43,6 +45,7 @@ namespace Game.Core
             FocusRampMax = focusRampMax;
             FocusBlastRadius = focusBlastRadius;
             FocusBlastRatio = focusBlastRatio;
+            Refractions = refractions;
         }
 
         public static AreaSettings From(AreaStats area) =>
@@ -52,7 +55,7 @@ namespace Game.Core
         public static AreaSettings From(BeamStats beam, float baseDamage = 0) =>
             new AreaSettings(0, beam.Duration, beam.Duration / Mathf.Max(1f, beam.Pulses), length: beam.Length, width: beam.Width,
                 focusBonus: beam.FocusBonus, baseDamage: baseDamage, focusRampMax: beam.FocusRampMax,
-                focusBlastRadius: beam.FocusBlastRadius, focusBlastRatio: beam.FocusBlastRatio);
+                focusBlastRadius: beam.FocusBlastRadius, focusBlastRatio: beam.FocusBlastRatio, refractions: beam.Refractions);
     }
 
     /// <summary>지정한 자리에 일정 시간 머물며 주기마다 범위 안의 적에게 적중 반응을 거는 영역(또는 광선).
@@ -67,7 +70,10 @@ namespace Game.Core
         private AttackReactions reactions = AttackReactions.Empty;
         private Func<float> randomValue;
         private float radius, duration, pulseInterval, moveSpeed, pull, length, width, focusBonus, baseDamage, focusRampMax, focusBlastRadius, focusBlastRatio;
-        private int mainHits;
+        private int mainHits, refractions;
+        private readonly List<Vector2> path = new();
+        private readonly List<IEnemyTarget> visited = new();
+        private readonly List<Transform> segmentVisuals = new();
         private float elapsed, sincePulse;
         private Vector2? moveTarget;
         private IEnemyTarget aim;
@@ -100,6 +106,7 @@ namespace Game.Core
             focusBlastRadius = Mathf.Max(0, settings.FocusBlastRadius);
             focusBlastRatio = Mathf.Max(0, settings.FocusBlastRatio);
             mainHits = 0;
+            refractions = Mathf.Max(0, settings.Refractions);
             moveTarget = null;
             aim = aimTarget;
             this.hitReactions = hitReactions ?? AttackReactions.Empty;
@@ -125,7 +132,7 @@ namespace Game.Core
             if (deltaTime < 0 || float.IsNaN(deltaTime) || float.IsInfinity(deltaTime)) { throw new ArgumentOutOfRangeException(nameof(deltaTime)); }
             float active = Mathf.Min(deltaTime, Mathf.Max(0, duration - elapsed));
             elapsed += active;
-            if (IsLine) { TrackAim(); }
+            if (IsLine) { TrackAim(); BuildPath(transform.position); }
             else if (moveSpeed > 0 && moveTarget.HasValue)
             {
                 transform.position = Vector2.MoveTowards(transform.position, moveTarget.Value, moveSpeed * active);
@@ -162,10 +169,20 @@ namespace Game.Core
             if (visual == null) { return; }
             if (IsLine)
             {
-                float angle = Mathf.Atan2(beamDirection.y, beamDirection.x) * Mathf.Rad2Deg;
-                visual.position = (Vector2)transform.position + beamDirection * (length * .5f);
-                visual.rotation = Quaternion.Euler(0, 0, angle);
-                visual.localScale = new Vector3(length, width, 1);
+                if (path.Count < 2) { BuildPath(transform.position); }
+                for (int i = 0; i < path.Count - 1; i++)
+                {
+                    var segment = SegmentVisual(i);
+                    segment.gameObject.SetActive(true);
+                    Vector2 from = path[i], to = path[i + 1];
+                    Vector2 along = to - from;
+                    float segmentLength = along.magnitude;
+                    float angle = Mathf.Atan2(along.y, along.x) * Mathf.Rad2Deg;
+                    segment.position = from + along * .5f;
+                    segment.rotation = Quaternion.Euler(0, 0, angle);
+                    segment.localScale = new Vector3(segmentLength, width, 1);
+                }
+                for (int i = Mathf.Max(0, path.Count - 1); i < segmentVisuals.Count; i++) { segmentVisuals[i].gameObject.SetActive(false); }
             }
             else
             {
@@ -173,12 +190,63 @@ namespace Game.Core
             }
         }
 
-        // 선(광선) 위에 있는지: 시전 위치에서 방향으로 뻗는 선분과 적 위치의 거리가 폭의 절반 이하인지
-        private bool OnBeam(Vector2 origin, Vector2 point)
+        // 굴절한 구간마다 광선 모양이 하나씩 필요하다. 첫 구간은 프리팹의 visual을 쓰고 나머지는 그것을 복제해 둔다
+        private Transform SegmentVisual(int index)
         {
-            Vector2 along = point - origin;
-            float t = Mathf.Clamp(Vector2.Dot(along, beamDirection), 0, length);
-            return (along - beamDirection * t).sqrMagnitude <= width * width * .25f;
+            if (index == 0) { return visual; }
+            while (segmentVisuals.Count < index) { segmentVisuals.Add(Instantiate(visual, visual.parent)); }
+            return segmentVisuals[index - 1];
+        }
+
+        // 광선이 지나는 꺾은선. 굴절이 없으면 시전 위치에서 방향으로 길이만큼 곧게 뻗는다.
+        // 굴절이 있으면 겨눈 적에서 끝나고, 거기서 가장 가까운 다른 적으로 굴절 횟수만큼 이어진다 (겨눈 적이 죽었거나 길이 밖이면 곧게 뻗는다)
+        private void BuildPath(Vector2 origin)
+        {
+            path.Clear();
+            path.Add(origin);
+            if (refractions > 0 && aim != null && !aim.IsDead && (aim.Position - origin).sqrMagnitude <= length * length)
+            {
+                path.Add(aim.Position);
+                visited.Clear();
+                visited.Add(aim);
+                Vector2 current = aim.Position;
+                for (int i = 0; i < refractions; i++)
+                {
+                    var next = NearestUnvisited(current);
+                    if (next == null) { break; }
+                    path.Add(next.Position);
+                    visited.Add(next);
+                    current = next.Position;
+                }
+                return;
+            }
+            path.Add(origin + beamDirection * length);
+        }
+
+        private IEnemyTarget NearestUnvisited(Vector2 from)
+        {
+            provider.GetNearest(from, int.MaxValue, candidates);
+            foreach (var target in candidates)
+            {
+                if (target == null || target.IsDead || visited.Contains(target)) { continue; }
+                if ((target.Position - from).sqrMagnitude > length * length) { return null; }
+                return target;
+            }
+            return null;
+        }
+
+        // 선(광선) 위에 있는지: 꺾은선의 어느 구간과 적 위치의 거리가 폭의 절반 이하인지
+        private bool OnBeam(Vector2 point)
+        {
+            float limit = width * width * .25f;
+            for (int i = 0; i < path.Count - 1; i++)
+            {
+                Vector2 from = path[i], along = path[i + 1] - from;
+                float lengthSquared = along.sqrMagnitude;
+                float t = lengthSquared > 0 ? Mathf.Clamp01(Vector2.Dot(point - from, along) / lengthSquared) : 0;
+                if ((point - from - along * t).sqrMagnitude <= limit) { return true; }
+            }
+            return false;
         }
 
         // 광선이 겨눈 메인 대상에게만 일어나는 일 (집중 광선): 초점의 추가 피해, 초점 조정으로 늘어나는 추가 피해, 집중 폭파
@@ -189,7 +257,8 @@ namespace Game.Core
             float totalPulses = Mathf.Max(1f, Mathf.Round(duration / pulseInterval));
             float ramp = focusRampMax * Mathf.Min(1f, mainHits / totalPulses);
             float extra = baseDamage * (focusBonus + ramp);
-            if (extra > 0) { new DamageReaction(extra, isImpact: true).Execute(context); }
+            // 메인 대상 추가 피해는 같은 적중의 일부다. 충격(IsImpact)으로 주면 타격 횟수형 방어막이 한 번의 광선 공격을 두 번 맞은 것으로 센다
+            if (extra > 0) { new DamageReaction(extra).Execute(context); }
             if (focusBlastRadius > 0 && focusBlastRatio > 0)
             {
                 SkillReactionEffects.Explode(provider, target.Position, focusBlastRadius, baseDamage * focusBlastRatio);
@@ -209,7 +278,7 @@ namespace Game.Core
                 float distanceSquared = (target.Position - center).sqrMagnitude;
                 if (IsLine)
                 {
-                    if (!OnBeam(center, target.Position)) { continue; }
+                    if (!OnBeam(target.Position)) { continue; }
                 }
                 else
                 {

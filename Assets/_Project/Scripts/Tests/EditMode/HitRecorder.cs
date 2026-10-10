@@ -10,6 +10,9 @@ namespace Game.Tests
         IParalyzableTarget, IBurnableTarget, IStunnableTarget, ISlowableTarget, IVulnerableTarget
     {
         public Vector2 Position { get; set; }
+        /// <summary>true면 죽은 적으로 보인다 (조준과 피해에서 건너뛴다)</summary>
+        public bool Dead;
+        public bool IsDead => Dead;
         public int Damage;
         public Vector2 KnockbackDirection;
         public float Freeze, KnockbackDistance, Frostbite, Paralysis, BurnDamage, BurnDuration, BurnMaxHpRatio, Stun,

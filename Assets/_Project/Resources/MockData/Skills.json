@@ -2969,6 +2969,25 @@
         "minPermanentLevel": 13
       },
       {
+        "id": "focus_beam_refract",
+        "name": "집중 굴절",
+        "desc": "굴절 +1",
+        "maxPickCount": 2,
+        "effects": [
+          {
+            "kind": "beamRefractions",
+            "value": 1
+          }
+        ],
+        "requiredCardCounts": [
+          {
+            "cardId": "focus_beam_amplify",
+            "count": 1,
+            "skillId": 0
+          }
+        ]
+      },
+      {
         "id": "focus_beam_ultimate",
         "name": "필살기 · 집중 사격",
         "desc": "1회용 / 집중 광선 영구 레벨 비례 공격력",

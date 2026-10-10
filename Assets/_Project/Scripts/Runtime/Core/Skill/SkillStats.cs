@@ -15,7 +15,7 @@ namespace Game.Core
         KillLightningRatio, LightningStrikeRatio,
         FieldDuration, FieldDamageRatio, FieldFlatDamage, FieldDamageMultiplier, FieldRadius, FieldSlowRatio,
         AreaRadius, AreaDuration, AreaPulseInterval, AreaMoveSpeed, AreaPull,
-        BeamLength, BeamWidth, BeamDuration, BeamPulses, BeamFocusBonus, BeamFocusRampMax, BeamFocusBlastRadius, BeamFocusBlastRatio,
+        BeamLength, BeamWidth, BeamDuration, BeamPulses, BeamFocusBonus, BeamFocusRampMax, BeamFocusBlastRadius, BeamFocusBlastRatio, BeamRefractions,
         ChainBounces, ChainJumpRange, ChainHopInterval, ChainPathWidth,
         Count
     }
@@ -94,6 +94,7 @@ namespace Game.Core
             Def(Stat.BeamFocusRampMax, d => d.beam.focusRampMax);
             Def(Stat.BeamFocusBlastRadius, d => d.beam.focusBlastRadius);
             Def(Stat.BeamFocusBlastRatio, d => d.beam.focusBlastRatio);
+            Def(Stat.BeamRefractions, d => d.beam.refractions);
             Def(Stat.ChainBounces, d => d.chain.bounces);
             Def(Stat.ChainJumpRange, d => d.chain.jumpRange);
             Def(Stat.ChainHopInterval, d => d.chain.hopInterval);
@@ -266,6 +267,8 @@ namespace Game.Core
         public float FocusBlastRadius => v[(int)Stat.BeamFocusBlastRadius];
         /// <summary>메인 대상 주변 폭발 피해 비율(공격 한 번 피해 대비)</summary>
         public float FocusBlastRatio => v[(int)Stat.BeamFocusBlastRatio];
+        /// <summary>광선이 메인 대상에서 꺾여 다른 적으로 이어지는 횟수</summary>
+        public int Refractions => (int)v[(int)Stat.BeamRefractions];
     }
 
     public readonly struct ChainStats

@@ -154,6 +154,8 @@ namespace Game.Core
             Add("beamFocusRamp", Plain, Beam, (s, v) => s[Stat.BeamFocusRampMax] += v * .01f, Positive);
             // 메인 대상을 공격할 때마다 그 주변 반경 v에 폭발을 낸다
             Add("beamFocusBlast", Plain, Beam, (s, v) => s[Stat.BeamFocusBlastRadius] = v, Positive);
+            // 광선이 메인 대상에서 꺾여 가까운 다른 적으로 이어지는 횟수(굴절)를 v만큼 늘린다
+            Add("beamRefractions", Plain, Beam, (s, v) => s[Stat.BeamRefractions] += (int)v, PositiveInteger);
 
             // 연쇄: 첫 대상 뒤에 튕기는 횟수(반사), 튕기는 거리, 경로 위 적 공격
             Add("chainBounces", Plain, Chain, (s, v) => s[Stat.ChainBounces] += (int)v, PositiveInteger);
