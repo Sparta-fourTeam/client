@@ -150,6 +150,26 @@
         ]
       },
       {
+        "id": "arrow_storm",
+        "name": "화살 폭풍",
+        "desc": "쿨타임 -40%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "attackSpeed",
+            "value": 40
+          }
+        ],
+        "requiredCardCounts": [
+          {
+            "cardId": "arrow_burst",
+            "count": 1,
+            "skillId": 0
+          }
+        ],
+        "minPermanentLevel": 21
+      },
+      {
         "id": "arrow_pierce",
         "name": "관통 강화",
         "desc": "공격력 +30% / 관통력 +1",
@@ -352,6 +372,10 @@
           {
             "kind": "projectileSpeed",
             "value": 100
+          },
+          {
+            "kind": "form",
+            "form": "ThunderArrow"
           }
         ],
         "requiredCardCounts": [
@@ -475,6 +499,10 @@
           {
             "kind": "burnRatio",
             "value": 10
+          },
+          {
+            "kind": "form",
+            "form": "FlameArrow"
           }
         ],
         "requiredCardCounts": [
@@ -1145,6 +1173,24 @@
         "requiredWeaponIds": [
           18
         ]
+      },
+      {
+        "id": "lightning_polish",
+        "name": "뇌속성 연마",
+        "desc": "벼락과 연쇄 번개 쿨타임 -20%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "attackSpeed",
+            "value": 20
+          }
+        ],
+        "enabled": true,
+        "requiredWeaponIds": [
+          18
+        ],
+        "sharedId": "shared_lightning_chain_cooldown",
+        "minPermanentLevel": 21
       }
     ],
     "desc": "벼락으로 적과 주변을 즉시 공격하고 잠시 마비시킵니다."
@@ -2774,6 +2820,24 @@
           3
         ],
         "sharedId": "shared_lightning_chain_damage"
+      },
+      {
+        "id": "chain_lightning_polish",
+        "name": "뇌속성 연마",
+        "desc": "벼락과 연쇄 번개 쿨타임 -20%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "attackSpeed",
+            "value": 20
+          }
+        ],
+        "enabled": true,
+        "requiredWeaponIds": [
+          3
+        ],
+        "sharedId": "shared_lightning_chain_cooldown",
+        "minPermanentLevel": 21
       }
     ],
     "desc": "번개가 가까운 적 사이를 튕기며 여러 적을 공격합니다."

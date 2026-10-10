@@ -54,6 +54,11 @@ for c in cards.values():
             assert upgraded_damage == expected_after, key
             assert [e for e in definition['effects'] if e['kind'] != 'damage'] == [e for e in variants[0]['effects'] if e['kind'] != 'damage'], key
         mapped.add(key)
+        if 'companion' in c['runtime']:
+            partner = (c['runtime']['companion']['weaponId'], c['runtime']['companion']['cardId'])
+            assert partner in runtime_cards and partner not in mapped, partner
+            assert runtime_cards[partner]['sharedId'] == definition['sharedId'], partner
+            mapped.add(partner)
 assert mapped == set(runtime_cards), 'Every current runtime card needs exactly one documentation mapping'
 
 def visit(node, visiting, visited):

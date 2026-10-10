@@ -2506,7 +2506,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Game.Core::Game.Core.Projectile
   impactPrefab: {fileID: 4054791758048953818, guid: a48792449076f44349ca0df69d508831, type: 3}
-  formSprites: []
+  formSprites:
+  - form: 6
+    sprite: {fileID: 21300000, guid: b7c1e5a04d2f4e6a9a31c5d8e0f2a7b9, type: 3}
+    visualRoot: {fileID: 0}
+    hideBaseSprite: 0
+  - form: 7
+    sprite: {fileID: 21300000, guid: b7c1e5a04d2f4e6a9a31c5d8e0f2a7b9, type: 3}
+    visualRoot: {fileID: 0}
+    hideBaseSprite: 0
   baseVisual: {fileID: 0}
 --- !u!1 &6176457399597300933
 GameObject:

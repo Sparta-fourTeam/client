@@ -7,7 +7,7 @@ namespace Game.Core
 
     /// <summary>Projectile: 날아가 맞춤(투척), Hitscan: 대상 위치에 즉시 타격, Area: 위치에 머무는 범위, Beam: 지속하며 닿는 모든 적을 공격하는 광선, Chain: 여러 적을 연쇄적으로 튕기며 공격</summary>
     public enum CastType { Projectile, Hitscan, Area, Beam, Chain }
-    public enum SkillForm { Default, Enbakutsu, JudgementThunder, TriangleIce, LargeLog, FireLog }
+    public enum SkillForm { Default, Enbakutsu, JudgementThunder, TriangleIce, LargeLog, FireLog, FlameArrow, ThunderArrow }
 
     public class SkillData
     {

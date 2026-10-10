@@ -83,6 +83,24 @@ namespace Game.Tests
             finally { UnityEngine.Object.DestroyImmediate(go); }
         }
 
+        [TestCase("arrow_flame", SkillForm.FlameArrow)]
+        [TestCase("arrow_thunder", SkillForm.ThunderArrow)]
+        public void ArrowTransformCards_EnableActualForm(string cardId, SkillForm expected)
+        {
+            var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 1);
+            var card = data.upgrades.Find(c => c.id == cardId);
+            var go = new UnityEngine.GameObject("ArrowFormCardTest");
+            try
+            {
+                var weapon = Casters.Projectile(data, go, go.transform, new NullEnemyTargetProvider());
+                weapon.UseChildCaster(new NoopChildCaster());
+                Assert.IsTrue(weapon.LevelUp(card)); Assert.IsFalse(weapon.LevelUp(card));
+                var stats = (SkillStats)typeof(SkillBase).GetField("stats", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(weapon);
+                Assert.AreEqual(expected, stats.Cast.Form);
+            }
+            finally { UnityEngine.Object.DestroyImmediate(go); }
+        }
+
         [Test]
         public void LogRepeatAndSize_KeepConservativeDamagePrerequisite()
         {
