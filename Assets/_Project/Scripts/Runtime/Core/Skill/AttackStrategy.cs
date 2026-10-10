@@ -8,8 +8,9 @@ namespace Game.Core
     /// 새 공격 종류는 전략 하나를 만들어 <see cref="SkillFactory"/>에 등록한다.</summary>
     public interface IAttackStrategy : IDisposable
     {
-        /// <summary>현재 설정으로 공격 한 번을 낸다</summary>
-        void Fire(SkillConfig config, AttackEnvironment environment);
+        /// <summary>현재 설정으로 공격 한 번을 낸다. 실제로 시전했으면 true, 쏠 대상이 없어 아무것도 내지 않았으면 false.
+        /// 시전기는 false이면 쿨타임을 쓰지 않고 대상이 생길 때까지 기다린다</summary>
+        bool Fire(SkillConfig config, AttackEnvironment environment);
 
         /// <summary>매 프레임 추가로 처리할 일(예: 예비 시전). 없으면 비워 둔다</summary>
         void Tick(SkillConfig config, AttackEnvironment environment, float deltaTime);

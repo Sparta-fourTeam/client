@@ -21,11 +21,11 @@ namespace Game.Core
 
         public void Tick(SkillConfig config, AttackEnvironment environment, float deltaTime) { }
 
-        public void Fire(SkillConfig config, AttackEnvironment environment)
+        public bool Fire(SkillConfig config, AttackEnvironment environment)
         {
             var stats = config.Stats;
             var targets = environment.FindTargets(config.Attack.Range);
-            if (targets.Count == 0) { return; }
+            if (targets.Count == 0) { return false; }
             var hitReactions = ReactionCompiler.ForChain(stats, environment.Targets);
             var settings = ChainSettings.From(stats.Chain);
             for (int i = 0; i < stats.Cast.ProjectileCount; i++)
@@ -33,6 +33,8 @@ namespace Game.Core
                 var first = targets[i % targets.Count];
                 Pool.Get().Init(Pool, environment.Targets, environment.Origin, first, settings, hitReactions, config.Reactions);
             }
+
+            return true;
         }
     }
 }

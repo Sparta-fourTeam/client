@@ -15,7 +15,7 @@ namespace Game.Tests
             public int Fires, Ticks, Disposed;
             public readonly List<Vector3> Origins = new List<Vector3>();
             public readonly List<float> Damages = new List<float>();
-            public void Fire(SkillConfig config, AttackEnvironment environment) { Fires++; Origins.Add(environment.Origin); Damages.Add(config.Stats.Cast.Damage); }
+            public bool Fire(SkillConfig config, AttackEnvironment environment) { Fires++; Origins.Add(environment.Origin); Damages.Add(config.Stats.Cast.Damage); return true; }
             public void Tick(SkillConfig config, AttackEnvironment environment, float deltaTime) => Ticks++;
             public void Dispose() => Disposed++;
         }

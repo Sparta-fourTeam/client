@@ -74,7 +74,8 @@ namespace Game.Core
 
         public virtual void Dispose() => disposed = true;
 
-        protected abstract void OnFire();
+        /// <summary>시전하고 실제로 쏘았는지 돌려준다. false면 쿨타임을 쓰지 않는다(<see cref="CastClock"/>)</summary>
+        protected abstract bool OnFire();
 
         protected IReadOnlyList<IEnemyTarget> FindTargets(float maxRange) =>
             targets.Select(caster.position, maxRange);
