@@ -134,6 +134,11 @@ class MergeTests(unittest.TestCase):
         self.api.comment['user'] = {**BOT, 'id': 999}
         self.held('summary')
 
+    def test_graphql_bot_login_does_not_need_rest_suffix(self):
+        self.api.editor['login'] = 'chatgpt-codex-connector'
+        gate.merge_one(self.api, 300)
+        self.assertEqual(1, len(self.api.writes))
+
     def test_human_edited_bot_summary(self):
         self.api.editor = {'__typename': 'User', 'databaseId': gate.AUTHOR_ID}
         self.held('edited by another')
@@ -190,6 +195,11 @@ class MergeTests(unittest.TestCase):
 
     def test_newer_request_invalidates_old_approval(self):
         self.add_request(3, '2026-10-10T20:07:00Z')
+        self.held('newer review request')
+
+    def test_newer_security_review_request_blocks_old_approval(self):
+        comment = self.add_request(3, '2026-10-10T20:07:00Z')
+        comment['body'] = '@codex security review'
         self.held('newer review request')
 
     def test_newer_collaborator_request_blocks_old_approval(self):

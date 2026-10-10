@@ -153,8 +153,8 @@ def summary_evidence(comments, head, api, prefix):
     provenance = api.comment_provenance(comment.get("node_id"))
     author = provenance.get("author") or {}
     editor = provenance.get("editor") or {}
-    require(author.get("__typename") == "Bot" and author.get("databaseId") == CODEX_ID and author.get("login") == CODEX_LOGIN, "summary author provenance mismatch")
-    require(provenance.get("lastEditedAt") is None or (editor.get("__typename") == "Bot" and editor.get("databaseId") == CODEX_ID and editor.get("login") == CODEX_LOGIN), "Codex summary was edited by another actor")
+    require(author.get("__typename") == "Bot" and author.get("databaseId") == CODEX_ID, "summary author provenance mismatch")
+    require(provenance.get("lastEditedAt") is None or (editor.get("__typename") == "Bot" and editor.get("databaseId") == CODEX_ID), "Codex summary was edited by another actor")
     require(provenance.get("id") == comment.get("node_id") and provenance.get("body") == comment.get("body") and timestamp(provenance.get("updatedAt")) == timestamp(comment.get("updated_at")), "summary changed during validation")
     body = comment["body"]
     require(body.startswith(MARKER + "\n"), "unknown Codex summary format")
@@ -189,10 +189,11 @@ def summary_evidence(comments, head, api, prefix):
 def approval_reaction(api, prefix, number, comments, finished):
     sources = [("pull_request", api.pages(f"{prefix}/issues/{number}/reactions"))]
     anchored = [comment for comment in comments
-                if re.match(r"^@codex review(?:\s|$)", comment.get("body", ""), re.IGNORECASE)]
+                if re.match(r"^@codex (?:security )?review(?:\s|$)", comment.get("body", ""), re.IGNORECASE)]
     require(all(timestamp(comment.get("updated_at")) <= finished for comment in anchored), "newer review request has not completed")
     requests = [comment for comment in anchored if comment.get("user", {}).get("id") == AUTHOR_ID
-                and comment["user"].get("type") == "User"]
+                and comment["user"].get("type") == "User"
+                and re.match(r"^@codex review(?:\s|$)", comment.get("body", ""), re.IGNORECASE)]
     request_snapshot = None
     if requests:
         # Only the latest owner-authored request may supply approval evidence.
