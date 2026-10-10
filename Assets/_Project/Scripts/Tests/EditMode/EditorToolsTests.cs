@@ -9,7 +9,7 @@ namespace Game.Tests
     {
 
         [Test]
-        public void SaveResetKeepsAnExactRecoverableBackup()
+        public void SaveBackupPreservesOriginalBytesAndCreatesSeparateCopies()
         {
             string folder = Path.Combine(Path.GetTempPath(), "nova-tools-" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(folder);
@@ -18,13 +18,14 @@ namespace Game.Tests
                 string save = Path.Combine(folder, "save.json");
                 byte[] contents = System.Text.Encoding.UTF8.GetBytes("{\"gold\":123,\"name\":\"검증\"}");
                 File.WriteAllBytes(save, contents);
-                string backup = PlaytestWindow.BackupAndReset(save);
-                Assert.That(File.Exists(save), Is.False);
+                string backup = PlaytestWindow.Backup(save);
+                Assert.That(File.ReadAllBytes(save), Is.EqualTo(contents));
                 Assert.That(File.ReadAllBytes(backup), Is.EqualTo(contents));
-                File.Copy(backup, save);
-                string nextBackup = PlaytestWindow.BackupAndReset(save);
+                string nextBackup = PlaytestWindow.Backup(save);
                 Assert.That(nextBackup, Is.Not.EqualTo(backup));
-                Assert.That(File.Exists(backup), Is.True);
+                Assert.That(File.ReadAllBytes(backup), Is.EqualTo(contents));
+                Assert.That(File.ReadAllBytes(nextBackup), Is.EqualTo(contents));
+                Assert.That(File.ReadAllBytes(save), Is.EqualTo(contents));
             }
             finally { Directory.Delete(folder, true); }
         }
