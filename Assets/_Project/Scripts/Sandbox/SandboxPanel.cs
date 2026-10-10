@@ -20,10 +20,6 @@ namespace Game.Sandbox
         private const float MinimizedHeight = 64f;
 
         private const float HeaderHeight = 52f;
-        private const float SectionHeight = 48f;
-        private const float ControlHeight = 58f;
-        private const float SkillButtonHeight = 72f;
-        private const float CardButtonHeight = 90f;
 
         private readonly SkillSandboxSession session;
         private readonly SandboxEnemyField enemies;
@@ -33,6 +29,7 @@ namespace Game.Sandbox
         private GUIStyle section;
         private GUIStyle button;
         private GUIStyle buttonOn;
+        private GUIStyle buttonForm;
         private GUIStyle label;
         private GUIStyle muted;
         private GUIStyle error;
@@ -54,7 +51,6 @@ namespace Game.Sandbox
         private bool showEnvironment;
         private bool showStats;
 
-        private bool realMode;
         private bool clickPlace = true;
 
         private SandboxEnemyField.Pattern pattern =
@@ -62,8 +58,7 @@ namespace Game.Sandbox
 
         private int enemyHp = 1000;
 
-        private List<UpgradeChoice> choices = new();
-        private List<SkillSandboxSession.CardInfo> cards = new();
+        private readonly Dictionary<int, List<SkillSandboxSession.CardInfo>> cards = new();
 
         private float nextStats;
         private string statsText = string.Empty;
@@ -89,11 +84,11 @@ namespace Game.Sandbox
 
         private void OnChanged()
         {
-            cards = session.Cards();
+            cards.Clear();
 
-            if (realMode)
+            foreach (var skill in session.ActiveSkills)
             {
-                choices = session.RollChoices();
+                cards[skill.Data.id] = session.Cards(skill.Data.id);
             }
 
             nextStats = 0f;
@@ -182,7 +177,7 @@ namespace Game.Sandbox
                 DrawEnvironment);
 
             DrawSection(
-                "현재 스킬 정보",
+                "스킬 정보",
                 ref showStats,
                 () =>
                 {
@@ -241,8 +236,7 @@ namespace Game.Sandbox
                     expanded
                         ? $"▼  {name}"
                         : $"▶  {name}",
-                    section,
-                    GUILayout.Height(SectionHeight)))
+                    section))
             {
                 expanded = !expanded;
             }
@@ -352,6 +346,13 @@ namespace Game.Sandbox
 
             var skills = session.Skills;
 
+            GUILayout.Label(
+                $"눌러서 켜고 끕니다 (최대 {SkillSandboxSession.MaxSkills}개). "
+                + "쿨타임은 오른쪽 위 HUD에 인게임과 같이 표시됩니다.",
+                small);
+
+            GUILayout.Space(6f);
+
             for (int i = 0; i < skills.Count; i += perRow)
             {
                 GUILayout.BeginHorizontal();
@@ -362,20 +363,20 @@ namespace Game.Sandbox
                 {
                     var skill = skills[j];
 
+                    bool on = session.IsOn(skill.Id);
+
                     string text = skill.HasPrefab
-                        ? skill.Name
+                        ? (on ? "● " : "○ ") + skill.Name
                         : skill.Name + "\n(프리팹 연결 없음)";
 
                     GUI.enabled = skill.HasPrefab;
 
                     if (GUILayout.Button(
                             text,
-                            skill.Id == session.Build.skillId
-                                ? buttonOn
-                                : button,
-                            GUILayout.Height(SkillButtonHeight)))
+                            on ? buttonOn : button,
+                            GUILayout.ExpandHeight(true)))
                     {
-                        session.SelectSkill(skill.Id);
+                        session.ToggleSkill(skill.Id);
                     }
 
                     GUI.enabled = true;
@@ -393,33 +394,10 @@ namespace Game.Sandbox
 
         private void DrawCards()
         {
-            GUILayout.BeginHorizontal();
-
-            if (GUILayout.Button(
-                    "직접 선택",
-                    realMode ? button : buttonOn,
-                    GUILayout.Height(ControlHeight)))
-            {
-                realMode = false;
-            }
-
-            if (GUILayout.Button(
-                    "실제 3지선다",
-                    realMode ? buttonOn : button,
-                    GUILayout.Height(ControlHeight)))
-            {
-                realMode = true;
-                choices = session.RollChoices();
-            }
-
-            GUILayout.EndHorizontal();
-
-            GUILayout.Space(8f);
-
-            if (session.Build.skillId == 0)
+            if (session.ActiveSkills.Count == 0)
             {
                 GUILayout.Label(
-                    "위에서 스킬을 고르세요",
+                    "위에서 스킬을 켜세요",
                     muted);
 
                 return;
@@ -430,76 +408,68 @@ namespace Game.Sandbox
             if (GUILayout.Button(
                     "카드 모두 비우기",
                     button,
-                    GUILayout.Height(ControlHeight)))
+                    GUILayout.ExpandHeight(true)))
             {
                 session.ClearCards();
             }
 
-            if (realMode &&
-                GUILayout.Button(
-                    "다시 뽑기",
-                    button,
-                    GUILayout.Height(ControlHeight)))
+            if (GUILayout.Button(
+                    session.Build.ignoreConditions
+                        ? "선행·배타 조건 무시: 켬"
+                        : "선행·배타 조건 무시: 끔",
+                    session.Build.ignoreConditions
+                        ? buttonOn
+                        : button,
+                    GUILayout.ExpandHeight(true)))
             {
-                choices = session.RollChoices();
+                session.SetIgnoreConditions(
+                    !session.Build.ignoreConditions);
             }
 
             GUILayout.EndHorizontal();
 
             GUILayout.Space(8f);
 
+            foreach (var skill in session.ActiveSkills.ToList())
+            {
+                DrawSkillCards(skill);
+            }
+        }
+
+        private void DrawSkillCards(SkillBase skill)
+        {
+            int skillId = skill.Data.id;
+
+            GUILayout.Label(
+                $"{skill.Data.name}  Lv {skill.Level}",
+                title);
+
+            var applied = session.Build.steps
+                .Where(s => s.skillId == skillId && !s.IsSkill)
+                .Select(s => s.cardId);
+
             GUILayout.Label(
                 "적용한 카드: "
-                + (session.Build.cards.Count == 0
-                    ? "없음"
-                    : string.Join(
-                        ", ",
-                        session.Build.cards)),
+                + (applied.Any()
+                    ? string.Join(", ", applied)
+                    : "없음"),
                 small);
 
+            GUILayout.Space(6f);
+
+            if (cards.TryGetValue(skillId, out var list))
+            {
+                DrawCardList(skillId, list);
+            }
+
             GUILayout.Space(10f);
-
-            if (realMode)
-            {
-                DrawChoices();
-            }
-            else
-            {
-                DrawCardList();
-            }
         }
 
-        private void DrawChoices()
+        private void DrawCardList(
+            int skillId,
+            List<SkillSandboxSession.CardInfo> list)
         {
-            if (choices.Count == 0)
-            {
-                GUILayout.Label(
-                    "지금 고를 수 있는 카드가 없습니다.\n"
-                    + "(조건 미충족 또는 모두 최대)",
-                    muted);
-
-                return;
-            }
-
-            foreach (var choice in choices.ToList())
-            {
-                if (GUILayout.Button(
-                        $"{choice.DisplayName}\n"
-                        + choice.DisplayDescription,
-                        button,
-                        GUILayout.MinHeight(CardButtonHeight)))
-                {
-                    session.Pick(choice);
-                    choices = session.RollChoices();
-                }
-
-                GUILayout.Space(6f);
-            }
-        }
-
-        private void DrawCardList()
-        {
-            foreach (var card in cards.ToList())
+            foreach (var card in list.ToList())
             {
                 GUILayout.BeginHorizontal();
 
@@ -507,6 +477,14 @@ namespace Game.Sandbox
                     $"{card.Name}   "
                     + $"{card.Count}/{card.MaxPick}\n"
                     + card.Description;
+
+                if (card.Conditions.Count > 0)
+                {
+                    text += "\n"
+                        + string.Join(
+                            " / ",
+                            card.Conditions);
+                }
 
                 if (card.Blocked != null)
                 {
@@ -517,10 +495,13 @@ namespace Game.Sandbox
 
                 if (GUILayout.Button(
                         text,
-                        button,
-                        GUILayout.MinHeight(CardButtonHeight)))
+                        card.IsForm
+                            ? buttonForm
+                            : button,
+                        GUILayout.ExpandHeight(true)))
                 {
                     session.TryAddCard(
+                        skillId,
                         card.Id,
                         out _);
                 }
@@ -531,9 +512,9 @@ namespace Game.Sandbox
                         "−",
                         button,
                         GUILayout.Width(64f),
-                        GUILayout.MinHeight(CardButtonHeight)))
+                        GUILayout.ExpandHeight(true)))
                 {
-                    session.RemoveCard(card.Id);
+                    session.RemoveCard(skillId, card.Id);
                 }
 
                 GUI.enabled = true;
@@ -563,7 +544,7 @@ namespace Game.Sandbox
                 if (GUILayout.Button(
                         $"샌드백 {count}",
                         button,
-                        GUILayout.Height(ControlHeight)))
+                        GUILayout.ExpandHeight(true)))
                 {
                     enemies.SpawnPattern(
                         pattern,
@@ -596,7 +577,7 @@ namespace Game.Sandbox
                         pattern == value
                             ? buttonOn
                             : button,
-                        GUILayout.Height(ControlHeight)))
+                        GUILayout.ExpandHeight(true)))
                 {
                     pattern = value;
                 }
@@ -620,7 +601,7 @@ namespace Game.Sandbox
                         enemyHp == hp
                             ? buttonOn
                             : button,
-                        GUILayout.Height(ControlHeight)))
+                        GUILayout.ExpandHeight(true)))
                 {
                     enemyHp = hp;
                 }
@@ -637,7 +618,7 @@ namespace Game.Sandbox
                     enemies.Moving
                         ? buttonOn
                         : button,
-                    GUILayout.Height(ControlHeight)))
+                    GUILayout.ExpandHeight(true)))
             {
                 enemies.Moving = !enemies.Moving;
             }
@@ -647,7 +628,7 @@ namespace Game.Sandbox
                     enemies.Respawn
                         ? buttonOn
                         : button,
-                    GUILayout.Height(ControlHeight)))
+                    GUILayout.ExpandHeight(true)))
             {
                 enemies.Respawn = !enemies.Respawn;
             }
@@ -661,7 +642,7 @@ namespace Game.Sandbox
                     clickPlace
                         ? buttonOn
                         : button,
-                    GUILayout.Height(ControlHeight)))
+                    GUILayout.ExpandHeight(true)))
             {
                 clickPlace = !clickPlace;
             }
@@ -673,7 +654,7 @@ namespace Game.Sandbox
             if (GUILayout.Button(
                     "모두 제거",
                     button,
-                    GUILayout.Height(ControlHeight)))
+                    GUILayout.ExpandHeight(true)))
             {
                 enemies.Clear();
             }
@@ -681,7 +662,7 @@ namespace Game.Sandbox
             if (GUILayout.Button(
                     "피해 집계 초기화",
                     button,
-                    GUILayout.Height(ControlHeight)))
+                    GUILayout.ExpandHeight(true)))
             {
                 enemies.ResetDamage();
             }
@@ -701,7 +682,7 @@ namespace Game.Sandbox
                     "−",
                     button,
                     GUILayout.Width(64f),
-                    GUILayout.Height(ControlHeight)))
+                    GUILayout.ExpandHeight(true)))
             {
                 session.SetPermanentLevel(
                     session.Build.permanentLevel - 1);
@@ -711,13 +692,13 @@ namespace Game.Sandbox
                 $"영구 레벨 {session.Build.permanentLevel}",
                 label,
                 GUILayout.ExpandWidth(true),
-                GUILayout.Height(ControlHeight));
+                GUILayout.ExpandHeight(true));
 
             if (GUILayout.Button(
                     "+",
                     button,
                     GUILayout.Width(64f),
-                    GUILayout.Height(ControlHeight)))
+                    GUILayout.ExpandHeight(true)))
             {
                 session.SetPermanentLevel(
                     session.Build.permanentLevel + 1);
@@ -727,7 +708,7 @@ namespace Game.Sandbox
                     "+5",
                     button,
                     GUILayout.Width(72f),
-                    GUILayout.Height(ControlHeight)))
+                    GUILayout.ExpandHeight(true)))
             {
                 session.SetPermanentLevel(
                     session.Build.permanentLevel + 5);
@@ -754,7 +735,7 @@ namespace Game.Sandbox
                             speed)
                             ? buttonOn
                             : button,
-                        GUILayout.Height(ControlHeight)))
+                        GUILayout.ExpandHeight(true)))
                 {
                     Time.timeScale = speed;
                 }
@@ -773,7 +754,7 @@ namespace Game.Sandbox
                 if (GUILayout.Button(
                         $"저장 {slot}",
                         button,
-                        GUILayout.Height(ControlHeight)))
+                        GUILayout.ExpandHeight(true)))
                 {
                     session.SavePreset(slot);
                 }
@@ -784,7 +765,7 @@ namespace Game.Sandbox
                 if (GUILayout.Button(
                         $"불러오기 {slot}",
                         button,
-                        GUILayout.Height(ControlHeight)))
+                        GUILayout.ExpandHeight(true)))
                 {
                     session.LoadPreset(slot);
                 }
@@ -894,12 +875,13 @@ namespace Game.Sandbox
                         alignment =
                             TextAnchor.MiddleCenter,
 
+                        // 최소 높이는 GUILayout.MinHeight(고정 높이처럼 동작해 줄바꿈된 글자가 잘린다) 대신 안쪽 여백으로 확보한다
                         padding =
                             new RectOffset(
                                 10,
                                 10,
-                                8,
-                                8)
+                                18,
+                                18)
                     };
 
                 style.normal.textColor =
@@ -936,6 +918,14 @@ namespace Game.Sandbox
                     .2f,
                     .55f,
                     .85f,
+                    1f));
+
+            // 형태 변환 카드
+            buttonForm = Button(
+                new Color(
+                    .5f,
+                    .3f,
+                    .72f,
                     1f));
 
             section =

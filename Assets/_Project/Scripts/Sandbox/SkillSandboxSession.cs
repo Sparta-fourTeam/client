@@ -5,10 +5,14 @@ using Game.Core;
 
 namespace Game.Sandbox
 {
-    /// <summary>스킬 샌드박스의 조작 로직 (UI와 분리해 테스트한다). 스킬 하나와 카드 목록으로 구성(<see cref="SandboxBuild"/>)을 만들고,
-    /// 구성이 바뀔 때마다 보유 스킬을 비우고 처음부터 다시 쌓는다. 같은 순서면 같은 결과이므로 카드 획득 순서 의존 문제도 그대로 드러난다.</summary>
+    /// <summary>스킬 샌드박스의 조작 로직. 켠 스킬 여러 개와 카드를 얻은 순서로 구성(<see cref="SandboxBuild"/>)을 만들고,
+    /// 구성이 바뀔 때마다 보유 스킬을 비우고 처음부터 다시 쌓는다. 같은 순서면 같은 결과이므로 카드 획득 순서 의존 문제도 그대로 드러난다.
+    /// 카드는 게임과 같은 선행·배타 조건(<see cref="UpgradeEligibility"/>)으로 고를 수 있고, 조건 무시를 켜면 조건만 건너뛴다. 영구 레벨 조건은 표시만 하고 막지 않는다.</summary>
     public sealed class SkillSandboxSession
     {
+        /// <summary>게임 HUD(SkillHud 프리팹)의 슬롯 수와 같다. 넘는 스킬은 HUD에 보이지 않는다</summary>
+        public const int MaxSkills = 5;
+
         public readonly struct SkillInfo
         {
             public int Id { get; }
@@ -36,8 +40,12 @@ namespace Game.Sandbox
             public bool Enabled { get; set; }
             public string DisabledReason { get; set; }
             public bool Shared { get; set; }
-            /// <summary>직접 적용할 수 있으면 null, 없으면 이유</summary>
+            /// <summary>고르면 스킬의 형태가 바뀌는 형태 변환 카드</summary>
+            public bool IsForm { get; set; }
+            /// <summary>지금 고를 수 있으면 null, 없으면 이유</summary>
             public string Blocked { get; set; }
+            /// <summary>선행·배타·영구 레벨·필요 스킬 조건과 지금 충족 여부. 조건이 없으면 비어 있다</summary>
+            public List<string> Conditions { get; set; } = new List<string>();
         }
 
         private readonly SkillController controller;
@@ -59,72 +67,103 @@ namespace Game.Sandbox
             Skills = all.Where(w => !w.childOnly).OrderBy(w => w.id).Select(w => new SkillInfo(w, controller.HasPrefab(w.id))).ToList();
         }
 
-        public SkillBase Current => controller.Skills.FirstOrDefault(w => w.Data.id == Build.skillId);
+        /// <summary>켠 스킬 (켠 순서)</summary>
+        public IReadOnlyList<SkillBase> ActiveSkills => controller.Skills;
 
-        // ── 스킬과 카드 ───────────────────────────────────────────────
+        // ── 스킬 ──────────────────────────────────────────────────────
 
-        public bool SelectSkill(int skillId)
+        public bool IsOn(int skillId) => Build.steps.Any(s => s.skillId == skillId && s.IsSkill);
+
+        /// <summary>스킬을 켜거나 끈다. 끄면 그 스킬의 카드도 함께 빠진다.</summary>
+        public bool ToggleSkill(int skillId)
         {
-            if (!catalog.TryGetValue(skillId, out var data) || data.childOnly) { LastError = $"알 수 없는 스킬 {skillId}"; return false; }
-            if (!controller.HasPrefab(skillId)) { LastError = $"{data.name}: SkillAssetTable에 프리팹이 없습니다."; Changed?.Invoke(); return false; }
-            Build = new SandboxBuild { skillId = skillId, permanentLevel = Build.permanentLevel };
+            if (IsOn(skillId))
+            {
+                Build.steps.RemoveAll(s => s.skillId == skillId);
+                Rebuild();
+                return true;
+            }
+            if (!catalog.TryGetValue(skillId, out var data) || data.childOnly) { return Fail($"알 수 없는 스킬 {skillId}"); }
+            if (!controller.HasPrefab(skillId)) { return Fail($"{data.name}: SkillAssetTable에 프리팹이 없습니다."); }
+            if (Build.steps.Count(s => s.IsSkill) >= MaxSkills) { return Fail($"스킬은 최대 {MaxSkills}개까지 켤 수 있습니다 (게임 HUD 슬롯 수)."); }
+            Build.steps.Add(new SandboxStep { skillId = skillId });
             Rebuild();
             return LastError == null;
         }
 
-        /// <summary>선택한 스킬의 카드 목록. 선행 조건은 보지 않고, 비활성 카드·공유 카드·최대 횟수만 막는다.</summary>
-        public List<CardInfo> Cards()
+        private bool Fail(string message)
+        {
+            LastError = message;
+            Changed?.Invoke();
+            return false;
+        }
+
+        // ── 카드 ──────────────────────────────────────────────────────
+
+        /// <summary>켠 스킬 하나의 카드 목록. 조건을 못 채웠거나 비활성·최대 횟수인 카드는 Blocked에 이유가 있다.</summary>
+        public List<CardInfo> Cards(int skillId)
         {
             var list = new List<CardInfo>();
-            if (!catalog.TryGetValue(Build.skillId, out var data)) { return list; }
-            foreach (var option in data.upgrades)
+            var weapon = FindWeapon(skillId);
+            if (weapon == null) { return list; }
+            foreach (var option in weapon.Data.upgrades)
             {
-                int count = Build.cards.Count(c => c == option.id);
-                var info = new CardInfo
+                list.Add(new CardInfo
                 {
                     Id = option.id,
                     Name = option.name,
                     Description = option.desc,
                     MaxPick = option.maxPickCount,
-                    Count = count,
+                    Count = controller.GetAcquiredCount(skillId, option.id),
                     Enabled = option.enabled,
                     DisabledReason = option.disabledReason,
-                    Shared = !string.IsNullOrEmpty(option.sharedId)
-                };
-                info.Blocked = !option.enabled ? (option.disabledReason ?? "비활성 카드")
-                    : info.Shared ? "공유 카드는 실제 선택(3지선다) 모드에서만 적용할 수 있다"
-                    : count >= option.maxPickCount ? "최대 횟수"
-                    : null;
-                list.Add(info);
+                    Shared = !string.IsNullOrEmpty(option.sharedId),
+                    IsForm = FormHintFinder.TryGetForm(option, controller.GetPermanentWeaponLevel(skillId), out _),
+                    Blocked = BlockedReason(weapon, option),
+                    Conditions = Conditions(weapon, option)
+                });
             }
             return list;
         }
 
-        public bool TryAddCard(string cardId, out string reason)
+        public bool TryAddCard(int skillId, string cardId, out string reason)
         {
             reason = null;
-            var card = Cards().Find(c => c.Id == cardId);
-            if (card == null) { reason = "이 스킬에 없는 카드"; return false; }
-            if (card.Blocked != null) { reason = card.Blocked; return false; }
-            Build.cards.Add(cardId);
+            var weapon = FindWeapon(skillId);
+            var option = weapon?.Data.upgrades.Find(c => c.id == cardId);
+            if (option == null) { reason = "이 스킬에 없는 카드"; return false; }
+            reason = BlockedReason(weapon, option);
+            if (reason != null) { return false; }
+            Build.steps.Add(new SandboxStep { skillId = skillId, cardId = cardId });
             Rebuild();
             if (LastError != null) { reason = LastError; return false; }
             return true;
         }
 
-        /// <summary>마지막으로 얻은 해당 카드를 하나 뺀다.</summary>
-        public bool RemoveCard(string cardId)
+        /// <summary>마지막으로 얻은 해당 카드를 하나 뺀다. 이 카드가 선행인 카드는 다시 쌓을 때 함께 빠진다.</summary>
+        public bool RemoveCard(int skillId, string cardId)
         {
-            int index = Build.cards.LastIndexOf(cardId);
+            // 공유 카드는 한 번 고르면 두 스킬의 행에 모두 횟수가 올라가므로, 어느 쪽 행에서 빼도 같은 공유 카드의 마지막 선택을 뺀다
+            string shared = FindOption(skillId, cardId)?.sharedId;
+            int index = Build.steps.FindLastIndex(s => !s.IsSkill
+                && ((s.skillId == skillId && s.cardId == cardId)
+                    || (!string.IsNullOrEmpty(shared) && FindOption(s.skillId, s.cardId)?.sharedId == shared)));
             if (index < 0) { return false; }
-            Build.cards.RemoveAt(index);
+            Build.steps.RemoveAt(index);
             Rebuild();
             return true;
         }
 
+        /// <summary>카드를 모두 비운다. 켠 스킬은 그대로 둔다.</summary>
         public void ClearCards()
         {
-            Build.cards.Clear();
+            Build.steps.RemoveAll(s => !s.IsSkill);
+            Rebuild();
+        }
+
+        public void SetIgnoreConditions(bool ignore)
+        {
+            Build.ignoreConditions = ignore;
             Rebuild();
         }
 
@@ -134,68 +173,115 @@ namespace Game.Sandbox
             Rebuild();
         }
 
-        // ── 실제 3지선다 ──────────────────────────────────────────────
+        private SkillBase FindWeapon(int skillId) => controller.Skills.FirstOrDefault(w => w.Data.id == skillId);
 
-        /// <summary>게임과 같은 규칙(선행 조건, 최대 횟수, 제외, 영구 레벨)으로 지금 고를 수 있는 현재 스킬의 강화 카드를 최대 count장 뽑는다.</summary>
-        public List<UpgradeChoice> RollChoices(int count = 3)
+        private SkillUpgradeOption FindOption(int skillId, string cardId) =>
+            catalog.TryGetValue(skillId, out var data) ? data.upgrades?.Find(c => c.id == cardId) : null;
+
+        private string BlockedReason(SkillBase weapon, SkillUpgradeOption option)
         {
-            var result = new List<UpgradeChoice>();
-            if (Current == null) { return result; }
-            foreach (var choice in controller.GetRandomUpgradeChoices(200))
+            int id = weapon.Data.id;
+            if (!option.enabled) { return option.disabledReason ?? "비활성 카드"; }
+            if (controller.GetAcquiredCount(id, option.id) >= option.maxPickCount) { return "최대 횟수"; }
+            // 영구 레벨 조건은 표시만 하고 막지 않는다(샌드박스는 영구 레벨을 자유롭게 바꿔 시험하는 곳이다)
+            if (!Build.ignoreConditions && !UpgradeEligibility.CanAcquire(option, id, controller, ignorePermanentLevel: true)) { return "조건 미충족"; }
+            if (!SkillUpgradeTransaction.CanApply(weapon, option, controller.Skills, controller.GetPermanentWeaponLevel(id)))
             {
-                if (choice.IsNewWeapon || choice.skill == null || choice.skill.Data.id != Build.skillId) { continue; }
-                result.Add(choice);
-                if (result.Count >= count) { break; }
+                return "함께 강화할 스킬이 없거나 적용할 수 없다";
             }
-            return result;
+            return null;
         }
 
-        public bool Pick(UpgradeChoice choice)
+        // ── 조건 안내 ─────────────────────────────────────────────────
+
+        private List<string> Conditions(SkillBase weapon, SkillUpgradeOption option)
         {
-            if (choice.Option == null || !controller.ApplyUpgradeChoice(choice)) { return false; }
-            Build.cards.Add(choice.Option.id);
-            Changed?.Invoke();
-            return true;
+            var lines = new List<string>();
+            int id = weapon.Data.id;
+            if (option.minPermanentLevel > 0)
+            {
+                lines.Add($"영구 Lv {option.minPermanentLevel} 이상");
+            }
+            if (option.minBattleLevel > 1)
+            {
+                lines.Add($"전투 Lv {option.minBattleLevel} 이상 {Mark(weapon.Level >= option.minBattleLevel)}");
+            }
+            if (option.requiredWeaponIds != null)
+            {
+                foreach (int required in option.requiredWeaponIds)
+                {
+                    lines.Add($"스킬 {SkillName(required)} 보유 {Mark(controller.GetWeaponLevel(required) > 0)}");
+                }
+            }
+            if (option.requiredCardCounts != null)
+            {
+                foreach (var requirement in option.requiredCardCounts)
+                {
+                    int owner = requirement.skillId == 0 ? id : requirement.skillId;
+                    string count = requirement.count > 1 ? $" x{requirement.count}" : string.Empty;
+                    lines.Add($"선행 {CardName(owner, requirement.cardId, id)}{count} {Mark(controller.GetAcquiredCount(owner, requirement.cardId) >= requirement.count)}");
+                }
+            }
+            if (option.exclusions != null)
+            {
+                foreach (var exclusion in option.exclusions)
+                {
+                    int owner = UpgradeEligibility.ExclusionOwner(exclusion, id);
+                    string until = exclusion.belowPermanentLevel > 0 ? $" (영구 Lv {exclusion.belowPermanentLevel} 미만에서만)" : string.Empty;
+                    bool applies = UpgradeEligibility.ExclusionApplies(exclusion, id, controller);
+                    bool clear = !applies || controller.GetAcquiredCount(owner, exclusion.cardId) == 0;
+                    lines.Add($"배타 {CardName(owner, exclusion.cardId, id)}{until} {(clear ? "(충족)" : "(보유 중)")}");
+                }
+            }
+            return lines;
+        }
+
+        private static string Mark(bool met) => met ? "(충족)" : "(미충족)";
+
+        private string SkillName(int skillId) => catalog.TryGetValue(skillId, out var data) ? data.name : skillId.ToString();
+
+        private string CardName(int ownerId, string cardId, int selfId)
+        {
+            string name = catalog.TryGetValue(ownerId, out var data) ? data.upgrades?.Find(c => c.id == cardId)?.name ?? cardId : cardId;
+            return ownerId == selfId ? name : $"{SkillName(ownerId)}의 {name}";
         }
 
         // ── 구성 적용 ─────────────────────────────────────────────────
 
-        /// <summary>보유 스킬을 비우고 구성대로 처음부터 다시 쌓는다. 적용하지 못한 카드는 구성에서 빼고 LastError에 남긴다.</summary>
+        /// <summary>보유 스킬을 비우고 구성대로 처음부터 다시 쌓는다. 적용하지 못한 단계는 구성에서 빼고 LastError에 남긴다.</summary>
         public void Rebuild()
         {
             LastError = null;
             progression.Level = Build.permanentLevel;
             controller.RefreshPermanentLevels();
             controller.ClearWeapons();
-            if (Build.skillId > 0)
+            var rejected = new List<string>();
+            foreach (var step in Build.steps.ToList())
             {
-                if (!controller.AddWeapon(Build.skillId)) { LastError = $"스킬 {Build.skillId}를 얻지 못했습니다."; }
-                else { ApplyCards(); }
+                if (!Apply(step, out string label)) { rejected.Add(label); Build.steps.Remove(step); }
             }
+            if (rejected.Count > 0) { LastError = "적용하지 못한 항목: " + string.Join(", ", rejected); }
+            // 카드를 직접 적용하면 선택 흐름이 SkillChanged를 발행하지 않으므로, 적용이 끝난 뒤 HUD에 올라간 레벨을 알린다
+            controller.PublishSkillStatus();
             Changed?.Invoke();
         }
 
-        private void ApplyCards()
+        private bool Apply(SandboxStep step, out string label)
         {
-            var weapon = Current;
-            var rejected = new List<string>();
-            foreach (var cardId in Build.cards.ToList())
-            {
-                var option = weapon.Data.upgrades.Find(c => c.id == cardId);
-                if (option == null || !weapon.LevelUp(option, Build.permanentLevel))
-                {
-                    rejected.Add(cardId);
-                    Build.cards.Remove(cardId);
-                }
-            }
-            if (rejected.Count > 0) { LastError = "적용하지 못한 카드: " + string.Join(", ", rejected); }
+            label = SkillName(step.skillId);
+            if (step.IsSkill) { return controller.AddWeapon(step.skillId); }
+            var weapon = FindWeapon(step.skillId);
+            var option = weapon?.Data.upgrades.Find(c => c.id == step.cardId);
+            label = $"{label}/{option?.name ?? step.cardId}";
+            return option != null && BlockedReason(weapon, option) == null
+                && SkillUpgradeTransaction.TryApply(weapon, option, controller.Skills, controller.GetPermanentWeaponLevel(step.skillId));
         }
 
         // ── 구성 불러오기·저장 ────────────────────────────────────────
 
         public bool LoadBuild(SandboxBuild build)
         {
-            if (build == null || !SelectSkill(build.skillId)) { return false; }
+            if (build == null) { return false; }
             Build = build.Clone();
             Rebuild();
             return LastError == null;
@@ -205,6 +291,8 @@ namespace Game.Sandbox
 
         public bool LoadPreset(string slot) => SandboxPresets.TryLoad(slot, out var build) && LoadBuild(build);
 
-        public string StatsText() => SandboxStatsText.Describe(Current);
+        public string StatsText() => controller.Skills.Count == 0
+            ? SandboxStatsText.Describe(null)
+            : string.Join("\n\n", controller.Skills.Select(SandboxStatsText.Describe));
     }
 }
