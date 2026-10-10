@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using UnityEditor;
+using UnityEditor.SceneManagement;
 #endif
 using System;
 using System.Collections;
@@ -25,8 +26,46 @@ using Object = UnityEngine.Object;
 
 namespace Game.Tests
 {
-    public sealed class UiRuntimeFlowTests
+    public sealed class UiRuntimeFlowTests : IPrebuildSetup, IPostBuildCleanup
     {
+#if UNITY_EDITOR
+        private const string EditorStateKey = "Game.Tests.UiRuntimeFlowTests.EditorState";
+        private static string PlayFromBootKey => $"ProjectNova.PlayFromBoot.{Hash128.Compute(Application.dataPath)}";
+#endif
+
+        void IPrebuildSetup.Setup()
+        {
+#if UNITY_EDITOR
+            // This runs before entering Play Mode, unlike NUnit/Unity setup callbacks.
+            // SessionState survives the domain reload so cleanup can restore the developer's settings.
+            SessionState.SetString(EditorStateKey + ".Scene", AssetDatabase.GetAssetPath(EditorSceneManager.playModeStartScene));
+            SessionState.SetBool(EditorStateKey + ".HadPreference", EditorPrefs.HasKey(PlayFromBootKey));
+            SessionState.SetBool(EditorStateKey + ".Preference", EditorPrefs.GetBool(PlayFromBootKey, false));
+            SessionState.SetBool(EditorStateKey, true);
+            // PlayFromBootMenu would otherwise restore Boot again after the domain reload.
+            EditorPrefs.SetBool(PlayFromBootKey, false);
+            EditorSceneManager.playModeStartScene = null;
+#endif
+        }
+
+        void IPostBuildCleanup.Cleanup()
+        {
+#if UNITY_EDITOR
+            if (!SessionState.GetBool(EditorStateKey, false)) { return; }
+            string scenePath = SessionState.GetString(EditorStateKey + ".Scene", "");
+            EditorSceneManager.playModeStartScene = string.IsNullOrEmpty(scenePath) ? null : AssetDatabase.LoadAssetAtPath<SceneAsset>(scenePath);
+            if (SessionState.GetBool(EditorStateKey + ".HadPreference", false))
+            {
+                EditorPrefs.SetBool(PlayFromBootKey, SessionState.GetBool(EditorStateKey + ".Preference", false));
+            }
+            else { EditorPrefs.DeleteKey(PlayFromBootKey); }
+            SessionState.EraseString(EditorStateKey + ".Scene");
+            SessionState.EraseBool(EditorStateKey + ".HadPreference");
+            SessionState.EraseBool(EditorStateKey + ".Preference");
+            SessionState.EraseBool(EditorStateKey);
+#endif
+        }
+
         private string _savePath;
         private string _originalSavePath;
         private LocalSaveStore _store;
