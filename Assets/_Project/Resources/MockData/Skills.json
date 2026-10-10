@@ -2930,6 +2930,45 @@
         ]
       },
       {
+        "id": "focus_beam_blast",
+        "name": "집중 폭파",
+        "desc": "메인 대상 주변 폭발 피해",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "beamFocusBlast",
+            "value": 1.5
+          }
+        ],
+        "requiredCardCounts": [
+          {
+            "cardId": "focus_beam_focus",
+            "count": 1,
+            "skillId": 0
+          }
+        ]
+      },
+      {
+        "id": "focus_beam_adjust",
+        "name": "초점 조정",
+        "desc": "메인 대상 공격 시 공격력 지속 증가 (최대 +150%)",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "beamFocusRamp",
+            "value": 150
+          }
+        ],
+        "requiredCardCounts": [
+          {
+            "cardId": "focus_beam_focus",
+            "count": 1,
+            "skillId": 0
+          }
+        ],
+        "minPermanentLevel": 13
+      },
+      {
         "id": "focus_beam_ultimate",
         "name": "필살기 · 집중 사격",
         "desc": "1회용 / 집중 광선 영구 레벨 비례 공격력",

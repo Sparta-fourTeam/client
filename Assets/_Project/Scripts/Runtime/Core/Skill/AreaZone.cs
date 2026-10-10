@@ -22,9 +22,14 @@ namespace Game.Core
         public float FocusBonus { get; }
         /// <summary>광선의 공격 한 번 피해. 메인 대상 추가 피해 계산에 쓴다</summary>
         public float BaseDamage { get; }
+        /// <summary>메인 대상을 공격할 때마다 늘어나 광선이 끝날 때 닿는 추가 피해 비율의 최대값</summary>
+        public float FocusRampMax { get; }
+        /// <summary>메인 대상 주변 폭발 반경과 피해 비율(공격 한 번 피해 대비)</summary>
+        public float FocusBlastRadius { get; }
+        public float FocusBlastRatio { get; }
 
         public AreaSettings(float radius, float duration, float pulseInterval, float moveSpeed = 0, float pull = 0, float length = 0, float width = 0,
-            float focusBonus = 0, float baseDamage = 0)
+            float focusBonus = 0, float baseDamage = 0, float focusRampMax = 0, float focusBlastRadius = 0, float focusBlastRatio = 0)
         {
             Radius = radius;
             Duration = duration;
@@ -35,6 +40,9 @@ namespace Game.Core
             Width = width;
             FocusBonus = focusBonus;
             BaseDamage = baseDamage;
+            FocusRampMax = focusRampMax;
+            FocusBlastRadius = focusBlastRadius;
+            FocusBlastRatio = focusBlastRatio;
         }
 
         public static AreaSettings From(AreaStats area) =>
@@ -43,7 +51,8 @@ namespace Game.Core
         /// <summary>광선: 지속 시간 동안 공격 횟수(pulses)만큼 고르게 피해를 준다</summary>
         public static AreaSettings From(BeamStats beam, float baseDamage = 0) =>
             new AreaSettings(0, beam.Duration, beam.Duration / Mathf.Max(1f, beam.Pulses), length: beam.Length, width: beam.Width,
-                focusBonus: beam.FocusBonus, baseDamage: baseDamage);
+                focusBonus: beam.FocusBonus, baseDamage: baseDamage, focusRampMax: beam.FocusRampMax,
+                focusBlastRadius: beam.FocusBlastRadius, focusBlastRatio: beam.FocusBlastRatio);
     }
 
     /// <summary>지정한 자리에 일정 시간 머물며 주기마다 범위 안의 적에게 적중 반응을 거는 영역(또는 광선).
@@ -57,7 +66,8 @@ namespace Game.Core
         private AttackReactions hitReactions = AttackReactions.Empty;
         private AttackReactions reactions = AttackReactions.Empty;
         private Func<float> randomValue;
-        private float radius, duration, pulseInterval, moveSpeed, pull, length, width, focusBonus, baseDamage;
+        private float radius, duration, pulseInterval, moveSpeed, pull, length, width, focusBonus, baseDamage, focusRampMax, focusBlastRadius, focusBlastRatio;
+        private int mainHits;
         private float elapsed, sincePulse;
         private Vector2? moveTarget;
         private IEnemyTarget aim;
@@ -86,6 +96,10 @@ namespace Game.Core
             width = Mathf.Max(0, settings.Width);
             focusBonus = Mathf.Max(0, settings.FocusBonus);
             baseDamage = Mathf.Max(0, settings.BaseDamage);
+            focusRampMax = Mathf.Max(0, settings.FocusRampMax);
+            focusBlastRadius = Mathf.Max(0, settings.FocusBlastRadius);
+            focusBlastRatio = Mathf.Max(0, settings.FocusBlastRatio);
+            mainHits = 0;
             moveTarget = null;
             aim = aimTarget;
             this.hitReactions = hitReactions ?? AttackReactions.Empty;
@@ -167,6 +181,21 @@ namespace Game.Core
             return (along - beamDirection * t).sqrMagnitude <= width * width * .25f;
         }
 
+        // 광선이 겨눈 메인 대상에게만 일어나는 일 (집중 광선): 초점의 추가 피해, 초점 조정으로 늘어나는 추가 피해, 집중 폭파
+        private void HitMain(IEnemyTarget target, AttackContext context)
+        {
+            mainHits++;
+            // 추가 피해는 광선이 끝날 때까지 메인 대상을 계속 맞힌다고 보고 공격 횟수에 비례해 최대값까지 늘어난다 (증가 속도는 원문에 없어 임시)
+            float totalPulses = Mathf.Max(1f, Mathf.Round(duration / pulseInterval));
+            float ramp = focusRampMax * Mathf.Min(1f, mainHits / totalPulses);
+            float extra = baseDamage * (focusBonus + ramp);
+            if (extra > 0) { new DamageReaction(extra, isImpact: true).Execute(context); }
+            if (focusBlastRadius > 0 && focusBlastRatio > 0)
+            {
+                SkillReactionEffects.Explode(provider, target.Position, focusBlastRadius, baseDamage * focusBlastRatio);
+            }
+        }
+
         private void Pulse(Vector2 center)
         {
             candidates.Clear();
@@ -195,6 +224,7 @@ namespace Game.Core
                 float scale = IsLine && focusBonus > 0 && ReferenceEquals(target, aim) ? 1f + focusBonus : 1f;
                 var context = new AttackContext(target.Position, Direction, target, randomValue, damageScale: scale);
                 hitReactions.Raise(AttackEvent.Hit, context);
+                if (IsLine && baseDamage > 0 && ReferenceEquals(target, aim)) { HitMain(target, context); }
                 reactions.Raise(AttackEvent.Hit, context);
                 if (target.IsDead) { reactions.Raise(AttackEvent.Kill, context); }
             }

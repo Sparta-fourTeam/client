@@ -15,7 +15,7 @@ namespace Game.Core
         KillLightningRatio, LightningStrikeRatio,
         FieldDuration, FieldDamageRatio, FieldFlatDamage, FieldDamageMultiplier, FieldRadius, FieldSlowRatio,
         AreaRadius, AreaDuration, AreaPulseInterval, AreaMoveSpeed, AreaPull,
-        BeamLength, BeamWidth, BeamDuration, BeamPulses, BeamFocusBonus,
+        BeamLength, BeamWidth, BeamDuration, BeamPulses, BeamFocusBonus, BeamFocusRampMax, BeamFocusBlastRadius, BeamFocusBlastRatio,
         ChainBounces, ChainJumpRange, ChainHopInterval, ChainPathWidth,
         Count
     }
@@ -91,6 +91,9 @@ namespace Game.Core
             Def(Stat.BeamDuration, d => d.beam.duration);
             Def(Stat.BeamPulses, d => d.beam.pulses);
             Def(Stat.BeamFocusBonus, d => d.beam.focusBonus);
+            Def(Stat.BeamFocusRampMax, d => d.beam.focusRampMax);
+            Def(Stat.BeamFocusBlastRadius, d => d.beam.focusBlastRadius);
+            Def(Stat.BeamFocusBlastRatio, d => d.beam.focusBlastRatio);
             Def(Stat.ChainBounces, d => d.chain.bounces);
             Def(Stat.ChainJumpRange, d => d.chain.jumpRange);
             Def(Stat.ChainHopInterval, d => d.chain.hopInterval);
@@ -257,6 +260,12 @@ namespace Game.Core
         public float Pulses => v[(int)Stat.BeamPulses];
         /// <summary>메인 대상(겨눈 적)에게 공격마다 더 주는 피해 비율</summary>
         public float FocusBonus => v[(int)Stat.BeamFocusBonus];
+        /// <summary>메인 대상을 공격할 때마다 늘어나는 추가 피해 비율의 최대값</summary>
+        public float FocusRampMax => v[(int)Stat.BeamFocusRampMax];
+        /// <summary>메인 대상 주변 폭발 반경</summary>
+        public float FocusBlastRadius => v[(int)Stat.BeamFocusBlastRadius];
+        /// <summary>메인 대상 주변 폭발 피해 비율(공격 한 번 피해 대비)</summary>
+        public float FocusBlastRatio => v[(int)Stat.BeamFocusBlastRatio];
     }
 
     public readonly struct ChainStats

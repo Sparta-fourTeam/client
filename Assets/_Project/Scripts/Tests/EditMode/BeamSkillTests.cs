@@ -205,6 +205,66 @@ namespace Game.Tests
             Assert.AreEqual(3, other.Damage);
         }
 
+        [Test(Description = "초점 조정: 메인 대상을 맞힐 때마다 추가 피해가 광선이 끝날 때 최대값까지 선형으로 늘고 다른 적은 그대로다")]
+        public void FocusRamp_MainTargetExtraDamageGrowsEachPulse()
+        {
+            var main = new HitRecorder { Position = new Vector2(4, 0) };
+            var other = new HitRecorder { Position = new Vector2(7, 0) };
+            var provider = new CatalogWorld.Targets();
+            provider.All.AddRange(new[] { main, other });
+            var pool = Pool();
+            var zone = pool.Get();
+            // 지속 3초에 1초 간격 3번, 최대 +150%: 추가 피해는 50% → 100% → 150%
+            zone.Init(pool, provider, Vector2.zero, new AreaSettings(0, 3, 1, length: 10, width: 1, baseDamage: 10, focusRampMax: 1.5f), Damage(10),
+                AttackReactions.Empty, aimTarget: main);
+
+            Tick(zone, .1f);
+            Assert.AreEqual(10 + 5, main.Damage);
+            Tick(zone, 1f);
+            Assert.AreEqual(15 + 10 + 10, main.Damage);
+            Tick(zone, 1f);
+            Assert.AreEqual(35 + 10 + 15, main.Damage);
+            Assert.AreEqual(30, other.Damage, "메인 대상이 아닌 적은 기본 피해만 받는다");
+        }
+
+        [Test(Description = "집중 폭파: 메인 대상을 맞힐 때마다 주변 적이 폭발 피해를 받고 반경 밖은 받지 않는다")]
+        public void FocusBlast_ExplodesAroundTheMainTargetOnly()
+        {
+            var main = new HitRecorder { Position = new Vector2(4, 0) };
+            var neighbor = new HitRecorder { Position = new Vector2(4, 1.5f) };   // 광선 폭 밖, 폭발 반경 안
+            var far = new HitRecorder { Position = new Vector2(4, 5) };
+            var provider = new CatalogWorld.Targets();
+            provider.All.AddRange(new[] { main, neighbor, far });
+            var pool = Pool();
+            var zone = pool.Get();
+            zone.Init(pool, provider, Vector2.zero, new AreaSettings(0, 1, 1, length: 10, width: 1, baseDamage: 10, focusBlastRadius: 2, focusBlastRatio: .5f), Damage(10),
+                AttackReactions.Empty, aimTarget: main);
+
+            Tick(zone, .1f);
+
+            Assert.AreEqual(5, neighbor.Damage, "공격 한 번 피해 10의 50%");
+            Assert.AreEqual(0, far.Damage);
+            Assert.AreEqual(10 + 5, main.Damage, "메인 대상도 폭발 안에 있다");
+        }
+
+        [Test(Description = "집중 광선: 집중 폭파와 초점 조정 카드는 초점을 선행으로 하고 스탯을 켠다")]
+        public void FocusBeam_BlastAndAdjustCardsRequireFocusAndEnableTheirStats()
+        {
+            world = new CatalogWorld();
+            var beam = world.Create(FocusBeamId);
+            var cards = world.Data[FocusBeamId].upgrades;
+            foreach (var id in new[] { "focus_beam_blast", "focus_beam_adjust" })
+            {
+                Assert.AreEqual("focus_beam_focus", cards.Find(c => c.id == id).requiredCardCounts.Single().cardId);
+            }
+            Assert.AreEqual(13, cards.Find(c => c.id == "focus_beam_adjust").minPermanentLevel);
+
+            world.Take(beam, "focus_beam_focus", "focus_beam_blast", "focus_beam_adjust");
+
+            Assert.AreEqual(1.5f, beam.Stats.Beam.FocusBlastRadius);
+            Assert.AreEqual(1.5f, beam.Stats.Beam.FocusRampMax, .0001f);
+        }
+
         [Test(Description = "연속 광선은 공격 횟수를 15 늘린다 (지속 시간은 그대로)")]
         public void FocusBeam_ContinuousCardAddsPulses()
         {

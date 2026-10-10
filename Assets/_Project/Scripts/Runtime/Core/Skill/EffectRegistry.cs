@@ -150,6 +150,10 @@ namespace Game.Core
             Add("beamPulsesFlat", Plain, Beam, (s, v) => s[Stat.BeamPulses] += v, PositiveInteger);
             // 메인 대상(광선이 겨눈 적)이 공격마다 공격력의 v%를 더 받는다
             Add("beamFocusBonus", Plain, Beam, (s, v) => s[Stat.BeamFocusBonus] += v * .01f, Positive);
+            // 메인 대상을 공격할 때마다 추가 피해가 늘어나 광선이 끝날 때 공격력의 v%까지 닿는다
+            Add("beamFocusRamp", Plain, Beam, (s, v) => s[Stat.BeamFocusRampMax] += v * .01f, Positive);
+            // 메인 대상을 공격할 때마다 그 주변 반경 v에 폭발을 낸다
+            Add("beamFocusBlast", Plain, Beam, (s, v) => s[Stat.BeamFocusBlastRadius] = v, Positive);
 
             // 연쇄: 첫 대상 뒤에 튕기는 횟수(반사), 튕기는 거리, 경로 위 적 공격
             Add("chainBounces", Plain, Chain, (s, v) => s[Stat.ChainBounces] += (int)v, PositiveInteger);
