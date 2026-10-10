@@ -32,6 +32,7 @@ class FakeAPI:
                     'run_attempt': 1, 'status': 'completed', 'conclusion': 'success',
                     'pull_requests': [{'number': 300, 'head': {'sha': HEAD}, 'base': {'sha': BASE}}]}
         self.runs, self.writes = [self.run], []
+        self.request_reactions = {}
         self.graph = {'headRefOid': HEAD, 'baseRefOid': BASE, 'mergeable': 'MERGEABLE', 'mergeStateStatus': 'CLEAN', 'reviewDecision': None}
         self.after_first_inspection, self.inspections = None, 0
 
@@ -48,6 +49,9 @@ class FakeAPI:
         raise AssertionError(path)
 
     def pages(self, path, key=None):
+        for comment_id, reactions in self.request_reactions.items():
+            if path.endswith(f'/issues/comments/{comment_id}/reactions'):
+                return copy.deepcopy(reactions)
         for suffix, rows in [('/comments', self.comments), ('/reactions', self.reactions), ('/reviews', self.reviews), ('/statuses', self.statuses), ('/files', self.files)]:
             if path.endswith(suffix):
                 return copy.deepcopy(rows)
@@ -57,9 +61,16 @@ class FakeAPI:
         raise AssertionError(path)
 
     def comment_provenance(self, node_id):
-        return {'id': self.comment['node_id'], 'body': self.comment['body'],
-                'updatedAt': self.comment['updated_at'], 'lastEditedAt': self.comment['updated_at'],
-                'author': {'__typename': 'Bot', 'databaseId': gate.CODEX_ID, 'login': gate.CODEX_LOGIN}, 'editor': self.editor}
+        comment = next(row for row in self.comments if row['node_id'] == node_id)
+        if node_id == self.comment['node_id']:
+            author = {'__typename': 'Bot', 'databaseId': gate.CODEX_ID, 'login': gate.CODEX_LOGIN}
+            editor = self.editor
+        else:
+            author = {'__typename': 'User', 'databaseId': gate.AUTHOR_ID, 'login': 'Eunseok'}
+            editor = comment.get('test_editor', author)
+        return {'id': comment['node_id'], 'body': comment['body'],
+                'updatedAt': comment['updated_at'], 'lastEditedAt': comment['updated_at'],
+                'author': author, 'editor': editor}
 
     def threads(self, number):
         return copy.deepcopy(self.graph), copy.deepcopy(self.review_threads)
@@ -149,6 +160,76 @@ class MergeTests(unittest.TestCase):
         self.api.reactions = FakeAPI().reactions
         gate.merge_one(self.api, 300)
         self.assertEqual(1, len(self.api.writes))
+
+    def add_request(self, comment_id=3, when='2026-10-10T20:00:00Z'):
+        comment = {'id': comment_id, 'node_id': f'IC_{comment_id}', 'body': '@codex review\nPlease check the updated commit.',
+                   'user': {'id': gate.AUTHOR_ID, 'type': 'User'}, 'updated_at': when}
+        self.api.comments.append(comment)
+        self.api.request_reactions[comment_id] = []
+        return comment
+
+    def test_manual_review_comment_thumb_is_accepted(self):
+        self.add_request()
+        self.api.reactions = []
+        self.api.request_reactions[3] = FakeAPI().reactions
+        gate.merge_one(self.api, 300)
+        self.assertEqual(1, len(self.api.writes))
+
+    def test_stale_request_comment_thumb_is_rejected(self):
+        self.add_request()
+        self.api.reactions = []
+        self.api.request_reactions[3] = [{**FakeAPI().reactions[0], 'created_at': '2026-10-10T20:00:01Z'}]
+        self.held('fresh Codex')
+
+    def test_only_latest_request_comment_can_approve(self):
+        self.add_request()
+        self.add_request(4, '2026-10-10T20:05:00Z')
+        self.api.reactions = []
+        self.api.request_reactions[3] = FakeAPI().reactions
+        self.held('fresh Codex')
+
+    def test_newer_request_invalidates_old_approval(self):
+        self.add_request(3, '2026-10-10T20:07:00Z')
+        self.held('newer review request')
+
+    def test_newer_collaborator_request_blocks_old_approval(self):
+        comment = self.add_request(3, '2026-10-10T20:07:00Z')
+        comment['user']['id'] = 999
+        self.held('newer review request')
+
+    def test_other_collaborator_running_review_blocks_old_approval(self):
+        comment = self.add_request()
+        comment['user']['id'] = 999
+        self.api.request_reactions[3] = [{'user': BOT, 'content': 'eyes'}]
+        self.held('running')
+
+    def test_changed_request_body_between_passes_is_detected(self):
+        self.add_request()
+        self.api.after_first_inspection = lambda api: api.comments[-1].update(body='@codex review updated text')
+        self.held('changed during validation')
+
+    def test_request_comment_running_reaction_blocks_pr_thumb(self):
+        self.add_request()
+        self.api.request_reactions[3] = [{'user': BOT, 'content': 'eyes'}]
+        self.held('running')
+
+    def test_request_comment_wrong_bot_or_editor(self):
+        comment = self.add_request()
+        self.api.reactions = []
+        self.api.request_reactions[3] = [{**FakeAPI().reactions[0], 'user': {**BOT, 'id': 999}}]
+        self.held('fresh Codex')
+        comment['test_editor'] = {'__typename': 'User', 'databaseId': 999}
+        self.held('edited by another')
+
+    def test_quoted_command_or_other_author_is_not_review_evidence(self):
+        comment = self.add_request()
+        self.api.reactions = []
+        self.api.request_reactions[3] = FakeAPI().reactions
+        comment['body'] = '> @codex review'
+        self.held('fresh Codex')
+        comment['body'] = '@codex review'
+        comment['user']['id'] = 999
+        self.held('fresh Codex')
 
     def test_running_reaction(self):
         self.api.reactions.append({'user': BOT, 'content': 'eyes'})

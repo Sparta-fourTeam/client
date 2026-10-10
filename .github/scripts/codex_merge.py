@@ -98,8 +98,8 @@ class GitHub:
         query = """query($id: ID!) {
           node(id: $id) { ... on IssueComment {
             id body updatedAt lastEditedAt
-            author { __typename ... on Bot { databaseId login } }
-            editor { __typename ... on Bot { databaseId login } }
+            author { __typename login ... on Bot { databaseId } ... on User { databaseId } }
+            editor { __typename login ... on Bot { databaseId } ... on User { databaseId } }
           } }
         }"""
         result = self.request("/graphql", "POST", {"query": query, "variables": {"id": node_id}})
@@ -185,6 +185,48 @@ def summary_evidence(comments, head, api, prefix):
     return finished, comment["id"], comment["updated_at"], comment["body"]
 
 
+
+def approval_reaction(api, prefix, number, comments, finished):
+    sources = [("pull_request", api.pages(f"{prefix}/issues/{number}/reactions"))]
+    anchored = [comment for comment in comments
+                if re.match(r"^@codex review(?:\s|$)", comment.get("body", ""), re.IGNORECASE)]
+    require(all(timestamp(comment.get("updated_at")) <= finished for comment in anchored), "newer review request has not completed")
+    requests = [comment for comment in anchored if comment.get("user", {}).get("id") == AUTHOR_ID
+                and comment["user"].get("type") == "User"]
+    request_snapshot = None
+    if requests:
+        # Only the latest owner-authored request may supply approval evidence.
+        # Old commands, quoted mentions and reactions on arbitrary comments are
+        # not evidence for this review. Edited commands require owner provenance.
+        request = max(requests, key=lambda row: (timestamp(row.get("updated_at")), row.get("id", 0)))
+        require(timestamp(request.get("updated_at")) <= finished, "newer review request has not completed")
+        provenance = api.comment_provenance(request.get("node_id"))
+        author = provenance.get("author") or {}
+        editor = provenance.get("editor") or {}
+        require(author.get("__typename") == "User" and author.get("databaseId") == AUTHOR_ID, "review request author provenance mismatch")
+        require(provenance.get("lastEditedAt") is None or (editor.get("__typename") == "User" and editor.get("databaseId") == AUTHOR_ID), "review request was edited by another actor")
+        require(provenance.get("id") == request.get("node_id") and provenance.get("body") == request.get("body") and timestamp(provenance.get("updatedAt")) == timestamp(request.get("updated_at")), "review request changed during validation")
+        sources.append((f"issue_comment:{request['id']}", api.pages(f"{prefix}/issues/comments/{request['id']}/reactions")))
+        request_snapshot = (request["node_id"], request["id"], request["body"], request["updated_at"])
+    if anchored:
+        latest_any = max(anchored, key=lambda row: (timestamp(row.get("updated_at")), row.get("id", 0)))
+        if request_snapshot is None or latest_any["id"] != request_snapshot[1]:
+            # Another collaborator's request cannot approve a merge, but its
+            # live Codex reaction can block one while a new review is running.
+            other_reactions = api.pages(f"{prefix}/issues/comments/{latest_any['id']}/reactions")
+            require(not any(is_codex(item.get("user")) and item.get("content") == "eyes" for item in other_reactions), "Codex still has a running-review reaction")
+    thumbs = []
+    for source, reactions in sources:
+        require(not any(is_codex(item.get("user")) and item.get("content") == "eyes" for item in reactions), "Codex still has a running-review reaction")
+        candidates = [item for item in reactions if is_codex(item.get("user")) and item.get("content") == "+1"]
+        require(len(candidates) <= 1, "ambiguous Codex reactions")
+        for item in candidates:
+            if timestamp(item.get("created_at")) >= finished:
+                thumbs.append((source, item["id"], item["created_at"]))
+    require(bool(thumbs), "fresh Codex thumbs-up is missing")
+    return {"thumbs": tuple(sorted(thumbs)), "request": request_snapshot}
+
+
 def validate_reviews(reviews, finished):
     latest = {}
     for review in sorted(reviews, key=lambda row: row.get("id", 0)):
@@ -262,13 +304,10 @@ def inspect(api, number):
     comments = api.pages(f"{prefix}/issues/{number}/comments")
     evidence = summary_evidence(comments, head, api, prefix)
     finished = evidence[0]
-    reactions = api.pages(f"{prefix}/issues/{number}/reactions")
-    require(not any(is_codex(item.get("user")) and item.get("content") == "eyes" for item in reactions), "Codex still has a running-review reaction")
-    thumbs = [item for item in reactions if is_codex(item.get("user")) and item.get("content") == "+1"]
-    require(len(thumbs) == 1 and timestamp(thumbs[0].get("created_at")) >= finished, "fresh Codex thumbs-up is missing")
+    reactions = approval_reaction(api, prefix, number, comments, finished)
     validate_reviews(api.pages(f"{prefix}/pulls/{number}/reviews"), finished)
     validate_checks(api, prefix, pr)
-    return {"head": head, "base": pr["base"]["sha"], "merge": pr["merge_commit_sha"], "evidence": evidence, "reaction": thumbs[0]["id"]}
+    return {"head": head, "base": pr["base"]["sha"], "merge": pr["merge_commit_sha"], "evidence": evidence, "reactions": reactions}
 
 
 def merge_one(api, number):
