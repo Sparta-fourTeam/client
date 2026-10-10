@@ -534,6 +534,23 @@
         "requiredWeaponIds": [
           16
         ]
+      },
+      {
+        "id": "arrow_neutral_2",
+        "name": "무속성 증폭 · Ⅱ",
+        "desc": "화살과 집중 광선 공격력 +50%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 50
+          }
+        ],
+        "enabled": true,
+        "sharedId": "shared_arrow_focus_damage",
+        "requiredWeaponIds": [
+          19
+        ]
       }
     ],
     "desc": "가장 가까운 적에게 화살을 발사합니다. 강화로 발사 수와 관통력을 늘릴 수 있습니다."
@@ -2581,9 +2598,17 @@
         "name": "무속성 증폭 · Ⅲ",
         "desc": "에너지 빔과 집중 광선 공격력 +60%",
         "maxPickCount": 1,
-        "effects": [],
-        "enabled": false,
-        "disabledReason": "집중 광선이 구현되지 않았고 공유 카드가 연결되지 않았다"
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 60
+          }
+        ],
+        "enabled": true,
+        "sharedId": "shared_energy_focus_damage",
+        "requiredWeaponIds": [
+          19
+        ]
       }
     ],
     "desc": "가장 가까운 적을 향해 빔을 쏘아 직선 위의 적을 반복 공격합니다."
@@ -2841,5 +2866,113 @@
       }
     ],
     "desc": "번개가 가까운 적 사이를 튕기며 여러 적을 공격합니다."
+  },
+  {
+    "id": 19,
+    "unlockLevel": 7,
+    "name": "집중 광선",
+    "assetKey": "weapon_focus_beam",
+    "castType": 3,
+    "element": 0,
+    "maxLevel": 9,
+    "progressionId": null,
+    "baseStats": {
+      "cast": {
+        "cooldown": 5,
+        "baseDamage": 3,
+        "range": 14,
+        "projectileCount": 1,
+        "castCount": 1,
+        "castInterval": 0.1
+      },
+      "beam": {
+        "length": 14,
+        "width": 0.35,
+        "duration": 2,
+        "pulses": 10
+      }
+    },
+    "upgrades": [
+      {
+        "id": "focus_beam_focus",
+        "name": "초점",
+        "desc": "메인 대상 공격력 +100%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "beamFocusBonus",
+            "value": 100
+          }
+        ]
+      },
+      {
+        "id": "focus_beam_continuous",
+        "name": "연속 광선",
+        "desc": "공격 횟수 +15",
+        "maxPickCount": 2,
+        "effects": [
+          {
+            "kind": "beamPulsesFlat",
+            "value": 15
+          }
+        ]
+      },
+      {
+        "id": "focus_beam_amplify",
+        "name": "집중 증폭",
+        "desc": "공격력 +60%",
+        "maxPickCount": 2,
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 60
+          }
+        ]
+      },
+      {
+        "id": "focus_beam_ultimate",
+        "name": "필살기 · 집중 사격",
+        "desc": "1회용 / 집중 광선 영구 레벨 비례 공격력",
+        "maxPickCount": 1,
+        "effects": [],
+        "enabled": false,
+        "disabledReason": "필살기를 쓰는 캐릭터(원문 표기가 마요네코 아카네/쿠로네코 아카네로 다름)와 1회용 규칙, 공격력 계수가 원문에 없다"
+      },
+      {
+        "id": "focus_beam_neutral_2",
+        "name": "무속성 증폭 · Ⅱ",
+        "desc": "화살과 집중 광선 공격력 +50%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 50
+          }
+        ],
+        "enabled": true,
+        "sharedId": "shared_arrow_focus_damage",
+        "requiredWeaponIds": [
+          1
+        ]
+      },
+      {
+        "id": "focus_beam_neutral_3",
+        "name": "무속성 증폭 · Ⅲ",
+        "desc": "에너지 빔과 집중 광선 공격력 +60%",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "damage",
+            "value": 60
+          }
+        ],
+        "enabled": true,
+        "sharedId": "shared_energy_focus_damage",
+        "requiredWeaponIds": [
+          16
+        ]
+      }
+    ],
+    "desc": "가장 가까운 적 하나를 집중해서 광선으로 연속 공격합니다."
   }
 ]

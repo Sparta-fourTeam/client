@@ -27,7 +27,7 @@ namespace Game.Core
             var targets = environment.FindTargets(config.Attack.Range);
             if (targets.Count == 0) { return false; }
             var hitReactions = ReactionCompiler.ForProjectile(stats, null, environment.Targets);
-            var settings = AreaSettings.From(stats.Beam);
+            var settings = AreaSettings.From(stats.Beam, stats.Cast.Damage);
             for (int i = 0; i < stats.Cast.ProjectileCount; i++)
             {
                 var target = targets[i % targets.Count];

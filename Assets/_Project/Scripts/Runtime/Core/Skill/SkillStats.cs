@@ -15,7 +15,7 @@ namespace Game.Core
         KillLightningRatio, LightningStrikeRatio,
         FieldDuration, FieldDamageRatio, FieldFlatDamage, FieldDamageMultiplier, FieldRadius, FieldSlowRatio,
         AreaRadius, AreaDuration, AreaPulseInterval, AreaMoveSpeed, AreaPull,
-        BeamLength, BeamWidth, BeamDuration, BeamPulses,
+        BeamLength, BeamWidth, BeamDuration, BeamPulses, BeamFocusBonus,
         ChainBounces, ChainJumpRange, ChainHopInterval, ChainPathWidth,
         Count
     }
@@ -90,6 +90,7 @@ namespace Game.Core
             Def(Stat.BeamWidth, d => d.beam.width);
             Def(Stat.BeamDuration, d => d.beam.duration);
             Def(Stat.BeamPulses, d => d.beam.pulses);
+            Def(Stat.BeamFocusBonus, d => d.beam.focusBonus);
             Def(Stat.ChainBounces, d => d.chain.bounces);
             Def(Stat.ChainJumpRange, d => d.chain.jumpRange);
             Def(Stat.ChainHopInterval, d => d.chain.hopInterval);
@@ -254,6 +255,8 @@ namespace Game.Core
         public float Duration => v[(int)Stat.BeamDuration];
         /// <summary>지속 시간 동안의 공격 횟수</summary>
         public float Pulses => v[(int)Stat.BeamPulses];
+        /// <summary>메인 대상(겨눈 적)에게 공격마다 더 주는 피해 비율</summary>
+        public float FocusBonus => v[(int)Stat.BeamFocusBonus];
     }
 
     public readonly struct ChainStats
