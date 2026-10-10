@@ -32,12 +32,13 @@ namespace Game.Core
             Strategy.Tick(Config, environment, deltaTime);
         }
 
-        protected override void OnFire()
+        protected override bool OnFire()
         {
             using var scope = Game.Core.Combat.DamageAttribution.BeginOutermost(Data.ToDamageSource());
             bool hasTarget = Fired != null && FindTargets(Config.Attack.Range).Any(target => !target.IsDead);
-            Strategy.Fire(Config, environment);
+            bool fired = Strategy.Fire(Config, environment);
             if (hasTarget) { Fired?.Invoke(); }
+            return fired;
         }
 
         /// <summary>쿨타임과 무관하게 지정한 위치에서 공격 한 번을 낸다. 자식 스킬 시전에 쓴다.</summary>

@@ -14,8 +14,9 @@ namespace Game.Tests
             {
             }
 
-            protected override void OnFire()
+            protected override bool OnFire()
             {
+                return true;
             }
         }
 

@@ -9,7 +9,7 @@ namespace Game.Tests
         private sealed class TestSkill : SkillBase
         {
             public TestSkill(SkillData data) : base(data, null, null) { }
-            protected override void OnFire() { }
+            protected override bool OnFire() => true;
             public SkillStats CurrentStats => stats;
         }
 
@@ -234,6 +234,22 @@ namespace Game.Tests
             clock.Tick(0.2f, 2, 3, 0.1f, () => fired++);
             Assert.AreEqual(3, fired);
             Assert.AreEqual(1.75f, clock.RemainingCooldown, 0.0001f);
+        }
+
+        [Test(Description = "쏠 대상이 없으면 쿨타임을 쓰지 않고 준비 상태로 기다리다가, 대상이 생기면 그 프레임에 바로 시전한다")]
+        public void NoTarget_KeepsCooldownReadyAndFiresAsSoonAsTargetAppears()
+        {
+            var clock = new CastClock(); bool hasTarget = false; int fired = 0;
+            bool Fire() { if (!hasTarget) { return false; } fired++; return true; }
+
+            for (int i = 0; i < 10; i++) { clock.Tick(0.5f, 2, 1, 0.1f, Fire); }
+            Assert.AreEqual(0, fired);
+            Assert.AreEqual(0f, clock.RemainingCooldown);
+
+            hasTarget = true;
+            clock.Tick(0.016f, 2, 1, 0.1f, Fire);
+            Assert.AreEqual(1, fired);
+            Assert.AreEqual(2f, clock.RemainingCooldown);
         }
 
         [Test]

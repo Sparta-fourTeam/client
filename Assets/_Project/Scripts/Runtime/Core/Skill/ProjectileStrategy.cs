@@ -48,7 +48,7 @@ namespace Game.Core
             reserveClock.Tick(deltaTime, nearby, cast.ReserveCount, cast.ReserveCooldown, cast.ReserveInterval, fireReserve);
         }
 
-        public void Fire(SkillConfig config, AttackEnvironment environment)
+        public bool Fire(SkillConfig config, AttackEnvironment environment)
         {
             var current = config.Stats;
             // 사방 발사는 조준하지 않으므로 대상이 없어도 쏜다. 그 밖에는 가까운 적부터 서로 다른 적에게 나눠 쏜다.
@@ -56,7 +56,7 @@ namespace Game.Core
             var targets = radial ? null : environment.FindTargets(config.Attack.Range);
             // 맞은 적을 빼고 나니 노릴 적이 없으면, 부모가 날아온 방향이 있을 때 그 방향 기준 부채꼴로 쏜다.
             bool fan = !radial && targets.Count == 0 && environment.Exclude != null && environment.Direction.sqrMagnitude > 0;
-            if (!radial && !fan && targets.Count == 0) { return; }
+            if (!radial && !fan && targets.Count == 0) { return false; }
 
             var spawnRules = new ProjectileSpawnRules(current, environment.Targets, Pool, Scale, config.Reactions);
             int count = current.Cast.ProjectileCount;
@@ -69,6 +69,8 @@ namespace Game.Core
                         wall != null ? wall.AttackLineY : (float?)null, config.Attack.Range, current.Projectile.Speed, current.Projectile.PierceCount, i, count);
                 spawnRules.SpawnMain(path.Start, path.Direction, path.Lifetime, path.PierceCount, environment.Exclude);
             }
+
+            return true;
         }
     }
 }

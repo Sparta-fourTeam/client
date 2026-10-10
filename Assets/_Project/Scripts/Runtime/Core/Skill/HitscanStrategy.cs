@@ -31,16 +31,18 @@ namespace Game.Core
 
         public void Tick(SkillConfig config, AttackEnvironment environment, float deltaTime) { }
 
-        public void Fire(SkillConfig config, AttackEnvironment environment)
+        public bool Fire(SkillConfig config, AttackEnvironment environment)
         {
             var current = config.Stats;
             var targets = environment.FindTargets(config.Attack.Range);
-            if (targets.Count == 0) { return; }
+            if (targets.Count == 0) { return false; }
             var effects = new HitscanCastEffects(current, config.Attack.Range, environment.Targets, Pool, fieldPool, originalScale, config.Reactions);
             for (int i = 0; i < current.Cast.ProjectileCount; i++)
             {
                 effects.Cast(targets[i % targets.Count]);
             }
+
+            return true;
         }
     }
 }
