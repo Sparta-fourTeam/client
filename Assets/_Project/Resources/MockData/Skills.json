@@ -2988,6 +2988,29 @@
         ]
       },
       {
+        "id": "focus_beam_arrow",
+        "name": "집중 화살",
+        "desc": "시전 시 집중 화살 추가 발사 (화살 일제 사격 효과 적용)",
+        "maxPickCount": 1,
+        "effects": [
+          {
+            "kind": "onEvent",
+            "trigger": "Start",
+            "skillId": 20
+          }
+        ],
+        "requiredCardCounts": [
+          {
+            "cardId": "focus_beam_focus",
+            "count": 1,
+            "skillId": 0
+          }
+        ],
+        "requiredWeaponIds": [
+          1
+        ]
+      },
+      {
         "id": "focus_beam_ultimate",
         "name": "필살기 · 집중 사격",
         "desc": "1회용 / 집중 광선 영구 레벨 비례 공격력",
@@ -3032,5 +3055,46 @@
       }
     ],
     "desc": "가장 가까운 적 하나를 집중해서 광선으로 연속 공격합니다."
+  },
+  {
+    "id": 20,
+    "name": "집중 화살",
+    "assetKey": "weapon_focus_arrow",
+    "castType": 0,
+    "element": 0,
+    "maxLevel": 1,
+    "progressionId": null,
+    "childOnly": true,
+    "mirrorCards": [
+      {
+        "skillId": 1,
+        "cardId": "arrow_multishot"
+      }
+    ],
+    "baseStats": {
+      "cast": {
+        "cooldown": 2.0,
+        "baseDamage": 12,
+        "range": 12,
+        "projectileCount": 1,
+        "castCount": 1,
+        "castInterval": 0.1
+      },
+      "projectile": {
+        "speed": 10,
+        "pierceCount": 0,
+        "knockbackDistance": 0.08
+      },
+      "status": {
+        "paralysisChance": 1,
+        "freezeChance": 1,
+        "frostbiteChance": 1,
+        "burnChance": 1
+      },
+      "explosion": {
+        "damageRatio": 1
+      }
+    },
+    "upgrades": []
   }
 ]

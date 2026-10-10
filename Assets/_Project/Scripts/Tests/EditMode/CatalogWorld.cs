@@ -24,6 +24,16 @@ namespace Game.Tests
             }
         }
 
+        /// <summary>이 세계에서 만든 시전기들이 얻은 카드를 게임의 SkillController처럼 알려 준다 (다른 스킬 카드를 가져오는 자식 스킬용)</summary>
+        private sealed class OwnedState : IUpgradeState
+        {
+            private readonly CatalogWorld world;
+            public OwnedState(CatalogWorld world) => this.world = world;
+            public int GetWeaponLevel(int id) => world.casters.Find(c => c.Data.id == id)?.Level ?? 0;
+            public int GetPermanentWeaponLevel(int id) => 0;
+            public int GetAcquiredCount(int id, string card) => world.casters.Find(c => c.Data.id == id)?.GetAcquiredCount(card) ?? 0;
+        }
+
         public Targets Provider { get; } = new Targets();
         public Dictionary<int, SkillData> Data { get; }
         private readonly Dictionary<int, GameObject> prefabs = new Dictionary<int, GameObject>();
@@ -37,7 +47,7 @@ namespace Game.Tests
             tweak?.Invoke(Data);
             var assets = TestSkillAssets.Real();
             foreach (var data in Data.Values) { prefabs[data.id] = assets.GetPrefab(data.assetKey); }
-            children = new ChildSkillCaster(id => Build(id));
+            children = new ChildSkillCaster(id => Build(id), id => MirroredEffects.For(Data[id], Data, new OwnedState(this)));
         }
 
         private SkillCaster Build(int id)

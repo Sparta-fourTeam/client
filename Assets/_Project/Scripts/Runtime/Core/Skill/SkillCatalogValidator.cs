@@ -62,6 +62,38 @@ namespace Game.Core
             SkillUpgradeTransaction.ValidateCatalog(weapons);
             ValidateConditions(weapons);
             ValidateChildSkills(weapons);
+            ValidateMirrorCards(weapons);
+        }
+
+        // 다른 스킬의 카드 효과를 가져오는 자식 스킬은 존재하는 스킬·카드만 가리켜야 하고, 그 카드의 효과를 자식이 소비해야 한다(소비하지 않으면 적용돼도 아무 일이 없다)
+        private static void ValidateMirrorCards(List<SkillData> weapons)
+        {
+            var byId = new Dictionary<int, SkillData>();
+            foreach (var weapon in weapons) { byId[weapon.id] = weapon; }
+            foreach (var weapon in weapons)
+            {
+                if (weapon.mirrorCards == null) { continue; }
+                foreach (var mirrored in weapon.mirrorCards)
+                {
+                    var option = mirrored != null && byId.TryGetValue(mirrored.skillId, out var owner) && mirrored.skillId != weapon.id
+                        ? owner.upgrades.Find(c => c.id == mirrored.cardId)
+                        : null;
+                    if (option == null)
+                    {
+                        throw new InvalidOperationException($"스킬 '{weapon.name}'의 mirrorCards가 없는 스킬·카드를 가리키거나 자기 자신을 가리킵니다.");
+                    }
+                    foreach (var effects in EffectLists(option))
+                    {
+                        foreach (var effect in effects)
+                        {
+                            if (effect.target != 0 || !EffectRegistry.IsStatKind(effect.kind) || !EffectRegistry.Supports(weapon.castType, effect.kind))
+                            {
+                                throw new InvalidOperationException($"스킬 '{weapon.name}'의 mirrorCards 카드 '{option.id}': 효과 {effect.kind}는 {weapon.castType} 스킬이 가져올 수 없는 효과입니다 (스탯 효과만 가능).");
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         // 자식 스킬 시전과 보관 효과(target)는 존재하는 스킬만 가리켜야 하고, 한 스킬 아래에서 시전이 순환하면 안 된다.

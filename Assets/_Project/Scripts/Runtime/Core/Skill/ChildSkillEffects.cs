@@ -246,10 +246,27 @@ namespace Game.Core
     public sealed class ChildSkillCaster : IChildSkillCaster, IDisposable
     {
         private readonly Func<int, SkillCaster> create;
+        private readonly Func<int, IReadOnlyList<EffectDef>> mirrored;
         private readonly Dictionary<int, SkillCaster> children = new Dictionary<int, SkillCaster>();
 
         /// <param name="create">스킬 ID로 시전기를 만든다. 만들 수 없으면 null (사유는 만드는 쪽이 알린다)</param>
-        public ChildSkillCaster(Func<int, SkillCaster> create) => this.create = create;
+        /// <param name="mirrored">시전할 때마다 그 자식 스킬에 더 적용할 다른 스킬 카드의 효과(<see cref="MirroredEffects"/>). 없으면 null</param>
+        public ChildSkillCaster(Func<int, SkillCaster> create, Func<int, IReadOnlyList<EffectDef>> mirrored = null)
+        {
+            this.create = create;
+            this.mirrored = mirrored;
+        }
+
+        private SkillConfig Resolve(ChildCast cast, SkillConfig childBase)
+        {
+            var config = cast.Resolve(childBase, this);
+            var extra = mirrored?.Invoke(cast.SkillId);
+            if (extra == null || extra.Count == 0) { return config; }
+            var builder = new SkillConfigBuilder(config);
+            if (builder.TryApplyCatalog(extra)) { return builder.Build(); }
+            Debug.LogWarning($"[ChildCast] 스킬 {cast.SkillId}에 다른 스킬 카드의 효과를 적용하지 못했습니다. mirrorCards를 확인하세요.");
+            return config;
+        }
 
         public void Cast(ChildCast cast, AttackContext context)
         {
@@ -258,7 +275,7 @@ namespace Game.Core
                 child = create(cast.SkillId);
                 children[cast.SkillId] = child;
             }
-            child?.FireAt(context.Position, config => cast.Resolve(config, this), cast.ExcludeHit ? context.Target : null,
+            child?.FireAt(context.Position, config => Resolve(cast, config), cast.ExcludeHit ? context.Target : null,
                 cast.ExcludeHit ? context.Direction : default);
         }
 

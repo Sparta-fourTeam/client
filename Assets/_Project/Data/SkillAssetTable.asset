@@ -98,6 +98,11 @@ MonoBehaviour:
     hudIcon: {fileID: 21300000, guid: b7c1e5a04d2f4e6a9a31c5d8e0f2a7b9, type: 3}
     newCardIcon: {fileID: 21300000, guid: b7c1e5a04d2f4e6a9a31c5d8e0f2a7b9, type: 3}
     upgradeCardIcon: {fileID: 21300000, guid: b7c1e5a04d2f4e6a9a31c5d8e0f2a7b9, type: 3}
+  - key: weapon_focus_arrow
+    prefab: {fileID: 5228935304015980034, guid: be9bd7196120145f69876a92c5d1a55c, type: 3}
+    hudIcon: {fileID: 21300000, guid: b7c1e5a04d2f4e6a9a31c5d8e0f2a7b9, type: 3}
+    newCardIcon: {fileID: 21300000, guid: b7c1e5a04d2f4e6a9a31c5d8e0f2a7b9, type: 3}
+    upgradeCardIcon: {fileID: 21300000, guid: b7c1e5a04d2f4e6a9a31c5d8e0f2a7b9, type: 3}
   hudFallback: {fileID: -1817599883, guid: 256e7fff31566b14e81a254145f0c189, type: 3}
   cardFallback: {fileID: -1817599883, guid: 256e7fff31566b14e81a254145f0c189, type: 3}
   formIcons:
