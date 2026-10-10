@@ -471,17 +471,42 @@ namespace Game.Tests
             yield return new WaitForSecondsRealtime(0.35f);
             Canvas.ForceUpdateCanvases();
             var canvas = button.GetComponentInParent<Canvas>();
-            yield return WaitFor(() => canvas.rootCanvas.renderMode != RenderMode.ScreenSpaceOverlay
-                || (Mathf.Abs(canvas.rootCanvas.pixelRect.width - Screen.width) < 1
-                    && Mathf.Abs(canvas.rootCanvas.pixelRect.height - Screen.height) < 1));
             var rect = (RectTransform)button.transform;
-            var pointer = new PointerEventData(EventSystem.current)
-            {
-                position = RectTransformUtility.WorldToScreenPoint(canvas.worldCamera, rect.TransformPoint(rect.rect.center)),
-                button = PointerEventData.InputButton.Left
-            };
+            PointerEventData pointer = null;
             var hits = new List<RaycastResult>();
-            EventSystem.current.RaycastAll(pointer, hits);
+            bool sampled = false;
+            void SampleGameView()
+            {
+                if (sampled)
+                {
+                    return;
+                }
+
+                if (canvas.rootCanvas.renderMode == RenderMode.ScreenSpaceOverlay
+                    && (Mathf.Abs(canvas.rootCanvas.pixelRect.width - Screen.width) >= 1
+                        || Mathf.Abs(canvas.rootCanvas.pixelRect.height - Screen.height) >= 1))
+                {
+                    return;
+                }
+
+                pointer = new PointerEventData(EventSystem.current)
+                {
+                    position = RectTransformUtility.WorldToScreenPoint(canvas.worldCamera, rect.TransformPoint(rect.rect.center)),
+                    button = PointerEventData.InputButton.Left
+                };
+                EventSystem.current.RaycastAll(pointer, hits);
+                sampled = true;
+            }
+            // Editor update can retain Scene View/preview dimensions even with Game View focused.
+            // Sample the real raycast while the Game View canvas is preparing its render.
+            Canvas.willRenderCanvases += SampleGameView;
+            try
+            {
+                gameView?.Repaint();
+                Canvas.ForceUpdateCanvases();
+                yield return WaitFor(() => sampled);
+            }
+            finally { Canvas.willRenderCanvases -= SampleGameView; }
             Assert.That(hits, Is.Not.Empty, $"{button.name} has no pointer target. Pointer={pointer.position}, Screen={Screen.width}x{Screen.height}, Camera={canvas.worldCamera?.pixelRect}, Canvas={canvas.pixelRect}, Rect={rect.rect}, Position={rect.position}, EventSystem={EventSystem.current.name}");
             Assert.That(hits[0].gameObject.GetComponentInParent<Button>(), Is.SameAs(button), button.name + " is covered by " + hits[0].gameObject.name);
             ExecuteEvents.ExecuteHierarchy(hits[0].gameObject, pointer, ExecuteEvents.pointerDownHandler);

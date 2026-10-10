@@ -32,3 +32,5 @@
 Unity의 `Window > General > Test Runner`에서 EditMode 탭의 `Game.Tests.UiRuntimeFlowTests`를 선택해 실행한다. 테스트 어셈블리는 Editor 전용이지만 각 시나리오는 실제 Play Mode로 들어가 검증한다.
 
 `UpgradeConfirmationTests`는 레벨별 총비용·강화 횟수, 취소 후 늦은 확인, 연타·진행 중 취소, 확인 전 변경된 비용 재확인, 중간 실패 후 성공분 유지와 재시도를 검사한다. `UpgradeConfirmPopup` 미리보기는 테이블의 후드 0→2레벨 예시 비용이며 구매 API를 호출하지 않는다.
+
+에디터 도구·Scene View와 Game View의 해상도가 다를 수 있으므로 게임 버튼 테스트는 Game View에 포커스를 맞추고 Canvas 렌더 시점에 화면 크기가 일치할 때 실제 EventSystem 레이캐스트를 검사한다. 에디터 업데이트 단계에서 Scene View 크기가 남아 있으면 정상 버튼을 화면 밖으로 오인할 수 있다.
