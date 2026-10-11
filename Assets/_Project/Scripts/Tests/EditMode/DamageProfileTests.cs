@@ -102,12 +102,19 @@ namespace Game.Tests
         [Test(Description = "저항을 먼저 적용하고 취약 배율은 그 뒤에 곱한다")]
         public void Model_AppliesVulnerabilityAfterProfile()
         {
-            var model = Model(Profile(new Dictionary<string, float> { { "Fire", 0.5f } }));
+            var hp = new Recorder<EnemyHpChanged>();
+            var model = Model(Profile(new Dictionary<string, float> { { "Fire", 0.5f } }), hp);
             model.ApplyVulnerability(0.5f, 5f);
 
-            model.TakeDamage(Skill(10, Element.Fire)); // 10 → 15 → 22
+            model.TakeDamage(Skill(10, Element.Fire, CastType.Hitscan, impact: true)); // 10 → 15 → 22
 
             Assert.AreEqual(78, model.Hp);
+            Assert.AreEqual(1, hp.Messages.Count);
+            Assert.AreEqual(22, hp.Messages[0].Damage.Amount, "메시지도 저항·취약 적용 후 실제 HP 차감량을 전달한다");
+            Assert.AreEqual(1, hp.Messages[0].Damage.SkillId);
+            Assert.AreEqual(Element.Fire, hp.Messages[0].Damage.Element);
+            Assert.AreEqual(CastType.Hitscan, hp.Messages[0].Damage.CastType);
+            Assert.IsTrue(hp.Messages[0].Damage.IsImpact);
         }
 
         [Test(Description = "막힌 피해는 HP 변화 메시지도 내지 않는다")]

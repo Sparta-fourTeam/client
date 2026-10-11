@@ -29,6 +29,8 @@ namespace Game.Core
         private int _lastHp; // EnemyHpChanged가 체력 감소(피격)인지 회복인지 가리는 기준
         private Vector2 _lastPosition; // 오브젝트가 파괴된 뒤에도 남은 참조가 읽을 마지막 위치
         private bool _destroyed;
+        private bool _deathPlayed;
+        private static GameObject s_deathEffect;
 
         private void Awake()
         {
@@ -53,6 +55,7 @@ namespace Game.Core
             _enemyModel = enemyModel;
             _projectilePrefab = projectilePrefab;
             _lastHp = enemyModel.Hp;
+            _deathPlayed = false;
             _previousPosition = transform.position;
             _lastPosition = transform.position;
             _enemyModel.ProjectileFired += OnProjectileFired;
@@ -194,13 +197,15 @@ namespace Game.Core
                 return;
             }
 
-            _hitFlash.Flash();
+            bool impact = message.Damage.Amount == 0 || message.Damage.IsImpact &&
+                message.Damage.CastType != CastType.Area && message.Damage.CastType != CastType.Beam;
+            _hitFlash.Flash(impact ? 1f : .22f);
 
             // 실제로 깎인 체력(남은 체력을 넘는 과잉 피해는 빠진 값)을 머리 위에 띄운다
             float jitter = UnityEngine.Random.Range(-DamagePopupJitter, DamagePopupJitter);
             DamagePopupPool.Show(damage, new Vector3(Position.x + jitter, VisualBounds.TopY(transform), transform.position.z), gameObject.scene);
 
-            if (_hasHit && message.Current > 0)
+            if (impact && _hasHit && message.Current > 0)
             {
                 _animator.SetTrigger(HitHash);
             }
@@ -208,9 +213,36 @@ namespace Game.Core
 
         private void OnDied(EnemyDied message)
         {
-            if (message.EnemyId != _enemyModel.Id)
+            if (message.EnemyId != _enemyModel.Id || _deathPlayed)
             {
                 return;
+            }
+
+            _deathPlayed = true;
+            _hitFlash?.Restore();
+            GetComponent<EnemyStatusEffects>()?.Clear();
+            if (s_deathEffect == null) { s_deathEffect = Resources.Load<GameObject>("VFX/EnemyDeath"); }
+            if (s_deathEffect != null)
+            {
+                var body = _animator != null ? _animator.transform : transform;
+                var bounds = new Bounds(Position, Vector3.one * .6f);
+                var renderers = body.GetComponentsInChildren<SpriteRenderer>();
+                if (renderers.Length > 0)
+                {
+                    bounds = renderers[0].bounds;
+                    foreach (var renderer in renderers) { bounds.Encapsulate(renderer.bounds); }
+                }
+                var effect = Instantiate(s_deathEffect, bounds.center, Quaternion.identity);
+                UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(effect, gameObject.scene);
+                effect.transform.localScale = Vector3.one * Mathf.Clamp(Mathf.Max(bounds.size.x, bounds.size.y), .4f, 2f);
+                // 새 분열체와 다른 적을 가리지 않도록 죽은 적의 바로 뒤에 그린다.
+                var bodySorting = GetComponentInChildren<UnityEngine.Rendering.SortingGroup>();
+                var effectSorting = effect.GetComponent<UnityEngine.Rendering.SortingGroup>();
+                if (bodySorting != null && effectSorting != null)
+                {
+                    effectSorting.sortingLayerID = bodySorting.sortingLayerID;
+                    effectSorting.sortingOrder = bodySorting.sortingOrder - 1;
+                }
             }
 
             if (!_hasDie)
