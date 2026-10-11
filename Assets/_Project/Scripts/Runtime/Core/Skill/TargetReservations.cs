@@ -38,13 +38,27 @@ namespace Game.Core
             list.Add(new Entry(damage, now + duration));
         }
 
-        /// <summary>예약된 피해가 남은 체력을 넘는 양. 0이면 아직 더 맞아야 죽는 적이다. 체력을 모르는 대상은 항상 0이다</summary>
-        public float Overkill(IEnemyTarget target)
+        private float PendingDamage(IEnemyTarget target)
         {
             if (target == null || !entries.TryGetValue(target, out var list)) { return 0; }
             float pending = 0;
             foreach (var entry in list) { pending += entry.Damage; }
-            return System.Math.Max(0, pending - target.CurrentHp);
+            return pending;
+        }
+
+        /// <summary>예약된 피해만으로 죽는 대상인지. 남은 체력과 같아도 죽으며, 체력을 모르는 대상은 제외한다</summary>
+        public bool IsLethal(IEnemyTarget target)
+        {
+            if (target == null || target.CurrentHp == int.MaxValue) { return false; }
+            float pending = PendingDamage(target);
+            return pending > 0 && pending >= target.CurrentHp;
+        }
+
+        /// <summary>예약된 피해가 남은 체력을 넘는 양. 정확히 죽는 예약도 0이므로 치명 여부는 IsLethal로 구분한다</summary>
+        public float Overkill(IEnemyTarget target)
+        {
+            if (target == null || target.CurrentHp == int.MaxValue) { return 0; }
+            return System.Math.Max(0, PendingDamage(target) - target.CurrentHp);
         }
     }
 }
