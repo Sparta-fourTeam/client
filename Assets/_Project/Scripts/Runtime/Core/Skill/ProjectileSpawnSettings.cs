@@ -13,6 +13,7 @@ namespace Game.Core
         public IEnemyTargetProvider TargetProvider { get; set; }
         public int PierceCount { get; set; } = 0;
         public IEnemyTarget IgnoredTarget { get; set; }
+        public TargetReservations.Reservation Reservation { get; set; }
         /// <summary>적중 때 가장 먼저 실행하는 피해·상태이상 반응</summary>
         public AttackReactions HitReactions { get; set; } = AttackReactions.Empty;
         /// <summary>강화 카드가 덧붙인 반응(시작·틱·적중·처치·소멸)</summary>

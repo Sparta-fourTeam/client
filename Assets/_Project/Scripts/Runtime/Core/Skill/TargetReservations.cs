@@ -6,14 +6,26 @@ namespace Game.Core
     /// 예약은 도착 예정 시간이 지나면 사라지므로 빗나가도 오래 남지 않는다.</summary>
     public sealed class TargetReservations
     {
-        private readonly struct Entry
+        /// <summary>공격 한 발의 예약. 반복 해제하거나 만료 뒤 해제해도 다른 공격의 예약은 건드리지 않는다.</summary>
+        public sealed class Reservation : System.IDisposable
         {
             public readonly float Damage;
             public readonly float ExpiresAt;
-            public Entry(float damage, float expiresAt) { Damage = damage; ExpiresAt = expiresAt; }
+            public IEnemyTarget Target { get; }
+            private TargetReservations owner;
+
+            internal Reservation(TargetReservations owner, IEnemyTarget target, float damage, float expiresAt)
+            { this.owner = owner; Target = target; Damage = damage; ExpiresAt = expiresAt; }
+
+            public void Dispose()
+            {
+                var previous = owner;
+                owner = null;
+                previous?.Release(this);
+            }
         }
 
-        private readonly Dictionary<IEnemyTarget, List<Entry>> entries = new();
+        private readonly Dictionary<IEnemyTarget, List<Reservation>> entries = new();
         private readonly List<IEnemyTarget> emptied = new();
         private float now;
 
@@ -31,12 +43,21 @@ namespace Game.Core
         }
 
         /// <summary>target이 duration초 뒤에 맞을 피해를 기록한다. DamageReaction처럼 매 적중의 소수 부분은 버린다</summary>
-        public void Reserve(IEnemyTarget target, float damage, float duration)
+        public Reservation Reserve(IEnemyTarget target, float damage, float duration)
         {
             int appliedDamage = (int)damage;
-            if (target == null || appliedDamage <= 0 || duration <= 0) { return; }
-            if (!entries.TryGetValue(target, out var list)) { entries[target] = list = new List<Entry>(); }
-            list.Add(new Entry(appliedDamage, now + duration));
+            if (target == null || appliedDamage <= 0 || duration <= 0) { return null; }
+            if (!entries.TryGetValue(target, out var list)) { entries[target] = list = new List<Reservation>(); }
+            var reservation = new Reservation(this, target, appliedDamage, now + duration);
+            list.Add(reservation);
+            return reservation;
+        }
+
+        private void Release(Reservation reservation)
+        {
+            if (!entries.TryGetValue(reservation.Target, out var list)) { return; }
+            list.Remove(reservation);
+            if (list.Count == 0) { entries.Remove(reservation.Target); }
         }
 
         private float PendingDamage(IEnemyTarget target)
