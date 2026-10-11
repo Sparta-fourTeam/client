@@ -16,7 +16,7 @@ namespace Game.Core
         FieldDuration, FieldDamageRatio, FieldFlatDamage, FieldDamageMultiplier, FieldRadius, FieldSlowRatio,
         AreaRadius, AreaDuration, AreaPulseInterval, AreaMoveSpeed, AreaPull, AreaCoreHits, AreaCoreRadiusRatio, AreaCoreFreezeScale,
         BeamLength, BeamWidth, BeamDuration, BeamPulses, BeamFocusBonus, BeamFocusRampMax, BeamFocusBlastRadius, BeamFocusBlastRatio, BeamRefractions, BeamFocusAim,
-        ChainBounces, ChainJumpRange, ChainHopInterval, ChainPathWidth,
+        ChainBounces, ChainHopInterval, ChainPathWidth,
         Count
     }
 
@@ -103,7 +103,6 @@ namespace Game.Core
             Def(Stat.BeamRefractions, d => d.beam.refractions);
             Def(Stat.BeamFocusAim, d => d.beam.focusAim);
             Def(Stat.ChainBounces, d => d.chain.bounces);
-            Def(Stat.ChainJumpRange, d => d.chain.jumpRange);
             Def(Stat.ChainHopInterval, d => d.chain.hopInterval);
             Def(Stat.ChainPathWidth, d => d.chain.pathWidth);
             for (int i = 0; i < t.Length; i++)
@@ -295,7 +294,6 @@ namespace Game.Core
         internal ChainStats(float[] values) => v = values;
 
         public int Bounces => (int)v[(int)Stat.ChainBounces];
-        public float JumpRange => v[(int)Stat.ChainJumpRange];
         public float HopInterval => v[(int)Stat.ChainHopInterval];
         public float PathWidth => v[(int)Stat.ChainPathWidth];
     }

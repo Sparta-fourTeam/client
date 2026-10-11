@@ -10,20 +10,18 @@ namespace Game.Core
     public readonly struct ChainSettings
     {
         public int Bounces { get; }
-        public float JumpRange { get; }
         public float HopInterval { get; }
         /// <summary>0보다 크면 튕기는 경로 위(이 폭 이내)의 적도 함께 공격한다</summary>
         public float PathWidth { get; }
 
-        public ChainSettings(int bounces, float jumpRange, float hopInterval, float pathWidth = 0)
+        public ChainSettings(int bounces, float hopInterval, float pathWidth = 0)
         {
             Bounces = bounces;
-            JumpRange = jumpRange;
             HopInterval = hopInterval;
             PathWidth = pathWidth;
         }
 
-        public static ChainSettings From(ChainStats chain) => new ChainSettings(chain.Bounces, chain.JumpRange, chain.HopInterval, chain.PathWidth);
+        public static ChainSettings From(ChainStats chain) => new ChainSettings(chain.Bounces, chain.HopInterval, chain.PathWidth);
     }
 
     public sealed class ChainBolt : MonoBehaviour
@@ -103,18 +101,18 @@ namespace Game.Core
             if (!released && remaining <= 0 && started) { Finish(); }
         }
 
-        // 현재 대상에서 가장 가까운, 아직 맞지 않은 살아 있는 적. 튕김 거리 밖이면 연쇄가 끝난다.
+        // 현재 대상에서 가장 가까운, 아직 맞지 않은 살아 있는 적. 튕김 거리 제한은 없다.
         private IEnemyTarget FindNext()
         {
             candidates.Clear();
             provider.GetNearest(position, int.MaxValue, candidates);
             IEnemyTarget best = null;
-            float bestSquared = settings.JumpRange * settings.JumpRange;
+            float bestSquared = float.PositiveInfinity;
             foreach (var candidate in candidates)
             {
                 if (candidate == null || visited.Contains(candidate) || candidate.IsDead) { continue; }
                 float distanceSquared = (candidate.Position - position).sqrMagnitude;
-                if (distanceSquared <= bestSquared) { best = candidate; bestSquared = distanceSquared; }
+                if (distanceSquared < bestSquared) { best = candidate; bestSquared = distanceSquared; }
             }
             return best;
         }
