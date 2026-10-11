@@ -69,11 +69,11 @@ namespace Game.Core
         }
 
         // 곧 도착할 투사체의 피해를 장부에 적어, 다른 스킬이 이 적이 죽을 거라 보고 다른 적을 노리게 한다
-        private static void ReserveHit(AttackEnvironment environment, IEnemyTarget target, SkillStats stats, float lifetime)
+        private static TargetReservations.Reservation ReserveHit(AttackEnvironment environment, IEnemyTarget target, SkillStats stats, float lifetime)
         {
             float speed = stats.Projectile.Speed;
             float travel = speed > 0 ? ((Vector2)target.Position - (Vector2)environment.Origin).magnitude / speed + ReserveGrace : lifetime;
-            environment.Reservations?.Reserve(target, stats.Cast.Damage, Mathf.Min(lifetime, travel));
+            return environment.Reservations?.Reserve(target, stats.Cast.Damage, Mathf.Min(lifetime, travel));
         }
 
         public bool HasTargets(SkillConfig config, AttackEnvironment environment)
@@ -102,8 +102,9 @@ namespace Game.Core
                     : ProjectileLaunchPath.Calculate(config.Attack.Path, environment.Origin, aim,
                         wall != null ? wall.AttackLineY : (float?)null,
                         config.Attack.Path == ProjectilePath.RollingLane ? ProjectileLaunchPath.RollingTravelDistance : config.Attack.Range, current.Projectile.Speed, current.Projectile.PierceCount, i, count);
-                spawnRules.SpawnMain(path.Start, path.Direction, path.Lifetime, path.PierceCount, environment.Exclude);
-                if (!radial && !fan) { ReserveHit(environment, targets[i % targets.Count], current, path.Lifetime); }
+                var reservation = radial || fan ? null : ReserveHit(environment, targets[i % targets.Count], current, path.Lifetime);
+                try { spawnRules.SpawnMain(path.Start, path.Direction, path.Lifetime, path.PierceCount, environment.Exclude, reservation); }
+                catch { reservation?.Dispose(); throw; }
             }
 
             return true;

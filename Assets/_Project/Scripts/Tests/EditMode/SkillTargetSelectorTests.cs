@@ -1,7 +1,9 @@
 using System.Collections.Generic;
+using System.Reflection;
 using Game.Core;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.Pool;
 
 namespace Game.Tests
 {
@@ -17,7 +19,9 @@ namespace Game.Tests
         {
             public Vector2 Position { get; set; }
             public int CurrentHp { get; set; }
-            public void TakeDamage(int damage) { }
+            public bool IsDead => CurrentHp <= 0;
+            public bool BlocksPierce { get; set; }
+            public void TakeDamage(int damage) => CurrentHp -= damage;
         }
 
         private sealed class Dead : IEnemyTarget
@@ -161,6 +165,142 @@ namespace Game.Tests
             Assert.AreEqual(8, result.Count);
             Assert.AreSame(survivor, result[0]);
             CollectionAssert.DoesNotContain(result, outside);
+        }
+
+        private static void TickProjectile(Projectile projectile, float deltaTime) =>
+            typeof(Projectile).GetMethod("Tick", BindingFlags.Instance | BindingFlags.NonPublic)
+                .Invoke(projectile, new object[] { deltaTime });
+
+        [TestCase(10)]
+        [TestCase(15)]
+        public void Projectile_RegistersBeforeStartAndClearsItsHitBeforeChildSelection(int hp)
+        {
+            var prefab = new GameObject("ReservedHitTest");
+            prefab.SetActive(false);
+            prefab.AddComponent<Projectile>();
+            try
+            {
+                var targets = new Targets();
+                var front = new Mortal { Position = Vector2.up, CurrentHp = hp };
+                var back = new Mortal { Position = Vector2.up * 2, CurrentHp = 20 };
+                targets.Values.AddRange(new IEnemyTarget[] { front, back });
+                var reservations = new TargetReservations();
+                var selector = new SkillTargetSelector(targets, reservations);
+                var data = new SkillData { baseStats = new SkillBaseStats
+                { cast = { baseDamage = 10, range = 5, projectileCount = 1 }, projectile = { speed = 10, pierceCount = 1 } } };
+                var builder = new SkillConfigBuilder(SkillConfig.FromDefinition(data));
+                bool started = false, hit = false;
+                builder.AddReaction(AttackEvent.Start, new CastSkillReaction(_ =>
+                {
+                    started = true;
+                    Assert.AreEqual(hp == 10, reservations.IsLethal(front), "Start 자식 시전보다 먼저 예약해야 한다");
+                }));
+                builder.AddReaction(AttackEvent.Hit, new CastSkillReaction(context =>
+                {
+                    hit = true;
+                    Assert.AreSame(front, context.Target);
+                    Assert.AreEqual(hp - 10, front.CurrentHp);
+                    Assert.IsFalse(reservations.IsLethal(front), "적중 피해를 줄어든 HP에 다시 세면 안 된다");
+                    if (hp > 10) { Assert.AreSame(front, selector.Select(Vector2.zero, 5)[0]); }
+                }));
+                using var strategy = new ProjectileStrategy(prefab);
+                Assert.IsTrue(strategy.Fire(builder.Build(), new AttackEnvironment(prefab.transform, targets, selector.Select, reservations: reservations)));
+                var projectile = Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None);
+                var launched = System.Array.Find(projectile, p => p.name == "ReservedHitTest(Clone)");
+                Assert.IsNotNull(launched);
+                TickProjectile(launched, .1f);
+                Assert.IsTrue(started);
+                Assert.IsTrue(hit);
+                Assert.IsTrue(launched.gameObject.activeSelf, "관통 중에도 적중한 예약은 즉시 없어져야 한다");
+            }
+            finally { Object.DestroyImmediate(prefab); }
+        }
+
+        [TestCase(false)]
+        [TestCase(true)]
+        public void Projectile_InterceptionKeepsItsAimReservationUnlessItCannotContinue(bool blocksPierce)
+        {
+            var go = new GameObject("ReservationInterceptionTest");
+            try
+            {
+                var projectile = go.AddComponent<Projectile>();
+                var targets = new Targets();
+                var aim = new Mortal { Position = Vector2.up * 2, CurrentHp = 15 };
+                var interceptor = new Mortal { Position = Vector2.up, CurrentHp = 20, BlocksPierce = blocksPierce };
+                targets.Values.AddRange(new IEnemyTarget[] { interceptor, aim });
+                var reservations = new TargetReservations();
+                var own = reservations.Reserve(aim, 10, 1);
+                var sibling = reservations.Reserve(aim, 6, 1);
+                var pool = new ObjectPool<Projectile>(() => projectile, actionOnRelease: p => p.gameObject.SetActive(false));
+                pool.Get().Init(pool, new ProjectileSpawnSettings
+                {
+                    StartPos = Vector3.zero, Direction = Vector3.up, Speed = 10, Lifetime = 1,
+                    TargetProvider = targets, PierceCount = 1, Reservation = own,
+                    HitReactions = new HitReactionBuilder().Damage(10).Build()
+                });
+                TickProjectile(projectile, .1f);
+                Assert.AreEqual(10, interceptor.CurrentHp);
+                Assert.AreEqual(!blocksPierce, reservations.IsLethal(aim));
+                if (!blocksPierce)
+                {
+                    TickProjectile(projectile, .1f);
+                    Assert.AreEqual(5, aim.CurrentHp);
+                    Assert.AreEqual(1, reservations.Overkill(aim), "별도 투사체의 6 피해 예약은 보존해야 한다");
+                }
+                own.Dispose();
+                sibling.Dispose();
+                Assert.IsFalse(reservations.IsLethal(aim));
+            }
+            finally { Object.DestroyImmediate(go); }
+        }
+
+        [TestCase("expire")]
+        [TestCase("disable")]
+        [TestCase("destroy")]
+        [TestCase("reuse")]
+        public void Projectile_CleanupReleasesOnlyItsOwnReservationAndIsRepeatable(string cleanup)
+        {
+            var go = new GameObject("ReservationCleanupTest");
+            try
+            {
+                var projectile = go.AddComponent<Projectile>();
+                var target = new Mortal { Position = Vector2.up, CurrentHp = 10 };
+                var reservations = new TargetReservations();
+                var own = reservations.Reserve(target, 6, 1);
+                var sibling = reservations.Reserve(target, 4, 1);
+                var pool = new ObjectPool<Projectile>(() => projectile, actionOnRelease: p => p.gameObject.SetActive(false));
+                var settings = new ProjectileSpawnSettings
+                { TargetProvider = new Targets(), Lifetime = .1f, Reservation = own };
+                bool expired = false;
+                settings.Reactions = new AttackReactions(new[] { new ReactionBinding(AttackEvent.Expired,
+                    new CastSkillReaction(_ => { expired = true; Assert.IsFalse(reservations.IsLethal(target)); })) });
+                pool.Get().Init(pool, settings);
+                Assert.IsTrue(reservations.IsLethal(target));
+                TargetReservations.Reservation reused = null;
+                switch (cleanup)
+                {
+                    case "expire": TickProjectile(projectile, .2f); break;
+                    case "disable": go.SetActive(false); break;
+                    case "destroy": Object.DestroyImmediate(go); break;
+                    case "reuse":
+                        reused = reservations.Reserve(target, 6, 1);
+                        projectile.Init(pool, new ProjectileSpawnSettings { TargetProvider = new Targets(), Lifetime = 1, Reservation = reused });
+                        break;
+                }
+                own.Dispose();
+                own.Dispose();
+                Assert.AreEqual(cleanup == "expire", expired);
+                Assert.AreEqual(cleanup == "reuse", reservations.IsLethal(target));
+                Assert.AreEqual(0, reservations.Overkill(target));
+                reused?.Dispose();
+                Assert.IsFalse(reservations.IsLethal(target));
+                using var next = reservations.Reserve(target, 6, 1);
+                own.Dispose();
+                Assert.IsTrue(reservations.IsLethal(target), "만료/해제된 토큰이 재사용된 공격이나 다른 예약을 지우면 안 된다");
+                sibling.Dispose();
+                Assert.IsFalse(reservations.IsLethal(target));
+            }
+            finally { if (go != null) { Object.DestroyImmediate(go); } }
         }
     }
 }

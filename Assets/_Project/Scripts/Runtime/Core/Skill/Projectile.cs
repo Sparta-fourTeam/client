@@ -18,7 +18,8 @@ namespace Game.Core
             visual ??= new ProjectileVisual(gameObject, formSprites, baseVisual);
             visual.SetForm(form);
         }
-        private void OnDestroy() => visual?.Dispose();
+        private void OnDisable() => ClearReservation();
+        private void OnDestroy() { ClearReservation(); visual?.Dispose(); }
 
         private IObjectPool<Projectile> pool;
         private Vector3 direction;
@@ -29,6 +30,7 @@ namespace Game.Core
         private System.Func<float> randomValue;
         private AttackReactions reactions;
         private bool released;
+        private TargetReservations.Reservation reservation;
         private Game.Core.Combat.DamageSource sourceSkill;   // 이 투사체를 만든 스킬 (피해 집계와 속성 전달용)
         private IEnemyTarget ignoredTarget;
         private IEnemyTargetProvider targetProvider;
@@ -40,6 +42,8 @@ namespace Game.Core
 
         public void Init(IObjectPool<Projectile> pool, ProjectileSpawnSettings settings)
         {
+            ClearReservation();
+            reservation = settings.Reservation;
             sourceSkill = Game.Core.Combat.DamageAttribution.CurrentSource;
             hitRadius = Mathf.Max(0, settings.CollisionRadius);
             ignoredTarget = settings.IgnoredTarget;
@@ -92,6 +96,7 @@ namespace Game.Core
             if (lifetime <= 0)
             {
                 released = true;
+                ClearReservation();
                 reactions.Raise(AttackEvent.Expired, new AttackContext(end, direction, elapsed: elapsed));
                 pool.Release(this);
                 return;
@@ -114,6 +119,8 @@ namespace Game.Core
                 if (candidate.IsDead) { continue; }
                 if (ReferenceEquals(candidate, ignoredTarget)) { continue; }
                 if (!hitLedger.TryHit(candidate)) { continue; }
+                // 피해와 자식 시전의 동기 콜백이 줄어든 HP에 이 적중을 다시 예약 피해로 세지 않게 한다.
+                if (ReferenceEquals(candidate, reservation?.Target)) { ClearReservation(); }
                 hitReactions.Raise(AttackEvent.Hit, new AttackContext(hitPosition, direction, candidate, randomValue));
                 SpawnImpact(hitPosition);
                 var context = new AttackContext(hitPosition, direction, candidate);
@@ -131,7 +138,14 @@ namespace Game.Core
         private void Release()
         {
             released = true;
+            ClearReservation();
             pool.Release(this);
+        }
+
+        private void ClearReservation()
+        {
+            reservation?.Dispose();
+            reservation = null;
         }
 
         private static float SegmentFraction(Vector2 start, Vector2 end, Vector2 point)

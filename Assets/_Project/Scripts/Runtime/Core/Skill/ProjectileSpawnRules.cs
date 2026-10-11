@@ -22,7 +22,8 @@ namespace Game.Core
             this.reactions = reactions ?? AttackReactions.Empty;
         }
 
-        public void SpawnMain(Vector3 start, Vector3 direction, float lifetime, int pierce, IEnemyTarget ignoredTarget = null)
+        public void SpawnMain(Vector3 start, Vector3 direction, float lifetime, int pierce, IEnemyTarget ignoredTarget = null,
+            TargetReservations.Reservation reservation = null)
         {
             Projectile projectile = pool.Get();
             projectile.transform.localScale = ProjectileVisual.MainScale(projectileScale, stats.Cast.Form, stats.Projectile.SizeMultiplier);
@@ -37,6 +38,7 @@ namespace Game.Core
                 Reactions = reactions,
                 PierceCount = pierce,
                 IgnoredTarget = ignoredTarget,
+                Reservation = reservation,
                 HitReactions = ReactionCompiler.ForProjectile(stats, CreateBurnDeathCallback(), targetProvider),
                 CollisionRadius = .3f * stats.Projectile.SizeMultiplier
             });
