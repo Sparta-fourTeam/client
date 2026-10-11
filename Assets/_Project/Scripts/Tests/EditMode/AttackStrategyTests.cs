@@ -13,39 +13,46 @@ namespace Game.Tests
     {
         [TestCase(SkillForm.ThunderArrow)]
         [TestCase(SkillForm.Enbakutsu)]
-        public void Projectile_FormUsesOwnPrefabAndKeepsExistingFlightUntilTeardown(SkillForm form)
+        public void Projectile_FormUsesOwnPrefabAndSharesReservations(SkillForm form)
         {
             var basic = new GameObject("FormPoolBaseTest");
             var thunder = new GameObject("FormPoolThunderTest");
             basic.AddComponent<Projectile>();
             thunder.AddComponent<Projectile>();
             thunder.transform.localScale = new Vector3(2, 3, 1);
-            var strategy = new ProjectileStrategy(basic, formPrefabs: new[]
-            {
-                new SkillFormPrefabEntry { form = form, prefab = thunder }
-            });
+            var provider = new FormProvider();
+            var reservations = new TargetReservations();
+            SkillCaster caster = null;
             Projectile[] flights = null;
             try
             {
-                var data = new SkillData { castType = CastType.Projectile, baseStats = new SkillBaseStats() };
-                var config = SkillConfig.FromDefinition(data);
-                var environment = new AttackEnvironment(basic.transform, new NullEnemyTargetProvider(),
-                    (_, _) => new IEnemyTarget[] { new FormTarget() });
-                Assert.IsTrue(strategy.Fire(config, environment));
-                var builder = new SkillConfigBuilder(config);
+                var data = new SkillData
+                {
+                    castType = CastType.Projectile,
+                    baseStats = new SkillBaseStats
+                    { cast = { baseDamage = 10, range = 5, projectileCount = 1 }, projectile = { speed = 10 } }
+                };
+                caster = SkillFactory.Create(data, basic, basic.transform, provider, reservations: reservations, formPrefabs: new[]
+                {
+                    new SkillFormPrefabEntry { form = form, prefab = thunder }
+                });
+                caster.FireAt(Vector3.zero);
+                Assert.IsTrue(reservations.IsLethal(provider.Target), "기본형 발사도 공유 장부에 예약한다.");
+                var builder = new SkillConfigBuilder(caster.Config);
                 Assert.IsTrue(builder.TryApply(new IUpgradeEffect[] { new TransformUpgradeEffect(form) }));
-                Assert.IsTrue(strategy.Fire(builder.Build(), environment));
+                caster.FireAt(Vector3.zero, _ => builder.Build());
+                Assert.AreEqual(10, reservations.Overkill(provider.Target), "변환형 발사도 같은 장부에 예약한다.");
                 flights = UnityEngine.Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None)
                     .Where(p => p.name == "FormPoolBaseTest(Clone)" || p.name == "FormPoolThunderTest(Clone)").ToArray();
                 Assert.AreEqual(2, flights.Length, "변환 전에 발사한 기본형도 유지한다.");
                 Assert.AreEqual(thunder.transform.localScale,
                     flights.Single(p => p.name == "FormPoolThunderTest(Clone)").transform.localScale);
-                strategy.Dispose();
+                caster.Dispose();
                 Assert.IsTrue(flights.All(p => p == null), "전투 정리 시 형태별 비행 중 객체도 제거한다.");
             }
             finally
             {
-                strategy.Dispose();
+                caster?.Dispose();
                 UnityEngine.Object.DestroyImmediate(basic);
                 UnityEngine.Object.DestroyImmediate(thunder);
             }
@@ -54,6 +61,7 @@ namespace Game.Tests
         private sealed class FormTarget : IEnemyTarget
         {
             public Vector2 Position => Vector2.up;
+            public int CurrentHp => 10;
             public void TakeDamage(int damage) { }
         }
 
@@ -104,11 +112,11 @@ namespace Game.Tests
 
         private sealed class FormProvider : IEnemyTargetProvider
         {
-            private readonly FormTarget target = new();
+            public readonly FormTarget Target = new();
             public int GetNearest(Vector2 from, int count, List<IEnemyTarget> results)
             {
                 results.Clear();
-                if (count > 0) { results.Add(target); }
+                if (count > 0) { results.Add(Target); }
                 return results.Count;
             }
         }
