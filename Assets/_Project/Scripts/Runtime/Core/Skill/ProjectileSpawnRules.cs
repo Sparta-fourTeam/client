@@ -53,7 +53,7 @@ namespace Game.Core
 
             float radius = stats.Explosion.Radius;
             float damage = stats.Explosion.Damage;
-            return position => SkillReactionEffects.Explode(targetProvider, position, radius, damage);
+            return position => SkillReactionEffects.Explode(targetProvider, position, radius, damage, "Explosion");
         }
     }
 }

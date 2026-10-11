@@ -13,7 +13,7 @@ namespace Game.Core
         /// <summary>공격 실체 프리팹. 연결돼 있어야 스킬을 얻을 수 있다</summary>
         public GameObject prefab;
 
-        /// <summary>형태별 독립 투사체 프리팹. 연결이 없으면 기본 프리팹을 쓴다.</summary>
+        /// <summary>형태별 독립 공격 프리팹. 연결이 없으면 기본 프리팹을 쓴다.</summary>
         public List<SkillFormPrefabEntry> formPrefabs = new();
 
         /// <summary>HUD 슬롯 아이콘</summary>

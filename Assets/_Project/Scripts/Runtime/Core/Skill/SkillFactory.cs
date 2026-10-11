@@ -27,9 +27,12 @@ namespace Game.Core
             {
                 throw new NotSupportedException($"{config.Attack.Type} 공격 전략이 등록되지 않았습니다. SkillFactory에 등록하세요.");
             }
-            var strategy = config.Attack.Type == CastType.Projectile
-                ? new ProjectileStrategy(prefab, wall, formPrefabs)
-                : create(prefab, wall);
+            var strategy = config.Attack.Type switch
+            {
+                CastType.Projectile => new ProjectileStrategy(prefab, wall, formPrefabs),
+                CastType.Hitscan => new HitscanStrategy(prefab, formPrefabs),
+                _ => create(prefab, wall)
+            };
             return new SkillCaster(data, caster, targetProvider, strategy, config, reservations);
         }
 

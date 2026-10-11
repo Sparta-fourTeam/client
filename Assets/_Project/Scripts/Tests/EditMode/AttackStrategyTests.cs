@@ -58,6 +58,62 @@ namespace Game.Tests
         }
 
         [Test]
+        public void Hitscan_FormUsesOwnPrefabAndRestoresBasicPoolWithoutReplacingActiveStrikes()
+        {
+            var basic = new GameObject("HitscanBaseTest");
+            var form = new GameObject("HitscanFormTest");
+            basic.AddComponent<HitscanEffect>();
+            form.AddComponent<HitscanEffect>();
+            form.transform.localScale = new Vector3(2, 3, 1);
+            SkillCaster caster = null;
+            try
+            {
+                var data = new SkillData { castType = CastType.Hitscan, baseStats = new SkillBaseStats { cast = { range = 10 } } };
+                caster = SkillFactory.Create(data, basic, basic.transform, new FormProvider(), formPrefabs: new[]
+                {
+                    new SkillFormPrefabEntry { form = SkillForm.JudgementThunder, prefab = form }
+                });
+                caster.FireAt(Vector3.zero);
+                var original = UnityEngine.Object.FindObjectsByType<HitscanEffect>(FindObjectsSortMode.None)
+                    .Single(p => p.name == "HitscanBaseTest(Clone)");
+                caster.FireAt(Vector3.zero, config =>
+                {
+                    var builder = new SkillConfigBuilder(config);
+                    Assert.IsTrue(builder.TryApply(new IUpgradeEffect[] { new TransformUpgradeEffect(SkillForm.JudgementThunder) }));
+                    return builder.Build();
+                });
+                var upgraded = UnityEngine.Object.FindObjectsByType<HitscanEffect>(FindObjectsSortMode.None)
+                    .Single(p => p.name == "HitscanFormTest(Clone)");
+                Assert.IsTrue(original.gameObject.activeSelf, "기존 타격은 변환과 무관하게 끝까지 유지한다.");
+                Assert.AreEqual(form.transform.localScale * 1.5f, upgraded.transform.localScale);
+                var basicPool = ((HitscanStrategy)caster.Strategy).Pool;
+                basicPool.Release(original);
+                caster.FireAt(Vector3.zero);
+                Assert.IsTrue(original.gameObject.activeSelf, "기본형으로 돌아오면 기존 기본 풀을 재사용한다.");
+                Assert.AreEqual(basic.transform.localScale, original.transform.localScale);
+                caster.Dispose();
+                Assert.IsTrue(original == null && upgraded == null, "전투 정리 시 두 형태의 진행 중 타격을 모두 제거한다.");
+            }
+            finally
+            {
+                caster?.Dispose();
+                UnityEngine.Object.DestroyImmediate(basic);
+                UnityEngine.Object.DestroyImmediate(form);
+            }
+        }
+
+        private sealed class FormProvider : IEnemyTargetProvider
+        {
+            private readonly FormTarget target = new();
+            public int GetNearest(Vector2 from, int count, List<IEnemyTarget> results)
+            {
+                results.Clear();
+                if (count > 0) { results.Add(target); }
+                return results.Count;
+            }
+        }
+
+        [Test]
         public void Validator_RejectsCastTypeWithoutRegisteredStrategy()
         {
             var catalog = JsonConvert.DeserializeObject<List<SkillData>>(Resources.Load<TextAsset>("MockData/Skills").text);

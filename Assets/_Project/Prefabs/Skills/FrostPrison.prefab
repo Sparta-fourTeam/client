@@ -159,9 +159,9 @@ ParticleSystem:
         m_RotationOrder: 4
     startColor:
       serializedVersion: 2
-      minMaxState: 0
-      minColor: {r: 1, g: 1, b: 1, a: 1}
-      maxColor: {r: 0.6, g: 1.2, b: 1.35, a: 1}
+      minMaxState: 2
+      minColor: {r: 0.5, g: 0.8, b: 1, a: 0.6}
+      maxColor: {r: 0.8, g: 1.2, b: 1.4, a: 0.85}
       maxGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
@@ -224,9 +224,9 @@ ParticleSystem:
         m_NumAlphaKeys: 2
     startSize:
       serializedVersion: 3
-      minMaxState: 0
-      scalar: 0.14
-      minScalar: 1
+      minMaxState: 3
+      scalar: 0.085
+      minScalar: 0.04
       maxCurve:
         serializedVersion: 2
         m_Curve: []
@@ -326,7 +326,7 @@ ParticleSystem:
         m_RotationOrder: 4
     randomizeRotationDirection: 0
     gravitySource: 0
-    maxNumParticles: 32
+    maxNumParticles: 24
     customEmitterVelocity: {x: 0, y: 0, z: 0}
     size3D: 0
     rotation3D: 0
@@ -448,7 +448,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 3
       minMaxState: 0
-      scalar: 7
+      scalar: 8
       minScalar: 10
       maxCurve:
         serializedVersion: 2
@@ -812,11 +812,29 @@ ParticleSystem:
     x:
       serializedVersion: 3
       minMaxState: 0
-      scalar: 0
+      scalar: 0.035
       minScalar: 0
       maxCurve:
         serializedVersion: 2
-        m_Curve: []
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0.33333334
+          outWeight: 0.33333334
+        - serializedVersion: 3
+          time: 1
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0.33333334
+          outWeight: 0.33333334
         m_PreInfinity: 2
         m_PostInfinity: 2
         m_RotationOrder: 4
@@ -829,7 +847,7 @@ ParticleSystem:
     y:
       serializedVersion: 3
       minMaxState: 0
-      scalar: 0.009000001
+      scalar: 0.025
       minScalar: 0
       maxCurve:
         serializedVersion: 2
@@ -2430,7 +2448,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: 3a30e99437a384d86b07f9b5cd9aa566, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2454,7 +2472,7 @@ SpriteRenderer:
   m_SortingOrder: -8
   m_MaskInteraction: 0
   m_Sprite: {fileID: 1847902937035858225, guid: 3bf773bad9a74442087988e2bafdfabc, type: 3}
-  m_Color: {r: 0.5, g: 0.9, b: 1, a: 0.65}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
