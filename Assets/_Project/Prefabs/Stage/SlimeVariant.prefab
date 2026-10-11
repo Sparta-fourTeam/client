@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 7694825105983372227}
   - component: {fileID: 6083469283848590965}
   m_Layer: 8
-  m_Name: Elite_Slime
+  m_Name: SlimeVariant
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -205,15 +205,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3715147407638330994, guid: d1b41d016d6694702a5a5e9092922846, type: 3}
       propertyPath: m_LocalScale.x
-      value: 2.5170732
+      value: 2.097561
       objectReference: {fileID: 0}
     - target: {fileID: 3715147407638330994, guid: d1b41d016d6694702a5a5e9092922846, type: 3}
       propertyPath: m_LocalScale.y
-      value: 2.5170732
+      value: 2.097561
       objectReference: {fileID: 0}
     - target: {fileID: 3715147407638330994, guid: d1b41d016d6694702a5a5e9092922846, type: 3}
       propertyPath: m_LocalScale.z
-      value: 2.5170732
+      value: 2.097561
       objectReference: {fileID: 0}
     - target: {fileID: 3715147407638330994, guid: d1b41d016d6694702a5a5e9092922846, type: 3}
       propertyPath: m_LocalPosition.x
@@ -221,7 +221,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3715147407638330994, guid: d1b41d016d6694702a5a5e9092922846, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.774
+      value: -0.645
       objectReference: {fileID: 0}
     - target: {fileID: 3715147407638330994, guid: d1b41d016d6694702a5a5e9092922846, type: 3}
       propertyPath: m_LocalPosition.z
