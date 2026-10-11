@@ -218,7 +218,7 @@ namespace Game.Tests
 
         private const int LightningCloudId = 7;
         private const int LightningId = 3;
-        private const string LightningPrefab = "Assets/_Project/Prefabs/Skills/Lightning_Lv1.prefab";
+        private const string LightningPrefab = "Assets/_Project/Prefabs/Skills/Lightning.prefab";
 
         private static SkillData Cloud() => new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == LightningCloudId);
 
