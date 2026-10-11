@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Pool;
 
@@ -7,13 +8,15 @@ namespace Game.Core
     public sealed class HitscanStrategy : IAttackStrategy
     {
         private readonly SkillObjectPool<HitscanEffect> ownedPool;
+        private readonly Dictionary<SkillForm, GameObject> formPrefabs = new();
+        private readonly Dictionary<SkillForm, SkillObjectPool<HitscanEffect>> formPools = new();
         private readonly SkillObjectPool<ElectromagneticField> ownedFieldPool;
         private readonly ObjectPool<ElectromagneticField> fieldPool;
         private readonly Vector3 originalScale;
 
         public ObjectPool<HitscanEffect> Pool { get; }
 
-        public HitscanStrategy(GameObject prefab)
+        public HitscanStrategy(GameObject prefab, IReadOnlyList<SkillFormPrefabEntry> formPrefabs = null)
         {
             ownedFieldPool = new SkillObjectPool<ElectromagneticField>(
                 () => new GameObject("ElectromagneticField_Prototype").AddComponent<ElectromagneticField>(), 8, 120);
@@ -21,11 +24,20 @@ namespace Game.Core
             originalScale = prefab.transform.localScale;
             ownedPool = new SkillObjectPool<HitscanEffect>(() => Object.Instantiate(prefab).GetComponent<HitscanEffect>(), 5, 20);
             Pool = ownedPool.Pool;
+            if (formPrefabs != null)
+            {
+                foreach (var entry in formPrefabs)
+                {
+                    if (entry != null && entry.prefab != null) { this.formPrefabs[entry.form] = entry.prefab; }
+                }
+            }
         }
 
         public void Dispose()
         {
             ownedPool.Dispose();
+            foreach (var pool in formPools.Values) { pool.Dispose(); }
+            formPools.Clear();
             ownedFieldPool.Dispose();
         }
 
@@ -36,7 +48,20 @@ namespace Game.Core
             var current = config.Stats;
             var targets = environment.FindTargets(config.Attack.Range);
             if (targets.Count == 0) { return false; }
-            var effects = new HitscanCastEffects(current, config.Attack.Range, environment.Targets, Pool, fieldPool, originalScale, config.Reactions);
+            var pool = Pool;
+            var scale = originalScale;
+            if (formPrefabs.TryGetValue(current.Cast.Form, out var formPrefab))
+            {
+                if (!formPools.TryGetValue(current.Cast.Form, out var formPool))
+                {
+                    formPool = new SkillObjectPool<HitscanEffect>(() => Object.Instantiate(formPrefab).GetComponent<HitscanEffect>(), 5, 20);
+                    formPools.Add(current.Cast.Form, formPool);
+                }
+                pool = formPool.Pool;
+                scale = formPrefab.transform.localScale;
+            }
+            var effects = new HitscanCastEffects(current, config.Attack.Range, environment.Targets, pool, fieldPool, scale, config.Reactions,
+                secondaryStrikes: Pool, secondaryScale: originalScale);
             for (int i = 0; i < current.Cast.ProjectileCount; i++)
             {
                 effects.Cast(targets[i % targets.Count]);

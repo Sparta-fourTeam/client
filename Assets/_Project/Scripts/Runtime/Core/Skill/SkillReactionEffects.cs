@@ -4,17 +4,27 @@ namespace Game.Core
 {
     public static class SkillReactionEffects
     {
-        public static int Explode(IEnemyTargetProvider provider, Vector2 position, float radius, float damage, string visualEffect = "Explosion")
+        public static int Explode(IEnemyTargetProvider provider, Vector2 position, float radius, float damage, string visualEffect = null)
         {
             int hits = AreaDamage.Apply(provider, position, radius, damage);
             if (Application.isPlaying && provider != null && radius > 0 && damage > 0
                 && !float.IsNaN(radius) && !float.IsInfinity(radius)
                 && !float.IsNaN(damage) && !float.IsInfinity(damage))
             {
-                Spawn(visualEffect, position, radius);
+                Spawn(visualEffect ?? ExplosionVisual(Game.Core.Combat.DamageAttribution.CurrentSource.Element), position, radius);
             }
             return hits;
         }
+
+        internal static string ExplosionVisual(Element element) => element switch
+        {
+            Element.Fire => "Explosion",
+            Element.Ice => "IceExplosion",
+            Element.Lightning => "LightningExplosion",
+            Element.Earth => "EarthExplosion",
+            Element.Wind => "WindExplosion",
+            _ => "NeutralExplosion"
+        };
 
         public static void Lightning(Vector2 position)
         {

@@ -181,13 +181,19 @@ namespace Game.Core
             if (released) { return; }
             released = true;
             // 공격은 즉시 반환하고, 마지막 연결선의 표시만 별도 프리팹의 수명으로 남긴다.
-            if (afterglowPrefab != null && points.Count > 1)
+            if (Application.isPlaying && afterglowPrefab != null && points.Count > 1)
             {
                 var tail = Instantiate(afterglowPrefab);
                 UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(tail.gameObject, gameObject.scene);
                 tail.positionCount = points.Count;
                 for (int i = 0; i < points.Count; i++) { tail.SetPosition(i, points[i]); }
-                Destroy(tail.gameObject, .16f);
+                const float afterglowDuration = .42f;
+                var properties = new MaterialPropertyBlock();
+                tail.GetPropertyBlock(properties);
+                properties.SetFloat("_AfterglowStart", Time.time);
+                properties.SetFloat("_AfterglowDuration", afterglowDuration);
+                tail.SetPropertyBlock(properties);
+                Destroy(tail.gameObject, afterglowDuration);
             }
             reactions.Raise(AttackEvent.Expired, new AttackContext(position, Vector3.up));
             pool.Release(this);

@@ -58,7 +58,7 @@ namespace Game.Core
             ratio > 0 && duration > 0 ? Add(new StatusReaction<IVulnerableTarget>(1, (t, _) => t.ApplyVulnerability(ratio, duration))) : this;
 
         /// <summary>그 시점의 위치에서 범위 폭발을 낸다. 반경이 0이면 만들지 않는다. 투사체는 적중(Hit), Hitscan은 타격 지점(Impact)에 건다.</summary>
-        public HitReactionBuilder Explosion(AttackEvent trigger, IEnemyTargetProvider provider, float radius, float damage, string visualEffect = "Explosion") =>
+        public HitReactionBuilder Explosion(AttackEvent trigger, IEnemyTargetProvider provider, float radius, float damage, string visualEffect = null) =>
             radius > 0 && provider != null
                 ? Add(new CastSkillReaction(c => SkillReactionEffects.Explode(provider, c.Position, radius, damage, visualEffect)), trigger)
                 : this;
@@ -74,13 +74,18 @@ namespace Game.Core
     {
         /// <summary>투사체 적중 반응: 피해와 스탯이 켠 모든 상태이상</summary>
         public static AttackReactions ForProjectile(SkillStats stats, Action<Vector2> burnOnDeath = null, IEnemyTargetProvider explosionTargets = null) =>
-            Compile(stats, burnOnDeath, explosionTargets, AttackEvent.Hit);
+            Compile(stats, burnOnDeath, explosionTargets, AttackEvent.Hit, stats.Cast.Form switch
+            {
+                SkillForm.FlameArrow or SkillForm.FireLog => "Explosion",
+                SkillForm.ThunderArrow => "LightningExplosion",
+                _ => null
+            });
 
         /// <summary>연쇄 적중 반응: 투사체와 같되 폭발은 적중마다가 아니라 튕겨 도착할 때(Bounce)마다 난다</summary>
         public static AttackReactions ForChain(SkillStats stats, IEnemyTargetProvider explosionTargets) =>
-            Compile(stats, null, explosionTargets, AttackEvent.Bounce);
+            Compile(stats, null, explosionTargets, AttackEvent.Bounce, "ChainExplosion");
 
-        private static AttackReactions Compile(SkillStats stats, Action<Vector2> burnOnDeath, IEnemyTargetProvider explosionTargets, AttackEvent explosionTrigger)
+        private static AttackReactions Compile(SkillStats stats, Action<Vector2> burnOnDeath, IEnemyTargetProvider explosionTargets, AttackEvent explosionTrigger, string explosionVisual)
         {
             float damage = stats.Cast.Damage;
             var status = stats.Status;
@@ -97,7 +102,7 @@ namespace Game.Core
                 .Stun(status.StunDuration, status.StunChance)
                 .Slow(status.SlowRatio, status.SlowDuration)
                 .Vulnerability(status.VulnerabilityRatio, status.VulnerabilityDuration)
-                .Explosion(explosionTrigger, explosionTargets, stats.Explosion.Radius, stats.Explosion.Damage)
+                .Explosion(explosionTrigger, explosionTargets, stats.Explosion.Radius, stats.Explosion.Damage, explosionVisual)
                 .Build();
         }
     }

@@ -12,20 +12,25 @@ namespace Game.Core
         private readonly float range;
         private readonly IEnemyTargetProvider targets;
         private readonly ObjectPool<HitscanEffect> strikes;
+        private readonly ObjectPool<HitscanEffect> secondaryStrikes;
         private readonly ObjectPool<ElectromagneticField> fields;
         private readonly Vector3 scale;
+        private readonly Vector3 secondaryScale;
         private readonly AttackReactions reactions;
 
         public HitscanCastEffects(SkillStats stats, float range, IEnemyTargetProvider targets,
             ObjectPool<HitscanEffect> strikes,
-            ObjectPool<ElectromagneticField> fields, Vector3 scale, AttackReactions reactions = null)
+            ObjectPool<ElectromagneticField> fields, Vector3 scale, AttackReactions reactions = null,
+            ObjectPool<HitscanEffect> secondaryStrikes = null, Vector3? secondaryScale = null)
         {
             this.stats = stats;
             this.range = range;
             this.targets = targets;
             this.strikes = strikes;
+            this.secondaryStrikes = secondaryStrikes ?? strikes;
             this.fields = fields;
             this.scale = scale;
+            this.secondaryScale = secondaryScale ?? scale;
             this.reactions = reactions ?? AttackReactions.Empty;
         }
 
@@ -38,7 +43,6 @@ namespace Game.Core
                 fields.Get().Init(fields, targets, target.Position, field.Radius, damage, field.Duration, field.SlowRatio);
             }
             var strike = strikes.Get();
-            strike.SetVisualForm(stats.Cast.Form);
             strike.transform.localScale = stats.Cast.Form == SkillForm.JudgementThunder ? scale * 1.5f : scale;
             strike.Init(strikes, new Vector3(target.Position.x, target.Position.y, 0), stats.Cast.Damage,
                 reactions: CompileReactions().Then(reactions), sourceTarget: target, impactRadius: stats.Cast.ImpactRadius *
@@ -49,7 +53,7 @@ namespace Game.Core
         private AttackReactions CompileReactions()
         {
             var builder = new HitReactionBuilder().Paralysis(stats.Status.ParalysisDuration, stats.Status.ParalysisChance);
-            builder.Explosion(AttackEvent.Impact, targets, stats.Explosion.Radius, stats.Explosion.Damage, "MagneticStorm");
+            builder.Explosion(AttackEvent.Impact, targets, stats.Explosion.Radius, stats.Explosion.Damage, "StormExplosion");
             var killLightning = CreateKillLightningCallback();
             if (killLightning != null) { builder.On(AttackEvent.Kill, new CastSkillReaction(c => killLightning(c.Position))); }
             return builder.Build();
@@ -72,10 +76,9 @@ namespace Game.Core
                     if (distance <= nearestDistance) { nearest = candidate; nearestDistance = distance; }
                 }
                 if (nearest == null) { return; }
-                var secondary = strikes.Get();
-                secondary.SetVisualForm(SkillForm.Default);
-                secondary.transform.localScale = scale * .5f;
-                secondary.Init(strikes, nearest.Position, damage, directTarget: nearest);
+                var secondary = secondaryStrikes.Get();
+                secondary.transform.localScale = secondaryScale * .5f;
+                secondary.Init(secondaryStrikes, nearest.Position, damage, directTarget: nearest);
             };
         }
     }
