@@ -30,8 +30,6 @@ namespace Game.Core.Defense
 
         private SpriteRenderer _renderer;
         private HitFlash _hitFlash;
-        [SerializeField] private GameObject hitEffect;
-        [SerializeField] private GameObject breakEffect;
 
         [Inject]
         public void Construct(IBufferedPublisher<WallHpChanged> hpChangedPublisher,
@@ -75,7 +73,6 @@ namespace Game.Core.Defense
 
             ApplySprite();
             FlashHit();
-            SpawnEffect(CurrentHp > 0 ? hitEffect : breakEffect);
 
             if (CurrentHp <= 0)
             {
@@ -94,20 +91,6 @@ namespace Game.Core.Defense
             CurrentHp = Math.Min(MaxHp, CurrentHp + amount);
             _hpChangedPublisher.Publish(new WallHpChanged(CurrentHp, MaxHp));
             ApplySprite();
-        }
-
-        private void SpawnEffect(GameObject prefab)
-        {
-            if (prefab == null) { return; }
-            var position = transform.position;
-            if (_renderer != null)
-            {
-                var bounds = _renderer.bounds;
-                position.x = UnityEngine.Random.Range(bounds.min.x, bounds.max.x);
-                position.y = bounds.max.y;
-            }
-            var effect = Instantiate(prefab, position, Quaternion.identity);
-            UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(effect, gameObject.scene);
         }
 
         // 적과 같은 피격 플래시. 프리팹에 없으면 붙인다
