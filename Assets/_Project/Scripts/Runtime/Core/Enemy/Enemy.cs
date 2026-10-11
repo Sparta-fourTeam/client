@@ -270,6 +270,8 @@ namespace Game.Core
 
         public bool IsDead => _enemyModel == null || _enemyModel.IsDead;
 
+        public int CurrentHp => _enemyModel == null ? 0 : _enemyModel.Hp;
+
         public void TakeDamage(int damage)
         {
             _enemyModel.TakeDamage(damage);

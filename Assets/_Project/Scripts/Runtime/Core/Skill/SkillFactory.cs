@@ -19,14 +19,15 @@ namespace Game.Core
         /// <summary>전략이 등록된 공격 종류인지. 카탈로그 검증이 등록되지 않은 종류를 시작 때 막는다</summary>
         public static bool IsRegistered(CastType type) => Strategies.ContainsKey(type);
 
-        public static SkillCaster Create(SkillData data, GameObject prefab, Transform caster, IEnemyTargetProvider targetProvider, Game.Core.Defense.Wall wall = null, SkillConfig config = null)
+        public static SkillCaster Create(SkillData data, GameObject prefab, Transform caster, IEnemyTargetProvider targetProvider, Game.Core.Defense.Wall wall = null, SkillConfig config = null,
+            TargetReservations reservations = null)
         {
             config ??= SkillConfig.FromDefinition(data);
             if (!Strategies.TryGetValue(config.Attack.Type, out var create))
             {
                 throw new NotSupportedException($"{config.Attack.Type} 공격 전략이 등록되지 않았습니다. SkillFactory에 등록하세요.");
             }
-            return new SkillCaster(data, caster, targetProvider, create(prefab, wall), config);
+            return new SkillCaster(data, caster, targetProvider, create(prefab, wall), config, reservations);
         }
 
         /// <summary>전략을 직접 지정해 시전기를 만든다 (공격 종류와 무관한 조합이 필요한 경우)</summary>

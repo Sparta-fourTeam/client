@@ -10,6 +10,7 @@ namespace Game.Core
     {
         private readonly SkillObjectPool<Projectile> ownedPool;
         private readonly Game.Core.Defense.Wall wall;
+        private const float ReserveGrace = .15f;
         private SkillTargetSelector laneSelector;
         private readonly List<IEnemyTarget> laneBuffer = new();
         private readonly ReactiveCastClock reserveClock = new();
@@ -59,12 +60,20 @@ namespace Game.Core
         private IReadOnlyList<IEnemyTarget> FindTargets(SkillConfig config, AttackEnvironment environment)
         {
             if (config.Attack.Path != ProjectilePath.RollingLane || wall == null) { return environment.FindTargets(config.Attack.Range); }
-            laneSelector ??= new SkillTargetSelector(environment.Targets);
+            laneSelector ??= new SkillTargetSelector(environment.Targets, environment.Reservations);
             var lane = laneSelector.SelectLane(wall.AttackLineY, config.Attack.Range);
             if (environment.Exclude == null) { return lane; }
             laneBuffer.Clear();
             foreach (var target in lane) { if (!ReferenceEquals(target, environment.Exclude)) { laneBuffer.Add(target); } }
             return laneBuffer;
+        }
+
+        // 곧 도착할 투사체의 피해를 장부에 적어, 다른 스킬이 이 적이 죽을 거라 보고 다른 적을 노리게 한다
+        private static void ReserveHit(AttackEnvironment environment, IEnemyTarget target, SkillStats stats, float lifetime)
+        {
+            float speed = stats.Projectile.Speed;
+            float travel = speed > 0 ? ((Vector2)target.Position - (Vector2)environment.Origin).magnitude / speed + ReserveGrace : lifetime;
+            environment.Reservations?.Reserve(target, stats.Cast.Damage, Mathf.Min(lifetime, travel));
         }
 
         public bool HasTargets(SkillConfig config, AttackEnvironment environment)
@@ -94,6 +103,7 @@ namespace Game.Core
                         wall != null ? wall.AttackLineY : (float?)null,
                         config.Attack.Path == ProjectilePath.RollingLane ? ProjectileLaunchPath.RollingTravelDistance : config.Attack.Range, current.Projectile.Speed, current.Projectile.PierceCount, i, count);
                 spawnRules.SpawnMain(path.Start, path.Direction, path.Lifetime, path.PierceCount, environment.Exclude);
+                if (!radial && !fan) { ReserveHit(environment, targets[i % targets.Count], current, path.Lifetime); }
             }
 
             return true;

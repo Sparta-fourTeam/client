@@ -16,6 +16,8 @@ namespace Game.Core
         private Defense.Wall wall;
         private readonly Dictionary<int, int> permanentLevels = new();
         private List<SkillBase> skills = new();
+        // 모든 스킬이 공유한다: 날아가는 중인 공격이 죽일 적을 다른 스킬이 또 조준하지 않게 한다
+        private readonly TargetReservations reservations = new();
         private IEnemyTargetProvider targetProvider;
         private IBufferedPublisher<SkillChanged> skillChanged;
         private ChildSkillCaster childCaster;
@@ -73,7 +75,7 @@ namespace Game.Core
                 Debug.LogWarning($"[SkillController] 자식 스킬 skillId={skillId}의 데이터 또는 프리팹이 없어 시전하지 못합니다 (SkillAssetTable의 assetKey 확인).");
                 return null;
             }
-            var child = SkillFactory.Create(data, prefab, transform, targetProvider, wall, CreateConfig(data));
+            var child = SkillFactory.Create(data, prefab, transform, targetProvider, wall, CreateConfig(data), reservations);
             child.UseChildCaster(childCaster);
             return child;
         }
@@ -109,7 +111,7 @@ namespace Game.Core
                 return false;
             }
 
-            var weapon = SkillFactory.Create(data, prefab, transform, targetProvider, wall, CreateConfig(data));
+            var weapon = SkillFactory.Create(data, prefab, transform, targetProvider, wall, CreateConfig(data), reservations);
             Debug.Log($"[영구강화] {data.progressionId} Lv.{progression?.GetLevel(data.progressionId) ?? 0} → 피해 {weapon.Config.Stats.Cast.Damage} (기본 {data.baseStats.cast.baseDamage})");
             weapon.UseChildCaster(childCaster);
             weapon.Fired += OnSkillFired;
@@ -209,6 +211,7 @@ namespace Game.Core
 
         private void Update()
         {
+            reservations.Advance(Time.deltaTime);
             foreach (var weapon in skills)
             {
                 weapon.Tick();
