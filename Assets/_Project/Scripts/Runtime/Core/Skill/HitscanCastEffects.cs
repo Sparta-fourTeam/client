@@ -41,14 +41,15 @@ namespace Game.Core
             strike.SetVisualForm(stats.Cast.Form);
             strike.transform.localScale = stats.Cast.Form == SkillForm.JudgementThunder ? scale * 1.5f : scale;
             strike.Init(strikes, new Vector3(target.Position.x, target.Position.y, 0), stats.Cast.Damage,
-                reactions: CompileReactions().Then(reactions), sourceTarget: target);
+                reactions: CompileReactions().Then(reactions), sourceTarget: target, impactRadius: stats.Cast.ImpactRadius *
+                    (stats.Cast.Form == SkillForm.JudgementThunder ? 1.5f : 1f));
         }
 
         // 맞은 적마다 마비(Hit), 목표 지점에 한 번 폭발(Impact), 처치마다 처치 번개(Kill). 번개 구체 같은 자식 시전은 강화 카드의 반응이 맡는다.
         private AttackReactions CompileReactions()
         {
             var builder = new HitReactionBuilder().Paralysis(stats.Status.ParalysisDuration, stats.Status.ParalysisChance);
-            builder.Explosion(AttackEvent.Impact, targets, stats.Explosion.Radius, stats.Explosion.Damage);
+            builder.Explosion(AttackEvent.Impact, targets, stats.Explosion.Radius, stats.Explosion.Damage, "MagneticStorm");
             var killLightning = CreateKillLightningCallback();
             if (killLightning != null) { builder.On(AttackEvent.Kill, new CastSkillReaction(c => killLightning(c.Position))); }
             return builder.Build();

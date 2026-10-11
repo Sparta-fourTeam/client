@@ -4,14 +4,14 @@ namespace Game.Core
 {
     public static class SkillReactionEffects
     {
-        public static int Explode(IEnemyTargetProvider provider, Vector2 position, float radius, float damage)
+        public static int Explode(IEnemyTargetProvider provider, Vector2 position, float radius, float damage, string visualEffect = "Explosion")
         {
             int hits = AreaDamage.Apply(provider, position, radius, damage);
             if (Application.isPlaying && provider != null && radius > 0 && damage > 0
                 && !float.IsNaN(radius) && !float.IsInfinity(radius)
                 && !float.IsNaN(damage) && !float.IsInfinity(damage))
             {
-                Spawn("Explosion", position, radius);
+                Spawn(visualEffect, position, radius);
             }
             return hits;
         }

@@ -5,9 +5,9 @@ namespace Game.Core
     /// <summary>스냅샷과 빌더가 공유하는 스탯 키. 스탯 하나를 더하려면 여기, <see cref="SkillStatRegistry"/>, 묶음 구조체에 한 줄씩 적는다.</summary>
     internal enum Stat
     {
-        Cooldown, Damage, ProjectileCount, CastCount, ReserveCastCount, Form, CastInterval,
+        Cooldown, Damage, ImpactRadius, ProjectileCount, CastCount, ReserveCastCount, Form, CastInterval,
         ReserveDistance, ReserveCooldown, ReserveInterval,
-        PierceCount, ProjectileSpeed, ProjectileSizeMultiplier, KnockbackDistance,
+        PierceCount, ProjectileCollisionRadius, ProjectileSpeed, ProjectileSizeMultiplier, KnockbackDistance,
         FreezeDuration, FreezeChance, FrostbiteRatio, FrostbiteChance, FreezeMaxHpRatio, ParalysisDuration, ParalysisChance,
         StunDuration, StunChance, SlowDuration, SlowRatio, VulnerabilityRatio, VulnerabilityDuration,
         BurnDuration, BurnRatio, BurnMaxHpRatio, BurnDeathExplosion, BurnChance,
@@ -42,6 +42,7 @@ namespace Game.Core
             void Def(Stat stat, Func<SkillBaseStats, float> value) => t[(int)stat] = value;
             Def(Stat.Cooldown, d => d.cast.cooldown);
             Def(Stat.Damage, d => d.cast.baseDamage);
+            Def(Stat.ImpactRadius, d => d.cast.impactRadius);
             Def(Stat.ProjectileCount, d => Math.Max(1, d.cast.projectileCount));
             Def(Stat.CastCount, d => Math.Max(1, d.cast.castCount));
             Def(Stat.ReserveCastCount, _ => 0);
@@ -52,6 +53,7 @@ namespace Game.Core
             Def(Stat.ReserveInterval, d => d.reserve.interval);
             Def(Stat.PierceCount, d => Math.Max(0, d.projectile.pierceCount));
             Def(Stat.ProjectileSpeed, d => d.projectile.speed);
+            Def(Stat.ProjectileCollisionRadius, d => d.projectile.collisionRadius);
             Def(Stat.ProjectileSizeMultiplier, d => d.projectile.sizeMultiplier);
             Def(Stat.KnockbackDistance, d => d.projectile.knockbackDistance);
             Def(Stat.FreezeDuration, d => d.status.freezeDuration);
@@ -157,6 +159,7 @@ namespace Game.Core
 
         public float Cooldown => v[(int)Stat.Cooldown];
         public float Damage => v[(int)Stat.Damage];
+        public float ImpactRadius => v[(int)Stat.ImpactRadius];
         public int ProjectileCount => (int)v[(int)Stat.ProjectileCount];
         public int Count => (int)v[(int)Stat.CastCount];
         public int ReserveCount => (int)v[(int)Stat.ReserveCastCount];
@@ -174,6 +177,7 @@ namespace Game.Core
 
         public int PierceCount => (int)v[(int)Stat.PierceCount];
         public float Speed => v[(int)Stat.ProjectileSpeed];
+        public float CollisionRadius => v[(int)Stat.ProjectileCollisionRadius];
         public float SizeMultiplier => v[(int)Stat.ProjectileSizeMultiplier];
         public float KnockbackDistance => v[(int)Stat.KnockbackDistance];
     }

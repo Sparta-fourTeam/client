@@ -19,6 +19,8 @@ namespace Game.Core
             public float cooldown;
             public float baseDamage;
             public float range;
+            /// <summary>즉시 타격의 기본 반경. 형태와 크기 강화는 그림과 판정에 함께 곱한다.</summary>
+            public float impactRadius = .7f;
             public int projectileCount;
             public int castCount = 1;
             public float castInterval = 0.1f;
@@ -28,6 +30,8 @@ namespace Game.Core
         {
             public float sizeMultiplier = 1;
             public float speed;
+            /// <summary>투사체 중심 경로에서 적중하는 거리.</summary>
+            public float collisionRadius = .3f;
             public int pierceCount;
             public float knockbackDistance;
         }

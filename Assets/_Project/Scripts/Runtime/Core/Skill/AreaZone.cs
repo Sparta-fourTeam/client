@@ -220,7 +220,8 @@ namespace Game.Core
             }
             else
             {
-                visual.localScale = Vector3.one * (radius * 2f);
+                var native = NativeVisualSize();
+                visual.localScale = new Vector3(radius * 2f / native.x, radius * 2f / native.y, 1);
             }
         }
 

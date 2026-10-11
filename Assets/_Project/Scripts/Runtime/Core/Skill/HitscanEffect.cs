@@ -19,6 +19,7 @@ namespace Game.Core
 
         [SerializeField] private LayerMask targetMask;
         private float damage;
+        private float activeRadius;
         private IEnemyTarget directTarget;
         // 이 타격이 겨냥한 적. Impact 반응이 "방금 맞은 적"으로 쓴다
         private IEnemyTarget sourceTarget;
@@ -38,12 +39,13 @@ namespace Game.Core
 
         private Game.Core.Combat.DamageSource sourceSkill;   // 이 타격을 만든 스킬 (피해 집계와 속성 전달용)
 
-        public void Init(IObjectPool<HitscanEffect> pool, Vector3 position, float damage, IEnemyTarget directTarget = null, AttackReactions reactions = null, IEnemyTarget sourceTarget = null)
+        public void Init(IObjectPool<HitscanEffect> pool, Vector3 position, float damage, IEnemyTarget directTarget = null, AttackReactions reactions = null, IEnemyTarget sourceTarget = null, float impactRadius = -1f)
         {
             sourceSkill = Game.Core.Combat.DamageAttribution.CurrentSource;
             this.pool = pool;
             transform.position = position;
             this.damage = damage;
+            activeRadius = impactRadius >= 0 ? impactRadius : radius;
             this.directTarget = directTarget;
             this.sourceTarget = sourceTarget;
             this.reactions = reactions ?? AttackReactions.Empty;
@@ -95,7 +97,7 @@ namespace Game.Core
                 }
                 return;
             }
-            Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, radius, targetMask);
+            Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, activeRadius, targetMask);
 
             var damaged = new System.Collections.Generic.HashSet<Enemy>();
             foreach (Collider2D hit in hits)
