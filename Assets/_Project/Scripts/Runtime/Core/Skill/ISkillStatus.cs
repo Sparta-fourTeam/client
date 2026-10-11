@@ -11,6 +11,9 @@ namespace Game.Core
         /// <summary>SkillAssetTable에서 아이콘을 찾는 키</summary>
         string AssetKey { get; }
 
+        /// <summary>현재 공격 형태. HUD가 형태변환 아이콘을 선택할 때 쓴다</summary>
+        SkillForm Form { get; }
+
         /// <summary>쿨타임 진행도 0~1. 0이면 발사 가능, 1이면 방금 발사해서 쿨타임이 가득 남은 상태.
         /// 매 프레임 바뀌는 값이라 메시지로 보내지 않고 뷰가 Update에서 직접 읽는다 (docs/architecture.md)</summary>
         float CooldownRatio { get; }

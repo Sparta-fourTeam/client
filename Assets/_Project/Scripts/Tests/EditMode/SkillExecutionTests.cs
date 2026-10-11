@@ -1,5 +1,6 @@
 using System;
 using Game.Core;
+using MessagePipe;
 using NUnit.Framework;
 
 namespace Game.Tests
@@ -11,6 +12,85 @@ namespace Game.Tests
             public TestSkill(SkillData data) : base(data, null, null) { }
             protected override bool OnFire() => true;
             public SkillStats CurrentStats => stats;
+        }
+
+        [Test(Description = "형태변환 후 SkillChanged를 받으면 HUD가 변환 아이콘을 표시하고, 전용 아이콘이 없으면 기본 아이콘을 쓴다")]
+        public void Hud_RefreshesFormIconAfterUpgradeAndFallsBackWhenMissing()
+        {
+            var root = new UnityEngine.GameObject("SkillHudTest");
+            root.SetActive(false);
+            var texture = new UnityEngine.Texture2D(2, 2);
+            var basic = UnityEngine.Sprite.Create(texture, new UnityEngine.Rect(0, 0, 1, 1), UnityEngine.Vector2.zero);
+            var transformed = UnityEngine.Sprite.Create(texture, new UnityEngine.Rect(1, 0, 1, 1), UnityEngine.Vector2.zero);
+            var table = SkillAssetTable.Create(new[] { new SkillAssetEntry { key = "test", hudIcon = basic } },
+                formIcons: new[] { new SkillFormIconEntry { form = SkillForm.FlameArrow, icon = transformed } });
+            var builder = new MessagePipe.BuiltinContainerBuilder();
+            builder.AddMessagePipe();
+            builder.AddMessageBroker<Game.Core.Messages.SkillChanged>();
+            var provider = builder.BuildServiceProvider();
+            var weapon = new TestSkill(new SkillData { assetKey = "test", maxLevel = 15, baseStats = new SkillBaseStats() });
+            Game.View.SkillHudView view = null;
+            try
+            {
+                UnityEngine.GameObject Child(string name, Type component)
+                {
+                    var child = new UnityEngine.GameObject(name, typeof(UnityEngine.RectTransform), component);
+                    child.transform.SetParent(root.transform);
+                    return child;
+                }
+                var icon = Child("Icon", typeof(UnityEngine.UI.Image)).GetComponent<UnityEngine.UI.Image>();
+                var cooldown = Child("Cooldown", typeof(UnityEngine.UI.Image)).GetComponent<UnityEngine.UI.Image>();
+                var frame = Child("Frame", typeof(UnityEngine.UI.Image)).GetComponent<UnityEngine.UI.Image>();
+                var level = Child("Level", typeof(TMPro.TextMeshProUGUI)).GetComponent<TMPro.TMP_Text>();
+                var slot = root.AddComponent<Game.View.SkillSlotView>();
+                var slotFields = new UnityEditor.SerializedObject(slot);
+                slotFields.FindProperty("_icon").objectReferenceValue = icon;
+                slotFields.FindProperty("_cooldownOverlay").objectReferenceValue = cooldown;
+                slotFields.FindProperty("_activeFrame").objectReferenceValue = frame;
+                slotFields.FindProperty("_levelText").objectReferenceValue = level;
+                slotFields.ApplyModifiedPropertiesWithoutUndo();
+                view = root.AddComponent<Game.View.SkillHudView>();
+                var viewFields = new UnityEditor.SerializedObject(view);
+                viewFields.FindProperty("_assets").objectReferenceValue = table;
+                var slots = viewFields.FindProperty("_slots");
+                slots.arraySize = 1;
+                slots.GetArrayElementAtIndex(0).objectReferenceValue = slot;
+                viewFields.ApplyModifiedPropertiesWithoutUndo();
+                view.Construct(provider.GetRequiredService<MessagePipe.IBufferedSubscriber<Game.Core.Messages.SkillChanged>>(), null);
+                var publisher = provider.GetRequiredService<MessagePipe.IBufferedPublisher<Game.Core.Messages.SkillChanged>>();
+                void Publish() => publisher.Publish(new Game.Core.Messages.SkillChanged(new ISkillStatus[] { weapon }));
+                Publish();
+                Assert.AreSame(basic, icon.sprite);
+
+                Assert.IsTrue(weapon.LevelUp(new SkillUpgradeOption
+                {
+                    id = "flame",
+                    effects = new System.Collections.Generic.List<EffectDef>
+                    { new EffectDef { kind = "form", value = (int)SkillForm.FlameArrow } }
+                }));
+                Publish();
+                Assert.AreSame(transformed, icon.sprite, "현재 형태의 아이콘으로 갱신해야 한다");
+
+                Assert.IsTrue(weapon.LevelUp(new SkillUpgradeOption
+                {
+                    id = "thunder",
+                    effects = new System.Collections.Generic.List<EffectDef>
+                    { new EffectDef { kind = "form", value = (int)SkillForm.ThunderArrow } }
+                }));
+                Publish();
+                Assert.AreSame(basic, icon.sprite, "등록되지 않은 형태는 기본 아이콘을 유지해야 한다");
+            }
+            finally
+            {
+                view?.Dispose();
+                weapon.Dispose();
+                UnityEngine.Object.DestroyImmediate(root);
+                (provider as IDisposable)?.Dispose();
+                UnityEngine.Object.DestroyImmediate(table);
+                UnityEngine.Object.DestroyImmediate(basic);
+                UnityEngine.Object.DestroyImmediate(transformed);
+                UnityEngine.Object.DestroyImmediate(texture);
+            }
         }
 
         [Test]

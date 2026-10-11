@@ -35,7 +35,7 @@ namespace Game.Core
         public GameObject prefab;
     }
 
-    /// <summary>형태 변환 하나의 아이콘. 카드 선택창에서 카드 아래에 작게 보인다</summary>
+    /// <summary>형태 변환 하나의 아이콘. HUD와 카드 선택창의 형태 안내에 쓴다</summary>
     [Serializable]
     public class SkillFormIconEntry
     {
