@@ -58,9 +58,9 @@ namespace Game.Core
             ratio > 0 && duration > 0 ? Add(new StatusReaction<IVulnerableTarget>(1, (t, _) => t.ApplyVulnerability(ratio, duration))) : this;
 
         /// <summary>그 시점의 위치에서 범위 폭발을 낸다. 반경이 0이면 만들지 않는다. 투사체는 적중(Hit), Hitscan은 타격 지점(Impact)에 건다.</summary>
-        public HitReactionBuilder Explosion(AttackEvent trigger, IEnemyTargetProvider provider, float radius, float damage) =>
+        public HitReactionBuilder Explosion(AttackEvent trigger, IEnemyTargetProvider provider, float radius, float damage, string visualEffect = "Explosion") =>
             radius > 0 && provider != null
-                ? Add(new CastSkillReaction(c => SkillReactionEffects.Explode(provider, c.Position, radius, damage)), trigger)
+                ? Add(new CastSkillReaction(c => SkillReactionEffects.Explode(provider, c.Position, radius, damage, visualEffect)), trigger)
                 : this;
 
         /// <summary>임의 반응을 지정한 시점에 덧붙인다</summary>

@@ -69,7 +69,7 @@ namespace Game.Tests
         [TestCase(SkillForm.FlameArrow, true)]
         [TestCase(SkillForm.ThunderArrow, false)]
         [TestCase(SkillForm.ThunderArrow, true)]
-        public void ArrowSpread_InheritsFormStatusesWithoutUnrelatedStatuses(SkillForm form, bool formFirst)
+        public void ArrowSpread_UsesDefaultFormWithoutInheritingParentStatuses(SkillForm form, bool formFirst)
         {
             var catalog = JsonConvert.DeserializeObject<List<SkillData>>(Resources.Load<TextAsset>("MockData/Skills").text);
             var arrow = catalog.Find(skill => skill.assetKey == "weapon_arrow");
@@ -104,7 +104,8 @@ namespace Game.Tests
             var childBase = SkillConfig.FromDefinition(childData);
             var child = cast.Resolve(childBase, recorder);
 
-            Assert.AreEqual(form, child.Stats.Cast.Form, "확산 화살도 부모의 형태 프리팹을 선택해야 한다.");
+            Assert.AreEqual(form, parent.Stats.Cast.Form);
+            Assert.AreEqual(SkillForm.Default, child.Stats.Cast.Form, "확산 화살은 일반 쿠나이 프리팹을 선택해야 한다.");
             Assert.AreEqual(cast.Count, child.Stats.Cast.ProjectileCount);
             Assert.AreEqual(childData.baseStats.projectile.sizeMultiplier, child.Stats.Projectile.SizeMultiplier);
             Assert.AreEqual(parent.Stats.Cast.Damage * spread.effects[0].inherit["damage"], child.Stats.Cast.Damage);
@@ -113,34 +114,19 @@ namespace Game.Tests
             var target = new ArrowStatusTarget();
             ReactionCompiler.ForProjectile(child.Stats).Raise(AttackEvent.Hit,
                 new AttackContext(Vector2.zero, Vector3.up, target, () => 0));
-            if (form == SkillForm.ThunderArrow)
-            {
-                Assert.AreEqual(parent.Stats.Status.ParalysisDuration, child.Stats.Status.ParalysisDuration);
-                Assert.AreEqual(parent.Stats.Status.ParalysisChance, child.Stats.Status.ParalysisChance);
-                Assert.AreEqual(1, target.ParalysisCount);
-                Assert.AreEqual(parent.Stats.Status.ParalysisDuration, target.ParalysisDuration);
-            }
-            else
-            {
-                Assert.AreEqual(childBase.Stats.Status.ParalysisDuration, child.Stats.Status.ParalysisDuration);
-                Assert.AreEqual(0, target.ParalysisCount);
-            }
-            if (form == SkillForm.FlameArrow)
-            {
-                Assert.AreEqual(parent.Stats.Burn.Duration, child.Stats.Burn.Duration);
-                Assert.AreEqual(parent.Stats.Burn.DamageRatio, child.Stats.Burn.DamageRatio);
-                Assert.AreEqual(parent.Stats.Burn.Chance, child.Stats.Burn.Chance);
-                Assert.AreEqual(1, target.BurnCount);
-                Assert.AreEqual(parent.Stats.Cast.Damage * spread.effects[0].inherit["damage"] * parent.Stats.Burn.DamageRatio,
-                    target.BurnDamage);
-                Assert.AreEqual(parent.Stats.Burn.Duration, target.BurnDuration);
-            }
-            else
-            {
-                Assert.AreEqual(childBase.Stats.Burn.Duration, child.Stats.Burn.Duration);
-                Assert.AreEqual(childBase.Stats.Burn.DamageRatio, child.Stats.Burn.DamageRatio);
-                Assert.AreEqual(0, target.BurnCount);
-            }
+            Assert.AreEqual(childBase.Stats.Status.ParalysisDuration, child.Stats.Status.ParalysisDuration);
+            Assert.AreEqual(childBase.Stats.Status.ParalysisChance, child.Stats.Status.ParalysisChance);
+            Assert.AreEqual(0, target.ParalysisCount);
+            Assert.AreEqual(childBase.Stats.Burn.Duration, child.Stats.Burn.Duration);
+            Assert.AreEqual(childBase.Stats.Burn.DamageRatio, child.Stats.Burn.DamageRatio);
+            Assert.AreEqual(childBase.Stats.Burn.Chance, child.Stats.Burn.Chance);
+            Assert.AreEqual(0, target.BurnCount);
+
+            var parentTarget = new ArrowStatusTarget();
+            ReactionCompiler.ForProjectile(parent.Stats).Raise(AttackEvent.Hit,
+                new AttackContext(Vector2.zero, Vector3.up, parentTarget, () => 0));
+            Assert.AreEqual(form == SkillForm.FlameArrow || form == SkillForm.Default ? 1 : 0, parentTarget.BurnCount);
+            Assert.AreEqual(form == SkillForm.ThunderArrow || form == SkillForm.Default ? 1 : 0, parentTarget.ParalysisCount);
         }
 
         private sealed class ArrowStatusTarget : IEnemyTarget, IBurnableTarget, IParalyzableTarget

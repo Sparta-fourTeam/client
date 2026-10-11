@@ -29,6 +29,8 @@ namespace Game.Core
     public sealed class ChainBolt : MonoBehaviour
     {
         [SerializeField] private LineRenderer line;
+        [SerializeField] private LineRenderer afterglowPrefab;
+        [SerializeField] private GameObject impactPrefab;
 
         private IObjectPool<ChainBolt> pool;
         private IEnemyTargetProvider provider;
@@ -150,6 +152,11 @@ namespace Game.Core
             position = target.Position;
             points.Add(position);
             RefreshLine();
+            if (impactPrefab != null)
+            {
+                var impact = Instantiate(impactPrefab, position, Quaternion.identity);
+                UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(impact, gameObject.scene);
+            }
             Vector3 direction = (position - from).sqrMagnitude > 0 ? (Vector3)(position - from).normalized : Vector3.up;
             var context = new AttackContext(position, direction, target, randomValue);
             hitReactions.Raise(AttackEvent.Hit, context);
@@ -173,6 +180,15 @@ namespace Game.Core
         {
             if (released) { return; }
             released = true;
+            // 공격은 즉시 반환하고, 마지막 연결선의 표시만 별도 프리팹의 수명으로 남긴다.
+            if (afterglowPrefab != null && points.Count > 1)
+            {
+                var tail = Instantiate(afterglowPrefab);
+                UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(tail.gameObject, gameObject.scene);
+                tail.positionCount = points.Count;
+                for (int i = 0; i < points.Count; i++) { tail.SetPosition(i, points[i]); }
+                Destroy(tail.gameObject, .16f);
+            }
             reactions.Raise(AttackEvent.Expired, new AttackContext(position, Vector3.up));
             pool.Release(this);
         }

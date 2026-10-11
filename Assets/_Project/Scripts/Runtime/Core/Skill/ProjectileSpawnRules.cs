@@ -40,7 +40,8 @@ namespace Game.Core
                 IgnoredTarget = ignoredTarget,
                 Reservation = reservation,
                 HitReactions = ReactionCompiler.ForProjectile(stats, CreateBurnDeathCallback(), targetProvider),
-                CollisionRadius = .3f * stats.Projectile.SizeMultiplier
+                CollisionRadius = stats.Projectile.CollisionRadius * stats.Projectile.SizeMultiplier *
+                    (stats.Cast.Form == SkillForm.Enbakutsu ? 1.8f : 1f)
             });
         }
         private System.Action<Vector2> CreateBurnDeathCallback()

@@ -39,13 +39,19 @@ MonoBehaviour:
     upgradeCardIcon: {fileID: 21300000, guid: 7cab7be4daa2d1b48900af152debc6e3, type: 3}
   - key: weapon_frost_crystal
     prefab: {fileID: 898466977149368188, guid: d7935ccce6302b94f8eb4729673ed2bd, type: 3}
-    formPrefabs: []
+    formPrefabs:
+    - form: 3
+      prefab: {fileID: 2034999875842895424, guid: 8af7c28982a6a493088cbb6144d03e4c, type: 3}
     hudIcon: {fileID: 21300000, guid: baee726e7a9640c0ab566c5be326cc36, type: 3}
     newCardIcon: {fileID: 21300000, guid: baee726e7a9640c0ab566c5be326cc36, type: 3}
     upgradeCardIcon: {fileID: 21300000, guid: baee726e7a9640c0ab566c5be326cc36, type: 3}
   - key: weapon_log
     prefab: {fileID: 898466977149368188, guid: 78f27881a2cc7d24d8b4a047ef4294c3, type: 3}
-    formPrefabs: []
+    formPrefabs:
+    - form: 4
+      prefab: {fileID: 5350589169475603300, guid: c6a3e0bf236e240d498f2e29c7744813, type: 3}
+    - form: 5
+      prefab: {fileID: 4421963851173864406, guid: 2acdd506424df4fc3b08a57cdf3dc178, type: 3}
     hudIcon: {fileID: 21300000, guid: 57d8ff141e45434ea1b491a9e1d31ccb, type: 3}
     newCardIcon: {fileID: 21300000, guid: 57d8ff141e45434ea1b491a9e1d31ccb, type: 3}
     upgradeCardIcon: {fileID: 21300000, guid: 57d8ff141e45434ea1b491a9e1d31ccb, type: 3}
@@ -69,7 +75,9 @@ MonoBehaviour:
     upgradeCardIcon: {fileID: 0}
   - key: weapon_frost_crystal_aux
     prefab: {fileID: 898466977149368188, guid: d7935ccce6302b94f8eb4729673ed2bd, type: 3}
-    formPrefabs: []
+    formPrefabs:
+    - form: 3
+      prefab: {fileID: 2034999875842895424, guid: 8af7c28982a6a493088cbb6144d03e4c, type: 3}
     hudIcon: {fileID: 0}
     newCardIcon: {fileID: 0}
     upgradeCardIcon: {fileID: 0}
@@ -127,6 +135,11 @@ MonoBehaviour:
     upgradeCardIcon: {fileID: 21300000, guid: b7c1e5a04d2f4e6a9a31c5d8e0f2a7b9, type: 3}
   - key: weapon_focus_arrow
     prefab: {fileID: 5228935304015980034, guid: be9bd7196120145f69876a92c5d1a55c, type: 3}
+    formPrefabs:
+    - form: 7
+      prefab: {fileID: 8378211432792846082, guid: 6e779c6f72359459aaab402b7488bb67, type: 3}
+    - form: 6
+      prefab: {fileID: 9011048590407165832, guid: 8b89d80e4087a480dbc3323424d7b767, type: 3}
     hudIcon: {fileID: 21300000, guid: b7c1e5a04d2f4e6a9a31c5d8e0f2a7b9, type: 3}
     newCardIcon: {fileID: 21300000, guid: b7c1e5a04d2f4e6a9a31c5d8e0f2a7b9, type: 3}
     upgradeCardIcon: {fileID: 21300000, guid: b7c1e5a04d2f4e6a9a31c5d8e0f2a7b9, type: 3}
@@ -134,6 +147,6 @@ MonoBehaviour:
   cardFallback: {fileID: -1817599883, guid: 256e7fff31566b14e81a254145f0c189, type: 3}
   formIcons:
   - form: 6
-    icon: {fileID: 21300000, guid: b16c970a390ee4d2b8f939711398548a, type: 3}
-  - form: 7
     icon: {fileID: 21300000, guid: bb55ddd2c3e6f4111b150595eeac1279, type: 3}
+  - form: 7
+    icon: {fileID: 21300000, guid: b16c970a390ee4d2b8f939711398548a, type: 3}

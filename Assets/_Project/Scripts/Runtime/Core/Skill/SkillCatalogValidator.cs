@@ -39,6 +39,14 @@ namespace Game.Core
                     throw new InvalidOperationException($"스킬 '{weapon.name}'의 속성 {(int)weapon.element}이(가) 올바르지 않습니다 (0~5).");
                 }
 
+                float collision = weapon.baseStats.projectile.collisionRadius;
+                float impact = weapon.baseStats.cast.impactRadius;
+                if (collision < 0 || float.IsNaN(collision) || float.IsInfinity(collision) ||
+                    impact < 0 || float.IsNaN(impact) || float.IsInfinity(impact))
+                {
+                    throw new InvalidOperationException($"스킬 '{weapon.name}'의 적중 반경은 유한한 0 이상이어야 합니다.");
+                }
+
                 foreach (var option in weapon.upgrades)
                 {
                     if (option == null || string.IsNullOrEmpty(option.id) || !cards.Add(option.id)
