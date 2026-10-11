@@ -89,7 +89,7 @@ namespace Game.View
                 if (i < count)
                 {
                     var status = message.Skills[i];
-                    _slots[i].Bind(status, _assets != null ? _assets.GetHudIcon(status.AssetKey) : null);
+                    _slots[i].Bind(status, _assets != null ? _assets.GetFormIcon(status.Form, status.AssetKey) : null);
                 }
                 else
                 {
