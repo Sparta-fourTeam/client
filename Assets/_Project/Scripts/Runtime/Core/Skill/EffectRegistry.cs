@@ -164,7 +164,6 @@ namespace Game.Core
 
             // 연쇄: 첫 대상 뒤에 튕기는 횟수(반사), 튕기는 거리, 경로 위 적 공격
             Add("chainBounces", Plain, Chain, (s, v) => s[Stat.ChainBounces] += (int)v, PositiveInteger);
-            Add("chainJumpRange", Plain, Chain, (s, v) => s[Stat.ChainJumpRange] *= Factor(v), Positive);
             Add("chainPath", Plain, Chain, (s, v) => s[Stat.ChainPathWidth] = v, Positive);
 
             // 자식 스킬 시전: 지정한 시점(onEvent) 또는 주기(periodic)에 다른 스킬을 그 위치에서 시전한다.

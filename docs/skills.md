@@ -125,7 +125,7 @@ flowchart TD
 | 전자기장 | `fieldDuration`, `fieldDamageFlat`, `fieldDamageMultiplier` | Hitscan |
 | 영역 | `areaRadius`, `areaDuration`, `areaMoveSpeed`, `areaPull`(모두 %) | Area |
 | 광선 | `beamLength`, `beamWidth`, `beamDuration`, `beamPulses`(%), `beamPulsesFlat`(+) | Beam |
-| 연쇄 | `chainBounces`(+), `chainJumpRange`(%), `chainPath`(=, 경로 폭) | Chain |
+| 연쇄 | `chainBounces`(+), `chainPath`(=, 경로 폭) | Chain |
 | 자식 시전 | `onEvent`, `periodic`, `inherit` | 전체 (6절) |
 
 정확한 단위와 허용 값은 `EffectRegistry.cs`의 선언이 기준이다. 스킬의 공격 종류가 소비하지 않는 효과를 카드에 적으면 조용히 무시되므로 검증이 카드 ID와 함께 거부한다.

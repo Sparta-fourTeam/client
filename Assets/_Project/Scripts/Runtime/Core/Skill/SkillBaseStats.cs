@@ -86,8 +86,6 @@ namespace Game.Core
         {
             /// <summary>첫 대상 뒤에 튕기는 횟수(반사)</summary>
             public float bounces;
-            /// <summary>다음 대상을 찾는 거리 (현재 대상 기준)</summary>
-            public float jumpRange = 4;
             /// <summary>대상 사이를 건너는 시간(초)</summary>
             public float hopInterval = 0.08f;
             /// <summary>0보다 크면 튕기는 경로 위(이 폭 이내)의 적도 함께 공격한다</summary>

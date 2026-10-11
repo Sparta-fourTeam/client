@@ -49,14 +49,14 @@ namespace Game.Tests
         // ── 튕김 규칙 ─────────────────────────────────────────────────
 
         [Test]
-        public void Chain_HitsFirstTargetThenBouncesToNearestUnhitEnemiesWithinJumpRange()
+        public void Chain_HitsFirstTargetThenBouncesToNearestUnhitEnemies()
         {
             var a = Enemy(3, 0); var b = Enemy(5, 0); var c = Enemy(7, 0); var far = Enemy(30, 0);
             var provider = new CatalogWorld.Targets(); provider.All.AddRange(new[] { a, b, c, far });
-            var bolt = Start(provider, a, new ChainSettings(2, 4, .1f));
+            var bolt = Start(provider, a, new ChainSettings(2, .1f));
             RunAll(bolt);
             Assert.AreEqual(10, a.Damage); Assert.AreEqual(10, b.Damage); Assert.AreEqual(10, c.Damage);
-            Assert.AreEqual(0, far.Damage, "튕김 거리 밖의 적은 맞지 않는다");
+            Assert.AreEqual(0, far.Damage, "튕김 횟수를 넘으면 맞지 않는다");
             Assert.IsFalse(bolt.gameObject.activeSelf, "끝나면 풀로 돌아간다");
         }
 
@@ -65,19 +65,19 @@ namespace Game.Tests
         {
             var a = Enemy(3, 0); var b = Enemy(5, 0);
             var provider = new CatalogWorld.Targets(); provider.All.AddRange(new[] { a, b });
-            RunAll(Start(provider, a, new ChainSettings(10, 4, .1f)));
+            RunAll(Start(provider, a, new ChainSettings(10, .1f)));
             Assert.AreEqual(10, a.Damage);
             Assert.AreEqual(10, b.Damage);
         }
 
         [Test]
-        public void Chain_StopsWhenNoEnemyIsWithinJumpRange()
+        public void Chain_BouncesToDistantEnemyRegardlessOfDistance()
         {
             var a = Enemy(3, 0); var near = Enemy(5, 0); var isolated = Enemy(20, 0);
             var provider = new CatalogWorld.Targets(); provider.All.AddRange(new[] { a, near, isolated });
-            RunAll(Start(provider, a, new ChainSettings(5, 4, .1f)));
+            RunAll(Start(provider, a, new ChainSettings(5, .1f)));
             Assert.AreEqual(10, near.Damage);
-            Assert.AreEqual(0, isolated.Damage);
+            Assert.AreEqual(10, isolated.Damage, "튕김 거리 제한이 없다");
         }
 
         [Test]
@@ -85,7 +85,7 @@ namespace Game.Tests
         {
             var a = Enemy(3, 0); var b = Enemy(5, 0);
             var provider = new CatalogWorld.Targets(); provider.All.AddRange(new[] { a, b });
-            var bolt = Start(provider, a, new ChainSettings(0, 4, .1f));
+            var bolt = Start(provider, a, new ChainSettings(0, .1f));
             Tick(bolt, .01f);
             Assert.AreEqual(10, a.Damage);
             Assert.AreEqual(0, b.Damage);
@@ -97,7 +97,7 @@ namespace Game.Tests
         {
             var a = Enemy(3, 0); var b = Enemy(5, 0); var c = Enemy(7, 0);
             var provider = new CatalogWorld.Targets(); provider.All.AddRange(new[] { a, b, c });
-            var bolt = Start(provider, a, new ChainSettings(2, 4, 1f));
+            var bolt = Start(provider, a, new ChainSettings(2, 1f));
             Tick(bolt, .1f);
             Assert.AreEqual(10, a.Damage); Assert.AreEqual(0, b.Damage);
             Tick(bolt, .95f);
@@ -119,7 +119,7 @@ namespace Game.Tests
                 .On(AttackEvent.Hit, new CastSkillReaction(x => log.Add("hit@" + x.Position.x)))
                 .On(AttackEvent.Bounce, new CastSkillReaction(x => log.Add("bounce@" + x.Position.x)))
                 .On(AttackEvent.Expired, new CastSkillReaction(_ => log.Add("expired"))).Build();
-            RunAll(Start(provider, a, new ChainSettings(2, 4, .1f), reactions: reactions));
+            RunAll(Start(provider, a, new ChainSettings(2, .1f), reactions: reactions));
             CollectionAssert.AreEqual(new[] { "start", "hit@3", "hit@5", "bounce@5", "hit@7", "bounce@7", "expired" }, log);
         }
 
@@ -133,7 +133,7 @@ namespace Game.Tests
             var chainTargets = new CatalogWorld.Targets(); chainTargets.All.AddRange(new[] { a, b });
             var blastTargets = new CatalogWorld.Targets(); blastTargets.All.AddRange(new[] { bystanderA, bystanderB });
             var hit = ReactionCompiler.ForChain(stats, blastTargets);
-            RunAll(Start(chainTargets, a, new ChainSettings(1, 4, .1f), hit: hit));
+            RunAll(Start(chainTargets, a, new ChainSettings(1, .1f), hit: hit));
             Assert.AreEqual(20, a.Damage); Assert.AreEqual(20, b.Damage);
             Assert.AreEqual(0, bystanderA.Damage, "첫 대상 주변은 터지지 않는다");
             Assert.AreEqual(10, bystanderB.Damage, "튕겨 도착한 자리에서 폭발(피해 × 비율)");
@@ -148,7 +148,7 @@ namespace Game.Tests
             var onPath = Enemy(5, 3.2f);
             var offPath = Enemy(5, 6);
             var provider = new CatalogWorld.Targets(); provider.All.AddRange(new[] { a, b, onPath, offPath });
-            RunAll(Start(provider, a, new ChainSettings(1, 12, .1f, pathWidth: 1)));
+            RunAll(Start(provider, a, new ChainSettings(1, .1f, pathWidth: 1)));
             Assert.AreEqual(10, onPath.Damage, "튕기는 경로 위의 적도 맞는다");
             Assert.AreEqual(0, offPath.Damage);
         }
@@ -159,7 +159,7 @@ namespace Game.Tests
             var a = Enemy(0, 3); var b = Enemy(10, 3);
             var between = Enemy(5, 3.1f);
             var provider = new CatalogWorld.Targets(); provider.All.AddRange(new[] { a, b, between });
-            RunAll(Start(provider, a, new ChainSettings(1, 12, .1f)));
+            RunAll(Start(provider, a, new ChainSettings(1, .1f)));
             // between이 b보다 a에 더 가까워 먼저 튕겨 맞는다. 경로 피해가 아니라 다음 대상으로서 맞는 것이다.
             Assert.AreEqual(10, between.Damage);
             Assert.AreEqual(0, b.Damage, "반사가 1번뿐이라 거기서 끝난다");
