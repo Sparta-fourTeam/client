@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Game.Core
 {
-    /// <summary>Selects targets by wall proximity from the nearest eight candidates, skipping those already reserved to die.</summary>
+    /// <summary>Selects up to eight in-range targets, preferring survivors before overkill and wall proximity.</summary>
     public sealed class SkillTargetSelector
     {
         private const int CandidateCount = 8;
@@ -37,7 +37,7 @@ namespace Game.Core
         {
             candidates.Clear();
             selected.Clear();
-            provider.GetNearest(origin, CandidateCount, candidates);
+            provider.GetNearest(origin, int.MaxValue, candidates);
             float rangeSquared = range * range;
             foreach (var candidate in candidates)
             {
@@ -47,6 +47,7 @@ namespace Game.Core
                 }
             }
             selected.Sort(Compare);
+            if (selected.Count > CandidateCount) { selected.RemoveRange(CandidateCount, selected.Count - CandidateCount); }
             return selected;
         }
 

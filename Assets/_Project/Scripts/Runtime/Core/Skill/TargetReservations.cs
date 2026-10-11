@@ -30,12 +30,13 @@ namespace Game.Core
             foreach (var target in emptied) { entries.Remove(target); }
         }
 
-        /// <summary>target이 duration초 뒤에 damage만큼 맞을 예정임을 기록한다</summary>
+        /// <summary>target이 duration초 뒤에 맞을 피해를 기록한다. DamageReaction처럼 매 적중의 소수 부분은 버린다</summary>
         public void Reserve(IEnemyTarget target, float damage, float duration)
         {
-            if (target == null || damage <= 0 || duration <= 0) { return; }
+            int appliedDamage = (int)damage;
+            if (target == null || appliedDamage <= 0 || duration <= 0) { return; }
             if (!entries.TryGetValue(target, out var list)) { entries[target] = list = new List<Entry>(); }
-            list.Add(new Entry(damage, now + duration));
+            list.Add(new Entry(appliedDamage, now + duration));
         }
 
         private float PendingDamage(IEnemyTarget target)
