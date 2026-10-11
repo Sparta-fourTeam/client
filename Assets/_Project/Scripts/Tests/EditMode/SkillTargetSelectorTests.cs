@@ -216,9 +216,10 @@ namespace Game.Tests
             finally { Object.DestroyImmediate(prefab); }
         }
 
-        [TestCase(false)]
-        [TestCase(true)]
-        public void Projectile_InterceptionKeepsItsAimReservationUnlessItCannotContinue(bool blocksPierce)
+        [TestCase(1, false)]
+        [TestCase(0, false)]
+        [TestCase(1, true)]
+        public void Projectile_InterceptionKeepsItsAimReservationUnlessItCannotContinue(int pierceCount, bool blocksPierce)
         {
             var go = new GameObject("ReservationInterceptionTest");
             try
@@ -231,17 +232,30 @@ namespace Game.Tests
                 var reservations = new TargetReservations();
                 var own = reservations.Reserve(aim, 10, 1);
                 var sibling = reservations.Reserve(aim, 6, 1);
+                bool canContinue = pierceCount > 0 && !blocksPierce;
+                bool intercepted = false;
+                var childReaction = new CastSkillReaction(context =>
+                {
+                    if (!ReferenceEquals(context.Target, interceptor)) { return; }
+                    intercepted = true;
+                    Assert.AreEqual(canContinue, reservations.IsLethal(aim), "도달할 수 없는 예약은 Hit 자식 시전 전에 해제해야 한다");
+                    using var probe = reservations.Reserve(aim, 9, 1);
+                    Assert.IsTrue(reservations.IsLethal(aim), "다른 투사체의 6 피해 예약은 남아야 한다");
+                    Assert.AreEqual(canContinue ? 10 : 0, reservations.Overkill(aim));
+                });
                 var pool = new ObjectPool<Projectile>(() => projectile, actionOnRelease: p => p.gameObject.SetActive(false));
                 pool.Get().Init(pool, new ProjectileSpawnSettings
                 {
                     StartPos = Vector3.zero, Direction = Vector3.up, Speed = 10, Lifetime = 1,
-                    TargetProvider = targets, PierceCount = 1, Reservation = own,
-                    HitReactions = new HitReactionBuilder().Damage(10).Build()
+                    TargetProvider = targets, PierceCount = pierceCount, Reservation = own,
+                    HitReactions = new HitReactionBuilder().Damage(10).Build(),
+                    Reactions = new AttackReactions(new[] { new ReactionBinding(AttackEvent.Hit, childReaction) })
                 });
                 TickProjectile(projectile, .1f);
+                Assert.IsTrue(intercepted);
                 Assert.AreEqual(10, interceptor.CurrentHp);
-                Assert.AreEqual(!blocksPierce, reservations.IsLethal(aim));
-                if (!blocksPierce)
+                Assert.AreEqual(canContinue, reservations.IsLethal(aim));
+                if (canContinue)
                 {
                     TickProjectile(projectile, .1f);
                     Assert.AreEqual(5, aim.CurrentHp);

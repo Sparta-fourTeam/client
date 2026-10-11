@@ -119,8 +119,9 @@ namespace Game.Core
                 if (candidate.IsDead) { continue; }
                 if (ReferenceEquals(candidate, ignoredTarget)) { continue; }
                 if (!hitLedger.TryHit(candidate)) { continue; }
-                // 피해와 자식 시전의 동기 콜백이 줄어든 HP에 이 적중을 다시 예약 피해로 세지 않게 한다.
-                if (ReferenceEquals(candidate, reservation?.Target)) { ClearReservation(); }
+                // 적중했거나 더 진행할 수 없는 공격은 피해/자식 시전 콜백 전에 자기 예약을 해제한다.
+                if (ReferenceEquals(candidate, reservation?.Target) || hitLedger.Exhausted || candidate.BlocksPierce)
+                { ClearReservation(); }
                 hitReactions.Raise(AttackEvent.Hit, new AttackContext(hitPosition, direction, candidate, randomValue));
                 SpawnImpact(hitPosition);
                 var context = new AttackContext(hitPosition, direction, candidate);
