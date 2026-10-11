@@ -36,6 +36,9 @@ namespace Game.Core
 
         public IEnemyTargetProvider Targets { get; }
 
+        /// <summary>날아가는 공격이 줄 피해를 미리 기록하는 공유 장부. 없으면 null</summary>
+        public TargetReservations Reservations { get; }
+
         /// <summary>조준 대상에서 빼고 공격이 지나치게 할 적 (자식 스킬이 방금 맞은 적을 피할 때). 없으면 null</summary>
         public IEnemyTarget Exclude { get; }
 
@@ -45,9 +48,10 @@ namespace Game.Core
 
         public AttackEnvironment(Transform caster, IEnemyTargetProvider targets,
             Func<Vector2, float, IReadOnlyList<IEnemyTarget>> select, Vector3? origin = null, IEnemyTarget exclude = null,
-            Vector3 direction = default)
+            Vector3 direction = default, TargetReservations reservations = null)
         {
             Direction = direction;
+            Reservations = reservations;
             this.caster = caster;
             Targets = targets;
             this.select = select;
@@ -74,6 +78,6 @@ namespace Game.Core
 
         /// <summary>같은 시전자와 대상 선택을 쓰되 다른 위치에서 시전하는 환경 (exclude를 주면 그 적은 조준하지 않는다)</summary>
         public AttackEnvironment At(Vector3 position, IEnemyTarget exclude = null, Vector3 direction = default) =>
-            new AttackEnvironment(caster, Targets, select, position, exclude, direction);
+            new AttackEnvironment(caster, Targets, select, position, exclude, direction, Reservations);
     }
 }

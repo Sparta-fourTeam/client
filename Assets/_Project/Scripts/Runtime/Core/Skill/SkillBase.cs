@@ -32,6 +32,7 @@ namespace Game.Core
             }
         }
         protected IEnemyTargetProvider targetProvider;
+        protected TargetReservations Reservations { get; }
         private readonly SkillTargetSelector targets;
         public SkillStats Stats => stats;
         public bool IsMaxLevel => upgrades.IsMaxLevel;
@@ -43,8 +44,9 @@ namespace Game.Core
         /// <summary>0이면 발사 가능, 1이면 방금 발사. 강화로 쿨타임이 줄어든 직후에도 1을 넘지 않게 자른다</summary>
         public float CooldownRatio => Stats.Cast.Cooldown <= 0f ? 0f : Mathf.Clamp01(cooldownTimer / Stats.Cast.Cooldown);
 
-        public SkillBase(SkillData data, Transform caster, IEnemyTargetProvider targetProvider, SkillConfig config = null)
+        public SkillBase(SkillData data, Transform caster, IEnemyTargetProvider targetProvider, SkillConfig config = null, TargetReservations reservations = null)
         {
+            Reservations = reservations;
             this.data = data;
             this.caster = caster;
             this.targetProvider = targetProvider;
@@ -52,7 +54,7 @@ namespace Game.Core
             this.config = config ?? SkillConfig.FromDefinition(data);
             stats = this.config.Stats;
             upgrades = new SkillUpgradeState(data);
-            targets = new SkillTargetSelector(targetProvider);
+            targets = new SkillTargetSelector(targetProvider, reservations);
         }
 
         /// <summary>자식 스킬 시전 효과가 쓸 시전기를 연결한다</summary>

@@ -13,6 +13,13 @@ namespace Game.Tests
             public void TakeDamage(int damage) { }
         }
 
+        private sealed class Mortal : IEnemyTarget
+        {
+            public Vector2 Position { get; set; }
+            public int CurrentHp { get; set; }
+            public void TakeDamage(int damage) { }
+        }
+
         private sealed class Dead : IEnemyTarget
         {
             public Vector2 Position { get; set; }
@@ -74,6 +81,43 @@ namespace Game.Tests
             Assert.AreEqual(8, result.Count);
             CollectionAssert.DoesNotContain(result, dead);
             Assert.AreEqual(1f, result[0].Position.y, .0001f);
+        }
+
+        [Test(Description = "이미 죽을 만큼 맞을 예정인 적은 뒤로 밀리고, 예약이 만료되면 다시 벽에 가까운 순으로 돌아온다")]
+        public void Select_SkipsEnemiesAlreadyReservedToDieUntilTheReservationExpires()
+        {
+            var provider = new Targets();
+            var front = new Mortal { Position = new Vector2(0, 1), CurrentHp = 10 };
+            var back = new Mortal { Position = new Vector2(0, 2), CurrentHp = 10 };
+            provider.Values.AddRange(new IEnemyTarget[] { back, front });
+            var reservations = new TargetReservations();
+            var selector = new SkillTargetSelector(provider, reservations);
+
+            reservations.Reserve(front, 6, 1f);
+            Assert.AreSame(front, selector.Select(Vector2.zero, 5)[0], "피해가 남은 체력에 못 미치면 그대로 앞 적을 노린다");
+
+            reservations.Reserve(front, 6, 1f);
+            Assert.AreSame(back, selector.Select(Vector2.zero, 5)[0], "예약 피해가 남은 체력을 넘으면 다른 적을 노린다");
+
+            reservations.Advance(1.1f);
+            Assert.AreSame(front, selector.Select(Vector2.zero, 5)[0], "빗나가 만료된 예약은 사라진다");
+        }
+
+        [Test(Description = "모든 후보가 죽을 예정이어도 대상이 없어지지 않고, 넘치는 양이 가장 적은 적부터 고른다")]
+        public void Select_WhenEveryoneIsReserved_PrefersTheLeastOverkilled()
+        {
+            var provider = new Targets();
+            var front = new Mortal { Position = new Vector2(0, 1), CurrentHp = 10 };
+            var back = new Mortal { Position = new Vector2(0, 2), CurrentHp = 10 };
+            provider.Values.AddRange(new IEnemyTarget[] { front, back });
+            var reservations = new TargetReservations();
+            reservations.Reserve(front, 30, 1f);
+            reservations.Reserve(back, 12, 1f);
+
+            var result = new SkillTargetSelector(provider, reservations).Select(Vector2.zero, 5);
+
+            Assert.AreEqual(2, result.Count);
+            Assert.AreSame(back, result[0]);
         }
     }
 }

@@ -12,10 +12,10 @@ namespace Game.Core
         public event System.Action Fired;
 
         public SkillCaster(SkillData data, Transform caster, IEnemyTargetProvider targetProvider,
-            IAttackStrategy strategy, SkillConfig config = null) : base(data, caster, targetProvider, config)
+            IAttackStrategy strategy, SkillConfig config = null, TargetReservations reservations = null) : base(data, caster, targetProvider, config, reservations)
         {
             Strategy = strategy;
-            environment = new AttackEnvironment(caster, targetProvider, FindTargets);
+            environment = new AttackEnvironment(caster, targetProvider, FindTargets, reservations: reservations);
         }
 
         public override void Dispose()
