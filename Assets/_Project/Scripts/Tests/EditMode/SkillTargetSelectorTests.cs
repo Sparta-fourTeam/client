@@ -34,6 +34,8 @@ namespace Game.Tests
             {
                 results.Clear();
                 results.AddRange(Values);
+                results.Sort((a, b) => (a.Position - from).sqrMagnitude.CompareTo((b.Position - from).sqrMagnitude));
+                if (results.Count > count) { results.RemoveRange(count, results.Count - count); }
                 return results.Count;
             }
         }
@@ -120,6 +122,45 @@ namespace Game.Tests
 
             Assert.AreEqual(2, result.Count);
             Assert.AreSame(back, result[0]);
+        }
+
+        [TestCase(11, false, Description = "5.9 피해 두 발은 각각 버림한 5 + 5이므로 체력 11인 적은 살아남는다")]
+        [TestCase(10, true, Description = "각각 버림한 5 + 5로 체력 10인 적은 정확히 죽는다")]
+        public void Select_UsesIntegerDamagePerReservedHit(int hp, bool lethal)
+        {
+            var provider = new Targets();
+            var front = new Mortal { Position = new Vector2(0, 1), CurrentHp = hp };
+            var back = new Mortal { Position = new Vector2(0, 2), CurrentHp = 10 };
+            provider.Values.AddRange(new IEnemyTarget[] { front, back });
+            var reservations = new TargetReservations();
+            reservations.Reserve(front, 5.9f, 1f);
+            reservations.Reserve(front, 5.9f, 1f);
+
+            var result = new SkillTargetSelector(provider, reservations).Select(Vector2.zero, 5);
+
+            Assert.AreSame(lethal ? back : front, result[0]);
+        }
+
+        [Test(Description = "가까운 여덟 적이 죽을 예정이어도 사거리 안의 아홉 번째 생존 후보를 먼저 고르고 결과는 여덟으로 제한한다")]
+        public void Select_RanksReservationsBeforeLimitingToEightTargets()
+        {
+            var provider = new Targets();
+            var reservations = new TargetReservations();
+            for (int i = 1; i <= 8; i++)
+            {
+                var target = new Mortal { Position = new Vector2(0, i), CurrentHp = 10 };
+                provider.Values.Add(target);
+                reservations.Reserve(target, 10, 1f);
+            }
+            var survivor = new Mortal { Position = new Vector2(0, 9), CurrentHp = 10 };
+            var outside = new Mortal { Position = new Vector2(11, 0), CurrentHp = 10 };
+            provider.Values.AddRange(new IEnemyTarget[] { survivor, outside });
+
+            var result = new SkillTargetSelector(provider, reservations).Select(Vector2.zero, 10);
+
+            Assert.AreEqual(8, result.Count);
+            Assert.AreSame(survivor, result[0]);
+            CollectionAssert.DoesNotContain(result, outside);
         }
     }
 }
