@@ -25,7 +25,9 @@ MonoBehaviour:
     upgradeCardIcon: {fileID: 21300000, guid: cd1b3d4d92db82347acefbead8229252, type: 3}
   - key: weapon_fireball
     prefab: {fileID: 7451147369274982716, guid: 0af9f3faa168a4cbcbbcfa788f02b312, type: 3}
-    formPrefabs: []
+    formPrefabs:
+    - form: 1
+      prefab: {fileID: 428698991527858693, guid: 103a79bc302e345d7b57c40583305cc7, type: 3}
     hudIcon: {fileID: 21300000, guid: 4426318d3eacec84da33c02a8066f9f4, type: 3}
     newCardIcon: {fileID: 21300000, guid: 4426318d3eacec84da33c02a8066f9f4, type: 3}
     upgradeCardIcon: {fileID: 21300000, guid: 4426318d3eacec84da33c02a8066f9f4, type: 3}

@@ -26,7 +26,7 @@ namespace Game.Core
             TargetReservations.Reservation reservation = null)
         {
             Projectile projectile = pool.Get();
-            projectile.transform.localScale = ProjectileVisual.MainScale(projectileScale, stats.Cast.Form, stats.Projectile.SizeMultiplier);
+            projectile.transform.localScale = projectileScale * stats.Projectile.SizeMultiplier;
             projectile.SetVisualForm(stats.Cast.Form);
             projectile.Init(pool, new ProjectileSpawnSettings
             {
