@@ -79,6 +79,7 @@ namespace Game.Tests
         private sealed class SlowTarget : IEnemyTarget, IAreaSlowTarget
         {
             public Vector2 Position { get; set; }
+            public int CurrentHp { get; set; } = int.MaxValue;
             public readonly Dictionary<object, float> Slows = new();
             public void TakeDamage(int damage) { }
             public void SetAreaSlow(object source, float ratio) => Slows[source] = ratio;
@@ -152,15 +153,22 @@ namespace Game.Tests
                 prefab.SetActive(false);
                 SkillCaster weapon = null;
                 GameObject active = null, inactive = null;
+                GameObject formPrefab = null, transformed = null;
+                TargetReservations reservations = null;
+                SlowTarget target = null;
                 try
                 {
-                    var data = new SkillData { baseStats = new SkillBaseStats { cast = { cooldown = 1, baseDamage = 10, projectileCount = 1 } }, maxLevel = 10 };
-                    IAttackStrategy strategy;
+                    var data = new SkillData
+                    {
+                        castType = hitscan ? CastType.Hitscan : CastType.Projectile,
+                        baseStats = new SkillBaseStats { cast = { cooldown = 1, baseDamage = 10, projectileCount = 1, range = 5 }, projectile = { speed = 1 } },
+                        maxLevel = 10
+                    };
                     if (hitscan)
                     {
                         prefab.AddComponent<HitscanEffect>();
                         var hitscanStrategy = new HitscanStrategy(prefab);
-                        strategy = hitscanStrategy;
+                        weapon = SkillFactory.Create(data, prefab.transform, new NullEnemyTargetProvider(), hitscanStrategy);
                         var first = hitscanStrategy.Pool.Get();
                         var second = hitscanStrategy.Pool.Get();
                         active = first.gameObject;
@@ -170,27 +178,55 @@ namespace Game.Tests
                     else
                     {
                         prefab.AddComponent<Projectile>();
-                        var projectileStrategy = new ProjectileStrategy(prefab);
-                        strategy = projectileStrategy;
+                        formPrefab = new GameObject("PoolLifecycleFormPrefab");
+                        formPrefab.SetActive(false);
+                        formPrefab.AddComponent<Projectile>();
+                        target = new SlowTarget { Position = Vector2.up * 2, CurrentHp = 10 };
+                        reservations = new TargetReservations();
+                        weapon = SkillFactory.Create(data, prefab, prefab.transform, new SlowTargets { Target = target },
+                            reservations: reservations, formPrefabs: new[] { new SkillFormPrefabEntry { form = SkillForm.ThunderArrow, prefab = formPrefab } });
+                        var projectileStrategy = (ProjectileStrategy)weapon.Strategy;
                         var first = projectileStrategy.Pool.Get();
                         var second = projectileStrategy.Pool.Get();
                         active = first.gameObject;
                         inactive = second.gameObject;
                         projectileStrategy.Pool.Release(second);
+                        weapon.FireAt(Vector3.zero);
+                        weapon.FireAt(Vector3.zero, config =>
+                        {
+                            var builder = new SkillConfigBuilder(config);
+                            Assert.IsTrue(builder.TryApply(new IUpgradeEffect[] { new TransformUpgradeEffect(SkillForm.ThunderArrow) }));
+                            return builder.Build();
+                        });
+                        Assert.AreEqual(10, reservations.Overkill(target), "기본형과 변환형의 비행 중 예약을 모두 등록한다.");
+                        foreach (var flight in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
+                        {
+                            if (flight.name == "PoolLifecycleFormPrefab(Clone)") { transformed = flight.gameObject; }
+                        }
+                        Assert.IsNotNull(transformed);
+                        var idle = projectileStrategy.Pool.Get();
+                        inactive = idle.gameObject;
+                        projectileStrategy.Pool.Release(idle);
                     }
-                    weapon = SkillFactory.Create(data, prefab.transform, new NullEnemyTargetProvider(), strategy);
                     weapon.Dispose();
                     weapon.Dispose();
                     weapon.Tick(1);
                     yield return null;
                     Assert.IsTrue(active == null, "In-flight effect must be destroyed: " + hitscan);
                     Assert.IsTrue(inactive == null, "Idle pooled effect must be destroyed: " + hitscan);
+                    if (!hitscan)
+                    {
+                        Assert.IsTrue(transformed == null, "변환 풀의 비행 중 객체도 파괴한다.");
+                        Assert.IsFalse(reservations.IsLethal(target), "실제 disable/destroy 생명주기가 두 풀의 예약을 해제한다.");
+                    }
                 }
                 finally
                 {
                     weapon?.Dispose();
                     if (active != null) { Object.Destroy(active); }
                     if (inactive != null) { Object.Destroy(inactive); }
+                    if (transformed != null) { Object.Destroy(transformed); }
+                    if (formPrefab != null) { Object.Destroy(formPrefab); }
                     Object.Destroy(prefab);
                 }
                 yield return null;

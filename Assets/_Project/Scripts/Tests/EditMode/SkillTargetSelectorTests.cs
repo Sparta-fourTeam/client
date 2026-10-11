@@ -171,13 +171,18 @@ namespace Game.Tests
             typeof(Projectile).GetMethod("Tick", BindingFlags.Instance | BindingFlags.NonPublic)
                 .Invoke(projectile, new object[] { deltaTime });
 
-        [TestCase(10)]
-        [TestCase(15)]
-        public void Projectile_RegistersBeforeStartAndClearsItsHitBeforeChildSelection(int hp)
+        [TestCase(10, false)]
+        [TestCase(15, false)]
+        [TestCase(10, true)]
+        [TestCase(15, true)]
+        public void Projectile_RegistersBeforeStartAndClearsItsHitBeforeChildSelection(int hp, bool transformed)
         {
             var prefab = new GameObject("ReservedHitTest");
             prefab.SetActive(false);
             prefab.AddComponent<Projectile>();
+            var formPrefab = new GameObject("ReservedHitFormTest");
+            formPrefab.SetActive(false);
+            formPrefab.AddComponent<Projectile>();
             try
             {
                 var targets = new Targets();
@@ -186,9 +191,13 @@ namespace Game.Tests
                 targets.Values.AddRange(new IEnemyTarget[] { front, back });
                 var reservations = new TargetReservations();
                 var selector = new SkillTargetSelector(targets, reservations);
-                var data = new SkillData { baseStats = new SkillBaseStats
-                { cast = { baseDamage = 10, range = 5, projectileCount = 1 }, projectile = { speed = 10, pierceCount = 1 } } };
+                var data = new SkillData
+                {
+                    baseStats = new SkillBaseStats
+                    { cast = { baseDamage = 10, range = 5, projectileCount = 1 }, projectile = { speed = 10, pierceCount = 1 } }
+                };
                 var builder = new SkillConfigBuilder(SkillConfig.FromDefinition(data));
+                if (transformed) { Assert.IsTrue(builder.TryApply(new IUpgradeEffect[] { new TransformUpgradeEffect(SkillForm.ThunderArrow) })); }
                 bool started = false, hit = false;
                 builder.AddReaction(AttackEvent.Start, new CastSkillReaction(_ =>
                 {
@@ -203,17 +212,18 @@ namespace Game.Tests
                     Assert.IsFalse(reservations.IsLethal(front), "적중 피해를 줄어든 HP에 다시 세면 안 된다");
                     if (hp > 10) { Assert.AreSame(front, selector.Select(Vector2.zero, 5)[0]); }
                 }));
-                using var strategy = new ProjectileStrategy(prefab);
-                Assert.IsTrue(strategy.Fire(builder.Build(), new AttackEnvironment(prefab.transform, targets, selector.Select, reservations: reservations)));
+                using var caster = SkillFactory.Create(data, prefab, prefab.transform, targets, config: builder.Build(),
+                    reservations: reservations, formPrefabs: new[] { new SkillFormPrefabEntry { form = SkillForm.ThunderArrow, prefab = formPrefab } });
+                caster.FireAt(Vector3.zero);
                 var projectile = Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None);
-                var launched = System.Array.Find(projectile, p => p.name == "ReservedHitTest(Clone)");
+                var launched = System.Array.Find(projectile, p => p.name == (transformed ? "ReservedHitFormTest(Clone)" : "ReservedHitTest(Clone)"));
                 Assert.IsNotNull(launched);
                 TickProjectile(launched, .1f);
                 Assert.IsTrue(started);
                 Assert.IsTrue(hit);
                 Assert.IsTrue(launched.gameObject.activeSelf, "관통 중에도 적중한 예약은 즉시 없어져야 한다");
             }
-            finally { Object.DestroyImmediate(prefab); }
+            finally { Object.DestroyImmediate(prefab); Object.DestroyImmediate(formPrefab); }
         }
 
         [TestCase(1, false)]
@@ -246,8 +256,13 @@ namespace Game.Tests
                 var pool = new ObjectPool<Projectile>(() => projectile, actionOnRelease: p => p.gameObject.SetActive(false));
                 pool.Get().Init(pool, new ProjectileSpawnSettings
                 {
-                    StartPos = Vector3.zero, Direction = Vector3.up, Speed = 10, Lifetime = 1,
-                    TargetProvider = targets, PierceCount = pierceCount, Reservation = own,
+                    StartPos = Vector3.zero,
+                    Direction = Vector3.up,
+                    Speed = 10,
+                    Lifetime = 1,
+                    TargetProvider = targets,
+                    PierceCount = pierceCount,
+                    Reservation = own,
                     HitReactions = new HitReactionBuilder().Damage(10).Build(),
                     Reactions = new AttackReactions(new[] { new ReactionBinding(AttackEvent.Hit, childReaction) })
                 });
