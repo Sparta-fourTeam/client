@@ -60,8 +60,8 @@ Unity 실제 스프라이트 임포트·테이블·프리팹 참조 검사는 `a
 | 4 | Golem | 행 없음 |
 | 5 | Spider | 행 없음 |
 | 6 | Spider_Mini | 행 없음 |
-| 11 | Elite_Slime | 행 있음, icon 없음 |
-| 12 | Elite_Bat | 행 있음, icon 없음 |
+| 11 | SlimeVariant | 행 있음, icon 없음 |
+| 12 | BatVariant | 행 있음, icon 없음 |
 | 21 | ArmoredCrab | 행 없음 |
 | 22 | EyeJelly | 행 없음 |
 | 23 | Ghost | 행 없음 |

@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 7059720896842738677}
   - component: {fileID: 6062772879779337200}
   m_Layer: 8
-  m_Name: Elite_Bat
+  m_Name: BatVariant
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -195,23 +195,23 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 821902569694815978, guid: 712791f6d237941bdbcf2fe100b1e1eb, type: 3}
       propertyPath: m_LocalScale.x
-      value: 2.4000003
+      value: 2.0000002
       objectReference: {fileID: 0}
     - target: {fileID: 821902569694815978, guid: 712791f6d237941bdbcf2fe100b1e1eb, type: 3}
       propertyPath: m_LocalScale.y
-      value: 2.4000003
+      value: 2.0000002
       objectReference: {fileID: 0}
     - target: {fileID: 821902569694815978, guid: 712791f6d237941bdbcf2fe100b1e1eb, type: 3}
       propertyPath: m_LocalScale.z
-      value: 2.4000003
+      value: 2.0000002
       objectReference: {fileID: 0}
     - target: {fileID: 821902569694815978, guid: 712791f6d237941bdbcf2fe100b1e1eb, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.07200009
+      value: 0.06000007
       objectReference: {fileID: 0}
     - target: {fileID: 821902569694815978, guid: 712791f6d237941bdbcf2fe100b1e1eb, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.07799997
+      value: -0.064999975
       objectReference: {fileID: 0}
     - target: {fileID: 821902569694815978, guid: 712791f6d237941bdbcf2fe100b1e1eb, type: 3}
       propertyPath: m_LocalPosition.z
