@@ -9,6 +9,8 @@ namespace Game.Core
     public sealed class ProjectileStrategy : IAttackStrategy
     {
         private readonly SkillObjectPool<Projectile> ownedPool;
+        private readonly Dictionary<SkillForm, GameObject> formPrefabs = new();
+        private readonly Dictionary<SkillForm, SkillObjectPool<Projectile>> formPools = new();
         private readonly Game.Core.Defense.Wall wall;
         private const float ReserveGrace = .15f;
         private SkillTargetSelector laneSelector;
@@ -21,16 +23,29 @@ namespace Game.Core
         public ObjectPool<Projectile> Pool { get; }
         public Vector3 Scale { get; }
 
-        public ProjectileStrategy(GameObject prefab, Game.Core.Defense.Wall wall = null)
+        public ProjectileStrategy(GameObject prefab, Game.Core.Defense.Wall wall = null,
+            IReadOnlyList<SkillFormPrefabEntry> formPrefabs = null)
         {
             this.wall = wall;
             Scale = prefab.transform.localScale;
             ownedPool = new SkillObjectPool<Projectile>(() => UnityEngine.Object.Instantiate(prefab).GetComponent<Projectile>(), 10, 10);
             Pool = ownedPool.Pool;
+            if (formPrefabs != null)
+            {
+                foreach (var entry in formPrefabs)
+                {
+                    if (entry != null && entry.prefab != null) { this.formPrefabs[entry.form] = entry.prefab; }
+                }
+            }
             fireReserve = () => Fire(reserveConfig, reserveEnvironment);
         }
 
-        public void Dispose() => ownedPool.Dispose();
+        public void Dispose()
+        {
+            ownedPool.Dispose();
+            foreach (var pool in formPools.Values) { pool.Dispose(); }
+            formPools.Clear();
+        }
 
         public void Tick(SkillConfig config, AttackEnvironment environment, float deltaTime)
         {
@@ -92,7 +107,19 @@ namespace Game.Core
             bool fan = !radial && targets.Count == 0 && environment.Exclude != null && environment.Direction.sqrMagnitude > 0;
             if (!radial && !fan && targets.Count == 0) { return false; }
 
-            var spawnRules = new ProjectileSpawnRules(current, environment.Targets, Pool, Scale, config.Reactions);
+            var pool = Pool;
+            var scale = Scale;
+            if (formPrefabs.TryGetValue(current.Cast.Form, out var formPrefab))
+            {
+                if (!formPools.TryGetValue(current.Cast.Form, out var formPool))
+                {
+                    formPool = new SkillObjectPool<Projectile>(() => UnityEngine.Object.Instantiate(formPrefab).GetComponent<Projectile>(), 10, 10);
+                    formPools.Add(current.Cast.Form, formPool);
+                }
+                pool = formPool.Pool;
+                scale = formPrefab.transform.localScale;
+            }
+            var spawnRules = new ProjectileSpawnRules(current, environment.Targets, pool, scale, config.Reactions);
             int count = current.Cast.ProjectileCount;
             for (int i = 0; i < count; i++)
             {

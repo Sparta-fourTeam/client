@@ -284,7 +284,8 @@
             "excludeHit": true,
             "inherit": {
               "damage": 0.5,
-              "projectileSpeed": 1
+              "projectileSpeed": 1,
+              "form": 1
             }
           }
         ],
@@ -376,6 +377,14 @@
           {
             "kind": "form",
             "form": "ThunderArrow"
+          },
+          {
+            "kind": "inherit",
+            "skillId": 13,
+            "inherit": {
+              "paralysisDuration": 1,
+              "paralysisChance": 1
+            }
           }
         ],
         "requiredCardCounts": [
@@ -503,6 +512,15 @@
           {
             "kind": "form",
             "form": "FlameArrow"
+          },
+          {
+            "kind": "inherit",
+            "skillId": 13,
+            "inherit": {
+              "burnDuration": 1,
+              "burnRatio": 1,
+              "burnChance": 1
+            }
           }
         ],
         "requiredCardCounts": [
@@ -2313,7 +2331,8 @@
         "castInterval": 0.1
       },
       "projectile": {
-        "speed": 20
+        "speed": 20,
+        "sizeMultiplier": 0.5
       }
     },
     "upgrades": []

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Game.Core;
+using Newtonsoft.Json;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -62,6 +63,103 @@ namespace Game.Tests
         }
 
         private static SkillConfig ChildBase() => SkillConfig.FromDefinition(Child());
+
+        [TestCase(SkillForm.Default, false)]
+        [TestCase(SkillForm.FlameArrow, false)]
+        [TestCase(SkillForm.FlameArrow, true)]
+        [TestCase(SkillForm.ThunderArrow, false)]
+        [TestCase(SkillForm.ThunderArrow, true)]
+        public void ArrowSpread_InheritsFormStatusesWithoutUnrelatedStatuses(SkillForm form, bool formFirst)
+        {
+            var catalog = JsonConvert.DeserializeObject<List<SkillData>>(Resources.Load<TextAsset>("MockData/Skills").text);
+            var arrow = catalog.Find(skill => skill.assetKey == "weapon_arrow");
+            var spread = arrow.upgrades.Find(card => card.id == "arrow_spread");
+            var formCard = arrow.upgrades.Find(card => card.id ==
+                (form == SkillForm.ThunderArrow ? "arrow_thunder" : "arrow_flame"));
+            var recorder = new Recorder();
+            var builder = NewBuilder(recorder);
+            if (formFirst) { Assert.IsTrue(builder.TryApplyCatalog(formCard.effects)); }
+            Assert.IsTrue(builder.TryApplyCatalog(spread.effects));
+            if (form == SkillForm.FlameArrow || form == SkillForm.ThunderArrow)
+            {
+                if (!formFirst) { Assert.IsTrue(builder.TryApplyCatalog(formCard.effects)); }
+            }
+            else
+            {
+                Assert.IsTrue(builder.TryApplyCatalog(new[]
+                {
+                    new EffectDef { kind = "burnDuration", value = 3 },
+                    new EffectDef { kind = "burnRatio", value = 40 },
+                    new EffectDef { kind = "paralysis", value = 3 }
+                }));
+                if (form != SkillForm.Default)
+                {
+                    Assert.IsTrue(builder.TryApplyCatalog(new[] { new EffectDef { kind = "form", value = (int)form } }));
+                }
+            }
+
+            var parent = builder.Build();
+            var cast = RaiseOnce(parent, recorder);
+            var childData = catalog.Find(skill => skill.id == cast.SkillId);
+            var childBase = SkillConfig.FromDefinition(childData);
+            var child = cast.Resolve(childBase, recorder);
+
+            Assert.AreEqual(form, child.Stats.Cast.Form, "확산 화살도 부모의 형태 프리팹을 선택해야 한다.");
+            Assert.AreEqual(cast.Count, child.Stats.Cast.ProjectileCount);
+            Assert.AreEqual(childData.baseStats.projectile.sizeMultiplier, child.Stats.Projectile.SizeMultiplier);
+            Assert.AreEqual(parent.Stats.Cast.Damage * spread.effects[0].inherit["damage"], child.Stats.Cast.Damage);
+            Assert.AreEqual(parent.Stats.Projectile.Speed * spread.effects[0].inherit["projectileSpeed"], child.Stats.Projectile.Speed);
+            Assert.AreEqual(childBase.Stats.Status.FreezeDuration, child.Stats.Status.FreezeDuration);
+            var target = new ArrowStatusTarget();
+            ReactionCompiler.ForProjectile(child.Stats).Raise(AttackEvent.Hit,
+                new AttackContext(Vector2.zero, Vector3.up, target, () => 0));
+            if (form == SkillForm.ThunderArrow)
+            {
+                Assert.AreEqual(parent.Stats.Status.ParalysisDuration, child.Stats.Status.ParalysisDuration);
+                Assert.AreEqual(parent.Stats.Status.ParalysisChance, child.Stats.Status.ParalysisChance);
+                Assert.AreEqual(1, target.ParalysisCount);
+                Assert.AreEqual(parent.Stats.Status.ParalysisDuration, target.ParalysisDuration);
+            }
+            else
+            {
+                Assert.AreEqual(childBase.Stats.Status.ParalysisDuration, child.Stats.Status.ParalysisDuration);
+                Assert.AreEqual(0, target.ParalysisCount);
+            }
+            if (form == SkillForm.FlameArrow)
+            {
+                Assert.AreEqual(parent.Stats.Burn.Duration, child.Stats.Burn.Duration);
+                Assert.AreEqual(parent.Stats.Burn.DamageRatio, child.Stats.Burn.DamageRatio);
+                Assert.AreEqual(parent.Stats.Burn.Chance, child.Stats.Burn.Chance);
+                Assert.AreEqual(1, target.BurnCount);
+                Assert.AreEqual(parent.Stats.Cast.Damage * spread.effects[0].inherit["damage"] * parent.Stats.Burn.DamageRatio,
+                    target.BurnDamage);
+                Assert.AreEqual(parent.Stats.Burn.Duration, target.BurnDuration);
+            }
+            else
+            {
+                Assert.AreEqual(childBase.Stats.Burn.Duration, child.Stats.Burn.Duration);
+                Assert.AreEqual(childBase.Stats.Burn.DamageRatio, child.Stats.Burn.DamageRatio);
+                Assert.AreEqual(0, target.BurnCount);
+            }
+        }
+
+        private sealed class ArrowStatusTarget : IEnemyTarget, IBurnableTarget, IParalyzableTarget
+        {
+            public Vector2 Position => Vector2.zero;
+            public int BurnCount;
+            public float BurnDamage;
+            public float BurnDuration;
+            public int ParalysisCount;
+            public float ParalysisDuration;
+            public void ApplyParalysis(float duration) { ParalysisCount++; ParalysisDuration = duration; }
+            public void TakeDamage(int damage) { }
+            public void ApplyBurn(float damagePerSecond, float duration, float maxHpRatio = 0, Action<Vector2> onDeath = null)
+            {
+                BurnCount++;
+                BurnDamage = damagePerSecond;
+                BurnDuration = duration;
+            }
+        }
 
         // ── 손자: 보관 효과로 자식에게 반응을 붙이고, 보관 효과는 후손 전체에 적용된다 ──
 
