@@ -19,11 +19,13 @@ namespace Game.Core
             this.reservations = reservations;
         }
 
-        // 이미 죽을 만큼 맞을 예정인 적(예약이 남은 체력을 넘는 양)이 적은 순, 같으면 벽에 가까운(y가 낮은) 순
+        // 아직 죽지 않을 적을 먼저, 모두 죽을 예정이면 넘치는 피해가 적은 순, 같으면 벽에 가까운(y가 낮은) 순
         private int Compare(IEnemyTarget a, IEnemyTarget b)
         {
             if (reservations != null)
             {
+                int byLethal = reservations.IsLethal(a).CompareTo(reservations.IsLethal(b));
+                if (byLethal != 0) { return byLethal; }
                 int byOverkill = reservations.Overkill(a).CompareTo(reservations.Overkill(b));
                 if (byOverkill != 0) { return byOverkill; }
             }
