@@ -26,6 +26,7 @@ namespace Game.Core
 
         public class ProjectileBase
         {
+            public float sizeMultiplier = 1;
             public float speed;
             public int pierceCount;
             public float knockbackDistance;

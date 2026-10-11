@@ -13,6 +13,9 @@ namespace Game.Core
         /// <summary>공격 실체 프리팹. 연결돼 있어야 스킬을 얻을 수 있다</summary>
         public GameObject prefab;
 
+        /// <summary>형태별 독립 투사체 프리팹. 연결이 없으면 기본 프리팹을 쓴다.</summary>
+        public List<SkillFormPrefabEntry> formPrefabs = new();
+
         /// <summary>HUD 슬롯 아이콘</summary>
         public Sprite hudIcon;
 
@@ -24,6 +27,13 @@ namespace Game.Core
     }
 
     public enum SkillCardIcon { New, Upgrade }
+
+    [Serializable]
+    public class SkillFormPrefabEntry
+    {
+        public SkillForm form;
+        public GameObject prefab;
+    }
 
     /// <summary>형태 변환 하나의 아이콘. 카드 선택창에서 카드 아래에 작게 보인다</summary>
     [Serializable]
@@ -77,6 +87,9 @@ namespace Game.Core
         public bool HasPrefab(string key) => TryGet(key, out var entry) && entry.prefab != null;
 
         public GameObject GetPrefab(string key) => TryGet(key, out var entry) ? entry.prefab : null;
+
+        public IReadOnlyList<SkillFormPrefabEntry> GetFormPrefabs(string key) =>
+            TryGet(key, out var entry) ? entry.formPrefabs : null;
 
         public Sprite GetHudIcon(string key) =>
             TryGet(key, out var entry) && entry.hudIcon != null ? entry.hudIcon : hudFallback;

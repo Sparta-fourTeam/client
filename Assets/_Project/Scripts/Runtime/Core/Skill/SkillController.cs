@@ -75,7 +75,8 @@ namespace Game.Core
                 Debug.LogWarning($"[SkillController] 자식 스킬 skillId={skillId}의 데이터 또는 프리팹이 없어 시전하지 못합니다 (SkillAssetTable의 assetKey 확인).");
                 return null;
             }
-            var child = SkillFactory.Create(data, prefab, transform, targetProvider, wall, CreateConfig(data), reservations);
+            var child = SkillFactory.Create(data, prefab, transform, targetProvider, wall, CreateConfig(data),
+                reservations: reservations, formPrefabs: assets.GetFormPrefabs(data.assetKey));
             child.UseChildCaster(childCaster);
             return child;
         }
@@ -111,7 +112,8 @@ namespace Game.Core
                 return false;
             }
 
-            var weapon = SkillFactory.Create(data, prefab, transform, targetProvider, wall, CreateConfig(data), reservations);
+            var weapon = SkillFactory.Create(data, prefab, transform, targetProvider, wall, CreateConfig(data),
+                reservations: reservations, formPrefabs: assets.GetFormPrefabs(data.assetKey));
             Debug.Log($"[영구강화] {data.progressionId} Lv.{progression?.GetLevel(data.progressionId) ?? 0} → 피해 {weapon.Config.Stats.Cast.Damage} (기본 {data.baseStats.cast.baseDamage})");
             weapon.UseChildCaster(childCaster);
             weapon.Fired += OnSkillFired;

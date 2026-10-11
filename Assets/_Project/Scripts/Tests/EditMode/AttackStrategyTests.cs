@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Game.Core;
 using Newtonsoft.Json;
 using NUnit.Framework;
@@ -10,6 +11,51 @@ namespace Game.Tests
     /// <summary>전략 등록 검증과 자식 스킬의 카드 후보 제외</summary>
     public sealed class AttackStrategyTests
     {
+        [Test]
+        public void Projectile_FormUsesOwnPrefabAndKeepsExistingFlightUntilTeardown()
+        {
+            var basic = new GameObject("FormPoolBaseTest");
+            var thunder = new GameObject("FormPoolThunderTest");
+            basic.AddComponent<Projectile>();
+            thunder.AddComponent<Projectile>();
+            thunder.transform.localScale = new Vector3(2, 3, 1);
+            var strategy = new ProjectileStrategy(basic, formPrefabs: new[]
+            {
+                new SkillFormPrefabEntry { form = SkillForm.ThunderArrow, prefab = thunder }
+            });
+            Projectile[] flights = null;
+            try
+            {
+                var data = new SkillData { castType = CastType.Projectile, baseStats = new SkillBaseStats() };
+                var config = SkillConfig.FromDefinition(data);
+                var environment = new AttackEnvironment(basic.transform, new NullEnemyTargetProvider(),
+                    (_, _) => new IEnemyTarget[] { new FormTarget() });
+                Assert.IsTrue(strategy.Fire(config, environment));
+                var builder = new SkillConfigBuilder(config);
+                Assert.IsTrue(builder.TryApply(new IUpgradeEffect[] { new TransformUpgradeEffect(SkillForm.ThunderArrow) }));
+                Assert.IsTrue(strategy.Fire(builder.Build(), environment));
+                flights = UnityEngine.Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None)
+                    .Where(p => p.name == "FormPoolBaseTest(Clone)" || p.name == "FormPoolThunderTest(Clone)").ToArray();
+                Assert.AreEqual(2, flights.Length, "변환 전에 발사한 기본형도 유지한다.");
+                Assert.AreEqual(thunder.transform.localScale,
+                    flights.Single(p => p.name == "FormPoolThunderTest(Clone)").transform.localScale);
+                strategy.Dispose();
+                Assert.IsTrue(flights.All(p => p == null), "전투 정리 시 형태별 비행 중 객체도 제거한다.");
+            }
+            finally
+            {
+                strategy.Dispose();
+                UnityEngine.Object.DestroyImmediate(basic);
+                UnityEngine.Object.DestroyImmediate(thunder);
+            }
+        }
+
+        private sealed class FormTarget : IEnemyTarget
+        {
+            public Vector2 Position => Vector2.up;
+            public void TakeDamage(int damage) { }
+        }
+
         [Test]
         public void Validator_RejectsCastTypeWithoutRegisteredStrategy()
         {

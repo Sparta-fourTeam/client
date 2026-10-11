@@ -9,16 +9,37 @@ namespace Game.Core
     internal sealed class SkillObjectPool<T> : IDisposable where T : Component
     {
         private readonly HashSet<T> instances = new();
+        private readonly Dictionary<T, ParticleSystem[]> particles = new();
+        private readonly Dictionary<T, TrailRenderer[]> trails = new();
         public ObjectPool<T> Pool { get; }
         public SkillObjectPool(Func<T> create, int capacity, int maxSize)
         {
-            Pool = new ObjectPool<T>(() => { var item = create(); instances.Add(item); return item; },
-                item => item.gameObject.SetActive(true), item => item.gameObject.SetActive(false),
+            Pool = new ObjectPool<T>(() =>
+                {
+                    var item = create();
+                    instances.Add(item);
+                    particles[item] = item.GetComponentsInChildren<ParticleSystem>(true);
+                    trails[item] = item.GetComponentsInChildren<TrailRenderer>(true);
+                    return item;
+                },
+                item => item.gameObject.SetActive(true), ReleaseItem,
                 DestroyItem, true, capacity, maxSize);
         }
+        private void ReleaseItem(T item)
+        {
+            foreach (var particle in particles[item])
+            {
+                if (particle != null) { particle.Stop(false, ParticleSystemStopBehavior.StopEmittingAndClear); }
+            }
+            foreach (var trail in trails[item]) { if (trail != null) { trail.Clear(); } }
+            item.gameObject.SetActive(false);
+        }
+
         private void DestroyItem(T item)
         {
             instances.Remove(item);
+            particles.Remove(item);
+            trails.Remove(item);
             if (item == null) { return; }
             item.gameObject.SetActive(false);
             if (Application.isPlaying) { UnityEngine.Object.Destroy(item.gameObject); }

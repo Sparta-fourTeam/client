@@ -11,6 +11,7 @@ namespace Game.Core
             public SkillForm form;
             public Sprite sprite;
             public GameObject visualRoot;
+            public GameObject impactPrefab;
             public bool hideBaseSprite;
         }
 

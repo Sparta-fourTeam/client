@@ -52,7 +52,7 @@ namespace Game.Core
             Def(Stat.ReserveInterval, d => d.reserve.interval);
             Def(Stat.PierceCount, d => Math.Max(0, d.projectile.pierceCount));
             Def(Stat.ProjectileSpeed, d => d.projectile.speed);
-            Def(Stat.ProjectileSizeMultiplier, _ => 1);
+            Def(Stat.ProjectileSizeMultiplier, d => d.projectile.sizeMultiplier);
             Def(Stat.KnockbackDistance, d => d.projectile.knockbackDistance);
             Def(Stat.FreezeDuration, d => d.status.freezeDuration);
             Def(Stat.FreezeChance, d => d.status.freezeChance);

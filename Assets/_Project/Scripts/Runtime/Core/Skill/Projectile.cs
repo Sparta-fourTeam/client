@@ -13,10 +13,17 @@ namespace Game.Core
         [SerializeField] private GameObject baseVisual;
 
         private ProjectileVisual visual;
+        private GameObject activeImpact;
         public void SetVisualForm(SkillForm form)
         {
             visual ??= new ProjectileVisual(gameObject, formSprites, baseVisual);
             visual.SetForm(form);
+            activeImpact = impactPrefab;
+            if (formSprites == null) { return; }
+            foreach (var entry in formSprites)
+            {
+                if (entry.form == form && entry.impactPrefab != null) { activeImpact = entry.impactPrefab; break; }
+            }
         }
         private void OnDisable() => ClearReservation();
         private void OnDestroy() { ClearReservation(); visual?.Dispose(); }
@@ -158,10 +165,11 @@ namespace Game.Core
 
         private void SpawnImpact(Vector2 position)
         {
-            if (impactPrefab != null)
-            {
-                Instantiate(impactPrefab, position, Quaternion.identity);
-            }
+            var prefab = activeImpact != null ? activeImpact : impactPrefab;
+            if (prefab == null) { return; }
+            var impact = Instantiate(prefab, position, transform.rotation);
+            UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(impact, gameObject.scene);
+            impact.transform.localScale *= Mathf.Clamp(Mathf.Abs(transform.lossyScale.x), .5f, 1.6f);
         }
 
         private void ApplyDirectionRoration()
