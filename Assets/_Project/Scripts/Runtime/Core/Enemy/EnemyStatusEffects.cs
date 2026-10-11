@@ -60,6 +60,8 @@ namespace Game.Core
             else { effects[index].Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear); }
         }
 
+        public void Clear() => StopAll();
+
         private void StopAll()
         {
             for (int i = 0; i < effects.Length; i++) { Set(i, false); }

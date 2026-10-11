@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Game.Core
 {
-    /// <summary>적이 데미지를 받으면 자식의 모든 SpriteRenderer를 잠깐 빨갛게 만들었다가 원래대로 돌린다.
+    /// <summary>적이 피해를 받으면 몸의 SpriteRenderer를 짧게 밝게 만들었다가 원래대로 돌린다.
     /// 원래 색과 상관없이 같은 색으로 보이도록, 맞는 동안 머티리얼을 Game/2D/Sprite-HitFlash로 바꿔 끼우고
     /// 스프라이트 색을 flashColor로 섞는다 (알파는 그대로라 모양이 유지된다). 섞는 정도는 MaterialPropertyBlock으로 준다.
     /// 스프라이트가 여러 조각인 리깅 몬스터도 같이 변한다. 끝나거나 비활성화되면 원래 머티리얼로 되돌린다.
@@ -11,7 +11,7 @@ namespace Game.Core
     {
         private const string MaterialPath = "Materials/SpriteHitFlash";
 
-        // 시간의 앞쪽은 빨강을 완전히 유지하고, 마지막 이 비율 동안만 원래대로 서서히 돌아온다.
+        // 시간의 앞쪽은 피격 색을 유지하고, 마지막 이 비율 동안만 원래대로 서서히 돌아온다.
         // 서서히 섞는 구간이 길면 초록처럼 원래 색이 강한 몬스터가 탁한 중간색으로 보인다
         private const float FadeRatio = 0.4f;
         private static readonly int FlashAmountId = Shader.PropertyToID("_FlashAmount");
@@ -20,15 +20,17 @@ namespace Game.Core
         private static Material s_material;
         private static bool s_warned;
 
-        [SerializeField] private Color _flashColor = new Color(1f, 0.15f, 0.15f, 1f);
-        [SerializeField, Min(0.01f)] private float _duration = 0.15f;
-        [SerializeField, Range(0f, 1f)] private float _peakAmount = 1f;
+        [SerializeField] private Color _flashColor = new Color(1f, 0.9f, 0.65f, 1f);
+        [SerializeField, Min(0.01f)] private float _duration = 0.09f;
+        [SerializeField, Range(0f, 1f)] private float _peakAmount = .85f;
 
         private SpriteRenderer[] _renderers;
         private Material[] _baseMaterials;
         private MaterialPropertyBlock _block;
         private float _remaining;
         private bool _applied;
+        private float _activeDuration, _activePeak;
+        private float _activeStrength;
 
         /// <summary>남은 시간 비율에 따라 섞는 정도. 앞쪽은 peak을 유지하다가 마지막 FadeRatio 동안 0으로 줄어든다.
         /// peak이 1이면 원래 색과 상관없이 flashColor로 완전히 덮는다 (1보다 작으면 원래 색이 그만큼 남는다)</summary>
@@ -60,15 +62,22 @@ namespace Game.Core
             }
         }
 
-        /// <summary>플래시를 시작한다. 이미 진행 중이면 처음부터 다시 시작한다</summary>
-        public void Flash()
+        /// <summary>플래시를 시작한다. 진행 중인 강한 직접 타격을 약한 지속 피해가 덮지 않는다</summary>
+        public void Flash(float strength = 1f)
         {
+            strength = Mathf.Clamp01(strength);
+            if (strength <= 0f) { return; }
             if (!CacheIfNeeded())
             {
                 return;
             }
 
-            _remaining = _duration;
+            // 작은 지속 피해가 진행 중인 직접 타격의 강도를 덮지 않는다.
+            if (_remaining > 0 && strength < _activeStrength) { return; }
+            _activeStrength = strength;
+            _activeDuration = _duration * Mathf.Lerp(.55f, 1f, strength);
+            _activePeak = _peakAmount * strength;
+            _remaining = _activeDuration;
             Apply();
         }
 
@@ -113,7 +122,8 @@ namespace Game.Core
                 return false;
             }
 
-            _renderers = GetComponentsInChildren<SpriteRenderer>(true);
+            var body = GetComponentInChildren<Animator>();
+            _renderers = body != null ? body.GetComponentsInChildren<SpriteRenderer>(true) : GetComponentsInChildren<SpriteRenderer>(true);
             _baseMaterials = new Material[_renderers.Length];
             for (int i = 0; i < _renderers.Length; i++)
             {
@@ -133,7 +143,7 @@ namespace Game.Core
 
             if (_remaining > 0f)
             {
-                float amount = AmountAt(_remaining, _duration, _peakAmount);
+                float amount = AmountAt(_remaining, _activeDuration, _activePeak);
                 for (int i = 0; i < _renderers.Length; i++)
                 {
                     // 리깅 몬스터의 조각이 중간에 사라질 수 있다

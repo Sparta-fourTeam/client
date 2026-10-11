@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Game.Core;
+using Game.Core.Combat;
 using Game.Core.Messages;
 using MessagePipe;
 using NUnit.Framework;
@@ -489,8 +490,12 @@ namespace Game.Tests
         {
             var enemy = CreateModel(id: 7, maxHp: 10);
 
-            enemy.TakeDamage(3);
+            enemy.TakeDamage(new DamageInfo(3, 42, Element.Fire, CastType.Projectile, true));
 
+            Assert.AreEqual(3, _hpChanged.Published[0].Damage.Amount);
+            Assert.AreEqual(42, _hpChanged.Published[0].Damage.SkillId);
+            Assert.AreEqual(Element.Fire, _hpChanged.Published[0].Damage.Element);
+            Assert.IsTrue(_hpChanged.Published[0].Damage.IsImpact);
             Assert.AreEqual(7, enemy.Hp);
             Assert.AreEqual(1, _hpChanged.Published.Count);
             Assert.AreEqual(7, _hpChanged.Published[0].EnemyId);
@@ -515,6 +520,19 @@ namespace Game.Tests
         // ───────── 사망 ─────────
 
         [Test]
+        public void HpChanged_StatusDamageReportsAppliedLossWithoutImpact()
+        {
+            var enemy = CreateModel(maxHp: 100);
+            enemy.ApplyVulnerability(.5f, 3);
+            enemy.ApplyBurn(4, 1);
+            enemy.TickStatus(1);
+            Assert.AreEqual(94, enemy.Hp);
+            Assert.AreEqual(6, _hpChanged.Published[0].Damage.Amount);
+            Assert.IsFalse(_hpChanged.Published[0].Damage.IsImpact);
+            Assert.IsFalse(_hpChanged.Published[0].Damage.IsFromSkill);
+        }
+
+        [Test]
         public void TakeDamage_ExactlyToZero_Dies_AndPublishesEnemyDied()
         {
             var enemy = CreateModel(id: 5, maxHp: 10);
@@ -536,6 +554,7 @@ namespace Game.Tests
 
             Assert.AreEqual(0, enemy.Hp);
             Assert.AreEqual(0, _hpChanged.Published[0].Current); // 음수로 안 나감
+            Assert.AreEqual(10, _hpChanged.Published[0].Damage.Amount, "과잉 피해는 메시지에 포함하지 않는다");
             Assert.IsTrue(enemy.IsDead);
             enemy.TakeDamage(5);
             enemy.TakeDamage(5);

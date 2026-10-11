@@ -1,3 +1,5 @@
+using Game.Core.Combat;
+
 namespace Game.Core.Messages
 {
     public readonly struct EnemyDied
@@ -20,11 +22,17 @@ namespace Game.Core.Messages
         public int Current { get; }
         public int Max { get; }
 
-        public EnemyHpChanged(int enemyId, int current, int max)
+        /// <summary>실제 HP 차감량과 피해 출처. 회복 또는 기존 생성자는 기본값이다.</summary>
+        public DamageInfo Damage { get; }
+
+        public EnemyHpChanged(int enemyId, int current, int max) : this(enemyId, current, max, default) { }
+
+        public EnemyHpChanged(int enemyId, int current, int max, DamageInfo damage)
         {
             EnemyId = enemyId;
             Current = current;
             Max = max;
+            Damage = damage;
         }
     }
 }
