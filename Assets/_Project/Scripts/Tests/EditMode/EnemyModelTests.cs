@@ -35,8 +35,8 @@ namespace Game.Tests
             return TestEnemy.Create(CreateModel(id, maxHp, speed), position);
         }
 
-        private EnemyModel CreateModel(int id = 1, int maxHp = 10, float speed = 0f) =>
-            new EnemyModel(id, speed, EnemyType.Normal, maxHp, TestAttack, _hpChanged, _died);
+        private EnemyModel CreateModel(int id = 1, int maxHp = 10, float speed = 0f, EnemyType type = EnemyType.Normal) =>
+            new EnemyModel(id, speed, type, maxHp, TestAttack, _hpChanged, _died);
 
         [Test]
         public void AreaSlow_StrongestSourceWinsAndRemovalRestoresMovement()
@@ -558,10 +558,12 @@ namespace Game.Tests
             Assert.IsFalse(_hpChanged.Published[0].Damage.IsFromSkill);
         }
 
-        [Test]
-        public void TakeDamage_ExactlyToZero_Dies_AndPublishesEnemyDied()
+        [TestCase(EnemyType.Normal)]
+        [TestCase(EnemyType.Elite)]
+        [TestCase(EnemyType.Boss)]
+        public void TakeDamage_ExactlyToZero_Dies_AndPublishesEnemyDied(EnemyType type)
         {
-            var enemy = CreateModel(id: 5, maxHp: 10);
+            var enemy = CreateModel(id: 5, maxHp: 10, type: type);
 
             enemy.TakeDamage(10);
 
@@ -569,6 +571,7 @@ namespace Game.Tests
             Assert.IsTrue(enemy.IsDead);
             Assert.AreEqual(1, _died.Published.Count);
             Assert.AreEqual(5, _died.Published[0].EnemyId);
+            Assert.AreEqual(type, _died.Published[0].Type);
         }
 
         [Test]

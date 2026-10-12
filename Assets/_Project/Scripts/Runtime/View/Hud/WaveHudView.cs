@@ -131,7 +131,7 @@ namespace Game.View
 
         private void OnStateChanged(StageStateChanged message)
         {
-            if (message.State == StageState.CardSelect) { _selectingCard = true; }
+            if (message.State is StageState.CardSelect or StageState.EliteRoulette) { _selectingCard = true; }
             else if (message.State != StageState.Paused) { _selectingCard = false; }
             _deferRender = false;
             RenderGauge();

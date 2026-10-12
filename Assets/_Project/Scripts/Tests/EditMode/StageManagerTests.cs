@@ -46,6 +46,8 @@ namespace Game.Tests
 
         private IPublisher<StageEnded> _stageEnded;
         private IPublisher<WaveCompleted> _waveCompleted;
+        private IPublisher<EnemyDied> _enemyDied;
+        private EliteRouletteSession _roulette;
         private ISubscriber<StageStateChanged> _stateChanged;
         private ISubscriber<StageResult> _resultSubscriber;
         private ISubscriber<SubmitRejected> _rejectedSubscriber;
@@ -95,6 +97,7 @@ namespace Game.Tests
 
             _stageEnded = provider.GetRequiredService<IPublisher<StageEnded>>();
             _waveCompleted = provider.GetRequiredService<IPublisher<WaveCompleted>>();
+            _enemyDied = provider.GetRequiredService<IPublisher<EnemyDied>>();
             _stateChanged = provider.GetRequiredService<ISubscriber<StageStateChanged>>();
             _resultSubscriber = provider.GetRequiredService<ISubscriber<StageResult>>();
             _rejectedSubscriber = provider.GetRequiredService<ISubscriber<SubmitRejected>>();
@@ -124,6 +127,8 @@ namespace Game.Tests
                 provider.GetRequiredService<IBufferedPublisher<SkillChanged>>(), new DefaultSkillDataProvider(new GameDataStore()));
             TestSkillAssets.PrepareForRules(_skills, 3);
 
+            var deck = new CardDeck(_skills, null, new List<GeneralCardDefinition>(), new UnityRandomProvider());
+            _roulette = new EliteRouletteSession(deck, new UnityRandomProvider(), 1, 1);
             _manager = new StageManager(
                 provider.GetRequiredService<IBufferedPublisher<StageStateChanged>>(),
                 provider.GetRequiredService<ISubscriber<StageEnded>>(),
@@ -133,9 +138,10 @@ namespace Game.Tests
                 _stats,
                 _clock,
                 provider.GetRequiredService<ISubscriber<WaveCompleted>>(),
-                new CardDeck(_skills, null, new List<GeneralCardDefinition>(), new UnityRandomProvider()),
+                deck,
                 provider.GetRequiredService<IPublisher<SubmitRejected>>(),
-                provider.GetRequiredService<IPublisher<SubmitFailed>>());
+                provider.GetRequiredService<IPublisher<SubmitFailed>>(),
+                enemyDied: provider.GetRequiredService<ISubscriber<EnemyDied>>(), roulette: _roulette);
             _manager.RetryDelay = TimeSpan.Zero;
             _manager.Start();
         }
@@ -159,6 +165,97 @@ namespace Game.Tests
         private void FillGauge(bool isFinalWave)
         {
             _waveCompleted.Publish(new WaveCompleted(isFinalWave ? 20 : 1, isFinalWave));
+        }
+
+        private void CompleteRoulette()
+        {
+            var round = _roulette.PrepareRound();
+            Assert.IsNotNull(round);
+            Assert.IsTrue(_manager.ApplyRouletteReward(round));
+            Assert.IsFalse(_manager.ApplyRouletteReward(round));
+            _manager.FinishEliteRoulette();
+        }
+
+        [Test]
+        public void EliteRoulette_OnlyEliteStarts_AndRestoresSelectedSpeed()
+        {
+            _manager.SetSpeed(2f);
+            _enemyDied.Publish(new EnemyDied(1001));
+            _enemyDied.Publish(new EnemyDied(1002, type: EnemyType.Boss));
+            Assert.AreEqual(StageState.Playing, _manager.State);
+            _enemyDied.Publish(new EnemyDied(1003, type: EnemyType.Elite));
+            Assert.AreEqual(StageState.EliteRoulette, _manager.State);
+            Assert.AreEqual(0f, Time.timeScale);
+            _manager.FinishEliteRoulette();
+            Assert.AreEqual(StageState.EliteRoulette, _manager.State, "연출 전 완료 요청으로 보상을 건너뛰면 안 된다");
+            CompleteRoulette();
+            Assert.AreEqual(StageState.Playing, _manager.State);
+            Assert.AreEqual(2f, Time.timeScale);
+            Assert.AreEqual(1, _stats.BuildLog.Count);
+        }
+
+        [Test]
+        public void EliteRoulette_WaveCardWaits_WithoutResumingCombatBetweenRewards()
+        {
+            _enemyDied.Publish(new EnemyDied(1001, type: EnemyType.Elite));
+            FillGauge(false);
+            CompleteRoulette();
+            Assert.AreEqual(StageState.CardSelect, _manager.State);
+            Assert.AreEqual(0f, Time.timeScale);
+            _manager.PickCard(0);
+            Assert.AreEqual(StageState.Playing, _manager.State);
+        }
+
+        [Test]
+        public void EliteRoulette_QueuedWhileChoosingCardOrPaused_RunsAfterCurrentChoice()
+        {
+            FillGauge(false);
+            _manager.Pause();
+            _enemyDied.Publish(new EnemyDied(1001, type: EnemyType.Elite));
+            _manager.Resume();
+            Assert.AreEqual(StageState.CardSelect, _manager.State);
+            _manager.PickCard(0);
+            Assert.AreEqual(StageState.EliteRoulette, _manager.State);
+            Assert.AreEqual(0f, Time.timeScale);
+            CompleteRoulette();
+            Assert.AreEqual(StageState.Playing, _manager.State);
+        }
+
+        [Test]
+        public void EliteRoulette_MultipleKillsQueue_AndDuplicateDeathDoesNotGrantTwice()
+        {
+            _enemyDied.Publish(new EnemyDied(1001, type: EnemyType.Elite));
+            _enemyDied.Publish(new EnemyDied(1001, type: EnemyType.Elite));
+            _enemyDied.Publish(new EnemyDied(1002, type: EnemyType.Elite));
+            CompleteRoulette();
+            Assert.AreEqual(StageState.EliteRoulette, _manager.State);
+            Assert.AreEqual(0f, Time.timeScale);
+            CompleteRoulette();
+            Assert.AreEqual(StageState.Playing, _manager.State);
+            Assert.AreEqual(2, _stats.BuildLog.Count);
+        }
+
+        [Test]
+        public void EliteRoulette_NoOwnedUpgrade_DoesNotPauseForNewWeapons()
+        {
+            _skills.ClearWeapons();
+            _enemyDied.Publish(new EnemyDied(1001, type: EnemyType.Elite));
+            Assert.AreEqual(StageState.Playing, _manager.State);
+            Assert.AreEqual(1f, Time.timeScale);
+        }
+
+        [Test]
+        public void EliteRoulette_StageEndingCancelsPendingReward_AndCannotResume()
+        {
+            _enemyDied.Publish(new EnemyDied(1001, type: EnemyType.Elite));
+            var pending = _roulette.PrepareRound();
+            _stageEnded.Publish(new StageEnded(StageOutcome.Fail));
+            Assert.AreEqual(StageState.Finished, _manager.State);
+            Assert.IsFalse(_manager.ApplyRouletteReward(pending));
+            _manager.FinishEliteRoulette();
+            Assert.AreEqual(StageState.Finished, _manager.State);
+            Assert.AreEqual(0f, Time.timeScale);
+            Assert.IsEmpty(_stats.BuildLog);
         }
 
         [Test(Description = "Start하면 Playing으로 전환되고 상태 변경이 발행된다")]

@@ -24,6 +24,10 @@ namespace Game.Core
         private readonly IPublisher<SubmitRejected> _submitRejected;
         private readonly IPublisher<SubmitFailed> _submitFailed;
         private readonly StageRewardTracker _rewards;
+        private readonly ISubscriber<EnemyDied> _enemyDied;
+        private readonly EliteRouletteSession _roulette;
+        private readonly HashSet<int> _rewardedElites = new();
+        private int _pendingElites, _pendingCardSelections;
 
         /// <summary>일시적 실패와 네트워크 실패 때 자동으로 다시 보내는 횟수 (docs/flows.md)</summary>
         public const int AutoRetryCount = 3;
@@ -46,6 +50,7 @@ namespace Game.Core
 
         /// <summary>CardSelect 상태에서 UI가 표시할 카드 후보</summary>
         public IReadOnlyList<UpgradeChoice> Choices => _choices;
+        public EliteRouletteSession Roulette => _roulette;
 
         public StageManager(
             IBufferedPublisher<StageStateChanged> stateChanged,
@@ -58,7 +63,8 @@ namespace Game.Core
             ISubscriber<WaveCompleted> waveCompleted,
             CardDeck deck,
             IPublisher<SubmitRejected> submitRejected,
-            IPublisher<SubmitFailed> submitFailed, StageRewardTracker rewards = null, EncounteredMonsters encountered = null)
+            IPublisher<SubmitFailed> submitFailed, StageRewardTracker rewards = null, EncounteredMonsters encountered = null,
+            ISubscriber<EnemyDied> enemyDied = null, EliteRouletteSession roulette = null)
         {
             _stateChanged = stateChanged;
             _stageEnded = stageEnded;
@@ -73,6 +79,8 @@ namespace Game.Core
             _submitFailed = submitFailed;
             _rewards = rewards;
             _encountered = encountered;
+            _enemyDied = enemyDied;
+            _roulette = roulette;
         }
 
         public void Start()
@@ -80,6 +88,7 @@ namespace Game.Core
             var bag = DisposableBag.CreateBuilder();
             _stageEnded.Subscribe(e => OnStageEnded(e.Outcome == StageOutcome.Clear).Forget(Debug.LogException)).AddTo(bag);
             _waveCompleted.Subscribe(OnWaveCompleted).AddTo(bag);
+            _enemyDied?.Subscribe(OnEnemyDied).AddTo(bag);
             _subscription = bag.Build();
 
             // 전투는 Lobby의 BattleLauncher가 이미 발급받아 StageContext에 채워뒀다 — 여기선 꺼내 쓰기만 한다
@@ -114,12 +123,8 @@ namespace Game.Core
             }
 
             // CardSelect였다면 카드를 고르기 전까지 계속 멈춰있어야 하므로 timeScale은 그대로 0으로 둔다
-            if (_beforePause == StageState.Playing)
-            {
-                Time.timeScale = _speed;
-            }
-
-            ChangeState(_beforePause);
+            if (_beforePause == StageState.Playing) { ContinueRewards(); }
+            else { ChangeState(_beforePause); }
         }
 
         public void SetSpeed(float speed)
@@ -135,23 +140,13 @@ namespace Game.Core
         /// <summary>마지막이 아닌 웨이브가 끝나면 카드 3장을 제시하고 CardSelect로 전환한다. 적 이동·스폰도 timeScale로 함께 멈춘다</summary>
         private void OnWaveCompleted(WaveCompleted e)
         {
-            if (e.IsFinalWave || State != StageState.Playing)
+            if (e.IsFinalWave || State is StageState.Starting or StageState.Submitting or StageState.Finished)
             {
                 return;
             }
 
-            var choices = _deck.Draw(3);
-
-            // 고를 카드가 없으면(무기 만렙, 강화 소진) 카드 선택으로 넘어가지 않는다.
-            // 넘어가면 PickCard가 항상 무시되고 Pause/Resume으로도 CardSelect로 돌아와 영영 멈춘다
-            if (choices.Count == 0)
-            {
-                return;
-            }
-
-            _choices = choices;
-            Time.timeScale = 0f;
-            ChangeState(StageState.CardSelect);
+            _pendingCardSelections++;
+            if (State == StageState.Playing) { ContinueRewards(); }
         }
 
         public void PickCard(int index)
@@ -172,14 +167,59 @@ namespace Game.Core
                     return;
                 }
 
-                Time.timeScale = _speed;
-                ChangeState(StageState.Playing);
+                ContinueRewards();
                 return;
             }
             _stats.RecordCard(choice.IsGeneral ? choice.GeneralCard.Id
                 : choice.IsNewWeapon ? $"weapon_{choice.newSkillData.id}" : choice.Option.id);
             _choices = new List<UpgradeChoice>();
 
+            ContinueRewards();
+        }
+
+        private void OnEnemyDied(EnemyDied message)
+        {
+            if (message.Type != EnemyType.Elite || _roulette == null
+                || State is StageState.Starting or StageState.Submitting or StageState.Finished
+                || !_rewardedElites.Add(message.EnemyId)) { return; }
+            _pendingElites++;
+            if (State == StageState.Playing) { ContinueRewards(); }
+        }
+
+        public bool ApplyRouletteReward(EliteRouletteRound round)
+        {
+            if (State != StageState.EliteRoulette || !_roulette.TryApply(round)) { return false; }
+            _stats.RecordCard(round.Winner.Option.id);
+            return true;
+        }
+
+        public void FinishEliteRoulette()
+        {
+            if (State == StageState.EliteRoulette && _roulette.IsComplete) { ContinueRewards(); }
+        }
+
+        private void ContinueRewards()
+        {
+            while (_pendingElites > 0)
+            {
+                _pendingElites--;
+                if (_roulette.Start())
+                {
+                    Time.timeScale = 0f;
+                    ChangeState(StageState.EliteRoulette);
+                    return;
+                }
+            }
+            while (_pendingCardSelections > 0)
+            {
+                _pendingCardSelections--;
+                _choices = _deck.Draw(3);
+                if (_choices.Count == 0) { continue; }
+                Time.timeScale = 0f;
+                ChangeState(StageState.CardSelect);
+                return;
+            }
+            _choices = new List<UpgradeChoice>();
             Time.timeScale = _speed;
             ChangeState(StageState.Playing);
         }
@@ -199,6 +239,8 @@ namespace Game.Core
         {
             if (State is StageState.Submitting or StageState.Finished) { return; }
             _rewards?.Stop();
+            _pendingElites = _pendingCardSelections = 0;
+            _roulette?.Cancel();
             // 클리어·실패는 Playing 중에 끝나 timeScale이 배속 그대로라 적·투사체가 결과 화면 뒤에서 계속 움직인다.
             // 제출 대기·재시도 연출은 unscaled time을 쓰므로 멈춰도 된다. 다음 전투는 Dispose가 1로 되돌린다
             Time.timeScale = 0f;

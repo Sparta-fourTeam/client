@@ -1,0 +1,35 @@
+{
+  "mode": "built-in image_gen",
+  "assets": [
+    {
+      "name": "WeaponRouletteWheel",
+      "prompt": "Use case: stylized-concept. Asset type: transparent 2D mobile-game UI WEAPON ROULETTE WHEEL, icon-free reusable asset for ProjectNova. Input image 1 is STYLE reference for its rough charcoal/crayon outline, flat pigment and paper-white grain only. Draw ONE perfectly circular wheel, viewed exactly FRONT ON in orthographic 2D, centered on a square canvas. The wheel has EXACTLY EIGHT empty equal wedge-shaped sectors: every sector spans EXACTLY 45 DEGREES, eight evenly spaced radial charcoal-black divider lines, and one small blank circular center hub. Arrange one sector centered at 12 o'clock, then centers every 45 degrees clockwise; boundaries at22.5,67.5,112.5,157.5,202.5,247.5,292.5,337.5 degrees from top. Count must be 8, no extra subdivisions. Alternate TWO calm pale colors around the eight blank sectors: warm ivory parchment, and very pale grey-blue. The sector interiors are roomy quiet blank surfaces, no circular socket marks; weapon icons will be added later as independent UI layers at the middle of each sector, so keep 90% of each sector empty. A modest warm tan/ochre rim with thick uneven charcoal-black outer and inner outlines, matching the hand-drawn crayon fantasy-game art. Small ivory center hub, outlined in charcoal black, no text, no symbols, no crest. Keep circle geometry and wedge angles regular while the outline texture remains handmade. Outer wheel diameter about84% of canvas, full safe transparent margin outside. Actual transparent RGBA background outside the wheel; wheel sectors and center themselves remain filled/opaque. DO NOT draw ANY weapons, icons, pictograms, numbers, letters, words, radial tick marks, skulls, stars, jewels or arrows. This image is ONLY the rotating wheel; the stationary pointer is a separate asset. No stand or pedestal, no perspective, no tilt, no floor, no cast shadow, no aura, no decorative spokes beyond the 8 dividers. No photorealism, no glossy/3D, no polished vector style. Output one simple complete EMPTY EIGHT-SLOT wheel.",
+      "reference": "Assets/_Project/Sprites/Generated/Common/SkillCircleFrame.png",
+      "path": "Assets/_Project/Sprites/WeaponRouletteWheel.png"
+    },
+    {
+      "name": "WeaponRouletteSpinner",
+      "prompt": "Use case: stylized-concept. Asset type: transparent CENTER ROTATING SELECTOR NEEDLE layer for the eight-slot weapon roulette in the reference. Input image1 is the roulette STYLE and exact square-canvas layout reference. Generate ONLY the independent central spinner/needle asset, not the wheel. Keep the output canvas SQUARE and the ROTATION AXIS at EXACTLY (50% canvas width,50% canvas height). Draw a small round ochre/brass hub centered EXACTLY at that axis, outer diameter about12% of canvas, with a charcoal-black rough outline and simple warm ivory tiny center circle. A single slender warm-ochre shaft extends vertically UP from that centered hub toward 12 o'clock, finishing with a compact dark muted brick-red triangular arrow head whose tip lies around 20% canvas height. The whole needle is one attached coherent part, facing UP. Shaft thin (about3% canvas width), arrow head about8% canvas width, so it does not obscure the weapon icon sectors. The lower part of the canvas below the hub remains ENTIRELY transparent: do not vertically center the bounding box or crop tightly; preserve the wide intentional transparent padding and EXACT central pivot. The hub must stay at canvas50%,50% because this PNG will be overlaid on the wheel at equal size and rotated around its center. Match reference's handmade irregular charcoal/crayon outline and subtle wax-crayon pigment paper grain; flat 2D frontal view, no realistic shiny metal. All canvas pixels outside this SMALL needle and center hub have true RGBA transparency. NO roulette disk, NO sectors, NO background circle beyond the small hub, NO weapons or icons, NO labels, numbers or lettering, NO stars or skulls, NO ground, shadows, external glow, no duplicate needles. One reusable rotating center spinner only.",
+      "reference": "WeaponRouletteWheel generated image",
+      "path": "Assets/_Project/Sprites/WeaponRouletteSpinner.png"
+    }
+  ],
+  "layout": {
+    "slotCount": 8,
+    "canvasPivot": [
+      0.5,
+      0.5
+    ],
+    "clockwiseSlotCenterDegrees": [
+      22.5,
+      67.5,
+      112.5,
+      157.5,
+      202.5,
+      247.5,
+      292.5,
+      337.5
+    ],
+    "overlay": "Use matching RectTransform sizes and centered pivots; rotate the spinner layer."
+  }
+}

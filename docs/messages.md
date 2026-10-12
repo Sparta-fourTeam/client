@@ -17,7 +17,7 @@
 | `StageStateChanged` | Buffered | StageManager |
 | `WaveStarted` | 사건 | WaveManager |
 | `SpawnCountdown` | Buffered | WaveManager |
-| `EnemyDied` | 사건 | EnemySpawner |
+| `EnemyDied` | 사건 | EnemyModel |
 | `EnemyHpChanged` | 사건 | EnemyModel |
 | `WaveGaugeChanged` | Buffered | WaveProgress |
 | `WaveGaugeFilled` | 사건 | WaveProgress |
@@ -44,6 +44,8 @@
 `WalletChanged.HasValue`는 실제 발행된 잔액인지 구분한다. 생성자로 만든 메시지는 금액이 0이어도 true이며, 미발행 버퍼가 전달하는 `default(WalletChanged)`는 false다. 재화 UI는 false인 메시지를 무시하고 첫 실제 잔액은 카운트 효과 없이 표시한다.
 
 `EnemyDied.IsSummoned`가 true이면 주기 소환으로 생긴 적이다(분열체는 false). 소환체는 게이지 총량에 포함되지 않으므로 `WaveProgress`는 세지 않고, `BattleStats`의 처치 수에는 센다.
+
+`EnemyDied.Type`은 사망한 모델의 등급이다. `StageManager`는 Elite 사망을 한 번씩 룰렛 보상에 넣는다. 룰렛과 웨이브 카드 보상이 겹치면 대기열로 차례로 처리하고 모두 끝난 뒤 전투를 재개한다.
 
 `EnemyHpChanged.Damage`는 저항·취약·남은 HP를 반영한 실제 차감량의 `DamageInfo`다. 피해 출처와 `IsImpact`를 보존하므로 직접 타격과 지속·부가 피해의 반응을 구분할 수 있다. 회복과 기존 3인자 생성자는 기본 `DamageInfo`를 사용한다. 발행 순서는 HP 변경 → 사망이며 피해·상태·보상 시점은 바뀌지 않는다.
 

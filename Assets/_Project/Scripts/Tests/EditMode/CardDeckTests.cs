@@ -14,16 +14,83 @@ namespace Game.Tests
         private sealed class FakeSkills : IUpgradeChoiceSource
         {
             public int Count;
+            public List<UpgradeChoice> Candidates;
+            public bool RemoveApplied;
             public List<UpgradeChoice> Applied { get; } = new List<UpgradeChoice>();
 
             public List<UpgradeChoice> GetUpgradeCandidates() =>
-                Enumerable.Range(0, Count).Select(i => new UpgradeChoice { DisplayName = "skill" + i }).ToList();
+                Candidates?.ToList() ?? Enumerable.Range(0, Count).Select(i => new UpgradeChoice { DisplayName = "skill" + i }).ToList();
 
             public bool ApplyUpgradeChoice(UpgradeChoice choice)
             {
                 Applied.Add(choice);
+                if (RemoveApplied) { Candidates.RemoveAll(c => c.skill == choice.skill); }
                 return true;
             }
+        }
+
+        private sealed class TestSkill : SkillBase
+        {
+            public TestSkill(int id) : base(new SkillData { id = id, maxLevel = 10, baseStats = new SkillBaseStats() }, null, null) { }
+            protected override bool OnFire() => false;
+        }
+
+        [Test]
+        public void Roulette_UsesOwnedUpgradesOnly_AndAppliesRoundOnce()
+        {
+            using var weapon = new TestSkill(701);
+            var upgrade = new UpgradeChoice { skill = weapon, Option = new SkillUpgradeOption { id = "boost" } };
+            skills.Candidates = new List<UpgradeChoice> { upgrade,
+                new UpgradeChoice { IsNewWeapon = true, newSkillData = new SkillData { id = 702 } },
+                new UpgradeChoice { GeneralCard = Card("repair", false) } };
+            var session = new EliteRouletteSession(Deck(), new FixedRandom(), 2, 4);
+            Assert.IsTrue(session.Start());
+            Assert.AreEqual(2, session.CardCount);
+            var round = session.PrepareRound();
+            Assert.AreEqual(8, round.Slots.Count);
+            Assert.IsTrue(round.Slots.All(c => c.skill == weapon && c.Option == upgrade.Option));
+            Assert.AreSame(round, session.PrepareRound());
+            Assert.IsTrue(session.TryApply(round));
+            Assert.IsFalse(session.TryApply(round));
+            Assert.AreEqual(1, skills.Applied.Count);
+            Assert.AreEqual(1, session.CompletedRolls);
+        }
+
+        [Test]
+        public void Roulette_RebuildsCandidatesAfterReward_AndStopsWhenExhausted()
+        {
+            using var first = new TestSkill(701);
+            using var second = new TestSkill(702);
+            skills.RemoveApplied = true;
+            skills.Candidates = new List<UpgradeChoice> {
+                new UpgradeChoice { skill = first, Option = new SkillUpgradeOption { id = "first" } },
+                new UpgradeChoice { skill = second, Option = new SkillUpgradeOption { id = "second" } } };
+            var session = new EliteRouletteSession(Deck(), new FixedRandom(), 4, 4);
+            Assert.IsTrue(session.Start());
+            Assert.IsTrue(session.TryApply(session.PrepareRound()));
+            var next = session.PrepareRound();
+            Assert.IsTrue(next.Slots.All(c => c.skill == second));
+            Assert.IsTrue(session.TryApply(next));
+            Assert.IsNull(session.PrepareRound());
+            Assert.IsTrue(session.IsComplete);
+            Assert.AreEqual(2, skills.Applied.Count);
+        }
+
+        [Test]
+        public void Roulette_EmptyOrCancelledSessionCannotGrantReward()
+        {
+            skills.Candidates = new List<UpgradeChoice>();
+            var session = new EliteRouletteSession(Deck(), new FixedRandom(), 3, 3);
+            Assert.IsFalse(session.Start());
+            Assert.IsNull(session.PrepareRound());
+            using var weapon = new TestSkill(701);
+            skills.Candidates.Add(new UpgradeChoice { skill = weapon, Option = new SkillUpgradeOption { id = "boost" } });
+            Assert.IsTrue(session.Start());
+            var pending = session.PrepareRound();
+            session.Cancel();
+            Assert.IsFalse(session.TryApply(pending));
+            Assert.IsTrue(session.IsComplete);
+            Assert.IsEmpty(skills.Applied);
         }
 
         private sealed class Publisher<T> : IPublisher<T>, IBufferedPublisher<T>

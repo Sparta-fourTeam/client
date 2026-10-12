@@ -7,6 +7,7 @@ namespace Game.Core
         Paused,
         CardSelect,
         Submitting,
-        Finished
+        Finished,
+        EliteRoulette
     }
 }

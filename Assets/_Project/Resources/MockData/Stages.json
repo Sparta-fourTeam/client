@@ -1,6 +1,8 @@
 [
 {
   "Id": 1,
+  "EliteRouletteMinCards": 1,
+  "EliteRouletteMaxCards": 5,
   "ClearGold": 100,
   "RatingRewards": [
     20,
@@ -38,6 +40,8 @@
 },
 {
   "Id": 2,
+  "EliteRouletteMinCards": 1,
+  "EliteRouletteMaxCards": 5,
   "ClearGold": 150,
   "MonsterBonuses": [ { "Stat": "Hp", "Percent": 9 } ],
   "RatingRewards": [
@@ -76,6 +80,8 @@
 },
 {
   "Id": 3,
+  "EliteRouletteMinCards": 1,
+  "EliteRouletteMaxCards": 5,
   "ClearGold": 300,
   "MonsterBonuses": [ { "Stat": "Hp", "Percent": 18 }, { "Stat": "Damage", "Percent": 9 } ],
   "RatingRewards": [

@@ -82,6 +82,14 @@ flowchart TD
 
 - 일시정지 후 CardSelect로 돌아올 때는 선택지를 새로 뽑지 않는다. 일시정지로 리롤하는 꼼수를 막기 위해서다
 
+### 엘리트 룰렛
+
+`EnemyDied.Type`이 Elite이면 `StageManager`가 룰렛 보상을 대기열에 넣는다. `EliteRoulette` 상태에서는 전투 시간이 0이고, 바늘과 카드 등장 연출은 unscaled time으로 진행한다. 이미 카드 선택이나 일시정지 중이면 그 흐름을 마친 뒤 룰렛을 연다.
+
+8칸에는 보유 무기 중 현재 강화 가능한 무기가 무작위로 들어간다. 무기가 적으면 중복 배치하며, 무기를 먼저 같은 확률로 뽑고 그 무기의 강화 후보를 뽑는다. 스테이지의 `EliteRouletteMinCards`~`EliteRouletteMaxCards` 범위에서 횟수를 정하고 한 번씩 회전·적용·카드 표시를 반복한다. 두 값이 0이면 룰렛을 사용하지 않는다.
+
+당첨 강화는 기존 카드 적용 규칙으로 한 번만 적용하고 전투 buildLog에 기록한다. 매 회차 후보를 다시 확인하므로 만렙·선행 조건·카드 상한을 넘지 않는다. 후보가 소진되면 남은 회차를 마치며, 대기 중인 룰렛이나 웨이브 카드가 있으면 계속 정지한 채 먼저 처리한다. 모든 보상이 끝나면 이전 배속으로 재개한다. 전투 종료 시 대기 보상과 연출은 취소하며 뒤늦은 연출 완료가 전투를 재개하지 않는다.
+
 ## 스테이지 상태 머신
 
 여기 없는 전환은 무시된다.
@@ -92,6 +100,11 @@ stateDiagram-v2
     Starting --> Playing: 전투 발급 성공
     Playing --> Paused: 일시정지, 백그라운드
     Playing --> CardSelect: WaveGaugeFilled 수신
+    Playing --> EliteRoulette: 엘리트 처치
+    EliteRoulette --> Playing: 룰렛 보상 완료
+    EliteRoulette --> CardSelect: 대기 중인 웨이브 카드
+    CardSelect --> EliteRoulette: 대기 중인 엘리트 보상
+    EliteRoulette --> Submitting: StageEnded 수신
     Playing --> Submitting: StageEnded 수신
     Paused --> Playing: 계속하기
     Paused --> CardSelect: 카드 선택 중이었으면 복귀

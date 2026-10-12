@@ -141,6 +141,60 @@ namespace Game.Tests
         }
 
         [UnityTest]
+        public IEnumerator EliteDeath_RouletteAnimatesDuringPause_AppliesRewardsAndRestoresSpeed()
+        {
+            yield return StartFromBoot();
+            var rouletteStage = Object.FindAnyObjectByType<RootLifetimeScope>().Container.Resolve<GameDataStore>().StageOrFirst(1);
+            int originalMinimum = rouletteStage.EliteRouletteMinCards;
+            // 검증용 입력에서 선언된 상한 횟수를 사용해 여러 회차와 보상 누적을 끝까지 확인한다.
+            rouletteStage.EliteRouletteMinCards = rouletteStage.EliteRouletteMaxCards;
+            try
+            {
+                var lobby = Object.FindAnyObjectByType<LobbyLifetimeScope>();
+                yield return lobby.Container.Resolve<BattleLauncher>().Launch(1).ToCoroutine();
+                yield return WaitFor(() => Object.FindAnyObjectByType<StageLifetimeScope>()?.Container != null);
+                var stage = Object.FindAnyObjectByType<StageLifetimeScope>();
+                var manager = stage.Container.Resolve<StageManager>();
+                var ui = stage.Container.Resolve<IUiRegistry>();
+                yield return WaitFor(() => manager.State == StageState.Playing && ui.Get<EliteRouletteView>() != null);
+                var view = ui.Get<EliteRouletteView>();
+                var stats = stage.Container.Resolve<BattleStats>();
+                var data = stage.Container.Resolve<GameDataStore>();
+                var elite = data.Monsters.Values.First(monster => monster.GetEnemyType() == EnemyType.Elite);
+                // 실제 factory/model의 사망을 쓴다. 웨이브 밖에서 생성하므로 게이지 집계 대상에서 제외한다.
+                var enemy = stage.Container.Resolve<IEnemyFactory>().Create(elite.Id, new Vector2(99, 99), isSummoned: true);
+                manager.SetSpeed(2f);
+                int priorCards = stats.BuildLog.Count;
+                enemy.TakeDamage(enemy.Model.Hp);
+                Assert.That(manager.State, Is.EqualTo(StageState.EliteRoulette));
+                Assert.That(Time.timeScale, Is.Zero);
+                var panel = Field<GameObject>(view, "_panel");
+                Assert.That(panel.activeSelf, Is.True);
+                int count = manager.Roulette.CardCount;
+                var definition = stage.Container.Resolve<StageDefinition>();
+                Assert.That(count, Is.InRange(definition.EliteRouletteMinCards, definition.EliteRouletteMaxCards));
+                var spinner = Field<RectTransform>(view, "_spinner");
+                float initial = spinner.localEulerAngles.z;
+                yield return WaitFor(() => Mathf.Abs(Mathf.DeltaAngle(initial, spinner.localEulerAngles.z)) > 5f);
+                Assert.That(Time.timeScale, Is.Zero, "회전은 unscaled time, 전투는 정지 상태여야 한다");
+                var cards = Field<CardSlotView[]>(view, "_rewardCards");
+                yield return WaitFor(() => manager.Roulette.IsComplete
+                    && Field<TMP_Text>(view, "_heading").text == "강화 완료");
+                string screenshot = Path.GetFullPath(Path.Combine(Application.dataPath, "../Temp/elite-roulette-live.png"));
+                if (File.Exists(screenshot)) { File.Delete(screenshot); }
+                ScreenCapture.CaptureScreenshot(screenshot);
+                yield return WaitFor(() => File.Exists(screenshot));
+                yield return WaitFor(() => manager.State == StageState.Playing);
+                Assert.That(panel.activeSelf, Is.False);
+                Assert.That(stats.BuildLog.Count - priorCards, Is.EqualTo(count));
+                Assert.That(cards.Count(card => card.gameObject.activeSelf), Is.EqualTo(count));
+                Assert.That(Time.timeScale, Is.EqualTo(2f));
+                LogAssert.NoUnexpectedReceived();
+            }
+            finally { rouletteStage.EliteRouletteMinCards = originalMinimum; }
+        }
+
+        [UnityTest]
         public IEnumerator BootLobbyStageRoundTripKeepsViewsAndSubscriptionsAlive()
         {
             yield return StartFromBoot();
