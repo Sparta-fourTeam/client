@@ -14,6 +14,7 @@ namespace Game.View
         public void BindUi(IUiRegistry registry)
         {
             _nav = registry.Get<LobbyNavView>();
+            _detail = registry.Get<DetailPopupView>();
         }
 
         [SerializeField] private GameObject _panel;
@@ -27,7 +28,6 @@ namespace Game.View
         [Tooltip("복제해서 칸을 만드는 원본. 꺼진 채로 격자 안에 둔다")]
         [SerializeField] private InventorySlotView _slotTemplate;
 
-        [SerializeField] private InventoryDetailView _detail;
         [SerializeField] private ItemIconTable _icons;
 
         public const int Columns = 4;
@@ -42,6 +42,7 @@ namespace Game.View
         private PlayerProfile _profile;
         private GameDataStore _data;
         private LobbyNavView _nav;
+        private DetailPopupView _detail;
         private InventoryCategory _category = InventoryCategory.All;
 
         /// <summary>지금 보이는 칸 전부 (빈칸 포함)</summary>
@@ -88,7 +89,10 @@ namespace Game.View
         public void SetVisible(bool visible)
         {
             _panel.SetActive(visible);
-            _detail.Hide();
+            if (_detail != null)
+            {
+                _detail.Hide();
+            }
             if (visible)
             {
                 // 다시 열면 전체 탭부터 보여준다
@@ -157,7 +161,7 @@ namespace Game.View
                 InventoryCategory.EquipmentMaterial when _nav != null => _nav.OpenCharacter,
                 _ => null,
             };
-            _detail.Show(item, IconOf(item), go);
+            _detail.Show(IconOf(item), item.Name, $"보유 {CurrencyFormat.Format(item.Quantity)}개", ItemInfo.DescriptionOf(item.ItemId), go);
         }
     }
 }

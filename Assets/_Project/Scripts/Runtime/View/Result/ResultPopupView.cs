@@ -12,8 +12,16 @@ namespace Game.View
 {
     /// <summary>스테이지가 끝나고 결과 제출까지 끝나면 결과를 보여준다.
     /// StageEnded가 아니라 StageResult를 구독한다: 서버가 확정한 보상이 들어 있고, 판정 없이 끝나는 포기(Forfeit)도 StageResult로 이어지기 때문이다</summary>
-    public sealed class ResultPopupView : HudView
+    public sealed class ResultPopupView : HudView, IUiBindable
     {
+        public void BindUi(IUiRegistry registry)
+        {
+            _detail = registry.Get<DetailPopupView>();
+        }
+
+        // 보상 칸을 누르면 여는 공용 상세 창
+        private DetailPopupView _detail;
+
         [SerializeField] private GameObject _panel;
         [SerializeField] private PopupTransition _transition;
         [SerializeField] private TMP_Text _titleText;
@@ -77,7 +85,8 @@ namespace Game.View
             _bubbleText.text = result.Cleared
                 ? (_firstStageClear ? "첫 클리어! 로비에서 화살을 강화해 봐요!" : ClearBubble)
                 : FailBubble;
-            _rewardList.Show(RewardRows.Build(_itemIcons, _data, result.RewardGold, result.RewardExp, result.RewardItems));
+            var rewards = RewardRows.Build(_itemIcons, _data, result.RewardGold, result.RewardExp, result.RewardItems);
+            _rewardList.Show(rewards, i => DetailContent.ShowReward(_detail, _data, rewards[i], "획득 {0}개"));
             _starsView.Show(result.Cleared, result.ClearRating);
             if (_damageList != null)
             {

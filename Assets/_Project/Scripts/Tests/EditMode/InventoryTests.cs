@@ -66,6 +66,8 @@ namespace Game.Tests
         private GameObject _root;
         private InventoryScreenView _view;
         private PlayerProfile _profile;
+        private GameObject _detailRoot;
+        private DetailPopupView _detail;
 
         private void OpenScreen(params (string id, int quantity)[] owned)
         {
@@ -76,6 +78,10 @@ namespace Game.Tests
             _profile = new PlayerProfile(Data);
             _profile.Apply(Snapshot(owned));
             _view.Construct(_profile, Data);
+            _detailRoot = Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/UI/Common/DetailPopup.prefab"));
+            _detail = _detailRoot.GetComponent<DetailPopupView>();
+            _detail.Initialize();
+            typeof(InventoryScreenView).GetField("_detail", Flags).SetValue(_view, _detail);
             _view.SetVisible(true);
         }
 
@@ -95,6 +101,7 @@ namespace Game.Tests
         public void TearDown()
         {
             if (_root != null) { Object.DestroyImmediate(_root); }
+            if (_detailRoot != null) { Object.DestroyImmediate(_detailRoot); }
         }
 
         [Test(Description = "열면 전체 탭에 보유 아이템 칸이 나오고, 분류 탭을 누르면 그 분류만 남는다")]
@@ -142,41 +149,39 @@ namespace Game.Tests
             Assert.AreEqual(2, _view.FilledSlots.Count);
         }
 
-        [Test(Description = "상세: 강화 이동이 있으면 버튼이 보이고 누르면 닫히며 이동한다. 없으면 버튼이 숨고, 배경을 누르면 닫힌다")]
+        [Test(Description = "상세: 이동할 곳이 있으면 버튼이 보이고 누르면 닫히며 이동한다. 없으면 버튼이 숨고, 배경을 누르면 닫힌다")]
         public void Detail_GoButtonAndClose()
         {
             OpenScreen((ItemIds.ArrowBook, 2));
-            var detail = Field<InventoryDetailView>(_view, "_detail");
-            var item = _view.FilledSlots[0].Item;
             int went = 0;
 
-            detail.Show(item, null, () => went++);
-            var go = Field<Button>(detail, "_goButton");
-            Assert.IsTrue(detail.IsShown);
+            _detail.Show(null, "화살 마법북", "보유 2개", "설명", () => went++);
+            var go = Field<Button>(_detail, "_goButton");
+            Assert.IsTrue(_detail.IsShown);
             Assert.IsTrue(go.gameObject.activeSelf);
-            Assert.AreEqual("화살 마법북", TextOf(Label(detail, "_nameText")));
+            Assert.AreEqual("화살 마법북", TextOf(Label(_detail, "_titleText")));
 
             go.onClick.Invoke();
             Assert.AreEqual(1, went);
-            Assert.IsFalse(detail.IsShown);
+            Assert.IsFalse(_detail.IsShown);
 
-            detail.Show(item, null, null);
+            _detail.Show(null, "화살 마법북", "보유 2개", "설명");
             Assert.IsFalse(go.gameObject.activeSelf);
-            detail.OnPointerClick(new PointerEventData(null));
-            Assert.IsFalse(detail.IsShown);
+            Field<PointerClickRelay>(_detail, "_background").OnPointerClick(new PointerEventData(null));
+            Assert.IsFalse(_detail.IsShown);
         }
 
-        [Test(Description = "칸을 누르면 그 아이템의 상세가 열린다")]
+        [Test(Description = "칸을 누르면 그 아이템의 이름·보유 개수·설명으로 공용 상세 창이 열린다")]
         public void Slot_Click_OpensDetail()
         {
             OpenScreen((ItemIds.GemChest, 1));
-            var detail = Field<InventoryDetailView>(_view, "_detail");
 
             Field<Button>(_view.FilledSlots[0], "_button").onClick.Invoke();
 
-            Assert.IsTrue(detail.IsShown);
-            Assert.AreEqual("보유 1개", TextOf(Label(detail, "_countText")));
-            Assert.IsFalse(Field<Button>(detail, "_goButton").gameObject.activeSelf, "보석상자는 강화 이동이 없다");
+            Assert.IsTrue(_detail.IsShown);
+            Assert.AreEqual("보유 1개", TextOf(Label(_detail, "_subtitleText")));
+            Assert.AreEqual(ItemInfo.DescriptionOf(ItemIds.GemChest), TextOf(Label(_detail, "_descText")));
+            Assert.IsFalse(Field<Button>(_detail, "_goButton").gameObject.activeSelf, "보석상자는 이동할 곳이 없다");
         }
     }
 }

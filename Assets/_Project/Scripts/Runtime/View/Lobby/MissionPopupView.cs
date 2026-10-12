@@ -5,9 +5,18 @@ using UnityEngine.UI;
 
 namespace Game.View
 {
-    /// <summary>선택 관문의 등장 요마와 획득 가능한 보상을 보여준다.</summary>
-    public sealed class MissionPopupView : HudView
+    /// <summary>선택 관문의 등장 요마와 획득 가능한 보상을 보여준다. 칸을 누르면 공용 상세 창(DetailPopupView)에
+    /// 몬스터의 등급·특징이나 보상의 이름·설명을 띄운다</summary>
+    public sealed class MissionPopupView : HudView, IUiBindable
     {
+        public void BindUi(IUiRegistry registry)
+        {
+            _detail = registry.Get<DetailPopupView>();
+        }
+
+        private DetailPopupView _detail;
+        private GameDataStore _data;
+
         [SerializeField] private GameObject _panel;
         [SerializeField] private PopupTransition _transition;
         [SerializeField] private TMP_Text _title, _description;
@@ -29,9 +38,12 @@ namespace Game.View
         {
             _title.text = $"제 {stageId} 관문";
             _description.text = "등장 요마와 클리어 시 획득할 수 있는 보상을 확인하세요.";
-            _monsters.Show(MonsterRows.Build(_monsterDisplay, data, stageId));
+            _data = data;
+            var monsters = MonsterRows.Build(_monsterDisplay, data, stageId);
+            _monsters.Show(monsters, i => DetailContent.ShowMonster(_detail, _data, _monsterDisplay, monsters[i]));
             var maximum = StageRewardRules.Maximum(data.StageRewards.GetOrThrow(stageId));
-            _rewards.Show(RewardRows.Build(_itemIcons, data, maximum.Coin, maximum.Exp, maximum.Items));
+            var rewards = RewardRows.Build(_itemIcons, data, maximum.Coin, maximum.Exp, maximum.Items);
+            _rewards.Show(rewards, i => DetailContent.ShowReward(_detail, _data, rewards[i], "최대 {0}개 획득"));
             Show();
         }
 

@@ -45,3 +45,7 @@ MonoBehaviour:
     Prefab: {fileID: 8761041663258074451, guid: 56bf8d5c14d693d4a890a9de367b0f2b, type: 3}
     ParentPath: HudLayer/SafeArea
     SiblingIndex: 2
+  - Id: DetailPopup
+    Prefab: {fileID: 2338224154658450158, guid: b972eb3a31adf9d4c9f718353643b064, type: 3}
+    ParentPath: PopupCanvas/Overlays
+    SiblingIndex: 2

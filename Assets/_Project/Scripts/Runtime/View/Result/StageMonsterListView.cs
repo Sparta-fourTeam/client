@@ -11,12 +11,14 @@ namespace Game.View
         public UnityEngine.Sprite Icon { get; }
         public string Name { get; }
         public bool IsBoss { get; }
+        public int MonsterId { get; }
 
-        public StageMonsterItem(UnityEngine.Sprite icon, string name, bool isBoss)
+        public StageMonsterItem(UnityEngine.Sprite icon, string name, bool isBoss, int monsterId = 0)
         {
             Icon = icon;
             Name = name;
             IsBoss = isBoss;
+            MonsterId = monsterId;
         }
     }
 
@@ -33,7 +35,8 @@ namespace Game.View
 
         [SerializeField] private Slot[] _slots;
 
-        public void Show(IReadOnlyList<StageMonsterItem> items)
+        /// <param name="onClick">칸을 누르면 그 칸의 순서로 부른다. null이면 칸이 눌리지 않는다</param>
+        public void Show(IReadOnlyList<StageMonsterItem> items, Action<int> onClick = null)
         {
             EnsureSlots(items.Count);
             for (int i = 0; i < _slots.Length; i++)
@@ -52,6 +55,8 @@ namespace Game.View
                 }
 
                 _slots[i].BossBadge.SetActive(items[i].IsBoss);
+                int index = i;
+                SlotClick.Set(_slots[i].Root, onClick == null ? null : () => onClick(index));
             }
 
             gameObject.SetActive(items.Count > 0);

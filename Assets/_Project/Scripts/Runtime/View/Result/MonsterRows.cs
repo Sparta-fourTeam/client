@@ -15,7 +15,7 @@ namespace Game.View
             {
                 MonsterDisplayTable.MonsterEntry entry = null;
                 bool found = display != null && display.TryGetMonster(monster.Id, out entry);
-                rows.Add(new StageMonsterItem(found ? entry.icon : null, found ? entry.displayName : $"#{monster.Id}", monster.IsBoss));
+                rows.Add(new StageMonsterItem(found ? entry.icon : null, found ? entry.displayName : $"#{monster.Id}", monster.IsBoss, monster.Id));
             }
 
             return rows;

@@ -232,6 +232,16 @@ namespace Game.Tests
             yield return ClickGameButton(Field<Button>(mission, "_infoButton"));
             var details = Field<MissionPopupView>(mission, "_detailsPopup");
             Assert.That(Field<GameObject>(details, "_panel").activeSelf, Is.True);
+            // 몬스터·보상 칸을 실제로 눌러(레이캐스트) 공용 상세 창이 열리는지 본다
+            var info = ui.Get<DetailPopupView>();
+            yield return ClickGameButton(FirstSlotButton(Field<StageMonsterListView>(details, "_monsters")));
+            Assert.That(info.IsShown, Is.True);
+            yield return ClickGameButton(Field<Button>(info, "_closeButton"));
+            Assert.That(info.IsShown, Is.False);
+            yield return ClickGameButton(FirstSlotButton(Field<ResultRewardListView>(details, "_rewards")));
+            Assert.That(info.IsShown, Is.True);
+            yield return ClickGameButton(Field<Button>(info, "_closeButton"));
+            Assert.That(info.IsShown, Is.False);
             yield return ClickGameButton(Field<Button>(details, "_closeButton"));
             yield return WaitFor(() => !Field<GameObject>(details, "_panel").activeSelf);
             yield return ClickGameButton(Field<Button>(mission, "_enterButton"));
@@ -247,6 +257,16 @@ namespace Game.Tests
             yield return ClickGameButton(Field<Button>(controls, "_pauseButton"));
             Assert.That(manager.State, Is.EqualTo(StageState.Paused));
             Assert.That(Time.timeScale, Is.Zero);
+            // 일시정지 창의 등장 요마·확보 보상 칸을 실제로 눌러 공용 상세 창이 열리는지 본다
+            var stageInfo = stageUi.Get<DetailPopupView>();
+            var pause = stageUi.Get<PauseMenuView>();
+            yield return ClickGameButton(FirstSlotButton(Field<StageMonsterListView>(pause, "_monsterList")));
+            Assert.That(stageInfo.IsShown, Is.True);
+            yield return ClickGameButton(Field<Button>(stageInfo, "_closeButton"));
+            yield return ClickGameButton(FirstSlotButton(Field<ResultRewardListView>(pause, "_obtainableList")));
+            Assert.That(stageInfo.IsShown, Is.True);
+            yield return ClickGameButton(Field<Button>(stageInfo, "_closeButton"));
+            Assert.That(stageInfo.IsShown, Is.False);
             yield return ClickGameButton(Field<Button>(stageUi.Get<PauseMenuView>(), "_resumeButton"));
             Assert.That(manager.State, Is.EqualTo(StageState.Playing));
             Assert.That(Time.timeScale, Is.EqualTo(2));
@@ -282,6 +302,11 @@ namespace Game.Tests
                 Assert.That(tipClosed, Is.EqualTo(1), "반복 닫기는 알림을 중복 발행하지 않는다");
             }
             finally { tip.Closed -= onTipClosed; }
+            // 결과 창의 보상 칸도 실제로 눌러 상세 창이 열리는지 본다
+            yield return ClickGameButton(FirstSlotButton(Field<ResultRewardListView>(result, "_rewardList")));
+            Assert.That(stageInfo.IsShown, Is.True);
+            yield return ClickGameButton(Field<Button>(stageInfo, "_closeButton"));
+            Assert.That(stageInfo.IsShown, Is.False);
             yield return ClickGameButton(Field<Button>(result, "_lobbyButton"));
             yield return WaitFor(() => SceneManager.GetActiveScene().name == "Lobby");
             yield return null;
@@ -398,6 +423,13 @@ namespace Game.Tests
             _store = null;
             _originalSavePath = null;
             _savePath = null;
+        }
+
+        private static Button FirstSlotButton(Component listView)
+        {
+            var slots = (System.Array)listView.GetType().GetField("_slots", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(listView);
+            var slot = slots.GetValue(0);
+            return ((GameObject)slot.GetType().GetField("Root").GetValue(slot)).GetComponent<Button>();
         }
 
         private static IEnumerator ClickGameButton(Button button)
