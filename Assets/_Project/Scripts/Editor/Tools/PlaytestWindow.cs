@@ -44,6 +44,7 @@ namespace Game.Editor
             Button("failButton", () => { var fault = Resolve<ISubmitFaultSwitch>(); if (fault != null) { fault.FailNextSubmits = StageManager.AutoRetryCount + 1; } });
             Button("clearFaultButton", () => { var fault = Resolve<ISubmitFaultSwitch>(); if (fault != null) { fault.FailNextSubmits = 0; } });
             Button("backupSaveButton", BackupSave);
+            Button("deleteSaveButton", DeleteSave);
             Refresh();
         }
 
@@ -95,6 +96,7 @@ namespace Game.Editor
             rootVisualElement.Q<Label>("faultStatus").text = fault == null ? "Local 백엔드로 재생할 때 사용할 수 있습니다." : $"남은 실패 횟수: {fault.FailNextSubmits}";
             rootVisualElement.Q<Label>("savePath").text = SavePath;
             Enable("backupSaveButton", !EditorApplication.isPlayingOrWillChangePlaymode && File.Exists(SavePath));
+            Enable("deleteSaveButton", !EditorApplication.isPlayingOrWillChangePlaymode && File.Exists(SavePath));
         }
 
         private void Enable(string name, bool enabled) => rootVisualElement.Q<Button>(name).SetEnabled(enabled);
@@ -112,6 +114,34 @@ namespace Game.Editor
                 rootVisualElement.Q<Label>("saveStatus").text = "백업: " + backup;
             }
             catch (Exception error) { rootVisualElement.Q<Label>("saveStatus").text = error.Message; Debug.LogException(error); }
+        }
+
+        // 지우기 전에 백업해 두어 실수로 지워도 .bak에서 되살릴 수 있다
+        private void DeleteSave()
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode || !File.Exists(SavePath))
+            {
+                return;
+            }
+
+            if (!EditorUtility.DisplayDialog("세이브 삭제", "save.json을 지웁니다. 지우기 전에 같은 폴더에 백업합니다.\n다음 재생은 새 세이브로 시작합니다.", "삭제", "취소"))
+            {
+                return;
+            }
+
+            try
+            {
+                string backup = Delete(SavePath);
+                rootVisualElement.Q<Label>("saveStatus").text = "삭제함 (백업: " + backup + ")";
+            }
+            catch (Exception error) { rootVisualElement.Q<Label>("saveStatus").text = error.Message; Debug.LogException(error); }
+        }
+
+        internal static string Delete(string path)
+        {
+            string backup = Backup(path);
+            File.Delete(path);
+            return backup;
         }
 
         internal static string Backup(string path)
