@@ -47,6 +47,8 @@ namespace Game.Boot
             builder.Register<EnemyProjectileSystem>(Lifetime.Scoped);
             builder.RegisterEntryPoint<EnemySpawner>(Lifetime.Scoped).AsSelf().As<IEnemyTargetProvider>();
             builder.RegisterEntryPoint<WaveManager>();
+            // 전투 튜토리얼에서 지면 결과 화면에서 로비 대신 같은 스테이지를 다시 발급받는다
+            builder.Register<BattleLauncher>(Lifetime.Scoped);
         }
     }
 }

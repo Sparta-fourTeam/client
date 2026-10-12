@@ -17,6 +17,8 @@ namespace Game.Boot
             builder.Register<ILoginPrompt>(resolver => resolver.Resolve<IUiRegistry>().Get<LoginView>(), Lifetime.Scoped);
             builder.Register(resolver => resolver.Resolve<IUiRegistry>().Get<TapToStartView>(), Lifetime.Scoped);
             builder.Register<LoginFlow>(Lifetime.Scoped);
+            // 전투 튜토리얼 중이면 로그인 뒤 로비 대신 그 스테이지로 바로 들어간다
+            builder.Register<BattleLauncher>(Lifetime.Scoped);
             builder.RegisterEntryPoint<LoadingFlow>();
         }
     }

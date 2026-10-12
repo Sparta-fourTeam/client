@@ -7,6 +7,8 @@ namespace Game.Core
     public class EnergyConfig
     {
         public int Max;
+        /// <summary>새 계정이 처음 가진 에너지</summary>
+        public int Start;
         public float RegenSeconds;
 
         /// <summary>스테이지 입장에 드는 에너지. 모든 스테이지가 공통으로 쓴다</summary>

@@ -9,7 +9,7 @@ namespace Game.Core
     /// <summary>Resources/MockData의 테이블 JSON을 읽어 도메인 모델 테이블로 만든다</summary>
     public sealed class GameDataStore
     {
-        private static readonly string[] TableNames = { "Monsters", "Stages", "Upgrades", "Energy", "GeneralCards", "Skills", "Items", "StageRewards", "PlayerLevels", "CodexRewards" };
+        private static readonly string[] TableNames = { "Monsters", "Stages", "Upgrades", "Energy", "GeneralCards", "Skills", "Items", "StageRewards", "PlayerLevels", "CodexRewards", "Tutorials" };
         private readonly Dictionary<string, string> _rawJson;
         private readonly Dictionary<string, int> _skillUnlockLevels;
 
@@ -21,6 +21,9 @@ namespace Game.Core
         public Table<int, StageRewardBalance> StageRewards { get; }
         public EnergyConfig Energy { get; }
         public PlayerLevelTable PlayerLevels { get; }
+
+        /// <summary>튜토리얼 정의. 표의 순서가 진행 우선순위다 (TutorialProgress)</summary>
+        public IReadOnlyList<TutorialDefinition> Tutorials { get; }
 
         /// <summary>도감 등록 보상 골드. 몬스터마다가 아니라 등급별이다</summary>
         public IReadOnlyDictionary<EnemyType, int> CodexRewardGold { get; }
@@ -110,6 +113,15 @@ namespace Game.Core
             StageRewards = new Table<int, StageRewardBalance>(rewards);
             Energy = JsonConvert.DeserializeObject<EnergyConfig>(_rawJson["Energy"]);
             PlayerLevels = new PlayerLevelTable(JsonConvert.DeserializeObject<List<PlayerLevelRow>>(_rawJson["PlayerLevels"]));
+            var tutorials = JsonConvert.DeserializeObject<List<TutorialDefinition>>(_rawJson["Tutorials"]);
+            var tutorialIds = new HashSet<string>();
+            foreach (var tutorial in tutorials)
+            {
+                tutorial.Validate(this, tutorialIds);
+                if (!tutorialIds.Add(tutorial.Id)) { throw new InvalidOperationException($"Tutorials {tutorial.Id}: Id가 중복됩니다"); }
+            }
+
+            Tutorials = tutorials;
 
             var codexRewards = ParseIndexed<EnemyType, CodexRewardRow>("CodexRewards", d => d.GetGrade());
             foreach (var row in codexRewards.Values) { row.Validate(); }

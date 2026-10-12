@@ -1,0 +1,90 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Cysharp.Threading.Tasks;
+using UnityEngine;
+
+namespace Game.Core
+{
+    /// <summary>로비에 들어올 때 보여줄 레벨업 소식. 레벨이 오르지 않았고 받은 것도 없으면 비어 있다</summary>
+    public sealed class LevelUpNews
+    {
+        public int FromLevel;
+        public int ToLevel;
+        /// <summary>이번에 오른 레벨 구간에서 열린 것 (등록된 ILevelUnlockSource 순서)</summary>
+        public IReadOnlyList<UnlockNotice> Unlocks = Array.Empty<UnlockNotice>();
+        /// <summary>튜토리얼 완료 등으로 함께 받은 아이템</summary>
+        public IReadOnlyList<ItemAmount> RewardItems = Array.Empty<ItemAmount>();
+
+        public bool LeveledUp => ToLevel > FromLevel;
+        public bool IsEmpty => !LeveledUp && RewardItems.Count == 0;
+    }
+
+    /// <summary>로비 진입 처리. 프로필을 다시 받은 뒤 완료 조건을 채운 튜토리얼(전투 튜토리얼 클리어 등)을 서버에 완료로 알려 보상을 받고,
+    /// 전투 전 레벨과 비교해 레벨업 소식을 만든다. 보여주는 것은 View가 한다</summary>
+    public sealed class LobbyArrival
+    {
+        private readonly LobbyProfileRefresher _refresher;
+        private readonly PlayerProfile _profile;
+        private readonly ITutorialApi _tutorialApi;
+        private readonly GameDataStore _data;
+        private readonly IReadOnlyList<ILevelUnlockSource> _unlockSources;
+
+        public LobbyArrival(LobbyProfileRefresher refresher, PlayerProfile profile, ITutorialApi tutorialApi, GameDataStore data,
+            IReadOnlyList<ILevelUnlockSource> unlockSources)
+        {
+            _refresher = refresher;
+            _profile = profile;
+            _tutorialApi = tutorialApi;
+            _data = data;
+            _unlockSources = unlockSources;
+        }
+
+        public async UniTask<LevelUpNews> CollectAsync()
+        {
+            await _refresher.WhenLoaded;
+            var rewards = new List<ItemAmount>();
+            // 완료하면 다음 튜토리얼이 시작될 수 있어서(After) 더 완료할 게 없을 때까지 반복한다
+            for (var ready = Completable(); ready != null; ready = Completable())
+            {
+                var items = await CompleteAsync(ready.Id);
+                if (items == null)
+                {
+                    break;
+                }
+
+                rewards.AddRange(items);
+            }
+
+            int from = _refresher.LevelBefore;
+            int to = _profile.Level;
+            return new LevelUpNews
+            {
+                FromLevel = from,
+                ToLevel = to,
+                Unlocks = to > from ? _unlockSources.SelectMany(source => source.Unlocked(from, to)).ToList() : Array.Empty<UnlockNotice>(),
+                RewardItems = rewards,
+            };
+        }
+
+        private TutorialDefinition Completable() =>
+            TutorialProgress.Completable(_data.Tutorials, TutorialFacts.From(_profile)).FirstOrDefault();
+
+        /// <summary>튜토리얼을 완료로 저장하고 프로필에 반영한다. 실패하면 로그만 남기고 null을 돌려준다 (다음 로비 진입 때 다시 시도된다)</summary>
+        public async UniTask<IReadOnlyList<ItemAmount>> CompleteAsync(string tutorialId)
+        {
+            try
+            {
+                var response = await _tutorialApi.Complete(tutorialId);
+                _profile.Apply(response.snapshot);
+                return response.rewardItems ?? new List<ItemAmount>();
+            }
+            catch (Exception ex)
+            {
+                // TODO(error-ui): 재시도 팝업 자리. 지금은 로그만 남긴다
+                Debug.LogException(ex);
+                return null;
+            }
+        }
+    }
+}
