@@ -17,6 +17,7 @@ namespace Game.Core
         private readonly IBattleApi _battleApi;
         private readonly StageContext _stageContext;
         private readonly BattleStats _stats;
+        private readonly EncounteredMonsters _encountered;
         private readonly StageClock _clock;
         private readonly ISubscriber<WaveCompleted> _waveCompleted;
         private readonly CardDeck _deck;
@@ -57,7 +58,7 @@ namespace Game.Core
             ISubscriber<WaveCompleted> waveCompleted,
             CardDeck deck,
             IPublisher<SubmitRejected> submitRejected,
-            IPublisher<SubmitFailed> submitFailed, StageRewardTracker rewards = null)
+            IPublisher<SubmitFailed> submitFailed, StageRewardTracker rewards = null, EncounteredMonsters encountered = null)
         {
             _stateChanged = stateChanged;
             _stageEnded = stageEnded;
@@ -71,6 +72,7 @@ namespace Game.Core
             _submitRejected = submitRejected;
             _submitFailed = submitFailed;
             _rewards = rewards;
+            _encountered = encountered;
         }
 
         public void Start()
@@ -212,6 +214,7 @@ namespace Game.Core
                 playTime = _clock.ElapsedSeconds,
                 buildLog = _stats.BuildLog,
                 wallHpPercent = cleared ? _stats.WallHpPercent : 0,
+                encounteredMonsterIds = _encountered == null ? new List<int>() : new List<int>(_encountered.Ids),
                 createdAt = DateTime.UtcNow.ToString("O")
             };
 

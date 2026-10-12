@@ -38,14 +38,14 @@
 
 - 밸런스 수치·해금·재화·보상은 서버, 판 안의 진행 상태·쿨타임·에셋은 클라이언트
 - 게임 테이블은 도메인 모델로 변환해 쓴다. 전투 발급·제출 요청과 응답만 예외로 `Core/Api`의 타입을 그대로 쓴다
-- 밸런스 값은 코드나 프리팹에 박지 않고 `GameDataStore`의 테이블(`MockData/*.json`)에 둔다. 테이블: `Monsters`(체력, 속도, 공격 값, 투사체 속도), `Stages`(방벽 체력, 스폰 간격, 웨이브 목록, 보상), `Skills`(스킬과 스킬 카드), `Upgrades`, `Energy`, `GeneralCards`(스킬이 아닌 카드: 방벽 수리 등). 새 테이블은 `GameDataStore.TableNames`에 넣으면 버전 목록과 원문 조회(`IDataApi`)에도 자동으로 포함된다
+- 밸런스 값은 코드나 프리팹에 박지 않고 `GameDataStore`의 테이블(`MockData/*.json`)에 둔다. 테이블: `Monsters`(체력, 속도, 공격 값, 투사체 속도), `Stages`(방벽 체력, 스폰 간격, 웨이브 목록, 보상, 몬스터 강화 `MonsterBonuses`: 능력치 Hp·Damage·Speed별 증가율(%)을 여러 줄 함께 쓸 수 있다), `Skills`(스킬과 스킬 카드), `Upgrades`, `Energy`, `GeneralCards`(스킬이 아닌 카드: 방벽 수리 등), `CodexRewards`(몬스터 도감 등록 보상. 몬스터마다가 아니라 등급 Normal·Elite·Boss별 골드). 새 테이블은 `GameDataStore.TableNames`에 넣으면 버전 목록과 원문 조회(`IDataApi`)에도 자동으로 포함된다
 - 카드는 두 곳에서 관리한다. 스킬 카드는 `Skills.json`의 각 스킬 `upgrades`에, 스킬이 아닌 카드(방벽 수리 등)는 `GeneralCards.json`에 둔다. 뽑는 것은 `CardDeck` 하나가 합친다. 일반 카드는 `Condition`(언제 나오는가)과 `Effect`(고르면 무엇이 되는가)를 `GeneralCardRules`에 등록된 이름으로 적고, `Forced`이면 조건이 맞을 때 3장 중 한 칸을 먼저 차지한다 (한 번에 최대 1장)
 - 적 프리팹 엔트리(`EnemyPrefabEntry`)는 프리팹과 공격 방식만 갖고, 수치는 `MonsterId`로 `Monsters` 행을 가리킨다. Stage 씬은 `StageContext.StageId`로 `StageDefinition`을 한 번 정해 방벽, 웨이브, 스폰에 나눠 준다 (Stage 씬을 바로 열면 첫 스테이지)
 - 프리팹·아이콘은 테이블의 `PrefabKey`/`IconKey`로 찾는다
 - 스킬의 프리팹과 아이콘은 `Skills.json`의 `assetKey`로 `SkillAssetTable`(`Data/`)에서 찾는다. 플레이어 프리팹에는 스킬 목록을 두지 않는다
 - 1주차는 저장되는 Local 구현(`Network/Local`)을 쓴다. `save.json`에 저장되어 재실행해도 값이 유지된다. `MockData` 폴더는 Local이 읽는 초기 테이블 JSON을 두는 곳이다
 - Local도 ApiDog 명세와 같은 DTO(`Network/Dto`)로 변환하고, 서버와 같은 오류 코드(`INSUFFICIENT_GOLD` 등)로 `ApiException`을 던진다
-- 서버 전환은 `BackendSettings`(ScriptableObject)의 스위치로 그룹 단위로 한다: Account(`IAuthApi`, `IDataApi`)를 먼저, Player(`IPlayerApi`, `IBattleApi`, `IUpgradeApi`, `IEnergyApi`, `IStageApi`) 5개는 한 번에 전환한다. 다섯 다 지갑을 건드리므로 따로 바꾸면 로컬과 서버 잔액이 어긋난다
+- 서버 전환은 `BackendSettings`(ScriptableObject)의 스위치로 그룹 단위로 한다: Account(`IAuthApi`, `IDataApi`)를 먼저, Player(`IPlayerApi`, `IBattleApi`, `IUpgradeApi`, `IEnergyApi`, `IStageApi`, `ICodexApi`) 6개는 한 번에 전환한다. 여섯 다 지갑을 건드리므로 따로 바꾸면 로컬과 서버 잔액이 어긋난다
 - 로컬 데이터는 서버로 이관하지 않는다. 전환 후에는 새 계정으로 시작하고, Local에서 만든 미전송 결과는 서버로 보내지 않는다
 
 ## 에셋

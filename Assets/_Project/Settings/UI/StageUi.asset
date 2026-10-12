@@ -49,3 +49,7 @@ MonoBehaviour:
     Prefab: {fileID: 2338224154658450158, guid: b972eb3a31adf9d4c9f718353643b064, type: 3}
     ParentPath: PopupCanvas/Overlays
     SiblingIndex: 2
+  - Id: RewardPopup
+    Prefab: {fileID: 9063590483577428516, guid: b1a23b3ed48d647a8af356ce14cdb872, type: 3}
+    ParentPath: PopupCanvas/Overlays
+    SiblingIndex: 3

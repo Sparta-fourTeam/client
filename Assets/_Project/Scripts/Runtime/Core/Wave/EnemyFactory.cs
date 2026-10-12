@@ -17,6 +17,8 @@ namespace Game.Core
         private ISubscriber<EnemyDied> _diedSubscriber;
         private GameDataStore _data;
         private IRandomProvider _random;
+        private StageDefinition _stage;
+        private EncounteredMonsters _encountered;
 
         private int _nextEnemyId;
 
@@ -27,7 +29,9 @@ namespace Game.Core
             ISubscriber<EnemyHpChanged> hpchangedSubscriber,
             ISubscriber<EnemyDied> diedSubscriber,
             GameDataStore data,
-            IRandomProvider random
+            IRandomProvider random,
+            StageDefinition stage,
+            EncounteredMonsters encountered
             )
         {
             _hpChangedPublisher = hpChangedPublisher;
@@ -36,6 +40,8 @@ namespace Game.Core
             _diedSubscriber = diedSubscriber;
             _data = data;
             _random = random;
+            _stage = stage;
+            _encountered = encountered;
 
             ValidateAssets();
         }
@@ -43,13 +49,14 @@ namespace Game.Core
         public Enemy Create(int monsterId, Vector2 spawnPosition, bool isSummoned = false)
         {
             var monster = _data.Monsters.GetOrThrow(monsterId);
+            _encountered.Record(monsterId);
             var assets = _assets.GetOrThrow(monsterId);
 
             // 뷰가 위치를 가지므로 먼저 만든다
             var view = Object.Instantiate(assets.prefab, spawnPosition, Quaternion.identity);
             var model = new EnemyModel(
-                ++_nextEnemyId, monster.Speed, monster.GetEnemyType(), monster.Hp,
-                new EnemyAttackStats(monster.GetAttackType(), monster.Damage, monster.AttackInterval, monster.AttackRange, monster.ProjectileSpeed,
+                ++_nextEnemyId, _stage.ScaleMonsterSpeed(monster.Speed), monster.GetEnemyType(), _stage.ScaleMonsterHp(monster.Hp),
+                new EnemyAttackStats(monster.GetAttackType(), _stage.ScaleMonsterDamage(monster.Damage), monster.AttackInterval, monster.AttackRange, monster.ProjectileSpeed,
                     monster.BurstCount, monster.BurstInterval),
                 _hpChangedPublisher, _diedPublisher,
                 PassiveBuilder.BuildPassives(monster, _random), isSummoned, PassiveBuilder.BuildImmunities(monster),

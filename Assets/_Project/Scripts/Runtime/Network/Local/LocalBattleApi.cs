@@ -130,6 +130,7 @@ namespace Game.Network
             battle.rewardItems = itemRewards;
             save.wallet.gold = totalGold;
             save.exp = totalExp;
+            RegisterEncounters(save, req.encounteredMonsterIds);
 
             if (req.cleared)
             {
@@ -139,6 +140,19 @@ namespace Game.Network
             _store.Flush(save);
             return UniTask.FromResult(new SubmitResultResponse
             { cleared = req.cleared, rewardGold = reward, rewardExp = rewardExp, clearRating = rating, rewardItems = itemRewards });
+        }
+
+        /// <summary>마주친 몬스터를 도감에 등록한다. 이미 있는 줄(수령 여부)은 건드리지 않고, 없는 몬스터 ID는 무시한다</summary>
+        private void RegisterEncounters(LocalSave save, List<int> monsterIds)
+        {
+            save.codex ??= new();
+            foreach (int id in monsterIds ?? new List<int>())
+            {
+                if (_data.Monsters.Contains(id) && !save.codex.Exists(c => c.monsterId == id))
+                {
+                    save.codex.Add(new CodexRow { monsterId = id });
+                }
+            }
         }
 
         private static void ApplyClearRating(LocalSave save, int stageId, int rating, Table<int, StageDefinition> stages)

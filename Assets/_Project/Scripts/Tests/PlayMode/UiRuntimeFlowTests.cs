@@ -244,10 +244,18 @@ namespace Game.Tests
             Assert.That(Field<GameObject>(details, "_panel").activeSelf, Is.True);
             // 몬스터·보상 칸을 실제로 눌러(레이캐스트) 공용 상세 창이 열리는지 본다
             var info = ui.Get<DetailPopupView>();
+            SeedMonsterClaims(lobby.Container.Resolve<GameDataStore>(), lobby.Container.Resolve<PlayerProfile>());
             yield return ClickGameButton(FirstSlotButton(Field<StageMonsterListView>(details, "_monsters")));
             Assert.That(info.IsShown, Is.True);
+            yield return ClaimMonsterAndCloseReward(ui, lobby.Container.Resolve<PlayerProfile>(), false);
             yield return ClickGameButton(Field<Button>(info, "_closeButton"));
             Assert.That(info.IsShown, Is.False);
+            yield return ClickGameButton(FirstSlotButton(Field<StageMonsterListView>(details, "_monsters")));
+            Assert.That(Field<Button>(info, "_claimButton").gameObject.activeSelf, Is.False);
+            yield return ClickGameButton(Field<Button>(info, "_closeButton"));
+            yield return ClickGameButton(FirstSlotButton(Field<StageMonsterListView>(details, "_monsters"), 1));
+            yield return ClaimMonsterAndCloseReward(ui, lobby.Container.Resolve<PlayerProfile>(), true);
+            yield return ClickGameButton(Field<Button>(info, "_closeButton"));
             yield return ClickGameButton(FirstSlotButton(Field<ResultRewardListView>(details, "_rewards")));
             Assert.That(info.IsShown, Is.True);
             yield return ClickGameButton(Field<Button>(info, "_closeButton"));
@@ -270,8 +278,13 @@ namespace Game.Tests
             // 일시정지 창의 등장 요마·확보 보상 칸을 실제로 눌러 공용 상세 창이 열리는지 본다
             var stageInfo = stageUi.Get<DetailPopupView>();
             var pause = stageUi.Get<PauseMenuView>();
+            // 일시정지 수령은 새 미수령 프로필로 독립 검증한다.
+            SeedMonsterClaims(stage.Container.Resolve<GameDataStore>(), stage.Container.Resolve<PlayerProfile>());
             yield return ClickGameButton(FirstSlotButton(Field<StageMonsterListView>(pause, "_monsterList")));
             Assert.That(stageInfo.IsShown, Is.True);
+            yield return ClaimMonsterAndCloseReward(stageUi, stage.Container.Resolve<PlayerProfile>(), false);
+            Assert.That(manager.State, Is.EqualTo(StageState.Paused));
+            Assert.That(Time.timeScale, Is.Zero);
             yield return ClickGameButton(Field<Button>(stageInfo, "_closeButton"));
             yield return ClickGameButton(FirstSlotButton(Field<ResultRewardListView>(pause, "_obtainableList")));
             Assert.That(stageInfo.IsShown, Is.True);
@@ -435,15 +448,43 @@ namespace Game.Tests
             _savePath = null;
         }
 
-        private static Button FirstSlotButton(Component listView)
+        private void SeedMonsterClaims(GameDataStore data, PlayerProfile profile)
+        {
+            var save = _store.Load();
+            save.codex = data.StageMonsters(1).Select(monster => new CodexRow { monsterId = monster.Id }).ToList();
+            _store.Flush(save);
+            profile.Apply(new LocalPlayerApi(_store).GetMe().GetAwaiter().GetResult());
+        }
+
+        private IEnumerator ClaimMonsterAndCloseReward(IUiRegistry ui, PlayerProfile profile, bool useCloseButton)
+        {
+            var detail = ui.Get<DetailPopupView>();
+            int monsterId = Field<int>(detail, "_claimMonsterId");
+            int gold = profile.Gold;
+            var reward = ui.Get<RewardPopupView>();
+            var panel = Field<GameObject>(reward, "_panel");
+            yield return ClickGameButton(Field<Button>(detail, "_claimButton"));
+            yield return WaitFor(() => panel.activeSelf && Field<PopupTransition>(reward, "_transition").Progress >= 0.99f);
+            Assert.That(detail.IsShown, Is.True);
+            Assert.That(profile.CanClaimMonsterReward(monsterId), Is.False);
+            Assert.That(profile.Gold, Is.GreaterThan(gold));
+            Assert.That(_store.Load().wallet.gold, Is.EqualTo(profile.Gold));
+            Assert.That(Field<Button>(detail, "_claimButton").gameObject.activeSelf, Is.False);
+            // 상세창을 먼저 닫지 않고 보상창의 최상위 포인터 대상과 실제 닫기를 검증한다.
+            yield return ClickGameButton(Field<Button>(reward, useCloseButton ? "_closeButton" : "_confirmButton"));
+            yield return WaitFor(() => !panel.activeSelf);
+            Assert.That(detail.IsShown, Is.True);
+        }
+
+        private static Button FirstSlotButton(Component listView, int index = 0)
         {
             if (listView is ResultRewardListView rewards)
             {
-                return rewards.Cells[0].GetComponent<Button>();
+                return rewards.Cells[index].GetComponent<Button>();
             }
 
             var slots = (System.Array)listView.GetType().GetField("_slots", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(listView);
-            var slot = slots.GetValue(0);
+            var slot = slots.GetValue(index);
             return ((GameObject)slot.GetType().GetField("Root").GetValue(slot)).GetComponent<Button>();
         }
 
