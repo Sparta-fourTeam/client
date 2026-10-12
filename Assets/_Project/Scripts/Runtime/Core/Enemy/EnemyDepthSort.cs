@@ -34,7 +34,8 @@ namespace Game.Core
                 return;
             }
 
-            _footOffset = VisualBounds.BottomY(_group.transform, transform.position.y) - transform.position.y;
+            var shadow = TryGetComponent<EnemyShadow>(out var s) ? s.Shadow : null;
+            _footOffset = VisualBounds.BottomY(_group.transform, transform.position.y, shadow) - transform.position.y;
             Sync();
         }
 

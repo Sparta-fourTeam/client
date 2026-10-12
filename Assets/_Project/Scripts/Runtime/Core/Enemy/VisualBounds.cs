@@ -23,14 +23,15 @@ namespace Game.Core
             return top;
         }
 
-        /// <summary>root 아래 모든 SpriteRenderer 중 가장 낮은 곳의 y(발끝). 스프라이트가 없으면 fallback</summary>
-        public static float BottomY(Transform root, float fallback)
+        /// <summary>root 아래 모든 SpriteRenderer 중 가장 낮은 곳의 y(발끝). 스프라이트가 없으면 fallback.
+        /// ignore 아래의 렌더러(발밑 그림자처럼 몸이 아닌 것)는 건너뛴다</summary>
+        public static float BottomY(Transform root, float fallback, Transform ignore = null)
         {
             bool found = false;
             float bottom = 0f;
             foreach (var renderer in root.GetComponentsInChildren<SpriteRenderer>())
             {
-                if (renderer.sprite == null)
+                if (renderer.sprite == null || (ignore != null && renderer.transform.IsChildOf(ignore)))
                 {
                     continue;
                 }
