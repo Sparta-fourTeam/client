@@ -7,6 +7,8 @@ namespace Game.View
     public interface IUiRegistry
     {
         T Get<T>() where T : Component;
+        /// <summary>구성에 없을 수도 있는 선택 화면용. 없거나 둘 이상이면 null</summary>
+        T TryGet<T>() where T : Component;
     }
 
     public interface IUiBindable
@@ -49,6 +51,9 @@ namespace Game.View
 
             return (T)list[0];
         }
+
+        public T TryGet<T>() where T : Component =>
+            _components.TryGetValue(typeof(T), out var list) && list.Count == 1 ? list[0] as T : null;
 
         public void Clear() => _components.Clear();
     }

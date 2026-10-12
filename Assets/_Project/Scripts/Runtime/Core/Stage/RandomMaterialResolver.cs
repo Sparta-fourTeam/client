@@ -21,7 +21,7 @@ namespace Game.Core
                 { result.Add(new ItemAmount { itemId = item.itemId, quantity = item.quantity }); continue; }
                 if (item.quantity <= 0) { throw new ApiException(ApiErrorKind.Rejected, "INVALID_ITEM_REWARD"); }
 
-                var candidates = isSkill ? SkillCandidates(unlockedSkills, data) : EquipmentCandidates(unlockedEquipment, data);
+                var candidates = Candidates(item.itemId, unlockedSkills, unlockedEquipment, data);
                 if (candidates.Count == 0)
                 { throw new ApiException(ApiErrorKind.Rejected, isSkill ? "NO_UNLOCKED_SKILL_MATERIAL" : "NO_UNLOCKED_EQUIPMENT_MATERIAL"); }
 
@@ -43,6 +43,14 @@ namespace Game.Core
             }
             return result;
         }
+
+        /// <summary>랜덤 재료 한 번 뽑기의 후보. 지급(Resolve)과 확률 표시(RandomRewardOdds)가 같은 목록을 쓴다.
+        /// 랜덤 재료가 아닌 ID는 빈 목록이다</summary>
+        public static List<string> Candidates(string randomItemId, IEnumerable<int> unlockedSkills,
+            IEnumerable<string> unlockedEquipment, GameDataStore data) =>
+            randomItemId == ItemIds.RandomSkillMaterial ? SkillCandidates(unlockedSkills, data)
+            : randomItemId == ItemIds.RandomEquipmentMaterial ? EquipmentCandidates(unlockedEquipment, data)
+            : new List<string>();
 
         private static List<string> SkillCandidates(IEnumerable<int> unlocked, GameDataStore data)
         {

@@ -63,6 +63,38 @@ namespace Game.Tests
             Assert.Throws<ApiException>(() => RandomMaterialResolver.Resolve(rewards, new[] { 1 }, Array.Empty<string>(), data, 1));
         }
 
+        /// <summary>공개 확률이 실제 지급 후보(현재 레벨에서 열린 스킬의 마법북)와 어긋나지 않고 합이 1인지 본다</summary>
+        [Test]
+        public void RandomRewardOdds_MatchUnlockedSkillCandidates_AndSumToOne()
+        {
+            var data = new GameDataStore();
+            var skills = data.LoadSkills();
+            foreach (int level in new[] { 1, data.PlayerLevels.MaxLevel })
+            {
+                int exp = Enumerable.Range(1, level - 1).Sum(l => data.PlayerLevels.RequiredToNext(l));
+                var unlocked = skills.Where(skill => skill.unlockLevel <= level).Select(skill => skill.id.ToString()).ToList();
+                var expected = ItemIds.SkillMaterials.Where(id => unlocked.Contains(data.Items.GetOrThrow(id).TargetId)).ToList();
+
+                var odds = RandomRewardOdds.For(ItemIds.RandomSkillMaterial, data, exp);
+                CollectionAssert.AreEquivalent(expected, odds.Select(entry => entry.ItemId));
+                if (expected.Count == 0) { continue; }
+                Assert.AreEqual(1.0, odds.Sum(entry => entry.Probability), 1e-9);
+                Assert.IsTrue(odds.All(entry => Math.Abs(entry.Probability - 1.0 / expected.Count) < 1e-9));
+            }
+        }
+
+        [TestCase(1.0 / 3, 2, "33.33%")]
+        [TestCase(2.0 / 3, 2, "66.67%")]
+        [TestCase(0.125, 2, "12.50%")]
+        [TestCase(0.125, 0, "13%")]
+        [TestCase(0.00001, 2, "0.01%")]
+        [TestCase(0.0, 2, "0.00%")]
+        [TestCase(1.0, 1, "100.0%")]
+        public void RandomRewardOdds_FormatPercent_RoundsHalfUpAndKeepsNonZeroVisible(double probability, int decimals, string expected)
+        {
+            Assert.AreEqual(expected, RandomRewardOdds.FormatPercent(probability, decimals));
+        }
+
         [Test]
         public void FixedMaterial_DoesNotNeedUnlocks_AndRandomDistributionCanBeReplaced()
         {

@@ -7,7 +7,7 @@ using UnityEngine.UI;
 namespace Game.View
 {
     /// <summary>미수령 보상이 없을 때 선택한 상자의 조건과 1회성 보상을 보여준다.</summary>
-    public sealed class MissionRewardInfoPopupView : HudView
+    public sealed class MissionRewardInfoPopupView : HudView, IUiBindable
     {
         [SerializeField] private GameObject _panel;
         [SerializeField] private PopupTransition _transition;
@@ -16,10 +16,17 @@ namespace Game.View
         [SerializeField] private ScrollRect _scroll;
         [SerializeField] private ResultRewardListView _rewards;
         [SerializeField] private ItemIconTable _itemIcons;
+        [SerializeField, Tooltip("랜덤 재료 보상이 있을 때만 보이는 '확률 정보' 버튼")] private Button _oddsButton;
+
+        private RewardOddsButton _odds;
+
+        public void BindUi(IUiRegistry registry) => (_odds ??= new RewardOddsButton(_oddsButton)).Bind(registry);
 
         protected override void InitializeView()
         {
             _panel.SetActive(false);
+            _odds ??= new RewardOddsButton(_oddsButton);
+            _odds.Init();
             _closeButton.onClick.AddListener(Close);
             _confirmButton.onClick.AddListener(Close);
         }
@@ -34,6 +41,7 @@ namespace Game.View
             var items = stage.RatingItemRewards != null && stage.RatingItemRewards.Count >= rating
                 ? stage.RatingItemRewards[rating - 1] : null;
             _rewards.Show(RewardRows.Build(_itemIcons, data, stage.RatingRewards[rating - 1], 0, items ?? new List<ItemAmount>()));
+            _odds?.Refresh(items);
             PopupPanel.Set(_panel, _transition, true);
             PopupPanel.FitContent(_scroll, 560f, 1040f);
             _scroll.verticalNormalizedPosition = 1f;

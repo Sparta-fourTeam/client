@@ -6,7 +6,7 @@ using UnityEngine.UI;
 namespace Game.View
 {
     /// <summary>선택 관문의 등장 요마와 획득 가능한 보상을 보여준다.</summary>
-    public sealed class MissionPopupView : HudView
+    public sealed class MissionPopupView : HudView, IUiBindable
     {
         [SerializeField] private GameObject _panel;
         [SerializeField] private PopupTransition _transition;
@@ -17,10 +17,17 @@ namespace Game.View
         [SerializeField] private ResultRewardListView _rewards;
         [SerializeField] private ItemIconTable _itemIcons;
         [SerializeField] private MonsterDisplayTable _monsterDisplay;
+        [SerializeField, Tooltip("랜덤 재료 보상이 있을 때만 보이는 '확률 정보' 버튼")] private Button _oddsButton;
+
+        private RewardOddsButton _odds;
+
+        public void BindUi(IUiRegistry registry) => (_odds ??= new RewardOddsButton(_oddsButton)).Bind(registry);
 
         protected override void InitializeView()
         {
             _panel.SetActive(false);
+            _odds ??= new RewardOddsButton(_oddsButton);
+            _odds.Init();
             _closeButton.onClick.AddListener(Close);
             _confirmButton.onClick.AddListener(Close);
         }
@@ -32,6 +39,7 @@ namespace Game.View
             _monsters.Show(MonsterRows.Build(_monsterDisplay, data, stageId));
             var maximum = StageRewardRules.Maximum(data.StageRewards.GetOrThrow(stageId));
             _rewards.Show(RewardRows.Build(_itemIcons, data, maximum.Coin, maximum.Exp, maximum.Items));
+            _odds?.Refresh(maximum.Items);
             Show();
         }
 

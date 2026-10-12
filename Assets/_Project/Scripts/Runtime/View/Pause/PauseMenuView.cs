@@ -8,7 +8,7 @@ using VContainer;
 
 namespace Game.View
 {
-    public sealed class PauseMenuView : HudView
+    public sealed class PauseMenuView : HudView, IUiBindable
     {
         [SerializeField] private GameObject _panel;
         [SerializeField] private PopupTransition _transition;
@@ -20,15 +20,19 @@ namespace Game.View
         [Header("획득 가능 (지금 포기하거나 져도 받게 되는 확보 보상)")]
         [SerializeField] private ResultRewardListView _obtainableList;
         [SerializeField] private ItemIconTable _itemIcons;
+        [SerializeField, Tooltip("랜덤 재료 보상이 있을 때만 보이는 '확률 정보' 버튼")] private Button _oddsButton;
 
         [Header("등장 요마 (현재 스테이지의 몬스터)")]
         [SerializeField] private StageMonsterListView _monsterList;
         [SerializeField] private MonsterDisplayTable _monsterDisplay;
 
+        private RewardOddsButton _odds;
         private StageManager _stageManager;
         private GameDataStore _data;
         private StageRewardTracker _rewards;
         private StageContext _stageContext;
+
+        public void BindUi(IUiRegistry registry) => (_odds ??= new RewardOddsButton(_oddsButton)).Bind(registry);
 
         [Inject]
         public void Construct(
@@ -48,6 +52,8 @@ namespace Game.View
         protected override void InitializeView()
         {
             _panel.SetActive(false);
+            _odds ??= new RewardOddsButton(_oddsButton);
+            _odds.Init();
             _resumeButton.onClick.AddListener(() => _stageManager.Resume());
             // 닫기(X)는 계속하기와 같다. 프리팹에 없는 씬에서도 동작하도록 비어 있으면 건너뛴다
             if (_closeButton != null)
@@ -97,11 +103,13 @@ namespace Game.View
         {
             if (_obtainableList == null || _rewards.Rewards == null)
             {
+                _odds?.Refresh(null);
                 return;
             }
 
             var secured = _rewards.Rewards;
             _obtainableList.Show(RewardRows.Build(_itemIcons, _data, secured.Coin, secured.Exp, secured.Items));
+            _odds?.Refresh(secured.Items);
         }
     }
 }
