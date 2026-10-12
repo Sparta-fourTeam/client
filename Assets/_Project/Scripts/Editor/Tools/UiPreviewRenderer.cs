@@ -273,7 +273,7 @@ namespace Game.Editor
                 var icons = AssetDatabase.LoadAssetAtPath<ItemIconTable>("Assets/_Project/Data/ItemIconTable.asset");
                 if (sample == "도감 보상 수령")
                 {
-                    detailView.Show(null, "슬라임", "일반 · 근접 공격", "· 쓰러지면 작은 슬라임 2마리로 나뉘어요");
+                    detailView.Show(AssetDatabase.LoadAllAssetsAtPath("Assets/_Project/Sprites/Generated/Monsters/Slime.png").OfType<Sprite>().FirstOrDefault(), "슬라임", "일반 · 근접 공격", "· 쓰러지면 작은 슬라임 2마리로 나뉘어요");
                     SetComponentActive(detailSo, "_claimButton", true);
                     ((GameObject)detailSo.FindProperty("_claimBadge").objectReferenceValue)?.SetActive(true);
                 }
