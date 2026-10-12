@@ -210,7 +210,14 @@ namespace Game.Tests
             yield return ClickGameButton(Field<Button>(nav, "_skillTab"));
             Assert.That(Field<GameObject>(ui.Get<CharacterScreenView>(), "_panel").activeSelf, Is.False);
             Assert.That(Field<GameObject>(ui.Get<SkillScreenView>(), "_panel").activeSelf, Is.True);
+            yield return ClickGameButton(Field<Button>(nav, "_inventoryTab"));
+            Assert.That(Field<GameObject>(ui.Get<InventoryScreenView>(), "_panel").activeSelf, Is.True);
+            Assert.That(Field<GameObject>(ui.Get<SkillScreenView>(), "_panel").activeSelf, Is.False);
+            yield return ClickGameButton(Field<Button>(nav, "_shopTab"));
+            Assert.That(Field<GameObject>(ui.Get<ShopScreenView>(), "_panel").activeSelf, Is.True);
+            Assert.That(Field<GameObject>(ui.Get<InventoryScreenView>(), "_panel").activeSelf, Is.False);
             yield return ClickGameButton(Field<Button>(nav, "_homeTab"));
+            Assert.That(Field<GameObject>(ui.Get<ShopScreenView>(), "_panel").activeSelf, Is.False);
             Assert.That(Field<GameObject>(ui.Get<SkillScreenView>(), "_panel").activeSelf, Is.False);
             yield return ClickGameButton(Field<Button>(ui.Get<MissionButtonView>(), "_button"));
             var mission = ui.Get<MissionScreenView>();
