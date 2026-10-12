@@ -9,7 +9,7 @@ namespace Game.Core
 {
     // 적 한 마리. 위치와 이동(Transform)을 갖고, 규칙은 EnemyModel에 맡긴다.
     // 스킬이 겨누는 대상(IEnemyTarget)이고, 상태이상·밀치기 대상 인터페이스를 모델에 위임해서 구현한다
-    public class Enemy : MonoBehaviour, IEnemyTarget, IFreezableTarget, IKnockbackTarget, IFrostbiteTarget,
+    public class Enemy : MonoBehaviour, IEnemyTarget, IFreezableTarget, IKnockbackTarget, IPullTarget, IFrostbiteTarget,
         IParalyzableTarget, IFreezeMaxHpDotTarget, IBurnableTarget, IAreaSlowTarget, IStunnableTarget, ISlowableTarget, IVulnerableTarget
     {
         private static readonly int MovingHash = Animator.StringToHash("Moving");
@@ -336,10 +336,16 @@ namespace Game.Core
         public void ApplyBurn(float damagePerSecond, float duration, float maxHpRatio = 0, Action<Vector2> onDeath = null)
             => _enemyModel.ApplyBurn(damagePerSecond, duration, maxHpRatio, onDeath);
 
-        // 모델이 저항 등을 반영해 정한 거리만큼 실제로 밀려난다
+        // 모델이 저항 등을 반영해 정한 거리만큼 실제로 밀려난다 (위아래로만)
         public void ApplyKnockback(Vector2 direction, float distance)
         {
             transform.position += (Vector3)_enemyModel.ResolveKnockback(direction, distance);
+        }
+
+        // 장판 중심 쪽으로 끌려간다 (좌우 포함)
+        public void ApplyPull(Vector2 direction, float distance)
+        {
+            transform.position += (Vector3)_enemyModel.ResolvePull(direction, distance);
         }
     }
 }

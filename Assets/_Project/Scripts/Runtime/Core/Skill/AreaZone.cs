@@ -387,9 +387,9 @@ namespace Game.Core
                 {
                     if (distanceSquared < nearestSquared) { nearestSquared = distanceSquared; moveTarget = target.Position; }
                     if (distanceSquared > radiusSquared) { continue; }
-                    if (pull > 0 && target is IKnockbackTarget pulled && distanceSquared > 0)
+                    if (pull > 0 && target is IPullTarget pulled && distanceSquared > 0)
                     {
-                        pulled.ApplyKnockback(center - target.Position, Mathf.Min(pull, Mathf.Sqrt(distanceSquared)));
+                        pulled.ApplyPull(center - target.Position, Mathf.Min(pull, Mathf.Sqrt(distanceSquared)));
                     }
                 }
                 bool isMain = IsLine && aim != null && ReferenceEquals(target, aim);

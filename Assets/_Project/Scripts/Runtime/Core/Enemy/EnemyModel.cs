@@ -71,18 +71,34 @@ namespace Game.Core
         public void ApplyFreezeMaxHpDot(float maxHpRatio) => _status.ApplyFreezeMaxHpDot(maxHpRatio);
         public void TickStatus(float deltaTime) => _status.Tick(deltaTime);
 
-        // 밀치기로 실제 움직일 거리. 적용(위치 이동)은 Enemy가 한다
+        // 밀치기로 실제 움직일 거리. 적용(위치 이동)은 Enemy가 한다.
+        // 밀치기는 위아래(y)로만 민다: 맞은 방향의 위·아래만 보고 거리는 그대로 쓴다. 정확히 옆에서 맞으면 위(벽 반대쪽)로 민다
         public Vector2 ResolveKnockback(Vector2 direction, float distance)
         {
-            if (IsDead || distance <= 0 || float.IsNaN(distance) || float.IsInfinity(distance)
-                || float.IsNaN(direction.x) || float.IsNaN(direction.y)
-                || float.IsInfinity(direction.x) || float.IsInfinity(direction.y))
+            if (!CanBeMoved(direction, distance))
+            {
+                return Vector2.zero;
+            }
+
+            float sign = direction.y < -0.0001f ? -1f : 1f;
+            return new Vector2(0f, sign * distance * _modifiers.KnockbackMultiplier);
+        }
+
+        // 끌어당기기(장판 중심으로 모으기)로 실제 움직일 거리. 밀치기와 달리 방향 그대로(좌우 포함) 움직인다
+        public Vector2 ResolvePull(Vector2 direction, float distance)
+        {
+            if (!CanBeMoved(direction, distance))
             {
                 return Vector2.zero;
             }
 
             return direction.normalized * (distance * _modifiers.KnockbackMultiplier);
         }
+
+        private bool CanBeMoved(Vector2 direction, float distance) =>
+            !IsDead && distance > 0 && !float.IsNaN(distance) && !float.IsInfinity(distance)
+            && !float.IsNaN(direction.x) && !float.IsNaN(direction.y)
+            && !float.IsInfinity(direction.x) && !float.IsInfinity(direction.y);
 
         public event Action<EnemyProjectileModel> ProjectileFired; // 원거리 투사체 생성 용
         public event Action Attacked; // 공격이 나간 순간 (근접/원거리 공통, 공격 모션 재생 용)
