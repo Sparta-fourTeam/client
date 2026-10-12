@@ -3,14 +3,15 @@ using System.Collections.Generic;
 
 namespace Game.Core
 {
-    /// <summary>스킬 영구 강화가 전투에 주는 효과. progressionId(= 스킬 강화 UpgradeId)의 현재 강화 레벨만큼 쌓인 효과를 돌려준다</summary>
+    /// <summary>영구 강화가 전투에 주는 효과. 그 스킬의 영구 강화(progressionId = 스킬 강화 UpgradeId)와,
+    /// 모든 스킬에 붙는 장비 강화 효과를 현재 강화 레벨만큼 쌓아 돌려준다</summary>
     public interface IPermanentSkillEffects
     {
-        /// <summary>효과 목록. 강화 데이터가 없거나 레벨이 0이면 빈 목록이다</summary>
+        /// <summary>효과 목록. progressionId가 없거나 강화 데이터가 없는 스킬도 장비 효과는 받는다. 아무것도 강화하지 않았으면 빈 목록이다</summary>
         IReadOnlyList<EffectDef> For(string progressionId);
     }
 
-    /// <summary>Upgrades 테이블의 스킬 강화 행과 PlayerProfile의 강화 레벨로 효과를 만든다</summary>
+    /// <summary>Upgrades 테이블과 PlayerProfile의 강화 레벨로 효과를 만든다 (스킬 영구 강화 + 장비)</summary>
     public sealed class ProfilePermanentSkillEffects : IPermanentSkillEffects
     {
         private readonly PlayerProfile profile;
@@ -22,11 +23,8 @@ namespace Game.Core
             this.data = data;
         }
 
-        public IReadOnlyList<EffectDef> For(string progressionId)
-        {
-            if (string.IsNullOrEmpty(progressionId) || !data.Upgrades.Contains(progressionId)) { return Array.Empty<EffectDef>(); }
-            return PermanentSkillEffect.At(data.Upgrades.GetOrThrow(progressionId), profile.UpgradeLevel(progressionId));
-        }
+        public IReadOnlyList<EffectDef> For(string progressionId) =>
+            PermanentSkillEffect.Collect(data, profile.UpgradeLevel, progressionId);
     }
 
     /// <summary>스킬 강화 행의 Effects를 카드와 같은 효과(<see cref="EffectRegistry"/>의 키)로 바꿔 스킬의 기본 설정에 적용한다.
@@ -34,6 +32,76 @@ namespace Game.Core
     /// TODO(data): #142 수치가 확정되면 Upgrades.json의 스킬 행 Effects만 바꾼다 (지금은 레벨당 damage +8% 임시값)</summary>
     public static class PermanentSkillEffect
     {
+        /// <summary>장비 강화 행의 UpgradeId 접두사 (예: equipment.hat)</summary>
+        public const string EquipmentPrefix = "equipment.";
+
+        // 장비 효과 종류 → 전투 효과 키. 장비 효과는 모든 스킬에 붙는다.
+        // TODO(data): 장비 효과 종류가 늘면 여기에 대응을 더한다 (없는 종류는 부팅 때 ValidateEquipment가 거부한다)
+        private static readonly Dictionary<string, string> EquipmentKinds = new()
+        {
+            ["skillDamagePercent"] = "damage",
+        };
+
+        public static bool IsEquipment(UpgradeDefinition def) => def.UpgradeId.StartsWith(EquipmentPrefix, StringComparison.Ordinal);
+
+        /// <summary>스킬 하나가 전투에서 받는 영구 효과: 그 스킬의 영구 강화 효과와 장비 효과 합계.
+        /// 둘은 따로 적용되어 곱해진다 (피해 × (1 + 스킬 %) × (1 + 장비 합계 %)). levelOf는 UpgradeId의 현재 강화 레벨이다</summary>
+        public static List<EffectDef> Collect(GameDataStore data, Func<string, int> levelOf, string progressionId)
+        {
+            var effects = new List<EffectDef>();
+            if (!string.IsNullOrEmpty(progressionId) && data.Upgrades.Contains(progressionId))
+            {
+                effects.AddRange(At(data.Upgrades.GetOrThrow(progressionId), levelOf(progressionId)));
+            }
+
+            effects.AddRange(Equipment(data, levelOf));
+            return effects;
+        }
+
+        /// <summary>장비 효과 합계. 장비마다 ValuePerLevel × 레벨을 같은 종류끼리 더해 종류별 효과 하나로 만든다 (장비끼리는 더한다).
+        /// 레벨 0인 장비는 효과가 없다. 장비는 해금된 뒤에만 강화할 수 있으므로(LocalUpgradeApi의 LOCKED) 레벨이 있으면 해금된 장비다</summary>
+        public static List<EffectDef> Equipment(GameDataStore data, Func<string, int> levelOf)
+        {
+            var totals = new SortedDictionary<string, float>(StringComparer.Ordinal);
+            foreach (var def in data.Upgrades.Values)
+            {
+                if (!IsEquipment(def)) { continue; }
+                int level = levelOf(def.UpgradeId);
+                if (level <= 0) { continue; }
+                foreach (var effect in def.Effects)
+                {
+                    string kind = EquipmentKinds[effect.Kind];
+                    totals[kind] = (totals.TryGetValue(kind, out var sum) ? sum : 0f) + effect.ValuePerLevel * level;
+                }
+            }
+
+            var effects = new List<EffectDef>();
+            foreach (var pair in totals)
+            {
+                effects.Add(new EffectDef { kind = pair.Key, value = pair.Value });
+            }
+
+            return effects;
+        }
+
+        /// <summary>장비 강화 행의 효과 종류가 전투 효과로 바뀔 수 있는지 부팅 때 확인한다. 장비가 아닌 행은 검사하지 않는다</summary>
+        public static void ValidateEquipment(UpgradeDefinition def)
+        {
+            if (!IsEquipment(def)) { return; }
+            foreach (var effect in def.Effects)
+            {
+                if (!EquipmentKinds.TryGetValue(effect.Kind, out var kind))
+                {
+                    throw new InvalidOperationException($"Upgrades {def.UpgradeId}: 장비 효과 {effect.Kind}을(를) 전투에 적용하는 방법이 없습니다 (PermanentSkillEffect.EquipmentKinds)");
+                }
+
+                if (!EffectRegistry.IsStatKind(kind))
+                {
+                    throw new InvalidOperationException($"Upgrades {def.UpgradeId}: 장비 효과 {effect.Kind}의 전투 효과 {kind}은(는) EffectRegistry의 숫자 효과 키가 아닙니다");
+                }
+            }
+        }
+
         /// <summary>level의 효과. 효과량은 ValuePerLevel × level로 단순 합산한다 (레벨 0 이하면 빈 목록)</summary>
         public static List<EffectDef> At(UpgradeDefinition def, int level)
         {

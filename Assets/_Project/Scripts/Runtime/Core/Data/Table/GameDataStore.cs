@@ -124,6 +124,7 @@ namespace Game.Core
             {
                 UpgradeUnlockRule.Validate(upgrade, _skillUnlockLevels);
                 PermanentSkillEffect.Validate(upgrade, skills);
+                PermanentSkillEffect.ValidateEquipment(upgrade);
             }
 
             // TODO(server): 전부 1 고정 — 예: 빌드에 포함된 테이블 버전 메타데이터로 교체
