@@ -18,5 +18,7 @@ namespace Game.Network
         public List<ItemAmount> items = new();
         /// <summary>도감 등록 몬스터. 기존 저장 파일에서 누락된 codex는 빈 목록이다.</summary>
         public List<CodexRow> codex = new();
+        /// <summary>완료한 튜토리얼 단계. 기본값이 null이어야 튜토리얼이 생기기 전 저장 파일을 LocalSaveStore가 알아본다</summary>
+        public List<string> tutorials;
     }
 }

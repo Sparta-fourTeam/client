@@ -121,3 +121,11 @@ MonoBehaviour:
     Prefab: {fileID: 9063590483577428516, guid: f41532a8efebf4acb80e9e67de726571, type: 3}
     ParentPath: NavUI/Overlays
     SiblingIndex: 4
+  - Id: LevelUpPopup
+    Prefab: {fileID: 2211327661843839452, guid: 36e241421f75d934f82d6bbdde7c11e5, type: 3}
+    ParentPath: NavUI/Popups
+    SiblingIndex: 12
+  - Id: TutorialGuide
+    Prefab: {fileID: 1513197265687280728, guid: 2f6933517c34e2543b1624fa262cd418, type: 3}
+    ParentPath: NavUI/Overlays
+    SiblingIndex: 5

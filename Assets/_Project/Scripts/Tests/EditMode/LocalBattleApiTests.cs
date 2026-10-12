@@ -35,9 +35,11 @@ namespace Game.Tests
             }
         }
 
-        private void SeedEnergy(int energy)
+        // 튜토리얼을 마친 계정의 에너지. 튜토리얼 중 1스테이지는 에너지를 쓰지 않는다
+        private void SeedEnergy(int energy, bool tutorialDone = true)
         {
             var save = _store.Load();
+            save.tutorials = tutorialDone ? _data.Tutorials.Select(t => t.Id).ToList() : new();
             save.wallet.energyStored = energy;
             save.wallet.energyUpdatedAt = DateTime.UtcNow.ToString("O");
             _store.Flush(save);
@@ -65,6 +67,17 @@ namespace Game.Tests
             var ex = Assert.Throws<ApiException>(() => _api.StartBattle(1, 1).GetAwaiter().GetResult());
 
             Assert.AreEqual("INSUFFICIENT_ENERGY", ex.Code);
+        }
+
+        [Test(Description = "진행 중인 전투 튜토리얼의 스테이지는 에너지가 없어도 차감 없이 입장한다")]
+        public void StartBattle_TutorialBattleStage_IsFree()
+        {
+            SeedEnergy(0, tutorialDone: false);
+
+            var response = _api.StartBattle(_data.Tutorials.First(t => t.IsBattle).StageId, 1).GetAwaiter().GetResult();
+
+            Assert.IsNotEmpty(response.battleId);
+            Assert.AreEqual(0, _store.Load().wallet.energyStored);
         }
 
         [Test(Description = "진행 기록이 없는 스테이지는 STAGE_LOCKED로 거절한다")]

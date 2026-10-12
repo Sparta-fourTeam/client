@@ -37,6 +37,7 @@ namespace Game.Core
 
         public int UpgradeLevel(string id) => _snapshot.upgrades.Find(u => u.upgradeId == id)?.level ?? 0;
         public bool IsStageCleared(int stageId) => _snapshot.stageProgress.Find(s => s.stageId == stageId)?.IsCleared ?? false;
+        public bool IsTutorialDone(string tutorialId) => _snapshot.tutorials?.Contains(tutorialId) ?? false;
         public bool HasUnclaimedReward(int stageId) => _snapshot.stageProgress.Find(s => s.stageId == stageId)?.HasUnclaimedReward ?? false;
 
         /// <summary>전투에서 한 번이라도 마주쳐 도감에 등록된 몬스터인가</summary>
@@ -44,6 +45,9 @@ namespace Game.Core
 
         /// <summary>도감에 등록됐고 등록 보상을 아직 안 받았는가</summary>
         public bool CanClaimMonsterReward(int monsterId) => _snapshot.codex.Exists(c => c.monsterId == monsterId && !c.claimed);
+
+        /// <summary>서버 스냅샷을 한 번이라도 받았는지. 받기 전 값(레벨 1 등)은 실제 상태가 아니다</summary>
+        public bool IsLoaded { get; private set; }
 
         /// <summary>서버(or Local) 스냅샷으로 상태를 통째로 덮어쓰고 Changed를 방송한다</summary>
         public void Apply(PlayerSnapshot snap)
@@ -53,6 +57,7 @@ namespace Game.Core
             snap.items ??= new();
             snap.codex ??= new();
             _snapshot = snap;
+            IsLoaded = true;
             Changed?.Invoke(this);
         }
 

@@ -23,7 +23,7 @@ namespace Game.Network
 
             if (isNewAccount)
             {
-                save.wallet.energyStored = _data.Energy.Max;
+                save.wallet.energyStored = _data.Energy.Start;
                 save.wallet.energyUpdatedAt = DateTime.UtcNow.ToString("O");
             }
 

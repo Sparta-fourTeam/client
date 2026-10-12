@@ -25,7 +25,8 @@ namespace Game.Network
             stageProgress = save.stageProgress,
             upgrades = save.upgrades,
             items = save.items ?? new(),
-            codex = save.codex ?? new()
+            codex = save.codex ?? new(),
+            tutorials = save.tutorials ?? new()
         };
     }
 }

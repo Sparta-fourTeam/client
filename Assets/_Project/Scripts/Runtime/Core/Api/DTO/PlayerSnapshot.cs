@@ -17,5 +17,7 @@ namespace Game.Core
         public List<ItemAmount> items;
         /// <summary>도감에 등록된 몬스터. 전투에서 마주친 몬스터마다 한 행이며, 없는 몬스터는 아직 등록되지 않은 것이다.</summary>
         public List<CodexRow> codex;
+        /// <summary>완료한 튜토리얼 ID (Tutorials.json)</summary>
+        public List<string> tutorials;
     }
 }

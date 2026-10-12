@@ -1,0 +1,8 @@
+[
+  {"Id": "intro_battle", "Kind": "battle", "StageId": 1,
+   "Complete": {"Kind": "stageCleared", "StageId": 1},
+   "Rewards": [{"Kind": "setLevel", "Level": 2}, {"Kind": "upgradeMaterial", "UpgradeId": "log", "Level": 1}]},
+  {"Id": "log_upgrade", "Kind": "guide", "After": "intro_battle", "Script": "skillUpgrade",
+   "Complete": {"Kind": "upgradeLevel", "UpgradeId": "log", "Level": 1},
+   "Lines": ["새로 얻은 무기를 강화해 볼까요?\n아래 스킬 탭을 눌러 보세요!", "나무뿌리를 눌러 보세요!", "방금 받은 마법북으로 강화할 수 있어요.\n강화 버튼을 눌러요!", "확인을 누르면 강화돼요!"]}
+]

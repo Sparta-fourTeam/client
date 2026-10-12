@@ -141,6 +141,77 @@ namespace Game.Tests
         }
 
         [UnityTest]
+        public IEnumerator Tutorial_NewAccountStartsInTutorialBattleInsteadOfLobby()
+        {
+            yield return StartFromBoot(save => save.tutorials = new List<string>(), "Stage");
+            var root = Object.FindAnyObjectByType<RootLifetimeScope>().Container;
+            int tutorialStage = root.Resolve<GameDataStore>().Tutorials.First(t => t.IsBattle).StageId;
+            Assert.That(root.Resolve<StageContext>().StageId, Is.EqualTo(tutorialStage));
+            Assert.That(SceneManager.GetSceneByName("Lobby").isLoaded, Is.False);
+        }
+
+        [UnityTest]
+        public IEnumerator Tutorial_AfterBattleTutorialClear_ShowsLevelUpThenGuidesOnlyThroughUpgrade()
+        {
+            // 전투 튜토리얼 스테이지를 깬 직후: 보상 코인은 받았고 튜토리얼 완료는 아직이다. 경험치가 모자라도 정한 레벨을 보장한다
+            var root = VContainer.Unity.VContainerSettings.Instance.GetOrCreateRootLifetimeScopeInstance() as RootLifetimeScope;
+            var data = root.Container.Resolve<GameDataStore>();
+            var intro = data.Tutorials.First(t => t.IsBattle);
+            var guideTutorial = data.Tutorials.First(t => t.IsGuide && t.After == intro.Id);
+            string upgradeId = guideTutorial.Complete.UpgradeId;
+            var upgrade = data.Upgrades.GetOrThrow(upgradeId);
+            string weapon = data.LoadSkills().First(skill => skill.progressionId == upgradeId).name;
+            yield return StartFromBoot(save =>
+            {
+                save.tutorials = new List<string>();
+                save.stageProgress.Find(p => p.stageId == intro.StageId).clearRating = 1;
+                save.wallet.gold = upgrade.CostAt(1);
+            });
+            var lobby = Object.FindAnyObjectByType<LobbyLifetimeScope>();
+            var profile = lobby.Container.Resolve<PlayerProfile>();
+            var ui = lobby.Container.Resolve<IUiRegistry>();
+            var levelUp = ui.Get<LevelUpPopupView>();
+            yield return WaitFor(() => levelUp.IsOpen);
+            var lines = levelUp.GetComponentsInChildren<LevelUpLineView>().Select(line => line.GetComponentInChildren<TMP_Text>().text).ToList();
+            Assert.That(lines, Has.Count.EqualTo(3));
+            Assert.That(lines[0], Does.Contain("Lv.1").And.Contain("Lv.2"));
+            Assert.That(lines[1], Does.Contain(weapon));
+            Assert.That(lines[2], Does.Contain($"×{upgrade.MaterialAt(1)}"));
+            Assert.That(profile.Level, Is.EqualTo(intro.Rewards.Single(r => r.Kind == TutorialReward.SetLevel).Level));
+
+            yield return ClickGameButton(Field<Button>(levelUp, "_confirmButton"));
+            var guide = ui.Get<TutorialGuideView>();
+            var nav = ui.Get<LobbyNavView>();
+            yield return WaitFor(() => Field<GameObject>(guide, "_root").activeSelf);
+            // 강조한 버튼 외에는 가림판이 터치를 막는다
+            Assert.That(TopHit(Field<Button>(nav, "_shopTab")), Is.EqualTo("Blocker"));
+            yield return ClickGameButton(Field<Button>(nav, "_skillTab"));
+            var slot = ui.Get<SkillScreenView>().SlotOf(upgradeId).GetComponent<SkillListSlotView>();
+            yield return ClickGameButton(Field<Button>(slot, "_button"));
+            yield return ClickGameButton(Field<Button>(ui.Get<SkillUpgradePopupView>(), "_upgradeButton"));
+            yield return ClickGameButton(Field<Button>(ui.Get<UpgradeConfirmPopupView>(), "_confirmButton"));
+            yield return WaitFor(() => profile.IsTutorialDone(guideTutorial.Id));
+            Assert.That(profile.UpgradeLevel(upgradeId), Is.EqualTo(1));
+            Assert.That(Field<GameObject>(guide, "_root").activeSelf, Is.False);
+            LogAssert.NoUnexpectedReceived();
+        }
+
+        // button 가운데를 실제로 눌렀을 때 가장 위에 맞는 오브젝트 이름
+        private static string TopHit(Button button)
+        {
+            var rect = (RectTransform)button.transform;
+            var canvas = button.GetComponentInParent<Canvas>();
+            var pointer = new PointerEventData(EventSystem.current)
+            {
+                position = RectTransformUtility.WorldToScreenPoint(canvas.rootCanvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera,
+                    rect.TransformPoint(rect.rect.center))
+            };
+            var hits = new List<RaycastResult>();
+            EventSystem.current.RaycastAll(pointer, hits);
+            return hits.FirstOrDefault().gameObject?.name;
+        }
+
+        [UnityTest]
         public IEnumerator EliteDeath_RouletteAnimatesDuringPause_AppliesRewardsAndRestoresSpeed()
         {
             yield return StartFromBoot();
@@ -441,7 +512,8 @@ namespace Game.Tests
             Assert.That(Object.FindObjectsByType<UiHost>().Length, Is.EqualTo(1));
         }
 
-        private IEnumerator StartFromBoot()
+        // seed가 없으면 튜토리얼을 마친 계정으로 시작한다. 튜토리얼 중인 새 계정은 로비 대신 1스테이지로 들어간다
+        private IEnumerator StartFromBoot(Action<LocalSave> seed = null, string expectedScene = "Lobby")
         {
             _hadSpeedPreference = PlayerPrefs.HasKey("stage_speed");
             _speedPreference = PlayerPrefs.GetFloat("stage_speed");
@@ -452,6 +524,13 @@ namespace Game.Tests
             _originalSavePath = (string)StorePath.GetValue(_store);
             _savePath = Path.Combine(Path.GetTempPath(), "nova-ui-" + Guid.NewGuid().ToString("N") + ".json");
             StorePath.SetValue(_store, _savePath);
+            var save = _store.Load();
+            var data = root.Container.Resolve<GameDataStore>();
+            save.tutorials = data.Tutorials.Select(t => t.Id).ToList();
+            save.wallet.energyStored = data.Energy.Max;
+            save.wallet.energyUpdatedAt = DateTime.UtcNow.ToString("O");
+            seed?.Invoke(save);
+            _store.Flush(save);
             // 로그인 정보는 개발자 PC의 것을 보관해 두고 비운다. 그래서 매번 최초 진입처럼 로그인창이 뜬다 (Cleanup에서 복원)
             _credentials = root.Container.Resolve<IAuthCredentialStore>();
             _hadCredential = _credentials.HasCredential;
@@ -466,7 +545,7 @@ namespace Game.Tests
             // Loading의 로그인창에서 게스트로 시작한다
             yield return WaitFor(() => SceneManager.GetActiveScene().name == "Loading" && LoginPanelShown());
             yield return ClickGameButton(Field<Button>(Object.FindAnyObjectByType<LoginView>(), "_guestButton"));
-            yield return WaitFor(() => SceneManager.GetActiveScene().name == "Lobby" && navigator.Current == SceneId.Lobby);
+            yield return WaitFor(() => SceneManager.GetActiveScene().name == expectedScene && navigator.Current.ToString() == expectedScene);
             yield return null;
         }
 

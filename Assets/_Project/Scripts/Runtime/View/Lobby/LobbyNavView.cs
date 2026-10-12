@@ -45,6 +45,9 @@ namespace Game.View
             Select(Tab.Home);
         }
 
+        /// <summary>튜토리얼이 강조하는 스킬 탭 버튼</summary>
+        public RectTransform SkillTab => (RectTransform)_skillTab.transform;
+
         /// <summary>스킬 화면을 연다 (인벤토리의 "강화하러 가기" 등)</summary>
         public void OpenSkill() => Select(Tab.Skill);
 

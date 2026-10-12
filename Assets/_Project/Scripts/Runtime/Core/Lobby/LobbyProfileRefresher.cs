@@ -23,8 +23,16 @@ namespace Game.Core
         /// <summary>조회가 끝나면(실패 포함) 완료된다. 미션 입장처럼 최신 상태가 필요한 입력은 이걸 기다린다</summary>
         public UniTask WhenLoaded => _loaded.Task;
 
+        /// <summary>다시 받기 전의 플레이어 레벨. 전투에서 돌아왔으면 전투 전 레벨이라 레벨업 팝업이 이것과 비교한다.
+        /// 받기 전 프로필이 비어 있었으면(로그인 없이 로비부터 재생 등) 비교할 이전 레벨이 없으므로 받은 뒤 레벨과 같다</summary>
+        public int LevelBefore { get; private set; }
+
+        private bool _hadProfile;
+
         public void Start()
         {
+            _hadProfile = _profile.IsLoaded;
+            LevelBefore = _profile.Level;
             RefreshAsync().Forget(Debug.LogException);
         }
 
@@ -34,6 +42,10 @@ namespace Game.Core
             {
                 PlayerSnapshot snapshot = await _playerApi.GetMe();
                 _profile.Apply(snapshot);
+                if (!_hadProfile)
+                {
+                    LevelBefore = _profile.Level;
+                }
             }
             catch (Exception ex)
             {

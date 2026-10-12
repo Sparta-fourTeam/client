@@ -4,7 +4,8 @@ using MessagePipe;
 
 namespace Game.Core
 {
-    /// <summary>Lobby에서 전투를 먼저 발급받고, 성공했을 때만 Stage로 전환한다.
+    /// <summary>전투를 먼저 발급받고, 성공했을 때만 Stage로 전환한다.
+    /// 로비 외에 튜토리얼에서도 쓴다(로딩 → 튜토리얼 전투, 튜토리얼 전투 패배 → 재도전).
     /// 거절되면 씬 전환 없이 StartFailed만 발행한다 — 이전엔 반대로 Stage로 넘어갔다가 거절돼서 되돌아왔다</summary>
     public sealed class BattleLauncher
     {
@@ -21,7 +22,8 @@ namespace Game.Core
             _startFailed = startFailed;
         }
 
-        public async UniTask Launch(int stageId)
+        /// <summary>발급에 성공해 Stage로 넘어갔으면 true, 거절돼 그대로 남았으면 false</summary>
+        public async UniTask<bool> Launch(int stageId)
         {
             StartBattleResponse response;
             try
@@ -32,11 +34,12 @@ namespace Game.Core
             catch (ApiException e) when (e.Kind == ApiErrorKind.Rejected)
             {
                 _startFailed.Publish(new StartFailed(e.Code));
-                return;
+                return false;
             }
 
             _stageContext.SetBattle(response.battleId, response.seed);
             await _nav.GoToStage(stageId);
+            return true;
         }
     }
 }

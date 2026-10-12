@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Game.Core;
 using Newtonsoft.Json;
 using VContainer;
@@ -10,22 +12,26 @@ namespace Game.Network
     public sealed class LocalSaveStore
     {
         private readonly string _filePath;
+        private readonly int _startEnergy;
+        private readonly List<string> _legacyTutorials;
 
-        /// <summary>에디터는 프로젝트별 경로, 플레이어 빌드는 persistentDataPath/save.json을 사용한다.</summary>
+        /// <summary>에디터는 프로젝트별 경로, 플레이어 빌드는 persistentDataPath/save.json을 사용한다. 새 세이브는 시작 에너지를 가지고 시작한다</summary>
         [Inject]
-        public LocalSaveStore()
-            : this(LocalSavePath.Current, LocalSavePath.Legacy)
+        public LocalSaveStore(GameDataStore data)
+            : this(LocalSavePath.Current, LocalSavePath.Legacy, data)
         {
         }
 
-        /// <summary>지정한 경로를 사용한다. (테스트에서 임시 경로 주입용)</summary>
-        public LocalSaveStore(string filePath)
-            : this(filePath, null)
+        /// <summary>지정한 경로를 사용한다. (테스트에서 임시 경로 주입용)
+        /// data: 새 세이브의 시작 에너지와, 튜토리얼이 생기기 전 저장 파일을 마친 것으로 볼 튜토리얼 목록. 없으면 에너지 0, 목록은 비어 있다.
+        /// 시작 에너지는 로그인(LocalAuthApi)을 거치지 않고 로비부터 재생해도 새 계정이 에너지를 갖게 한다</summary>
+        public LocalSaveStore(string filePath, GameDataStore data = null)
+            : this(filePath, null, data)
         {
         }
 
         /// <summary>지정한 이전 경로의 세이브를 처음 한 번만 가져온다. 기존 프로젝트 세이브와 원본은 보존한다.</summary>
-        public LocalSaveStore(string filePath, string legacyFilePath)
+        public LocalSaveStore(string filePath, string legacyFilePath, GameDataStore data = null)
         {
             if (string.IsNullOrWhiteSpace(filePath))
             {
@@ -33,6 +39,8 @@ namespace Game.Network
             }
 
             _filePath = filePath;
+            _startEnergy = data?.Energy.Start ?? 0;
+            _legacyTutorials = data?.Tutorials.Select(t => t.Id).ToList() ?? new List<string>();
             if (!string.IsNullOrEmpty(legacyFilePath)
                 && !string.Equals(Path.GetFullPath(filePath), Path.GetFullPath(legacyFilePath), StringComparison.Ordinal))
             {
@@ -70,13 +78,20 @@ namespace Game.Network
         /// <summary>파일이 없으면 기본값의 LocalSave를 반환한다</summary>
         public LocalSave Load()
         {
-            if (!File.Exists(_filePath))
-            {
-                return new LocalSave();
-            }
+            var save = File.Exists(_filePath)
+                ? JsonConvert.DeserializeObject<LocalSave>(File.ReadAllText(_filePath), ReplaceCollections)
+                : NewSave();
+            // 튜토리얼이 생기기 전 저장 파일은 이미 플레이한 계정이므로 튜토리얼을 마친 것으로 본다
+            save.tutorials ??= save.exp > 0 ? new List<string>(_legacyTutorials) : new List<string>();
+            return save;
+        }
 
-            var json = File.ReadAllText(_filePath);
-            return JsonConvert.DeserializeObject<LocalSave>(json, ReplaceCollections);
+        private LocalSave NewSave()
+        {
+            var save = new LocalSave();
+            save.wallet.energyStored = _startEnergy;
+            save.wallet.energyUpdatedAt = DateTime.UtcNow.ToString("O");
+            return save;
         }
 
         /// <summary>이전 저장 내용을 덮어쓴다</summary>

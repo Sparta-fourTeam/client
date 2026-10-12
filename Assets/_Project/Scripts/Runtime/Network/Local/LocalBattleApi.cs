@@ -40,14 +40,17 @@ namespace Game.Network
             if (rewardBalance.UsesRandomEquipmentMaterial && UnlockedEquipmentIds == null)
             { throw new ApiException(ApiErrorKind.Rejected, "EQUIPMENT_UNLOCK_SOURCE_NOT_READY"); }
 
+            // 진행 중인 전투 튜토리얼의 스테이지는 에너지 없이 바로 들어간다
+            bool tutorial = TutorialProgress.BattleStage(_data.Tutorials, LocalTutorialApi.Facts(save, _data)) == stageId;
+            int cost = tutorial ? 0 : _data.Energy.Cost;
             var (current, _) = EnergyRule.At(save.wallet.energyStored,
                 EnergyRule.ParseUpdatedAt(save.wallet.energyUpdatedAt), DateTime.UtcNow, _data.Energy);
-            if (current < _data.Energy.Cost)
+            if (current < cost)
             {
                 throw new ApiException(ApiErrorKind.Rejected, "INSUFFICIENT_ENERGY");
             }
 
-            save.wallet.energyStored = current - _data.Energy.Cost;
+            save.wallet.energyStored = current - cost;
             save.wallet.energyUpdatedAt = DateTime.UtcNow.ToString("O");
 
             var row = new BattleRow

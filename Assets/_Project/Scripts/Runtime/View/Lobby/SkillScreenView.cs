@@ -54,6 +54,23 @@ namespace Game.View
             _panel.SetActive(false);
         }
 
+        public bool IsVisible => _panel.activeSelf;
+
+        /// <summary>강화 ID가 upgradeId인 스킬 칸. 튜토리얼이 강조한다. 없으면 null</summary>
+        public RectTransform SlotOf(string upgradeId)
+        {
+            var skills = _catalog.Skills;
+            for (int i = 0; i < skills.Count && i < _slots.Length; i++)
+            {
+                if (skills[i].UpgradeId == upgradeId)
+                {
+                    return (RectTransform)_slots[i].transform;
+                }
+            }
+
+            return null;
+        }
+
         public void SetVisible(bool visible)
         {
             // 칸들의 Awake가 먼저 돌도록 켠 뒤에 채운다

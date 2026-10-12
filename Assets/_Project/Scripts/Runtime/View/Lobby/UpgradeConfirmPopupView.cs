@@ -25,6 +25,8 @@ namespace Game.View
         private string _name;
         private bool _all, _busy, _visible;
         public bool IsBusy => _busy;
+        public bool IsOpen => _visible;
+        public RectTransform ConfirmButton => (RectTransform)_confirmButton.transform;
 
         [Inject]
         public void Construct(PlayerProfile profile, GameDataStore data, IUpgradeApi api)

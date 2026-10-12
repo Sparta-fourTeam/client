@@ -54,6 +54,10 @@ namespace Game.View
             _rewardRows.AddRange(_rewardContent.GetComponentsInChildren<LevelRewardRowView>(true));
         }
 
+        /// <summary>열려 있는 스킬의 강화 ID. 닫혀 있으면 null</summary>
+        public string OpenUpgradeId => _panel.activeSelf ? _catalog.Skills[_index].UpgradeId : null;
+        public RectTransform UpgradeButton => (RectTransform)_upgradeButton.transform;
+
         public void Open(int index)
         {
             _index = index;
