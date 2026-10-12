@@ -31,6 +31,7 @@ namespace Game.Editor
                 return;
             }
 
+            BuildProfile.SetActiveBuildProfile(profile);
             ApplyVersion(args);
             ApplyAndroidSigning(args);
 

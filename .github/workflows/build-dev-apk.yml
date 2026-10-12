@@ -1,5 +1,4 @@
-name: Build Release AAB Candidate
-run-name: Release AAB 1 - ${{ github.ref_name }}
+name: Build Dev APK
 
 on:
   workflow_dispatch:
@@ -10,7 +9,6 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
 
     steps:
       - name: Checkout
@@ -18,44 +16,16 @@ jobs:
         with:
           fetch-depth: 0
           lfs: true
-          ref: ${{ github.sha }}
-          persist-credentials: false
 
-      - name: Verify pinned release inputs
-        run: |
-          python3 - <<'PY'
-          import hashlib, json, pathlib, subprocess
-          base = '9ff0cf77ab27519805d63d9f1dd948f6c58fbc2a'
-          profile = pathlib.Path('Assets/Settings/Build Profiles/Android_Release.asset')
-          head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
-          subprocess.run(['git', 'merge-base', '--is-ancestor', base, head], check=True)
-          changed = set(subprocess.check_output(['git', 'diff', '--name-only', base, head], text=True).splitlines())
-          allowed = {str(profile), '.github/workflows/build-dev-apk.yml'}
-          if not changed <= allowed:
-              raise SystemExit('Candidate contains changes outside the approved release scope')
-          settings = profile.read_text()
-          required = ['Android: com.teamdoodle.doodledefense', 'bundleVersion: 1.0',
-                      'AndroidBundleVersionCode: 1', 'AndroidTargetSdkVersion: 36',
-                      'AndroidTargetArchitectures: 2', 'm_Development: 0',
-                      'm_BuildAppBundle: 1', 'm_BuildProfileEngineDiagnosticsState: 2']
-          if any(value not in settings for value in required):
-              raise SystemExit('Release profile does not match the approved inputs')
-          diagnostic = pathlib.Path('ProjectSettings/UnityConnectSettings.asset')
-          original = subprocess.check_output(['git', 'show', base + ':' + str(diagnostic)])
-          if diagnostic.read_bytes() != original:
-              raise SystemExit('Diagnostics settings changed unexpectedly')
-          pathlib.Path('build').mkdir(exist_ok=True)
-          pathlib.Path('build/release-inputs.json').write_text(json.dumps({
-              'source_commit': head, 'base_commit': base,
-              'profile_sha256': hashlib.sha256(profile.read_bytes()).hexdigest(),
-              'expected_package': 'com.teamdoodle.doodledefense',
-              'expected_version_name': '1.0', 'expected_version_code': 1,
-              'expected_target_api': 36, 'diagnostics_policy': 'unchanged',
-              'scope': sorted(changed)
-          }, indent=2) + '\n')
-          PY
+      - name: Cache Unity Library
+        uses: actions/cache@v4
+        with:
+          path: Library
+          key: Unity-Android-Dev-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          restore-keys: |
+            Unity-Android-Dev-
 
-      - name: Build signed Release AAB
+      - name: Build Dev APK
         uses: game-ci/unity-builder@v4
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
@@ -63,14 +33,12 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           projectPath: .
-          unityVersion: 6000.6.3f1
+          unityVersion: auto
           targetPlatform: Android
-          buildProfile: 'Assets/Settings/Build Profiles/Android_Release.asset'
+          buildProfile: 'Assets/Settings/Build Profiles/Android_Dev.asset'
           buildMethod: Game.Editor.CiBuild.Build
-          androidExportType: androidAppBundle
-          versioning: Custom
-          version: '1.0'
-          androidVersionCode: 1
+          androidExportType: androidPackage
+          versioning: Semantic
           buildsPath: build
 
           androidKeystoreName: release.keystore
@@ -79,31 +47,10 @@ jobs:
           androidKeyaliasName: ${{ secrets.ANDROID_KEYALIAS_NAME }}
           androidKeyaliasPass: ${{ secrets.ANDROID_KEYALIAS_PASS }}
 
-      - name: Record artifact hash and reject private-key files
-        run: |
-          python3 - <<'PY'
-          import hashlib, json, pathlib, zipfile
-          files = list(pathlib.Path('build/Android').glob('*.aab'))
-          if len(files) != 1:
-              raise SystemExit('Expected exactly one release AAB')
-          artifact = files[0]
-          with zipfile.ZipFile(artifact) as archive:
-              if any(name.lower().endswith(('.keystore', '.jks', '.p12', '.pfx', '.env'))
-                     for name in archive.namelist()):
-                  raise SystemExit('Private signing/configuration file found inside the AAB')
-          inputs = json.loads(pathlib.Path('build/release-inputs.json').read_text())
-          inputs.update({'artifact': artifact.name, 'bytes': artifact.stat().st_size,
-                         'artifact_sha256': hashlib.sha256(artifact.read_bytes()).hexdigest()})
-          pathlib.Path('build/artifact-manifest.json').write_text(json.dumps(inputs, indent=2) + '\n')
-          PY
-
-      - name: Save Release AAB only
+      - name: Save Dev APK
         uses: actions/upload-artifact@v4
         with:
-          name: Release-AAB-1-${{ github.sha }}
-          path: |
-            build/Android/*.aab
-            build/release-inputs.json
-            build/artifact-manifest.json
+          name: Dev-APK-${{ github.run_number }}
+          path: build/Android/*.apk
           if-no-files-found: error
-          retention-days: 3
+          retention-days: 14

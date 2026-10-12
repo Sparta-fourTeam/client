@@ -1,15 +1,18 @@
 name: Release APK
 
 on:
-  push:
-    tags:
-      - 'v*'
+  workflow_dispatch:
 
 permissions:
   contents: write
 
+concurrency:
+  group: android-release-build
+  cancel-in-progress: false
+
 jobs:
   release:
+    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
 
     steps:
@@ -19,13 +22,20 @@ jobs:
           fetch-depth: 0
           lfs: true
 
-      - name: Cache Unity Library
-        uses: actions/cache@v4
-        with:
-          path: Library
-          key: Unity-Android-Release-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
-          restore-keys: |
-            Unity-Android-Release-
+      - name: Allocate shared Android version code
+        id: version
+        run: |
+          python3 - <<'PY'
+          import os, re, subprocess, time
+          time.sleep(2)
+          code = int(time.time()) - 1577836800
+          tags = subprocess.check_output(['git', 'for-each-ref', 'refs/tags', '--format=%(contents)'], text=True)
+          previous = [int(value) for value in re.findall(r'^Android-Version-Code: (\d+)$', tags, re.M)]
+          if not 0 < code <= 2100000000 or code <= max(previous, default=0):
+              raise SystemExit('Version code must exceed the published tag code and fit the Play range')
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write('code=' + str(code) + '\n')
+          PY
 
       - name: Build Release APK
         uses: game-ci/unity-builder@v4
@@ -41,6 +51,7 @@ jobs:
           buildMethod: Game.Editor.CiBuild.Build
           androidExportType: androidPackage
           versioning: Tag
+          androidVersionCode: ${{ steps.version.outputs.code }}
           buildsPath: build
 
           androidKeystoreName: release.keystore

@@ -1,47 +1,109 @@
 name: Deploy Google Play Internal
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
+    inputs:
+      release_version:
+        description: '표시 버전 (이번 릴리스 1.0, 대응 태그 v1.0)'
+        type: string
+        required: true
+        default: '1.0'
+      publish_to_internal:
+        description: '검증된 AAB를 내부 테스트에 게시 (별도 승인 후 선택)'
+        type: boolean
+        required: true
+        default: false
 
 permissions:
   contents: read
 
 concurrency:
-  group: google-play-internal
+  group: android-release-build
   cancel-in-progress: false
 
 jobs:
-  deploy:
-    if: github.ref == 'refs/heads/main'
+  build:
     runs-on: ubuntu-latest
-
+    timeout-minutes: 60
+    outputs:
+      version_code: ${{ steps.version.outputs.code }}
     steps:
-      - name: Checkout
+      - name: Checkout dispatched commit
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.sha }}
           fetch-depth: 0
           lfs: true
+          persist-credentials: false
 
-      - name: Cache Unity Library
-        uses: actions/cache@v4
-        with:
-          path: Library
-          key: Unity-Android-Release-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
-          restore-keys: |
-            Unity-Android-Release-
-
-      - name: Set Android version code
-        id: version
+      - name: Validate release profile
+        id: profile
         env:
-          BUILD_NUMBER: ${{ github.run_number }}
-          VERSION_CODE_BASE: ${{ vars.ANDROID_VERSION_CODE_BASE || '10000' }}
+          RELEASE_VERSION: ${{ inputs.release_version }}
         run: |
-          echo "code=$((VERSION_CODE_BASE + BUILD_NUMBER))" >> "$GITHUB_OUTPUT"
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib, re
+          profile = pathlib.Path('Assets/Settings/Build Profiles/Android_Release.asset')
+          settings = profile.read_text()
+          def field(name):
+              match = re.search(r'\b' + name + r': ([^\n]+)', settings)
+              if not match:
+                  raise SystemExit('Required release field missing: ' + name)
+              return match.group(1).rstrip("'").strip()
+          package = re.search(r'Android: (com\.[A-Za-z0-9_.]+)', settings).group(1)
+          version = os.environ['RELEASE_VERSION']
+          target = int(field('AndroidTargetSdkVersion'))
+          if package != 'com.teamdoodle.doodledefense':
+              raise SystemExit('Release package does not match Play app')
+          if not re.fullmatch(r'\d+(?:\.\d+){1,2}', version):
+              raise SystemExit('Invalid release version')
+          release_tag = 'v' + version
+          import subprocess
+          tagged = subprocess.run(['git', 'rev-parse', '--verify', '--quiet', 'refs/tags/' + release_tag + '^{commit}'], text=True, capture_output=True)
+          if tagged.returncode == 0 and tagged.stdout.strip() != os.environ['GITHUB_SHA']:
+              raise SystemExit('Existing release tag points to a different source commit')
+          if target < 36 or field('AndroidTargetArchitectures') != '2':
+              raise SystemExit('API 36+ and ARM64 required')
+          if field('m_Development') != '0' or field('m_BuildAppBundle') != '1':
+              raise SystemExit('Non-development AAB required')
+          pathlib.Path('build').mkdir(exist_ok=True)
+          pathlib.Path('build/release-inputs.json').write_text(json.dumps({
+              'source_commit': os.environ['GITHUB_SHA'], 'package': package,
+              'version_name': version, 'release_tag': release_tag, 'target_api': target,
+              'profile_sha256': hashlib.sha256(profile.read_bytes()).hexdigest()
+          }, indent=2) + '\n')
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write('version_name=' + version + '\n')
+          PY
 
-      - name: Build Release AAB
+      - name: Allocate shared Android version code
+        id: version
+        run: |
+          python3 - <<'PY'
+          import os, re, subprocess, time
+          time.sleep(2)
+          code = int(time.time()) - 1577836800
+          tags = subprocess.check_output(['git', 'for-each-ref', 'refs/tags', '--format=%(contents)'], text=True)
+          previous = [int(value) for value in re.findall(r'^Android-Version-Code: (\d+)$', tags, re.M)]
+          if not 0 < code <= 2100000000 or code <= max(previous, default=0):
+              raise SystemExit('Version code must exceed the published tag code and fit the Play range')
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write('code=' + str(code) + '\n')
+          PY
+
+      - name: Record allocated version code
+        env:
+          ANDROID_VERSION_CODE: ${{ steps.version.outputs.code }}
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib
+          path = pathlib.Path('build/release-inputs.json')
+          data = json.loads(path.read_text())
+          data['version_code'] = int(os.environ['ANDROID_VERSION_CODE'])
+          path.write_text(json.dumps(data, indent=2) + '\n')
+          PY
+
+      - name: Build signed Release AAB
         uses: game-ci/unity-builder@v4
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
@@ -54,30 +116,129 @@ jobs:
           buildProfile: 'Assets/Settings/Build Profiles/Android_Release.asset'
           buildMethod: Game.Editor.CiBuild.Build
           androidExportType: androidAppBundle
-          versioning: Semantic
+          versioning: Custom
+          version: ${{ steps.profile.outputs.version_name }}
           androidVersionCode: ${{ steps.version.outputs.code }}
           buildsPath: build
-
           androidKeystoreName: release.keystore
           androidKeystoreBase64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           androidKeystorePass: ${{ secrets.ANDROID_KEYSTORE_PASS }}
           androidKeyaliasName: ${{ secrets.ANDROID_KEYALIAS_NAME }}
           androidKeyaliasPass: ${{ secrets.ANDROID_KEYALIAS_PASS }}
 
-      - name: Save AAB
+      - name: Validate actual AAB and record evidence
+        run: |
+          curl --fail --silent --show-error --location \
+            https://github.com/google/bundletool/releases/download/1.17.2/bundletool-all-1.17.2.jar \
+            --output "$RUNNER_TEMP/bundletool.jar"
+          printf '%s  %s\n' 2d4ad908faea64047c1cc9cb747e6aa667c6ab192e09607bd16b67246a8cd6ae \
+            "$RUNNER_TEMP/bundletool.jar" | sha256sum --check
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib, re, struct, subprocess, xml.etree.ElementTree as ET, zipfile
+          files = list(pathlib.Path('build/Android').glob('*.aab'))
+          if len(files) != 1:
+              raise SystemExit('Exactly one AAB required')
+          aab = files[0]
+          tool = str(pathlib.Path(os.environ['RUNNER_TEMP']) / 'bundletool.jar')
+          def run(args):
+              return subprocess.check_output(args, text=True, stderr=subprocess.STDOUT)
+          run(['java', '-jar', tool, 'validate', '--bundle=' + str(aab)])
+          manifest = ET.fromstring(run(['java', '-jar', tool, 'dump', 'manifest', '--bundle=' + str(aab), '--module=base']))
+          config = json.loads(run(['java', '-jar', tool, 'dump', 'config', '--bundle=' + str(aab)]))
+          expected = json.loads(pathlib.Path('build/release-inputs.json').read_text())
+          ns = '{http://schemas.android.com/apk/res/android}'
+          actual = {'package': manifest.get('package'), 'version_name': manifest.get(ns + 'versionName'),
+                    'version_code': int(manifest.get(ns + 'versionCode')),
+                    'target_api': int(manifest.find('uses-sdk').get(ns + 'targetSdkVersion'))}
+          if any(actual[key] != expected[key] for key in actual):
+              raise SystemExit('AAB differs from release profile')
+          if manifest.find('application').get(ns + 'debuggable', 'false') != 'false':
+              raise SystemExit('Debuggable AAB rejected')
+          abis, alignments = set(), {}
+          with zipfile.ZipFile(aab) as archive:
+              for name in archive.namelist():
+                  if name.lower().endswith(('.keystore', '.jks', '.p12', '.pfx', '.env')):
+                      raise SystemExit('Private signing/configuration file inside AAB')
+                  if name.startswith('base/lib/') and name.endswith('.so'):
+                      abis.add(name.split('/')[2])
+                      data = archive.read(name)
+                      if data[:4] != b'\x7fELF' or data[4] != 2:
+                          raise SystemExit('Unexpected native binary format')
+                      endian = '<' if data[5] == 1 else '>'
+                      offset = struct.unpack_from(endian + 'Q', data, 32)[0]
+                      size, count = struct.unpack_from(endian + 'HH', data, 54)
+                      values = [struct.unpack_from(endian + 'Q', data, offset + i * size + 48)[0]
+                                for i in range(count) if struct.unpack_from(endian + 'I', data, offset + i * size)[0] == 1]
+                      if not values or any(value < 16384 for value in values):
+                          raise SystemExit('Native library is not 16KB aligned')
+                      alignments[name] = values
+          if abis != {'arm64-v8a'} or config.get('optimizations', {}).get('uncompressNativeLibraries', {}).get('alignment') != 'PAGE_ALIGNMENT_16K':
+              raise SystemExit('AAB architecture/alignment mismatch')
+          signed = run(['jarsigner', '-J-Duser.language=en', '-J-Duser.country=US', '-verify', str(aab)])
+          if 'jar verified.' not in signed or 'unsigned entries' in signed.lower():
+              raise SystemExit('AAB signature verification failed')
+          cert = run(['keytool', '-J-Duser.language=en', '-J-Duser.country=US', '-printcert', '-jarfile', str(aab)])
+          evidence = dict(expected, **{'actual': actual, 'artifact': aab.name,
+              'artifact_sha256': hashlib.sha256(aab.read_bytes()).hexdigest(),
+              'signer_certificate_sha256': re.findall(r'SHA256:\s*([A-F0-9:]+)', cert),
+              'architectures': sorted(abis), 'elf_load_alignments': alignments,
+              'signature_verified': True,
+              'permissions': [p.get(ns + 'name') for p in manifest.findall('uses-permission')]})
+          pathlib.Path('build/artifact-manifest.json').write_text(json.dumps(evidence, indent=2) + '\n')
+          PY
+
+      - name: Save verified AAB and non-sensitive evidence
         uses: actions/upload-artifact@v4
         with:
-          name: Release-AAB-${{ steps.version.outputs.code }}
-          path: build/Android/*.aab
+          name: Release-AAB-${{ steps.version.outputs.code }}-${{ github.sha }}
+          path: |
+            build/Android/*.aab
+            build/release-inputs.json
+            build/artifact-manifest.json
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 3
 
-      - name: Deploy to Google Play internal testing
+  publish:
+    if: ${{ inputs.publish_to_internal }}
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check existing Play upload credential
+        env:
+          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          if [ -z "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" ]; then
+            echo 'Existing GOOGLE_PLAY_SERVICE_ACCOUNT_JSON is not configured. No upload attempted.'
+            exit 1
+          fi
+
+      - name: Download this run's verified AAB
+        uses: actions/download-artifact@v4
+        with:
+          name: Release-AAB-${{ needs.build.outputs.version_code }}-${{ github.sha }}
+          path: verified
+
+      - name: Recheck artifact identity
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib
+          evidence = json.loads(pathlib.Path('verified/artifact-manifest.json').read_text())
+          files = list(pathlib.Path('verified/Android').glob('*.aab'))
+          if len(files) != 1 or evidence['source_commit'] != os.environ['GITHUB_SHA']:
+              raise SystemExit('Artifact source mismatch')
+          if evidence['actual']['package'] != 'com.teamdoodle.doodledefense' or not evidence['signature_verified']:
+              raise SystemExit('Artifact package/signature mismatch')
+          if hashlib.sha256(files[0].read_bytes()).hexdigest() != evidence['artifact_sha256']:
+              raise SystemExit('Artifact hash mismatch')
+          PY
+
+      - name: Publish explicitly approved internal test release
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
-          packageName: com.example.yourgame
-          releaseFiles: build/Android/*.aab
+          packageName: com.teamdoodle.doodledefense
+          releaseFiles: verified/Android/*.aab
           tracks: internal
           status: completed
-          releaseName: main-${{ steps.version.outputs.code }}
+          releaseName: internal-${{ needs.build.outputs.version_code }}-${{ github.sha }}
