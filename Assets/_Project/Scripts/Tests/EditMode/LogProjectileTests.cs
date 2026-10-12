@@ -154,6 +154,46 @@ namespace Game.Tests
         }
 
         [Test]
+        public void Projectile_SortsAllSegmentHitsAndRefreshesDirectionOnPoolReuse()
+        {
+            var go = new GameObject("ProjectileSegmentOrderTest");
+            try
+            {
+                var projectile = go.AddComponent<Projectile>();
+                var provider = new LaneProvider();
+                var targets = new IEnemyTarget[5];
+                for (int i = 0; i < targets.Length; i++)
+                { targets[i] = new Target { Position = Vector2.right * (1 + i * 2) }; }
+                provider.Targets.AddRange(new[] { targets[4], targets[1], targets[3], targets[0], targets[2] });
+                provider.Targets.Add(new Target { Position = new Vector2(5, 1) });
+                var hits = new List<IEnemyTarget>();
+                var reactions = new AttackReactions(new[]
+                { new ReactionBinding(AttackEvent.Hit, new CastSkillReaction(context => hits.Add(context.Target))) });
+                var pool = new UnityEngine.Pool.ObjectPool<Projectile>(() => projectile);
+                var tick = typeof(Projectile).GetMethod("Tick", Flags);
+                pool.Get().Init(pool, new ProjectileSpawnSettings
+                {
+                    StartPos = Vector3.zero, Direction = Vector3.right, Speed = 100, Lifetime = 3,
+                    PierceCount = 4, TargetProvider = provider, Reactions = reactions
+                });
+                tick.Invoke(projectile, new object[] { .1f });
+                CollectionAssert.AreEqual(targets, hits, "네 번째 후보 이후의 경로 적도 이동 순서대로 맞아야 한다");
+                Assert.AreEqual(1, pool.CountInactive);
+                hits.Clear();
+                Assert.AreSame(projectile, pool.Get());
+                projectile.Init(pool, new ProjectileSpawnSettings
+                {
+                    StartPos = Vector3.right * 10, Direction = Vector3.left, Speed = 100, Lifetime = 3,
+                    PierceCount = 4, TargetProvider = provider, Reactions = reactions
+                });
+                tick.Invoke(projectile, new object[] { .1f });
+                CollectionAssert.AreEqual(new[] { targets[4], targets[3], targets[2], targets[1], targets[0] }, hits);
+                Assert.AreEqual(1, pool.CountInactive);
+            }
+            finally { Object.DestroyImmediate(go); }
+        }
+
+        [Test]
         public void RollingLog_SpawnsInTargetsLaneMovesVerticallyAndPiercesMultipleEnemies()
         {
             var go = new GameObject("RollingLaneTest"); go.AddComponent<Projectile>();
@@ -196,7 +236,11 @@ namespace Game.Tests
         {
             public readonly List<IEnemyTarget> Targets = new();
             public int GetNearest(Vector2 from, int count, List<IEnemyTarget> results)
-            { results.Clear(); results.AddRange(Targets); return results.Count; }
+            {
+                results.Clear();
+                for (int i = 0; i < Targets.Count && i < count; i++) { results.Add(Targets[i]); }
+                return results.Count;
+            }
         }
     }
 }

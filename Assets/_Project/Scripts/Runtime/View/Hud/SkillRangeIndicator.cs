@@ -15,6 +15,9 @@ namespace Game.View
         /// <summary>점선 텍스처 한 칸(점 하나와 빈칸)의 월드 길이</summary>
         [SerializeField] private float _dashPeriod = .4f;
 
+        private readonly Vector3[] _arcPoints = new Vector3[ArcSegments + 1];
+        private readonly Vector3[] _linePoints = new Vector3[2];
+
         private void Awake()
         {
             if (_line != null)
@@ -30,9 +33,17 @@ namespace Game.View
         public void Show(SkillRange range)
         {
             if (_line == null) { return; }
-            var points = range.Shape == SkillRangeShape.Arc
-                ? ArcPoints(range.Center, range.Radius, ArcSegments)
-                : LinePoints(range.LineY, CameraCenterX(), CameraHalfWidth());
+            Vector3[] points;
+            if (range.Shape == SkillRangeShape.Arc)
+            {
+                points = _arcPoints;
+                FillArcPoints(points, range.Center, range.Radius, ArcSegments);
+            }
+            else
+            {
+                points = _linePoints;
+                FillLinePoints(points, range.LineY, CameraCenterX(), CameraHalfWidth());
+            }
             _line.positionCount = points.Length;
             _line.SetPositions(points);
             _line.enabled = true;
@@ -47,17 +58,32 @@ namespace Game.View
         public static Vector3[] ArcPoints(Vector2 center, float radius, int segments)
         {
             var points = new Vector3[segments + 1];
+            FillArcPoints(points, center, radius, segments);
+            return points;
+        }
+
+        private static void FillArcPoints(Vector3[] points, Vector2 center, float radius, int segments)
+        {
             for (int i = 0; i <= segments; i++)
             {
                 float angle = Mathf.PI * i / segments;
                 points[i] = new Vector3(center.x + Mathf.Cos(angle) * radius, center.y + Mathf.Sin(angle) * radius, 0);
             }
-            return points;
         }
 
         /// <summary>높이 y에서 가운데 x를 기준으로 양쪽 halfWidth만큼 뻗는 가로선의 두 끝점</summary>
-        public static Vector3[] LinePoints(float y, float centerX, float halfWidth) =>
-            new[] { new Vector3(centerX - halfWidth, y, 0), new Vector3(centerX + halfWidth, y, 0) };
+        public static Vector3[] LinePoints(float y, float centerX, float halfWidth)
+        {
+            var points = new Vector3[2];
+            FillLinePoints(points, y, centerX, halfWidth);
+            return points;
+        }
+
+        private static void FillLinePoints(Vector3[] points, float y, float centerX, float halfWidth)
+        {
+            points[0] = new Vector3(centerX - halfWidth, y, 0);
+            points[1] = new Vector3(centerX + halfWidth, y, 0);
+        }
 
         private static float CameraCenterX() => Camera.main != null ? Camera.main.transform.position.x : 0f;
 
