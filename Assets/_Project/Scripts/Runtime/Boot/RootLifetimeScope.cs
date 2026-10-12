@@ -36,6 +36,11 @@ namespace Game.Boot
             builder.Register<IEnergyApi, LocalEnergyApi>(Lifetime.Singleton);
             builder.Register<IStageApi, LocalStageApi>(Lifetime.Singleton);
 
+            // 음악·효과음·음성 볼륨은 기기 설정이라 기기에 저장하고, 시작할 때와 바뀔 때 오디오 믹서에 적용한다
+            builder.Register<IVolumeStore, PlayerPrefsVolumeStore>(Lifetime.Singleton);
+            builder.Register<SoundSettings>(Lifetime.Singleton);
+            builder.RegisterEntryPoint<SoundVolumeApplier>();
+
             builder.Register<StageContext>(Lifetime.Singleton);
             builder.RegisterInstance<ITransitionCurtain>(curtain);
             builder.Register<ISceneNavigator, SceneLoader>(Lifetime.Singleton);
