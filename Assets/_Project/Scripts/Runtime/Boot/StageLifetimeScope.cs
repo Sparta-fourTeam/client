@@ -23,6 +23,9 @@ namespace Game.Boot
             builder.RegisterComponentInHierarchy<Wall>();
             builder.RegisterComponentInHierarchy<SkillController>().AsSelf().As<IUpgradeChoiceSource>();
             builder.Register<CardDeck>(Lifetime.Scoped);
+            builder.Register(resolver => new EliteRouletteSession(resolver.Resolve<CardDeck>(),
+                resolver.Resolve<IRandomProvider>(), resolver.Resolve<StageDefinition>().EliteRouletteMinCards,
+                resolver.Resolve<StageDefinition>().EliteRouletteMaxCards), Lifetime.Scoped);
             builder.Register<ISkillDataProvider, DefaultSkillDataProvider>(Lifetime.Scoped);
             builder.Register<IWeaponProgression, ProfileWeaponProgression>(Lifetime.Scoped);
             builder.Register<IPermanentSkillEffects, ProfilePermanentSkillEffects>(Lifetime.Scoped);

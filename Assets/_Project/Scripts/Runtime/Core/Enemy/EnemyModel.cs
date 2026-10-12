@@ -269,7 +269,7 @@ namespace Game.Core
             if (Hp == 0)
             {
                 var deathExplosion = _status.ClearOnDeath();
-                _diedPublisher.Publish(new EnemyDied(Id, _isSummoned));
+                _diedPublisher.Publish(new EnemyDied(Id, _isSummoned, _type));
                 if (deathExplosion != null)
                 {
                     DeathExplosionRequested?.Invoke(deathExplosion);

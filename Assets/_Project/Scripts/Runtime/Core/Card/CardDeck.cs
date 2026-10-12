@@ -35,6 +35,11 @@ namespace Game.Core
 
         public int GetPickCount(string cardId) => _picks.TryGetValue(cardId, out var count) ? count : 0;
 
+        /// <summary>룰렛에는 이미 가진 무기의 유효한 강화 카드만 넣는다. 일반 카드와 새 무기 습득은 제외한다</summary>
+        public List<UpgradeChoice> GetWeaponUpgradeCandidates() => _skills.GetUpgradeCandidates()
+            .Where(choice => !choice.IsGeneral && !choice.IsNewWeapon && choice.skill != null && choice.Option != null)
+            .ToList();
+
         public List<UpgradeChoice> Draw(int count)
         {
             var result = new List<UpgradeChoice>();

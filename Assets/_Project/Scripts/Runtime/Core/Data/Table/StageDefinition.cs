@@ -11,6 +11,10 @@ namespace Game.Core
         public int Id;
         public int ClearGold;
 
+        /// <summary>엘리트 룰렛의 강화 카드 횟수 범위. 둘 다 0이면 룰렛 보상이 없는 스테이지다</summary>
+        public int EliteRouletteMinCards;
+        public int EliteRouletteMaxCards;
+
         /// <summary>rating 1~3 클리어 시 1회성 보상 (index 0 = rating 1)</summary>
         public int[] RatingRewards;
 
@@ -50,6 +54,12 @@ namespace Game.Core
 
         public void Validate()
         {
+            if (EliteRouletteMinCards < 0 || EliteRouletteMaxCards < EliteRouletteMinCards
+                || EliteRouletteMaxCards > EliteRouletteSession.MaxCards
+                || (EliteRouletteMinCards == 0 && EliteRouletteMaxCards != 0))
+            {
+                throw new InvalidOperationException($"Stages {Id}: 엘리트 룰렛 횟수는 1~{EliteRouletteSession.MaxCards} 범위이거나 둘 다 0이어야 합니다");
+            }
             ValidateItemRewards(ClearItems);
             if (RatingItemRewards != null)
             {
