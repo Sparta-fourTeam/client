@@ -6,16 +6,18 @@ using UnityEngine.UI;
 
 namespace Game.View
 {
-    /// <summary>보상 한 칸: 아이콘과 수량</summary>
+    /// <summary>보상 한 칸: 아이콘과 수량. ItemId는 아이템 ID 또는 RewardRows.CoinId/ExpId다(상세 창에 쓴다)</summary>
     public readonly struct ResultRewardItem
     {
         public Sprite Icon { get; }
         public int Count { get; }
+        public string ItemId { get; }
 
-        public ResultRewardItem(Sprite icon, int count)
+        public ResultRewardItem(Sprite icon, int count, string itemId = null)
         {
             Icon = icon;
             Count = count;
+            ItemId = itemId;
         }
     }
 
@@ -32,7 +34,8 @@ namespace Game.View
 
         [SerializeField] private Slot[] _slots;
 
-        public void Show(IReadOnlyList<ResultRewardItem> items)
+        /// <param name="onClick">칸을 누르면 그 칸의 순서로 부른다. null이면 칸이 눌리지 않는다</param>
+        public void Show(IReadOnlyList<ResultRewardItem> items, Action<int> onClick = null)
         {
             EnsureSlots(items.Count);
             for (int i = 0; i < _slots.Length; i++)
@@ -51,6 +54,8 @@ namespace Game.View
                 }
 
                 _slots[i].Count.text = $"x{items[i].Count:N0}";
+                int index = i;
+                SlotClick.Set(_slots[i].Root, onClick == null ? null : () => onClick(index));
             }
 
             gameObject.SetActive(items.Count > 0);

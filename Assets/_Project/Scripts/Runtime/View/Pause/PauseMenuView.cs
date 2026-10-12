@@ -8,8 +8,16 @@ using VContainer;
 
 namespace Game.View
 {
-    public sealed class PauseMenuView : HudView
+    public sealed class PauseMenuView : HudView, IUiBindable
     {
+        public void BindUi(IUiRegistry registry)
+        {
+            _detail = registry.Get<DetailPopupView>();
+        }
+
+        // 등장 요마·확보 보상 칸을 누르면 여는 공용 상세 창
+        private DetailPopupView _detail;
+
         [SerializeField] private GameObject _panel;
         [SerializeField] private PopupTransition _transition;
         [SerializeField] private Button _resumeButton;
@@ -89,7 +97,8 @@ namespace Game.View
                 return;
             }
 
-            _monsterList.Show(MonsterRows.Build(_monsterDisplay, _data, _stageContext.StageId));
+            var monsters = MonsterRows.Build(_monsterDisplay, _data, _stageContext.StageId);
+            _monsterList.Show(monsters, i => DetailContent.ShowMonster(_detail, _data, _monsterDisplay, monsters[i]));
         }
 
         /// <summary>완료한 웨이브까지 확보한 보상이다. 웨이브가 끝날 때마다 달라지므로 열 때마다 다시 만든다</summary>
@@ -101,7 +110,8 @@ namespace Game.View
             }
 
             var secured = _rewards.Rewards;
-            _obtainableList.Show(RewardRows.Build(_itemIcons, _data, secured.Coin, secured.Exp, secured.Items));
+            var rewards = RewardRows.Build(_itemIcons, _data, secured.Coin, secured.Exp, secured.Items);
+            _obtainableList.Show(rewards, i => DetailContent.ShowReward(_detail, _data, rewards[i], "지금까지 확보 {0}개"));
         }
     }
 }

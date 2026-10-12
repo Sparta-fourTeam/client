@@ -101,3 +101,7 @@ MonoBehaviour:
     Prefab: {fileID: 3468135605265646659, guid: 5199c8eae3bc54c5380f858bf9e60bd1, type: 3}
     ParentPath: NavUI/Overlays
     SiblingIndex: 1
+  - Id: DetailPopup
+    Prefab: {fileID: 2338224154658450158, guid: b972eb3a31adf9d4c9f718353643b064, type: 3}
+    ParentPath: NavUI/Overlays
+    SiblingIndex: 2
