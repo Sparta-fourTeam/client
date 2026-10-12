@@ -56,7 +56,7 @@ namespace Game.View
             return rows;
         }
 
-        private static UnityEngine.Sprite IconOf(ItemIconTable icons, GameDataStore data, string itemId)
+        public static UnityEngine.Sprite IconOf(ItemIconTable icons, GameDataStore data, string itemId)
         {
             if (icons == null)
             {

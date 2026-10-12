@@ -29,6 +29,7 @@ namespace Game.View
 
             detail.Show(item.Icon, ItemInfo.NameOf(item.ItemId, data), string.Format(countFormat, CurrencyFormat.Format(item.Count)),
                 ItemInfo.DescriptionOf(item.ItemId));
+            detail.OfferOdds(item.ItemId);
         }
     }
 }
