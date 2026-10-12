@@ -27,7 +27,7 @@ namespace Game.Core
         public CharacterInfo Character { get; } = new CharacterInfo
         {
             Name = "캐릭터",
-            Rank = "신입 직원",
+            Rank = "네크로맨서", // TODO(data): 임시 직급 이름. 캐릭터 데이터가 생기면 교체
             Power = 120,
         };
 
