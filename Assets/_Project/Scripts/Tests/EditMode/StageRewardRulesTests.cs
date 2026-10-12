@@ -119,6 +119,25 @@ namespace Game.Tests
             Assert.IsEmpty(RandomRewardOdds.For(ItemIds.ArrowBook, new[] { 1 }, null, data));
         }
 
+        [Test(Description = "확률표는 그 레벨에 열린 스킬·장비의 재료만 보여주고, 레벨이 오르면 후보가 늘어난다")]
+        public void RandomRewardOdds_ForExp_ListsOnlyMaterialsUnlockedAtThatLevel()
+        {
+            var data = new GameDataStore();
+            var skills = data.LoadSkills();
+            var expectedBooks = ItemIds.SkillMaterials.Where(id =>
+                skills.Any(skill => skill.unlockLevel <= 1 && skill.id.ToString() == data.Items.GetOrThrow(id).TargetId)).ToList();
+            var expectedScrolls = ItemIds.EquipmentMaterials.Where(id =>
+                data.Upgrades.GetOrThrow(data.Items.GetOrThrow(id).TargetId).UnlockLevel <= 1).ToList();
+
+            var books = RandomRewardOdds.ForExp(ItemIds.RandomSkillMaterial, data, 0);
+            var scrolls = RandomRewardOdds.ForExp(ItemIds.RandomEquipmentMaterial, data, 0);
+
+            CollectionAssert.AreEquivalent(expectedBooks, books.Select(odd => odd.ItemId));
+            CollectionAssert.AreEquivalent(expectedScrolls, scrolls.Select(odd => odd.ItemId));
+            Assert.Greater(RandomRewardOdds.ForExp(ItemIds.RandomSkillMaterial, data, int.MaxValue / 4).Count, books.Count);
+            Assert.Greater(RandomRewardOdds.ForExp(ItemIds.RandomEquipmentMaterial, data, int.MaxValue / 4).Count, scrolls.Count);
+        }
+
         [Test(Description = "총수량이 기본 누적보다 작으면 중간 보너스가 음수가 되므로 거절한다")]
         public void FinalAmountBelowBaseAccumulation_IsRejected()
         {
