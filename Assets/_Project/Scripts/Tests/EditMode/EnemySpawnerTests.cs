@@ -204,7 +204,7 @@ namespace Game.Tests
             }
 
             var spawner = CreateSpawner(factory, out var waveStarted, out _);
-            StartWave(waveStarted, enemyCount: 10); // 버스트를 넉넉히 → 쿨다운 없이 1초마다 1마리
+            StartWave(waveStarted, enemyCount: Mathf.Max(10, positions.Length)); // 쿨다운 없이 준비할 적을 모두 스폰
 
             for (int i = 0; i < positions.Length; i++)
             {
@@ -331,6 +331,23 @@ namespace Game.Tests
             Assert.AreEqual(new Vector2(5f, 3f), results[0].Position);
             Assert.AreEqual(Vector2.zero, results[1].Position);
             Assert.AreEqual(new Vector2(5f, 8f), results[2].Position);
+        }
+
+        [TestCase(8)]
+        [TestCase(18)]
+        [TestCase(int.MaxValue)]
+        public void GetNearest_EqualDistancesKeepSpawnOrderAcrossFullAndLimitedQueries(int count)
+        {
+            var positions = new Vector2[18];
+            for (int i = 0; i < positions.Length; i++) { positions[i] = new Vector2(0, 6 - i % 3); }
+            var spawner = CreateSpawnerWithEnemies(out var factory, positions);
+            var results = new List<IEnemyTarget>();
+            int[] order = { 2, 5, 8, 11, 14, 17, 1, 4, 7, 10, 13, 16, 0, 3, 6, 9, 12, 15 };
+
+            int filled = spawner.GetNearest(Vector2.zero, count, results);
+
+            Assert.AreEqual(Mathf.Min(count, order.Length), filled);
+            for (int i = 0; i < filled; i++) { Assert.AreSame(factory.Created[order[i]], results[i]); }
         }
 
         [TestCase(0)]

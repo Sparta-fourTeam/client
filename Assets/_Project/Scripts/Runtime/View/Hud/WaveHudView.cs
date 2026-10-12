@@ -52,8 +52,12 @@ namespace Game.View
         private bool _selectingCard;
         private bool _deferRender;   // 같은 프레임 안에 상태 전환이 이어질 수 있어 다음 웨이브 표시를 잠시 미룬다
         private int _shownWave;
+        private bool _hasWaveText;
+        private bool _hasFullState;
+        private bool _viewDisposed;
 
         private Tween _fillTween;
+        private float _fillTarget;
         private Tween _punchTween;
         private Tween _twinkleTween;
         private Tween _thinTween, _flareTween, _boltMasterTween, _wakeTween, _calmTween, _sparkStopTween;
@@ -95,6 +99,10 @@ namespace Game.View
 
         private void OnEnable()
         {
+            if (_viewDisposed) { return; }
+            _hasWaveText = false;
+            _hasFullState = false;
+            if (!_deferRender && _waveValueText != null && _gaugeFill != null) { RenderGauge(); }
             if (_gaugeStar == null || _twinkleTween != null) { return; }
             _twinkleTween = DOTween.To(() => _twinkle, v => { _twinkle = v; ApplyStarShape(); }, TwinkleMax, TwinkleSeconds)
                 .From(TwinkleMin)
@@ -144,6 +152,7 @@ namespace Game.View
             if (_gauge.Max <= 0)
             {
                 _waveValueText.text = string.Empty;
+                _hasWaveText = false;
                 SetFill(0f, false);
                 _shownWave = 0;
                 SetFull(false);
@@ -152,7 +161,11 @@ namespace Game.View
 
             // 다음 웨이브 신호는 카드 선택 전에 온다. 선택 중에는 방금 끝낸 웨이브를 표시한다.
             int index = _selectingCard ? Mathf.Max(1, _gauge.WaveIndex - 1) : _gauge.WaveIndex;
-            _waveValueText.text = $"{index}/{StageRewardRules.WaveCount}";
+            if (!_hasWaveText || index != _shownWave)
+            {
+                _waveValueText.text = $"{index}/{StageRewardRules.WaveCount}";
+                _hasWaveText = true;
+            }
 
             // 같은 웨이브 안에서 차오를 때만 부드럽게 채운다. 새 웨이브로 넘어가 다시 비워질 때는 줄어드는 모습 없이 바로 비운다
             float target = _selectingCard ? 1f : (float)_gauge.Current / _gauge.Max;
@@ -170,7 +183,11 @@ namespace Game.View
 
         private void SetFill(float value, bool animate)
         {
+            // 같은 목표로 차오르는 중이면 처치/상태 알림이 와도 진행 중인 트윈을 다시 시작하지 않는다.
+            if (animate && isActiveAndEnabled && value == _fillTarget
+                && _fillTween != null && _fillTween.IsActive() && _fillTween.IsPlaying()) { return; }
             _fillTween?.Kill();
+            _fillTween = null;
             // 이미 같은 값이면 움직일 게 없다. 의미 없는 트윈을 만들지 않는다
             if (!animate || !isActiveAndEnabled || Mathf.Approximately(_gaugeFill.fillAmount, value))
             {
@@ -182,6 +199,7 @@ namespace Game.View
             // 차오르는 동안 별이 깨어나 가늘어졌다가, 멈추면 돌아오고 잠시 뒤 다시 가라앉는다
             Wake();
             TweenTo(ref _thinTween, () => _thin, v => { _thin = v; ApplyStarShape(); }, 1f, StarShapeSeconds);
+            _fillTarget = value;
             _fillTween = DOTween.To(() => _gaugeFill.fillAmount, v => { _gaugeFill.fillAmount = v; PlaceStar(); }, value, FillSeconds)
                 .SetEase(Ease.OutQuad)
                 .SetUpdate(true)
@@ -192,6 +210,9 @@ namespace Game.View
         // 가득 차 카드를 고르는 동안: 별이 깨어 있고 플레어가 번지며 번개가 깜빡인다. 벗어나면 되돌린다
         private void SetFull(bool full)
         {
+            // 동일 상태는 플레어/번개 트윈을 계속 진행한다. 취소·정지됐으면 현재 값에서 다시 반영한다.
+            if (isActiveAndEnabled && _hasFullState && _pinnedAwake == full && FullAnimationIsCurrent(full)) { return; }
+            _hasFullState = true;
             TweenTo(ref _flareTween, () => _flare, v => { _flare = v; ApplyStarShape(); }, full ? 1f : 0f, StarShapeSeconds);
             SetBolts(full);
 
@@ -199,6 +220,35 @@ namespace Game.View
             _pinnedAwake = full;
             Wake();   // 가득 차면 계속 깨어 있고, 벗어나면 여기서부터 가라앉기 시작한다
         }
+
+        private bool FullAnimationIsCurrent(bool full)
+        {
+            float target = full ? 1f : 0f;
+            if (!AtTargetOrMoving(_flare, target, _flareTween)) { return false; }
+            if (_lightningBolts == null || _lightningBolts.Length == 0) { return true; }
+            if (!AtTargetOrMoving(_boltMaster, target, _boltMasterTween)) { return false; }
+            if (!full)
+            {
+                // 페이드가 취소됐으면 남은 깜빡임도 정상 종료 경로로 보낸다.
+                if (_boltTweens != null && (_boltMasterTween == null || !_boltMasterTween.IsActive() || !_boltMasterTween.IsPlaying()))
+                {
+                    foreach (var tween in _boltTweens)
+                    {
+                        if (tween != null && tween.IsActive()) { return false; }
+                    }
+                }
+                return true;
+            }
+            if (_boltTweens == null) { return false; }
+            foreach (var tween in _boltTweens)
+            {
+                if (tween == null || !tween.IsActive() || !tween.IsPlaying()) { return false; }
+            }
+            return true;
+        }
+
+        private static bool AtTargetOrMoving(float value, float target, Tween tween) =>
+            Mathf.Approximately(value, target) || (tween != null && tween.IsActive() && tween.IsPlaying());
 
         // 별을 깨운다. 고정 상태가 아니면 잠시 뒤 서서히 가라앉는다
         private void Wake()
@@ -231,7 +281,8 @@ namespace Game.View
             _boltTweens ??= new Tween[_lightningBolts.Length];
             for (int i = 0; i < _lightningBolts.Length; i++)
             {
-                if (_boltTweens[i] != null && _boltTweens[i].IsActive()) { continue; }
+                if (_boltTweens[i] != null && _boltTweens[i].IsActive() && _boltTweens[i].IsPlaying()) { continue; }
+                _boltTweens[i]?.Kill();
                 int index = i;
                 _boltTweens[i] = DOTween.To(() => 0f, t => { }, 1f, BoltFlashSeconds * (1f + 0.35f * i))
                     .SetLoops(-1, LoopType.Restart)
@@ -348,6 +399,7 @@ namespace Game.View
 
         protected override void DisposeView()
         {
+            _viewDisposed = true;
             _fillTween?.Kill();
             _punchTween?.Kill();
             _twinkleTween?.Kill();

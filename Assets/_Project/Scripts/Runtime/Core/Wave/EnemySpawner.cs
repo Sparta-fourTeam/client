@@ -20,6 +20,22 @@ namespace Game.Core
         // 필드에 있는 적
         // 죽은 적은 다음 Tick에 제거, EnemyDied는 EnemyModel이 발행
         private readonly List<Enemy> _activeEnemies = new();
+        private readonly List<NearestCandidate> _nearestCandidates = new();
+        private static readonly Comparison<NearestCandidate> CompareNearest = (a, b) =>
+        {
+            int byDistance = a.Distance.CompareTo(b.Distance);
+            return byDistance != 0 ? byDistance : a.Order.CompareTo(b.Order);
+        };
+
+        private readonly struct NearestCandidate
+        {
+            public readonly Enemy Enemy;
+            public readonly float Distance;
+            public readonly int Order;
+
+            public NearestCandidate(Enemy enemy, float distance, int order)
+            { Enemy = enemy; Distance = distance; Order = order; }
+        }
 
         // 분열·소환 요청. 죽는 순간(스킬 처리나 TickCombat 안)에는 목록을 건드리지 않고 다음 Advance 맨 앞에서 만든다
         private readonly Queue<EnemySpawnRequest> _pendingSpawns = new();
@@ -262,6 +278,9 @@ namespace Game.Core
                 return 0;
             }
 
+            // 전체 후보 조회는 거리 계산을 한 번씩 하고 정렬한다. 동률은 기존 삽입 정렬의 스폰 순서를 보존한다.
+            if (count >= _activeEnemies.Count && TryGetAllNearest(from, results)) { return results.Count; }
+
             // 투사체가 매 프레임 부르므로 전체 정렬 대신 가까운 count개만 삽입 정렬로 유지한다 (할당 없음)
             foreach (var enemy in _activeEnemies)
             {
@@ -295,6 +314,24 @@ namespace Game.Core
             }
 
             return results.Count;
+        }
+
+        private bool TryGetAllNearest(Vector2 from, List<IEnemyTarget> results)
+        {
+            _nearestCandidates.Clear();
+            for (int i = 0; i < _activeEnemies.Count; i++)
+            {
+                var enemy = _activeEnemies[i];
+                if (enemy.IsDead) { continue; }
+                float distance = (enemy.Position - from).sqrMagnitude;
+                // NaN은 기존 > 비교와 CompareTo의 정렬 규칙이 다르므로 기존 경로를 사용한다.
+                if (float.IsNaN(distance)) { _nearestCandidates.Clear(); return false; }
+                _nearestCandidates.Add(new NearestCandidate(enemy, distance, i));
+            }
+            _nearestCandidates.Sort(CompareNearest);
+            foreach (var candidate in _nearestCandidates) { results.Add(candidate.Enemy); }
+            _nearestCandidates.Clear();
+            return true;
         }
     }
 }
