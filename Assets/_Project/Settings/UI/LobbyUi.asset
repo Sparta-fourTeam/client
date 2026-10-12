@@ -105,6 +105,18 @@ MonoBehaviour:
     Prefab: {fileID: 2338224154658450158, guid: b972eb3a31adf9d4c9f718353643b064, type: 3}
     ParentPath: NavUI/Overlays
     SiblingIndex: 2
+  - Id: FriendPopup
+    Prefab: {fileID: 8813885440337469391, guid: 3d60f800c94bbf644bcbf376f6d329f0, type: 3}
+    ParentPath: NavUI/Popups
+    SiblingIndex: 9
+  - Id: QuestPopup
+    Prefab: {fileID: 5332678930219732609, guid: 28b07fa0ae4a27f4480a4069e3938020, type: 3}
+    ParentPath: NavUI/Popups
+    SiblingIndex: 10
+  - Id: MailPopup
+    Prefab: {fileID: 8124884503545775979, guid: 81f8f0097ee4fd0428ba30f1f358dad4, type: 3}
+    ParentPath: NavUI/Popups
+    SiblingIndex: 11
   - Id: RewardOddsPopup
     Prefab: {fileID: 9063590483577428516, guid: f41532a8efebf4acb80e9e67de726571, type: 3}
     ParentPath: NavUI/Overlays

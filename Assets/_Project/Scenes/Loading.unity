@@ -241,8 +241,8 @@ Camera:
   m_GameObject: {fileID: 2025931694}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_ClearFlags: 2
+  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 1}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -356,6 +356,14 @@ PrefabInstance:
     - target: {fileID: 4793356336401224485, guid: 1b29e627f0e5cd84d93b198f0d4f7fe0, type: 3}
       propertyPath: m_Name
       value: LoadingUiHost
+      objectReference: {fileID: 0}
+    - target: {fileID: 5917975040889324007, guid: 1b29e627f0e5cd84d93b198f0d4f7fe0, type: 3}
+      propertyPath: m_Camera
+      value: 
+      objectReference: {fileID: 2025931696}
+    - target: {fileID: 5917975040889324007, guid: 1b29e627f0e5cd84d93b198f0d4f7fe0, type: 3}
+      propertyPath: m_RenderMode
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
