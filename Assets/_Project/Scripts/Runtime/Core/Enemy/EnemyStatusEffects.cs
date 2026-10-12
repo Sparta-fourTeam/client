@@ -9,7 +9,8 @@ namespace Game.Core
         private EnemyModel model;
         private GameObject visual;
         private SortingGroup sortingGroup;
-        private float footOffset;
+        private EnemyDepthSort depthSort;
+        private int appliedOrder = int.MinValue;
         private readonly ParticleSystem[] effects = new ParticleSystem[7];
         private readonly bool[] playing = new bool[7];
         private static readonly string[] Names = { "Freeze", "Burn", "Paralysis", "Stun", "Frostbite", "Slow", "Vulnerability" };
@@ -30,9 +31,9 @@ namespace Game.Core
                 if (!found) { bounds = renderer.bounds; found = true; }
                 else { bounds.Encapsulate(renderer.bounds); }
             }
-            footOffset = bounds.min.y - transform.position.y;
             if (visual == null) { visual = Instantiate(prefab, transform); }
             sortingGroup = visual.GetComponent<SortingGroup>();
+            appliedOrder = int.MinValue;
             visual.transform.position = bounds.center;
             float height = Mathf.Max(.4f, bounds.size.y) * 1.2f;
             float width = Mathf.Max(height * .6f, bounds.size.x * 1.2f);
@@ -50,11 +51,14 @@ namespace Game.Core
 
         internal void Sync()
         {
-            if (model == null || model.IsDead) { StopAll(); return; }
+            // 몸 순서를 그대로 따라 몸 바로 앞에 그린다. 바뀔 때만 쓰고, 죽는 연출 중에도 몸을 따라간다
             if (sortingGroup != null)
             {
-                sortingGroup.sortingOrder = EnemyDepthSort.OrderAt(transform.position.y + footOffset) + 1;
+                if (depthSort == null) { depthSort = GetComponent<EnemyDepthSort>(); }
+                int order = (depthSort != null ? depthSort.Order : EnemyDepthSort.OrderAt(transform.position.y)) + 1;
+                if (order != appliedOrder) { sortingGroup.sortingOrder = order; appliedOrder = order; }
             }
+            if (model == null || model.IsDead) { StopAll(); return; }
             Set(0, model.IsFrozen);
             Set(1, model.BurnRemaining > 0);
             Set(2, model.IsParalyzed);
