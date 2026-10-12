@@ -86,6 +86,10 @@ namespace Game.Core
             if (hpBar == null) { hpBar = gameObject.AddComponent<EnemyHpBar>(); }
             hpBar.Bind(enemyModel);
 
+            // 그림자를 먼저 깔고, 앞뒤 정렬은 그림자를 뺀 발끝으로 잰다
+            if (!TryGetComponent<EnemyShadow>(out var shadow)) { shadow = gameObject.AddComponent<EnemyShadow>(); }
+            shadow.Bind();
+
             var depthSort = GetComponent<EnemyDepthSort>();
             if (depthSort == null) { depthSort = gameObject.AddComponent<EnemyDepthSort>(); }
             depthSort.Bind();
@@ -263,7 +267,9 @@ namespace Game.Core
             }
 
             _animator.SetTrigger(DieHash);
-            Destroy(gameObject, GetClipLength("_Die", DefaultDeathDuration));
+            float deathSeconds = GetClipLength("_Die", DefaultDeathDuration);
+            if (TryGetComponent<EnemyShadow>(out var shadow)) { shadow.FadeOut(deathSeconds); }
+            Destroy(gameObject, deathSeconds);
         }
 
         private float GetClipLength(string suffix, float fallback)
