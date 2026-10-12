@@ -131,6 +131,11 @@ namespace Game.Tests
 
         private static GameObject SlotRoot(object listView, int index)
         {
+            if (listView is ResultRewardListView rewards)
+            {
+                return rewards.Cells[index].gameObject;
+            }
+
             var slots = (System.Array)listView.GetType().GetField("_slots", Flags).GetValue(listView);
             var slot = slots.GetValue(index);
             return (GameObject)slot.GetType().GetField("Root").GetValue(slot);

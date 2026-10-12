@@ -128,7 +128,9 @@ namespace Game.Tests
 
             Assert.AreEqual(0, _view.FilledSlots.Count);
             Assert.AreEqual(InventoryScreenView.MinSlots, _view.VisibleSlots.Count);
-            Assert.IsFalse(Field<Button>(_view.VisibleSlots[0], "_button").interactable);
+            var emptyButton = _view.VisibleSlots[0].GetComponent<Button>();
+            Assert.IsTrue(emptyButton == null || !emptyButton.interactable, "빈칸은 눌리지 않는다");
+            Assert.IsTrue(_view.VisibleSlots[0].Cell.IsEmpty);
         }
 
         [Test(Description = "칸 수는 최소 40이고, 넘으면 4칸(한 줄)씩 늘어난다")]
@@ -176,7 +178,7 @@ namespace Game.Tests
         {
             OpenScreen((ItemIds.GemChest, 1));
 
-            Field<Button>(_view.FilledSlots[0], "_button").onClick.Invoke();
+            _view.FilledSlots[0].GetComponent<Button>().onClick.Invoke();
 
             Assert.IsTrue(_detail.IsShown);
             Assert.AreEqual("보유 1개", TextOf(Label(_detail, "_subtitleText")));

@@ -427,6 +427,11 @@ namespace Game.Tests
 
         private static Button FirstSlotButton(Component listView)
         {
+            if (listView is ResultRewardListView rewards)
+            {
+                return rewards.Cells[0].GetComponent<Button>();
+            }
+
             var slots = (System.Array)listView.GetType().GetField("_slots", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(listView);
             var slot = slots.GetValue(0);
             return ((GameObject)slot.GetType().GetField("Root").GetValue(slot)).GetComponent<Button>();
