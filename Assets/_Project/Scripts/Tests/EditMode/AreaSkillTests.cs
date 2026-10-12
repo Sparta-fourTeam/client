@@ -238,7 +238,7 @@ namespace Game.Tests
             Assert.AreEqual(0f, near.Position.x, .001f, "중심까지 거리보다 더 끌어당기지 않는다");
             Assert.AreEqual(1f, inside.Position.x, .001f);
             Assert.AreEqual(6f, outside.Position.x, .001f);
-            Assert.Less(inside.KnockbackDirection.x, 0, "중심 쪽으로 향한다");
+            Assert.Less(inside.PullDirection.x, 0, "중심 쪽으로 향한다(끌어당기기는 좌우도 움직인다)");
         }
 
         [Test]

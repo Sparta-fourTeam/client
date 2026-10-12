@@ -6,7 +6,7 @@ using UnityEngine;
 namespace Game.Tests
 {
     /// <summary>적중 반응이 대상에게 건 값을 기록한다. 투사체의 적중 반응을 직접 실행해 결과 수치를 확인하는 데 쓴다.</summary>
-    internal sealed class HitRecorder : IEnemyTarget, IFreezableTarget, IKnockbackTarget, IFrostbiteTarget,
+    internal sealed class HitRecorder : IEnemyTarget, IFreezableTarget, IKnockbackTarget, IPullTarget, IFrostbiteTarget,
         IParalyzableTarget, IBurnableTarget, IStunnableTarget, ISlowableTarget, IVulnerableTarget
     {
         public Vector2 Position { get; set; }
@@ -14,13 +14,14 @@ namespace Game.Tests
         public bool Dead;
         public bool IsDead => Dead;
         public int Damage;
-        public Vector2 KnockbackDirection;
+        public Vector2 KnockbackDirection, PullDirection;
         public float Freeze, KnockbackDistance, Frostbite, Paralysis, BurnDamage, BurnDuration, BurnMaxHpRatio, Stun,
             SlowRatio, SlowDuration, VulnerabilityRatio, VulnerabilityDuration;
 
         public void TakeDamage(int amount) => Damage += amount;
         public void ApplyFreeze(float duration) => Freeze = duration;
         public void ApplyKnockback(Vector2 direction, float distance) { KnockbackDirection = direction; KnockbackDistance = distance; Position += direction.normalized * distance; }
+        public void ApplyPull(Vector2 direction, float distance) { PullDirection = direction; Position += direction.normalized * distance; }
         public void ApplyFrostbite(float damagePerSecond) => Frostbite = damagePerSecond;
         public void ApplyParalysis(float duration) => Paralysis = duration;
         public void ApplyBurn(float damagePerSecond, float duration, float maxHpRatio = 0, Action<Vector2> onDeath = null)
