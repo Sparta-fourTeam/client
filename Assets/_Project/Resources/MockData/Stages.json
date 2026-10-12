@@ -43,6 +43,7 @@
   "EliteRouletteMinCards": 1,
   "EliteRouletteMaxCards": 5,
   "ClearGold": 150,
+  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 9 } ],
   "RatingRewards": [
     30,
     75,
@@ -82,6 +83,7 @@
   "EliteRouletteMinCards": 1,
   "EliteRouletteMaxCards": 5,
   "ClearGold": 300,
+  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 18 }, { "Stat": "Damage", "Percent": 9 } ],
   "RatingRewards": [
     60,
     150,

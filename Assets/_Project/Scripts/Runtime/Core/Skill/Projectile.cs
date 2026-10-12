@@ -43,12 +43,15 @@ namespace Game.Core
         private IEnemyTargetProvider targetProvider;
         private readonly ProjectileHitLedger hitLedger = new();
         private readonly List<IEnemyTarget> hitBuffer = new List<IEnemyTarget>(HitCandidateCount);
+        private System.Comparison<IEnemyTarget> compareHits;
+        private Vector2 hitSegmentStart, hitSegmentEnd;
         // 적 스프라이트가 레퍼런스 크기로 줄어든 것(슬라임 가로 약 0.6, 콜라이더 반지름 약 0.3)에 맞춘 값. 이전에는 1.4짜리 적에 맞춘 0.7이었다
         private float hitRadius = 0.3f;
         private const int HitCandidateCount = 4;
 
         public void Init(IObjectPool<Projectile> pool, ProjectileSpawnSettings settings)
         {
+            compareHits ??= CompareHitsAlongSegment;
             ClearReservation();
             reservation = settings.Reservation;
             sourceSkill = Game.Core.Combat.DamageAttribution.CurrentSource;
@@ -111,7 +114,9 @@ namespace Game.Core
 
             // 전체 이동 구간을 검사하므로 끝점에서 가까운 4체로 제한하지 않는다.
             targetProvider.GetNearest(start, int.MaxValue, hitBuffer);
-            hitBuffer.Sort((a, b) => SegmentFraction(start, end, a.Position).CompareTo(SegmentFraction(start, end, b.Position)));
+            hitSegmentStart = start;
+            hitSegmentEnd = end;
+            hitBuffer.Sort(compareHits);
 
             float hitRadiusSqr = hitRadius * hitRadius;
             foreach (var candidate in hitBuffer)
@@ -162,6 +167,10 @@ namespace Game.Core
             float lengthSquared = segment.sqrMagnitude;
             return lengthSquared > 0 ? Mathf.Clamp01(Vector2.Dot(point - start, segment) / lengthSquared) : 0;
         }
+
+        private int CompareHitsAlongSegment(IEnemyTarget a, IEnemyTarget b) =>
+            SegmentFraction(hitSegmentStart, hitSegmentEnd, a.Position).CompareTo(
+                SegmentFraction(hitSegmentStart, hitSegmentEnd, b.Position));
 
         private void SpawnImpact(Vector2 position)
         {

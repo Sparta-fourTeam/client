@@ -39,6 +39,7 @@ namespace Game.Boot
             builder.RegisterEntryPoint<StageRewardTracker>().AsSelf();
             // BattleStats는 WaveProgress보다 먼저 EnemyDied를 구독해야 스테이지를 끝내는 마지막 처치까지 센다 (순서 변경 금지)
             builder.RegisterEntryPoint<BattleStats>().AsSelf();
+            builder.Register<EncounteredMonsters>(Lifetime.Scoped);
             builder.RegisterEntryPoint<WaveProgress>();
             builder.Register<IRandomProvider, UnityRandomProvider>(Lifetime.Scoped);
             builder.RegisterComponentInHierarchy<EnemyFactory>().AsImplementedInterfaces();

@@ -9,7 +9,7 @@ namespace Game.Core
     /// <summary>Resources/MockData의 테이블 JSON을 읽어 도메인 모델 테이블로 만든다</summary>
     public sealed class GameDataStore
     {
-        private static readonly string[] TableNames = { "Monsters", "Stages", "Upgrades", "Energy", "GeneralCards", "Skills", "Items", "StageRewards", "PlayerLevels" };
+        private static readonly string[] TableNames = { "Monsters", "Stages", "Upgrades", "Energy", "GeneralCards", "Skills", "Items", "StageRewards", "PlayerLevels", "CodexRewards" };
         private readonly Dictionary<string, string> _rawJson;
         private readonly Dictionary<string, int> _skillUnlockLevels;
 
@@ -21,6 +21,9 @@ namespace Game.Core
         public Table<int, StageRewardBalance> StageRewards { get; }
         public EnergyConfig Energy { get; }
         public PlayerLevelTable PlayerLevels { get; }
+
+        /// <summary>도감 등록 보상 골드. 몬스터마다가 아니라 등급별이다</summary>
+        public IReadOnlyDictionary<EnemyType, int> CodexRewardGold { get; }
 
         /// <summary>스킬이 아닌 카드(방벽 회복 등). 스킬 카드는 Skills의 upgrades에 있다</summary>
         public IReadOnlyList<GeneralCardDefinition> GeneralCards { get; }
@@ -108,6 +111,14 @@ namespace Game.Core
             Energy = JsonConvert.DeserializeObject<EnergyConfig>(_rawJson["Energy"]);
             PlayerLevels = new PlayerLevelTable(JsonConvert.DeserializeObject<List<PlayerLevelRow>>(_rawJson["PlayerLevels"]));
 
+            var codexRewards = ParseIndexed<EnemyType, CodexRewardRow>("CodexRewards", d => d.GetGrade());
+            foreach (var row in codexRewards.Values) { row.Validate(); }
+            foreach (EnemyType grade in Enum.GetValues(typeof(EnemyType)))
+            {
+                if (!codexRewards.ContainsKey(grade)) { throw new InvalidOperationException($"CodexRewards {grade}: 등급별 보상이 없습니다"); }
+            }
+            CodexRewardGold = codexRewards.ToDictionary(pair => pair.Key, pair => pair.Value.Gold);
+
             var generalCards = ParseIndexed<string, GeneralCardDefinition>("GeneralCards", d => d.Id).Values.ToList();
             foreach (var card in generalCards)
             {
@@ -124,6 +135,7 @@ namespace Game.Core
             {
                 UpgradeUnlockRule.Validate(upgrade, _skillUnlockLevels);
                 PermanentSkillEffect.Validate(upgrade, skills);
+                PermanentSkillEffect.ValidateEquipment(upgrade);
             }
 
             // TODO(server): 전부 1 고정 — 예: 빌드에 포함된 테이블 버전 메타데이터로 교체

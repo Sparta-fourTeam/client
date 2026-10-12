@@ -19,10 +19,13 @@
         <ui:Label name="wallStatus" class="status" />
       </ui:VisualElement>
       <ui:VisualElement class="section">
-        <ui:Label text="세이브 백업" class="section-title" />
-        <ui:Label text="재생을 종료하면 현재 save.json을 같은 폴더에 백업합니다. 원본은 유지됩니다." class="note" />
+        <ui:Label text="세이브 백업 · 삭제" class="section-title" />
+        <ui:Label text="재생을 종료하면 현재 save.json을 같은 폴더에 백업하거나 지울 수 있습니다. 지우기 전에는 자동으로 백업하며, 다음 재생은 새 세이브로 시작합니다." class="note" />
         <ui:Label name="savePath" class="note" />
-        <ui:Button name="backupSaveButton" text="세이브 백업" />
+        <ui:VisualElement class="row playtest-actions">
+          <ui:Button name="backupSaveButton" text="세이브 백업" />
+          <ui:Button name="deleteSaveButton" text="세이브 삭제" />
+        </ui:VisualElement>
         <ui:Label name="saveStatus" class="status" />
       </ui:VisualElement>
     </ui:ScrollView>

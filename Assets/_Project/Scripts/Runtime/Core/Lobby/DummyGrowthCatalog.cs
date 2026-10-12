@@ -77,6 +77,11 @@ namespace Game.Core
                 {
                     ApplyUpgrade(skill, _data.Upgrades.GetOrThrow(skill.UpgradeId), _skillRows[i]);
                 }
+                else
+                {
+                    // 강화 데이터가 없는 스킬도 장비 효과는 받으므로, 장비를 강화하면 능력치가 바뀐다
+                    skill.Stats = CreateStats(_skillRows[i], null, 0, true);
+                }
             }
         }
 
@@ -168,12 +173,13 @@ namespace Game.Core
             skill.Stats = CreateStats(data, def, level, isMax);
         }
 
-        // 능력치는 전투와 같은 계산(Skills.json 기본 스탯 + 영구 강화 효과)으로 현재 값과 다음 레벨 증가량을 만든다.
+        // 능력치는 전투와 같은 계산(Skills.json 기본 스탯 + 영구 강화 효과 + 장비 효과)으로 현재 값과 다음 레벨 증가량을 만든다.
         // 강화 데이터가 없거나(def == null) 최대 레벨이면 증가량이 없고, 증가량이 없는 줄(예: 피해만 오르는 강화의 쿨타임)은 증가 표시를 하지 않는다
-        private static StatLine[] CreateStats(SkillData data, UpgradeDefinition def, int level, bool isMax)
+        private StatLine[] CreateStats(SkillData data, UpgradeDefinition def, int level, bool isMax)
         {
-            var current = PermanentSkillEffect.Apply(data, def == null ? null : PermanentSkillEffect.At(def, level)).Stats.Cast;
-            var next = def == null || isMax ? current : PermanentSkillEffect.Apply(data, PermanentSkillEffect.At(def, level + 1)).Stats.Cast;
+            var equipment = PermanentSkillEffect.Equipment(_data, _profile.UpgradeLevel);
+            var current = PermanentSkillEffect.Apply(data, WithEquipment(def, level, equipment)).Stats.Cast;
+            var next = def == null || isMax ? current : PermanentSkillEffect.Apply(data, WithEquipment(def, level + 1, equipment)).Stats.Cast;
             float damageUp = next.Damage - current.Damage;
             float cooldownDown = next.Cooldown - current.Cooldown;
             return new[]
@@ -181,6 +187,14 @@ namespace Game.Core
                 new StatLine("공격력", $"{current.Damage:0.#}", increase: damageUp > 0.001f ? $"+{damageUp:0.#}" : null),
                 new StatLine("쿨타임", $"{current.Cooldown:0.##}초", increase: cooldownDown < -0.001f ? $"{cooldownDown:0.##}초" : null),
             };
+        }
+
+        // 전투(PermanentSkillEffect.Collect)와 같은 순서로 스킬 영구 강화 효과 뒤에 장비 효과를 붙인다
+        private static List<EffectDef> WithEquipment(UpgradeDefinition def, int level, List<EffectDef> equipment)
+        {
+            var effects = def == null ? new List<EffectDef>() : PermanentSkillEffect.At(def, level);
+            effects.AddRange(equipment);
+            return effects;
         }
 
         // 임시: 데이터 시트의 영구 레벨 구간(5/9/13/17/21)은 카드 해금·변형, 나머지는 공격력 증가로 채운다

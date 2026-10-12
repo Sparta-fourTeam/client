@@ -7,7 +7,7 @@ namespace Game.Core
     public sealed class PlayerProfile
     {
         private readonly GameDataStore _data;
-        private PlayerSnapshot _snapshot = new PlayerSnapshot { stageProgress = new(), upgrades = new(), items = new() };
+        private PlayerSnapshot _snapshot = new PlayerSnapshot { stageProgress = new(), upgrades = new(), items = new(), codex = new() };
 
         public event Action<PlayerProfile> Changed;
 
@@ -39,12 +39,19 @@ namespace Game.Core
         public bool IsStageCleared(int stageId) => _snapshot.stageProgress.Find(s => s.stageId == stageId)?.IsCleared ?? false;
         public bool HasUnclaimedReward(int stageId) => _snapshot.stageProgress.Find(s => s.stageId == stageId)?.HasUnclaimedReward ?? false;
 
+        /// <summary>전투에서 한 번이라도 마주쳐 도감에 등록된 몬스터인가</summary>
+        public bool IsMonsterRegistered(int monsterId) => _snapshot.codex.Exists(c => c.monsterId == monsterId);
+
+        /// <summary>도감에 등록됐고 등록 보상을 아직 안 받았는가</summary>
+        public bool CanClaimMonsterReward(int monsterId) => _snapshot.codex.Exists(c => c.monsterId == monsterId && !c.claimed);
+
         /// <summary>서버(or Local) 스냅샷으로 상태를 통째로 덮어쓰고 Changed를 방송한다</summary>
         public void Apply(PlayerSnapshot snap)
         {
             snap.stageProgress ??= new();
             snap.upgrades ??= new();
             snap.items ??= new();
+            snap.codex ??= new();
             _snapshot = snap;
             Changed?.Invoke(this);
         }

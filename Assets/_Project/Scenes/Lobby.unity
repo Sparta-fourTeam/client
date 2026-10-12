@@ -156,8 +156,8 @@ Camera:
   m_GameObject: {fileID: 214551849}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_ClearFlags: 2
+  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 1}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -419,6 +419,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 360856459920800800, guid: f98217930deaf451fb9f491a0fc923f1, type: 3}
+      propertyPath: m_Camera
+      value: 
+      objectReference: {fileID: 214551851}
     - target: {fileID: 5849085561781025714, guid: f98217930deaf451fb9f491a0fc923f1, type: 3}
       propertyPath: m_Name
       value: LobbyUiHost

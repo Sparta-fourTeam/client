@@ -114,7 +114,6 @@ namespace Game.Core
 
             var weapon = SkillFactory.Create(data, prefab, transform, targetProvider, wall, CreateConfig(data),
                 reservations: reservations, formPrefabs: assets.GetFormPrefabs(data.assetKey));
-            Debug.Log($"[영구강화] {data.progressionId} Lv.{progression?.GetLevel(data.progressionId) ?? 0} → 피해 {weapon.Config.Stats.Cast.Damage} (기본 {data.baseStats.cast.baseDamage})");
             weapon.UseChildCaster(childCaster);
             weapon.Fired += OnSkillFired;
             skills.Add(weapon);

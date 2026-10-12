@@ -46,11 +46,35 @@ namespace Game.Core
             }
         }
 
+        /// <summary>이 스테이지에서 나오는 모든 몬스터의 능력치가 늘어나는 비율. 체력·공격력·이동 속도를 함께 올릴 수 있고, 비어 있으면 그대로다.
+        /// 미션 팝업이 같은 목록을 안내한다</summary>
+        public List<MonsterBonus> MonsterBonuses = new();
+
         public int WallHp;
         public SpawnDefinition Spawn;
 
         /// <summary>진행 순서대로의 웨이브. 마지막 웨이브가 최종 웨이브다</summary>
         public List<WaveDefinition> Waves;
+
+        /// <summary>능력치의 증가율(%). 없으면 0</summary>
+        public int BonusPercent(MonsterStat stat)
+        {
+            foreach (var bonus in MonsterBonuses ?? new List<MonsterBonus>())
+            {
+                if (bonus.GetStat() == stat) { return bonus.Percent; }
+            }
+
+            return 0;
+        }
+
+        /// <summary>몬스터 기본 체력에 이 스테이지의 증가율을 적용한 체력. 올림해서 증가율이 있으면 최소 1은 늘어난다</summary>
+        public int ScaleMonsterHp(int baseHp) => ScaleUp(baseHp, BonusPercent(MonsterStat.Hp));
+
+        public int ScaleMonsterDamage(int baseDamage) => ScaleUp(baseDamage, BonusPercent(MonsterStat.Damage));
+
+        public float ScaleMonsterSpeed(float baseSpeed) => baseSpeed * (100 + BonusPercent(MonsterStat.Speed)) / 100f;
+
+        private static int ScaleUp(int value, int percent) => (int)(((long)value * (100 + percent) + 99) / 100);
 
         public void Validate()
         {
@@ -60,6 +84,16 @@ namespace Game.Core
             {
                 throw new InvalidOperationException($"Stages {Id}: 엘리트 룰렛 횟수는 1~{EliteRouletteSession.MaxCards} 범위이거나 둘 다 0이어야 합니다");
             }
+
+            var bonusStats = new HashSet<MonsterStat>();
+            foreach (var bonus in MonsterBonuses ?? new List<MonsterBonus>())
+            {
+                if (bonus == null || bonus.Percent <= 0 || !bonusStats.Add(bonus.GetStat()))
+                {
+                    throw new InvalidOperationException($"Stages {Id}: 몬스터 강화는 능력치마다 한 줄이고 증가율은 1 이상이어야 합니다");
+                }
+            }
+
             ValidateItemRewards(ClearItems);
             if (RatingItemRewards != null)
             {
