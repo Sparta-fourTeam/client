@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 89e6732b0b81d4055a15f7e6cb13ec12, type: 3}
+  m_Name: LoadingUi
+  m_EditorClassIdentifier: Game.View::Game.View.UiComposition
+  Entries:
+  - Id: LoadingScreen
+    Prefab: {fileID: 4209967327368837447, guid: 7512fa2851bce7d40a32e6cfe972564e, type: 3}
+    ParentPath: LoadingUI/Screens
+    SiblingIndex: 0
+  - Id: TapToStart
+    Prefab: {fileID: 7431336765143749041, guid: 0d6f21780bd28f44e8842ab07ec79e2c, type: 3}
+    ParentPath: LoadingUI/Screens
+    SiblingIndex: 1
+  - Id: LoginView
+    Prefab: {fileID: 6901025688278750536, guid: 17dad5a1e0133c54586f0d4b14833b48, type: 3}
+    ParentPath: LoadingUI/Popups
+    SiblingIndex: 0

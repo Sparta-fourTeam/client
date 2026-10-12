@@ -22,6 +22,11 @@ namespace Game.Boot
 
             // 서버가 붙으면 이 API 등록을 Http*Api로 교체한다
             builder.Register<IAuthApi, LocalAuthApi>(Lifetime.Singleton);
+            // 로그인 정보는 백엔드(Local/서버)와 상관없이 기기에 저장한다
+            builder.Register<IAuthCredentialStore, PlayerPrefsAuthCredentialStore>(Lifetime.Singleton);
+            // 외부 계정 로그인. SDK가 붙기 전에는 자리표시 구현이라 로그인창에서 준비 중으로 막힌다
+            builder.Register<ISocialSignIn, PlaceholderGoogleSignIn>(Lifetime.Singleton);
+            builder.Register<ISocialSignIn, PlaceholderAppleSignIn>(Lifetime.Singleton);
             // TODO(server): 호출부 없음 — 예: BootFlow에서 GetVersions() 비교 후 GetTable()로 갱신
             builder.Register<IDataApi, LocalDataApi>(Lifetime.Singleton);
             builder.Register<IPlayerApi, LocalPlayerApi>(Lifetime.Singleton);
