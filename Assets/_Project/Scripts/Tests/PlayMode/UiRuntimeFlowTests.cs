@@ -72,6 +72,10 @@ namespace Game.Tests
         private bool _hadSpeedPreference;
         private float _speedPreference;
         private bool _restoreSpeedPreference;
+        private IAuthCredentialStore _credentials;
+        private bool _hadCredential;
+        private LoginMethod _credentialMethod;
+        private string _credentialAccountId;
         private static readonly FieldInfo StorePath = typeof(LocalSaveStore).GetField("_filePath", BindingFlags.Instance | BindingFlags.NonPublic);
         private static T Field<T>(object target, string name) =>
             (T)target.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(target);
@@ -326,13 +330,28 @@ namespace Game.Tests
             _originalSavePath = (string)StorePath.GetValue(_store);
             _savePath = Path.Combine(Path.GetTempPath(), "nova-ui-" + Guid.NewGuid().ToString("N") + ".json");
             StorePath.SetValue(_store, _savePath);
+            // 로그인 정보는 개발자 PC의 것을 보관해 두고 비운다. 그래서 매번 최초 진입처럼 로그인창이 뜬다 (Cleanup에서 복원)
+            _credentials = root.Container.Resolve<IAuthCredentialStore>();
+            _hadCredential = _credentials.HasCredential;
+            _credentialMethod = _credentials.Method;
+            _credentialAccountId = _credentials.AccountId;
+            _credentials.Clear();
             var navigator = root.Container.Resolve<ISceneNavigator>();
             var boot = new BootFlow(navigator);
             SceneManager.LoadSceneAsync("Boot");
             yield return WaitFor(() => SceneManager.GetActiveScene().name == "Boot");
             boot.Start();
+            // Loading의 로그인창에서 게스트로 시작한다
+            yield return WaitFor(() => SceneManager.GetActiveScene().name == "Loading" && LoginPanelShown());
+            yield return ClickGameButton(Field<Button>(Object.FindAnyObjectByType<LoginView>(), "_guestButton"));
             yield return WaitFor(() => SceneManager.GetActiveScene().name == "Lobby" && navigator.Current == SceneId.Lobby);
             yield return null;
+        }
+
+        private static bool LoginPanelShown()
+        {
+            var login = Object.FindAnyObjectByType<LoginView>();
+            return login != null && Field<GameObject>(login, "_panel").activeSelf;
         }
 
         [UnityTearDown]
@@ -354,6 +373,12 @@ namespace Game.Tests
                 if (_hadSpeedPreference) { PlayerPrefs.SetFloat("stage_speed", _speedPreference); }
                 else { PlayerPrefs.DeleteKey("stage_speed"); }
                 _restoreSpeedPreference = false;
+            }
+            if (_credentials != null)
+            {
+                if (_hadCredential) { _credentials.Save(_credentialMethod, _credentialAccountId); }
+                else { _credentials.Clear(); }
+                _credentials = null;
             }
             if (_savePath != null && File.Exists(_savePath)) { File.Delete(_savePath); }
             _store = null;

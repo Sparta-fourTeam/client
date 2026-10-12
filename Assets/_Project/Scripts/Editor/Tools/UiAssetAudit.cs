@@ -29,7 +29,7 @@ namespace Game.Editor
                 try { InspectPrefab(root, path, issues); }
                 finally { PrefabUtility.UnloadPrefabContents(root); }
             }
-            foreach (string scene in new[] { "Lobby", "Stage" })
+            foreach (string scene in new[] { "Loading", "Lobby", "Stage" })
             {
                 string path = $"Assets/_Project/Settings/UI/{scene}Ui.asset";
                 var composition = AssetDatabase.LoadAssetAtPath<UiComposition>(path);
