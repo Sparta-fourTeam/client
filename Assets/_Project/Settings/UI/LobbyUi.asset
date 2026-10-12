@@ -89,6 +89,14 @@ MonoBehaviour:
     Prefab: {fileID: 9063590483577428516, guid: f68a817ca6e5d4a2cbefc8c75014b3b1, type: 3}
     ParentPath: NavUI/Popups
     SiblingIndex: 6
+  - Id: LobbyMenuPopup
+    Prefab: {fileID: 2487572882896264764, guid: 14a1d7a2f31e5c74eb410bd74bb5abe7, type: 3}
+    ParentPath: NavUI/Popups
+    SiblingIndex: 7
+  - Id: SettingsPopup
+    Prefab: {fileID: 4628841233367791212, guid: a905dede5b5fcf1439df2bc6c860e438, type: 3}
+    ParentPath: NavUI/Popups
+    SiblingIndex: 8
   - Id: UpgradeConfirmPopup
     Prefab: {fileID: 3468135605265646659, guid: 5199c8eae3bc54c5380f858bf9e60bd1, type: 3}
     ParentPath: NavUI/Overlays
