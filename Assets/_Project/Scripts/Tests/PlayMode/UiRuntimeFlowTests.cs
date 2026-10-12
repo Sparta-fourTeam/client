@@ -225,6 +225,16 @@ namespace Game.Tests
             Assert.That(ui.Get<SettingsPopupView>().IsOpen, Is.True);
             yield return ClickGameButton(Field<Button>(ui.Get<SettingsPopupView>(), "_closeButton"));
             yield return WaitFor(() => !ui.Get<SettingsPopupView>().IsOpen);
+            // 오른쪽 메뉴의 친구·퀘스트·우편함 버튼이 미완성 안내 대신 각자의 팝업을 연다
+            var closeField = typeof(LobbyListPopupView).GetField("_closeButton", BindingFlags.Instance | BindingFlags.NonPublic);
+            foreach (var popup in new LobbyListPopupView[] { ui.Get<FriendPopupView>(), ui.Get<QuestPopupView>(), ui.Get<MailPopupView>() })
+            {
+                var open = Object.FindObjectsByType<SideMenuPopupButton>(FindObjectsSortMode.None).Single(b => Field<LobbyListPopupView>(b, "_popup") == popup);
+                yield return ClickGameButton(open.GetComponent<Button>());
+                Assert.That(popup.IsOpen, Is.True, popup.name);
+                yield return ClickGameButton((Button)closeField.GetValue(popup));
+                yield return WaitFor(() => !popup.IsOpen);
+            }
             Assert.That(Field<GameObject>(ui.Get<SkillScreenView>(), "_panel").activeSelf, Is.False);
             yield return ClickGameButton(Field<Button>(ui.Get<MissionButtonView>(), "_button"));
             var mission = ui.Get<MissionScreenView>();
