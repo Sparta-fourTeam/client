@@ -24,7 +24,8 @@ namespace Game.Network
             energyUpdatedAt = save.wallet.energyUpdatedAt,
             stageProgress = save.stageProgress,
             upgrades = save.upgrades,
-            items = save.items ?? new()
+            items = save.items ?? new(),
+            codex = save.codex ?? new()
         };
     }
 }

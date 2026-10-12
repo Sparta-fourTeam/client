@@ -17,5 +17,8 @@ namespace Game.Core
 
         /// <summary>클리어 시점의 벽 잔여 체력 비율(0~100). clearRating(1~3) 판정에 쓰인다</summary>
         public int wallHpPercent;
+
+        /// <summary>이 전투에서 한 번이라도 나온 몬스터 ID(분열·소환 포함). 서버가 도감에 등록한다</summary>
+        public List<int> encounteredMonsterIds = new();
     }
 }

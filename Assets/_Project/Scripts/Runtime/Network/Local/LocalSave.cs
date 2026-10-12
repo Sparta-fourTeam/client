@@ -16,5 +16,7 @@ namespace Game.Network
         public List<LedgerRow> ledger = new();
         /// <summary>마법북 소유량. 기존 저장 파일에서 누락된 items는 빈 목록이다.</summary>
         public List<ItemAmount> items = new();
+        /// <summary>도감 등록 몬스터. 기존 저장 파일에서 누락된 codex는 빈 목록이다.</summary>
+        public List<CodexRow> codex = new();
     }
 }

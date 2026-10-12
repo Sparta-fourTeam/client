@@ -35,6 +35,7 @@ namespace Game.Boot
             // TODO(server): Recover(Ad) 항상 거절 중 — 예: 광고 SDK 콜백에서 Recover(EnergySource.Ad, adTxId) 호출
             builder.Register<IEnergyApi, LocalEnergyApi>(Lifetime.Singleton);
             builder.Register<IStageApi, LocalStageApi>(Lifetime.Singleton);
+            builder.Register<ICodexApi, LocalCodexApi>(Lifetime.Singleton);
 
             // 음악·효과음·음성 볼륨은 기기 설정이라 기기에 저장하고, 시작할 때와 바뀔 때 오디오 믹서에 적용한다
             builder.Register<IVolumeStore, PlayerPrefsVolumeStore>(Lifetime.Singleton);
