@@ -40,15 +40,16 @@ namespace Game.Network
             if (rewardBalance.UsesRandomEquipmentMaterial && UnlockedEquipmentIds == null)
             { throw new ApiException(ApiErrorKind.Rejected, "EQUIPMENT_UNLOCK_SOURCE_NOT_READY"); }
 
-            var (current, _) = EnergyRule.At(save.wallet.energyStored,
-                EnergyRule.ParseUpdatedAt(save.wallet.energyUpdatedAt), DateTime.UtcNow, _data.Energy);
+            var now = DateTime.UtcNow;
+            var updatedAt = EnergyRule.ParseUpdatedAt(save.wallet.energyUpdatedAt);
+            var (current, _) = EnergyRule.At(save.wallet.energyStored, updatedAt, now, _data.Energy);
             if (current < _data.Energy.Cost)
             {
                 throw new ApiException(ApiErrorKind.Rejected, "INSUFFICIENT_ENERGY");
             }
 
             save.wallet.energyStored = current - _data.Energy.Cost;
-            save.wallet.energyUpdatedAt = DateTime.UtcNow.ToString("O");
+            save.wallet.energyUpdatedAt = EnergyRule.SettledUpdatedAt(current, updatedAt, now, _data.Energy).ToString("O");
 
             var row = new BattleRow
             {
