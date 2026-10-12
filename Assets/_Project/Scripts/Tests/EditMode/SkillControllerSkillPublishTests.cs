@@ -142,5 +142,70 @@ namespace Game.Tests
             Assert.IsEmpty(_controller.GetRandomUpgradeChoices(100).FindAll(c => c.Option?.sharedId == "synthetic_pair"));
         }
 
+        /// <summary>테스트가 정한 영구 강화 효과를 한 progressionId에만 돌려준다 (출시 수치와 무관하게 전투 반영 경로만 본다)</summary>
+        private sealed class FixedPermanentEffects : IPermanentSkillEffects
+        {
+            private readonly string _progressionId;
+            private readonly EffectDef[] _effects;
+
+            public FixedPermanentEffects(string progressionId, params EffectDef[] effects)
+            {
+                _progressionId = progressionId;
+                _effects = effects;
+            }
+
+            public IReadOnlyList<EffectDef> For(string progressionId) =>
+                progressionId == _progressionId ? _effects : System.Array.Empty<EffectDef>();
+        }
+
+        private SkillController CreateController(IPermanentSkillEffects permanentEffects)
+        {
+            var player = new GameObject("PermanentPlayer");
+            _created.Add(player);
+            var controller = player.AddComponent<SkillController>();
+            TestSkillAssets.Attach(controller, new[] { 1, 2 }, _created);
+            controller.Construct(new NullEnemyTargetProvider(), new FakeSkillPublisher(), new DefaultSkillDataProvider(new GameDataStore()),
+                permanentEffects: permanentEffects);
+            TestSkillAssets.PrepareForRules(controller, 1, 2);
+            return controller;
+        }
+
+        [Test(Description = "로비 영구 강화 효과가 전투 스킬의 시작 설정에 들어가고, 판 안 카드 강화는 그 설정 위에 쌓인다 (C-13)")]
+        public void PermanentEffects_ApplyToBattleSkill_AndCardsStackOnTop()
+        {
+            var progressionId = TestSkillAssets.Data(1).progressionId;
+            Assert.IsNotEmpty(progressionId, "영구 강화가 있는 스킬로 검사한다");
+            var plain = CreateController(null);
+            var upgraded = CreateController(new FixedPermanentEffects(progressionId,
+                new EffectDef { kind = "damage", value = 50 }, new EffectDef { kind = "attackSpeed", value = 20 }));
+
+            SkillBase Skill(SkillController c, int id)
+            {
+                foreach (var skill in c.Skills)
+                {
+                    if (skill.Data.id == id) { return skill; }
+                }
+                return null;
+            }
+            void AssertPermanentApplied(string when)
+            {
+                var basic = Skill(plain, 1).Stats.Cast;
+                var boosted = Skill(upgraded, 1).Stats.Cast;
+                Assert.AreEqual(basic.Damage * 1.5f, boosted.Damage, 1e-3f, $"{when}: 피해 +50%가 실제 시전 설정에 남는다");
+                Assert.AreEqual(basic.Cooldown * 0.8f, boosted.Cooldown, 1e-4f, $"{when}: 공격 속도 +20%가 쿨타임에 남는다");
+            }
+
+            AssertPermanentApplied("획득 직후");
+            Assert.AreEqual(Skill(plain, 2).Stats.Cast.Damage, Skill(upgraded, 2).Stats.Cast.Damage,
+                "다른 progressionId의 스킬에는 적용하지 않는다");
+
+            var card = upgraded.GetUpgradeCandidates().Find(c => !c.IsNewWeapon && c.skill.Data.id == 1 && string.IsNullOrEmpty(c.Option.sharedId));
+            Assert.IsNotNull(card.Option, "강화할 수 있는 카드가 있어야 한다");
+            var sameCard = plain.GetUpgradeCandidates().Find(c => !c.IsNewWeapon && c.skill.Data.id == 1 && c.Option.id == card.Option.id);
+            Assert.IsTrue(upgraded.ApplyUpgradeChoice(card));
+            Assert.IsTrue(plain.ApplyUpgradeChoice(sameCard));
+            AssertPermanentApplied($"카드 {card.Option.id} 적용 뒤");
+        }
+
     }
 }
