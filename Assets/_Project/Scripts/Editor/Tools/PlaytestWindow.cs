@@ -49,7 +49,7 @@ namespace Game.Editor
         }
 
         private void Button(string name, Action action) => rootVisualElement.Q<Button>(name).clicked += action;
-        private static string SavePath => Path.Combine(Application.persistentDataPath, "save.json");
+        private static string SavePath => LocalSavePath.Current;
 
         private static T Resolve<T>() where T : class
         {

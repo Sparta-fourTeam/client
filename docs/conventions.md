@@ -43,7 +43,7 @@
 - 적 프리팹 엔트리(`EnemyPrefabEntry`)는 프리팹과 공격 방식만 갖고, 수치는 `MonsterId`로 `Monsters` 행을 가리킨다. Stage 씬은 `StageContext.StageId`로 `StageDefinition`을 한 번 정해 방벽, 웨이브, 스폰에 나눠 준다 (Stage 씬을 바로 열면 첫 스테이지)
 - 프리팹·아이콘은 테이블의 `PrefabKey`/`IconKey`로 찾는다
 - 스킬의 프리팹과 아이콘은 `Skills.json`의 `assetKey`로 `SkillAssetTable`(`Data/`)에서 찾는다. 플레이어 프리팹에는 스킬 목록을 두지 않는다
-- 1주차는 저장되는 Local 구현(`Network/Local`)을 쓴다. `save.json`에 저장되어 재실행해도 값이 유지된다. `MockData` 폴더는 Local이 읽는 초기 테이블 JSON을 두는 곳이다
+- 1주차는 저장되는 Local 구현(`Network/Local`)을 쓴다. 에디터에서는 프로젝트별 `UserSettings/LocalSave/save.json`을 사용하고, 플레이어 빌드에서는 `Application.persistentDataPath/save.json`을 사용한다. 에디터의 첫 사용 시 기존 공유 세이브를 원본을 남긴 채 복사하며, 이후 프로젝트 세이브를 삭제해도 다시 가져오지 않는다. `MockData` 폴더는 Local이 읽는 초기 테이블 JSON을 두는 곳이다
 - Local도 ApiDog 명세와 같은 DTO(`Network/Dto`)로 변환하고, 서버와 같은 오류 코드(`INSUFFICIENT_GOLD` 등)로 `ApiException`을 던진다
 - 서버 전환은 `BackendSettings`(ScriptableObject)의 스위치로 그룹 단위로 한다: Account(`IAuthApi`, `IDataApi`)를 먼저, Player(`IPlayerApi`, `IBattleApi`, `IUpgradeApi`, `IEnergyApi`, `IStageApi`, `ICodexApi`) 6개는 한 번에 전환한다. 여섯 다 지갑을 건드리므로 따로 바꾸면 로컬과 서버 잔액이 어긋난다
 - 로컬 데이터는 서버로 이관하지 않는다. 전환 후에는 새 계정으로 시작하고, Local에서 만든 미전송 결과는 서버로 보내지 않는다

@@ -1,7 +1,7 @@
 using System;
 using System.IO;
+using Game.Core;
 using Newtonsoft.Json;
-using UnityEngine;
 using VContainer;
 
 namespace Game.Network
@@ -11,15 +11,21 @@ namespace Game.Network
     {
         private readonly string _filePath;
 
-        /// <summary>기본 경로(Application.persistentDataPath/save.json)를 사용한다.</summary>
+        /// <summary>에디터는 프로젝트별 경로, 플레이어 빌드는 persistentDataPath/save.json을 사용한다.</summary>
         [Inject]
         public LocalSaveStore()
-            : this(Path.Combine(Application.persistentDataPath, "save.json"))
+            : this(LocalSavePath.Current, LocalSavePath.Legacy)
         {
         }
 
         /// <summary>지정한 경로를 사용한다. (테스트에서 임시 경로 주입용)</summary>
         public LocalSaveStore(string filePath)
+            : this(filePath, null)
+        {
+        }
+
+        /// <summary>지정한 이전 경로의 세이브를 처음 한 번만 가져온다. 기존 프로젝트 세이브와 원본은 보존한다.</summary>
+        public LocalSaveStore(string filePath, string legacyFilePath)
         {
             if (string.IsNullOrWhiteSpace(filePath))
             {
@@ -27,6 +33,30 @@ namespace Game.Network
             }
 
             _filePath = filePath;
+            if (!string.IsNullOrEmpty(legacyFilePath)
+                && !string.Equals(Path.GetFullPath(filePath), Path.GetFullPath(legacyFilePath), StringComparison.Ordinal))
+            {
+                ImportLegacySave(legacyFilePath);
+            }
+        }
+
+        private void ImportLegacySave(string legacyFilePath)
+        {
+            string marker = _filePath + ".migrated";
+            if (File.Exists(marker)) { return; }
+            EnsureDirectory();
+            if (!File.Exists(_filePath) && File.Exists(legacyFilePath))
+            {
+                File.Copy(legacyFilePath, _filePath, overwrite: false);
+            }
+            // 삭제 후 재생할 때 공유 세이브가 다시 복원되지 않게 이전 여부를 별도로 남긴다.
+            File.WriteAllText(marker, string.Empty);
+        }
+
+        private void EnsureDirectory()
+        {
+            string directory = Path.GetDirectoryName(_filePath);
+            if (!string.IsNullOrEmpty(directory)) { Directory.CreateDirectory(directory); }
         }
 
         // LocalSave의 필드 기본값(예: stageProgress 시드 1행)을 Newtonsoft가 리스트에 이어붙이지 않고
@@ -52,6 +82,7 @@ namespace Game.Network
         /// <summary>이전 저장 내용을 덮어쓴다</summary>
         public void Flush(LocalSave save)
         {
+            EnsureDirectory();
             File.WriteAllText(_filePath, JsonConvert.SerializeObject(save));
         }
     }
