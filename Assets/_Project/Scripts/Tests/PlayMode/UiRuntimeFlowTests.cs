@@ -220,6 +220,12 @@ namespace Game.Tests
             Assert.That(Field<GameObject>(ui.Get<ShopScreenView>(), "_panel").activeSelf, Is.False);
             yield return ClickGameButton(ui.Get<LobbyMenuOpenButton>().GetComponent<Button>());
             Assert.That(ui.Get<LobbyMenuPopupView>().IsOpen, Is.True);
+            var menu = ui.Get<LobbyMenuPopupView>();
+            yield return ClickGameButton(Field<Button>(menu, "_closeButton"));
+            Assert.That(menu.IsOpen, Is.False);
+            yield return WaitFor(() => !Field<GameObject>(menu, "_panel").activeSelf);
+            yield return ClickGameButton(ui.Get<LobbyMenuOpenButton>().GetComponent<Button>());
+            Assert.That(menu.IsOpen, Is.True);
             yield return ClickGameButton(Field<Button>(ui.Get<LobbyMenuPopupView>(), "_settingsButton"));
             Assert.That(ui.Get<LobbyMenuPopupView>().IsOpen, Is.False);
             Assert.That(ui.Get<SettingsPopupView>().IsOpen, Is.True);

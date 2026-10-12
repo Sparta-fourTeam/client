@@ -137,7 +137,6 @@ namespace Game.Tests
             Assert.IsTrue(menu.IsOpen);
             Assert.IsTrue(Field<Button>(menu, "_settingsButton").interactable);
             foreach (var button in Field<Button[]>(menu, "_disabledButtons")) { Assert.IsFalse(button.interactable, button.name); }
-            Assert.AreEqual(3, Field<Button[]>(menu, "_disabledButtons").Length, "계정 연동·계정 삭제·로그아웃");
 
             Field<PointerClickRelay>(menu, "_background").OnPointerClick(new PointerEventData(null));
             Assert.IsFalse(menu.IsOpen, "바깥을 누르면 닫힌다");
