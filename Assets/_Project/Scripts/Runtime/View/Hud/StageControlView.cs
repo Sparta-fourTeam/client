@@ -27,6 +27,7 @@ namespace Game.View
             IBufferedSubscriber<StageStateChanged> stateChangedSubscriber)
         {
             _stageManager = stageManager;
+            UpdateSpeedImage();
             Track(stateChangedSubscriber.Subscribe(OnStateChanged));
         }
 
@@ -52,9 +53,16 @@ namespace Game.View
         // Playing에서만 누를 수 있다. 카드 선택·결과 전송 중에는 막는다
         private void OnStateChanged(StageStateChanged message)
         {
+            UpdateSpeedImage();
             bool playing = message.State == StageState.Playing;
             _speedButton.interactable = playing;
             _pauseButton.interactable = playing;
+        }
+
+        private void UpdateSpeedImage()
+        {
+            _speedIndex = _stageManager.Speed >= 2f ? 1 : 0;
+            buttonImage.sprite = _buttonimages[_speedIndex];
         }
 
         // private void UpdateSpeedLabel()

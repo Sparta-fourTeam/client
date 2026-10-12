@@ -40,6 +40,7 @@ namespace Game.Core
         private List<UpgradeChoice> _choices = new();
 
         public StageState State { get; private set; } = StageState.Starting;
+        public float Speed => _speed;
 
         /// <summary>자동 재시도 사이의 간격. 테스트에서 0으로 줄인다</summary>
         public TimeSpan RetryDelay { get; set; } = TimeSpan.FromSeconds(1);
@@ -73,6 +74,7 @@ namespace Game.Core
             _submitFailed = submitFailed;
             _rewards = rewards;
             _encountered = encountered;
+            _speed = PlayerPrefs.GetFloat("stage_speed", 1f) >= 2f ? 2f : 1f;
         }
 
         public void Start()
@@ -84,6 +86,7 @@ namespace Game.Core
 
             // 전투는 Lobby의 BattleLauncher가 이미 발급받아 StageContext에 채워뒀다 — 여기선 꺼내 쓰기만 한다
             _battleId = _stageContext.BattleId;
+            Time.timeScale = _speed;
             ChangeState(StageState.Playing);
         }
 

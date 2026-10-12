@@ -54,6 +54,7 @@ namespace Game.Tests
         private BattleStats _stats;
         private StageClock _clock;
         private StageManager _manager;
+        private Func<StageManager> _createManager;
         private SkillController _skills;
         private readonly List<GameObject> _objects = new();
         private readonly List<StageState> _states = new();
@@ -124,7 +125,7 @@ namespace Game.Tests
                 provider.GetRequiredService<IBufferedPublisher<SkillChanged>>(), new DefaultSkillDataProvider(new GameDataStore()));
             TestSkillAssets.PrepareForRules(_skills, 3);
 
-            _manager = new StageManager(
+            _createManager = () => new StageManager(
                 provider.GetRequiredService<IBufferedPublisher<StageStateChanged>>(),
                 provider.GetRequiredService<ISubscriber<StageEnded>>(),
                 provider.GetRequiredService<IPublisher<StageResult>>(),
@@ -136,6 +137,7 @@ namespace Game.Tests
                 new CardDeck(_skills, null, new List<GeneralCardDefinition>(), new UnityRandomProvider()),
                 provider.GetRequiredService<IPublisher<SubmitRejected>>(),
                 provider.GetRequiredService<IPublisher<SubmitFailed>>());
+            _manager = _createManager();
             _manager.RetryDelay = TimeSpan.Zero;
             _manager.Start();
         }
@@ -166,6 +168,24 @@ namespace Game.Tests
         {
             Assert.AreEqual(StageState.Playing, _manager.State);
             CollectionAssert.AreEqual(new[] { StageState.Playing }, _states);
+        }
+
+        [TestCase(2f, 2f)]
+        [TestCase(5f, 2f)]
+        [TestCase(-1f, 1f)]
+        [TestCase(float.NaN, 1f)]
+        public void NewBattleRestoresSavedSpeedAndPauseResumePreservesIt(float saved, float expected)
+        {
+            _manager.Dispose();
+            PlayerPrefs.SetFloat("stage_speed", saved);
+            _manager = _createManager();
+            _manager.Start();
+            Assert.That(_manager.Speed, Is.EqualTo(expected));
+            Assert.That(Time.timeScale, Is.EqualTo(expected));
+            _manager.Pause();
+            Assert.That(Time.timeScale, Is.Zero);
+            _manager.Resume();
+            Assert.That(Time.timeScale, Is.EqualTo(expected));
         }
 
         [Test(Description = "Playing에서 Pause하면 시간이 멈추고 Paused가 된다")]
