@@ -57,6 +57,35 @@ namespace Game.Tests
         }
 
         [Test]
+        public void Field_MovingTargetsRemoveOldSlowsAndReuseStartsWithCurrentOccupants()
+        {
+            var go = new GameObject("FieldMovingTargetsTest");
+            try
+            {
+                var field = go.AddComponent<ElectromagneticField>();
+                var first = new Target(); var second = new Target { Position = Vector2.right * 2 };
+                var otherSource = new object(); second.SetAreaSlow(otherSource, .6f);
+                var provider = new Provider(); provider.Targets.AddRange(new IEnemyTarget[] { first, second });
+                var pool = new ObjectPool<ElectromagneticField>(() => field);
+                pool.Get().Init(pool, provider, Vector2.zero, 1, 10, 2, .3f);
+                first.Position = Vector2.right * 2; second.Position = Vector2.zero;
+                Tick(field, 1);
+                Assert.AreEqual(0, first.Slows.Count); Assert.AreEqual(2, second.Slows.Count);
+                Assert.AreEqual(0, first.DamageTaken); Assert.AreEqual(10, second.DamageTaken);
+                Tick(field, 1);
+                Assert.AreEqual(1, second.Slows.Count); Assert.AreEqual(.6f, second.Slows[otherSource]);
+                first.Position = Vector2.zero; second.Position = Vector2.right * 2;
+                pool.Get().Init(pool, provider, Vector2.zero, 1, 3, 1, .3f);
+                Assert.AreEqual(1, first.Slows.Count); Assert.AreEqual(1, second.Slows.Count);
+                Tick(field, 1);
+                Assert.AreEqual(3, first.DamageTaken); Assert.AreEqual(20, second.DamageTaken);
+                Assert.AreEqual(0, first.Slows.Count); Assert.AreEqual(1, second.Slows.Count);
+                Assert.AreEqual(.6f, second.Slows[otherSource], "다른 전자기장의 슬로우는 만료나 재사용으로 해제하지 않는다");
+            }
+            finally { Object.DestroyImmediate(go); }
+        }
+
+        [Test]
         public void Field_FrameSizedTicksPreserveFinalDamageTick()
         {
             var go = new GameObject("FieldFrameTickTest");

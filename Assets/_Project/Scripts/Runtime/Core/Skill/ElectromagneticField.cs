@@ -14,6 +14,7 @@ namespace Game.Core
         private readonly List<IEnemyTarget> candidates = new();
         private readonly HashSet<IEnemyTarget> occupants = new();
         private readonly HashSet<IAreaSlowTarget> slowed = new();
+        private readonly HashSet<IAreaSlowTarget> currentSlows = new();
         private bool released;
         private Game.Core.Combat.DamageSource sourceSkill;   // 이 전자기장을 만든 스킬 (피해 집계와 속성 전달용)
         private GameObject visual;
@@ -76,7 +77,7 @@ namespace Game.Core
         {
             candidates.Clear(); occupants.Clear();
             provider.GetNearest(transform.position, int.MaxValue, candidates);
-            var current = new HashSet<IAreaSlowTarget>();
+            currentSlows.Clear();
             foreach (var target in candidates)
             {
                 if (target == null || target.IsDead) { continue; }
@@ -84,16 +85,16 @@ namespace Game.Core
                 float radiusSquared = radius * radius;
                 if ((distanceSquared > radiusSquared && !Mathf.Approximately(distanceSquared, radiusSquared))
                     || !occupants.Add(target)) { continue; }
-                if (target is IAreaSlowTarget slow) { slow.SetAreaSlow(this, slowRatio); current.Add(slow); }
+                if (target is IAreaSlowTarget slow) { slow.SetAreaSlow(this, slowRatio); currentSlows.Add(slow); }
             }
-            foreach (var old in slowed) { if (!current.Contains(old)) { old.RemoveAreaSlow(this); } }
-            slowed.Clear(); foreach (var slow in current) { slowed.Add(slow); }
+            foreach (var old in slowed) { if (!currentSlows.Contains(old)) { old.RemoveAreaSlow(this); } }
+            slowed.Clear(); foreach (var slow in currentSlows) { slowed.Add(slow); }
         }
 
         private void ClearSlows()
         {
             foreach (var target in slowed) { target.RemoveAreaSlow(this); }
-            slowed.Clear(); occupants.Clear();
+            slowed.Clear(); currentSlows.Clear(); occupants.Clear();
         }
         private void OnDisable() => ClearSlows();
         private void OnDestroy() => ClearSlows();

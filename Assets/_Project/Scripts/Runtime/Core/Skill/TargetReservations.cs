@@ -27,7 +27,13 @@ namespace Game.Core
 
         private readonly Dictionary<IEnemyTarget, List<Reservation>> entries = new();
         private readonly List<IEnemyTarget> emptied = new();
+        private readonly System.Predicate<Reservation> isExpired;
         private float now;
+
+        public TargetReservations()
+        {
+            isExpired = reservation => reservation.ExpiresAt <= now;
+        }
 
         public void Advance(float deltaTime)
         {
@@ -36,7 +42,7 @@ namespace Game.Core
             emptied.Clear();
             foreach (var pair in entries)
             {
-                pair.Value.RemoveAll(e => e.ExpiresAt <= now);
+                pair.Value.RemoveAll(isExpired);
                 if (pair.Value.Count == 0 || pair.Key == null || pair.Key.IsDead) { emptied.Add(pair.Key); }
             }
             foreach (var target in emptied) { entries.Remove(target); }
