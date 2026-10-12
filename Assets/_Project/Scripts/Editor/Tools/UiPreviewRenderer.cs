@@ -51,6 +51,11 @@ namespace Game.Editor
                 return new() { "기본", "빈 목록" };
             }
 
+            if (id == "DetailPopup")
+            {
+                return new() { "기본", "도감 보상 수령", "확률 정보" };
+            }
+
             return new() { "기본" };
         }
 
@@ -244,6 +249,41 @@ namespace Game.Editor
                         new[] { new ItemAmount { itemId = def.MaterialItemId, quantity = def.MaterialAt(1) + def.MaterialAt(2) } }));
             }
 
+            if (root.GetComponent<RewardOddsPopupView>() is { } odds)
+            {
+                var data = new GameDataStore();
+                var icons = AssetDatabase.LoadAssetAtPath<ItemIconTable>("Assets/_Project/Data/ItemIconTable.asset");
+                var rows = new List<RewardOddsRow>();
+                foreach (var odd in RandomRewardOdds.ForExp(ItemIds.RandomSkillMaterial, data, int.MaxValue / 4))
+                {
+                    rows.Add(new RewardOddsRow(RewardRows.IconOf(icons, data, odd.ItemId), ItemInfo.NameOf(odd.ItemId, data), RandomRewardOdds.Percent(odd.Probability)));
+                }
+
+                odds.Show("랜덤 마법북 확률", "현재 레벨에서 열린 스킬의 마법북이 같은 확률로 나와요.", rows);
+                ((GameObject)new SerializedObject(odds).FindProperty("_panel").objectReferenceValue).SetActive(true);
+            }
+
+            if (root.GetComponent<DetailPopupView>() is { } detailView && sample != "기본")
+            {
+                var detailSo = new SerializedObject(detailView);
+                SetComponentActive(detailSo, "_claimButton", sample == "도감 보상 수령");
+                SetComponentActive(detailSo, "_oddsButton", sample == "확률 정보");
+                SetComponentActive(detailSo, "_goButton", false);
+                var data = new GameDataStore();
+                var icons = AssetDatabase.LoadAssetAtPath<ItemIconTable>("Assets/_Project/Data/ItemIconTable.asset");
+                if (sample == "도감 보상 수령")
+                {
+                    detailView.Show(null, "슬라임", "일반 · 근접 공격", "· 쓰러지면 작은 슬라임 2마리로 나뉘어요");
+                    SetComponentActive(detailSo, "_claimButton", true);
+                    ((GameObject)detailSo.FindProperty("_claimBadge").objectReferenceValue)?.SetActive(true);
+                }
+                else
+                {
+                    detailView.Show(icons.GetRandom(ItemIds.RandomSkillMaterial), "랜덤 마법북", "최대 6개 획득", ItemInfo.DescriptionOf(ItemIds.RandomSkillMaterial));
+                    SetComponentActive(detailSo, "_oddsButton", true);
+                }
+            }
+
             foreach (var behaviour in root.GetComponentsInChildren<MonoBehaviour>(true))
             {
                 if (behaviour == null)
@@ -279,6 +319,14 @@ namespace Game.Editor
                         stars.Show(sample == "클리어", sample == "클리어" ? 3 : 0);
                     }
                 }
+            }
+        }
+
+        private static void SetComponentActive(SerializedObject so, string property, bool active)
+        {
+            if (so.FindProperty(property)?.objectReferenceValue is Component component)
+            {
+                component.gameObject.SetActive(active);
             }
         }
 

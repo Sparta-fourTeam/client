@@ -28,17 +28,23 @@ namespace Game.View
         [SerializeField] private GameObject _claimBadge;
         [SerializeField] private ItemIconTable _itemIcons;
 
+        [Header("확률 정보 (랜덤 재료 보상에서만 뜬다. 비어 있으면 건너뛴다)")]
+        [SerializeField] private Button _oddsButton;
+
         private Action _onGo;
         private PlayerProfile _profile;
         private ICodexApi _codexApi;
         private GameDataStore _data;
         private RewardPopupView _rewardPopup;
+        private RewardOddsPopupView _oddsPopup;
+        private string _oddsItemId;
         private int _claimMonsterId;
         private bool _claiming;
 
         public void BindUi(IUiRegistry registry)
         {
             _rewardPopup = registry.Get<RewardPopupView>();
+            _oddsPopup = registry.Get<RewardOddsPopupView>();
         }
 
         [Inject]
@@ -60,6 +66,11 @@ namespace Game.View
             {
                 _claimButton.onClick.AddListener(() => ClaimAsync().Forget(Debug.LogException));
             }
+
+            if (_oddsButton != null)
+            {
+                _oddsButton.onClick.AddListener(ShowOdds);
+            }
             _goButton.onClick.AddListener(() =>
             {
                 var go = _onGo;
@@ -80,6 +91,7 @@ namespace Game.View
             _goButton.gameObject.SetActive(onGo != null);
             _goLabel.text = goLabel;
             SetClaimVisible(false);
+            SetOddsVisible(false);
             _panel.SetActive(true);
         }
 
@@ -88,6 +100,37 @@ namespace Game.View
         {
             _claimMonsterId = monsterId;
             SetClaimVisible(_claimButton != null && _profile != null && _profile.CanClaimMonsterReward(monsterId));
+        }
+
+        /// <summary>Show로 보상을 띄운 직후에 부른다. 랜덤 재료(랜덤 마법북·랜덤 인챈트 주문서)면 확률 정보 "i" 아이콘을 띄운다</summary>
+        public void OfferOdds(string itemId)
+        {
+            _oddsItemId = itemId;
+            SetOddsVisible(_oddsButton != null && _oddsPopup != null && _profile != null && RandomRewardOdds.IsRandom(itemId));
+        }
+
+        private void SetOddsVisible(bool visible)
+        {
+            if (_oddsButton != null)
+            {
+                _oddsButton.gameObject.SetActive(visible);
+            }
+        }
+
+        private void ShowOdds()
+        {
+            string itemId = _oddsItemId;
+            if (!RandomRewardOdds.IsRandom(itemId)) { return; }
+
+            var rows = new System.Collections.Generic.List<RewardOddsRow>();
+            foreach (var odd in RandomRewardOdds.ForExp(itemId, _data, _profile.Exp))
+            {
+                rows.Add(new RewardOddsRow(RewardRows.IconOf(_itemIcons, _data, odd.ItemId),
+                    ItemInfo.NameOf(odd.ItemId, _data), RandomRewardOdds.Percent(odd.Probability)));
+            }
+
+            string what = itemId == ItemIds.RandomSkillMaterial ? "열린 스킬의 마법북" : "열린 장비의 인챈트 주문서";
+            _oddsPopup.Show($"{ItemInfo.NameOf(itemId, _data)} 확률", $"현재 레벨에서 {what}이 같은 확률로 나와요.", rows);
         }
 
         private void SetClaimVisible(bool visible)
