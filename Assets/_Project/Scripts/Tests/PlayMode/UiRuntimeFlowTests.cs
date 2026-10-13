@@ -721,9 +721,13 @@ namespace Game.Tests
             SceneManager.LoadSceneAsync("Boot");
             yield return WaitFor(() => SceneManager.GetActiveScene().name == "Boot");
             boot.Start();
-            // Loading의 로그인창에서 게스트로 시작한다
+            // Loading의 로그인창에서 게스트를 고르고 확인창에서 로그인을 누른다
             yield return WaitFor(() => SceneManager.GetActiveScene().name == "Loading" && LoginPanelShown());
-            yield return ClickGameButton(Field<Button>(Object.FindAnyObjectByType<LoginView>(), "_guestButton"));
+            var login = Object.FindAnyObjectByType<LoginView>();
+            yield return ClickGameButton(Field<Button>(login, "_guestButton"));
+            var confirm = Field<ConfirmPopupView>(login, "_confirm");
+            yield return WaitFor(() => confirm.IsOpen);
+            yield return ClickGameButton(Field<Button>(confirm, "_confirmButton"));
             yield return WaitFor(() => SceneManager.GetActiveScene().name == expectedScene && navigator.Current.ToString() == expectedScene);
             yield return null;
         }
