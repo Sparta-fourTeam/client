@@ -4,10 +4,10 @@ on:
   workflow_dispatch:
     inputs:
       release_version:
-        description: '표시 버전 (후보 설정과 일치해야 함, 이번 릴리스 1.0.1)'
+        description: '표시 버전 (후보 설정과 일치해야 함, 다음 후보 1.0.2)'
         type: string
         required: true
-        default: '1.0.1'
+        default: '1.0.2'
       publish_to_internal:
         description: '검증된 AAB를 내부 테스트에 게시 (별도 승인 후 선택)'
         type: boolean
