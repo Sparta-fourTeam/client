@@ -1,0 +1,652 @@
+fileFormatVersion: 2
+guid: 42b00753578032b41a203cbe8d219975
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 1096027079348262998
+    second: UI_CardWeaponCircleOutline_0
+  - first:
+      213: -3621589094400534526
+    second: UI_CardWeaponCircleOutline_1
+  - first:
+      213: 2214733794941968772
+    second: UI_CardWeaponCircleOutline_2
+  - first:
+      213: 8361196888233491705
+    second: UI_CardWeaponCircleOutline_3
+  - first:
+      213: 5645087139028948717
+    second: UI_CardWeaponCircleOutline_4
+  - first:
+      213: 7059451560898049429
+    second: UI_CardWeaponCircleOutline_5
+  - first:
+      213: 5541730341996077989
+    second: UI_CardWeaponCircleOutline_6
+  - first:
+      213: -8215637167641684107
+    second: UI_CardWeaponCircleOutline_7
+  - first:
+      213: -4091709595186914195
+    second: UI_CardWeaponCircleOutline_8
+  - first:
+      213: 6528897274606119324
+    second: UI_CardWeaponCircleOutline_9
+  - first:
+      213: -1951065056455924536
+    second: UI_CardWeaponCircleOutline_10
+  - first:
+      213: 5364047807722939325
+    second: UI_CardWeaponCircleOutline_11
+  - first:
+      213: 6991367600934206999
+    second: UI_CardWeaponCircleOutline_12
+  - first:
+      213: -5620053357076221181
+    second: UI_CardWeaponCircleOutline_13
+  - first:
+      213: 6822165720720758867
+    second: UI_CardWeaponCircleOutline_14
+  - first:
+      213: 2185920775073340706
+    second: UI_CardWeaponCircleOutline_15
+  - first:
+      213: 9189361240871033703
+    second: UI_CardWeaponCircleOutline_16
+  - first:
+      213: -6845028168189281563
+    second: UI_CardWeaponCircleOutline_17
+  - first:
+      213: 7591961397596466488
+    second: UI_CardWeaponCircleOutline_18
+  - first:
+      213: -8712427797051633895
+    second: UI_CardWeaponCircleOutline_19
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 0
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 256
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: UI_CardWeaponCircleOutline_0
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 0
+        width: 1193
+        height: 1230
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 65813c852ded53f00800000000000000
+      internalID: 1096027079348262998
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_CardWeaponCircleOutline_1
+      rect:
+        serializedVersion: 2
+        x: 362
+        y: 1227
+        width: 59
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 208d3d918e78dbdc0800000000000000
+      internalID: -3621589094400534526
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_CardWeaponCircleOutline_2
+      rect:
+        serializedVersion: 2
+        x: 784
+        y: 1211
+        width: 91
+        height: 35
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 481a19ff6a05cbe10800000000000000
+      internalID: 2214733794941968772
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_CardWeaponCircleOutline_3
+      rect:
+        serializedVersion: 2
+        x: 874
+        y: 1211
+        width: 29
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9fc32443540f80470800000000000000
+      internalID: 8361196888233491705
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_CardWeaponCircleOutline_4
+      rect:
+        serializedVersion: 2
+        x: 944
+        y: 1162
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: de652ff08d0675e40800000000000000
+      internalID: 5645087139028948717
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_CardWeaponCircleOutline_5
+      rect:
+        serializedVersion: 2
+        x: 948
+        y: 1157
+        width: 6
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 595b764cac538f160800000000000000
+      internalID: 7059451560898049429
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_CardWeaponCircleOutline_6
+      rect:
+        serializedVersion: 2
+        x: 954
+        y: 1162
+        width: 12
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5a32eab726e28ec40800000000000000
+      internalID: 5541730341996077989
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_CardWeaponCircleOutline_7
+      rect:
+        serializedVersion: 2
+        x: 56
+        y: 939
+        width: 17
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 577983b36813cfd80800000000000000
+      internalID: -8215637167641684107
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_CardWeaponCircleOutline_8
+      rect:
+        serializedVersion: 2
+        x: 1178
+        y: 962
+        width: 13
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d6c93de4dc35737c0800000000000000
+      internalID: -4091709595186914195
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_CardWeaponCircleOutline_9
+      rect:
+        serializedVersion: 2
+        x: 1180
+        y: 891
+        width: 57
+        height: 76
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c99e9ebca7d4b9a50800000000000000
+      internalID: 6528897274606119324
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_CardWeaponCircleOutline_10
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 947
+        width: 7
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8c464481bac6ce4e0800000000000000
+      internalID: -1951065056455924536
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_CardWeaponCircleOutline_11
+      rect:
+        serializedVersion: 2
+        x: 1198
+        y: 927
+        width: 7
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: db3e989af0de07a40800000000000000
+      internalID: 5364047807722939325
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_CardWeaponCircleOutline_12
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 868
+        width: 17
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 71ebbdb8ac3560160800000000000000
+      internalID: 6991367600934206999
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_CardWeaponCircleOutline_13
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 304
+        width: 26
+        height: 34
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 303fab08f3f8102b0800000000000000
+      internalID: -5620053357076221181
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_CardWeaponCircleOutline_14
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 329
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 358586ed3933dae50800000000000000
+      internalID: 6822165720720758867
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_CardWeaponCircleOutline_15
+      rect:
+        serializedVersion: 2
+        x: 1190
+        y: 312
+        width: 7
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 22d94690d53f55e10800000000000000
+      internalID: 2185920775073340706
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_CardWeaponCircleOutline_16
+      rect:
+        serializedVersion: 2
+        x: 303
+        y: 33
+        width: 26
+        height: 33
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 76b5cda7c5b278f70800000000000000
+      internalID: 9189361240871033703
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_CardWeaponCircleOutline_17
+      rect:
+        serializedVersion: 2
+        x: 327
+        y: 37
+        width: 8
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5eaf885c5239101a0800000000000000
+      internalID: -6845028168189281563
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_CardWeaponCircleOutline_18
+      rect:
+        serializedVersion: 2
+        x: 894
+        y: 25
+        width: 21
+        height: 35
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 83d273ccaa01c5960800000000000000
+      internalID: 7591961397596466488
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_CardWeaponCircleOutline_19
+      rect:
+        serializedVersion: 2
+        x: 884
+        y: 17
+        width: 9
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 91f8f79341d371780800000000000000
+      internalID: -8712427797051633895
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      UI_CardWeaponCircleOutline_0: 1096027079348262998
+      UI_CardWeaponCircleOutline_1: -3621589094400534526
+      UI_CardWeaponCircleOutline_10: -1951065056455924536
+      UI_CardWeaponCircleOutline_11: 5364047807722939325
+      UI_CardWeaponCircleOutline_12: 6991367600934206999
+      UI_CardWeaponCircleOutline_13: -5620053357076221181
+      UI_CardWeaponCircleOutline_14: 6822165720720758867
+      UI_CardWeaponCircleOutline_15: 2185920775073340706
+      UI_CardWeaponCircleOutline_16: 9189361240871033703
+      UI_CardWeaponCircleOutline_17: -6845028168189281563
+      UI_CardWeaponCircleOutline_18: 7591961397596466488
+      UI_CardWeaponCircleOutline_19: -8712427797051633895
+      UI_CardWeaponCircleOutline_2: 2214733794941968772
+      UI_CardWeaponCircleOutline_3: 8361196888233491705
+      UI_CardWeaponCircleOutline_4: 5645087139028948717
+      UI_CardWeaponCircleOutline_5: 7059451560898049429
+      UI_CardWeaponCircleOutline_6: 5541730341996077989
+      UI_CardWeaponCircleOutline_7: -8215637167641684107
+      UI_CardWeaponCircleOutline_8: -4091709595186914195
+      UI_CardWeaponCircleOutline_9: 6528897274606119324
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
