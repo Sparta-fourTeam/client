@@ -89,12 +89,14 @@ namespace Game.Core
 
     /// <summary>튜토리얼 완료 보상.
     /// setLevel: 경험치를 Level 레벨 시작점(진행 0)으로 맞춘다. upgradeMaterial: UpgradeId를 Level로 올리는 데 드는 재료를 준다.
+    /// upgradeCost: UpgradeId를 Level로 올리는 데 드는 코인을 준다 (강화 비용이 바뀌어도 안내한 강화를 할 수 있게 비용 표를 따른다).
     /// item: ItemId를 Quantity개 준다</summary>
     [Serializable]
     public sealed class TutorialReward
     {
         public const string SetLevel = "setLevel";
         public const string UpgradeMaterial = "upgradeMaterial";
+        public const string UpgradeCost = "upgradeCost";
         public const string Item = "item";
 
         public string Kind;
@@ -109,6 +111,8 @@ namespace Game.Core
             {
                 SetLevel => Level >= 1 && Level <= data.PlayerLevels.MaxLevel,
                 UpgradeMaterial => data.Upgrades.Contains(UpgradeId ?? "") && data.Upgrades.GetOrThrow(UpgradeId).UsesMaterial
+                    && Level >= 1 && Level <= data.Upgrades.GetOrThrow(UpgradeId).MaxLevel,
+                UpgradeCost => data.Upgrades.Contains(UpgradeId ?? "")
                     && Level >= 1 && Level <= data.Upgrades.GetOrThrow(UpgradeId).MaxLevel,
                 Item => data.Items.Contains(ItemId ?? "") && Quantity > 0,
                 _ => false,

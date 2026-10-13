@@ -232,7 +232,8 @@ namespace Game.Tests
         [UnityTest]
         public IEnumerator Tutorial_AfterBattleTutorialClear_ShowsLevelUpThenGuidesOnlyThroughUpgrade()
         {
-            // 전투 튜토리얼 스테이지를 깬 직후: 보상 코인은 받았고 튜토리얼 완료는 아직이다. 경험치가 모자라도 정한 레벨을 보장한다
+            // 전투 튜토리얼 스테이지를 깬 직후: 튜토리얼 완료는 아직이다. 경험치가 모자라도 정한 레벨을 보장한다.
+            // 가진 코인이 없어도 튜토리얼 보상 코인으로 안내한 첫 강화를 할 수 있어야 한다
             var root = VContainer.Unity.VContainerSettings.Instance.GetOrCreateRootLifetimeScopeInstance() as RootLifetimeScope;
             var data = root.Container.Resolve<GameDataStore>();
             var intro = data.Tutorials.First(t => t.IsBattle);
@@ -244,7 +245,7 @@ namespace Game.Tests
             {
                 save.tutorials = new List<string>();
                 save.stageProgress.Find(p => p.stageId == intro.StageId).clearRating = 1;
-                save.wallet.gold = upgrade.CostAt(1);
+                save.wallet.gold = 0;
             });
             var lobby = Object.FindAnyObjectByType<LobbyLifetimeScope>();
             var profile = lobby.Container.Resolve<PlayerProfile>();
@@ -254,9 +255,10 @@ namespace Game.Tests
             // 해금 카드와 보상 카드만 센다 (레벨은 큰 숫자로 보여 준다). 풀에 남은 숨은 카드는 제외
             var cards = levelUp.GetComponentsInChildren<LevelUpLineView>().Where(line => line.gameObject.activeSelf)
                 .Select(line => line.GetComponentInChildren<TMP_Text>().text).ToList();
-            Assert.That(cards, Has.Count.EqualTo(2));
+            Assert.That(cards, Has.Count.EqualTo(3));
             Assert.That(cards[0], Does.Contain(weapon));
-            Assert.That(cards[1], Does.Contain($"×{upgrade.MaterialAt(1)}"));
+            Assert.That(cards[1], Does.Contain($"×{upgrade.CostAt(1)}"));
+            Assert.That(cards[2], Does.Contain($"×{upgrade.MaterialAt(1)}"));
             Assert.That(profile.Level, Is.EqualTo(intro.Rewards.Single(r => r.Kind == TutorialReward.SetLevel).Level));
 
             var tapArea = Field<Button>(levelUp, "_confirmButton");

@@ -74,6 +74,25 @@ namespace Game.Tests
             Assert.AreEqual(upgrade.MaterialAt(material.Level), second.snapshot.items.Find(i => i.itemId == upgrade.MaterialItemId).quantity);
         }
 
+        [Test(Description = "전투 튜토리얼을 깨면 안내할 강화의 코인 비용만큼 코인을 한 번만 받아, 가진 코인과 상관없이 첫 강화를 할 수 있다")]
+        public void CompleteIntro_AfterClear_GrantsFirstUpgradeCostOnce()
+        {
+            var save = _store.Load();
+            save.stageProgress.Find(p => p.stageId == Intro.Complete.StageId).clearRating = 1;
+            save.wallet.gold = 7;
+            _store.Flush(save);
+            var cost = Intro.Rewards.Single(r => r.Kind == TutorialReward.UpgradeCost);
+            int expected = _data.Upgrades.GetOrThrow(cost.UpgradeId).CostAt(cost.Level);
+
+            var first = _api.Complete(Intro.Id).GetAwaiter().GetResult();
+            var second = _api.Complete(Intro.Id).GetAwaiter().GetResult();
+
+            Assert.AreEqual(expected, first.rewardGold);
+            Assert.AreEqual(7 + expected, first.snapshot.gold);
+            Assert.AreEqual(0, second.rewardGold);
+            Assert.AreEqual(7 + expected, second.snapshot.gold);
+        }
+
         [Test(Description = "튜토리얼이 생기기 전 저장 파일은 플레이 기록이 있으면 튜토리얼을 마친 것으로 읽는다")]
         public void Load_SaveWithoutTutorials_TreatsPlayedAccountAsDone()
         {

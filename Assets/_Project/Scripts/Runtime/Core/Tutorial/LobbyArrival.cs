@@ -15,9 +15,11 @@ namespace Game.Core
         public IReadOnlyList<UnlockNotice> Unlocks = Array.Empty<UnlockNotice>();
         /// <summary>튜토리얼 완료 등으로 함께 받은 아이템</summary>
         public IReadOnlyList<ItemAmount> RewardItems = Array.Empty<ItemAmount>();
+        /// <summary>튜토리얼 완료 등으로 함께 받은 코인</summary>
+        public int RewardGold;
 
         public bool LeveledUp => ToLevel > FromLevel;
-        public bool IsEmpty => !LeveledUp && RewardItems.Count == 0;
+        public bool IsEmpty => !LeveledUp && RewardItems.Count == 0 && RewardGold <= 0;
     }
 
     /// <summary>로비 진입 처리. 프로필을 다시 받은 뒤 완료 조건을 채운 튜토리얼(전투 튜토리얼 클리어 등)을 서버에 완료로 알려 보상을 받고,
@@ -44,16 +46,18 @@ namespace Game.Core
         {
             await _refresher.WhenLoaded;
             var rewards = new List<ItemAmount>();
+            int gold = 0;
             // 완료하면 다음 튜토리얼이 시작될 수 있어서(After) 더 완료할 게 없을 때까지 반복한다
             for (var ready = Completable(); ready != null; ready = Completable())
             {
-                var items = await CompleteAsync(ready.Id);
-                if (items == null)
+                var response = await CompleteAsync(ready.Id);
+                if (response == null)
                 {
                     break;
                 }
 
-                rewards.AddRange(items);
+                rewards.AddRange(response.rewardItems ?? new List<ItemAmount>());
+                gold += response.rewardGold;
             }
 
             int from = _refresher.LevelBefore;
@@ -64,20 +68,22 @@ namespace Game.Core
                 ToLevel = to,
                 Unlocks = to > from ? _unlockSources.SelectMany(source => source.Unlocked(from, to)).ToList() : Array.Empty<UnlockNotice>(),
                 RewardItems = rewards,
+                RewardGold = gold,
             };
         }
 
         private TutorialDefinition Completable() =>
             TutorialProgress.Completable(_data.Tutorials, TutorialFacts.From(_profile)).FirstOrDefault();
 
-        /// <summary>튜토리얼을 완료로 저장하고 프로필에 반영한다. 실패하면 로그만 남기고 null을 돌려준다 (다음 로비 진입 때 다시 시도된다)</summary>
-        public async UniTask<IReadOnlyList<ItemAmount>> CompleteAsync(string tutorialId)
+        /// <summary>튜토리얼을 완료로 저장하고 프로필에 반영한다. 받은 보상이 담긴 응답을 돌려주고,
+        /// 실패하면 로그만 남기고 null을 돌려준다 (다음 로비 진입 때 다시 시도된다)</summary>
+        public async UniTask<TutorialCompleteResponse> CompleteAsync(string tutorialId)
         {
             try
             {
                 var response = await _tutorialApi.Complete(tutorialId);
                 _profile.Apply(response.snapshot);
-                return response.rewardItems ?? new List<ItemAmount>();
+                return response;
             }
             catch (Exception ex)
             {
