@@ -20,6 +20,7 @@ namespace Game.View
         private Action<int> _onPick;
         [SerializeField] private Image _background;
         [SerializeField] private Image _iconImage;
+        [SerializeField] private Image _iconFrame;
         [Tooltip("카드 아래 형태 변환 아이콘 칸. 관련 변환이 칸보다 많으면 앞에서부터 칸 수만큼만 보인다")]
         [SerializeField] private FormHintIconView[] _formHints;
 
@@ -207,6 +208,8 @@ namespace Game.View
                 _levelText.text = $"{choice.skill.Level} → {choice.skill.Level + 1}";
                 _descText.text = choice.DisplayDescription ?? choice.Option.desc ?? string.Empty;
             }
+
+            if (_iconFrame != null) { _iconFrame.enabled = _iconImage.enabled && icon != null; }
         }
 
         // 이 카드가 조건이 되는 변환은 그대로, 이 카드를 고르면 막히는 변환은 X 표시로 보인다
