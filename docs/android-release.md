@@ -20,7 +20,7 @@ Play에서 새 후보 업로드가 실제 수용된 것을 확인한 뒤 해당 
 }
 ```
 
-두 release workflow는 동일한 검증 스크립트를 호출하고 같은 concurrency 그룹으로 직렬 실행한다. 스크립트는 현재 checkout과 checkout 시 가져온 최신 `origin/main`의 확인된 업로드 기록을 함께 검사해 이미 소비된 code, 누락/중복 기록, 이름 불일치와 다른 source tree의 기존 태그를 거절한다. Play 게시 job은 새 checkout으로 현재 main 기록을 다시 검사한다. 아직 Play에 업로드되지 않은 main 후보만으로 번호를 소비하거나 후보 이름을 고정하지 않는다.
+두 release workflow는 동일한 검증 스크립트를 호출하고 같은 concurrency 그룹으로 직렬 실행한다. 스크립트는 현재 checkout과 checkout 시 가져온 최신 `origin/main`의 확인된 업로드 기록을 함께 검사해 누락/중복 기록, 이름 불일치와 다른 source tree의 기존 태그를 거절한다. Play AAB 생성·새 업로드/게시 경로는 이미 소비된 code를 거절하고 publish job에서도 현재 main 기록을 재검사한다. APK 경로만 `--apk-build`로 확인된 `playUploads`의 code와 versionName이 정확히 일치하는 과거 태그 재빌드를 허용한다. 이 예외는 Play 재업로드를 허용하지 않으며 legacy 초안 금지 번호 검사도 유지한다. 아직 Play에 업로드되지 않은 main 후보만으로 번호를 소비하거나 후보 이름을 고정하지 않는다.
 
 이 파일은 Play 서버 조회를 대체하지 않는다. Console 담당자가 실제 업로드 수용 확인 후 기록을 갱신해야 한다. [Android 버전 규칙](https://developer.android.com/studio/publish/versioning)에 따라 업로드에 이미 사용한 code는 재사용할 수 없다. 낮은 새 code가 기존 high-code 초안과 함께 수용되는지는 실제 Console 검증 전에는 보장하지 않는다. 수용이 거절되면 번호 기록·태그를 임의로 덮어쓰지 말고 사유를 보고한다. 기존 게시 승인 절차도 유지한다. 새 자격증명이나 자동 Play API 설정은 필요하지 않다.
 

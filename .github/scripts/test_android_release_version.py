@@ -38,6 +38,16 @@ class ReleaseNumberTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             module.release_number(policy(), '1.0.1', used)
 
+    def test_historical_apk_requires_exact_record_while_play_reuse_is_rejected(self):
+        main = policy(2, '1.0.2', [{'versionName': '1.0.1', 'versionCode': 1}])
+        self.assertEqual(module.release_number(policy(), '1.0.1', main, apk_build=True), ('1.0.1', 1))
+        with self.assertRaises(ValueError):
+            module.release_number(policy(), '1.0.1', main)
+        with self.assertRaises(ValueError):
+            module.release_number(policy(1, '1.0.0'), '1.0.0', main, apk_build=True)
+        with self.assertRaises(ValueError):
+            module.release_number(policy(2, '1.0.1'), '1.0.1', main, apk_build=True)
+
     def test_code_skip_gap_duplicate_and_conflict_are_rejected(self):
         invalid = [policy(2), policy(True), policy(214011987),
                    policy(3, released=[{'versionName': '1.0.0', 'versionCode': 2}]),
@@ -92,6 +102,36 @@ class ReleaseNumberTests(unittest.TestCase):
             git('commit', '-qm', 'different tree')
             mismatch = subprocess.run(['python3', str(SCRIPT), '--version', '1.0.1'], cwd=root, env=env, capture_output=True)
             self.assertNotEqual(mismatch.returncode, 0)
+
+    def test_tagged_apk_cli_rebuild_after_main_records_upload(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            def git(*args):
+                return subprocess.check_output(['git', '-C', folder, *args], text=True).strip()
+            git('init', '-q')
+            git('config', 'user.name', 'Release policy test')
+            git('config', 'user.email', 'release-policy-test@example.invalid')
+            (root / '.github').mkdir()
+            config = root / '.github/android-release.json'
+            config.write_text(json.dumps(policy()))
+            git('add', '.')
+            git('commit', '-qm', 'candidate fixture')
+            git('tag', '-a', 'v1.0.1', '-m', 'candidate receipt')
+            config.write_text(json.dumps(policy(2, '1.0.2', [{'versionName': '1.0.1', 'versionCode': 1}])))
+            git('add', '.')
+            git('commit', '-qm', 'confirmed upload fixture')
+            git('update-ref', 'refs/remotes/origin/main', 'HEAD')
+            git('switch', '--detach', '-q', 'v1.0.1')
+            output = root / 'output.txt'
+            env = dict(os.environ, GITHUB_OUTPUT=str(output))
+            command = ['python3', str(SCRIPT), '--version', 'v1.0.1']
+            apk = subprocess.run(command + ['--apk-build'], cwd=root, env=env, capture_output=True)
+            self.assertEqual(apk.returncode, 0, apk.stderr)
+            self.assertEqual(output.read_text(), 'version_name=1.0.1\ncode=1\n')
+            before = output.read_bytes()
+            play = subprocess.run(command, cwd=root, env=env, capture_output=True)
+            self.assertNotEqual(play.returncode, 0)
+            self.assertEqual(output.read_bytes(), before)
 
 
 if __name__ == '__main__':

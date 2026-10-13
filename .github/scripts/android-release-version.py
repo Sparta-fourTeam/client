@@ -7,7 +7,7 @@ import re
 import subprocess
 
 
-def release_number(policy, requested_version, main_policy=None):
+def release_number(policy, requested_version, main_policy=None, apk_build=False):
     version = policy['versionName']
     code = policy['versionCode']
     if not isinstance(version, str) or not re.fullmatch(r'\d+(?:\.\d+){1,2}', version):
@@ -35,17 +35,19 @@ def release_number(policy, requested_version, main_policy=None):
         raise ValueError('Confirmed Play upload codes must be sequential from 1')
     if len(set(consumed.values())) != len(consumed):
         raise ValueError('A Play version name cannot consume multiple upload codes')
-    if code != len(consumed) + 1 or version in consumed.values():
-        raise ValueError('Candidate must use the next unused code and version name')
     legacy = [row['versionCode'] for ledger in [policy, main_policy or {}] for row in ledger.get('legacyDraftUploads', [])]
     if code in legacy:
         raise ValueError('Candidate code has already been uploaded as a legacy draft')
+    historical_apk = apk_build and consumed.get(code) == version
+    if not historical_apk and (code != len(consumed) + 1 or version in consumed.values()):
+        raise ValueError('Candidate must use the next unused code and version name')
     return version, code
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--version', required=True)
+    parser.add_argument('--apk-build', action='store_true', help='Allow an exact recorded code/version for an APK rebuild')
     args = parser.parse_args()
     policy = json.loads(Path('.github/android-release.json').read_text())
     # Checkout fetch-depth: 0 supplies origin/main. This also catches a stale branch
@@ -54,7 +56,7 @@ def main():
     current = subprocess.run(['git', 'show', 'refs/remotes/origin/main:.github/android-release.json'],
                              text=True, capture_output=True)
     main_policy = json.loads(current.stdout) if current.returncode == 0 else None
-    version, code = release_number(policy, args.version.removeprefix('v'), main_policy)
+    version, code = release_number(policy, args.version.removeprefix('v'), main_policy, args.apk_build)
     tag = subprocess.run(['git', 'rev-parse', '--verify', '--quiet', 'refs/tags/v' + version + '^{tree}'],
                          text=True, capture_output=True)
     if tag.returncode == 0:

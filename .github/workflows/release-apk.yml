@@ -26,7 +26,7 @@ jobs:
         id: version
         env:
           RELEASE_VERSION: ${{ github.ref_name }}
-        run: python3 .github/scripts/android-release-version.py --version "$RELEASE_VERSION"
+        run: python3 .github/scripts/android-release-version.py --version "$RELEASE_VERSION" --apk-build
 
       - name: Build Release APK
         uses: game-ci/unity-builder@v4
