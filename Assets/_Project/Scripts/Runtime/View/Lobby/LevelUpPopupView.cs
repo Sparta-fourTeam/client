@@ -9,11 +9,11 @@ using VContainer;
 
 namespace Game.View
 {
-    /// <summary>로비에 돌아왔을 때 레벨업 소식을 로비 위에 전체 화면으로 보여준다 (창 없음).
-    /// 넓은 리본이 옆에서 들어오고 → 빛이 번쩍이며 큰 레벨 숫자가 이전 레벨에서 새 레벨로 올라가고 →
-    /// "새 기능 해금" 카드(ILevelUnlockSource)와 "보상" 카드(튜토리얼 보상 아이템 등)가 차례로 튀어나온다 → "탭하여 계속".
+    /// <summary>로비에 돌아왔을 때 레벨업 소식을 로비 위에 전체 화면으로 보여준다 (창·박스 없음).
+    /// 리본이 펼쳐지고 → "Lv.1 → Lv.2"에서 새 레벨이 쾅 찍히며 번쩍임·충격 링·스파클이 터지고 →
+    /// "새 기능 해금"(ILevelUnlockSource)과 "보상"(튜토리얼 보상 아이템 등) 아이콘이 차례로 튀어나온다 → "탭하여 계속".
     /// 연출 중 탭하면 연출이 바로 끝나고, 끝난 뒤 한 번 더 탭하면 닫힌다. 닫을 때까지 ShowAsync가 기다린다.
-    /// 연출용 칸(_levelLabel·_flash·_glow·_ribbon·_tapHint)은 비워 둬도 동작한다 (그 연출만 빠진다)</summary>
+    /// 연출용 칸은 비워 둬도 동작한다 (그 연출만 빠진다)</summary>
     public sealed class LevelUpPopupView : HudView
     {
         [SerializeField] private GameObject _panel;
@@ -26,24 +26,30 @@ namespace Game.View
         [SerializeField] private LevelUpLineView _unlockLine;
         [Tooltip("보상 카드 줄. 이 칸이 첫 카드이고 모자라면 복제한다")]
         [SerializeField] private LevelUpLineView _rewardLine;
-        [SerializeField] private GameObject _unlockHeader;
-        [SerializeField] private GameObject _rewardHeader;
+        [Tooltip("해금 섹션 전체 (배경 + 제목 + 카드 줄). 해금이 없으면 숨긴다")]
+        [SerializeField] private GameObject _unlockSection;
+        [Tooltip("보상 섹션 전체 (배경 + 제목 + 카드 줄). 보상이 없으면 숨긴다")]
+        [SerializeField] private GameObject _rewardSection;
         [SerializeField] private SkillAssetTable _skillAssets;
         [SerializeField] private ItemIconTable _itemIcons;
 
         [Header("연출")]
-        [Tooltip("큰 레벨 숫자 (예: Lv.2). 이전 레벨에서 새 레벨로 세어 올라간다")]
+        [Tooltip("\"Lv.1 → Lv.2\" 한 줄 전체. 레벨이 오르지 않았으면 숨긴다")]
+        [SerializeField] private GameObject _levelRow;
+        [Tooltip("이전 레벨 (작고 흐리게)")]
+        [SerializeField] private TMP_Text _prevLabel;
+        [SerializeField] private TMP_Text _arrowLabel;
+        [Tooltip("새 레벨 (크게). 쾅 찍히며 나타난다")]
         [SerializeField] private TMP_Text _levelLabel;
-        [Tooltip("레벨업 순간 번쩍이는 흰 판 (CanvasGroup)")]
+        [Tooltip("레벨이 찍히는 순간 번쩍이는 흰 판 (CanvasGroup)")]
         [SerializeField] private CanvasGroup _flash;
-        [Tooltip("레벨 숫자 뒤의 빛 (CanvasGroup). 숫자가 오르는 동안 커지며 나타난다")]
-        [SerializeField] private CanvasGroup _glow;
-        [Tooltip("제목 리본. 옆에서 미끄러져 들어온다")]
+        [Tooltip("레벨이 찍히는 순간 재생하는 파티클 (스파클·충격 링). UIParticle 프리팹의 ParticleSystem을 넣는다")]
+        [SerializeField] private ParticleSystem[] _impactFx;
+        [Tooltip("제목 리본. 가운데에서 양옆으로 펼쳐진다")]
         [SerializeField] private RectTransform _ribbon;
         [Tooltip("\"탭하여 계속\" 안내. 연출이 끝나면 깜빡인다")]
         [SerializeField] private CanvasGroup _tapHint;
-        [SerializeField, Min(0.05f)] private float _cardInterval = 0.18f;
-        [SerializeField, Min(0.1f)] private float _countSeconds = 0.8f;
+        [SerializeField, Min(0.05f)] private float _cardInterval = 0.1f;
 
         private readonly List<LevelUpLineView> _unlockCards = new();
         private readonly List<LevelUpLineView> _rewardCards = new();
@@ -51,8 +57,10 @@ namespace Game.View
         private UniTaskCompletionSource _closed;
         private Sequence _sequence;
         private Tween _hintBlink;
-        private Tween _glowPulse;
+        private Tween _fxStop;
         private bool _playing;
+
+        private const float ImpactEmitSeconds = 0.1f;
 
         public bool IsOpen => _panel.activeSelf;
 
@@ -82,13 +90,13 @@ namespace Game.View
             foreach (var item in news.RewardItems)
             {
                 var data = _data.Items.GetOrThrow(item.itemId);
-                rewards.Add((_itemIcons != null ? _itemIcons.Get(data.IconKey) : null, $"{data.Name} ×{item.quantity}"));
+                rewards.Add((_itemIcons != null ? _itemIcons.Get(data.IconKey) : null, $"{data.Name}\n<color=#FFD35A>×{item.quantity}</color>"));
             }
 
             Fill(_unlockCards, _unlockLine, unlocks);
             Fill(_rewardCards, _rewardLine, rewards);
-            _unlockHeader.SetActive(unlocks.Count > 0);
-            _rewardHeader.SetActive(rewards.Count > 0);
+            _unlockSection.SetActive(unlocks.Count > 0);
+            _rewardSection.SetActive(rewards.Count > 0);
             _title.text = news.LeveledUp ? "레벨 업!" : "보상 획득";
             _closed = new UniTaskCompletionSource();
             PopupPanel.Set(_panel, _transition, true);
@@ -132,66 +140,121 @@ namespace Game.View
                 card.transform.localScale = Vector3.zero;
             }
 
-            _unlockHeader.transform.localScale = Vector3.zero;
-            _rewardHeader.transform.localScale = Vector3.zero;
+            _unlockSection.transform.localScale = Vector3.zero;
+            _rewardSection.transform.localScale = Vector3.zero;
+            bool leveled = news.LeveledUp && _levelLabel != null;
+            if (_levelRow != null)
+            {
+                _levelRow.SetActive(news.LeveledUp);
+            }
+
+            if (_prevLabel != null)
+            {
+                _prevLabel.text = $"Lv.{news.FromLevel}";
+                _prevLabel.alpha = 0f;
+            }
+
+            if (_arrowLabel != null)
+            {
+                _arrowLabel.alpha = 0f;
+            }
+
             if (_levelLabel != null)
             {
-                _levelLabel.gameObject.SetActive(news.LeveledUp);
-                _levelLabel.text = $"Lv.{news.FromLevel}";
-                _levelLabel.transform.localScale = Vector3.one;
+                _levelLabel.text = $"Lv.{news.ToLevel}";
+                _levelLabel.alpha = 0f;
+                _levelLabel.transform.localScale = Vector3.one * 2.4f;
             }
 
             SetAlpha(_tapHint, 0f);
             SetAlpha(_flash, 0f);
-            SetAlpha(_glow, 0f);
-            if (_glow != null)
-            {
-                _glow.transform.localScale = Vector3.one * 0.4f;
-            }
+            StopImpactFx();
 
             var seq = DOTween.Sequence().SetUpdate(true).SetLink(gameObject);
             if (_ribbon != null)
             {
-                float rest = _ribbon.anchoredPosition.x;
-                _ribbon.anchoredPosition = new Vector2(rest + 1600f, _ribbon.anchoredPosition.y);
-                seq.Append(DOTween.To(() => _ribbon.anchoredPosition.x, x => _ribbon.anchoredPosition = new Vector2(x, _ribbon.anchoredPosition.y), rest, 0.4f).SetEase(Ease.OutBack));
+                _ribbon.localScale = new Vector3(0f, 1f, 1f);
+                seq.Append(_ribbon.DOScale(Vector3.one, 0.3f).SetEase(Ease.OutCubic));
             }
 
-            if (news.LeveledUp && _levelLabel != null)
+            if (leveled)
             {
-                if (_flash != null)
+                if (_prevLabel != null)
                 {
-                    seq.Append(Fade(_flash, 0.9f, 0.08f));
-                    seq.Append(Fade(_flash, 0f, 0.4f));
+                    seq.Append(DOTween.To(() => _prevLabel.alpha, a => _prevLabel.alpha = a, 1f, 0.2f));
                 }
 
-                if (_glow != null)
+                if (_arrowLabel != null)
                 {
-                    seq.Join(Fade(_glow, 1f, 0.5f));
-                    seq.Join(_glow.transform.DOScale(1f, 0.6f).SetEase(Ease.OutCubic));
+                    seq.Append(DOTween.To(() => _arrowLabel.alpha, a => _arrowLabel.alpha = a, 1f, 0.15f));
                 }
 
-                seq.Append(DOVirtual.Int(news.FromLevel, news.ToLevel, _countSeconds, v => _levelLabel.text = $"Lv.{v}").SetEase(Ease.OutCubic));
-                seq.Append(_levelLabel.transform.DOPunchScale(Vector3.one * 0.3f, 0.3f, 6));
+                // 새 레벨이 크게 떨어져 쾅 찍힌다
+                seq.Append(_levelLabel.transform.DOScale(Vector3.one, 0.2f).SetEase(Ease.InQuad));
+                seq.Join(DOTween.To(() => _levelLabel.alpha, a => _levelLabel.alpha = a, 1f, 0.12f));
+                float impact = seq.Duration();
+                InsertImpact(seq, impact);
+                seq.Append(_levelLabel.transform.DOPunchScale(Vector3.one * 0.18f, 0.3f, 6));
             }
 
-            AppendCards(seq, _unlockHeader, _unlockCards, unlockCount);
-            AppendCards(seq, _rewardHeader, _rewardCards, rewardCount);
+            AppendCards(seq, _unlockSection, _unlockCards, unlockCount);
+            AppendCards(seq, _rewardSection, _rewardCards, rewardCount);
             seq.OnComplete(OnSequenceDone);
             _sequence = seq;
         }
 
-        private void AppendCards(Sequence seq, GameObject header, List<LevelUpLineView> cards, int count)
+        // 레벨이 찍히는 순간: 짧은 번쩍임, 충격 링, 사방으로 튀는 스파클
+        private void InsertImpact(Sequence seq, float at)
+        {
+            if (_flash != null)
+            {
+                seq.Insert(at, Fade(_flash, 0.4f, 0.04f));
+                seq.Insert(at + 0.04f, Fade(_flash, 0f, 0.3f));
+            }
+
+            seq.InsertCallback(at, PlayImpactFx);
+        }
+
+        // UIParticle은 반복 재생 + 방출 중단 방식에서 확실히 그려진다 (WaveHudView의 _resetSparks와 같은 방식)
+        private void PlayImpactFx()
+        {
+            foreach (var fx in _impactFx ?? System.Array.Empty<ParticleSystem>())
+            {
+                fx.Play(true);
+            }
+
+            _fxStop?.Kill();
+            _fxStop = DOVirtual.DelayedCall(ImpactEmitSeconds, StopImpactEmission, true).SetLink(gameObject);
+        }
+
+        private void StopImpactEmission()
+        {
+            foreach (var fx in _impactFx ?? System.Array.Empty<ParticleSystem>())
+            {
+                fx.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+            }
+        }
+
+        private void StopImpactFx()
+        {
+            foreach (var fx in _impactFx ?? System.Array.Empty<ParticleSystem>())
+            {
+                fx.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            }
+        }
+
+        private void AppendCards(Sequence seq, GameObject section, List<LevelUpLineView> cards, int count)
         {
             if (count == 0)
             {
                 return;
             }
 
-            seq.Append(header.transform.DOScale(1f, 0.25f).SetEase(Ease.OutBack));
+            seq.AppendInterval(0.08f);
+            seq.Append(section.transform.DOScale(1f, 0.18f).SetEase(Ease.OutCubic));
             for (int i = 0; i < count; i++)
             {
-                seq.Append(cards[i].transform.DOScale(1f, 0.3f).SetEase(Ease.OutBack));
+                seq.Append(cards[i].transform.DOScale(1f, 0.28f).SetEase(Ease.OutBack));
                 seq.AppendInterval(_cardInterval);
             }
         }
@@ -210,11 +273,6 @@ namespace Game.View
         private void OnSequenceDone()
         {
             _playing = false;
-            if (_glow != null && _glow.alpha > 0f)
-            {
-                _glowPulse = _glow.transform.DOScale(1.08f, 1.2f).SetLoops(-1, LoopType.Yoyo).SetEase(Ease.InOutSine).SetUpdate(true).SetLink(gameObject);
-            }
-
             if (_tapHint == null)
             {
                 return;
@@ -245,14 +303,15 @@ namespace Game.View
 
         private static string TextOf(UnlockNotice unlock) => unlock.Kind switch
         {
-            UnlockKind.Weapon => $"{unlock.Name}\n새 무기",
-            UnlockKind.Equipment => $"{unlock.Name}\n새 장비",
+            UnlockKind.Weapon => $"{unlock.Name}\n<color=#FFD35A>새 무기</color>",
+            UnlockKind.Equipment => $"{unlock.Name}\n<color=#FFD35A>새 장비</color>",
             _ => unlock.Name,
         };
 
         private void Close()
         {
             KillTweens();
+            StopImpactFx();
             PopupPanel.Set(_panel, _transition, false);
             _closed?.TrySetResult();
         }
@@ -264,8 +323,8 @@ namespace Game.View
             _sequence = null;
             _hintBlink?.Kill();
             _hintBlink = null;
-            _glowPulse?.Kill();
-            _glowPulse = null;
+            _fxStop?.Kill();
+            _fxStop = null;
             _playing = false;
         }
 
