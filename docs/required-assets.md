@@ -44,7 +44,7 @@ Unity 실제 스프라이트 임포트·테이블·프리팹 참조 검사는 `a
 
 | 구분 | 필요한 키 |
 |---|---|
-| 스킬 마법부 9종 | `book.arrow`, `book.fireball`, `book.lightning`, `book.frost_crystal`, `book.log`, `book.cold_zone`, `book.lightning_cloud`, `book.energy_beam`, `book.chain_lightning` |
+| 스킬 마법부 10종 | `book.arrow`, `book.fireball`, `book.lightning`, `book.frost_crystal`, `book.log`, `book.cold_zone`, `book.lightning_cloud`, `book.energy_beam`, `book.chain_lightning`, `book.focus_beam` (전용 아이콘 전까지 에너지 빔 마법북 아이콘 사용) |
 | 장비 마법부 7종 | `equipment.hat`, `equipment.top`, `equipment.shoes`, `equipment.weapon`, `equipment.ring`, `equipment.tie`, `equipment.employee_id` |
 | 상자 1종 | `chest.gem` |
 

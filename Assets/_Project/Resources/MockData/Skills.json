@@ -1104,7 +1104,7 @@
     "castType": "Projectile",
     "element": "Ice",
     "maxLevel": 15,
-    "progressionId": null,
+    "progressionId": "frost_crystal",
     "baseStats": {
       "cast": {
         "cooldown": 2.6,
@@ -1687,7 +1687,7 @@
     "castType": "Area",
     "element": "Ice",
     "maxLevel": 10,
-    "progressionId": null,
+    "progressionId": "cold_zone",
     "baseStats": {
       "cast": {
         "cooldown": 7.5,
@@ -1857,7 +1857,7 @@
     "castType": "Area",
     "element": "Lightning",
     "maxLevel": 10,
-    "progressionId": null,
+    "progressionId": "lightning_cloud",
     "baseStats": {
       "cast": {
         "cooldown": 8.5,
@@ -2145,7 +2145,7 @@
     "castType": "Beam",
     "element": "Neutral",
     "maxLevel": 13,
-    "progressionId": null,
+    "progressionId": "energy_beam",
     "baseStats": {
       "cast": {
         "cooldown": 7,
@@ -2415,7 +2415,7 @@
     "castType": "Chain",
     "element": "Lightning",
     "maxLevel": 11,
-    "progressionId": null,
+    "progressionId": "chain_lightning",
     "baseStats": {
       "cast": {
         "cooldown": 4.8,
@@ -2613,7 +2613,7 @@
     "castType": "Beam",
     "element": "Neutral",
     "maxLevel": 9,
-    "progressionId": null,
+    "progressionId": "focus_beam",
     "baseStats": {
       "cast": {
         "cooldown": 5,

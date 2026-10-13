@@ -6,7 +6,7 @@ namespace Game.Core
 {
     /// <summary>IGrowthCatalog의 임시 구현.
     /// 장비는 Upgrades 테이블과 PlayerProfile에서, 스킬 칸은 Skills.json(기획 시트의 스킬 탭)에서 만든다.
-    /// Upgrades 테이블에 영구 강화가 정의된 스킬(화살·화염구·벼락)은 레벨·비용도 테이블과 PlayerProfile에서 온다.
+    /// Upgrades 테이블에 영구 강화가 정의된 스킬(지금은 독립 스킬 10종 모두)은 레벨·비용도 테이블과 PlayerProfile에서 온다.
     /// TODO(data): 캐릭터 정보와 보석·티켓은 데이터와 API가 생기면 실제 구현으로 교체</summary>
     public sealed class DummyGrowthCatalog : IGrowthCatalog, IDisposable
     {
