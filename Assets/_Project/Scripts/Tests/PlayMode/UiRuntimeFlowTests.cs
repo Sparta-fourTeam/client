@@ -267,14 +267,24 @@ namespace Game.Tests
             var profile = lobby.Container.Resolve<PlayerProfile>();
             var ui = lobby.Container.Resolve<IUiRegistry>();
             var levelUp = ui.Get<LevelUpPopupView>();
+            // 같은 레벨에 열린 장비 칸이 있으면 무기 다음에 해금 카드로 나온다
+            var equipments = lobby.Container.Resolve<IGrowthCatalog>().Equips.Where(e => e.UnlockLevel == tutorialLevel).Select(e => e.Name).ToList();
             yield return WaitFor(() => levelUp.IsOpen);
             // 해금 카드와 보상 카드만 센다 (레벨은 큰 숫자로 보여 준다). 풀에 남은 숨은 카드는 제외
             var cards = levelUp.GetComponentsInChildren<LevelUpLineView>().Where(line => line.gameObject.activeSelf)
                 .Select(line => line.GetComponentInChildren<TMP_Text>().text).ToList();
-            Assert.That(cards, Has.Count.EqualTo(3));
+            int firstReward = 1 + equipments.Count;
+            Assert.That(cards, Has.Count.EqualTo(firstReward + 2));
             Assert.That(cards[0], Does.Contain(weapon));
-            Assert.That(cards[1], Does.Contain($"×{upgrade.CostAt(1)}"));
-            Assert.That(cards[2], Does.Contain($"×{upgrade.MaterialAt(1)}"));
+            for (int i = 0; i < equipments.Count; i++)
+            {
+                Assert.That(cards[1 + i], Does.Contain(equipments[i]));
+                var equipmentCard = levelUp.GetComponentsInChildren<LevelUpLineView>().Where(line => line.gameObject.activeSelf).ElementAt(1 + i);
+                Assert.That(Field<UnityEngine.UI.Image>(equipmentCard, "_icon").sprite, Is.Not.Null, "장비 해금 카드도 무기처럼 아이콘을 보여 준다");
+            }
+
+            Assert.That(cards[firstReward], Does.Contain($"×{upgrade.CostAt(1)}"));
+            Assert.That(cards[firstReward + 1], Does.Contain($"×{upgrade.MaterialAt(1)}"));
             Assert.That(profile.Level, Is.EqualTo(tutorialLevel));
 
             var tapArea = Field<Button>(levelUp, "_confirmButton");

@@ -40,4 +40,20 @@ namespace Game.Core
             SkillUnlockRule.NewlyUnlocked(_data.LoadSkills(), fromLevel, toLevel)
                 .Select(skill => new UnlockNotice { Kind = UnlockKind.Weapon, Name = skill.name, IconKey = skill.id.ToString() });
     }
+
+    /// <summary>해금 레벨(Upgrades의 UnlockLevel)을 채워 열린 장비 칸. 아이콘은 ItemIconTable에서 업그레이드 ID(예: equipment.hat)로 찾는다</summary>
+    public sealed class EquipmentUnlockSource : ILevelUnlockSource
+    {
+        private readonly IGrowthCatalog _catalog;
+
+        public EquipmentUnlockSource(IGrowthCatalog catalog)
+        {
+            _catalog = catalog;
+        }
+
+        public IEnumerable<UnlockNotice> Unlocked(int fromLevel, int toLevel) =>
+            _catalog.Equips.Where(equip => equip.UnlockLevel > fromLevel && equip.UnlockLevel <= toLevel)
+                .OrderBy(equip => equip.UnlockLevel).ThenBy(equip => equip.Slot)
+                .Select(equip => new UnlockNotice { Kind = UnlockKind.Equipment, Name = equip.Name, IconKey = equip.UpgradeId });
+    }
 }

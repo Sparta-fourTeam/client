@@ -304,6 +304,7 @@ namespace Game.View
         private Sprite IconOf(UnlockNotice unlock) => unlock.Kind switch
         {
             UnlockKind.Weapon => _skillAssets != null ? _skillAssets.GetHudIcon(unlock.IconKey) : null,
+            UnlockKind.Equipment => _itemIcons != null ? _itemIcons.Get(unlock.IconKey) : null,
             _ => null,
         };
 
