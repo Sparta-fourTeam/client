@@ -96,7 +96,15 @@ namespace Game.Core
             foreach (var upgrade in upgrades.Values)
             {
                 upgrade.Validate();
-                if (upgrade.UsesMaterial) { Items.GetOrThrow(upgrade.MaterialItemId); }
+                if (upgrade.UsesMaterial)
+                {
+                    var material = Items.GetOrThrow(upgrade.MaterialItemId);
+                    // 장비 재료는 아이템 TargetId와 강화 행의 MaterialItemId가 같은 연결을 양쪽에서 가진다. 어긋나면 랜덤 재료가 엉뚱한 장비를 가리킨다
+                    if (upgrade.UpgradeId.StartsWith("equipment.") && material.TargetId != upgrade.UpgradeId)
+                    {
+                        throw new InvalidOperationException($"Upgrades {upgrade.UpgradeId}: 재료 {material.Id}의 TargetId({material.TargetId})가 이 강화와 다릅니다");
+                    }
+                }
             }
             var rewards = ParseIndexed<int, StageRewardBalance>("StageRewards", d => d.StageId);
             foreach (var balance in rewards.Values)

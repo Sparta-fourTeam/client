@@ -40,7 +40,7 @@ namespace Game.Tests
         [TestCase(6)]
         public void FailedOrForfeitedBattle_PaysSecuredRewardsOnce(int completed)
         {
-            var issued = _api.StartBattle(1, 1).GetAwaiter().GetResult();
+            var issued = _api.StartBattle(1).GetAwaiter().GetResult();
             var request = new SubmitResultRequest { battleId = issued.battleId, completedWaves = completed, reachedWave = completed + 1 };
             var result = _api.SubmitResult(request).GetAwaiter().GetResult();
             var expected = StageRewardRules.Calculate(_data.StageRewards.GetOrThrow(1), completed, false, 0);
@@ -54,7 +54,7 @@ namespace Game.Tests
             request.cleared = true; request.completedWaves = 20;
             _data.StageRewards.GetOrThrow(1).FinalCoin = 9999;
             var replay = new LocalBattleApi(new LocalSaveStore(_path), _data).SubmitResult(request).GetAwaiter().GetResult();
-            Assert.IsFalse(replay.cleared);
+            Assert.AreEqual(result.clearRating, replay.clearRating);
             Assert.AreEqual(result.rewardExp, replay.rewardExp);
             Assert.AreEqual(before, File.ReadAllText(_path));
         }
@@ -64,7 +64,7 @@ namespace Game.Tests
         [TestCase(20, 1, 100)]
         public void Wave20Clear_PaysExpByRating(int hp, int rating, int exp)
         {
-            var issued = _api.StartBattle(1, 1).GetAwaiter().GetResult();
+            var issued = _api.StartBattle(1).GetAwaiter().GetResult();
             var result = _api.SubmitResult(new SubmitResultRequest
             { battleId = issued.battleId, completedWaves = 20, reachedWave = 20, cleared = true, wallHpPercent = hp }).GetAwaiter().GetResult();
             Assert.AreEqual(165, result.rewardGold); Assert.AreEqual(exp, result.rewardExp);
@@ -77,7 +77,7 @@ namespace Game.Tests
         {
             _data.StageRewards.GetOrThrow(1).Items[0].itemId = ItemIds.RandomSkillMaterial;
             _api.UnlockedSkillIds = () => new[] { 1 };
-            var issued = _api.StartBattle(1, 1).GetAwaiter().GetResult();
+            var issued = _api.StartBattle(1).GetAwaiter().GetResult();
             _api.UnlockedSkillIds = () => new[] { 2, 3 };
             var request = new SubmitResultRequest { battleId = issued.battleId, completedWaves = 3, reachedWave = 4 };
             var result = _api.SubmitResult(request).GetAwaiter().GetResult();
@@ -95,10 +95,10 @@ namespace Game.Tests
         {
             _data.StageRewards.GetOrThrow(1).Items[0].itemId = ItemIds.RandomSkillMaterial;
             var before = File.ReadAllText(_path);
-            var error = Assert.Throws<ApiException>(() => _api.StartBattle(1, 1).GetAwaiter().GetResult());
+            var error = Assert.Throws<ApiException>(() => _api.StartBattle(1).GetAwaiter().GetResult());
             Assert.AreEqual("SKILL_UNLOCK_SOURCE_NOT_READY", error.Code); Assert.AreEqual(before, File.ReadAllText(_path));
             _api.UnlockedSkillIds = () => Array.Empty<int>();
-            var issued = _api.StartBattle(1, 1).GetAwaiter().GetResult();
+            var issued = _api.StartBattle(1).GetAwaiter().GetResult();
             before = File.ReadAllText(_path);
             Assert.Throws<ApiException>(() => _api.SubmitResult(new SubmitResultRequest { battleId = issued.battleId }).GetAwaiter().GetResult());
             Assert.AreEqual(before, File.ReadAllText(_path));
@@ -110,11 +110,11 @@ namespace Game.Tests
             _data.StageRewards.GetOrThrow(1).Items = new List<StageRewardEntry>
             { new() { itemId = ItemIds.RandomEquipmentMaterial, finalAmount = 1 } };
             var before = File.ReadAllText(_path);
-            var error = Assert.Throws<ApiException>(() => _api.StartBattle(1, 1).GetAwaiter().GetResult());
+            var error = Assert.Throws<ApiException>(() => _api.StartBattle(1).GetAwaiter().GetResult());
             Assert.AreEqual("EQUIPMENT_UNLOCK_SOURCE_NOT_READY", error.Code);
             Assert.AreEqual(before, File.ReadAllText(_path));
             _api.UnlockedEquipmentIds = () => new[] { _data.Items.GetOrThrow(ItemIds.RingBook).TargetId };
-            var issued = _api.StartBattle(1, 1).GetAwaiter().GetResult();
+            var issued = _api.StartBattle(1).GetAwaiter().GetResult();
             var result = _api.SubmitResult(new SubmitResultRequest { battleId = issued.battleId, completedWaves = 4, reachedWave = 5 })
                 .GetAwaiter().GetResult();
             Assert.AreEqual(1, result.rewardItems.Where(item => item.itemId == ItemIds.RingBook).Sum(item => item.quantity));
@@ -126,7 +126,7 @@ namespace Game.Tests
         [TestCase(19, true)]
         public void InvalidCompletedWaves_DoNotFinalizeOrPay(int completed, bool clear)
         {
-            var issued = _api.StartBattle(1, 1).GetAwaiter().GetResult();
+            var issued = _api.StartBattle(1).GetAwaiter().GetResult();
             var before = File.ReadAllText(_path);
             Assert.Throws<ApiException>(() => _api.SubmitResult(new SubmitResultRequest
             { battleId = issued.battleId, completedWaves = completed, reachedWave = 20, cleared = clear }).GetAwaiter().GetResult());

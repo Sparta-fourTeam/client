@@ -25,7 +25,7 @@ namespace Game.Tests
             /// <summary>클리어 응답에 담을 별점</summary>
             public int ClearRating = 2;
 
-            public UniTask<StartBattleResponse> StartBattle(int stageId, int dataRevision)
+            public UniTask<StartBattleResponse> StartBattle(int stageId)
             {
                 throw new NotSupportedException();
             }
@@ -40,7 +40,7 @@ namespace Game.Tests
                 }
 
                 return UniTask.FromResult(new SubmitResultResponse
-                { cleared = req.cleared, rewardGold = 100, clearRating = req.cleared ? ClearRating : 0 });
+                { rewardGold = 100, clearRating = req.cleared ? ClearRating : 0 });
             }
         }
 
@@ -117,7 +117,7 @@ namespace Game.Tests
             _clock = new StageClock(_stateChanged);
 
             var context = new StageContext();
-            context.SetBattle("battle-1", 1);
+            context.SetBattle("battle-1");
 
             var player = new GameObject("TestPlayer");
             _objects.Add(player);

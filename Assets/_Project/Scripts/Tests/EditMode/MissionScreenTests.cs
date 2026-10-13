@@ -37,7 +37,7 @@ namespace Game.Tests
         {
             public int Calls;
             public readonly UniTaskCompletionSource<StartBattleResponse> Response = new();
-            public UniTask<StartBattleResponse> StartBattle(int stageId, int dataRevision)
+            public UniTask<StartBattleResponse> StartBattle(int stageId)
             {
                 Calls++;
                 return Response.Task;
@@ -140,7 +140,7 @@ namespace Game.Tests
             UnityEngine.TestTools.LogAssert.Expect(LogType.Exception,
                 new System.Text.RegularExpressions.Regex(networkFailure ? "OFFLINE" : "scene failed"));
             if (networkFailure) { battleApi.Response.TrySetException(new ApiException(ApiErrorKind.Network, "OFFLINE")); }
-            else { battleApi.Response.TrySetResult(new StartBattleResponse { battleId = "test", seed = 1 }); }
+            else { battleApi.Response.TrySetResult(new StartBattleResponse { battleId = "test" }); }
 
             Assert.IsFalse(Get<bool>(_screen, "_launching"));
             Assert.IsTrue(enter.interactable);

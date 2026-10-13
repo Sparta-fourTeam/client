@@ -338,7 +338,7 @@ namespace Game.Core
                 }
 
                 _pendingRequest = null;
-                _result.Publish(new StageResult(response.cleared, _resultKills, request.reachedWave, _resultPlayTime,
+                _result.Publish(new StageResult(request.cleared, _resultKills, request.reachedWave, _resultPlayTime,
                     response.rewardGold, response.rewardItems, response.rewardExp, response.clearRating,
                     _stats.SkillDamageRanking()));
                 ChangeState(StageState.Finished);
