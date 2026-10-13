@@ -15,7 +15,6 @@ namespace Game.Tests
         {
             public int Count;
             public List<UpgradeChoice> Candidates;
-            public bool RemoveApplied;
             public List<UpgradeChoice> Applied { get; } = new List<UpgradeChoice>();
 
             public List<UpgradeChoice> GetUpgradeCandidates() =>
@@ -24,7 +23,6 @@ namespace Game.Tests
             public bool ApplyUpgradeChoice(UpgradeChoice choice)
             {
                 Applied.Add(choice);
-                if (RemoveApplied) { Candidates.RemoveAll(c => c.skill == choice.skill); }
                 return true;
             }
         }
@@ -45,10 +43,11 @@ namespace Game.Tests
                 new UpgradeChoice { GeneralCard = Card("repair", false) } };
             var session = new EliteRouletteSession(Deck(), new FixedRandom(), 2, 4);
             Assert.IsTrue(session.Start());
-            Assert.AreEqual(2, session.CardCount);
+            Assert.AreEqual(1, session.CardCount, "강화 카드가 하나면 중복 보상으로 채우지 않는다");
             var round = session.PrepareRound();
             Assert.AreEqual(8, round.Slots.Count);
-            Assert.IsTrue(round.Slots.All(c => c.skill == weapon && c.Option == upgrade.Option));
+            Assert.AreEqual(1, round.Slots.Count(c => c.skill == weapon && c.Option == upgrade.Option));
+            Assert.IsTrue(round.Slots.Where(c => c.skill != null).All(c => c.skill == weapon));
             Assert.AreSame(round, session.PrepareRound());
             Assert.IsTrue(session.TryApply(round));
             Assert.IsFalse(session.TryApply(round));
@@ -57,23 +56,96 @@ namespace Game.Tests
         }
 
         [Test]
-        public void Roulette_RebuildsCandidatesAfterReward_AndStopsWhenExhausted()
+        public void Roulette_KeepsSlotsAndAllowsSameWeapon_WithDifferentCardsOnly()
+        {
+            using var weapon = new TestSkill(701);
+            skills.Candidates = Enumerable.Range(0, 4).Select(i => new UpgradeChoice {
+                skill = weapon, Option = new SkillUpgradeOption { id = "upgrade_" + i } }).ToList();
+            skills.Candidates.Add(skills.Candidates[0]);
+            var session = new EliteRouletteSession(Deck(), new FixedRandom(), 5, 5);
+            Assert.IsTrue(session.Start());
+            Assert.AreEqual(4, session.CardCount, "한 무기라도 서로 다른 강화 카드 네 개를 받을 수 있다");
+            var slots = session.Slots;
+            Assert.AreEqual(4, slots.Count(c => c.skill != null));
+            for (int i = 0; i < 4; i++)
+            {
+                var round = session.PrepareRound();
+                Assert.AreSame(slots, round.Slots);
+                Assert.AreSame(weapon, round.Winner.skill);
+                Assert.AreEqual(slots[round.WinnerIndex].Option.id, round.Winner.Option.id);
+                Assert.IsTrue(session.TryApply(round));
+                Assert.AreEqual(i + 1, Enumerable.Range(0, slots.Count).Count(session.IsSlotSelected));
+                if (i == 0)
+                {
+                    Assert.IsTrue(Enumerable.Range(0, slots.Count).Any(index => slots[index].skill == weapon
+                        && !session.IsSlotSelected(index)), "당첨된 화살 카드만 제외하고 다른 화살 카드는 남긴다");
+                }
+            }
+            Assert.IsNull(session.PrepareRound());
+            Assert.IsTrue(session.IsComplete);
+            Assert.AreEqual(4, skills.Applied.Count);
+            Assert.AreEqual(4, skills.Applied.Select(c => c.Option.id).Distinct().Count());
+            Assert.IsTrue(session.Start());
+            Assert.IsFalse(Enumerable.Range(0, session.Slots.Count).Any(session.IsSlotSelected));
+        }
+
+        [TestCase(false, 2)]
+        [TestCase(true, 1)]
+        public void Roulette_DistinguishesWeaponCards_AndDeduplicatesSharedCards(bool shared, int expectedCards)
         {
             using var first = new TestSkill(701);
             using var second = new TestSkill(702);
-            skills.RemoveApplied = true;
+            skills.Candidates = new List<UpgradeChoice> {
+                new UpgradeChoice { skill = first, Option = new SkillUpgradeOption { id = "boost", sharedId = shared ? "shared_boost" : null } },
+                new UpgradeChoice { skill = second, Option = new SkillUpgradeOption { id = "boost", sharedId = shared ? "shared_boost" : null } } };
+            var session = new EliteRouletteSession(Deck(), new FixedRandom(), 2, 2);
+            Assert.IsTrue(session.Start());
+            Assert.AreEqual(expectedCards, session.CardCount);
+            for (int i = 0; i < expectedCards; i++) { Assert.IsTrue(session.TryApply(session.PrepareRound())); }
+            Assert.IsNull(session.PrepareRound());
+            Assert.AreEqual(expectedCards, skills.Applied.Count);
+        }
+
+        [TestCase(false)]
+        [TestCase(true)]
+        public void Roulette_RefreshesRemainingCandidates_WithoutChangingTheBoard(bool remainingUnavailable)
+        {
+            using var first = new TestSkill(701);
+            using var second = new TestSkill(702);
+            using var added = new TestSkill(703);
             skills.Candidates = new List<UpgradeChoice> {
                 new UpgradeChoice { skill = first, Option = new SkillUpgradeOption { id = "first" } },
                 new UpgradeChoice { skill = second, Option = new SkillUpgradeOption { id = "second" } } };
-            var session = new EliteRouletteSession(Deck(), new FixedRandom(), 4, 4);
+            var session = new EliteRouletteSession(Deck(), new FixedRandom(), 2, 2);
             Assert.IsTrue(session.Start());
-            Assert.IsTrue(session.TryApply(session.PrepareRound()));
+            var round = session.PrepareRound();
+            Assert.IsTrue(session.TryApply(round));
+            var remaining = round.Winner.skill == first ? second : first;
+            string remainingCardId = skills.Candidates.Single(c => c.skill == remaining).Option.id;
+            var updated = new SkillUpgradeOption { id = remainingCardId, desc = "updated" };
+            skills.Candidates = new List<UpgradeChoice> {
+                new UpgradeChoice { skill = added, Option = new SkillUpgradeOption { id = "added" } } };
+            if (!remainingUnavailable)
+            {
+                skills.Candidates.Add(new UpgradeChoice { skill = remaining, Option = updated });
+            }
             var next = session.PrepareRound();
-            Assert.IsTrue(next.Slots.All(c => c.skill == second));
-            Assert.IsTrue(session.TryApply(next));
-            Assert.IsNull(session.PrepareRound());
-            Assert.IsTrue(session.IsComplete);
-            Assert.AreEqual(2, skills.Applied.Count);
+            if (remainingUnavailable)
+            {
+                Assert.IsNull(next);
+                Assert.IsTrue(session.IsComplete);
+                Assert.AreEqual(1, session.CompletedRolls, "후보가 없어도 실행하지 않은 회차를 완료 수에 더하지 않는다");
+                Assert.AreEqual(1, skills.Applied.Count);
+            }
+            else
+            {
+                Assert.AreSame(round.Slots, next.Slots);
+                Assert.AreSame(remaining, next.Winner.skill);
+                Assert.AreSame(updated, next.Winner.Option);
+                Assert.IsTrue(session.TryApply(next));
+                Assert.IsTrue(session.IsComplete);
+            }
+            Assert.IsFalse(session.Slots.Any(c => c.skill == added), "새로 추가된 카드로 고정한 배치를 바꾸지 않는다");
         }
 
         [Test]
