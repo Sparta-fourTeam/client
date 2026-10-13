@@ -1833,6 +1833,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8566043169245245612}
   - component: {fileID: 256869779842763672}
+  - component: {fileID: 593713776968911899}
   m_Layer: 5
   m_Name: HudCanvas
   m_TagString: Untagged
@@ -1887,6 +1888,60 @@ Canvas:
   m_SortingLayerID: 1964123581
   m_SortingOrder: 20
   m_TargetDisplay: 0
+--- !u!114 &593713776968911899
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7447173283495688033}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57ab7529462f7446bbe950b57735e437, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.HudIntro
+  _items:
+  - Target: {fileID: 4869352842847374870}
+    From: 3
+    Delay: 0.05
+    Distance: 220
+    ScaleIn: 0
+    Punch: 0
+    Hanging: 0
+    StringLength: 0
+    SwingDegrees: 0
+    SwingPeriod: 1
+  - Target: {fileID: 5534799165362881682}
+    From: 2
+    Delay: 0
+    Distance: 0
+    ScaleIn: 0
+    Punch: 0
+    Hanging: 1
+    StringLength: 70
+    SwingDegrees: 6
+    SwingPeriod: 1.3
+  - Target: {fileID: 6651739136835483767}
+    From: 2
+    Delay: 0.12
+    Distance: 0
+    ScaleIn: 0
+    Punch: 0
+    Hanging: 1
+    StringLength: 30
+    SwingDegrees: 14
+    SwingPeriod: 0.85
+  - Target: {fileID: 2713265820963929207}
+    From: 2
+    Delay: 0.12
+    Distance: 0
+    ScaleIn: 0
+    Punch: 0
+    Hanging: 1
+    StringLength: 30
+    SwingDegrees: 14
+    SwingPeriod: 0.85
+  _playOnStart: 1
 --- !u!1 &7520984209321496617
 GameObject:
   m_ObjectHideFlags: 0

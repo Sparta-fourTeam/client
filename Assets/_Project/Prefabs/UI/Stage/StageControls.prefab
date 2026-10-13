@@ -548,6 +548,7 @@ GameObject:
   m_Component:
   - component: {fileID: 9131577263205229486}
   - component: {fileID: 6133185119685656052}
+  - component: {fileID: 4273629987707738239}
   m_Layer: 5
   m_Name: StageControls
   m_TagString: Untagged
@@ -594,6 +595,40 @@ MonoBehaviour:
   - {fileID: -116178122, guid: e98c6a7131bec1e4cb52826e74a70157, type: 3}
   - {fileID: -296383204, guid: e98c6a7131bec1e4cb52826e74a70157, type: 3}
   buttonImage: {fileID: 1918303144114874173}
+--- !u!114 &4273629987707738239
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8761041663258074451}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57ab7529462f7446bbe950b57735e437, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.HudIntro
+  _items:
+  - Target: {fileID: 2675648009228400167}
+    From: 0
+    Delay: 0.05
+    Distance: 220
+    ScaleIn: 0
+    Punch: 0.12
+    Hanging: 0
+    StringLength: 0
+    SwingDegrees: 0
+    SwingPeriod: 1
+  - Target: {fileID: 526796305175552486}
+    From: 2
+    Delay: 0.28
+    Distance: 0
+    ScaleIn: 0
+    Punch: 0
+    Hanging: 1
+    StringLength: 38
+    SwingDegrees: 18
+    SwingPeriod: 0.75
+  _playOnStart: 1
 --- !u!1 &8834570305706152985
 GameObject:
   m_ObjectHideFlags: 0

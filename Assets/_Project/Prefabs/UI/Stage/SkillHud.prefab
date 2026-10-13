@@ -161,6 +161,7 @@ GameObject:
   - component: {fileID: 7028026614668797513}
   - component: {fileID: 5735787416695279010}
   - component: {fileID: 3453143652258201681}
+  - component: {fileID: 6725542516821928177}
   m_Layer: 5
   m_Name: SkillHud
   m_TagString: Untagged
@@ -238,6 +239,80 @@ MonoBehaviour:
   - {fileID: 3597247769859125321}
   _assets: {fileID: 11400000, guid: cc930aa35823f4e5a857c88730f82b00, type: 2}
   _rangeIndicatorPrefab: {fileID: 4887119527607287312, guid: 26aa691111a044b4bb03f4aa7763c433, type: 3}
+--- !u!114 &6725542516821928177
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3185226631231836932}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57ab7529462f7446bbe950b57735e437, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.HudIntro
+  _items:
+  - Target: {fileID: 7028026614668797513}
+    From: 1
+    Delay: 0.2
+    Distance: 200
+    ScaleIn: 0
+    Punch: 0
+    Hanging: 0
+    StringLength: 0
+    SwingDegrees: 0
+    SwingPeriod: 1
+  - Target: {fileID: 7162763183045851934}
+    From: 4
+    Delay: 0.3
+    Distance: 0
+    ScaleIn: 1
+    Punch: 0
+    Hanging: 0
+    StringLength: 0
+    SwingDegrees: 0
+    SwingPeriod: 1
+  - Target: {fileID: 2176454513111900529}
+    From: 4
+    Delay: 0.36
+    Distance: 0
+    ScaleIn: 1
+    Punch: 0
+    Hanging: 0
+    StringLength: 0
+    SwingDegrees: 0
+    SwingPeriod: 1
+  - Target: {fileID: 8400805785516570372}
+    From: 4
+    Delay: 0.42
+    Distance: 0
+    ScaleIn: 1
+    Punch: 0
+    Hanging: 0
+    StringLength: 0
+    SwingDegrees: 0
+    SwingPeriod: 1
+  - Target: {fileID: 4557810253716031601}
+    From: 4
+    Delay: 0.48
+    Distance: 0
+    ScaleIn: 1
+    Punch: 0
+    Hanging: 0
+    StringLength: 0
+    SwingDegrees: 0
+    SwingPeriod: 1
+  - Target: {fileID: 1436519236493726598}
+    From: 4
+    Delay: 0.54
+    Distance: 0
+    ScaleIn: 1
+    Punch: 0
+    Hanging: 0
+    StringLength: 0
+    SwingDegrees: 0
+    SwingPeriod: 1
+  _playOnStart: 1
 --- !u!1 &3657078380760421862
 GameObject:
   m_ObjectHideFlags: 0

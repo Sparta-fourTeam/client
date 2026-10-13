@@ -233,7 +233,8 @@ namespace Game.Editor
                 _releaseAfter = 0.2f;
             }
 
-            internal bool HasScenario => _selected.GetComponentInChildren<RewardPopupView>(true) != null
+            internal bool HasScenario => _container.GetComponentInChildren<HudIntro>(true) != null
+                || _selected.GetComponentInChildren<RewardPopupView>(true) != null
                 || _selected.GetComponentInChildren<ContentUnlockView>(true) != null
                 || _selected.GetComponentInChildren<LevelUpPopupView>(true) != null
                 || _selected.GetComponentInChildren<EliteRouletteView>(true) != null;
@@ -245,6 +246,9 @@ namespace Game.Editor
                 var icons = AssetDatabase.LoadAssetAtPath<ItemIconTable>("Assets/_Project/Data/ItemIconTable.asset");
                 OwnTweens(() =>
                 {
+                    // 전투 HUD 등장 연출 (게임에서는 스테이지가 시작될 때 자동으로 재생된다)
+                    foreach (var intro in _container.GetComponentsInChildren<HudIntro>(true)) { intro.Play(); }
+
                     if (_selected.GetComponentInChildren<RewardPopupView>(true) is { } reward)
                     {
                         if (!_rewardReady)
