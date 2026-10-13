@@ -35,6 +35,7 @@ namespace Game.Network
             }
 
             var items = new List<ItemAmount>();
+            int gold = 0;
             foreach (var reward in tutorial.Rewards)
             {
                 switch (reward.Kind)
@@ -45,6 +46,9 @@ namespace Game.Network
                     case TutorialReward.UpgradeMaterial:
                         var upgrade = _data.Upgrades.GetOrThrow(reward.UpgradeId);
                         items.Add(new ItemAmount { itemId = upgrade.MaterialItemId, quantity = upgrade.MaterialAt(reward.Level) });
+                        break;
+                    case TutorialReward.UpgradeCost:
+                        gold = checked(gold + _data.Upgrades.GetOrThrow(reward.UpgradeId).CostAt(reward.Level));
                         break;
                     case TutorialReward.Item:
                         items.Add(new ItemAmount { itemId = reward.ItemId, quantity = reward.Quantity });
@@ -57,9 +61,10 @@ namespace Game.Network
                 rewards = LocalItemRewards.Apply(save, items, _data);
             }
 
+            save.wallet.gold = checked(save.wallet.gold + gold);
             save.tutorials.Add(tutorialId);
             _store.Flush(save);
-            return UniTask.FromResult(Response(save, rewards));
+            return UniTask.FromResult(Response(save, rewards, gold));
         }
 
         /// <summary>저장 데이터로 튜토리얼 조건을 판정한다. 전투 발급(튜토리얼 전투 무료)도 쓴다</summary>
@@ -83,7 +88,7 @@ namespace Game.Network
             return total;
         }
 
-        private static TutorialCompleteResponse Response(LocalSave save, List<ItemAmount> rewards) =>
-            new() { snapshot = LocalPlayerApi.ToSnapshot(save), rewardItems = rewards };
+        private static TutorialCompleteResponse Response(LocalSave save, List<ItemAmount> rewards, int gold = 0) =>
+            new() { snapshot = LocalPlayerApi.ToSnapshot(save), rewardItems = rewards, rewardGold = gold };
     }
 }

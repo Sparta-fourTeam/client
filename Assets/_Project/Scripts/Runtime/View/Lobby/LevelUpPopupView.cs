@@ -11,7 +11,7 @@ namespace Game.View
 {
     /// <summary>로비에 돌아왔을 때 레벨업 소식을 로비 위에 전체 화면으로 보여준다 (창·박스 없음).
     /// 리본이 펼쳐지고 → "Lv.1 → Lv.2"에서 새 레벨이 쾅 찍히며 번쩍임·충격 링·스파클이 터지고 →
-    /// "새 기능 해금"(ILevelUnlockSource)과 "보상"(튜토리얼 보상 아이템 등) 아이콘이 차례로 튀어나온다 → "탭하여 계속".
+    /// "새 기능 해금"(ILevelUnlockSource)과 "보상"(튜토리얼 보상 코인·아이템 등) 아이콘이 차례로 튀어나온다 → "탭하여 계속".
     /// 연출 중 탭하면 연출이 바로 끝나고, 끝난 뒤 한 번 더 탭하면 닫힌다. 닫을 때까지 ShowAsync가 기다린다.
     /// 연출용 칸은 비워 둬도 동작한다 (그 연출만 빠진다)</summary>
     public sealed class LevelUpPopupView : HudView
@@ -87,6 +87,11 @@ namespace Game.View
             }
 
             var rewards = new List<(Sprite icon, string text)>();
+            if (news.RewardGold > 0)
+            {
+                rewards.Add((_itemIcons != null ? _itemIcons.Coin : null, $"코인\n<color=#FFD35A>×{news.RewardGold}</color>"));
+            }
+
             foreach (var item in news.RewardItems)
             {
                 var data = _data.Items.GetOrThrow(item.itemId);
