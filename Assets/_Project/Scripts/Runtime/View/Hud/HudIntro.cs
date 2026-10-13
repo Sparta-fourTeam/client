@@ -81,6 +81,20 @@ namespace Game.View
         /// <summary>처음부터 다시 재생한다. 진행 중이던 연출은 자리로 돌려놓고 끊는다</summary>
         public void Play()
         {
+            try
+            {
+                Begin();
+            }
+            catch (Exception error)
+            {
+                // 연출이 실패해도 HUD가 화면 밖에 남지 않게 모두 제자리로 돌려놓는다
+                Debug.LogException(error, this);
+                Stop();
+            }
+        }
+
+        private void Begin()
+        {
             CaptureHome();
             Stop();
             _sequence = DOTween.Sequence().SetUpdate(true).SetLink(gameObject);
@@ -92,7 +106,7 @@ namespace Game.View
             }
 
             // 조각은 이미 화면 밖에 있으므로, 커튼이 덮고 있다면 멈춰 둔 채 기다린다
-            _curtain = FindFirstObjectByType<TransitionCurtain>();
+            _curtain = FindAnyObjectByType<TransitionCurtain>();
             _waitingForCurtain = _curtain != null && _curtain.Coverage >= CurtainOpenEnough;
             if (_waitingForCurtain)
             {
