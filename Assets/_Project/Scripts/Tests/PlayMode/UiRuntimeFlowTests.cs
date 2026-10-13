@@ -240,7 +240,9 @@ namespace Game.Tests
             var guideTutorial = data.Tutorials.First(t => t.IsGuide && t.After == intro.Id);
             string upgradeId = guideTutorial.Complete.UpgradeId;
             var upgrade = data.Upgrades.GetOrThrow(upgradeId);
-            string weapon = data.LoadSkills().First(skill => skill.progressionId == upgradeId).name;
+            int tutorialLevel = intro.Rewards.Single(r => r.Kind == TutorialReward.SetLevel).Level;
+            // 레벨업으로 열린 무기와 강화 안내 대상(받은 재료)은 다른 스킬일 수 있다
+            string weapon = data.LoadSkills().Single(skill => !skill.childOnly && skill.unlockLevel == tutorialLevel).name;
             yield return StartFromBoot(save =>
             {
                 save.tutorials = new List<string>();
@@ -259,7 +261,7 @@ namespace Game.Tests
             Assert.That(cards[0], Does.Contain(weapon));
             Assert.That(cards[1], Does.Contain($"×{upgrade.CostAt(1)}"));
             Assert.That(cards[2], Does.Contain($"×{upgrade.MaterialAt(1)}"));
-            Assert.That(profile.Level, Is.EqualTo(intro.Rewards.Single(r => r.Kind == TutorialReward.SetLevel).Level));
+            Assert.That(profile.Level, Is.EqualTo(tutorialLevel));
 
             var tapArea = Field<Button>(levelUp, "_confirmButton");
             if (levelUp.IsPlaying)

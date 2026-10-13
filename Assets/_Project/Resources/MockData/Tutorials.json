@@ -1,4 +1,4 @@
 [
-  {"Id": "intro_battle", "Kind": "battle", "StageId": 1, "Complete": {"Kind": "stageCleared", "StageId": 1}, "Rewards": [{"Kind": "setLevel", "Level": 2}, {"Kind": "upgradeMaterial", "UpgradeId": "log", "Level": 1}, {"Kind": "upgradeCost", "UpgradeId": "log", "Level": 1}]},
-  {"Id": "log_upgrade", "Kind": "guide", "After": "intro_battle", "Complete": {"Kind": "upgradeLevel", "UpgradeId": "log", "Level": 1}}
+  {"Id": "intro_battle", "Kind": "battle", "StageId": 1, "Complete": {"Kind": "stageCleared", "StageId": 1}, "Rewards": [{"Kind": "setLevel", "Level": 2}, {"Kind": "upgradeMaterial", "UpgradeId": "shuriken", "Level": 1}, {"Kind": "upgradeCost", "UpgradeId": "shuriken", "Level": 1}]},
+  {"Id": "log_upgrade", "Kind": "guide", "After": "intro_battle", "Complete": {"Kind": "upgradeLevel", "UpgradeId": "shuriken", "Level": 1}}
 ]
