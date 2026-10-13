@@ -82,7 +82,7 @@ namespace Game.View
                 SetIcon(_equipmentIcon, _icons.Get(info.UpgradeId));
                 SetIcon(_nextEquipmentIcon, _icons.Get(info.UpgradeId));
                 var materialSprite = info.MaterialItemId != null
-                    ? _icons.Get(_data.Items.GetOrThrow(info.MaterialItemId).IconKey)
+                    ? _icons.Get(info.MaterialItemId)
                     : null;
                 SetIcon(_materialIcon, materialSprite);
             }

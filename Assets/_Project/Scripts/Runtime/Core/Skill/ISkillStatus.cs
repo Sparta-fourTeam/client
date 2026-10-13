@@ -8,9 +8,6 @@ namespace Game.Core
 
         int Level { get; }
 
-        /// <summary>SkillAssetTable에서 아이콘을 찾는 키</summary>
-        string AssetKey { get; }
-
         /// <summary>현재 공격 형태. HUD가 형태변환 아이콘을 선택할 때 쓴다</summary>
         SkillForm Form { get; }
 

@@ -53,7 +53,7 @@ namespace Game.Tests
             save.wallet.energyStored = _data.Energy.Cost * 2;
             save.wallet.energyUpdatedAt = DateTime.UtcNow.ToString("O");
             _store.Flush(save);
-            var start = _battle.StartBattle(1, 1).GetAwaiter().GetResult();
+            var start = _battle.StartBattle(1).GetAwaiter().GetResult();
             int normal = MonstersOf(EnemyType.Normal)[0];
 
             _battle.SubmitResult(new SubmitResultRequest

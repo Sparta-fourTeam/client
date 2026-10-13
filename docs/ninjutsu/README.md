@@ -310,7 +310,7 @@ python3 docs/ninjutsu/validate_requirements.py
 
 **새 효과 종류**: `EffectRegistry`에 한 줄(키, 분류, 허용 공격, 값 규칙, 적용)을 더한다. 새 스탯이 필요하면 `Stat` enum, `SkillStatRegistry`의 기본값, 묶음 구조체 속성(`CastStats` 등)에 한 줄씩 더한다. 스탯을 읽는 쪽은 반응이면 `ReactionCompiler`/`HitReactionBuilder`, 그 밖이면 해당 전략이다. 검증기의 부적합 효과 거절과 새 효과의 실제 공격 동작을 테스트한다.
 
-**새 스킬(기존 공격 종류)**: 먼저 6.7의 스킬 샌드박스에서 눈으로 확인할 수 있도록 `Skills.json`에 스킬을 추가한다(`castType`, `baseStats` 묶음, `upgrades`). 다른 스킬의 효과로만 쓰면 `childOnly: true`로 표시한다. `SkillAssetTable`에 `assetKey`로 프리팹과 아이콘(HUD, 새 스킬 카드, 강화 카드)을 한 항목으로 연결한다. 프리팹·아이콘 연결은 샌드박스와 카드 화면에서 직접 확인한다. 영구 성장을 쓰면 `progressionId`를 맞춘다.
+**새 스킬(기존 공격 종류)**: 먼저 6.7의 스킬 샌드박스에서 눈으로 확인할 수 있도록 `Skills.json`에 스킬을 추가한다(`castType`, `baseStats` 묶음, `upgrades`). 다른 스킬의 효과로만 쓰면 `childOnly: true`로 표시한다. `SkillAssetTable`에 스킬 id를 키로 프리팹과 아이콘(HUD, 새 스킬 카드, 강화 카드)을 한 항목으로 연결한다. 프리팹·아이콘 연결은 샌드박스와 카드 화면에서 직접 확인한다. 영구 성장을 쓰면 `progressionId`를 맞춘다.
 
 **새 공격 종류**: `CastType`(Projectile, Hitscan, Area, Beam, Chain)에 값을 더하고, `IAttackStrategy` 구현을 만들어 `SkillFactory`에 등록한다. 효과 종류의 허용 공격(`EffectRegistry`)에 새 종류를 반영한다.
 
@@ -367,7 +367,7 @@ python3 docs/ninjutsu/validate_requirements.py
 
 - 2단계가 가장 넓게 영향을 준다. 1단계의 부적합 효과 거절과 실제 공격 동작 테스트가 통과한 상태에서 시작한다.
 - 카드 ID, enum 숫자, `progressionId`를 바꾸면 repo 내부 파일(`Skills.json`, 테스트, `requirements.json`, `validate_requirements.py`, `LocalUpgradeApi`)을 함께 고쳐야 한다.
-- 에셋 참조(`SkillAssetTable`의 `key`)는 사용자 데이터가 아니라 에셋이므로 `assetKey`를 바꾸면 에셋도 같이 고친다.
+- 에셋 참조(`SkillAssetTable`의 `key`)는 사용자 데이터가 아니라 에셋이므로 스킬 id를 바꾸면 에셋도 같이 고친다.
 - 한 PR에 enum 재배열, JSON 변환, 테스트 수정이 겹치면 리뷰가 어렵다. 커밋을 나눈다.
 
 ## 부록 A. 제공 각주

@@ -68,7 +68,7 @@ namespace Game.View
                 return icons.GetRandom(itemId);
             }
 
-            return icons.Get(data.Items.Contains(itemId) ? data.Items.GetOrThrow(itemId).IconKey : null);
+            return icons.Get(itemId);
         }
     }
 }

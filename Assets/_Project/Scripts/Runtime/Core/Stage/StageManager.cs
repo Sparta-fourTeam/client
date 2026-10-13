@@ -37,8 +37,10 @@ namespace Game.Core
         private string _battleId;
         private IDisposable _subscription;
 
-        // 처음 만든 요청을 재시도에도 그대로 쓴다. 다시 만들면 playTime과 createdAt이 달라 다른 요청이 된다
+        // 처음 만든 요청을 재시도에도 그대로 쓴다. 결과 화면 표시용 값(kills, playTime)은 서버로 보내지 않고 종료 시점에 고정해 둔다
         private SubmitResultRequest _pendingRequest;
+        private int _resultKills;
+        private float _resultPlayTime;
         private bool _submitting;
 
         private List<UpgradeChoice> _choices = new();
@@ -256,18 +258,16 @@ namespace Game.Core
             Time.timeScale = 0f;
             ChangeState(StageState.Submitting);
 
+            _resultKills = _stats.Kills;
+            _resultPlayTime = _clock.ElapsedSeconds;
             _pendingRequest = new SubmitResultRequest
             {
                 battleId = _battleId,
                 cleared = cleared,
                 reachedWave = _stats.ReachedWave,
                 completedWaves = _rewards?.CompletedWaves ?? 0,
-                kills = _stats.Kills,
-                playTime = _clock.ElapsedSeconds,
-                buildLog = _stats.BuildLog,
                 wallHpPercent = cleared ? _stats.WallHpPercent : 0,
-                encounteredMonsterIds = _encountered == null ? new List<int>() : new List<int>(_encountered.Ids),
-                createdAt = DateTime.UtcNow.ToString("O")
+                encounteredMonsterIds = _encountered == null ? new List<int>() : new List<int>(_encountered.Ids)
             };
 
             await Submit(AutoRetryCount);
@@ -338,7 +338,7 @@ namespace Game.Core
                 }
 
                 _pendingRequest = null;
-                _result.Publish(new StageResult(response.cleared, request.kills, request.reachedWave, request.playTime,
+                _result.Publish(new StageResult(request.cleared, _resultKills, request.reachedWave, _resultPlayTime,
                     response.rewardGold, response.rewardItems, response.rewardExp, response.clearRating,
                     _stats.SkillDamageRanking()));
                 ChangeState(StageState.Finished);

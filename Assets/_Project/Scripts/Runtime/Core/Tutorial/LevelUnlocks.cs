@@ -10,7 +10,7 @@ namespace Game.Core
         Feature,
     }
 
-    /// <summary>레벨업 팝업의 해금 한 줄. IconKey는 Kind마다 다른 아이콘 표에서 찾는다 (무기: SkillAssetTable의 assetKey)</summary>
+    /// <summary>레벨업 팝업의 해금 한 줄. IconKey는 Kind마다 다른 아이콘 표에서 찾는다 (무기: SkillAssetTable의 스킬 id)</summary>
     public sealed class UnlockNotice
     {
         public UnlockKind Kind;
@@ -38,6 +38,6 @@ namespace Game.Core
 
         public IEnumerable<UnlockNotice> Unlocked(int fromLevel, int toLevel) =>
             SkillUnlockRule.NewlyUnlocked(_data.LoadSkills(), fromLevel, toLevel)
-                .Select(skill => new UnlockNotice { Kind = UnlockKind.Weapon, Name = skill.name, IconKey = skill.assetKey });
+                .Select(skill => new UnlockNotice { Kind = UnlockKind.Weapon, Name = skill.name, IconKey = skill.id.ToString() });
     }
 }

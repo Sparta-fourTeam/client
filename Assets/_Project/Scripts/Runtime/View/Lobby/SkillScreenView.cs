@@ -98,7 +98,7 @@ namespace Game.View
 
                 int index = i;
                 _slots[i].Bind(skills[i], () => _upgradePopup.Open(index),
-                    _assets != null ? _assets.GetHudIcon(skills[i].AssetKey) : null);
+                    _assets != null ? _assets.GetHudIcon(skills[i].Id) : null);
             }
         }
     }

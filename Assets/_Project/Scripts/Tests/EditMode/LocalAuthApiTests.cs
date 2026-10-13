@@ -37,7 +37,7 @@ namespace Game.Tests
             _api.Login().GetAwaiter().GetResult();
             var battleApi = new LocalBattleApi(_store, _data);
 
-            var response = battleApi.StartBattle(1, 1).GetAwaiter().GetResult();
+            var response = battleApi.StartBattle(1).GetAwaiter().GetResult();
 
             Assert.IsNotEmpty(response.battleId);
             var save = _store.Load();

@@ -50,7 +50,7 @@ namespace Game.Tests
         {
             SeedEnergy(_data.Energy.Cost * 2);
 
-            var response = _api.StartBattle(1, 1).GetAwaiter().GetResult();
+            var response = _api.StartBattle(1).GetAwaiter().GetResult();
 
             Assert.IsNotEmpty(response.battleId);
             var save = _store.Load();
@@ -64,7 +64,7 @@ namespace Game.Tests
         {
             SeedEnergy(0);
 
-            var ex = Assert.Throws<ApiException>(() => _api.StartBattle(1, 1).GetAwaiter().GetResult());
+            var ex = Assert.Throws<ApiException>(() => _api.StartBattle(1).GetAwaiter().GetResult());
 
             Assert.AreEqual("INSUFFICIENT_ENERGY", ex.Code);
         }
@@ -74,7 +74,7 @@ namespace Game.Tests
         {
             SeedEnergy(0, tutorialDone: false);
 
-            var response = _api.StartBattle(_data.Tutorials.First(t => t.IsBattle).StageId, 1).GetAwaiter().GetResult();
+            var response = _api.StartBattle(_data.Tutorials.First(t => t.IsBattle).StageId).GetAwaiter().GetResult();
 
             Assert.IsNotEmpty(response.battleId);
             Assert.AreEqual(0, _store.Load().wallet.energyStored);
@@ -85,7 +85,7 @@ namespace Game.Tests
         {
             SeedEnergy(_data.Energy.Cost * 2);
 
-            var ex = Assert.Throws<ApiException>(() => _api.StartBattle(2, 1).GetAwaiter().GetResult());
+            var ex = Assert.Throws<ApiException>(() => _api.StartBattle(2).GetAwaiter().GetResult());
 
             Assert.AreEqual("STAGE_LOCKED", ex.Code);
         }
@@ -100,7 +100,7 @@ namespace Game.Tests
             // 스테이지 3은 랜덤 재료 보상이라 열린 스킬·장비 정보가 연결돼 있어야 입장할 수 있다
             _api.UnlockedSkillIds = () => Enumerable.Range(1, 99);
             _api.UnlockedEquipmentIds = () => ItemIds.EquipmentMaterials.Select(id => _data.Items.GetOrThrow(id).TargetId);
-            var start = _api.StartBattle(3, 1).GetAwaiter().GetResult();
+            var start = _api.StartBattle(3).GetAwaiter().GetResult();
 
             _api.SubmitResult(new SubmitResultRequest { battleId = start.battleId, cleared = true, completedWaves = 20, reachedWave = 20, wallHpPercent = 100 })
                 .GetAwaiter().GetResult();
@@ -121,7 +121,7 @@ namespace Game.Tests
         public void SubmitResult_WithFaultSwitch_FailsThenSucceedsWithSameRequest()
         {
             SeedEnergy(_data.Energy.Cost * 2);
-            var start = _api.StartBattle(1, 1).GetAwaiter().GetResult();
+            var start = _api.StartBattle(1).GetAwaiter().GetResult();
             var request = new SubmitResultRequest { battleId = start.battleId, cleared = true, completedWaves = 20, reachedWave = 20, wallHpPercent = 100 };
             _api.FailNextSubmits = 2;
 
@@ -138,7 +138,7 @@ namespace Game.Tests
 
             var result = _api.SubmitResult(request).GetAwaiter().GetResult();
 
-            Assert.IsTrue(result.cleared);
+            Assert.Greater(result.clearRating, 0);
             Assert.AreEqual(FullClearCoin, result.rewardGold);
             Assert.AreEqual(FullClearCoin, _store.Load().wallet.gold);
         }
@@ -147,12 +147,12 @@ namespace Game.Tests
         public void SubmitResult_ClearedAtFullWallHp_GrantsGoldAndTopRatingAndUnlocksNextStage()
         {
             SeedEnergy(_data.Energy.Cost * 2);
-            var start = _api.StartBattle(1, 1).GetAwaiter().GetResult();
+            var start = _api.StartBattle(1).GetAwaiter().GetResult();
 
             var result = _api.SubmitResult(new SubmitResultRequest { battleId = start.battleId, cleared = true, completedWaves = 20, reachedWave = 20, wallHpPercent = 100 })
                 .GetAwaiter().GetResult();
 
-            Assert.IsTrue(result.cleared);
+            Assert.Greater(result.clearRating, 0);
             Assert.AreEqual(FullClearCoin, result.rewardGold);
             var save = _store.Load();
             Assert.AreEqual(FullClearCoin, save.wallet.gold);
@@ -164,12 +164,12 @@ namespace Game.Tests
         public void SubmitResult_Failed_GrantsStartRewardAndKeepsRating()
         {
             SeedEnergy(_data.Energy.Cost * 2);
-            var start = _api.StartBattle(1, 1).GetAwaiter().GetResult();
+            var start = _api.StartBattle(1).GetAwaiter().GetResult();
 
             var result = _api.SubmitResult(new SubmitResultRequest { battleId = start.battleId, cleared = false })
                 .GetAwaiter().GetResult();
 
-            Assert.IsFalse(result.cleared);
+            Assert.AreEqual(0, result.clearRating);
             Assert.AreEqual(StageRewardRules.Calculate(_data.StageRewards.GetOrThrow(1), 0, false, 0).Coin, result.rewardGold);
             Assert.AreEqual(0, _store.Load().stageProgress.Find(p => p.stageId == 1).clearRating);
         }
@@ -178,7 +178,7 @@ namespace Game.Tests
         public void SubmitResult_SubmittedTwice_ReturnsStoredResultWithoutDoublePay()
         {
             SeedEnergy(_data.Energy.Cost * 2);
-            var start = _api.StartBattle(1, 1).GetAwaiter().GetResult();
+            var start = _api.StartBattle(1).GetAwaiter().GetResult();
             var req = new SubmitResultRequest { battleId = start.battleId, cleared = true, completedWaves = 20, reachedWave = 20, wallHpPercent = 100 };
             _api.SubmitResult(req).GetAwaiter().GetResult();
 

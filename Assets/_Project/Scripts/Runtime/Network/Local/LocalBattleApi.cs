@@ -24,8 +24,7 @@ namespace Game.Network
             _data = data;
         }
 
-        // TODO(server): dataRevision 미사용 — 서버 연동 시 최신 테이블 버전과 다르면 DATA_OUTDATED로 거절
-        public UniTask<StartBattleResponse> StartBattle(int stageId, int dataRevision)
+        public UniTask<StartBattleResponse> StartBattle(int stageId)
         {
             var save = _store.Load();
             _data.Stages.GetOrThrow(stageId);
@@ -59,13 +58,12 @@ namespace Game.Network
                 stageId = stageId,
                 seed = new Random().Next(),
                 status = "Issued",
-                rewardGold = 0,
-                rewardRuleVersion = 1
+                rewardGold = 0
             };
             save.battles.Add(row);
             _store.Flush(save);
 
-            return UniTask.FromResult(new StartBattleResponse { battleId = row.battleKey, seed = row.seed });
+            return UniTask.FromResult(new StartBattleResponse { battleId = row.battleKey });
         }
 
         public UniTask<SubmitResultResponse> SubmitResult(SubmitResultRequest req)
@@ -89,7 +87,6 @@ namespace Game.Network
                 // 중복 제출 — 이전에 확정된 결과를 그대로 재반환한다
                 return UniTask.FromResult(new SubmitResultResponse
                 {
-                    cleared = battle.status == "Cleared",
                     rewardGold = battle.rewardGold,
                     rewardExp = battle.rewardExp,
                     clearRating = battle.clearRating,
@@ -97,31 +94,17 @@ namespace Game.Network
                 });
             }
 
-            var stage = _data.Stages.GetOrThrow(battle.stageId);
-
             int rating = req.cleared ? StageRewardRules.ClearRating(req.wallHpPercent) : 0;
-            int reward, rewardExp = 0;
-            IEnumerable<ItemAmount> rewards;
-            if (battle.rewardRuleVersion == 0)
-            {
-                // 업데이트 전에 발급한 전투만 기존 지급 규칙으로 마무리한다.
-                // TODO: 규칙 도입 전 전투가 모두 정산되면 이 분기와 StageDefinition.ClearGold·ClearItems를 제거한다.
-                reward = req.cleared ? stage.ClearGold : 0;
-                rewards = req.cleared ? stage.ClearItems : null;
-            }
-            else
-            {
-                if (req.completedWaves < 0 || req.completedWaves > StageRewardRules.WaveCount
-                    || req.reachedWave < req.completedWaves || req.reachedWave > StageRewardRules.WaveCount
-                    || (req.cleared && req.completedWaves != StageRewardRules.WaveCount))
-                { throw new ApiException(ApiErrorKind.Rejected, "INVALID_COMPLETED_WAVES"); }
-                var calculated = StageRewardRules.Calculate(_data.StageRewards.GetOrThrow(battle.stageId),
-                    req.completedWaves, req.cleared, rating);
-                reward = calculated.Coin;
-                rewardExp = calculated.Exp;
-                rewards = RandomMaterialResolver.Resolve(calculated.Items, UnlockedSkillIds?.Invoke(),
-                    UnlockedEquipmentIds?.Invoke(), _data, battle.seed, MaterialDistribution);
-            }
+            if (req.completedWaves < 0 || req.completedWaves > StageRewardRules.WaveCount
+                || req.reachedWave < req.completedWaves || req.reachedWave > StageRewardRules.WaveCount
+                || (req.cleared && req.completedWaves != StageRewardRules.WaveCount))
+            { throw new ApiException(ApiErrorKind.Rejected, "INVALID_COMPLETED_WAVES"); }
+            var calculated = StageRewardRules.Calculate(_data.StageRewards.GetOrThrow(battle.stageId),
+                req.completedWaves, req.cleared, rating);
+            int reward = calculated.Coin;
+            int rewardExp = calculated.Exp;
+            var rewards = RandomMaterialResolver.Resolve(calculated.Items, UnlockedSkillIds?.Invoke(),
+                UnlockedEquipmentIds?.Invoke(), _data, battle.seed, MaterialDistribution);
             int totalGold, totalExp;
             try { totalGold = checked(save.wallet.gold + reward); totalExp = checked(save.exp + rewardExp); }
             catch (OverflowException) { throw new ApiException(ApiErrorKind.Rejected, "REWARD_QUANTITY_OVERFLOW"); }
@@ -142,7 +125,7 @@ namespace Game.Network
 
             _store.Flush(save);
             return UniTask.FromResult(new SubmitResultResponse
-            { cleared = req.cleared, rewardGold = reward, rewardExp = rewardExp, clearRating = rating, rewardItems = itemRewards });
+            { rewardGold = reward, rewardExp = rewardExp, clearRating = rating, rewardItems = itemRewards });
         }
 
         /// <summary>마주친 몬스터를 도감에 등록한다. 이미 있는 줄(수령 여부)은 건드리지 않고, 없는 몬스터 ID는 무시한다</summary>

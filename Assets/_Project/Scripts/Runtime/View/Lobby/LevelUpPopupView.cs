@@ -90,7 +90,7 @@ namespace Game.View
             foreach (var item in news.RewardItems)
             {
                 var data = _data.Items.GetOrThrow(item.itemId);
-                rewards.Add((_itemIcons != null ? _itemIcons.Get(data.IconKey) : null, $"{data.Name}\n<color=#FFD35A>×{item.quantity}</color>"));
+                rewards.Add((_itemIcons != null ? _itemIcons.Get(item.itemId) : null, $"{data.Name}\n<color=#FFD35A>×{item.quantity}</color>"));
             }
 
             Fill(_unlockCards, _unlockLine, unlocks);

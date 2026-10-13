@@ -28,13 +28,13 @@
 | 값 범위를 벗어남(체력 0, 확률 0, 비율 -1 미만 등) | 부팅 예외 |
 | 소환 대상이 없거나 자기 자신이거나 다시 소환함 | 부팅 예외(연쇄 소환 금지) |
 | 웨이브 구성(`Spawns`)에 `Monsters`에 없는 몬스터, 엘리트·보스의 `Count`가 1이 아님, 빈 구성·0마리·웨이브 안 중복 | 부팅 예외 |
-| `Skills.element` | 숫자(0~5)와 이름(`Fire` 등) 둘 다 읽는다. 모르는 이름이나 범위 밖 숫자는 로드 실패 |
+| `Skills.castType`, `element`, `projectilePath` | 이름 문자열만 읽는다(`Fire` 등). 숫자나 모르는 이름은 로드 실패 |
 
 ## 필드 규칙
 
 - **이름 규칙**: `Monsters`, `Stages`, `StageRewards`, `Items`, `Upgrades`, `GeneralCards`, `PlayerLevels`, `Energy`는 PascalCase이고 `Skills`만 camelCase다. 표마다 자기 스타일을 지킨다.
-- **속성 이름**: `Neutral`, `Fire`, `Ice`, `Wind`, `Lightning`, `Earth`. 스킬의 `element`는 같은 순서의 숫자 0~5다.
-- **시전 형태 이름**: `Projectile`, `Hitscan`, `Area`, `Beam`, `Chain`. 스킬의 `castType`은 같은 순서의 숫자 0~4다.
+- **속성 이름**: `Neutral`, `Fire`, `Ice`, `Wind`, `Lightning`, `Earth`. 스킬의 `element`도 같은 이름 문자열로 적는다.
+- **시전 형태 이름**: `Projectile`, `Hitscan`, `Area`, `Beam`, `Chain`. 스킬의 `castType`도 같은 이름 문자열로 적는다. `projectilePath`는 `Aimed`(생략 시 기본), `RollingLane`, `Radial`이다.
 - **패시브 Kind**: `Spawn`, `Immunity`, `Modifier`, `Shield`, `Evade`, `LowHp`, `HealOnHit`, `SpeedBoost`.
 - **면역 이름**: `Stun`, `Burn`, `Paralysis`, `Freeze`, `Slow`, `Frostbite`, `Vulnerability`, `AllDebuffs`.
 
@@ -45,7 +45,7 @@
 | 1 | 클라이언트가 모르는 `Kind`를 받으면 | 부팅 예외로 멈춤 | **유지(빠른 실패).** 모르는 능력을 조용히 빼면 몬스터가 약해진 채로 나가서 눈치채기 어렵다. 대신 **클라이언트 먼저, 데이터 나중** 순서로 배포한다(새 `Kind`는 그것을 아는 클라이언트가 나간 뒤에 서버 데이터에 쓴다) | 제안 |
 | 2 | 필드 이름 규칙 | 표마다 다름(`Skills`만 camelCase) | **표별 기존 스타일 유지, 새 표는 PascalCase.** 클라이언트는 대소문자를 구분하지 않고 읽으니 어긋나도 깨지지는 않지만, 서버는 표 스타일을 지킨다 | 제안 |
 | 3 | 참조 검증(소환 대상, 스테이지 몬스터 등)을 누가 하나 | 클라이언트가 부팅 때 검증 | **둘 다 한다.** 서버가 시트를 반영할 때 같은 규칙으로 막고, 클라이언트 검증은 마지막 방어선으로 둔다. 규칙 목록은 위 표와 [enemy.md](enemy.md)의 "검증과 테스트" | 제안 |
-| 4 | `element`를 숫자로 줄지 이름으로 줄지 | 둘 다 읽음, 지금 데이터는 숫자 | **숫자 유지**(`castType`과 같은 방식). 대신 숫자의 의미를 **바꾸지 않는다**(항목은 뒤에만 더한다) | 제안 |
+| 4 | `element`·`castType`·`projectilePath`를 숫자로 줄지 이름으로 줄지 | 이름 문자열만 읽음 | **이름 문자열**(서버 데이터의 enum은 문자열). 이름이 계약이므로 C# enum 멤버 이름을 바꾸면 서버 계약도 함께 바꾼다 | 확정 |
 | 5 | 테이블 개정 번호(`DataVersions.revisions`) | 클라이언트가 전부 1로 고정(TODO) | 서버가 표별 개정 번호를 실제로 주고, **스키마가 바뀌는 변경은 개정 번호를 올린다.** 클라이언트가 지원하지 않는 개정이면 로드하기 전에 거부할 수 있다 | 제안(서버 구현 필요) |
 
 ## 시트 컬럼 (Monsters 탭)

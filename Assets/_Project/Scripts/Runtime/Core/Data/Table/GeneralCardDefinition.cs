@@ -18,7 +18,6 @@ namespace Game.Core
         public string Id;
         public string Name;
         public string Desc;
-        public string IconKey;
 
         /// <summary>한 판에서 고를 수 있는 최대 횟수</summary>
         public int MaxPicks;

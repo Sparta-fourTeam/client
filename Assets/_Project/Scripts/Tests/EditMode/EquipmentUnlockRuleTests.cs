@@ -56,7 +56,7 @@ namespace Game.Tests
 
             for (int i = 0; i < 3; i++)
             {
-                var issued = api.StartBattle(1, 1).GetAwaiter().GetResult();
+                var issued = api.StartBattle(1).GetAwaiter().GetResult();
                 var result = api.SubmitResult(new SubmitResultRequest { battleId = issued.battleId, completedWaves = 4, reachedWave = 5 }).GetAwaiter().GetResult();
 
                 var equipment = result.rewardItems.Where(item => ItemIds.EquipmentMaterials.Contains(item.itemId)).ToList();

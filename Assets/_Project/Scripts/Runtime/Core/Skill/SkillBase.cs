@@ -39,7 +39,6 @@ namespace Game.Core
 
         int ISkillStatus.Id => data.id;
 
-        string ISkillStatus.AssetKey => data.assetKey;
 
         SkillForm ISkillStatus.Form => Stats.Cast.Form;
 

@@ -9,7 +9,7 @@
 | 스킬 목록과 강화 팝업 | SkillAssetTable의 HUD 아이콘 9종, ItemIconTable의 강화 재료 |
 | 미션과 기력 회복 | 기존 Chest, Heart/HeartBundle, 버튼 프레임과 glyph |
 
-스킬 이미지는 카탈로그의 AssetKey로 선택한다. 재료 이미지는 MaterialItemId가 가리키는 아이템의 IconKey로 선택하며, 데이터가 없는 경우 이전 이미지가 남지 않도록 비운다. 선택·잠금 상태와 버튼 이벤트를 유지했다. 새 장식 Image는 raycastTarget을 끄고 LayoutElement.ignoreLayout을 켰다.
+스킬 이미지는 스킬 id로 선택한다. 재료 이미지는 MaterialItemId가 가리키는 아이템 Id로 선택하며, 데이터가 없는 경우 이전 이미지가 남지 않도록 비운다. 선택·잠금 상태와 버튼 이벤트를 유지했다. 새 장식 Image는 raycastTarget을 끄고 LayoutElement.ignoreLayout을 켰다.
 
 UIMenuGlyphs의 잘린 아이콘과 인접 문양이 포함된 슬라이스는 Sprite Editor 데이터 공급자로 경계를 수정했다. 원본 PNG, GUID와 spriteID는 유지했다. 슬라이스 계획과 웹 미리보기도 갱신했다.
 

@@ -6,19 +6,19 @@
 
 - 아이템은 문자열 ID 하나로 식별한다. 화살북과 화염구북, 모자북과 반지북은 각각 다른 ID와 소유량을 가진다. 코드에서는 `ItemIds.ArrowBook` 같은 문자열 상수로 참조해 오타를 줄인다. 상수는 해당 ID의 이름이며 별도 식별자가 아니다. enum은 두지 않는다.
 - 스킬북은 현재 `Skills.json`의 독립 스킬 9종 기준이다: 화살, 화염구, 벼락, 서리 결정, 나무뿌리, 냉기 지대, 전기 구름, 에너지 빔, 연쇄 번개. `childOnly` 보조 효과에는 별도 마법북을 만들지 않는다.
-- 장비 강화 재료는 후드, 로브, 장화, 무기(지팡이), 뼈 반지, 해골 목걸이, 인장의 **인챈트 주문서**다. 기존 무기 슬롯은 무기이며, 기존 사원증 슬롯의 표시 콘셉트는 인장이다. Local 테이블의 `TargetId`와 저장 ID는 호환성을 위해 기존 `equipment.*`, `book.*`를 유지한다. `IconKey`는 `HoodScroll`, `RobeScroll`, `BootsScroll`, `StaffScroll`, `BoneRingScroll`, `SkullNecklaceScroll`, `SealScroll`을 사용한다.
+- 장비 강화 재료는 후드, 로브, 장화, 무기(지팡이), 뼈 반지, 해골 목걸이, 인장의 **인챈트 주문서**다. 기존 무기 슬롯은 무기이며, 기존 사원증 슬롯의 표시 콘셉트는 인장이다. Local 테이블의 `TargetId`와 저장 ID는 호환성을 위해 기존 `equipment.*`, `book.*`를 유지한다. 아이콘은 아이템 `Id`로 `ItemIconTable`에서 찾는다.
 - `ItemDefinition.Id`는 저장·API에서 사용하는 콘텐츠 고유 ID다. 각 종류는 서로 다른 ID와 소유량을 가진다.
 - `TargetId`는 강화 재료가 대상으로 하는 스킬 또는 장비의 ID다. 아이템 자체의 식별자와 강화 대상의 식별자는 구분한다.
-- `Name`은 표시 이름, `IconKey`는 아이콘 조회 키다. Unity 오브젝트를 API나 저장 데이터에 넣지 않는다.
+- 표시 이름은 서버 테이블이 아니라 `Resources/ClientData/DisplayTexts.json`의 `items`에서 `Id`로 찾고, 아이콘은 `Id`로 클라이언트 표(`ItemIconTable`)에서 찾는다. Unity 오브젝트를 API나 저장 데이터에 넣지 않는다.
 - `ItemAmount.itemId`는 정의 ID, `quantity`는 0 이상의 절대 수량이다. 소비는 음수 수량 대신 소비 동작으로 표현한다. 실제 드랍·지급 행은 양수만 사용한다.
 
 `Resources/MockData/Items.json`에 정의를 등록하고 `GameDataStore.Items`에서 조회한다. 아이콘 키와 실제 스프라이트의 연결은 UI 구현에서 구성한다. 정의 예시:
 
 ```json
 [
-  { "Id": "book.arrow", "Name": "화살 마법북", "IconKey": "ArrowBook", "TargetId": "1" },
-  { "Id": "book.fireball", "Name": "화염구 마법북", "IconKey": "FireballBook", "TargetId": "2" },
-  { "Id": "book.weapon", "Name": "무기 인챈트 주문서", "IconKey": "StaffScroll", "TargetId": "equipment.weapon" }
+  { "Id": "book.arrow", "TargetId": "1" },
+  { "Id": "book.fireball", "TargetId": "2" },
+  { "Id": "book.weapon", "TargetId": "equipment.weapon" }
 ]
 ```
 
@@ -64,11 +64,10 @@
 - `LocalItemRewards`는 두 Local API가 공유하는 내부 검증·합산 함수다. 별도 DI 등록이나 아이템 지급 원장은 없다.
 - 알려진 Items ID와 양수 수량만 받으며 같은 ID는 합산한다. 잘못된 보상은 `INVALID_ITEM_REWARD`, 없는 ID는 `UNKNOWN_DATA_ID`, 수량 초과는 `ITEM_QUANTITY_OVERFLOW`로 거절한다.
 
-Stage 테이블의 `ClearItems`는 클리어 마법북, `RatingItemRewards`는 등급별 1회성 마법북 목록이다. 누락되거나 빈 목록이면 아이템 보상 없이 기존 골드 동작을 유지한다. 설정 형식 예시:
+Stage 테이블의 `RatingItemRewards`는 등급별 1회성 마법북 목록이다. 누락되거나 빈 목록이면 아이템 보상 없이 기존 골드 동작을 유지한다. 전투 보상은 `StageRewards` 테이블에서 정한다. 설정 형식 예시:
 
 ```json
 {
-  "ClearItems": [ { "itemId": "book.arrow", "quantity": 2 } ],
   "RatingItemRewards": [
     [ { "itemId": "book.weapon", "quantity": 1 } ],
     [],

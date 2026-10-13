@@ -23,7 +23,7 @@ namespace Game.Tests
             {
                 Calls++;
                 if (Calls <= FailFirst) { throw new InvalidOperationException("로그인 실패 (테스트)"); }
-                return UniTask.FromResult(new LoginResponse { accessToken = "test", dataRevision = 1 });
+                return UniTask.FromResult(new LoginResponse { accessToken = "test" });
             }
         }
 

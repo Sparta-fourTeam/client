@@ -41,7 +41,7 @@ namespace Game.Tests
                     prefab.SetActive(false);
                     prefabs.Add(prefab);
                     var data = provider.LoadAll().Find(s => s.id == id);
-                    entries.Add(new SkillAssetEntry { key = data.assetKey, prefab = prefab });
+                    entries.Add(new SkillAssetEntry { key = data.id.ToString(), prefab = prefab });
                 }
                 assets = SkillAssetTable.Create(entries);
                 var controller = root.AddComponent<SkillController>();
@@ -64,7 +64,6 @@ namespace Game.Tests
                 foreach (var skill in publisher.Last.Skills)
                 {
                     Assert.That(skill.Level, Is.EqualTo(1));
-                    Assert.That(skill.AssetKey, Is.Not.Empty);
                 }
             }
             finally

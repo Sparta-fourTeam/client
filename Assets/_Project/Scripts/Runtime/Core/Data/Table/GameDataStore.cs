@@ -11,6 +11,7 @@ namespace Game.Core
     {
         private static readonly string[] TableNames = { "Monsters", "Stages", "Upgrades", "Energy", "GeneralCards", "Skills", "Items", "StageRewards", "PlayerLevels", "CodexRewards", "Tutorials" };
         private readonly Dictionary<string, string> _rawJson;
+        private readonly DisplayTexts _texts;
         private readonly Dictionary<string, int> _skillUnlockLevels;
 
         public Dictionary<string, int> Revisions { get; }
@@ -24,6 +25,9 @@ namespace Game.Core
 
         /// <summary>튜토리얼 정의. 표의 순서가 진행 우선순위다 (TutorialProgress)</summary>
         public IReadOnlyList<TutorialDefinition> Tutorials { get; }
+
+        /// <summary>튜토리얼의 대사·화면 연결 정보(클라이언트 전용). 서버 테이블이 아니라서 버전·원문 조회 목록에 없다</summary>
+        public TutorialPresentationTable TutorialPresentations { get; }
 
         /// <summary>도감 등록 보상 골드. 몬스터마다가 아니라 등급별이다</summary>
         public IReadOnlyDictionary<EnemyType, int> CodexRewardGold { get; }
@@ -47,6 +51,10 @@ namespace Game.Core
 
                 _rawJson[name] = asset.text;
             }
+
+            var textAsset = Resources.Load<TextAsset>("ClientData/DisplayTexts")
+                ?? throw new InvalidOperationException("Resources/ClientData/DisplayTexts.json을 찾을 수 없습니다");
+            _texts = JsonConvert.DeserializeObject<DisplayTexts>(textAsset.text);
 
             var monsters = ParseIndexed<int, MonsterDefinition>("Monsters", d => d.Id);
             foreach (var monster in monsters.Values)
@@ -88,12 +96,21 @@ namespace Game.Core
             var upgrades = ParseIndexed<string, UpgradeDefinition>("Upgrades", d => d.UpgradeId);
             Upgrades = new Table<string, UpgradeDefinition>(upgrades);
             var items = ParseIndexed<string, ItemDefinition>("Items", d => d.Id);
+            _texts.ApplyTo(items.Values);
             foreach (var item in items.Values) { item.Validate(); }
             Items = new Table<string, ItemDefinition>(items);
             foreach (var upgrade in upgrades.Values)
             {
                 upgrade.Validate();
-                if (upgrade.UsesMaterial) { Items.GetOrThrow(upgrade.MaterialItemId); }
+                if (upgrade.UsesMaterial)
+                {
+                    var material = Items.GetOrThrow(upgrade.MaterialItemId);
+                    // 장비 재료는 아이템 TargetId와 강화 행의 MaterialItemId가 같은 연결을 양쪽에서 가진다. 어긋나면 랜덤 재료가 엉뚱한 장비를 가리킨다
+                    if (upgrade.UpgradeId.StartsWith("equipment.") && material.TargetId != upgrade.UpgradeId)
+                    {
+                        throw new InvalidOperationException($"Upgrades {upgrade.UpgradeId}: 재료 {material.Id}의 TargetId({material.TargetId})가 이 강화와 다릅니다");
+                    }
+                }
             }
             var rewards = ParseIndexed<int, StageRewardBalance>("StageRewards", d => d.StageId);
             foreach (var balance in rewards.Values)
@@ -112,7 +129,7 @@ namespace Game.Core
             Items.GetOrThrow(ItemIds.GemChest);
             StageRewards = new Table<int, StageRewardBalance>(rewards);
             Energy = JsonConvert.DeserializeObject<EnergyConfig>(_rawJson["Energy"]);
-            PlayerLevels = new PlayerLevelTable(JsonConvert.DeserializeObject<List<PlayerLevelRow>>(_rawJson["PlayerLevels"]));
+            PlayerLevels = JsonConvert.DeserializeObject<PlayerLevelConfig>(_rawJson["PlayerLevels"]).ToTable();
             var tutorials = JsonConvert.DeserializeObject<List<TutorialDefinition>>(_rawJson["Tutorials"]);
             var tutorialIds = new HashSet<string>();
             foreach (var tutorial in tutorials)
@@ -122,6 +139,10 @@ namespace Game.Core
             }
 
             Tutorials = tutorials;
+            var presentationAsset = Resources.Load<TextAsset>("ClientData/TutorialPresentations")
+                ?? throw new InvalidOperationException("Resources/ClientData/TutorialPresentations.json을 찾을 수 없습니다");
+            TutorialPresentations = new TutorialPresentationTable(
+                JsonConvert.DeserializeObject<List<TutorialPresentation>>(presentationAsset.text), tutorials);
 
             var codexRewards = ParseIndexed<EnemyType, CodexRewardRow>("CodexRewards", d => d.GetGrade());
             foreach (var row in codexRewards.Values) { row.Validate(); }
@@ -132,6 +153,7 @@ namespace Game.Core
             CodexRewardGold = codexRewards.ToDictionary(pair => pair.Key, pair => pair.Value.Gold);
 
             var generalCards = ParseIndexed<string, GeneralCardDefinition>("GeneralCards", d => d.Id).Values.ToList();
+            _texts.ApplyTo(generalCards);
             foreach (var card in generalCards)
             {
                 card.Validate();
@@ -193,11 +215,13 @@ namespace Game.Core
         public int UnlockLevelOf(UpgradeDefinition def) => UpgradeUnlockRule.LevelOf(def, _skillUnlockLevels);
 
         /// <summary>스킬 정의 목록. 호출마다 새 객체를 만들고 카탈로그 검증을 통과해야 돌려준다</summary>
-        public List<SkillData> LoadSkills() => ParseSkills(_rawJson["Skills"]);
+        public List<SkillData> LoadSkills() => ParseSkills(_rawJson["Skills"], _texts);
 
-        public static List<SkillData> ParseSkills(string json)
+        /// <summary>texts가 있으면 검증 전에 이름·설명을 채운다(검증이 카드·변형 이름을 본다)</summary>
+        public static List<SkillData> ParseSkills(string json, DisplayTexts texts = null)
         {
             var weapons = JsonConvert.DeserializeObject<List<SkillData>>(json);
+            texts?.ApplyTo(weapons);
             SkillCatalogValidator.Validate(weapons);
             return weapons;
         }

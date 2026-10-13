@@ -21,7 +21,7 @@ namespace Game.Tests
         /// <summary>실제 프로젝트의 에셋 표를 컨트롤러에 붙인다</summary>
         public static void AttachReal(SkillController controller) => Set(controller, Real());
 
-        /// <summary>실제 카탈로그의 assetKey로, ids에 해당하는 빈 프리팹을 가진 표를 컨트롤러에 붙인다. 만든 프리팹은 created에 넣는다</summary>
+        /// <summary>실제 카탈로그의 스킬 id로, ids에 해당하는 빈 프리팹을 가진 표를 컨트롤러에 붙인다. 만든 프리팹은 created에 넣는다</summary>
         public static void Attach(SkillController controller, IEnumerable<int> ids, ICollection<GameObject> created)
         {
             var catalog = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().ToDictionary(w => w.id);
@@ -30,7 +30,7 @@ namespace Game.Tests
             {
                 var prefab = new GameObject("SkillPrefab" + id);
                 created.Add(prefab);
-                entries.Add(new SkillAssetEntry { key = catalog[id].assetKey, prefab = prefab });
+                entries.Add(new SkillAssetEntry { key = id.ToString(), prefab = prefab });
             }
             Set(controller, SkillAssetTable.Create(entries));
         }

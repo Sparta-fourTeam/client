@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Game.View
 {
-    /// <summary>아이템 아이콘을 Items.json의 IconKey로 찾는 표. 코인과 EXP는 아이템이 아니라서 따로 둔다.
+    /// <summary>아이템 아이콘을 아이템 Id로 찾는 표. 코인과 EXP는 아이템이 아니라서 따로 둔다.
     /// 아이콘이 없는 키는 null을 돌려주고, 보여주는 쪽이 자리표시 이미지를 그대로 둔다</summary>
     [CreateAssetMenu(fileName = "ItemIconTable", menuName = "Project Nova/Item Icon Table")]
     public sealed class ItemIconTable : ScriptableObject
@@ -11,7 +11,8 @@ namespace Game.View
         [Serializable]
         private sealed class Entry
         {
-            public string iconKey;
+            [UnityEngine.Serialization.FormerlySerializedAs("iconKey")]
+            public string itemId;
             public Sprite icon;
         }
 
@@ -29,16 +30,16 @@ namespace Game.View
             itemId == Game.Core.ItemIds.RandomSkillMaterial ? _randomSkillMaterial
             : itemId == Game.Core.ItemIds.RandomEquipmentMaterial ? _randomEquipmentMaterial : null;
 
-        public Sprite Get(string iconKey)
+        public Sprite Get(string itemId)
         {
-            if (string.IsNullOrEmpty(iconKey))
+            if (string.IsNullOrEmpty(itemId))
             {
                 return null;
             }
 
             foreach (var entry in _items)
             {
-                if (entry.iconKey == iconKey)
+                if (entry.itemId == itemId)
                 {
                     return entry.icon;
                 }

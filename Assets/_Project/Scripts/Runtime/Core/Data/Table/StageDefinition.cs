@@ -9,7 +9,6 @@ namespace Game.Core
     public class StageDefinition
     {
         public int Id;
-        public int ClearGold;
 
         /// <summary>엘리트 룰렛의 강화 카드 횟수 범위. 둘 다 0이면 룰렛 보상이 없는 스테이지다</summary>
         public int EliteRouletteMinCards;
@@ -17,9 +16,6 @@ namespace Game.Core
 
         /// <summary>rating 1~3 클리어 시 1회성 보상 (index 0 = rating 1)</summary>
         public int[] RatingRewards;
-
-        /// <summary>클리어 시 전투 보상으로 지급할 마법북. 골드는 ClearGold로 관리한다.</summary>
-        public List<ItemAmount> ClearItems = new();
 
         /// <summary>rating 1~3의 1회성 마법북 보상 (index 0 = rating 1). 미설정 등급은 아이템 보상 없음.</summary>
         public List<List<ItemAmount>> RatingItemRewards = new();
@@ -94,7 +90,6 @@ namespace Game.Core
                 }
             }
 
-            ValidateItemRewards(ClearItems);
             if (RatingItemRewards != null)
             {
                 if (RatingItemRewards.Count > 3)

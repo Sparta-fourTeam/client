@@ -151,7 +151,7 @@ namespace Game.View
             }
         }
 
-        private Sprite IconOf(InventoryItem item) => _icons != null ? _icons.Get(item.IconKey) : null;
+        private Sprite IconOf(InventoryItem item) => _icons != null ? _icons.Get(item.ItemId) : null;
 
         private void OpenDetail(InventoryItem item)
         {

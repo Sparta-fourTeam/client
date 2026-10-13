@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Game.Core;
-using Newtonsoft.Json;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -97,7 +96,7 @@ namespace Game.Tests
         // ── 카탈로그 검증 ──────────────────────────────────────────────
 
         private static List<SkillData> Catalog() =>
-            JsonConvert.DeserializeObject<List<SkillData>>(Resources.Load<TextAsset>("MockData/Skills").text);
+            new GameDataStore().LoadSkills();
 
         private static void AddChildCast(SkillData skill, int childId) =>
             skill.upgrades[0].effects.Add(OnEvent(AttackEvent.Hit, childId));

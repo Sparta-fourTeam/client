@@ -45,7 +45,7 @@ namespace Game.Tests
             Data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().ToDictionary(w => w.id);
             tweak?.Invoke(Data);
             var assets = TestSkillAssets.Real();
-            foreach (var data in Data.Values) { prefabs[data.id] = assets.GetPrefab(data.assetKey); }
+            foreach (var data in Data.Values) { prefabs[data.id] = assets.GetPrefab(data.id); }
             children = new ChildSkillCaster(id => Build(id), id => MirroredEffects.For(Data[id], Data, new OwnedState(this)));
         }
 

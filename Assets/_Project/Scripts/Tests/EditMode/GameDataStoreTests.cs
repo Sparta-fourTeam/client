@@ -107,5 +107,45 @@ namespace Game.Tests
             unknownCondition.Condition = new GeneralCardRule { Kind = "nope" };
             Assert.Throws<InvalidOperationException>(() => unknownCondition.Validate());
         }
+
+        [Test(Description = "강화 비용을 Base·Step으로 줄여 적어도 레벨별 배열로 펼쳐지고, 배열을 적으면 배열이 우선한다")]
+        public void Upgrade_ExpandsLinearCostsAndPrefersExplicitArrays()
+        {
+            var linear = JsonConvert.DeserializeObject<UpgradeDefinition>(
+                "{\"UpgradeId\":\"a\",\"MaxLevel\":4,\"CostBase\":100,\"CostStep\":30,\"MaterialItemId\":\"book.arrow\",\"MaterialBase\":2,\"MaterialStep\":3}");
+            Assert.That(linear.LevelCosts, Is.EqualTo(new[] { 100, 130, 160, 190 }));
+            Assert.That(linear.MaterialCosts, Is.EqualTo(new[] { 2, 5, 8, 11 }));
+            linear.Validate();
+
+            var explicitCosts = JsonConvert.DeserializeObject<UpgradeDefinition>(
+                "{\"UpgradeId\":\"b\",\"MaxLevel\":2,\"LevelCosts\":[7,9],\"CostBase\":100,\"CostStep\":30}");
+            Assert.That(explicitCosts.LevelCosts, Is.EqualTo(new[] { 7, 9 }));
+        }
+
+        [Test(Description = "PlayerLevels는 시작값과 증가분으로 레벨별 필요 경험치를 만든다")]
+        public void PlayerLevels_BuildsRequiredExpFromBaseAndStep()
+        {
+            var table = JsonConvert.DeserializeObject<PlayerLevelConfig>("{\"BaseExp\":10,\"StepExp\":5,\"MaxLevel\":4}").ToTable();
+            Assert.AreEqual(4, table.MaxLevel);
+            Assert.AreEqual(10, table.RequiredToNext(1));
+            Assert.AreEqual(20, table.RequiredToNext(3));
+            Assert.AreEqual(0, table.RequiredToNext(4));
+        }
+
+        [Test(Description = "표시 문구는 클라이언트 표가 id로 채우고, 이름이 없는 스킬·카드는 데이터 오류로 거부한다")]
+        public void DisplayTexts_FillNamesByIdAndRejectMissingNames()
+        {
+            var texts = JsonConvert.DeserializeObject<DisplayTexts>(
+                "{\"skills\":{\"1\":{\"name\":\"스킬\",\"desc\":\"설명\"}},\"cards\":{\"a\":{\"name\":\"카드\"}}}");
+            string json = "[{\"id\":1,\"maxLevel\":1,\"baseStats\":{},\"upgrades\":[{\"id\":\"a\",\"effects\":[]}]}]";
+
+            var skill = GameDataStore.ParseSkills(json, texts).Single();
+            Assert.AreEqual("스킬", skill.name);
+            Assert.AreEqual("설명", skill.desc);
+            Assert.AreEqual("카드", skill.upgrades[0].name);
+
+            var missing = JsonConvert.DeserializeObject<DisplayTexts>("{\"skills\":{\"1\":{\"name\":\"스킬\"}}}");
+            Assert.Throws<InvalidOperationException>(() => GameDataStore.ParseSkills(json, missing));
+        }
     }
 }

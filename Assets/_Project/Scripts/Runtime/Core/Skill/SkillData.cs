@@ -1,11 +1,16 @@
 using System.Collections.Generic;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Serialization;
 
 namespace Game.Core
 {
     /// <summary>Aimed: 가장 가까운 적을 향해, RollingLane: 대상 줄을 따라 굴러감, Radial: 시전 위치에서 발 수만큼 사방으로 고르게 퍼짐(조준 없음)</summary>
+    [JsonConverter(typeof(StringEnumConverter), typeof(DefaultNamingStrategy), new object[0], false)]
     public enum ProjectilePath { Aimed, RollingLane, Radial }
 
     /// <summary>Projectile: 날아가 맞춤(투척), Hitscan: 대상 위치에 즉시 타격, Area: 위치에 머무는 범위, Beam: 지속하며 닿는 모든 적을 공격하는 광선, Chain: 여러 적을 연쇄적으로 튕기며 공격</summary>
+    [JsonConverter(typeof(StringEnumConverter), typeof(DefaultNamingStrategy), new object[0], false)]
     public enum CastType { Projectile, Hitscan, Area, Beam, Chain }
     public enum SkillForm { Default, Enbakutsu, JudgementThunder, TriangleIce, LargeLog, FireLog, FlameArrow, ThunderArrow }
 
@@ -18,11 +23,10 @@ namespace Game.Core
         public int unlockLevel = 1;
         public string desc;
 
-        /// <summary>SkillAssetTable에서 이 스킬의 프리팹과 아이콘을 찾는 키. 스킬마다 유일해야 한다</summary>
-        public string assetKey;
+        /// <summary>공격 종류. JSON에는 이름 문자열로 적는다(서버 데이터의 enum은 문자열)</summary>
         public CastType castType;
 
-        /// <summary>속성(무·화·빙·풍·뇌·토). 숫자: 0 Neutral, 1 Fire, 2 Ice, 3 Wind, 4 Lightning, 5 Earth. 적의 약점·저항이 이 값을 본다. 생략하면 무속성이다.
+        /// <summary>속성(무·화·빙·풍·뇌·토). JSON에는 Neutral, Fire, Ice, Wind, Lightning, Earth 이름으로 적는다. 적의 약점·저항이 이 값을 본다. 생략하면 무속성이다.
         /// 자식 스킬의 피해는 가장 바깥 스킬(부모)의 속성을 이어받는다</summary>
         public Element element;
         public ProjectilePath projectilePath;

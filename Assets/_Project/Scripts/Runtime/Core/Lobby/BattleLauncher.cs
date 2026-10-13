@@ -28,8 +28,7 @@ namespace Game.Core
             StartBattleResponse response;
             try
             {
-                // TODO(server): dataRevision 하드코딩(client#25) — 예: await _dataApi.GetVersions() 결과로 교체
-                response = await _battleApi.StartBattle(stageId, dataRevision: 1);
+                response = await _battleApi.StartBattle(stageId);
             }
             catch (ApiException e) when (e.Kind == ApiErrorKind.Rejected)
             {
@@ -37,7 +36,7 @@ namespace Game.Core
                 return false;
             }
 
-            _stageContext.SetBattle(response.battleId, response.seed);
+            _stageContext.SetBattle(response.battleId);
             await _nav.GoToStage(stageId);
             return true;
         }

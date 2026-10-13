@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Game.Core;
 using MessagePipe;
 using NUnit.Framework;
@@ -22,13 +23,13 @@ namespace Game.Tests
             var texture = new UnityEngine.Texture2D(2, 2);
             var basic = UnityEngine.Sprite.Create(texture, new UnityEngine.Rect(0, 0, 1, 1), UnityEngine.Vector2.zero);
             var transformed = UnityEngine.Sprite.Create(texture, new UnityEngine.Rect(1, 0, 1, 1), UnityEngine.Vector2.zero);
-            var table = SkillAssetTable.Create(new[] { new SkillAssetEntry { key = "test", hudIcon = basic } },
+            var table = SkillAssetTable.Create(new[] { new SkillAssetEntry { key = "1", hudIcon = basic } },
                 formIcons: new[] { new SkillFormIconEntry { form = SkillForm.FlameArrow, icon = transformed } });
             var builder = new MessagePipe.BuiltinContainerBuilder();
             builder.AddMessagePipe();
             builder.AddMessageBroker<Game.Core.Messages.SkillChanged>();
             var provider = builder.BuildServiceProvider();
-            var weapon = new TestSkill(new SkillData { assetKey = "test", maxLevel = 15, baseStats = new SkillBaseStats() });
+            var weapon = new TestSkill(new SkillData { id = 1, maxLevel = 15, baseStats = new SkillBaseStats() });
             Game.View.SkillHudView view = null;
             try
             {
@@ -153,7 +154,6 @@ namespace Game.Tests
             return new TestSkill(new SkillData
             {
                 id = id,
-                assetKey = "test_" + id,
                 maxLevel = 15,
                 baseStats = new SkillBaseStats { cast = { baseDamage = 10, cooldown = 2, projectileCount = 1 } },
                 upgrades = new System.Collections.Generic.List<SkillUpgradeOption> { option }
@@ -351,7 +351,7 @@ namespace Game.Tests
             var b = new SkillUpgradeOption { id = "b", maxPickCount = 1, effects = new System.Collections.Generic.List<EffectDef>() };
             var data = new[] { new SkillData
             {
-                id = 1, assetKey = "a", maxLevel = 15, baseStats = new SkillBaseStats(),
+                id = 1, maxLevel = 15, baseStats = new SkillBaseStats(),
                 upgrades = new System.Collections.Generic.List<SkillUpgradeOption> { a, b }
             } };
             a.requiredCardCounts = new[] { new CardCountRequirement { cardId = "missing" } };
@@ -373,20 +373,22 @@ namespace Game.Tests
         [Test]
         public void Catalog_RejectsDuplicateCardIdsAcrossWeapons()
         {
-            const string json = "[{\"id\":1,\"assetKey\":\"a\",\"maxLevel\":1,\"baseStats\":{},\"upgrades\":[{\"id\":\"same\",\"effects\":[]}]},{\"id\":2,\"assetKey\":\"b\",\"maxLevel\":1,\"baseStats\":{},\"upgrades\":[{\"id\":\"same\",\"effects\":[]}]}]";
+            const string json = "[{\"id\":1,\"maxLevel\":1,\"baseStats\":{},\"upgrades\":[{\"id\":\"same\",\"effects\":[]}]},{\"id\":2,\"maxLevel\":1,\"baseStats\":{},\"upgrades\":[{\"id\":\"same\",\"effects\":[]}]}]";
             Assert.Throws<InvalidOperationException>(() => GameDataStore.ParseSkills(json));
         }
 
-        [Test(Description = "assetKey는 프리팹과 아이콘을 찾는 키라 비어 있거나 다른 스킬과 겹치면 거부한다")]
-        public void Catalog_RejectsMissingOrDuplicateAssetKey()
+        [Test(Description = "서버 데이터의 enum은 이름 문자열만 받는다. 숫자 코드나 모르는 이름은 로드에서 거부한다")]
+        public void Catalog_ReadsEnumNamesAndRejectsNumbersOrUnknownNames()
         {
-            const string missing = "[{\"id\":1,\"maxLevel\":1,\"baseStats\":{},\"upgrades\":[]}]";
-            const string duplicate = "[{\"id\":1,\"assetKey\":\"same\",\"maxLevel\":1,\"baseStats\":{},\"upgrades\":[]},{\"id\":2,\"assetKey\":\"same\",\"maxLevel\":1,\"baseStats\":{},\"upgrades\":[]}]";
-            const string valid = "[{\"id\":1,\"assetKey\":\"a\",\"maxLevel\":1,\"baseStats\":{},\"upgrades\":[]},{\"id\":2,\"assetKey\":\"b\",\"maxLevel\":1,\"baseStats\":{},\"upgrades\":[]}]";
+            string Json(string castType, string element) =>
+                "[{\"id\":1,\"castType\":" + castType + ",\"element\":" + element + ",\"maxLevel\":1,\"baseStats\":{},\"upgrades\":[]}]";
 
-            Assert.AreEqual(2, GameDataStore.ParseSkills(valid).Count);
-            StringAssert.Contains("assetKey", Assert.Throws<InvalidOperationException>(() => GameDataStore.ParseSkills(missing)).Message);
-            StringAssert.Contains("assetKey", Assert.Throws<InvalidOperationException>(() => GameDataStore.ParseSkills(duplicate)).Message);
+            var skill = GameDataStore.ParseSkills(Json("\"Beam\"", "\"Ice\"")).Single();
+            Assert.AreEqual(CastType.Beam, skill.castType);
+            Assert.AreEqual(Element.Ice, skill.element);
+            Assert.Catch(() => GameDataStore.ParseSkills(Json("3", "\"Ice\"")));
+            Assert.Catch(() => GameDataStore.ParseSkills(Json("\"Beam\"", "2")));
+            Assert.Catch(() => GameDataStore.ParseSkills(Json("\"Laser\"", "\"Ice\"")));
         }
     }
 }

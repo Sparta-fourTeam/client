@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Game.Core
 {
-    /// <summary>스킬 하나가 쓰는 에셋 묶음. 키는 Skills.json의 assetKey와 같다</summary>
+    /// <summary>스킬 하나가 쓰는 에셋 묶음. 키는 스킬 id의 문자열이다. 일반 카드는 GeneralCards의 Id를 키로 쓴다. 서버 데이터에는 에셋 키를 두지 않는다</summary>
     [Serializable]
     public class SkillAssetEntry
     {
@@ -22,7 +22,7 @@ namespace Game.Core
         /// <summary>카드 화면의 "새 스킬" 카드 아이콘</summary>
         public Sprite newCardIcon;
 
-        /// <summary>카드 화면의 "강화" 카드 아이콘. 스킬이 아닌 일반 카드(GeneralCards.json의 IconKey)도 이 칸을 쓴다</summary>
+        /// <summary>카드 화면의 "강화" 카드 아이콘. 스킬이 아닌 일반 카드(키는 GeneralCards의 Id)도 이 칸을 쓴다</summary>
         public Sprite upgradeCardIcon;
     }
 
@@ -83,6 +83,18 @@ namespace Game.Core
             entry = null;
             return !string.IsNullOrEmpty(key) && lookup.TryGetValue(key, out entry);
         }
+
+        public bool HasPrefab(int skillId) => HasPrefab(skillId.ToString());
+
+        public GameObject GetPrefab(int skillId) => GetPrefab(skillId.ToString());
+
+        public IReadOnlyList<SkillFormPrefabEntry> GetFormPrefabs(int skillId) => GetFormPrefabs(skillId.ToString());
+
+        public Sprite GetHudIcon(int skillId) => GetHudIcon(skillId.ToString());
+
+        public Sprite GetCardIcon(int skillId, SkillCardIcon kind) => GetCardIcon(skillId.ToString(), kind);
+
+        public Sprite GetFormIcon(SkillForm form, int skillId) => GetFormIcon(form, skillId.ToString());
 
         public bool HasPrefab(string key) => TryGet(key, out var entry) && entry.prefab != null;
 

@@ -124,7 +124,7 @@ namespace Game.View
         {
             // 해금 전이면 스킬 탭에 자물쇠를 걸어 두었다가 레벨업 연출 뒤에 푼다
             var nav = _ui.Get<LobbyNavView>();
-            bool tabWasLocked = TutorialProgress.IsTabLocked(_data.Tutorials, TutorialFacts.From(_profile), SkillTab);
+            bool tabWasLocked = TutorialProgress.IsTabLocked(_data.Tutorials, _data.TutorialPresentations, TutorialFacts.From(_profile), SkillTab);
             nav.SetSkillLocked(tabWasLocked);
             var news = await _arrival.CollectAsync();
             if (this == null)
@@ -132,7 +132,7 @@ namespace Game.View
                 return;
             }
 
-            bool tabLocked = TutorialProgress.IsTabLocked(_data.Tutorials, TutorialFacts.From(_profile), SkillTab);
+            bool tabLocked = TutorialProgress.IsTabLocked(_data.Tutorials, _data.TutorialPresentations, TutorialFacts.From(_profile), SkillTab);
             // 새 컨텐츠 해금·레벨업 연출이 끝날 때까지는 잠긴 채로 둔다
             nav.SetSkillLocked(tabLocked || tabWasLocked);
 
@@ -140,11 +140,11 @@ namespace Game.View
             if (battle != null)
             {
                 // 첫 시작: 로비에서 도입 대사를 보여 준 뒤 전투로 보낸다
-                if (battle.Dialogue.Count > 0)
+                if (_data.TutorialPresentations.For(battle.Id).Dialogue.Count > 0)
                 {
                     try
                     {
-                        await _dialogue.PlayAsync(battle.Dialogue);
+                        await _dialogue.PlayAsync(_data.TutorialPresentations.For(battle.Id).Dialogue);
                     }
                     catch (OperationCanceledException)
                     {
@@ -209,11 +209,11 @@ namespace Game.View
 
             // 레벨업 직후 처음 시작되는 가이드에 대사 장면이 있으면 재생한다
             var starting = TutorialProgress.ActiveGuide(_data.Tutorials, TutorialFacts.From(_profile));
-            if (!news.IsEmpty && starting != null && starting.Dialogue.Count > 0)
+            if (!news.IsEmpty && starting != null && _data.TutorialPresentations.For(starting.Id).Dialogue.Count > 0)
             {
                 try
                 {
-                    await _dialogue.PlayAsync(starting.Dialogue);
+                    await _dialogue.PlayAsync(_data.TutorialPresentations.For(starting.Id).Dialogue);
                 }
                 catch (OperationCanceledException)
                 {
@@ -249,10 +249,10 @@ namespace Game.View
             }
 
             _guide = next;
-            _steps = next != null ? LobbyTutorialScripts.Create(next, _ui) : null;
+            _steps = next != null ? LobbyTutorialScripts.Create(next, _data.TutorialPresentations.For(next.Id), _ui) : null;
             if (next != null && _steps == null)
             {
-                Debug.LogError($"[Tutorial] {next.Id}: Script {next.Script}의 단계 템플릿이 LobbyTutorialScripts에 없습니다", this);
+                Debug.LogError($"[Tutorial] {next.Id}: Script {_data.TutorialPresentations.For(next.Id).Script}의 단계 템플릿이 LobbyTutorialScripts에 없습니다", this);
             }
         }
 
@@ -295,7 +295,7 @@ namespace Game.View
                 }
             }
 
-            var lines = _guide.Lines;
+            var lines = _data.TutorialPresentations.For(_guide.Id).Lines;
             Point(_steps[index].Target(), lines[Mathf.Min(index, lines.Count - 1)]);
         }
 

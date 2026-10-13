@@ -2,9 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Game.Core;
-using Newtonsoft.Json;
 using NUnit.Framework;
-using UnityEngine;
 
 namespace Game.Tests
 {
@@ -14,7 +12,7 @@ namespace Game.Tests
     public sealed class SkillCatalogSafetyNetTests
     {
         private static List<SkillData> LoadUnvalidated() =>
-            JsonConvert.DeserializeObject<List<SkillData>>(Resources.Load<TextAsset>("MockData/Skills").text);
+            new GameDataStore().LoadSkills();
 
         [Test]
         public void Validator_RejectsProjectileOnlyEffectOnHitscanWeapon()
