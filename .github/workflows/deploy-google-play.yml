@@ -4,10 +4,10 @@ on:
   workflow_dispatch:
     inputs:
       release_version:
-        description: '표시 버전 (이번 릴리스 1.0, 대응 태그 v1.0)'
+        description: '표시 버전 (후보 설정과 일치해야 함, 이번 릴리스 1.0.1)'
         type: string
         required: true
-        default: '1.0'
+        default: '1.0.1'
       publish_to_internal:
         description: '검증된 AAB를 내부 테스트에 게시 (별도 승인 후 선택)'
         type: boolean
@@ -58,10 +58,6 @@ jobs:
           if not re.fullmatch(r'\d+(?:\.\d+){1,2}', version):
               raise SystemExit('Invalid release version')
           release_tag = 'v' + version
-          import subprocess
-          tagged = subprocess.run(['git', 'rev-parse', '--verify', '--quiet', 'refs/tags/' + release_tag + '^{commit}'], text=True, capture_output=True)
-          if tagged.returncode == 0 and tagged.stdout.strip() != os.environ['GITHUB_SHA']:
-              raise SystemExit('Existing release tag points to a different source commit')
           if target < 36 or field('AndroidTargetArchitectures') != '2':
               raise SystemExit('API 36+ and ARM64 required')
           if field('m_Development') != '0' or field('m_BuildAppBundle') != '1':
@@ -76,22 +72,13 @@ jobs:
               output.write('version_name=' + version + '\n')
           PY
 
-      - name: Allocate shared Android version code
+      - name: Validate shared Android release number
         id: version
-        run: |
-          python3 - <<'PY'
-          import os, re, subprocess, time
-          time.sleep(2)
-          code = int(time.time()) - 1577836800
-          tags = subprocess.check_output(['git', 'for-each-ref', 'refs/tags', '--format=%(contents)'], text=True)
-          previous = [int(value) for value in re.findall(r'^Android-Version-Code: (\d+)$', tags, re.M)]
-          if not 0 < code <= 2100000000 or code <= max(previous, default=0):
-              raise SystemExit('Version code must exceed the published tag code and fit the Play range')
-          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
-              output.write('code=' + str(code) + '\n')
-          PY
+        env:
+          RELEASE_VERSION: ${{ inputs.release_version }}
+        run: python3 .github/scripts/android-release-version.py --version "$RELEASE_VERSION"
 
-      - name: Record allocated version code
+      - name: Record candidate version code
         env:
           ANDROID_VERSION_CODE: ${{ steps.version.outputs.code }}
         run: |
@@ -117,7 +104,7 @@ jobs:
           buildMethod: Game.Editor.CiBuild.Build
           androidExportType: androidAppBundle
           versioning: Custom
-          version: ${{ steps.profile.outputs.version_name }}
+          version: ${{ steps.version.outputs.version_name }}
           androidVersionCode: ${{ steps.version.outputs.code }}
           buildsPath: build
           androidKeystoreName: release.keystore
@@ -204,6 +191,18 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
+      - name: Checkout source and current release ledger
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Reject a candidate already recorded as released
+        env:
+          RELEASE_VERSION: ${{ inputs.release_version }}
+        run: python3 .github/scripts/android-release-version.py --version "$RELEASE_VERSION"
+
       - name: Check existing Play upload credential
         env:
           GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}

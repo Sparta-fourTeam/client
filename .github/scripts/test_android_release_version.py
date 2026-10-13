@@ -1,0 +1,80 @@
+import importlib.util
+import json
+import os
+from pathlib import Path
+import subprocess
+import tempfile
+import unittest
+
+SCRIPT = Path(__file__).with_name('android-release-version.py').resolve()
+spec = importlib.util.spec_from_file_location('release_version', SCRIPT)
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+
+
+def policy(code=1, version='1.0.1', released=None):
+    return {'versionName': version, 'versionCode': code, 'playReleases': released or []}
+
+
+class ReleaseNumberTests(unittest.TestCase):
+    def test_first_candidate_and_rebuild_keep_code_one(self):
+        self.assertEqual(module.release_number(policy(), '1.0.1'), ('1.0.1', 1))
+        self.assertEqual(module.release_number(policy(), '1.0.1', policy()), ('1.0.1', 1))
+
+    def test_next_confirmed_release_increments_by_one(self):
+        released = [{'versionName': '1.0.1', 'versionCode': 1}]
+        self.assertEqual(module.release_number(policy(2, '1.0.2', released), '1.0.2', policy()), ('1.0.2', 2))
+
+    def test_stale_checkout_cannot_reuse_code_released_on_main(self):
+        main = policy(2, '1.0.2', [{'versionName': '1.0.1', 'versionCode': 1}])
+        with self.assertRaises(ValueError):
+            module.release_number(policy(), '1.0.1', main)
+
+    def test_code_skip_gap_duplicate_and_conflict_are_rejected(self):
+        invalid = [policy(2), policy(True), policy(214011987),
+                   policy(3, released=[{'versionName': '1.0.0', 'versionCode': 2}]),
+                   policy(2, released=[{'versionName': '1.0.0', 'versionCode': 1}] * 2)]
+        for p in invalid:
+            with self.subTest(p=p), self.assertRaises(ValueError):
+                module.release_number(p, '1.0.1')
+        with self.assertRaises(ValueError):
+            module.release_number(policy(2, released=[{'versionName': '1.0.0', 'versionCode': 1}]), '1.0.1',
+                                  policy(2, released=[{'versionName': '0.9.0', 'versionCode': 1}]))
+
+    def test_requested_version_and_pending_main_candidate_cannot_diverge(self):
+        with self.assertRaises(ValueError):
+            module.release_number(policy(), '1.0')
+        with self.assertRaises(ValueError):
+            module.release_number(policy(1, '1.0.2'), '1.0.2', policy())
+
+    def test_cli_ignores_old_high_code_build_tag_and_checks_new_tag_tree(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            def git(*args):
+                return subprocess.check_output(['git', '-C', folder, *args], text=True).strip()
+            git('init', '-q')
+            git('config', 'user.name', 'Release policy test')
+            git('config', 'user.email', 'release-policy-test@example.invalid')
+            (root / '.github').mkdir()
+            (root / '.github/android-release.json').write_text(json.dumps(policy()))
+            git('add', '.')
+            git('commit', '-qm', 'test fixture')
+            git('update-ref', 'refs/remotes/origin/main', 'HEAD')
+            git('tag', '-a', 'v1.0', '-m', 'Android-Version-Code: 214011987')
+            output = root / 'output.txt'
+            env = dict(os.environ, GITHUB_OUTPUT=str(output))
+            result = subprocess.run(['python3', str(SCRIPT), '--version', '1.0.1'], cwd=root, env=env, capture_output=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(output.read_text(), 'version_name=1.0.1\ncode=1\n')
+            git('tag', '-a', 'v1.0.1', '-m', 'candidate build receipt')
+            same_tree = subprocess.run(['python3', str(SCRIPT), '--version', 'v1.0.1'], cwd=root, env=env, capture_output=True)
+            self.assertEqual(same_tree.returncode, 0, same_tree.stderr)
+            (root / 'changed.txt').write_text('different candidate source')
+            git('add', '.')
+            git('commit', '-qm', 'different tree')
+            mismatch = subprocess.run(['python3', str(SCRIPT), '--version', '1.0.1'], cwd=root, env=env, capture_output=True)
+            self.assertNotEqual(mismatch.returncode, 0)
+
+
+if __name__ == '__main__':
+    unittest.main()

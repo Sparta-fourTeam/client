@@ -22,20 +22,11 @@ jobs:
           fetch-depth: 0
           lfs: true
 
-      - name: Allocate shared Android version code
+      - name: Validate shared Android release number
         id: version
-        run: |
-          python3 - <<'PY'
-          import os, re, subprocess, time
-          time.sleep(2)
-          code = int(time.time()) - 1577836800
-          tags = subprocess.check_output(['git', 'for-each-ref', 'refs/tags', '--format=%(contents)'], text=True)
-          previous = [int(value) for value in re.findall(r'^Android-Version-Code: (\d+)$', tags, re.M)]
-          if not 0 < code <= 2100000000 or code <= max(previous, default=0):
-              raise SystemExit('Version code must exceed the published tag code and fit the Play range')
-          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
-              output.write('code=' + str(code) + '\n')
-          PY
+        env:
+          RELEASE_VERSION: ${{ github.ref_name }}
+        run: python3 .github/scripts/android-release-version.py --version "$RELEASE_VERSION"
 
       - name: Build Release APK
         uses: game-ci/unity-builder@v4
@@ -50,7 +41,8 @@ jobs:
           buildProfile: 'Assets/Settings/Build Profiles/Android_Release.asset'
           buildMethod: Game.Editor.CiBuild.Build
           androidExportType: androidPackage
-          versioning: Tag
+          versioning: Custom
+          version: ${{ steps.version.outputs.version_name }}
           androidVersionCode: ${{ steps.version.outputs.code }}
           buildsPath: build
 
