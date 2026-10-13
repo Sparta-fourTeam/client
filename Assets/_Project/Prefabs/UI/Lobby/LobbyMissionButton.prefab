@@ -739,7 +739,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 53
+  m_fontSize: 48
   m_fontSizeBase: 47
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -858,7 +858,7 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4292933375
+    rgba: 4292604670
   m_fontColor: {r: 0.99607843, g: 0.9490196, b: 0.85882354, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
@@ -876,7 +876,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 26
+  m_fontSize: 32
   m_fontSizeBase: 26
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -995,7 +995,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 526378015202200838, guid: 9217c836e24c8475bb200fbd190d17ec, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 2
+      value: -11.2
       objectReference: {fileID: 0}
     - target: {fileID: 526378015202200838, guid: 9217c836e24c8475bb200fbd190d17ec, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x

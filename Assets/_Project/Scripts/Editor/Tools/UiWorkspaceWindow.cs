@@ -289,6 +289,8 @@ namespace Game.Editor
                     rootVisualElement.Q<Toggle>("safeAreaToggle").value, _sample.value, _selected.Id);
                 _shot = _preview.Capture();
                 _image.image = _shot;
+                _motionPlaying = _preview.HasAmbientMotion;
+                _lastFrame = EditorApplication.timeSinceStartup;
                 _motionButton.choices = _preview.Buttons.ToList();
                 _motionButton.SetValueWithoutNotify(_motionButton.choices.FirstOrDefault() ?? "");
                 SetMotionControls(true);
@@ -319,7 +321,7 @@ namespace Game.Editor
                 _lastFrame = EditorApplication.timeSinceStartup;
                 _preview.Capture(_shot);
                 _image.MarkDirtyRepaint();
-                rootVisualElement.Q<Label>("statusLabel").text = "편집 연출 미리보기 재생 중 · 초기화로 중단 / 원상 복귀";
+                rootVisualElement.Q<Label>("statusLabel").text = "편집 연출 미리보기 재생 중 · 초기화로 원상 복귀";
             }
             catch (Exception error)
             {

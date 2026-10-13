@@ -33,10 +33,6 @@ namespace Game.Editor
 
         internal static List<string> Samples(string id)
         {
-            if (id is "HudCanvas" or "SkillHud" or "StageControls")
-            {
-                return new() { "기본", "피해 / 쿨타임" };
-            }
             if (id == "UpgradeConfirmPopup")
             {
                 return new() { "기본" };
@@ -77,8 +73,6 @@ namespace Game.Editor
                 SceneManager.MoveGameObjectToScene(container, scene);
                 container.GetComponent<Canvas>().renderMode = RenderMode.WorldSpace;
                 ((RectTransform)container.transform).sizeDelta = canvasSize;
-                bool stagePreview = composition != null && composition.name == "StageUi";
-                if (stagePreview) { AddStageBackdrop(container.transform); }
                 GameObject selected;
                 if (composition == null)
                 {
@@ -126,7 +120,6 @@ namespace Game.Editor
                         throw new InvalidOperationException("선택한 프리팹이 화면 구성에 없습니다.");
                     }
                 }
-                if (stagePreview) { ApplyStageSample(container, sample); }
                 ApplySample(selected, sample);
                 foreach (var text in container.GetComponentsInChildren<TMP_Text>(true))
                 {
@@ -139,7 +132,6 @@ namespace Game.Editor
                 }
 
                 Canvas.ForceUpdateCanvases();
-                if (stagePreview) { PlaceStagePreviewStars(container); }
                 var cameraRoot = new GameObject("Preview Camera", typeof(Camera));
                 SceneManager.MoveGameObjectToScene(cameraRoot, scene);
                 var camera = cameraRoot.GetComponent<Camera>();
@@ -176,6 +168,8 @@ namespace Game.Editor
             private readonly Camera _camera;
             private readonly Device _device;
             private readonly List<Tween> _tweens = new();
+            private readonly LobbyCloudDrift[] _clouds;
+            private double _ambientAge;
             private PressScaleAnimator _press;
             private float _releaseAfter;
             private bool _particlesPlaying;
@@ -188,14 +182,19 @@ namespace Game.Editor
             private bool _disposed;
 
             internal Session(Scene scene, GameObject container, GameObject selected, Camera camera, Device device)
-            { _scene = scene; _container = container; _selected = selected; _camera = camera; _device = device; }
+            {
+                _scene = scene; _container = container; _selected = selected; _camera = camera; _device = device;
+                _clouds = container.GetComponentsInChildren<LobbyCloudDrift>(true);
+                foreach (var cloud in _clouds) { cloud.SampleTime(0); }
+            }
 
             internal string[] Buttons => _selected.GetComponentsInChildren<Button>(true)
                 .Where(b => b.gameObject.activeInHierarchy && b.GetComponentInParent<NoPressFeedback>() == null)
                 .Select(b => AnimationUtility.CalculateTransformPath(b.transform, _selected.transform)).ToArray();
             internal bool HasTransition => _selected.GetComponentsInChildren<PopupTransition>(true).Length > 0;
             internal bool HasParticles => _selected.GetComponentsInChildren<ParticleSystem>(true).Length > 0;
-            internal bool IsAnimating => _particlesPlaying || _releaseAfter > 0 || _tweens.Any(t => t.IsActive());
+            internal bool HasAmbientMotion => _clouds.Any(c => c != null && c.enabled && c.gameObject.activeInHierarchy);
+            internal bool IsAnimating => HasAmbientMotion || _particlesPlaying || _releaseAfter > 0 || _tweens.Any(t => t.IsActive());
 
             private void OwnTweens(Action action)
             {
@@ -348,6 +347,11 @@ namespace Game.Editor
 
             internal void Advance(float seconds)
             {
+                _ambientAge += seconds;
+                foreach (var cloud in _clouds)
+                {
+                    if (cloud != null && cloud.enabled && cloud.gameObject.activeInHierarchy) { cloud.SampleTime(_ambientAge); }
+                }
                 OwnTweens(() =>
                 {
                     foreach (var tween in _tweens.ToArray())
@@ -431,82 +435,6 @@ namespace Game.Editor
                     foreach (var view in _container.GetComponentsInChildren<HudView>(true)) { view.Dispose(); }
                 }
                 finally { EditorSceneManager.ClosePreviewScene(_scene); }
-            }
-        }
-
-        private static void AddStageBackdrop(Transform parent)
-        {
-            var sprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Project/Sprites/StageBackground_v2.png");
-            if (sprite == null) { return; }
-            var backdrop = new GameObject("Stage Backdrop (preview only)", typeof(RectTransform), typeof(Image));
-            backdrop.transform.SetParent(parent, false);
-            var rect = (RectTransform)backdrop.transform;
-            rect.anchorMin = Vector2.zero;
-            rect.anchorMax = Vector2.one;
-            rect.offsetMin = rect.offsetMax = Vector2.zero;
-            var image = backdrop.GetComponent<Image>();
-            image.sprite = sprite;
-            image.color = Color.white;
-            image.raycastTarget = false;
-            backdrop.transform.SetAsFirstSibling();
-        }
-
-        private static void ApplyStageSample(GameObject container, string sample)
-        {
-            bool damaged = sample == "피해 / 쿨타임";
-            foreach (var view in container.GetComponentsInChildren<HudView>(true))
-            {
-                var so = new SerializedObject(view);
-                if (view is WaveHudView)
-                {
-                    if (so.FindProperty("_waveValueText")?.objectReferenceValue is TMP_Text wave) { wave.text = "1/20"; }
-                    if (so.FindProperty("_gaugeFill")?.objectReferenceValue is Image fill) { fill.fillAmount = damaged ? 0.65f : 1f; }
-                }
-                if (view is WallHpHudView)
-                {
-                    if (so.FindProperty("_hpText")?.objectReferenceValue is TMP_Text hp) { hp.text = damaged ? "40 / 100" : "100 / 100"; }
-                    if (so.FindProperty("_hpFill")?.objectReferenceValue is Image fill) { fill.fillAmount = damaged ? 0.4f : 1f; }
-                }
-                if (view is TimerHudView && so.FindProperty("_timeText")?.objectReferenceValue is TMP_Text timer) { timer.text = "00:06"; }
-                if (view is StageLabelHudView && so.FindProperty("_label")?.objectReferenceValue is TMP_Text stage) { stage.text = "Stage 3"; }
-                if (view is SkillHudView)
-                {
-                    var assets = (SkillAssetTable)so.FindProperty("_assets").objectReferenceValue;
-                    var slots = so.FindProperty("_slots");
-                    for (int i = 0; i < slots.arraySize; i++)
-                    {
-                        var slot = slots.GetArrayElementAtIndex(i).objectReferenceValue as SkillSlotView;
-                        if (slot == null) { continue; }
-                        slot.Clear();
-                        if (i != 0) { continue; }
-                        // Display-only data on the clone; no skills, messages, timers or game rules run.
-                        var slotSo = new SerializedObject(slot);
-                        var icon = (Image)slotSo.FindProperty("_icon").objectReferenceValue;
-                        icon.sprite = assets != null ? assets.GetHudIcon(1) : null;
-                        icon.enabled = icon.sprite != null;
-                        var frame = (Image)slotSo.FindProperty("_activeFrame").objectReferenceValue;
-                        frame.sprite = (Sprite)slotSo.FindProperty("_activeSprite").objectReferenceValue;
-                        frame.enabled = true;
-                        var level = (TMP_Text)slotSo.FindProperty("_levelText").objectReferenceValue;
-                        level.gameObject.SetActive(true);
-                        level.text = "1";
-                        var cooldown = (Image)slotSo.FindProperty("_cooldownOverlay").objectReferenceValue;
-                        cooldown.gameObject.SetActive(damaged);
-                        cooldown.fillAmount = 0.6f;
-                    }
-                }
-            }
-        }
-
-        private static void PlaceStagePreviewStars(GameObject container)
-        {
-            foreach (var view in container.GetComponentsInChildren<WaveHudView>(true))
-            {
-                var so = new SerializedObject(view);
-                if (so.FindProperty("_gaugeFill")?.objectReferenceValue is not Image fill
-                    || so.FindProperty("_gaugeStar")?.objectReferenceValue is not RectTransform star) { continue; }
-                var rect = fill.rectTransform.rect;
-                star.position = fill.transform.TransformPoint(new Vector3(rect.xMin + rect.width * fill.fillAmount, rect.center.y, 0));
             }
         }
 
