@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 namespace Game.View
 {
-    /// <summary>누르면 미완성 안내를 띄운다. 공방·결계·냥냥닌자 탭처럼 아직 없는 기능의 버튼에 붙인다</summary>
+    /// <summary>누르면 미완성 안내를 띄운다. 공방·보안·고급인력 탭처럼 아직 없는 기능의 버튼에 붙인다</summary>
     [RequireComponent(typeof(Button))]
     public sealed class ComingSoonButton : MonoBehaviour, IUiBindable
     {
