@@ -60,9 +60,9 @@ flowchart TD
 |---|---|
 | `id` | 스킬 ID. 새 스킬은 가장 큰 번호의 다음 번호를 쓴다 |
 | `name`, `desc` | 이름과 설명 |
-| `castType` | 공격 종류. **숫자**: 0 Projectile, 1 Hitscan, 2 Area, 3 Beam, 4 Chain |
-| `element` | 속성. **숫자**: 0 Neutral(무), 1 Fire(화), 2 Ice(빙), 3 Wind(풍), 4 Lightning(뇌), 5 Earth(토). 생략하면 무속성이다. 적의 약점·저항이 이 값을 본다. 자식 스킬(`childOnly`)의 피해는 가장 바깥 스킬(부모)의 속성과 `castType`을 이어받는다 |
-| `projectilePath` | 투사체 경로. **숫자**: 0 Aimed(가장 가까운 적), 1 RollingLane(대상 줄을 따라 굴러감), 2 Radial(발 수만큼 사방으로) |
+| `castType` | 공격 종류. **이름 문자열**: `Projectile`, `Hitscan`, `Area`, `Beam`, `Chain` |
+| `element` | 속성. **이름 문자열**: `Neutral`(무), `Fire`(화), `Ice`(빙), `Wind`(풍), `Lightning`(뇌), `Earth`(토). 생략하면 무속성이다. 적의 약점·저항이 이 값을 본다. 자식 스킬(`childOnly`)의 피해는 가장 바깥 스킬(부모)의 속성과 `castType`을 이어받는다 |
+| `projectilePath` | 투사체 경로. **이름 문자열**: `Aimed`(가장 가까운 적, 생략 시 기본), `RollingLane`(대상 줄을 따라 굴러감), `Radial`(발 수만큼 사방으로) |
 | `baseStats` | 기본 수치. 필요한 묶음만 적는다(아래) |
 | `upgrades` | 이 스킬의 카드 목록 |
 | `maxLevel` | 최초 습득을 제외한 전투 중 강화 횟수 상한 |
@@ -134,11 +134,11 @@ flowchart TD
 
 | `castType` | 전략 | 프리팹에 필요한 컴포넌트 | 동작 |
 |---|---|---|---|
-| 0 Projectile | `ProjectileStrategy` | `Projectile` | 날아가 맞춘다. 경로(`projectilePath`), 관통, 폭발, 점화 |
-| 1 Hitscan | `HitscanStrategy` | `HitscanEffect` | 대상 위치에 즉시 타격. 벼락, 전자기장 |
-| 2 Area | `AreaStrategy` | `AreaZone` | 위치에 머무는 범위. 이동, 끌어당김, 펄스 피해 (냉기 지대, 전기 구름) |
-| 3 Beam | `BeamStrategy` | `AreaZone` | 지속하며 닿는 모든 적을 공격하는 선 (에너지 빔) |
-| 4 Chain | `ChainStrategy` | `ChainBolt` | 여러 적을 연쇄로 튕기며 공격 (연쇄 번개) |
+| Projectile | `ProjectileStrategy` | `Projectile` | 날아가 맞춘다. 경로(`projectilePath`), 관통, 폭발, 점화 |
+| Hitscan | `HitscanStrategy` | `HitscanEffect` | 대상 위치에 즉시 타격. 벼락, 전자기장 |
+| Area | `AreaStrategy` | `AreaZone` | 위치에 머무는 범위. 이동, 끌어당김, 펄스 피해 (냉기 지대, 전기 구름) |
+| Beam | `BeamStrategy` | `AreaZone` | 지속하며 닿는 모든 적을 공격하는 선 (에너지 빔) |
+| Chain | `ChainStrategy` | `ChainBolt` | 여러 적을 연쇄로 튕기며 공격 (연쇄 번개) |
 
 **에셋 표 규칙**: 스킬의 프리팹, HUD 아이콘, 카드 아이콘은 `SkillAssetTable`의 항목 하나(`key` = 스킬 `id`의 문자열)에 모은다. 항목은 `prefab`, `hudIcon`, `newCardIcon`(새 스킬 카드), `upgradeCardIcon`(강화 카드)을 가진다. 카드마다가 아니라 스킬마다 아이콘 두 장이다. 자식 전용 스킬은 `prefab`만 있으면 된다. 표에는 기본 아이콘(`hudFallback`, `cardFallback`)이 있어 아이콘이 비어 있으면 기본 아이콘이 나온다. 스킬이 아닌 일반 카드는 카드 `Id`를 같은 표의 `key`로 쓰고 `upgradeCardIcon`을 쓴다. 형태 변환 아이콘은 스킬 항목이 아니라 표의 `formIcons`(형태 → 아이콘)에 둔다. 비어 있으면 변환 카드를 가진 스킬의 `hudIcon`이 나온다.
 
@@ -280,9 +280,9 @@ python3 docs/ninjutsu/validate_requirements.py
 
 ## 10. 알려진 한계와 주의
 
-- `castType`과 `projectilePath`는 JSON에 **숫자**로 적는다(위 표 참고). enum 중간에 값을 끼우면 데이터의 숫자가 밀려 엉뚱한 종류가 되므로, 값은 항상 끝에 더한다. `form`처럼 이름으로 바꾸는 것이 개선 후보다.
+- `castType`, `element`, `projectilePath`는 JSON에 **이름 문자열**로 적는다(서버 데이터의 enum은 문자열). 숫자나 모르는 이름은 로드에서 거부한다. C# enum 멤버 이름이 곧 데이터 계약이므로 이름을 바꾸면 `Skills.json`과 서버 계약도 함께 바꾼다.
 - 변형(`form`)은 스킬 전용 이름이 든 enum이라 새 변형마다 코드를 고쳐야 한다. 문자열 키와 프리팹의 `키 → 스프라이트` 표로 바꾸는 것이 개선 후보다.
 - 전자기장(벼락의 부가 효과)은 아직 코드로 남아 있다. 영역 스킬로 옮기려면 영역의 감속, 고정 피해 분리, 펄스 간격 맞춤이 먼저 필요하다.
 - 새 스킬의 아이콘과 프리팹 일부(냉기 지대, 전기 구름, 에너지 빔, 연쇄 번개)는 임시 연결이다.
-- 카드 ID, `progressionId`, enum 숫자를 바꾸면 `Skills.json`, 테스트, `requirements.json`, `validate_requirements.py`, `LocalUpgradeApi`를 함께 고쳐야 한다. 스킬 `id`를 바꾸면 `SkillAssetTable`의 `key`도 같이 고친다.
+- 카드 ID, `progressionId`, enum 이름을 바꾸면 `Skills.json`, 테스트, `requirements.json`, `validate_requirements.py`, `LocalUpgradeApi`를 함께 고쳐야 한다. 스킬 `id`를 바꾸면 `SkillAssetTable`의 `key`도 같이 고친다.
 - 한 PR에 enum 재배열, JSON 변환, 테스트 수정이 겹치면 리뷰가 어렵다. 커밋을 나눈다.

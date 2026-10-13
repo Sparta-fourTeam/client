@@ -3,8 +3,8 @@
     "id": 1,
     "unlockLevel": 1,
     "name": "화살",
-    "castType": 0,
-    "element": 0,
+    "castType": "Projectile",
+    "element": "Neutral",
     "maxLevel": 15,
     "progressionId": "shuriken",
     "baseStats": {
@@ -558,8 +558,8 @@
     "id": 2,
     "unlockLevel": 1,
     "name": "화염구",
-    "castType": 0,
-    "element": 1,
+    "castType": "Projectile",
+    "element": "Fire",
     "maxLevel": 14,
     "progressionId": "fireball",
     "baseStats": {
@@ -853,8 +853,8 @@
     "id": 3,
     "unlockLevel": 1,
     "name": "벼락",
-    "castType": 1,
-    "element": 4,
+    "castType": "Hitscan",
+    "element": "Lightning",
     "maxLevel": 14,
     "progressionId": "lightning",
     "baseStats": {
@@ -1214,8 +1214,8 @@
     "id": 4,
     "unlockLevel": 1,
     "name": "서리 결정",
-    "castType": 0,
-    "element": 2,
+    "castType": "Projectile",
+    "element": "Ice",
     "maxLevel": 15,
     "progressionId": null,
     "baseStats": {
@@ -1571,8 +1571,8 @@
     "id": 5,
     "unlockLevel": 2,
     "name": "나무뿌리",
-    "castType": 0,
-    "element": 5,
+    "castType": "Projectile",
+    "element": "Earth",
     "maxLevel": 10,
     "progressionId": "log",
     "baseStats": {
@@ -1844,15 +1844,15 @@
         ]
       }
     ],
-    "projectilePath": 1,
+    "projectilePath": "RollingLane",
     "desc": "나무뿌리가 방벽 앞에서 굴러가며 적을 관통하고 밀어냅니다."
   },
   {
     "id": 6,
     "unlockLevel": 3,
     "name": "냉기 지대",
-    "castType": 2,
-    "element": 2,
+    "castType": "Area",
+    "element": "Ice",
     "maxLevel": 10,
     "progressionId": null,
     "baseStats": {
@@ -2041,8 +2041,8 @@
     "id": 7,
     "unlockLevel": 4,
     "name": "전기 구름",
-    "castType": 2,
-    "element": 4,
+    "castType": "Area",
+    "element": "Lightning",
     "maxLevel": 10,
     "progressionId": null,
     "baseStats": {
@@ -2241,8 +2241,8 @@
   {
     "id": 8,
     "name": "얼음 조각",
-    "castType": 0,
-    "element": 2,
+    "castType": "Projectile",
+    "element": "Ice",
     "maxLevel": 1,
     "progressionId": null,
     "childOnly": true,
@@ -2264,8 +2264,8 @@
   {
     "id": 12,
     "name": "일반 서리 결정",
-    "castType": 0,
-    "element": 2,
+    "castType": "Projectile",
+    "element": "Ice",
     "maxLevel": 1,
     "progressionId": null,
     "childOnly": true,
@@ -2287,8 +2287,8 @@
   {
     "id": 13,
     "name": "화살 조각",
-    "castType": 0,
-    "element": 0,
+    "castType": "Projectile",
+    "element": "Neutral",
     "maxLevel": 1,
     "progressionId": null,
     "childOnly": true,
@@ -2311,8 +2311,8 @@
   {
     "id": 14,
     "name": "불꽃 조각",
-    "castType": 0,
-    "element": 1,
+    "castType": "Projectile",
+    "element": "Fire",
     "maxLevel": 1,
     "progressionId": null,
     "childOnly": true,
@@ -2334,8 +2334,8 @@
   {
     "id": 15,
     "name": "전기 구체",
-    "castType": 0,
-    "element": 4,
+    "castType": "Projectile",
+    "element": "Lightning",
     "maxLevel": 1,
     "progressionId": null,
     "childOnly": true,
@@ -2353,14 +2353,14 @@
       }
     },
     "upgrades": [],
-    "projectilePath": 2
+    "projectilePath": "Radial"
   },
   {
     "id": 16,
     "unlockLevel": 5,
     "name": "에너지 빔",
-    "castType": 3,
-    "element": 0,
+    "castType": "Beam",
+    "element": "Neutral",
     "maxLevel": 13,
     "progressionId": null,
     "baseStats": {
@@ -2636,8 +2636,8 @@
   {
     "id": 17,
     "name": "보조 에너지 빔",
-    "castType": 3,
-    "element": 0,
+    "castType": "Beam",
+    "element": "Neutral",
     "maxLevel": 1,
     "progressionId": null,
     "childOnly": true,
@@ -2663,8 +2663,8 @@
     "id": 18,
     "unlockLevel": 6,
     "name": "연쇄 번개",
-    "castType": 4,
-    "element": 4,
+    "castType": "Chain",
+    "element": "Lightning",
     "maxLevel": 11,
     "progressionId": null,
     "baseStats": {
@@ -2887,8 +2887,8 @@
     "id": 19,
     "unlockLevel": 7,
     "name": "집중 광선",
-    "castType": 3,
-    "element": 0,
+    "castType": "Beam",
+    "element": "Neutral",
     "maxLevel": 9,
     "progressionId": null,
     "baseStats": {
@@ -3075,8 +3075,8 @@
   {
     "id": 20,
     "name": "집중 화살",
-    "castType": 0,
-    "element": 0,
+    "castType": "Projectile",
+    "element": "Neutral",
     "maxLevel": 1,
     "progressionId": null,
     "childOnly": true,

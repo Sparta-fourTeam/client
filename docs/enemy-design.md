@@ -82,7 +82,7 @@ Enemy (MonoBehaviour)            위치, 이동 적용, 밀치기 적용, 연출
 - 데이터는 `Monsters.json`의 `Passives` 목록(`Kind` + 값)이고, `PassiveBuilder`가 `Kind`로 객체를 만든다. 상태를 가진 패시브라 호출마다 새 객체를 만든다.
 
 ### 속성과 시전 형태 (`DamageProfile`)
-- **스킬이 속성을 가진다.** `SkillData.element`(0 Neutral, 1 Fire, 2 Ice, 3 Wind, 4 Lightning, 5 Earth)가 `Skills.json`에 있다. 생략하면 무속성이다. 속성과 시전 형태는 `DamageAttribution` 범위의 `DamageSource`로 피해까지 따라가므로, 가장 바깥 스킬이 이겨서 자식 스킬(`childOnly`)의 피해는 부모의 속성과 `castType`을 이어받는다.
+- **스킬이 속성을 가진다.** `SkillData.element`(`Neutral`, `Fire`, `Ice`, `Wind`, `Lightning`, `Earth` 이름 문자열)가 `Skills.json`에 있다. 생략하면 무속성이다. 속성과 시전 형태는 `DamageAttribution` 범위의 `DamageSource`로 피해까지 따라가므로, 가장 바깥 스킬이 이겨서 자식 스킬(`childOnly`)의 피해는 부모의 속성과 `castType`을 이어받는다.
 - 약점/저항은 `Monsters.json`의 `Resists`(속성 이름 → 비율)다. 약점은 양수(받는 피해 +50% = 0.5), 저항은 음수(-70% = -0.7), -1은 무효다. 키는 `Neutral`, `Fire`, `Ice`, `Wind`, `Lightning`, `Earth`이고 대소문자를 구분한다.
 - **지상 공격 면역은 토속성 저항 100%(`"Earth": -1`)로 표현한다.** 별도의 지상/공중 태그를 만들지 않는다.
 - **투사체 감쇠는 시전 형태별 비율로 표현한다.** `Monsters.json`의 `CastResists`(`Projectile`, `Hitscan`, `Area`, `Beam`, `Chain` → 비율)다. 예: `"CastResists": {"Projectile": -0.7}`.

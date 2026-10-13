@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Game.Core;
 using MessagePipe;
 using NUnit.Framework;
@@ -374,6 +375,20 @@ namespace Game.Tests
         {
             const string json = "[{\"id\":1,\"maxLevel\":1,\"baseStats\":{},\"upgrades\":[{\"id\":\"same\",\"effects\":[]}]},{\"id\":2,\"maxLevel\":1,\"baseStats\":{},\"upgrades\":[{\"id\":\"same\",\"effects\":[]}]}]";
             Assert.Throws<InvalidOperationException>(() => GameDataStore.ParseSkills(json));
+        }
+
+        [Test(Description = "서버 데이터의 enum은 이름 문자열만 받는다. 숫자 코드나 모르는 이름은 로드에서 거부한다")]
+        public void Catalog_ReadsEnumNamesAndRejectsNumbersOrUnknownNames()
+        {
+            string Json(string castType, string element) =>
+                "[{\"id\":1,\"castType\":" + castType + ",\"element\":" + element + ",\"maxLevel\":1,\"baseStats\":{},\"upgrades\":[]}]";
+
+            var skill = GameDataStore.ParseSkills(Json("\"Beam\"", "\"Ice\"")).Single();
+            Assert.AreEqual(CastType.Beam, skill.castType);
+            Assert.AreEqual(Element.Ice, skill.element);
+            Assert.Catch(() => GameDataStore.ParseSkills(Json("3", "\"Ice\"")));
+            Assert.Catch(() => GameDataStore.ParseSkills(Json("\"Beam\"", "2")));
+            Assert.Catch(() => GameDataStore.ParseSkills(Json("\"Laser\"", "\"Ice\"")));
         }
     }
 }
