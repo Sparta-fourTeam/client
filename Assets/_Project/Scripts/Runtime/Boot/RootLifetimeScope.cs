@@ -24,8 +24,13 @@ namespace Game.Boot
             builder.Register<IAuthApi, LocalAuthApi>(Lifetime.Singleton);
             // 로그인 정보는 백엔드(Local/서버)와 상관없이 기기에 저장한다
             builder.Register<IAuthCredentialStore, PlayerPrefsAuthCredentialStore>(Lifetime.Singleton);
-            // 외부 계정 로그인. 구글은 Android 빌드에서만 쓸 수 있고(에디터에서는 준비 중), 애플은 SDK가 붙기 전까지 자리표시 구현이다
+            // 외부 계정 로그인. 구글은 Android 빌드에서 진짜 로그인을 하고, 에디터에서는 가짜 계정으로 바로 성공한다.
+            // 애플은 SDK가 붙기 전까지 자리표시 구현이다
+#if UNITY_EDITOR
+            builder.Register<ISocialSignIn, EditorGoogleSignIn>(Lifetime.Singleton);
+#else
             builder.Register<ISocialSignIn, AndroidGoogleSignIn>(Lifetime.Singleton);
+#endif
             builder.Register<ISocialSignIn, PlaceholderAppleSignIn>(Lifetime.Singleton);
             // TODO(server): 호출부 없음 — 예: BootFlow에서 GetVersions() 비교 후 GetTable()로 갱신
             builder.Register<IDataApi, LocalDataApi>(Lifetime.Singleton);

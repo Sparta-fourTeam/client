@@ -16,5 +16,15 @@ namespace Game.Tests
             Assert.IsFalse(google.IsAvailable);
             Assert.Throws<NotSupportedException>(() => google.SignInAsync().GetAwaiter().GetResult());
         }
+
+        [Test(Description = "에디터용 가짜 구글 로그인은 쓸 수 있고, 고정 계정 ID로 바로 성공한다")]
+        public void EditorFake_IsAvailableAndReturnsFixedAccountId()
+        {
+            var fake = new EditorGoogleSignIn();
+
+            Assert.AreEqual(LoginMethod.Google, fake.Method);
+            Assert.IsTrue(fake.IsAvailable);
+            Assert.AreEqual(EditorGoogleSignIn.FakeAccountId, fake.SignInAsync().GetAwaiter().GetResult());
+        }
     }
 }
