@@ -113,8 +113,11 @@ namespace Game.View
             _stageText.text = $"제 {_stageId} 관문";
             _lockOverlay.SetActive(!unlocked);
             _enterButton.interactable = unlocked && !busy;
-            _prevButton.interactable = !busy && _data.Stages.Contains(_stageId - 1);
-            _nextButton.interactable = !busy && _data.Stages.Contains(_stageId + 1);
+            // 넘어갈 관문이 없는 쪽(첫·마지막 관문)의 화살표는 숨긴다
+            _prevButton.gameObject.SetActive(_data.Stages.Contains(_stageId - 1));
+            _nextButton.gameObject.SetActive(_data.Stages.Contains(_stageId + 1));
+            _prevButton.interactable = !busy;
+            _nextButton.interactable = !busy;
             _backButton.interactable = !busy;
             _infoButton.interactable = !busy;
             _costText.text = $"에너지 x{_profile.EnergyConfig.Cost}";
