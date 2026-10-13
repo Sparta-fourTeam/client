@@ -48,15 +48,6 @@ class ReleaseNumberTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             module.release_number(policy(2, '1.0.1'), '1.0.1', main, apk_build=True)
 
-    def test_advanced_candidate_preserves_historical_apk_and_rejects_old_play_upload(self):
-        current = policy(2, '1.0.2', [{'versionName': '1.0.1', 'versionCode': 1}])
-        self.assertEqual(module.release_number(current, '1.0.1', apk_build=True), ('1.0.1', 1))
-        self.assertEqual(module.release_number(current, '1.0.2'), ('1.0.2', 2))
-        with self.assertRaises(ValueError):
-            module.release_number(current, '1.0.1')
-        with self.assertRaises(ValueError):
-            module.release_number(current, '1.0.3', apk_build=True)
-
     def test_code_skip_gap_duplicate_and_conflict_are_rejected(self):
         invalid = [policy(2), policy(True), policy(214011987),
                    policy(3, released=[{'versionName': '1.0.0', 'versionCode': 2}]),

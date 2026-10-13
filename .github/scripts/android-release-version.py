@@ -14,7 +14,7 @@ def release_number(policy, requested_version, main_policy=None, apk_build=False)
         raise ValueError('Invalid candidate version name')
     if type(code) is not int or not 0 < code <= 2100000000:
         raise ValueError('Invalid candidate version code')
-    if not apk_build and requested_version != version:
+    if requested_version != version:
         raise ValueError('Requested version must match the committed release candidate')
     consumed = {}
     for ledger in [policy, main_policy or {}]:
@@ -35,14 +35,6 @@ def release_number(policy, requested_version, main_policy=None, apk_build=False)
         raise ValueError('Confirmed Play upload codes must be sequential from 1')
     if len(set(consumed.values())) != len(consumed):
         raise ValueError('A Play version name cannot consume multiple upload codes')
-    if apk_build:
-        recorded = [number for number, name in consumed.items() if name == requested_version]
-        if recorded:
-            if requested_version == version and code != recorded[0]:
-                raise ValueError('APK code must match its exact historical upload record')
-            version, code = requested_version, recorded[0]
-        elif requested_version != version:
-            raise ValueError('Requested APK version must match a recorded upload or the candidate')
     legacy = [row['versionCode'] for ledger in [policy, main_policy or {}] for row in ledger.get('legacyDraftUploads', [])]
     if code in legacy:
         raise ValueError('Candidate code has already been uploaded as a legacy draft')
