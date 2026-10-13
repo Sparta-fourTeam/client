@@ -6,19 +6,21 @@ using CharacterInfo = Game.Core.CharacterInfo;
 
 namespace Game.View
 {
-    /// <summary>캐릭터 화면. 열 때 IGrowthCatalog에서 캐릭터·장비 정보를 읽어 채우고, 열린 장비 칸을 누르면 장비 강화 팝업을 연다.
+    /// <summary>캐릭터 화면. 열 때 IGrowthCatalog에서 캐릭터·장비 정보를 읽어 채우고, 열린 장비 칸을 누르면 장비 강화 팝업을 열고, 잠긴 칸을 누르면 열리는 레벨을 안내한다.
     /// 아래 캐릭터 목록(카드)은 아직 데이터가 없어 프리팹 그대로 둔다</summary>
     public sealed class CharacterScreenView : HudView, IUiBindable
     {
         public void BindUi(IUiRegistry registry)
         {
             _equipPopup = registry.Get<EquipUpgradePopupView>();
+            _toast = registry.Get<ComingSoonToastView>();
         }
 
         [SerializeField] private GameObject _panel;
         [SerializeField] private TMP_Text _nameText, _rankText, _powerText;
         [SerializeField] private EquipSlotView[] _equipSlots;   // IGrowthCatalog.Equips와 같은 순서
         private EquipUpgradePopupView _equipPopup;
+        private ComingSoonToastView _toast;
 
         private IGrowthCatalog _catalog;
         private PlayerProfile _profile;
@@ -82,7 +84,7 @@ namespace Game.View
                 }
 
                 int slot = i;
-                _equipSlots[i].Bind(equips[i], () => _equipPopup.Open(slot));
+                _equipSlots[i].Bind(equips[i], () => _equipPopup.Open(slot), _toast);
             }
         }
     }
