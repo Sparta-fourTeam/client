@@ -233,6 +233,7 @@ namespace Game.Editor
             }
 
             internal bool HasScenario => _container.GetComponentInChildren<HudIntro>(true) != null
+                || _container.GetComponentInChildren<SpinnerView>(true) != null
                 || _selected.GetComponentInChildren<RewardPopupView>(true) != null
                 || _selected.GetComponentInChildren<ContentUnlockView>(true) != null
                 || _selected.GetComponentInChildren<LevelUpPopupView>(true) != null
@@ -247,6 +248,14 @@ namespace Game.Editor
                 {
                     // 전투 HUD 등장 연출 (게임에서는 스테이지가 시작될 때 자동으로 재생된다)
                     foreach (var intro in _container.GetComponentsInChildren<HudIntro>(true)) { intro.Play(); }
+
+                    // 결과 제출 중 스피너: 게임에서는 SpinnerView.Update가 돌린다. 편집 모드에서는 같은 속도(초당 360도)로 돌려 보여 준다
+                    foreach (var spinner in _container.GetComponentsInChildren<SpinnerView>(true))
+                    {
+                        spinner.transform.localRotation = Quaternion.identity;
+                        spinner.transform.DOLocalRotate(new Vector3(0f, 0f, -360f), 1f, RotateMode.FastBeyond360)
+                            .SetEase(Ease.Linear).SetLoops(-1).SetUpdate(true);
+                    }
 
                     if (_selected.GetComponentInChildren<RewardPopupView>(true) is { } reward)
                     {
