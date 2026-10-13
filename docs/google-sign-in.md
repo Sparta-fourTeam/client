@@ -10,7 +10,8 @@
 | `Network/AndroidGoogleSignIn.cs` | `ISocialSignIn` 구현. 브리지를 불러 ID 토큰을 돌려준다. 취소하면 null, 실패하면 `GoogleSignInException` |
 | `Boot/RootLifetimeScope.cs` | `ISocialSignIn`으로 등록. `LoginFlow`(로그인창)와 `AccountService`(계정 연동)가 같이 쓴다 |
 
-- Android 기기가 아니면(에디터 포함) `IsAvailable`이 false라 버튼이 "준비 중"으로 막힌다. 웹 클라이언트 ID가 비어 있어도 마찬가지다
+- **에디터**에서는 `EditorGoogleSignIn`(가짜)이 등록된다. 고정 계정 ID로 바로 성공해서 구글 버튼 → 확인창 → 로비 흐름만 확인할 수 있다. 진짜 ID 토큰이 아니라서 서버에는 쓸 수 없고, `#if UNITY_EDITOR`라 빌드에는 들어가지 않는다
+- Android 이외의 빌드에서는 `AndroidGoogleSignIn.IsAvailable`이 false라 버튼이 "준비 중"으로 막힌다. 웹 클라이언트 ID가 비어 있어도 마찬가지다
 - 받은 ID 토큰은 서버 `POST /auth/social/login`에 `{ "provider": "GOOGLE", "idToken": "..." }`로 보낸다 (서버 연결은 #180에서 붙인다. 지금 로그인은 Local 구현이다)
 
 ## 설정 (한 번만)
@@ -28,7 +29,7 @@ SHA-1 확인: `keytool -list -v -keystore <키스토어 경로> -alias <별칭>`
 
 ## 확인
 
-- 에디터: 구글 버튼이 "준비 중"이면 정상이다 (`AndroidGoogleSignInTests`)
+- 에디터: 구글 버튼이 눌리고 로비로 들어가면 정상이다 (가짜 로그인, `AndroidGoogleSignInTests`)
 - Android 기기: 구글 → 확인창 [로그인] → 계정 선택 창 → 로비 진입. 실패하면 `adb logcat -s Unity`에서 `GoogleSignInException`의 코드를 본다
   - `NO_CREDENTIAL`: 기기에 Google 계정이 없거나, SHA-1·패키지 이름이 Android 클라이언트와 맞지 않는다
   - 창이 뜨지 않고 바로 실패: 웹 클라이언트 ID가 다른 프로젝트 것이거나 OAuth 동의 화면 테스트 사용자가 아니다
