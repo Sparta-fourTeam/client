@@ -65,6 +65,7 @@ namespace Game.View
         private PlayerProfile _profile;
         private GameDataStore _data;
         private BattleLauncher _launcher;
+        private StageContext _stageContext;
         private bool _ready;
         private bool _completing;
         private CanvasGroup _rootGroup;
@@ -77,8 +78,10 @@ namespace Game.View
         private IReadOnlyList<TutorialStep> _steps;
 
         [Inject]
-        public void Construct(LobbyArrival arrival, PlayerProfile profile, GameDataStore data, BattleLauncher launcher)
+        public void Construct(LobbyArrival arrival, PlayerProfile profile, GameDataStore data, BattleLauncher launcher,
+            StageContext stageContext)
         {
+            _stageContext = stageContext;
             _arrival = arrival;
             _profile = profile;
             _data = data;
@@ -136,8 +139,9 @@ namespace Game.View
             // 새 컨텐츠 해금·레벨업 연출이 끝날 때까지는 잠긴 채로 둔다
             nav.SetSkillLocked(tabLocked || tabWasLocked);
 
+            // 이번 실행에서 이미 전투를 하고 돌아왔으면(튜토리얼 전투에서 져서 나옴) 다시 보내지 않는다. 게임을 새로 켜면 다시 시작한다
             var battle = TutorialProgress.ActiveBattle(_data.Tutorials, TutorialFacts.From(_profile));
-            if (battle != null)
+            if (battle != null && _stageContext.BattleId == null)
             {
                 // 첫 시작: 로비에서 도입 대사를 보여 준 뒤 전투로 보낸다
                 if (_data.TutorialPresentations.For(battle.Id).Dialogue.Count > 0)

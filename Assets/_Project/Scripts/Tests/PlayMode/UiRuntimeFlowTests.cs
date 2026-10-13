@@ -201,7 +201,8 @@ namespace Game.Tests
         [UnityTest]
         public IEnumerator Tutorial_NewAccountSeesIntroDialogueInLobbyThenStartsTutorialBattle()
         {
-            // 첫 시작: 로비에서 도입 대사가 먼저 나오고, 건너뛰면 전투 튜토리얼 스테이지로 간다
+            // 첫 시작: 로비에서 도입 대사가 먼저 나오고, 건너뛰면 전투 튜토리얼 스테이지로 간다.
+            // 지면 평소 결과창으로 로비에 나가고, 로비는 튜토리얼 전투로 다시 보내지 않는다
             yield return StartFromBoot(save => save.tutorials = new List<string>());
             var dialogue = Object.FindAnyObjectByType<DialogueView>();
             yield return WaitFor(() => dialogue.IsOpen);
@@ -211,6 +212,21 @@ namespace Game.Tests
             int tutorialStage = root.Resolve<GameDataStore>().Tutorials.First(t => t.IsBattle).StageId;
             Assert.That(root.Resolve<StageContext>().StageId, Is.EqualTo(tutorialStage));
             Assert.That(SceneManager.GetSceneByName("Lobby").isLoaded, Is.False);
+
+            yield return null;
+            var stage = Object.FindAnyObjectByType<StageLifetimeScope>();
+            var wall = stage.Container.Resolve<Wall>();
+            wall.TakeDamage(wall.CurrentHp);
+            yield return WaitFor(() => stage.Container.Resolve<StageManager>().State == StageState.Finished);
+            var result = stage.Container.Resolve<IUiRegistry>().Get<ResultPopupView>();
+            Field<ResultTipView>(result, "_tip").OnPointerClick(new PointerEventData(EventSystem.current));
+            yield return ClickGameButton(Field<Button>(result, "_lobbyButton"));
+            yield return WaitFor(() => SceneManager.GetActiveScene().name == "Lobby");
+            var ui = Object.FindAnyObjectByType<LobbyLifetimeScope>().Container.Resolve<IUiRegistry>();
+            yield return WaitFor(() => Field<bool>(ui.Get<TutorialGuideView>(), "_ready"));
+            Assert.That(SceneManager.GetActiveScene().name, Is.EqualTo("Lobby"));
+            Assert.That(ui.Get<DialogueView>().IsOpen, Is.False);
+            Assert.That(root.Resolve<PlayerProfile>().IsTutorialDone(root.Resolve<GameDataStore>().Tutorials.First(t => t.IsBattle).Id), Is.False);
         }
 
         [UnityTest]
