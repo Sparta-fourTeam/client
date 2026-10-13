@@ -59,6 +59,7 @@
         <ui:VisualElement class="row playtest-actions">
           <ui:Button name="restoreSaveButton" text="최근 백업으로 복원" />
         </ui:VisualElement>
+        <ui:Label text="같은 초에 만든 구형 백업이 여러 개면 최신을 확정할 수 없어 자동 복원하지 않습니다." class="note" />
         <ui:Label name="saveStatus" class="status" />
       </ui:VisualElement>
     </ui:ScrollView>

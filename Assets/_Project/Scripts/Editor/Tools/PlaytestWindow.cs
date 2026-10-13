@@ -211,8 +211,23 @@ namespace Game.Editor
             catch (Exception error) { rootVisualElement.Q<Label>("saveStatus").text = error.Message; Debug.LogException(error); }
         }
 
-        /// <summary>가장 최근 .bak. 새 백업은 같은 시각에도 증가하는 UTC tick을 파일명에 사용한다</summary>
+        /// <summary>가장 최근 .bak. 같은 초의 구형 GUID 백업 여러 개는 순서를 확정할 수 없어 자동 선택하지 않는다</summary>
         internal static string LatestBackup(string path)
+        {
+            string latest = LastBackupName(path);
+            if (latest == null) { return null; }
+            string timestamp = Path.GetFileName(latest)[(Path.GetFileName(path).Length + 1)..^4];
+            // File.Copy는 생성/수정 시각도 원본에서 복사할 수 있으므로 메타데이터로 GUID 순서를 추측하지 않는다
+            if (timestamp.Length == 24 && timestamp[15] == '-'
+                && Directory.GetFiles(Path.GetDirectoryName(path), Path.GetFileName(latest[..^12]) + "*.bak").Length > 1)
+            {
+                return null;
+            }
+            return latest;
+        }
+
+        // 기존 시각의 상한만 구한다. 구형 GUID의 문자열 순서는 스냅샷 생성 순서가 아니다
+        private static string LastBackupName(string path)
         {
             string directory = Path.GetDirectoryName(path);
             return Directory.Exists(directory)
@@ -240,7 +255,7 @@ namespace Game.Editor
             const string format = "yyyyMMdd-HHmmss.fffffff";
             const DateTimeStyles styles = DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal;
             var time = DateTime.UtcNow;
-            string latest = LatestBackup(path);
+            string latest = LastBackupName(path);
             string timestamp = latest == null ? null : Path.GetFileName(latest)[(Path.GetFileName(path).Length + 1)..^4];
             // 같은 tick, 시계 역행, 에디터 재로드 뒤에도 기존 백업보다 뒤에 정렬되게 한다
             if (timestamp != null && (DateTime.TryParseExact(timestamp, format, CultureInfo.InvariantCulture, styles, out var previous)
