@@ -56,9 +56,9 @@ namespace Game.Editor
             Button("resetTutorialsButton", () => Cheat((save, _) => PlaytestCheats.ResetTutorials(save)));
             Button("unlockStagesButton", () => Cheat(PlaytestCheats.UnlockAllStages));
             Button("healWallButton", () => { var wall = ActiveWall(); if (wall != null) { wall.Repair(wall.MaxHp); } });
-            Button("speed1Button", () => Time.timeScale = 1f);
-            Button("speed4Button", () => Time.timeScale = 4f);
-            Button("speed8Button", () => Time.timeScale = 8f);
+            Button("speed1Button", () => Resolve<StageManager>()?.SetPlaytestSpeed(1f));
+            Button("speed4Button", () => Resolve<StageManager>()?.SetPlaytestSpeed(4f));
+            Button("speed8Button", () => Resolve<StageManager>()?.SetPlaytestSpeed(8f));
             Refresh();
         }
 
