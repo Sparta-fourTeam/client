@@ -10,7 +10,7 @@ namespace Game.Core
     public sealed class EnemyShadow : MonoBehaviour
     {
         public const string ShadowName = "Shadow";
-        private const int SortingOrder = -1000;        // 그룹 안에서 모든 파츠(0 이상)보다 뒤
+        private const int DefaultSortingOrder = -1000; // 그룹 안에서 모든 파츠(0 이상)보다 뒤
         private const float WidthRatio = 0.8f;         // 스프라이트 폭 대비 그림자 폭
         private const float HeightRatio = 0.28f;       // 그림자 폭 대비 높이
         private const float MinWidth = 0.15f;
@@ -18,11 +18,20 @@ namespace Game.Core
 
         private static Sprite s_sprite;
 
+        // 플레이어처럼 SortingGroup이 없는 곳에 직접 붙이면 씬 배경(-500)보다 앞이어야 보인다
+        [SerializeField] private int sortingOrder = DefaultSortingOrder;
+        [SerializeField] private bool bindOnStart;
+
         private SpriteRenderer _renderer;
         private Tween _fade;
 
         /// <summary>그림자 오브젝트. 비주얼이 없는 적이면 null</summary>
         public Transform Shadow => _renderer != null ? _renderer.transform : null;
+
+        private void Start()
+        {
+            if (bindOnStart) { Bind(); }
+        }
 
         /// <summary>그림자를 만들거나(이미 있으면 다시 쓴다) 지금 비주얼 크기에 맞춘다</summary>
         public void Bind()
@@ -47,7 +56,7 @@ namespace Game.Core
 
             _renderer.sprite = SharedSprite;
             _renderer.color = ShadowColor;
-            _renderer.sortingOrder = SortingOrder;
+            _renderer.sortingOrder = sortingOrder;
             Fit(parent, bodyRoot);
         }
 
