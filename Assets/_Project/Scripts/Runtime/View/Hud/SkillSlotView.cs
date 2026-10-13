@@ -16,6 +16,9 @@ namespace Game.View
         [SerializeField] private TMP_Text _levelText;
         [SerializeField] private Image _activeFrame;
         [SerializeField] private Sprite _activeSprite;
+        [Tooltip("칸의 바탕. 스킬이 없는 칸은 비활성 색으로 살짝 어둡게 보인다")]
+        [SerializeField] private Image _background;
+        [SerializeField] private Color _emptyTint = new Color(0.74f, 0.72f, 0.82f, 1f);
 
         private ISkillStatus _status;
         private bool _holding;
@@ -48,6 +51,7 @@ namespace Game.View
 
             _activeFrame.sprite = _activeSprite;
             _activeFrame.enabled = true;
+            SetBackground(Color.white);
         }
 
         public void Clear()
@@ -58,6 +62,15 @@ namespace Game.View
             _levelText.gameObject.SetActive(false);
             _cooldownOverlay.gameObject.SetActive(false);
             _activeFrame.enabled = false;
+            SetBackground(_emptyTint);
+        }
+
+        private void SetBackground(Color color)
+        {
+            if (_background != null)
+            {
+                _background.color = color;
+            }
         }
 
         public void OnPointerDown(PointerEventData eventData)

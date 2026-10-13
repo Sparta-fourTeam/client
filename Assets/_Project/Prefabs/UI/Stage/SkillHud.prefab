@@ -576,6 +576,10 @@ PrefabInstance:
       value: 0.12156863
       objectReference: {fileID: 0}
     - target: {fileID: 2801146664133088319, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
+      propertyPath: _background
+      value: 
+      objectReference: {fileID: 2940341153232571256}
+    - target: {fileID: 2801146664133088319, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
       propertyPath: _activeSprite
       value: 
       objectReference: {fileID: 21300000, guid: 4bbac223ed7094d7da168c4578ce13a6, type: 3}
@@ -624,6 +628,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 21300000, guid: 4bbac223ed7094d7da168c4578ce13a6, type: 3}
     - target: {fileID: 8544989912913922510, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
+      propertyPath: m_Color.a
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8544989912913922510, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
       propertyPath: m_RaycastTarget
       value: 1
       objectReference: {fileID: 0}
@@ -648,6 +656,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 350114631761655792, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
   m_PrefabInstance: {fileID: 1672051269904671862}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &2940341153232571256 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4610104328538779406, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
+  m_PrefabInstance: {fileID: 1672051269904671862}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
 --- !u!114 &3597247769859125321 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2801146664133088319, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
@@ -772,6 +791,10 @@ PrefabInstance:
       value: 0.12156863
       objectReference: {fileID: 0}
     - target: {fileID: 2801146664133088319, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
+      propertyPath: _background
+      value: 
+      objectReference: {fileID: 2672301198594161039}
+    - target: {fileID: 2801146664133088319, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
       propertyPath: _activeSprite
       value: 
       objectReference: {fileID: 21300000, guid: 4bbac223ed7094d7da168c4578ce13a6, type: 3}
@@ -820,6 +843,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 21300000, guid: 4bbac223ed7094d7da168c4578ce13a6, type: 3}
     - target: {fileID: 8544989912913922510, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
+      propertyPath: m_Color.a
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8544989912913922510, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
       propertyPath: m_RaycastTarget
       value: 1
       objectReference: {fileID: 0}
@@ -844,6 +871,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 350114631761655792, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
   m_PrefabInstance: {fileID: 1940922514058598017}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &2672301198594161039 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4610104328538779406, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
+  m_PrefabInstance: {fileID: 1940922514058598017}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
 --- !u!114 &4337008991338562238 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2801146664133088319, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
@@ -968,6 +1006,10 @@ PrefabInstance:
       value: 0.12156863
       objectReference: {fileID: 0}
     - target: {fileID: 2801146664133088319, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
+      propertyPath: _background
+      value: 
+      objectReference: {fileID: 315571202573340815}
+    - target: {fileID: 2801146664133088319, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
       propertyPath: _activeSprite
       value: 
       objectReference: {fileID: 21300000, guid: 4bbac223ed7094d7da168c4578ce13a6, type: 3}
@@ -1016,6 +1058,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 21300000, guid: 4bbac223ed7094d7da168c4578ce13a6, type: 3}
     - target: {fileID: 8544989912913922510, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
+      propertyPath: m_Color.a
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8544989912913922510, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
       propertyPath: m_RaycastTarget
       value: 1
       objectReference: {fileID: 0}
@@ -1035,6 +1081,17 @@ PrefabInstance:
       addedObject: {fileID: 3052925199515153383}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
+--- !u!114 &315571202573340815 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4610104328538779406, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
+  m_PrefabInstance: {fileID: 4295100474726645633}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
 --- !u!114 &2109073501294767038 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2801146664133088319, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
@@ -1164,6 +1221,10 @@ PrefabInstance:
       value: 0.12156863
       objectReference: {fileID: 0}
     - target: {fileID: 2801146664133088319, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
+      propertyPath: _background
+      value: 
+      objectReference: {fileID: 6360918012415648736}
+    - target: {fileID: 2801146664133088319, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
       propertyPath: _activeSprite
       value: 
       objectReference: {fileID: 21300000, guid: 4bbac223ed7094d7da168c4578ce13a6, type: 3}
@@ -1212,6 +1273,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 21300000, guid: 4bbac223ed7094d7da168c4578ce13a6, type: 3}
     - target: {fileID: 8544989912913922510, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
+      propertyPath: m_Color.a
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8544989912913922510, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
       propertyPath: m_RaycastTarget
       value: 1
       objectReference: {fileID: 0}
@@ -1239,6 +1304,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 23f3d1e92f4d64f86bbde4133d21c137, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Game.View::Game.View.SkillSlotView
+--- !u!114 &6360918012415648736 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4610104328538779406, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
+  m_PrefabInstance: {fileID: 7475100501686635758}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
 --- !u!224 &7162763183045851934 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 350114631761655792, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
@@ -1357,6 +1433,10 @@ PrefabInstance:
       value: 0.12156863
       objectReference: {fileID: 0}
     - target: {fileID: 2801146664133088319, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
+      propertyPath: _background
+      value: 
+      objectReference: {fileID: 5743235540016721914}
+    - target: {fileID: 2801146664133088319, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
       propertyPath: _activeSprite
       value: 
       objectReference: {fileID: 21300000, guid: 4bbac223ed7094d7da168c4578ce13a6, type: 3}
@@ -1405,6 +1485,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 21300000, guid: 4bbac223ed7094d7da168c4578ce13a6, type: 3}
     - target: {fileID: 8544989912913922510, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
+      propertyPath: m_Color.a
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8544989912913922510, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
       propertyPath: m_RaycastTarget
       value: 1
       objectReference: {fileID: 0}
@@ -1424,6 +1508,17 @@ PrefabInstance:
       addedObject: {fileID: 782551294726639663}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
+--- !u!114 &5743235540016721914 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4610104328538779406, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
+  m_PrefabInstance: {fileID: 8092532287604982004}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
 --- !u!114 &6238012362972943563 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2801146664133088319, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
