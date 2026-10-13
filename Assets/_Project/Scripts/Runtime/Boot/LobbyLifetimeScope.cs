@@ -21,6 +21,7 @@ namespace Game.Boot
             builder.Register<LobbyArrival>(Lifetime.Scoped);
             // 레벨업 팝업의 해금 줄 출처. 새 해금 종류(장비·기능 등)는 출처를 만들어 여기에 추가한다
             builder.Register<ILevelUnlockSource, WeaponUnlockSource>(Lifetime.Scoped);
+            builder.Register<ILevelUnlockSource, EquipmentUnlockSource>(Lifetime.Scoped);
             builder.Register<EnergyRecovery>(Lifetime.Scoped);
             // TODO(data): 실제 데이터가 생기면 구현만 교체
             builder.Register<IGrowthCatalog, DummyGrowthCatalog>(Lifetime.Scoped);

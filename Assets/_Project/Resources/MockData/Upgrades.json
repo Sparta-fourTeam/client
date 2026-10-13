@@ -1,6 +1,6 @@
 [
   {"UpgradeId": "atk", "MaxLevel": 3, "LevelCosts": [100, 250, 500]},
-  {"UpgradeId": "equipment.hat", "MaxLevel": 10, "UnlockLevel": 2, "MaterialItemId": "book.hat", "Effects": [{"Kind": "skillDamagePercent", "ValuePerLevel": 5}], "CostBase": 100, "CostStep": 15, "MaterialBase": 1, "MaterialStep": 1},
+  {"UpgradeId": "equipment.hat", "MaxLevel": 10, "UnlockLevel": 1, "MaterialItemId": "book.hat", "Effects": [{"Kind": "skillDamagePercent", "ValuePerLevel": 5}], "CostBase": 100, "CostStep": 15, "MaterialBase": 1, "MaterialStep": 1},
   {"UpgradeId": "equipment.top", "MaxLevel": 10, "UnlockLevel": 3, "MaterialItemId": "book.top", "Effects": [{"Kind": "skillDamagePercent", "ValuePerLevel": 5}], "CostBase": 100, "CostStep": 15, "MaterialBase": 1, "MaterialStep": 1},
   {"UpgradeId": "equipment.shoes", "MaxLevel": 10, "UnlockLevel": 4, "MaterialItemId": "book.shoes", "Effects": [{"Kind": "skillDamagePercent", "ValuePerLevel": 5}], "CostBase": 100, "CostStep": 15, "MaterialBase": 1, "MaterialStep": 1},
   {"UpgradeId": "equipment.weapon", "MaxLevel": 10, "UnlockLevel": 5, "MaterialItemId": "book.weapon", "Effects": [{"Kind": "skillDamagePercent", "ValuePerLevel": 5}], "CostBase": 100, "CostStep": 15, "MaterialBase": 1, "MaterialStep": 1},
