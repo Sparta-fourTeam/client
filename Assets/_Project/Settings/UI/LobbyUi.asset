@@ -137,3 +137,11 @@ MonoBehaviour:
     Prefab: {fileID: 3663958771333720694, guid: bd9f440ce147447cab5ca49733e68514, type: 3}
     ParentPath: NavUI/Popups
     SiblingIndex: 13
+  - Id: ConfirmPopup
+    Prefab: {fileID: 3468135605265646659, guid: aeb0c6dd7a1684a1d8bc3b925beadc4f, type: 3}
+    ParentPath: NavUI/Overlays
+    SiblingIndex: 6
+  - Id: LanguagePopup
+    Prefab: {fileID: 3468135605265646659, guid: 65f2e79b0c10641c1818656cbf19ac80, type: 3}
+    ParentPath: NavUI/Overlays
+    SiblingIndex: 7

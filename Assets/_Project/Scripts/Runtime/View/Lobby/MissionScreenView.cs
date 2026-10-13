@@ -40,6 +40,7 @@ namespace Game.View
         private GameDataStore _data;
         private BattleLauncher _launcher;
         private IStageApi _stageApi;
+        private GameSettings _settings;
         private int _stageId = 1;
         private int _energy;
         private bool _launching;
@@ -47,8 +48,10 @@ namespace Game.View
 
         [Inject]
         public void Construct(PlayerProfile profile, GameDataStore data, BattleLauncher launcher,
-            IBufferedSubscriber<EnergyChanged> energyChanged, ISubscriber<StartFailed> startFailed, IStageApi stageApi)
+            IBufferedSubscriber<EnergyChanged> energyChanged, ISubscriber<StartFailed> startFailed, IStageApi stageApi,
+            GameSettings settings = null)
         {
+            _settings = settings;
             _profile = profile;
             _data = data;
             _launcher = launcher;
@@ -79,6 +82,14 @@ namespace Game.View
             if (_claiming || _launching) { return; }
             _stageId = _profile.HighestUnlockedStage;
             Refresh();
+            // 설정에서 켜 두면 화면을 띄우지 않고 최고 스테이지에 바로 들어간다. 에너지가 모자라면 화면에서 보충을 안내한다
+            if (_settings != null && _settings.AutoEnterHighestStage && _profile.IsStageUnlocked(_stageId)
+                && _energy >= _profile.EnergyConfig.Cost)
+            {
+                OnEnterClicked();
+                return;
+            }
+
             _panel.SetActive(true);
         }
 
@@ -197,6 +208,7 @@ namespace Game.View
         {
             if (this == null) { return; }
             _launching = false;
+            _panel.SetActive(true);   // 자동 입장이 실패해도 사용자가 볼 수 있게 화면을 연다
             Refresh();
             _rewardStatus.text = "관문에 입장하지 못했어요. 다시 시도하세요.";
             Debug.LogException(error);
@@ -205,6 +217,7 @@ namespace Game.View
         private void OnStartFailed(StartFailed message)
         {
             _launching = false;
+            _panel.SetActive(true);
             Refresh();
             if (message.Code == "INSUFFICIENT_ENERGY")
             {

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Reflection;
+using Cysharp.Threading.Tasks;
 using Game.Core;
 using Game.View;
 using NUnit.Framework;
@@ -22,6 +23,40 @@ namespace Game.Tests
             public readonly Dictionary<string, float> Values = new();
             public bool TryGet(string key, out float value) => Values.TryGetValue(key, out value);
             public void Set(string key, float value) => Values[key] = value;
+        }
+
+        private sealed class MemorySettingsStore : ISettingsStore
+        {
+            public readonly Dictionary<string, int> Values = new();
+            public bool TryGet(string key, out int value) => Values.TryGetValue(key, out value);
+            public void Set(string key, int value) => Values[key] = value;
+        }
+
+        private sealed class GuestCredentials : IAuthCredentialStore
+        {
+            public bool HasCredential => true;
+            public LoginMethod Method => LoginMethod.Guest;
+            public string AccountId => "guest";
+            public void Save(LoginMethod method, string accountId) { }
+            public void Clear() { }
+        }
+
+        private sealed class MemoryAccountApi : IAccountApi
+        {
+            public int Deleted;
+            public readonly UniTaskCompletionSource Completion = new();
+            public UniTask DeleteAccount() { Deleted++; return Completion.Task; }
+            public UniTask LinkAccount(LoginMethod method, string accountId) => UniTask.CompletedTask;
+        }
+
+        private sealed class MemoryNavigator : ISceneNavigator
+        {
+            public int LoadingCalls;
+            public SceneId Current => default;
+            public UniTask GoToLoading() { LoadingCalls++; return UniTask.CompletedTask; }
+            public UniTask GoToLobby() => UniTask.CompletedTask;
+            public UniTask GoToStage(int stageId) => UniTask.CompletedTask;
+            public UniTask RestartStage() => UniTask.CompletedTask;
         }
 
         private static T Field<T>(object target, string name) => (T)target.GetType().GetField(name, Flags).GetValue(target);
@@ -76,6 +111,30 @@ namespace Game.Tests
             Assert.AreEqual(0.25f, new SoundSettings(store).Get(SoundChannel.Music), 0.0001f, "다시 켜도 남는다");
         }
 
+        [Test(Description = "기기 설정은 저장된 값이 없으면 기본값이고, 바꾸면 저장되어 다시 켜도 남으며 알린다")]
+        public void GameSettings_DefaultsPersistAndNotify()
+        {
+            var store = new MemorySettingsStore();
+            var settings = new GameSettings(store);
+            Assert.IsTrue(settings.DamageIndication);
+            Assert.IsTrue(settings.DebuffEffects);
+            Assert.IsFalse(settings.AutoEnterHighestStage);
+            Assert.AreEqual(FrameRateMode.High, settings.FrameRate);
+
+            int changes = 0;
+            settings.Changed += () => changes++;
+            settings.SetDamageIndication(false);
+            settings.SetDamageIndication(false);
+            settings.SetFrameRate(FrameRateMode.Standard);
+            settings.SetLanguage(GameLanguage.English);
+
+            Assert.AreEqual(3, changes, "같은 값은 알리지 않는다");
+            var reloaded = new GameSettings(store);
+            Assert.IsFalse(reloaded.DamageIndication);
+            Assert.AreEqual(GameSettings.StandardFrameRate, reloaded.TargetFrameRate);
+            Assert.AreEqual(GameLanguage.English, reloaded.Language);
+        }
+
         [Test(Description = "볼륨은 데시벨로 바뀐다: 1 → 0dB, 0.5 → 약 -6dB, 0 → -80dB(무음)")]
         public void ToDecibel()
         {
@@ -106,7 +165,7 @@ namespace Game.Tests
             store.Values[SoundSettings.Key(SoundChannel.Music)] = 0.4f;
             var settings = new SoundSettings(store);
             var popup = Spawn<SettingsPopupView>("SettingsPopup");
-            popup.Construct(settings);
+            popup.Construct(settings, new GameSettings(new MemorySettingsStore()));
 
             popup.Open();
             var sliders = Field<Slider[]>(popup, "_sliders");
@@ -114,7 +173,7 @@ namespace Game.Tests
             Assert.IsTrue(popup.IsOpen);
             Assert.AreEqual(0.4f, sliders[0].value, 0.0001f);
             Assert.AreEqual("40%", texts[0].text);
-            Assert.AreEqual("100%", texts[2].text);
+            Assert.AreEqual("100%", texts[1].text);
 
             sliders[1].value = 0.55f;
 
@@ -125,18 +184,131 @@ namespace Game.Tests
 
         // ---------- 메뉴 팝업 ----------
 
-        [Test(Description = "메뉴는 설정만 누를 수 있고, 바깥을 누르면 닫히며, 설정을 누르면 메뉴가 닫히고 설정 팝업이 열린다")]
-        public void Menu_OnlySettingsEnabled_AndOpensSettings()
+        [Test(Description = "두 단계 삭제 확인이 동기적으로 이어져도 닉네임 확인을 완료하고, 처리 중 연타를 막으며 완료 뒤 다시 열린다")]
+        public void Menu_DeleteAccount_CompletesSecondPromptAndReopens()
+        {
+            var (menu, confirm, api, nav) = CreateDeleteMenu();
+            var delete = Field<Button>(menu, "_deleteAccountButton");
+            var accept = Field<Button>(confirm, "_confirmButton");
+            var input = Field<TMP_InputField>(confirm, "_input");
+
+            delete.onClick.Invoke();
+            delete.onClick.Invoke();
+            accept.onClick.Invoke();
+            Assert.IsTrue(confirm.IsOpen, "첫 확인의 continuation이 두 번째 창을 연다");
+            Assert.IsTrue(input.gameObject.activeSelf);
+            Assert.IsFalse(accept.interactable);
+            input.text = "wrong";
+            Assert.IsFalse(accept.interactable);
+            input.text = "Review_Ninja";
+            Assert.IsTrue(accept.interactable);
+            accept.onClick.Invoke();
+            Assert.AreEqual(1, api.Deleted, "두 번째 완료소스가 살아 있어야 삭제 흐름이 이어진다");
+            Assert.AreEqual(0, nav.LoadingCalls);
+            accept.onClick.Invoke();
+            delete.onClick.Invoke();
+            Assert.IsFalse(Field<PopupTransition>(confirm, "_transition").IsShown, "계정 API 완료 전에는 연타로 새 흐름을 시작하지 않는다");
+            Assert.AreEqual(1, api.Deleted);
+
+            api.Completion.TrySetResult();
+            Assert.AreEqual(1, nav.LoadingCalls);
+            delete.onClick.Invoke();
+            Assert.IsTrue(confirm.IsOpen, "완료 후 메뉴 busy가 풀린다");
+            Field<Button>(confirm, "_cancelButton").onClick.Invoke();
+        }
+
+        [TestCase(false, false)]
+        [TestCase(false, true)]
+        [TestCase(true, false)]
+        [TestCase(true, true)]
+        public void Menu_DeleteAccount_CancelOrCloseAtEitherStepAllowsRetry(bool secondStep, bool close)
+        {
+            var (menu, confirm, api, nav) = CreateDeleteMenu();
+            var delete = Field<Button>(menu, "_deleteAccountButton");
+            delete.onClick.Invoke();
+            if (secondStep)
+            {
+                Field<Button>(confirm, "_confirmButton").onClick.Invoke();
+                Field<TMP_InputField>(confirm, "_input").text = "Review_Ninja";
+            }
+
+            Field<Button>(confirm, close ? "_closeButton" : "_cancelButton").onClick.Invoke();
+            Assert.IsFalse(Field<PopupTransition>(confirm, "_transition").IsShown);
+            Assert.AreEqual(0, api.Deleted);
+            Assert.AreEqual(0, nav.LoadingCalls);
+            delete.onClick.Invoke();
+            Assert.IsTrue(confirm.IsOpen);
+            Assert.IsFalse(Field<TMP_InputField>(confirm, "_input").gameObject.activeSelf, "재시도는 첫 확인부터 시작한다");
+            Field<Button>(confirm, "_cancelButton").onClick.Invoke();
+        }
+
+        private (LobbyMenuPopupView, ConfirmPopupView, MemoryAccountApi, MemoryNavigator) CreateDeleteMenu()
+        {
+            var menu = Spawn<LobbyMenuPopupView>("LobbyMenuPopup");
+            var confirm = Spawn<ConfirmPopupView>("ConfirmPopup");
+            var api = new MemoryAccountApi();
+            var nav = new MemoryNavigator();
+            var profile = new PlayerProfile(null);
+            profile.Apply(new PlayerSnapshot { nickname = "Review_Ninja" });
+            menu.Construct(new AccountService(api, new GuestCredentials(), nav, null), profile);
+            typeof(LobbyMenuPopupView).GetField("_confirm", Flags).SetValue(menu, confirm);
+            menu.Open();
+            return (menu, confirm, api, nav);
+        }
+
+        [Test(Description = "언어 선택 즉시 열려 있는 설정 표시가 바뀌고, 취소·재열기·반복 선택도 저장값과 일치한다")]
+        public void SettingsPopup_LanguageSelectionRefreshesOpenLabel()
+        {
+            var store = new MemorySettingsStore();
+            var game = new GameSettings(store);
+            var settings = Spawn<SettingsPopupView>("SettingsPopup");
+            var language = Spawn<LanguagePopupView>("LanguagePopup");
+            settings.Construct(new SoundSettings(new MemoryStore()), game);
+            language.Construct(game);
+            typeof(SettingsPopupView).GetField("_language", Flags).SetValue(settings, language);
+            var label = Field<TMP_Text>(settings, "_languageLabel");
+            var options = Field<Toggle[]>(language, "_options");
+            var open = Field<Button>(settings, "_languageButton");
+            settings.Open();
+            Assert.AreEqual("한국어", label.text);
+            open.onClick.Invoke();
+            options[1].isOn = true;
+            Assert.IsTrue(settings.IsOpen);
+            Assert.IsFalse(Field<PopupTransition>(language, "_transition").IsShown);
+            Assert.AreEqual("English", label.text);
+            Assert.AreEqual(GameLanguage.English, new GameSettings(store).Language);
+
+            open.onClick.Invoke();
+            Assert.IsTrue(options[1].isOn);
+            Field<Button>(language, "_closeButton").onClick.Invoke();
+            Assert.AreEqual("English", label.text);
+            Assert.AreEqual(GameLanguage.English, game.Language);
+            open.onClick.Invoke();
+            options[0].isOn = true;
+            Assert.AreEqual("한국어", label.text);
+            settings.Close();
+            settings.Open();
+            open.onClick.Invoke();
+            options[1].isOn = true;
+            Assert.AreEqual("English", label.text);
+
+            settings.Dispose();
+            game.SetLanguage(GameLanguage.Korean);
+            Assert.AreEqual("English", label.text, "Dispose 뒤에는 변경 구독이 남지 않는다");
+        }
+
+        [Test(Description = "메뉴 바깥을 누르면 닫히고, 설정을 누르면 메뉴가 닫히고 설정 팝업이 열린다")]
+        public void Menu_ClosesOnBackground_AndOpensSettings()
         {
             var menu = Spawn<LobbyMenuPopupView>("LobbyMenuPopup");
             var settings = Spawn<SettingsPopupView>("SettingsPopup");
-            settings.Construct(new SoundSettings(new MemoryStore()));
+            settings.Construct(new SoundSettings(new MemoryStore()), new GameSettings(new MemorySettingsStore()));
             typeof(LobbyMenuPopupView).GetField("_settings", Flags).SetValue(menu, settings);
+            menu.Construct(new AccountService(null, new GuestCredentials(), null, null), new PlayerProfile(null));
 
             menu.Toggle();
             Assert.IsTrue(menu.IsOpen);
             Assert.IsTrue(Field<Button>(menu, "_settingsButton").interactable);
-            foreach (var button in Field<Button[]>(menu, "_disabledButtons")) { Assert.IsFalse(button.interactable, button.name); }
 
             Field<PointerClickRelay>(menu, "_background").OnPointerClick(new PointerEventData(null));
             Assert.IsFalse(menu.IsOpen, "바깥을 누르면 닫힌다");

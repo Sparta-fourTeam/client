@@ -16,6 +16,7 @@ namespace Game.Core
             _data = data;
         }
 
+        public string Nickname => _snapshot.nickname ?? string.Empty;
         public int Gold => _snapshot.gold;
         public int Exp => _snapshot.exp;
         public int Level => _data.PlayerLevels.At(_snapshot.exp).level;

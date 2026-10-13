@@ -18,6 +18,7 @@ namespace Game.Network
         /// <summary>다른 Local*Api도 응답을 만들 때 이 변환을 재사용한다</summary>
         internal static PlayerSnapshot ToSnapshot(LocalSave save) => new()
         {
+            nickname = save.nickname,
             gold = save.wallet.gold,
             exp = save.exp,
             energyStored = save.wallet.energyStored,

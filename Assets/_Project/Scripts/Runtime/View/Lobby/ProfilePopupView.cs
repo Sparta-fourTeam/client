@@ -11,9 +11,8 @@ namespace Game.View
     /// 보유 캐릭터 목록은 아직 데이터가 없어 넣지 않았다</summary>
     public sealed class ProfilePopupView : HudView, IUiBindable
     {
-        // TODO(server): PlayerSnapshot에 플레이어 ID·닉네임이 생기면 그 값으로 바꾼다 (지금은 임시값)
+        // TODO(server): PlayerSnapshot에 플레이어 ID가 생기면 그 값으로 바꾼다 (지금은 임시값)
         private const string TempPlayerId = "LOCAL-0001";
-        private const string TempNickname = "닌자";
 
         public void BindUi(IUiRegistry registry)
         {
@@ -76,7 +75,7 @@ namespace Game.View
         private void Refresh()
         {
             _idText.text = $"ID: {TempPlayerId}";
-            _nameText.text = TempNickname;
+            _nameText.text = _profile.Nickname;
             _levelText.text = $"Lv.{_profile.Level}";
             _expFill.fillAmount = _profile.LevelProgress;
             _expText.text = _profile.IsMaxLevel
