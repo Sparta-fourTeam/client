@@ -72,6 +72,6 @@ PNG는 생성기의 투명 알파를 보존한다. UI 스프라이트는 Single,
 
 프롬프트 기록은 `prompts.json`(초기 승인), `production-prompts.json`(초기 제작), `equipment-revision-prompts.json`·`seal-prompts.json`(장비 수정), `equipment-scroll-prompts.json`(초기 주문서), `shared-scroll-prompts.json`(공통 틀), `consistent-scroll-prompts.json`(최종 완성 주문서)이다. 교체된 장비 책/주문서 시안과 공통 틀 작업 파일은 `superseded-equipment`에 보관하며 게임 Assets에는 포함하지 않는다.
 
-Unity 실제 임포트·테이블·프리팹 검사 결과는 `unity-validation.json`에 저장한다. 당시의 고정 목록 검사 메뉴는 삭제했다. 현재 UI 연결은 `Tools > Project Nova > UI Workspace`의 문제 검사와 Test Runner의 에셋 바인딩 테스트로 확인한다. 정적 파일 검사 결과는 `static-validation.json`에 저장한다. 플레이 모드에서 전체 화면을 실행한 검증은 별도다.
+Unity 실제 임포트·테이블·프리팹 검사 결과는 `unity-validation.json`에 저장한다. 당시의 고정 목록 검사 메뉴는 삭제했다. 현재 UI 연결은 `Tools > Project Nova > UI 작업실`의 문제 검사와 Test Runner의 에셋 바인딩 테스트로 확인한다. 정적 파일 검사 결과는 `static-validation.json`에 저장한다. 플레이 모드에서 전체 화면을 실행한 검증은 별도다.
 
 이 폴더의 최초 생성·복사·연결·출력용 Python 스크립트 7개는 완료된 작업을 덮어쓰는 일회성 도구여서 삭제했다. 원화·프리팹·갤러리·매니페스트와 검증 기록은 유지한다.

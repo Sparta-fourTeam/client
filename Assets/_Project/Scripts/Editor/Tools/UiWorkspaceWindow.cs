@@ -17,12 +17,16 @@ namespace Game.Editor
             public string Id;
             public string Title;
             public GameObject Prefab;
+            public bool Standalone;
         }
 
         private const string Layout = "Assets/_Project/Scripts/Editor/Tools/UiWorkspace.uxml";
-        private static readonly List<string> Groups = new() { "로비 화면", "전투 화면", "공통 요소" };
+        private static readonly List<string> Groups = new() { "로딩 화면", "로비 화면", "전투 화면", "공통 요소" };
         private static readonly Dictionary<string, string> Titles = new()
         {
+            ["LoadingScreen"] = "로딩 화면",
+            ["TapToStart"] = "터치 시작",
+            ["LoginView"] = "로그인 창",
             ["LobbyBackground"] = "홈 배경",
             ["LobbyTopBar"] = "상단 프로필 / 재화",
             ["LobbyMissionButton"] = "임무 입장 버튼",
@@ -51,7 +55,43 @@ namespace Game.Editor
             ["CardSlot"] = "카드 슬롯",
             ["SkillSlot"] = "전투 스킬 슬롯",
             ["SkillListSlot"] = "스킬 목록 슬롯",
-            ["EquipSlot"] = "장비 슬롯"
+            ["EquipSlot"] = "장비 슬롯",
+            ["InventoryScreen"] = "인벤토리 화면",
+            ["ShopScreen"] = "상점 화면",
+            ["MissionDetailsPopup"] = "임무 상세",
+            ["MissionRewardInfoPopup"] = "임무 보상 정보",
+            ["LobbyMenuPopup"] = "로비 메뉴",
+            ["SettingsPopup"] = "설정",
+            ["UpgradeConfirmPopup"] = "강화 확인",
+            ["DetailPopup"] = "상세 정보",
+            ["FriendPopup"] = "친구",
+            ["QuestPopup"] = "퀘스트",
+            ["MailPopup"] = "우편함",
+            ["RewardOddsPopup"] = "보상 확률 정보",
+            ["ConfirmPopup"] = "확인 팝업",
+            ["ContentUnlock"] = "콘텐츠 해금",
+            ["DialogueScene"] = "대화 장면",
+            ["LanguagePopup"] = "언어 선택",
+            ["LevelUpBurst"] = "레벨 업 연출",
+            ["LevelUpPopup"] = "레벨 업",
+            ["TutorialGuide"] = "튜토리얼 안내",
+            ["SkillHud"] = "스킬 HUD",
+            ["StageControls"] = "전투 조작",
+            ["EliteRoulette"] = "엘리트 룰렛",
+            ["SkillRangeIndicator"] = "스킬 범위 표시",
+            ["StarSparksFx"] = "별 반짝임 효과",
+            ["CharacterCard"] = "캐릭터 카드",
+            ["CurrencySlot"] = "재화 슬롯",
+            ["ItemCell"] = "아이템 칸",
+            ["MissionTab"] = "임무 탭",
+            ["MonsterList"] = "몬스터 목록",
+            ["NavTab"] = "하단 탭",
+            ["NotificationBadge"] = "알림 배지",
+            ["RewardList"] = "보상 목록",
+            ["RewardNode"] = "보상 노드",
+            ["SideMenuButton"] = "사이드 메뉴 버튼",
+            ["SubTab"] = "보조 탭",
+            ["TransitionCurtain"] = "화면 전환 막"
         };
 
         [SerializeField] private int _group;
@@ -66,19 +106,25 @@ namespace Game.Editor
         private Image _image;
         private Texture2D _shot;
         private Item _selected;
+        private UiPreviewRenderer.Session _preview;
+        private DropdownField _motionButton;
+        private bool _motionPlaying;
+        private double _lastFrame;
 
-        [MenuItem("Tools/Project Nova/UI Workspace", priority = 20)]
-        public static void Open() => GetWindow<UiWorkspaceWindow>("UI Workspace");
+        [MenuItem("Tools/Project Nova/UI 작업실", priority = 20)]
+        public static void Open() => GetWindow<UiWorkspaceWindow>("UI 작업실");
 
         private void OnEnable()
         {
             minSize = new Vector2(850, 650);
+            EditorApplication.update += UpdateMotion;
             EditorApplication.projectChanged += Refresh;
             EditorApplication.playModeStateChanged += OnPlayModeChanged;
         }
 
         private void OnDisable()
         {
+            EditorApplication.update -= UpdateMotion;
             EditorApplication.projectChanged -= Refresh;
             EditorApplication.playModeStateChanged -= OnPlayModeChanged;
             ClearShot();
@@ -102,6 +148,7 @@ namespace Game.Editor
             _list.itemsChosen += _ => Edit();
             _image = rootVisualElement.Q<Image>("previewImage");
             _image.scaleMode = ScaleMode.ScaleToFit;
+            rootVisualElement.RegisterCallback<GeometryChangedEvent>(_ => FitPreview());
             var device = rootVisualElement.Q<DropdownField>("deviceField");
             device.choices = UiPreviewRenderer.Devices.Select(d => d.Name).ToList();
             device.index = Mathf.Clamp(_device, 0, device.choices.Count - 1);
@@ -116,7 +163,23 @@ namespace Game.Editor
             Button("previewButton", Render);
             Button("saveButton", Save);
             Button("auditButton", Audit);
+            _motionButton = rootVisualElement.Q<DropdownField>("motionButtonField");
+            Button("showMotionButton", () => PlayMotion(() => _preview.Transition(true)));
+            Button("hideMotionButton", () => PlayMotion(() => _preview.Transition(false)));
+            Button("pressMotionButton", () => PlayMotion(() => _preview.Press(_motionButton.value)));
+            Button("particleMotionButton", () => PlayMotion(() => _preview.PlayParticles()));
+            Button("resetMotionButton", Render);
             Refresh();
+        }
+
+        // 미리보기가 원본 해상도(1080x1920)로 커지지 않도록, 창 높이에 맞춰 한눈에 보이는 크기로 고정한다
+        private void FitPreview()
+        {
+            if (_image == null) { return; }
+            float height = rootVisualElement.resolvedStyle.height;
+            if (float.IsNaN(height) || height <= 0f) { return; }
+            _image.style.flexGrow = 0f;
+            _image.style.height = Mathf.Clamp(height - 330f, 360f, 1400f);
         }
 
         private void Button(string name, Action action) => rootVisualElement.Q<Button>(name).clicked += action;
@@ -129,18 +192,21 @@ namespace Game.Editor
                 return;
             }
 
-            _composition = _group < 2 ? AssetDatabase.LoadAssetAtPath<UiComposition>(
-                $"Assets/_Project/Settings/UI/{(_group == 0 ? "Lobby" : "Stage")}Ui.asset") : null;
-            _items = _composition != null
-                ? _composition.Entries.Where(e => e != null).Select(e => new Item { Id = e.Id ?? "이름 없음", Prefab = e.Prefab, Title = Title(e.Id ?? "이름 없음") }).ToList()
-                : _group == 2 ? AssetDatabase.FindAssets("t:Prefab", new[] { "Assets/_Project/Prefabs/UI/Common" })
-                    .Select(AssetDatabase.GUIDToAssetPath).OrderBy(p => p)
-                    .Select(p => new Item
-                    {
-                        Id = Path.GetFileNameWithoutExtension(p),
-                        Title = Title(Path.GetFileNameWithoutExtension(p)),
-                        Prefab = AssetDatabase.LoadAssetAtPath<GameObject>(p)
-                    }).ToList() : new List<Item>();
+            string folder = _group switch { 0 => "Loading", 1 => "Lobby", 2 => "Stage", _ => "Common" };
+            _composition = _group < 3 ? AssetDatabase.LoadAssetAtPath<UiComposition>(
+                $"Assets/_Project/Settings/UI/{folder}Ui.asset") : null;
+            var registered = _composition != null
+                ? _composition.Entries.Where(e => e != null).ToList() : new List<UiComposition.Entry>();
+            _items = registered.Select(e => new Item { Id = e.Id ?? "이름 없음", Prefab = e.Prefab, Title = Title(e.Id ?? "이름 없음") }).ToList();
+            // 화면 구성에 등록되지 않은 프리팹도 목록에 보여 준다 (단독 미리보기)
+            foreach (var path in AssetDatabase.FindAssets("t:Prefab", new[] { "Assets/_Project/Prefabs/UI/" + folder })
+                .Select(AssetDatabase.GUIDToAssetPath).OrderBy(p => p))
+            {
+                var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                string id = Path.GetFileNameWithoutExtension(path);
+                if (prefab == null || registered.Any(e => e.Prefab == prefab || e.Id == id)) { continue; }
+                _items.Add(new Item { Id = id, Title = Title(id), Prefab = prefab, Standalone = _composition != null });
+            }
             rootVisualElement.Q<Button>("compositionButton").SetEnabled(_composition != null);
             rootVisualElement.Q<Label>("auditSummary").text = "변경 후에는 다시 검사하세요.";
             rootVisualElement.Q<ScrollView>("issueList").Clear();
@@ -186,6 +252,9 @@ namespace Game.Editor
 
         private void ClearShot()
         {
+            _motionPlaying = false;
+            _preview?.Dispose();
+            _preview = null;
             if (_image != null)
             {
                 _image.image = null;
@@ -205,6 +274,7 @@ namespace Game.Editor
             bool canRender = _selected?.Prefab != null && !EditorApplication.isPlayingOrWillChangePlaymode;
             rootVisualElement.Q<Button>("previewButton").SetEnabled(canRender);
             rootVisualElement.Q<Button>("saveButton").SetEnabled(false);
+            SetMotionControls(false);
             var status = rootVisualElement.Q<Label>("statusLabel");
             status.RemoveFromClassList("status-error");
             if (!canRender)
@@ -214,13 +284,73 @@ namespace Game.Editor
             }
             try
             {
-                _shot = UiPreviewRenderer.Capture(_selected.Prefab, _composition, UiPreviewRenderer.Devices[_device],
+                _preview = UiPreviewRenderer.CreateSession(_selected.Prefab, _selected.Standalone ? null : _composition, UiPreviewRenderer.Devices[_device],
                     rootVisualElement.Q<Toggle>("safeAreaToggle").value, _sample.value, _selected.Id);
+                _shot = _preview.Capture();
                 _image.image = _shot;
+                _motionButton.choices = _preview.Buttons.ToList();
+                _motionButton.SetValueWithoutNotify(_motionButton.choices.FirstOrDefault() ?? "");
+                SetMotionControls(true);
                 rootVisualElement.Q<Button>("saveButton").SetEnabled(true);
-                status.text = _composition != null ? "호스트의 레이어·순서와 9:16 카메라 영역을 적용했습니다." : "공통 요소 단독 미리보기";
+                status.text = _composition != null && !_selected.Standalone ? "호스트의 레이어·순서와 9:16 카메라 영역을 적용했습니다." : "단독 미리보기 (화면 구성에 등록되지 않은 프리팹)";
             }
-            catch (Exception error) { status.text = error.Message; status.AddToClassList("status-error"); Debug.LogException(error); }
+            catch (Exception error) { ClearShot(); SetMotionControls(false); status.text = error.Message; status.AddToClassList("status-error"); Debug.LogException(error); }
+        }
+
+        private void SetMotionControls(bool available)
+        {
+            rootVisualElement.Q<Button>("showMotionButton").SetEnabled(available && _preview.HasTransition);
+            rootVisualElement.Q<Button>("hideMotionButton").SetEnabled(available && _preview.HasTransition);
+            rootVisualElement.Q<Button>("pressMotionButton").SetEnabled(available && _preview.Buttons.Length > 0);
+            rootVisualElement.Q<Button>("particleMotionButton").SetEnabled(available && _preview.HasParticles);
+            rootVisualElement.Q<Button>("resetMotionButton").SetEnabled(available);
+            _motionButton?.SetEnabled(available && _preview.Buttons.Length > 0);
+        }
+
+        private void PlayMotion(Action action)
+        {
+            if (_preview == null || EditorApplication.isPlayingOrWillChangePlaymode) { return; }
+            try
+            {
+                action();
+                _motionPlaying = true;
+                _lastFrame = EditorApplication.timeSinceStartup;
+                _preview.Capture(_shot);
+                _image.MarkDirtyRepaint();
+                rootVisualElement.Q<Label>("statusLabel").text = "편집 연출 미리보기 재생 중 · 초기화로 중단 / 원상 복귀";
+            }
+            catch (Exception error)
+            {
+                Render();
+                Debug.LogException(error);
+            }
+        }
+
+        private void UpdateMotion()
+        {
+            if (!_motionPlaying || _preview == null) { return; }
+            if (EditorApplication.isPlayingOrWillChangePlaymode) { ClearShot(); return; }
+            double now = EditorApplication.timeSinceStartup;
+            if (now - _lastFrame < 1.0 / 24.0) { return; }
+            float elapsed = (float)(now - _lastFrame);
+            _lastFrame = now;
+            try
+            {
+                _preview.Advance(Mathf.Min(elapsed, 0.1f));
+                _preview.Capture(_shot);
+                _image.MarkDirtyRepaint();
+                Repaint();
+                if (!_preview.IsAnimating)
+                {
+                    _motionPlaying = false;
+                    rootVisualElement.Q<Label>("statusLabel").text = "편집 연출 미리보기 완료 · 열기로 다시 재생 / 초기화로 원상 복귀";
+                }
+            }
+            catch (Exception error)
+            {
+                Render();
+                Debug.LogException(error);
+            }
         }
 
         private void Save()

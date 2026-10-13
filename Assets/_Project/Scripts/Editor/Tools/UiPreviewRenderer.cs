@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using DG.Tweening;
 using Game.Core;
 using Game.View;
 using TMPro;
@@ -59,11 +60,9 @@ namespace Game.Editor
             return new() { "기본" };
         }
 
-        internal static Texture2D Capture(GameObject prefab, UiComposition composition, Device device, bool safeArea, string sample, string entryId = null)
+        internal static Session CreateSession(GameObject prefab, UiComposition composition, Device device, bool safeArea, string sample, string entryId = null)
         {
             var scene = EditorSceneManager.NewPreviewScene();
-            RenderTexture rt = null;
-            var previous = RenderTexture.active;
             try
             {
                 var viewport = composition == null ? new Rect(0, 0, 1, 1)
@@ -82,7 +81,7 @@ namespace Game.Editor
                 else
                 {
                     composition.Validate();
-                    string sceneName = composition.name == "LobbyUi" ? "Lobby" : "Stage";
+                    string sceneName = composition.name.EndsWith("Ui") ? composition.name[..^2] : composition.name;
                     var hostPrefab = AssetDatabase.LoadAssetAtPath<GameObject>($"Assets/_Project/Prefabs/UI/Hosts/{sceneName}UiHost.prefab");
                     if (hostPrefab == null)
                     {
@@ -95,7 +94,7 @@ namespace Game.Editor
                     foreach (var entry in composition.Entries)
                     {
                         bool isSelected = entryId == null ? entry.Prefab == prefab : entry.Id == entryId;
-                        bool chrome = sceneName == "Lobby" ? entry.ParentPath == "NavUI/SafeArea" : entry.Id == "HudCanvas" || entry.Id == "SkillHud" || entry.Id == "StageControls";
+                        bool chrome = sceneName == "Loading" ? false : sceneName == "Lobby" ? entry.ParentPath == "NavUI/SafeArea" : entry.Id == "HudCanvas" || entry.Id == "SkillHud" || entry.Id == "StageControls";
                         if (!isSelected && !chrome)
                         {
                             continue;
@@ -144,25 +143,158 @@ namespace Game.Editor
                 camera.backgroundColor = new Color(0.035f, 0.045f, 0.07f);
                 camera.nearClipPlane = 0.1f;
                 camera.farClipPlane = 1000;
-                rt = RenderTexture.GetTemporary(device.Width, device.Height, 24);
-                RenderTexture.active = rt;
-                GL.Clear(true, true, Color.black);
-                camera.targetTexture = rt;
-                camera.Render();
-                var shot = new Texture2D(device.Width, device.Height, TextureFormat.RGB24, false);
-                shot.ReadPixels(new Rect(0, 0, device.Width, device.Height), 0, 0);
-                shot.Apply();
-                return shot;
+                return new Session(scene, container, selected, camera, device);
             }
-            finally
+            catch
             {
-                RenderTexture.active = previous;
-                if (rt != null)
+                EditorSceneManager.ClosePreviewScene(scene);
+                throw;
+            }
+        }
+
+        internal static Texture2D Capture(GameObject prefab, UiComposition composition, Device device, bool safeArea, string sample, string entryId = null)
+        {
+            using var session = CreateSession(prefab, composition, device, safeArea, sample, entryId);
+            return session.Capture();
+        }
+
+        // Owns an isolated preview scene; it never advances or kills another scene's tweens.
+        internal sealed class Session : IDisposable
+        {
+            private readonly Scene _scene;
+            private readonly GameObject _container;
+            private readonly GameObject _selected;
+            private readonly Camera _camera;
+            private readonly Device _device;
+            private readonly List<Tween> _tweens = new();
+            private PressScaleAnimator _press;
+            private float _releaseAfter;
+            private bool _particlesPlaying;
+            private bool _disposed;
+
+            internal Session(Scene scene, GameObject container, GameObject selected, Camera camera, Device device)
+            { _scene = scene; _container = container; _selected = selected; _camera = camera; _device = device; }
+
+            internal string[] Buttons => _selected.GetComponentsInChildren<Button>(true)
+                .Where(b => b.gameObject.activeInHierarchy && b.GetComponentInParent<NoPressFeedback>() == null)
+                .Select(b => AnimationUtility.CalculateTransformPath(b.transform, _selected.transform)).ToArray();
+            internal bool HasTransition => _selected.GetComponentsInChildren<PopupTransition>(true).Length > 0;
+            internal bool HasParticles => _selected.GetComponentsInChildren<ParticleSystem>(true).Length > 0;
+            internal bool IsAnimating => _particlesPlaying || _releaseAfter > 0 || _tweens.Any(t => t.IsActive());
+
+            private void OwnTweens(Action action)
+            {
+                var existing = new HashSet<Tween>(AllTweens());
+                action();
+                foreach (var tween in AllTweens())
                 {
+                    if (existing.Contains(tween) || _tweens.Contains(tween)) { continue; }
+                    tween.SetUpdate(UpdateType.Manual, true).Play();
+                    _tweens.Add(tween);
+                }
+            }
+
+            private static IEnumerable<Tween> AllTweens() =>
+                (DOTween.PlayingTweens() ?? new List<Tween>()).Concat(DOTween.PausedTweens() ?? new List<Tween>());
+
+            internal void Transition(bool show)
+            {
+                OwnTweens(() =>
+                {
+                    foreach (var transition in _selected.GetComponentsInChildren<PopupTransition>(true))
+                    {
+                        if (show) { transition.HideImmediate(); transition.Show(); }
+                        else { transition.Hide(); }
+                    }
+                });
+            }
+
+            internal void Press(string path)
+            {
+                var target = string.IsNullOrEmpty(path) ? _selected.transform : _selected.transform.Find(path);
+                if (target == null) { return; }
+                _press ??= new PressScaleAnimator();
+                OwnTweens(() => _press.Press(target));
+                _releaseAfter = 0.2f;
+            }
+
+            internal void PlayParticles()
+            {
+                foreach (var particle in _selected.GetComponentsInChildren<ParticleSystem>(true))
+                {
+                    particle.gameObject.SetActive(true);
+                    particle.Simulate(0f, false, true, false);
+                }
+                _particlesPlaying = true;
+            }
+
+            internal void Advance(float seconds)
+            {
+                OwnTweens(() =>
+                {
+                    foreach (var tween in _tweens.ToArray())
+                    {
+                        if (tween.IsActive())
+                        {
+                            // The instance extension advances only this tween, including its actual callbacks.
+                            // DOTween.ManualUpdate (the global updater) is deliberately never used.
+                            tween.ManualUpdate(seconds, seconds);
+                            if (tween.IsActive() && tween.IsComplete()) { tween.Kill(); }
+                        }
+                    }
+                    if (_releaseAfter > 0)
+                    {
+                        _releaseAfter -= seconds;
+                        if (_releaseAfter <= 0) { _press?.Release(); }
+                    }
+                });
+                _tweens.RemoveAll(t => !t.IsActive());
+                if (_particlesPlaying)
+                {
+                    var particles = _selected.GetComponentsInChildren<ParticleSystem>(true);
+                    foreach (var particle in particles)
+                    {
+                        // Simulate each system once; recursively simulating every parent would double-step children.
+                        particle.Simulate(seconds, false, false, false);
+                    }
+                    _particlesPlaying = particles.Any(p => p.main.loop || p.time < p.main.duration || p.IsAlive(false));
+                }
+            }
+
+            internal Texture2D Capture(Texture2D shot = null)
+            {
+                Canvas.ForceUpdateCanvases();
+                var previous = RenderTexture.active;
+                var rt = RenderTexture.GetTemporary(_device.Width, _device.Height, 24);
+                try
+                {
+                    RenderTexture.active = rt;
+                    GL.Clear(true, true, Color.black);
+                    _camera.targetTexture = rt;
+                    _camera.Render();
+                    shot ??= new Texture2D(_device.Width, _device.Height, TextureFormat.RGB24, false);
+                    shot.ReadPixels(new Rect(0, 0, _device.Width, _device.Height), 0, 0);
+                    shot.Apply();
+                    return shot;
+                }
+                finally
+                {
+                    _camera.targetTexture = null;
+                    RenderTexture.active = previous;
                     RenderTexture.ReleaseTemporary(rt);
                 }
+            }
 
-                EditorSceneManager.ClosePreviewScene(scene);
+            public void Dispose()
+            {
+                if (_disposed) { return; }
+                _disposed = true;
+                foreach (var tween in _tweens) { if (tween.IsActive()) { tween.Kill(); } }
+                try
+                {
+                    foreach (var view in _container.GetComponentsInChildren<HudView>(true)) { view.Dispose(); }
+                }
+                finally { EditorSceneManager.ClosePreviewScene(_scene); }
             }
         }
 
@@ -211,6 +343,17 @@ namespace Game.Editor
                 }
 
                 var so = new SerializedObject(behaviour);
+                // Display-only values on the preview clone; no profile, wallet or balance table is changed.
+                if (behaviour is PlayerLevelView)
+                {
+                    if (so.FindProperty("_levelText")?.objectReferenceValue is TMP_Text level) { level.text = "Lv.5"; }
+                    if (so.FindProperty("_expText")?.objectReferenceValue is TMP_Text exp) { exp.text = "40 / 180"; }
+                    if (so.FindProperty("_expFill")?.objectReferenceValue is Image fill) { fill.fillAmount = 40f / 180f; }
+                }
+                if (behaviour is EnergyView && so.FindProperty("_value")?.objectReferenceValue is TMP_Text energy)
+                { energy.text = "97/100"; }
+                if (behaviour is WalletView && so.FindProperty("_value")?.objectReferenceValue is TMP_Text gold)
+                { gold.text = "1,215"; }
                 if (so.FindProperty("_panel")?.objectReferenceValue is GameObject panel)
                 {
                     panel.SetActive(showPanel && behaviour.transform == root.transform);
@@ -226,6 +369,13 @@ namespace Game.Editor
                     safe.anchorMin = min;
                     safe.anchorMax = max;
                     safe.offsetMin = safe.offsetMax = Vector2.zero;
+                }
+            }
+            if (root.GetComponentInChildren<PlayerLevelView>(true) != null)
+            {
+                foreach (var text in root.GetComponentsInChildren<TMP_Text>(true))
+                {
+                    if (text.name == "Value" && text.transform.parent?.name == "Gem") { text.text = "550"; }
                 }
             }
             foreach (var group in root.GetComponentsInChildren<CanvasGroup>(true))
