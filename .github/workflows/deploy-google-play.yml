@@ -13,9 +13,20 @@ on:
         type: boolean
         required: true
         default: false
+      recover_original_code2:
+        description: '빌드 없이 고정 원본 run38347195550 / artifact11789029713의 code2 복구'
+        type: boolean
+        required: true
+        default: false
+      acknowledge_edit_invalidation:
+        description: '복구 edit 생성/commit이 기존 미커밋 edit을 무효화할 수 있음을 확인'
+        type: boolean
+        required: true
+        default: false
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: android-release-build
@@ -23,6 +34,7 @@ concurrency:
 
 jobs:
   build:
+    if: ${{ !inputs.recover_original_code2 }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
     outputs:
@@ -186,7 +198,7 @@ jobs:
           retention-days: 3
 
   publish:
-    if: ${{ inputs.publish_to_internal }}
+    if: ${{ inputs.publish_to_internal && !inputs.recover_original_code2 }}
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -253,3 +265,68 @@ jobs:
           tracks: internal
           status: completed
           releaseName: ${{ steps.artifact.outputs.release_name }}
+
+  recover_code2:
+    if: ${{ inputs.recover_original_code2 && github.repository == 'Sparta-fourTeam/client' && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Check explicit scope and acknowledgment
+        env:
+          CONFIRM_INTERNAL_CODE2: ${{ inputs.publish_to_internal && inputs.release_version == '1.0.2' }}
+          ACKNOWLEDGE_EDIT_INVALIDATION: ${{ inputs.acknowledge_edit_invalidation }}
+        run: |
+          python3 - <<'PY'
+          import importlib.util, os
+          spec = importlib.util.spec_from_file_location('recovery', '.github/scripts/recover-play-code2.py')
+          recovery = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(recovery)
+          recovery.check_execution(os.environ)
+          PY
+
+      - name: Run offline recovery regressions
+        run: PYTHONDONTWRITEBYTECODE=1 python3 .github/scripts/test_recover_play_code2.py -v
+
+      - name: Download only the fixed original artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api repos/Sparta-fourTeam/client/actions/artifacts/11789029713 > "$RUNNER_TEMP/recovery-artifact.json"
+          gh api repos/Sparta-fourTeam/client/actions/artifacts/11789029713/zip > "$RUNNER_TEMP/original-aab.zip"
+
+      - name: Verify archive digest and original AAB separately
+        run: |
+          python3 .github/scripts/recover-play-code2.py verify \
+            --archive "$RUNNER_TEMP/original-aab.zip" --metadata "$RUNNER_TEMP/recovery-artifact.json" \
+            --destination "$RUNNER_TEMP/code2-recovery"
+
+      - name: Install pinned Play authentication transport
+        run: python3 -m pip install 'google-auth==2.40.3' 'requests==2.32.5'
+
+      - name: Reuse or upload original code2 and commit internal only
+        env:
+          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          CONFIRM_INTERNAL_CODE2: ${{ inputs.publish_to_internal && inputs.release_version == '1.0.2' }}
+          ACKNOWLEDGE_EDIT_INVALIDATION: ${{ inputs.acknowledge_edit_invalidation }}
+        run: |
+          python3 .github/scripts/recover-play-code2.py publish \
+            --archive "$RUNNER_TEMP/original-aab.zip" --metadata "$RUNNER_TEMP/recovery-artifact.json" \
+            --destination "$RUNNER_TEMP/code2-recovery"
+
+      - name: Preserve non-sensitive edit receipt
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: code2-recovery-receipt-${{ github.run_id }}
+          path: ${{ runner.temp }}/code2-recovery/recovery-receipt.json
+          if-no-files-found: ignore
+          retention-days: 7
