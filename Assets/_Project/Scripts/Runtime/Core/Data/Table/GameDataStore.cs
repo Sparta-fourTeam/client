@@ -25,6 +25,9 @@ namespace Game.Core
         /// <summary>튜토리얼 정의. 표의 순서가 진행 우선순위다 (TutorialProgress)</summary>
         public IReadOnlyList<TutorialDefinition> Tutorials { get; }
 
+        /// <summary>튜토리얼의 대사·화면 연결 정보(클라이언트 전용). 서버 테이블이 아니라서 버전·원문 조회 목록에 없다</summary>
+        public TutorialPresentationTable TutorialPresentations { get; }
+
         /// <summary>도감 등록 보상 골드. 몬스터마다가 아니라 등급별이다</summary>
         public IReadOnlyDictionary<EnemyType, int> CodexRewardGold { get; }
 
@@ -122,6 +125,10 @@ namespace Game.Core
             }
 
             Tutorials = tutorials;
+            var presentationAsset = Resources.Load<TextAsset>("ClientData/TutorialPresentations")
+                ?? throw new InvalidOperationException("Resources/ClientData/TutorialPresentations.json을 찾을 수 없습니다");
+            TutorialPresentations = new TutorialPresentationTable(
+                JsonConvert.DeserializeObject<List<TutorialPresentation>>(presentationAsset.text), tutorials);
 
             var codexRewards = ParseIndexed<EnemyType, CodexRewardRow>("CodexRewards", d => d.GetGrade());
             foreach (var row in codexRewards.Values) { row.Validate(); }

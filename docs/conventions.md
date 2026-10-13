@@ -41,6 +41,7 @@
 - 밸런스 값은 코드나 프리팹에 박지 않고 `GameDataStore`의 테이블(`MockData/*.json`)에 둔다. 테이블: `Monsters`(체력, 속도, 공격 값, 투사체 속도), `Stages`(방벽 체력, 스폰 간격, 웨이브 목록, 보상, 몬스터 강화 `MonsterBonuses`: 능력치 Hp·Damage·Speed별 증가율(%)을 여러 줄 함께 쓸 수 있다), `Skills`(스킬과 스킬 카드), `Upgrades`, `Energy`, `GeneralCards`(스킬이 아닌 카드: 방벽 수리 등), `CodexRewards`(몬스터 도감 등록 보상. 몬스터마다가 아니라 등급 Normal·Elite·Boss별 골드). 새 테이블은 `GameDataStore.TableNames`에 넣으면 버전 목록과 원문 조회(`IDataApi`)에도 자동으로 포함된다
 - 카드는 두 곳에서 관리한다. 스킬 카드는 `Skills.json`의 각 스킬 `upgrades`에, 스킬이 아닌 카드(방벽 수리 등)는 `GeneralCards.json`에 둔다. 뽑는 것은 `CardDeck` 하나가 합친다. 일반 카드는 `Condition`(언제 나오는가)과 `Effect`(고르면 무엇이 되는가)를 `GeneralCardRules`에 등록된 이름으로 적고, `Forced`이면 조건이 맞을 때 3장 중 한 칸을 먼저 차지한다 (한 번에 최대 1장)
 - 적 프리팹 엔트리(`EnemyPrefabEntry`)는 프리팹과 공격 방식만 갖고, 수치는 `MonsterId`로 `Monsters` 행을 가리킨다. Stage 씬은 `StageContext.StageId`로 `StageDefinition`을 한 번 정해 방벽, 웨이브, 스폰에 나눠 준다 (Stage 씬을 바로 열면 첫 스테이지)
+- 서버 테이블에는 id와 수치만 두고 표시·화면 연결 정보는 클라이언트 전용 데이터에 둔다. 튜토리얼의 대사·가이드 템플릿 이름·탭 잠금은 `Resources/ClientData/TutorialPresentations.json`이 튜토리얼 `Id`로 짝을 맞춘다
 - 레벨 비례 테이블은 레벨별 배열 대신 시작값·증가분으로 줄여 준다. `PlayerLevels`는 `BaseExp`·`StepExp`·`MaxLevel`, `Upgrades`의 코인·재료 비용은 `CostBase`·`CostStep`, `MaterialBase`·`MaterialStep`이다. 비선형이면 `LevelCosts`·`MaterialCosts` 배열을 직접 적고, 배열이 있으면 그것이 우선한다
 - 서버 데이터에는 에셋 키(`assetKey`, `IconKey`, `PrefabKey` 등)를 두지 않고, enum에 해당하는 값은 문자열로 둔다. 프리팹·아이콘은 클라이언트가 서버가 준 id로 찾는다
 - 스킬의 프리팹과 아이콘은 스킬 id의 문자열을 키로 `SkillAssetTable`(`Data/`)에서 찾고, 아이템 아이콘은 아이템 `Id`로 `ItemIconTable`에서 찾는다. 일반 카드 아이콘은 카드 `Id`를 키로 `SkillAssetTable`에서 찾는다. 플레이어 프리팹에는 스킬 목록을 두지 않는다
