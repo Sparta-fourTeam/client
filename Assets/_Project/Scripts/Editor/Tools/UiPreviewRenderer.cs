@@ -296,7 +296,7 @@ namespace Game.Editor
                 });
             }
 
-            // 룰렛은 스테이지 상태·세션 없이 회전과 카드 등장만 예시 순서(3회)로 재생한다
+            // 룰렛은 스테이지 상태·세션 없이 원판 회전·핀 튕김·당첨 연출·카드 등장을 예시 순서(3회)로 재생한다
             private static void PlayRoulette(EliteRouletteView view)
             {
                 view.Initialize();
@@ -318,6 +318,7 @@ namespace Game.Editor
                     if (index >= count) { return; }
                     view.PlaySpin(winners[index], () =>
                     {
+                        view.PlayWinEffect(winners[index]);
                         cards[index].gameObject.SetActive(true);
                         cards[index].PlayEntrance(0f);
                         DOVirtual.DelayedCall(0.4f, () => Round(index + 1), true).SetLink(view.gameObject);

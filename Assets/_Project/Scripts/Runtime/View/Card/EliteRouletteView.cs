@@ -8,12 +8,25 @@ using VContainer;
 
 namespace Game.View
 {
-    /// <summary>엘리트 룰렛. 전투가 멈춘 동안 바늘을 돌리고 당첨 강화 카드를 위에 차례로 쌓는다</summary>
+    /// <summary>엘리트 룰렛. 전투가 멈춘 동안 원판을 돌리고, 윗자리에 고정된 핀이 원판의 알전구에 튕기며 당첨 칸에 멈춘다.
+    /// 당첨 강화 카드를 위에 차례로 쌓는다</summary>
     public sealed class EliteRouletteView : HudView
     {
         private const float SpinSeconds = 2.2f * 2f / 3f;
+        private const float PegDegrees = 22.5f;     // 알전구 사이 각도 (원판에 16개)
+        private const float PinKickDegrees = 28f;
+        private const float PinReturnSeconds = 0.16f;
+        private const float WinFxEmitSeconds = 0.18f;
+        private Tween _winFxStop;
         [SerializeField] private GameObject _panel;
+        [Tooltip("돌아가는 원판 (원판 면·알전구·무기 아이콘 칸·당첨 칸 하이라이트가 들어 있다)")]
         [SerializeField] private RectTransform _spinner;
+        [Tooltip("원판 윗자리에 고정된 핀. 알전구가 지나갈 때마다 튕긴다. 위쪽 끝을 피벗으로 둔다")]
+        [SerializeField] private RectTransform _pin;
+        [Tooltip("당첨되는 순간 한 번 튀는 원판 전체")]
+        [SerializeField] private RectTransform _wheelRoot;
+        [Tooltip("당첨되는 순간 터지는 파티클 (UIParticle 프리팹의 ParticleSystem). 반복 파티클로 두면 코드가 짧게 재생했다 멈춘다")]
+        [SerializeField] private ParticleSystem[] _winFx;
         [SerializeField] private UnityEngine.UI.Image[] _weaponIcons;
         [SerializeField] private CardSlotView[] _rewardCards;
         [SerializeField] private TMP_Text _heading;
@@ -55,6 +68,7 @@ namespace Game.View
             }
             _panel.SetActive(true);
             HideWinGlow();
+            if (_pin != null) { _pin.DOKill(); _pin.localRotation = Quaternion.identity; }
             _skipButton.interactable = true;
             _skipButtonLabel.text = "스킵";
             _shownCards = 0;
@@ -87,16 +101,64 @@ namespace Game.View
             _animation = PlaySpin(round.WinnerIndex, () => Reveal(run, round));
         }
 
-        /// <summary>바늘이 여러 바퀴 돌아 winnerIndex 칸에 멈추는 회전 연출</summary>
+        /// <summary>원판이 시계 방향으로 여러 바퀴 돌아 winnerIndex 칸의 가운데가 핀 아래에 오도록 멈추는 회전 연출.
+        /// 알전구가 핀을 지날 때마다 핀이 튕긴다</summary>
         public Tween PlaySpin(int winnerIndex, TweenCallback onComplete = null)
         {
             float start = _spinner.localEulerAngles.z;
-            float target = -(22.5f + winnerIndex * 45f);
+            float target = 22.5f + winnerIndex * 45f;
             float travel = Mathf.Repeat(start - target, 360f) + 1080f;
-            return DOVirtual.Float(0f, travel, SpinSeconds,
-                angle => _spinner.localRotation = Quaternion.Euler(0f, 0f, start - angle))
+            int lastPeg = Mathf.FloorToInt(start / PegDegrees);
+            return DOVirtual.Float(0f, travel, SpinSeconds, angle =>
+                {
+                    float rotation = start - angle;
+                    _spinner.localRotation = Quaternion.Euler(0f, 0f, rotation);
+                    int peg = Mathf.FloorToInt(rotation / PegDegrees);
+                    if (peg != lastPeg)
+                    {
+                        lastPeg = peg;
+                        KickPin();
+                    }
+                })
                 .SetEase(Ease.OutQuart).SetUpdate(true).SetLink(gameObject)
                 .OnComplete(onComplete);
+        }
+
+        // 알전구가 핀 끝을 밀어 올렸다가 놓아 주면 핀이 제자리로 튕겨 돌아온다
+        private void KickPin()
+        {
+            if (_pin == null) { return; }
+            _pin.DOKill();
+            _pin.localRotation = Quaternion.Euler(0f, 0f, PinKickDegrees);
+            _pin.DOLocalRotate(Vector3.zero, PinReturnSeconds).SetEase(Ease.OutBack).SetUpdate(true).SetLink(gameObject);
+        }
+
+        /// <summary>원판이 멈추며 당첨된 순간의 연출: 당첨 칸을 민트색으로 밝히고, 원판이 튀고, 파티클이 터진다</summary>
+        public void PlayWinEffect(int winnerIndex)
+        {
+            ShowWinGlow(winnerIndex);
+            if (_wheelRoot != null)
+            {
+                _wheelRoot.DOKill(true);
+                _wheelRoot.DOPunchScale(Vector3.one * 0.07f, 0.4f, 6, 0.6f).SetUpdate(true).SetLink(gameObject);
+            }
+
+            if (_winGlow != null && _winGlow.TryGetComponent<UnityEngine.UI.Image>(out var glow))
+            {
+                var color = glow.color;
+                color.a = 1f;
+                glow.color = color;
+                DOTween.To(() => glow.color.a, a => { var c = glow.color; c.a = a; glow.color = c; }, 0.62f, 0.5f)
+                    .SetUpdate(true).SetLink(gameObject);
+            }
+
+            if (_winFx == null || _winFx.Length == 0) { return; }
+            foreach (var fx in _winFx) { fx.Play(true); }
+            _winFxStop?.Kill();
+            _winFxStop = DOVirtual.DelayedCall(WinFxEmitSeconds, () =>
+            {
+                foreach (var fx in _winFx) { fx.Stop(true, ParticleSystemStopBehavior.StopEmitting); }
+            }, true).SetLink(gameObject);
         }
 
         // 당첨된 칸을 민트색으로 칠한다. 12시에서 시계 방향으로 칸 번호 × 45도만큼 돌려 해당 칸에 맞춘다
@@ -138,7 +200,7 @@ namespace Game.View
         {
             if (!Current(run)) { return; }
             ShowReward(round);
-            ShowWinGlow(round.WinnerIndex);
+            PlayWinEffect(round.WinnerIndex);
             if (!Current(run)) { return; }
             _animation = DOVirtual.DelayedCall(0.4f, () => SpinNext(run), ignoreTimeScale: true).SetLink(gameObject);
         }
@@ -178,7 +240,7 @@ namespace Game.View
             {
                 var round = session.PrepareRound();
                 if (round == null) { break; }
-                _spinner.localRotation = Quaternion.Euler(0f, 0f, -(22.5f + round.WinnerIndex * 45f));
+                _spinner.localRotation = Quaternion.Euler(0f, 0f, 22.5f + round.WinnerIndex * 45f);
                 ShowReward(round);
                 ShowWinGlow(round.WinnerIndex);
             }
@@ -203,6 +265,7 @@ namespace Game.View
         {
             _run++;
             _animation?.Kill();
+            _winFxStop?.Kill();
             _skipButton.onClick.RemoveListener(OnActionClicked);
             base.DisposeView();
         }
