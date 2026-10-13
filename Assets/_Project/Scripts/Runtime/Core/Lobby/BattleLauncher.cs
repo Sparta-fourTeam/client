@@ -5,7 +5,7 @@ using MessagePipe;
 namespace Game.Core
 {
     /// <summary>전투를 먼저 발급받고, 성공했을 때만 Stage로 전환한다.
-    /// 로비 외에 튜토리얼에서도 쓴다(로딩 → 튜토리얼 전투, 튜토리얼 전투 패배 → 재도전).
+    /// 로비 외에 튜토리얼에서도 쓴다(로딩·로비 → 튜토리얼 전투).
     /// 거절되면 씬 전환 없이 StartFailed만 발행한다 — 이전엔 반대로 Stage로 넘어갔다가 거절돼서 되돌아왔다</summary>
     public sealed class BattleLauncher
     {
