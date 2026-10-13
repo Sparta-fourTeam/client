@@ -1,0 +1,392 @@
+using System;
+using Game.Core;
+using MessagePipe;
+using NUnit.Framework;
+
+namespace Game.Tests
+{
+    public sealed class SkillExecutionTests
+    {
+        private sealed class TestSkill : SkillBase
+        {
+            public TestSkill(SkillData data) : base(data, null, null) { }
+            protected override bool OnFire() => true;
+            public SkillStats CurrentStats => stats;
+        }
+
+        [Test(Description = "형태변환 후 SkillChanged를 받으면 HUD가 변환 아이콘을 표시하고, 전용 아이콘이 없으면 기본 아이콘을 쓴다")]
+        public void Hud_RefreshesFormIconAfterUpgradeAndFallsBackWhenMissing()
+        {
+            var root = new UnityEngine.GameObject("SkillHudTest");
+            root.SetActive(false);
+            var texture = new UnityEngine.Texture2D(2, 2);
+            var basic = UnityEngine.Sprite.Create(texture, new UnityEngine.Rect(0, 0, 1, 1), UnityEngine.Vector2.zero);
+            var transformed = UnityEngine.Sprite.Create(texture, new UnityEngine.Rect(1, 0, 1, 1), UnityEngine.Vector2.zero);
+            var table = SkillAssetTable.Create(new[] { new SkillAssetEntry { key = "test", hudIcon = basic } },
+                formIcons: new[] { new SkillFormIconEntry { form = SkillForm.FlameArrow, icon = transformed } });
+            var builder = new MessagePipe.BuiltinContainerBuilder();
+            builder.AddMessagePipe();
+            builder.AddMessageBroker<Game.Core.Messages.SkillChanged>();
+            var provider = builder.BuildServiceProvider();
+            var weapon = new TestSkill(new SkillData { assetKey = "test", maxLevel = 15, baseStats = new SkillBaseStats() });
+            Game.View.SkillHudView view = null;
+            try
+            {
+                UnityEngine.GameObject Child(string name, Type component)
+                {
+                    var child = new UnityEngine.GameObject(name, typeof(UnityEngine.RectTransform), component);
+                    child.transform.SetParent(root.transform);
+                    return child;
+                }
+                var icon = Child("Icon", typeof(UnityEngine.UI.Image)).GetComponent<UnityEngine.UI.Image>();
+                var cooldown = Child("Cooldown", typeof(UnityEngine.UI.Image)).GetComponent<UnityEngine.UI.Image>();
+                var frame = Child("Frame", typeof(UnityEngine.UI.Image)).GetComponent<UnityEngine.UI.Image>();
+                var level = Child("Level", typeof(TMPro.TextMeshProUGUI)).GetComponent<TMPro.TMP_Text>();
+                var slot = root.AddComponent<Game.View.SkillSlotView>();
+                var slotFields = new UnityEditor.SerializedObject(slot);
+                slotFields.FindProperty("_icon").objectReferenceValue = icon;
+                slotFields.FindProperty("_cooldownOverlay").objectReferenceValue = cooldown;
+                slotFields.FindProperty("_activeFrame").objectReferenceValue = frame;
+                slotFields.FindProperty("_levelText").objectReferenceValue = level;
+                slotFields.ApplyModifiedPropertiesWithoutUndo();
+                view = root.AddComponent<Game.View.SkillHudView>();
+                var viewFields = new UnityEditor.SerializedObject(view);
+                viewFields.FindProperty("_assets").objectReferenceValue = table;
+                var slots = viewFields.FindProperty("_slots");
+                slots.arraySize = 1;
+                slots.GetArrayElementAtIndex(0).objectReferenceValue = slot;
+                viewFields.ApplyModifiedPropertiesWithoutUndo();
+                view.Construct(provider.GetRequiredService<MessagePipe.IBufferedSubscriber<Game.Core.Messages.SkillChanged>>(), null);
+                var publisher = provider.GetRequiredService<MessagePipe.IBufferedPublisher<Game.Core.Messages.SkillChanged>>();
+                void Publish() => publisher.Publish(new Game.Core.Messages.SkillChanged(new ISkillStatus[] { weapon }));
+                Publish();
+                Assert.AreSame(basic, icon.sprite);
+
+                Assert.IsTrue(weapon.LevelUp(new SkillUpgradeOption
+                {
+                    id = "flame",
+                    effects = new System.Collections.Generic.List<EffectDef>
+                    { new EffectDef { kind = "form", value = (int)SkillForm.FlameArrow } }
+                }));
+                Publish();
+                Assert.AreSame(transformed, icon.sprite, "현재 형태의 아이콘으로 갱신해야 한다");
+
+                Assert.IsTrue(weapon.LevelUp(new SkillUpgradeOption
+                {
+                    id = "thunder",
+                    effects = new System.Collections.Generic.List<EffectDef>
+                    { new EffectDef { kind = "form", value = (int)SkillForm.ThunderArrow } }
+                }));
+                Publish();
+                Assert.AreSame(basic, icon.sprite, "등록되지 않은 형태는 기본 아이콘을 유지해야 한다");
+            }
+            finally
+            {
+                view?.Dispose();
+                weapon.Dispose();
+                UnityEngine.Object.DestroyImmediate(root);
+                (provider as IDisposable)?.Dispose();
+                UnityEngine.Object.DestroyImmediate(table);
+                UnityEngine.Object.DestroyImmediate(basic);
+                UnityEngine.Object.DestroyImmediate(transformed);
+                UnityEngine.Object.DestroyImmediate(texture);
+            }
+        }
+
+        [Test]
+        public void Variant_DoesNotResetChoiceCounterOrRemoveOtherPenalties()
+        {
+            var option = VariantOption(9, -20, 0);
+            option.maxPickCount = 1;
+            option.variants[0].effects.Add(new EffectDef { kind = "projectileSpeed", value = -30 });
+            var weapon = NewWeapon();
+            Assert.IsTrue(weapon.LevelUp(option, 9));
+            Assert.AreEqual(14, weapon.CurrentStats.Projectile.Speed, 0.0001f);
+            Assert.IsFalse(weapon.LevelUp(option, 8));
+            Assert.AreEqual(1, weapon.UpgradeCount);
+        }
+
+        [Test]
+        public void InvalidUpgrade_LeavesStatsLevelAndAcquisitionUnchanged()
+        {
+            var option = VariantOption(9, -20, 0);
+            option.variants[0].effects = null;
+            var weapon = NewWeapon();
+            Assert.IsFalse(weapon.LevelUp(option, 9));
+            Assert.AreEqual(10, weapon.CurrentStats.Cast.Damage);
+            Assert.AreEqual(0, weapon.UpgradeCount);
+            option = new SkillUpgradeOption
+            {
+                id = "invalid_effect",
+                effects = new System.Collections.Generic.List<EffectDef>
+                {
+                    new EffectDef { kind = "damage", value = 80 },
+                    new EffectDef { kind = "unknownKind", value = 1 }
+                }
+            };
+            Assert.IsFalse(weapon.LevelUp(option));
+            Assert.AreEqual(10, weapon.CurrentStats.Cast.Damage);
+            Assert.AreEqual(1, weapon.Level);
+            Assert.AreEqual(0, weapon.UpgradeCount);
+            Assert.AreEqual(0, weapon.GetAcquiredCount(option.id));
+        }
+
+        private static TestSkill NewWeapon() => new TestSkill(new SkillData
+        {
+            maxLevel = 15,
+            baseStats = new SkillBaseStats { cast = { baseDamage = 10, projectileCount = 1 }, projectile = { speed = 20 } }
+        });
+
+        private static TestSkill SharedWeapon(int id, string type = "damage")
+        {
+            var option = new SkillUpgradeOption
+            {
+                id = "shared_" + id,
+                sharedId = "pair",
+                affectedWeaponIds = new[] { 1, 2 },
+                maxPickCount = 1,
+                effects = new System.Collections.Generic.List<EffectDef>
+                {
+                    new EffectDef { kind = type, value = type == "damage" ? 80 : 20 }
+                }
+            };
+            return new TestSkill(new SkillData
+            {
+                id = id,
+                assetKey = "test_" + id,
+                maxLevel = 15,
+                baseStats = new SkillBaseStats { cast = { baseDamage = 10, cooldown = 2, projectileCount = 1 } },
+                upgrades = new System.Collections.Generic.List<SkillUpgradeOption> { option }
+            });
+        }
+
+        [TestCase("damage")]
+        [TestCase("attackSpeed")]
+        public void SharedUpgrade_AppliesBothAndSharesCounterAcrossOppositeChoice(string type)
+        {
+            var a = SharedWeapon(1, type);
+            var b = SharedWeapon(2, type);
+            var weapons = new SkillBase[] { a, b };
+            Assert.IsTrue(SkillUpgradeTransaction.CanApply(a, a.Data.upgrades[0], weapons, 0));
+            Assert.AreEqual(0, a.UpgradeCount, "후보 판정은 상태를 변경하지 않는다");
+            Assert.IsTrue(SkillUpgradeTransaction.TryApply(a, a.Data.upgrades[0], weapons, 0));
+            Assert.AreEqual(1, a.UpgradeCount);
+            Assert.AreEqual(1, b.UpgradeCount);
+            Assert.AreEqual(1, a.GetAcquiredCount("shared_1"));
+            Assert.AreEqual(1, b.GetAcquiredCount("shared_2"));
+            Assert.IsFalse(SkillUpgradeTransaction.TryApply(b, b.Data.upgrades[0], weapons, 0));
+            if (type == "damage")
+            {
+                Assert.AreEqual(18, a.CurrentStats.Cast.Damage, 0.0001f);
+                Assert.AreEqual(18, b.CurrentStats.Cast.Damage, 0.0001f);
+            }
+            else
+            {
+                Assert.AreEqual(1.6f, a.CurrentStats.Cast.Cooldown, 0.0001f);
+                Assert.AreEqual(1.6f, b.CurrentStats.Cast.Cooldown, 0.0001f);
+            }
+        }
+
+        [Test]
+        public void OrdinaryTransaction_UsesPermanentVariantWithoutSharing()
+        {
+            var weapon = NewWeapon();
+            var option = VariantOption(9, -20, 0);
+            weapon.Data.upgrades = new System.Collections.Generic.List<SkillUpgradeOption> { option };
+            Assert.IsTrue(SkillUpgradeTransaction.TryApply(weapon, option, new SkillBase[] { weapon }, 9));
+            Assert.AreEqual(10, weapon.CurrentStats.Cast.Damage);
+            Assert.AreEqual(2, weapon.CurrentStats.Cast.Count);
+            Assert.AreEqual(1, weapon.GetAcquiredCount(option.id));
+        }
+
+        [Test]
+        public void SharedUpgrade_MissingOrCappedPartnerLeavesOwnerUnchanged()
+        {
+            var a = SharedWeapon(1);
+            var b = SharedWeapon(2);
+            Assert.IsFalse(SkillUpgradeTransaction.TryApply(a, a.Data.upgrades[0], new SkillBase[] { a }, 0));
+            b.Data.maxLevel = 1;
+            Assert.IsTrue(b.LevelUp(new SkillUpgradeOption
+            {
+                id = "basic",
+                effects = new System.Collections.Generic.List<EffectDef>()
+            }));
+            Assert.IsFalse(SkillUpgradeTransaction.TryApply(a, a.Data.upgrades[0], new SkillBase[] { a, b }, 0));
+            Assert.AreEqual(0, a.UpgradeCount);
+            Assert.AreEqual(0, a.GetAcquiredCount("shared_1"));
+            Assert.AreEqual(10, a.CurrentStats.Cast.Damage);
+            Assert.AreEqual(1, b.UpgradeCount);
+        }
+
+        [Test]
+        public void SharedUpgrade_InconsistentEffectsAndDirectApplicationAreRejected()
+        {
+            var a = SharedWeapon(1);
+            var b = SharedWeapon(2);
+            Assert.IsFalse(a.LevelUp(a.Data.upgrades[0]));
+            b.Data.upgrades[0].effects[0].value = 60;
+            Assert.IsFalse(SkillUpgradeTransaction.TryApply(a, a.Data.upgrades[0], new SkillBase[] { a, b }, 0));
+            Assert.AreEqual(0, a.UpgradeCount);
+            Assert.AreEqual(0, b.UpgradeCount);
+            Assert.AreEqual(10, a.CurrentStats.Cast.Damage);
+        }
+
+        [Test]
+        public void Catalog_SharedDefinitionRequiresMatchingParticipantsAndCounters()
+        {
+            var a = SharedWeapon(1);
+            var b = SharedWeapon(2);
+            var definitions = new System.Collections.Generic.List<SkillData> { a.Data, b.Data };
+            Assert.AreEqual(2, GameDataStore.ParseSkills(Newtonsoft.Json.JsonConvert.SerializeObject(definitions)).Count);
+            b.Data.upgrades[0].maxPickCount = 2;
+            Assert.Throws<InvalidOperationException>(() => GameDataStore.ParseSkills(Newtonsoft.Json.JsonConvert.SerializeObject(definitions)));
+        }
+
+        private static SkillUpgradeOption VariantOption(int gate, float before, float after) => new SkillUpgradeOption
+        {
+            id = "repeat",
+            name = "연발",
+            maxPickCount = 2,
+            effects = new System.Collections.Generic.List<EffectDef>
+            {
+                new EffectDef { kind = "castCount", value = 1 },
+                new EffectDef { kind = "damage", value = before }
+            },
+            variants = new[] { new SkillUpgradeVariant
+            {
+                minPermanentLevel = gate, name = "연발(+)",
+                effects = new System.Collections.Generic.List<EffectDef>
+                {
+                    new EffectDef { kind = "castCount", value = 1 },
+                    new EffectDef { kind = "damage", value = after }
+                }
+            } }
+        };
+
+        [TestCase(1)]
+        [TestCase(14)]
+        [TestCase(15)]
+        public void BattleUpgradeCap_ExcludesInitialAcquisition(int cap)
+        {
+            var weapon = new TestSkill(new SkillData { maxLevel = cap, baseStats = new SkillBaseStats() });
+            var option = new SkillUpgradeOption
+            {
+                id = "repeat",
+                maxPickCount = cap + 1,
+                effects = new System.Collections.Generic.List<EffectDef>()
+            };
+            Assert.AreEqual(1, weapon.Level);
+            Assert.AreEqual(0, weapon.UpgradeCount);
+            Assert.IsFalse(weapon.IsMaxLevel);
+            for (int i = 0; i < cap; i++)
+            {
+                Assert.IsTrue(weapon.LevelUp(option));
+            }
+            Assert.AreEqual(cap, weapon.UpgradeCount);
+            Assert.AreEqual(cap + 1, weapon.Level);
+            Assert.IsTrue(weapon.IsMaxLevel);
+            Assert.IsFalse(weapon.LevelUp(option));
+            Assert.AreEqual(cap, weapon.GetAcquiredCount(option.id));
+        }
+
+        [Test]
+        public void RepeatedCasts_FireOverTimeAndCooldownStartsImmediately()
+        {
+            var clock = new CastClock(); int fired = 0;
+            clock.Tick(0, 2, 3, 0.1f, () => fired++);
+            Assert.AreEqual(1, fired);
+            Assert.AreEqual(2f, clock.RemainingCooldown);
+            clock.Tick(0.05f, 2, 3, 0.1f, () => fired++);
+            Assert.AreEqual(1, fired);
+            clock.Tick(0.2f, 2, 3, 0.1f, () => fired++);
+            Assert.AreEqual(3, fired);
+            Assert.AreEqual(1.75f, clock.RemainingCooldown, 0.0001f);
+        }
+
+        [Test(Description = "쏠 대상이 없으면 쿨타임을 쓰지 않고 준비 상태로 기다리다가, 대상이 생기면 그 프레임에 바로 시전한다")]
+        public void NoTarget_KeepsCooldownReadyAndFiresAsSoonAsTargetAppears()
+        {
+            var clock = new CastClock(); bool hasTarget = false; int fired = 0;
+            bool Fire() { if (!hasTarget) { return false; } fired++; return true; }
+
+            for (int i = 0; i < 10; i++) { clock.Tick(0.5f, 2, 1, 0.1f, Fire); }
+            Assert.AreEqual(0, fired);
+            Assert.AreEqual(0f, clock.RemainingCooldown);
+
+            hasTarget = true;
+            clock.Tick(0.016f, 2, 1, 0.1f, Fire);
+            Assert.AreEqual(1, fired);
+            Assert.AreEqual(2f, clock.RemainingCooldown);
+        }
+
+        [Test]
+        public void PendingRepeat_DoesNotAdvanceWhilePaused()
+        {
+            var clock = new CastClock(); int fired = 0;
+            clock.Tick(0, 2, 2, 0.1f, () => fired++);
+            clock.Tick(0, 2, 2, 0.1f, () => fired++);
+            Assert.AreEqual(1, fired);
+        }
+
+        [Test]
+        public void Pierce_DamagesDistinctTargetsOnceAndResetsOnReuse()
+        {
+            var ledger = new ProjectileHitLedger(); var a = new object(); var b = new object(); var c = new object();
+            ledger.Reset(1);
+            Assert.IsTrue(ledger.TryHit(a));
+            Assert.IsFalse(ledger.TryHit(a));
+            Assert.IsFalse(ledger.Exhausted);
+            Assert.IsTrue(ledger.TryHit(b));
+            Assert.IsTrue(ledger.Exhausted);
+            Assert.IsFalse(ledger.TryHit(c));
+            ledger.Reset(0);
+            Assert.IsTrue(ledger.TryHit(a));
+            Assert.IsTrue(ledger.Exhausted);
+        }
+
+        [Test]
+        public void Catalog_RejectsDanglingImpossibleAndCyclicPrerequisites()
+        {
+            var a = new SkillUpgradeOption { id = "a", maxPickCount = 1, effects = new System.Collections.Generic.List<EffectDef>() };
+            var b = new SkillUpgradeOption { id = "b", maxPickCount = 1, effects = new System.Collections.Generic.List<EffectDef>() };
+            var data = new[] { new SkillData
+            {
+                id = 1, assetKey = "a", maxLevel = 15, baseStats = new SkillBaseStats(),
+                upgrades = new System.Collections.Generic.List<SkillUpgradeOption> { a, b }
+            } };
+            a.requiredCardCounts = new[] { new CardCountRequirement { cardId = "missing" } };
+            Assert.Throws<InvalidOperationException>(() => GameDataStore.ParseSkills(Newtonsoft.Json.JsonConvert.SerializeObject(data)));
+            a.requiredCardCounts = new[] { new CardCountRequirement { cardId = "b", count = 2 } };
+            Assert.Throws<InvalidOperationException>(() => GameDataStore.ParseSkills(Newtonsoft.Json.JsonConvert.SerializeObject(data)));
+            a.requiredCardCounts = new[] { new CardCountRequirement { cardId = "b" } };
+            b.requiredCardCounts = new[] { new CardCountRequirement { cardId = "a" } };
+            Assert.Throws<InvalidOperationException>(() => GameDataStore.ParseSkills(Newtonsoft.Json.JsonConvert.SerializeObject(data)));
+        }
+
+        [Test]
+        public void Catalog_RejectsDuplicateWeaponIds()
+        {
+            const string json = "[{\"id\":1,\"maxLevel\":1,\"baseStats\":{},\"upgrades\":[]},{\"id\":1,\"maxLevel\":1,\"baseStats\":{},\"upgrades\":[]}]";
+            Assert.Throws<InvalidOperationException>(() => GameDataStore.ParseSkills(json));
+        }
+
+        [Test]
+        public void Catalog_RejectsDuplicateCardIdsAcrossWeapons()
+        {
+            const string json = "[{\"id\":1,\"assetKey\":\"a\",\"maxLevel\":1,\"baseStats\":{},\"upgrades\":[{\"id\":\"same\",\"effects\":[]}]},{\"id\":2,\"assetKey\":\"b\",\"maxLevel\":1,\"baseStats\":{},\"upgrades\":[{\"id\":\"same\",\"effects\":[]}]}]";
+            Assert.Throws<InvalidOperationException>(() => GameDataStore.ParseSkills(json));
+        }
+
+        [Test(Description = "assetKey는 프리팹과 아이콘을 찾는 키라 비어 있거나 다른 스킬과 겹치면 거부한다")]
+        public void Catalog_RejectsMissingOrDuplicateAssetKey()
+        {
+            const string missing = "[{\"id\":1,\"maxLevel\":1,\"baseStats\":{},\"upgrades\":[]}]";
+            const string duplicate = "[{\"id\":1,\"assetKey\":\"same\",\"maxLevel\":1,\"baseStats\":{},\"upgrades\":[]},{\"id\":2,\"assetKey\":\"same\",\"maxLevel\":1,\"baseStats\":{},\"upgrades\":[]}]";
+            const string valid = "[{\"id\":1,\"assetKey\":\"a\",\"maxLevel\":1,\"baseStats\":{},\"upgrades\":[]},{\"id\":2,\"assetKey\":\"b\",\"maxLevel\":1,\"baseStats\":{},\"upgrades\":[]}]";
+
+            Assert.AreEqual(2, GameDataStore.ParseSkills(valid).Count);
+            StringAssert.Contains("assetKey", Assert.Throws<InvalidOperationException>(() => GameDataStore.ParseSkills(missing)).Message);
+            StringAssert.Contains("assetKey", Assert.Throws<InvalidOperationException>(() => GameDataStore.ParseSkills(duplicate)).Message);
+        }
+    }
+}

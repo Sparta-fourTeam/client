@@ -1,0 +1,17 @@
+{
+  "generator": "built-in image_gen",
+  "instruction": "모든 장비 주문서는 하나의 공통 PNG 틀에 동일한 위치/크기의 중앙 장비 아이콘을 올린다. 틀의 그림과 배치는 재사용한다.",
+  "transparent_background": true,
+  "assets": [
+    {
+      "key": "EnchantmentScrollFrame",
+      "folder": "Items",
+      "prompt": "Use case: inpainting. EDIT TARGET is the provided StaffScroll.png. Create the one shared EMPTY parchment scroll template for every equipment enchantment icon. Remove ONLY the central staff drawing and green enchantment marks from the parchment face, replacing their pixels with the same ivory paper crayon texture. Keep the existing parchment silhouette, position, scale, canvas dimensions, rotation, top and bottom rolled curls, torn edges, black crayon outline and all parchment shading exactly fixed. Do NOT redesign, shift, straighten, enlarge or rotate the scroll. Preserve its existing transparent alpha outside the parchment. No emblem, no lettering, no book. Output this single empty scroll."
+    },
+    {
+      "key": "UnknownEquipmentSymbol",
+      "folder": "Equipment",
+      "prompt": "Use case: stylized-concept. The reference is approved wax-crayon art style only. Draw ONE chunky mint-green question mark symbol with thick rough black wax-crayon outlines, coarse scribbled flat green fill with white pigment gaps. Include its separate lower round dot. Center on square transparent alpha canvas with generous margins. No parchment, scroll, paper, book, frame, background, text other than the question mark. This is the swappable center emblem of a shared equipment enchantment scroll."
+    }
+  ]
+}

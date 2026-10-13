@@ -1,0 +1,121 @@
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+
+namespace Game.Core
+{
+    /// <summary>스킬 하나가 쓰는 에셋 묶음. 키는 Skills.json의 assetKey와 같다</summary>
+    [Serializable]
+    public class SkillAssetEntry
+    {
+        public string key;
+
+        /// <summary>공격 실체 프리팹. 연결돼 있어야 스킬을 얻을 수 있다</summary>
+        public GameObject prefab;
+
+        /// <summary>형태별 독립 공격 프리팹. 연결이 없으면 기본 프리팹을 쓴다.</summary>
+        public List<SkillFormPrefabEntry> formPrefabs = new();
+
+        /// <summary>HUD 슬롯 아이콘</summary>
+        public Sprite hudIcon;
+
+        /// <summary>카드 화면의 "새 스킬" 카드 아이콘</summary>
+        public Sprite newCardIcon;
+
+        /// <summary>카드 화면의 "강화" 카드 아이콘. 스킬이 아닌 일반 카드(GeneralCards.json의 IconKey)도 이 칸을 쓴다</summary>
+        public Sprite upgradeCardIcon;
+    }
+
+    public enum SkillCardIcon { New, Upgrade }
+
+    [Serializable]
+    public class SkillFormPrefabEntry
+    {
+        public SkillForm form;
+        public GameObject prefab;
+    }
+
+    /// <summary>형태 변환 하나의 아이콘. HUD와 카드 선택창의 형태 안내에 쓴다</summary>
+    [Serializable]
+    public class SkillFormIconEntry
+    {
+        public SkillForm form;
+        public Sprite icon;
+    }
+
+    /// <summary>스킬별 에셋(프리팹, HUD 아이콘, 카드 아이콘)을 키 하나로 찾는 표. 새 스킬을 추가하면 이 표에 항목 하나만 더하면 된다.
+    /// 아이콘이 없는 키는 기본 아이콘을 돌려준다</summary>
+    [CreateAssetMenu(fileName = "SkillAssetTable", menuName = "Project Nova/Skill Asset Table")]
+    public sealed class SkillAssetTable : ScriptableObject
+    {
+        [SerializeField] private List<SkillAssetEntry> entries = new List<SkillAssetEntry>();
+        [SerializeField] private Sprite hudFallback;
+        [SerializeField] private Sprite cardFallback;
+        [SerializeField] private List<SkillFormIconEntry> formIcons = new List<SkillFormIconEntry>();
+
+        private Dictionary<string, SkillAssetEntry> lookup;
+
+        public IReadOnlyList<SkillAssetEntry> Entries => entries;
+
+        /// <summary>코드(테스트, 도구)에서 표를 만들 때 쓴다. 에셋 표는 인스펙터에서 채운다</summary>
+        public static SkillAssetTable Create(IEnumerable<SkillAssetEntry> entries, Sprite hudFallback = null, Sprite cardFallback = null,
+            IEnumerable<SkillFormIconEntry> formIcons = null)
+        {
+            var table = CreateInstance<SkillAssetTable>();
+            table.entries = new List<SkillAssetEntry>(entries);
+            table.hudFallback = hudFallback;
+            table.cardFallback = cardFallback;
+            table.formIcons = formIcons != null ? new List<SkillFormIconEntry>(formIcons) : new List<SkillFormIconEntry>();
+            return table;
+        }
+
+        public bool TryGet(string key, out SkillAssetEntry entry)
+        {
+            if (lookup == null)
+            {
+                lookup = new Dictionary<string, SkillAssetEntry>(entries.Count);
+                foreach (var candidate in entries)
+                {
+                    if (candidate != null && !string.IsNullOrEmpty(candidate.key)) { lookup[candidate.key] = candidate; }
+                }
+            }
+
+            entry = null;
+            return !string.IsNullOrEmpty(key) && lookup.TryGetValue(key, out entry);
+        }
+
+        public bool HasPrefab(string key) => TryGet(key, out var entry) && entry.prefab != null;
+
+        public GameObject GetPrefab(string key) => TryGet(key, out var entry) ? entry.prefab : null;
+
+        public IReadOnlyList<SkillFormPrefabEntry> GetFormPrefabs(string key) =>
+            TryGet(key, out var entry) ? entry.formPrefabs : null;
+
+        public Sprite GetHudIcon(string key) =>
+            TryGet(key, out var entry) && entry.hudIcon != null ? entry.hudIcon : hudFallback;
+
+        public Sprite GetCardIcon(string key, SkillCardIcon kind)
+        {
+            if (!TryGet(key, out var entry)) { return cardFallback; }
+            var icon = kind == SkillCardIcon.New ? entry.newCardIcon : entry.upgradeCardIcon;
+            return icon != null ? icon : cardFallback;
+        }
+
+        /// <summary>형태 변환 아이콘. 그 형태의 아이콘이 없으면 변환 카드를 가진 스킬(skillKey)의 HUD 아이콘을 쓴다</summary>
+        public Sprite GetFormIcon(SkillForm form, string skillKey)
+        {
+            foreach (var entry in formIcons)
+            {
+                if (entry != null && entry.form == form && entry.icon != null) { return entry.icon; }
+            }
+
+            return GetHudIcon(skillKey);
+        }
+
+        // 인스펙터에서 항목을 고치면 다음 조회에서 다시 만든다
+        private void OnValidate()
+        {
+            lookup = null;
+        }
+    }
+}

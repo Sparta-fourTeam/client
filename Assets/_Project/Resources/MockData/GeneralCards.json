@@ -1,0 +1,8 @@
+[
+  {
+    "Id": "wall_repair", "Name": "방벽 수리", "Desc": "방벽 체력 +20", "IconKey": "wall_repair",
+    "MaxPicks": 999, "Forced": true, "Priority": 0,
+    "Condition": { "Kind": "wallHpBelow", "Value": 50 },
+    "Effect": { "Kind": "wallRepair", "Value": 20 }
+  }
+]

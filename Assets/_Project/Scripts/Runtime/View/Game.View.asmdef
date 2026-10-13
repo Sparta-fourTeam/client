@@ -1,0 +1,22 @@
+{
+    "name": "Game.View",
+    "rootNamespace": "Game.View",
+    "references": [
+        "Game.Core",
+        "MessagePipe",
+        "UniTask",
+        "VContainer",
+        "Unity.InputSystem",
+        "UnityEngine.UI",
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

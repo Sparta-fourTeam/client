@@ -1,0 +1,63 @@
+{
+  "generator": "built-in image_gen",
+  "instruction": "공통 주문서 틀을 참조해 내부 문양만 바꾼 단일 완성 PNG. 런타임 레이어 분리는 하지 않는다.",
+  "transparent_background": true,
+  "assets": [
+    {
+      "key": "HoodScroll",
+      "name": "후드 인챈트 주문서",
+      "folder": "Items",
+      "prompt": "Use case: inpainting. Produce ONE finished transparent PNG enchantment scroll icon. Image 1 is the EDIT TARGET and the EXACT COMMON SCROLL TEMPLATE. Image 2 is only the EQUIPMENT SYMBOL to insert. Copy the parchment from image 1 unchanged: identical square canvas, parchment position, scale, slight counterclockwise tilt, top roll curling at left, bottom roll curling at right, every torn edge, black crayon outline, paper shading and transparent exterior. Do not redraw, move, resize, rotate, mirror, straighten or redesign the parchment. The sole allowed change is adding ONE simplified icon from image 2 to the middle of the paper. Place the symbol within x=34..66 percent and y=28..65 percent of the full canvas, centered at x=50%, y=47%; simplify black charcoal, ivory bone and mint-green fills in the same coarse wax-crayon style. Add NO text, lettering, runes, additional green strokes, extra objects, backgrounds or frames. The output must be this ONE complete scroll with the inserted emblem, flattened in a single PNG with real alpha transparency. Not a separate symbol, not a book. Preserve the entire original parchment around the emblem exactly.\nEmblem identity: 후드 from image 2.",
+      "symbol": "Hood"
+    },
+    {
+      "key": "RobeScroll",
+      "name": "로브 인챈트 주문서",
+      "folder": "Items",
+      "prompt": "Use case: inpainting. Produce ONE finished transparent PNG enchantment scroll icon. Image 1 is the EDIT TARGET and the EXACT COMMON SCROLL TEMPLATE. Image 2 is only the EQUIPMENT SYMBOL to insert. Copy the parchment from image 1 unchanged: identical square canvas, parchment position, scale, slight counterclockwise tilt, top roll curling at left, bottom roll curling at right, every torn edge, black crayon outline, paper shading and transparent exterior. Do not redraw, move, resize, rotate, mirror, straighten or redesign the parchment. The sole allowed change is adding ONE simplified icon from image 2 to the middle of the paper. Place the symbol within x=34..66 percent and y=28..65 percent of the full canvas, centered at x=50%, y=47%; simplify black charcoal, ivory bone and mint-green fills in the same coarse wax-crayon style. Add NO text, lettering, runes, additional green strokes, extra objects, backgrounds or frames. The output must be this ONE complete scroll with the inserted emblem, flattened in a single PNG with real alpha transparency. Not a separate symbol, not a book. Preserve the entire original parchment around the emblem exactly.\nEmblem identity: 로브 from image 2.",
+      "symbol": "Robe"
+    },
+    {
+      "key": "BootsScroll",
+      "name": "장화 인챈트 주문서",
+      "folder": "Items",
+      "prompt": "Use case: inpainting. Produce ONE finished transparent PNG enchantment scroll icon. Image 1 is the EDIT TARGET and the EXACT COMMON SCROLL TEMPLATE. Image 2 is only the EQUIPMENT SYMBOL to insert. Copy the parchment from image 1 unchanged: identical square canvas, parchment position, scale, slight counterclockwise tilt, top roll curling at left, bottom roll curling at right, every torn edge, black crayon outline, paper shading and transparent exterior. Do not redraw, move, resize, rotate, mirror, straighten or redesign the parchment. The sole allowed change is adding ONE simplified icon from image 2 to the middle of the paper. Place the symbol within x=34..66 percent and y=28..65 percent of the full canvas, centered at x=50%, y=47%; simplify black charcoal, ivory bone and mint-green fills in the same coarse wax-crayon style. Add NO text, lettering, runes, additional green strokes, extra objects, backgrounds or frames. The output must be this ONE complete scroll with the inserted emblem, flattened in a single PNG with real alpha transparency. Not a separate symbol, not a book. Preserve the entire original parchment around the emblem exactly.\nEmblem identity: 장화 from image 2.",
+      "symbol": "Boots"
+    },
+    {
+      "key": "StaffScroll",
+      "name": "무기 인챈트 주문서",
+      "folder": "Items",
+      "prompt": "Use case: inpainting. Produce ONE finished transparent PNG enchantment scroll icon. Image 1 is the EDIT TARGET and the EXACT COMMON SCROLL TEMPLATE. Image 2 is only the EQUIPMENT SYMBOL to insert. Copy the parchment from image 1 unchanged: identical square canvas, parchment position, scale, slight counterclockwise tilt, top roll curling at left, bottom roll curling at right, every torn edge, black crayon outline, paper shading and transparent exterior. Do not redraw, move, resize, rotate, mirror, straighten or redesign the parchment. The sole allowed change is adding ONE simplified icon from image 2 to the middle of the paper. Place the symbol within x=34..66 percent and y=28..65 percent of the full canvas, centered at x=50%, y=47%; simplify black charcoal, ivory bone and mint-green fills in the same coarse wax-crayon style. Add NO text, lettering, runes, additional green strokes, extra objects, backgrounds or frames. The output must be this ONE complete scroll with the inserted emblem, flattened in a single PNG with real alpha transparency. Not a separate symbol, not a book. Preserve the entire original parchment around the emblem exactly.\nEmblem identity: 무기 from image 2.",
+      "symbol": "Staff"
+    },
+    {
+      "key": "BoneRingScroll",
+      "name": "뼈 반지 인챈트 주문서",
+      "folder": "Items",
+      "prompt": "Use case: inpainting. Produce ONE finished transparent PNG enchantment scroll icon. Image 1 is the EDIT TARGET and the EXACT COMMON SCROLL TEMPLATE. Image 2 is only the EQUIPMENT SYMBOL to insert. Copy the parchment from image 1 unchanged: identical square canvas, parchment position, scale, slight counterclockwise tilt, top roll curling at left, bottom roll curling at right, every torn edge, black crayon outline, paper shading and transparent exterior. Do not redraw, move, resize, rotate, mirror, straighten or redesign the parchment. The sole allowed change is adding ONE simplified icon from image 2 to the middle of the paper. Place the symbol within x=34..66 percent and y=28..65 percent of the full canvas, centered at x=50%, y=47%; simplify black charcoal, ivory bone and mint-green fills in the same coarse wax-crayon style. Add NO text, lettering, runes, additional green strokes, extra objects, backgrounds or frames. The output must be this ONE complete scroll with the inserted emblem, flattened in a single PNG with real alpha transparency. Not a separate symbol, not a book. Preserve the entire original parchment around the emblem exactly.\nEmblem identity: 뼈 반지 from image 2.",
+      "symbol": "BoneRing"
+    },
+    {
+      "key": "SkullNecklaceScroll",
+      "name": "해골 목걸이 인챈트 주문서",
+      "folder": "Items",
+      "prompt": "Use case: inpainting. Produce ONE finished transparent PNG enchantment scroll icon. Image 1 is the EDIT TARGET and the EXACT COMMON SCROLL TEMPLATE. Image 2 is only the EQUIPMENT SYMBOL to insert. Copy the parchment from image 1 unchanged: identical square canvas, parchment position, scale, slight counterclockwise tilt, top roll curling at left, bottom roll curling at right, every torn edge, black crayon outline, paper shading and transparent exterior. Do not redraw, move, resize, rotate, mirror, straighten or redesign the parchment. The sole allowed change is adding ONE simplified icon from image 2 to the middle of the paper. Place the symbol within x=34..66 percent and y=28..65 percent of the full canvas, centered at x=50%, y=47%; simplify black charcoal, ivory bone and mint-green fills in the same coarse wax-crayon style. Add NO text, lettering, runes, additional green strokes, extra objects, backgrounds or frames. The output must be this ONE complete scroll with the inserted emblem, flattened in a single PNG with real alpha transparency. Not a separate symbol, not a book. Preserve the entire original parchment around the emblem exactly.\nEmblem identity: 해골 목걸이 from image 2.",
+      "symbol": "SkullNecklace"
+    },
+    {
+      "key": "SealScroll",
+      "name": "인장 인챈트 주문서",
+      "folder": "Items",
+      "prompt": "Use case: inpainting. Produce ONE finished transparent PNG enchantment scroll icon. Image 1 is the EDIT TARGET and the EXACT COMMON SCROLL TEMPLATE. Image 2 is only the EQUIPMENT SYMBOL to insert. Copy the parchment from image 1 unchanged: identical square canvas, parchment position, scale, slight counterclockwise tilt, top roll curling at left, bottom roll curling at right, every torn edge, black crayon outline, paper shading and transparent exterior. Do not redraw, move, resize, rotate, mirror, straighten or redesign the parchment. The sole allowed change is adding ONE simplified icon from image 2 to the middle of the paper. Place the symbol within x=34..66 percent and y=28..65 percent of the full canvas, centered at x=50%, y=47%; simplify black charcoal, ivory bone and mint-green fills in the same coarse wax-crayon style. Add NO text, lettering, runes, additional green strokes, extra objects, backgrounds or frames. The output must be this ONE complete scroll with the inserted emblem, flattened in a single PNG with real alpha transparency. Not a separate symbol, not a book. Preserve the entire original parchment around the emblem exactly.\nEmblem identity: 인장 from image 2.",
+      "symbol": "Seal"
+    },
+    {
+      "key": "RandomEquipmentMaterial",
+      "name": "랜덤 장비 인챈트 주문서",
+      "folder": "Items",
+      "symbol": "UnknownEquipmentSymbol",
+      "prompt": "Use case: inpainting. Produce ONE finished transparent PNG enchantment scroll icon. Image 1 is the EDIT TARGET and the EXACT COMMON SCROLL TEMPLATE. Image 2 is only the EQUIPMENT SYMBOL to insert. Copy the parchment from image 1 unchanged: identical square canvas, parchment position, scale, slight counterclockwise tilt, top roll curling at left, bottom roll curling at right, every torn edge, black crayon outline, paper shading and transparent exterior. Do not redraw, move, resize, rotate, mirror, straighten or redesign the parchment. The sole allowed change is adding ONE simplified icon from image 2 to the middle of the paper. Place the symbol within x=34..66 percent and y=28..65 percent of the full canvas, centered at x=50%, y=47%; simplify black charcoal, ivory bone and mint-green fills in the same coarse wax-crayon style. Add NO text, lettering, runes, additional green strokes, extra objects, backgrounds or frames. The output must be this ONE complete scroll with the inserted emblem, flattened in a single PNG with real alpha transparency. Not a separate symbol, not a book. Preserve the entire original parchment around the emblem exactly.\nEmblem identity: one mint-green question mark from image 2, indicating an unknown equipment enchantment. The question mark is the only permitted text symbol."
+    }
+  ]
+}

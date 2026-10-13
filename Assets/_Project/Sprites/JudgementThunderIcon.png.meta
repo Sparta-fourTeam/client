@@ -1,0 +1,717 @@
+fileFormatVersion: 2
+guid: 30f5677dee5ba41f2a4de0f8cd93bdd7
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -2505074191093375964
+    second: JudgementThunderIcon_0
+  - first:
+      213: 1394563981495525316
+    second: JudgementThunderIcon_1
+  - first:
+      213: 7278180527294959338
+    second: JudgementThunderIcon_2
+  - first:
+      213: -911283922102408935
+    second: JudgementThunderIcon_3
+  - first:
+      213: -6350994614861420491
+    second: JudgementThunderIcon_4
+  - first:
+      213: 3450682456140914888
+    second: JudgementThunderIcon_5
+  - first:
+      213: 5332610856062827863
+    second: JudgementThunderIcon_6
+  - first:
+      213: 5721674840390181095
+    second: JudgementThunderIcon_7
+  - first:
+      213: 5557089923427883983
+    second: JudgementThunderIcon_8
+  - first:
+      213: -4608539044639058982
+    second: JudgementThunderIcon_9
+  - first:
+      213: -9067337389814525566
+    second: JudgementThunderIcon_10
+  - first:
+      213: -7003289593698278642
+    second: JudgementThunderIcon_11
+  - first:
+      213: 1653921390627821353
+    second: JudgementThunderIcon_12
+  - first:
+      213: -6227842463662967943
+    second: JudgementThunderIcon_13
+  - first:
+      213: 7058290884968603876
+    second: JudgementThunderIcon_14
+  - first:
+      213: 4282958896090433072
+    second: JudgementThunderIcon_15
+  - first:
+      213: 7436831620821348351
+    second: JudgementThunderIcon_16
+  - first:
+      213: -5564174317805460588
+    second: JudgementThunderIcon_17
+  - first:
+      213: -3397455992821420678
+    second: JudgementThunderIcon_18
+  - first:
+      213: 4556289314994689149
+    second: JudgementThunderIcon_19
+  - first:
+      213: -3219849967553803838
+    second: JudgementThunderIcon_20
+  - first:
+      213: -444364840728048580
+    second: JudgementThunderIcon_21
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 256
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: JudgementThunderIcon_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 1239
+        height: 1246
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 42c51efab403c3dd0800000000000000
+      internalID: -2505074191093375964
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: JudgementThunderIcon_1
+      rect:
+        serializedVersion: 2
+        x: 619
+        y: 1243
+        width: 18
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4cf589d6d8c7a5310800000000000000
+      internalID: 1394563981495525316
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: JudgementThunderIcon_2
+      rect:
+        serializedVersion: 2
+        x: 705
+        y: 1245
+        width: 12
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: aeec49cc0aa410560800000000000000
+      internalID: 7278180527294959338
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: JudgementThunderIcon_3
+      rect:
+        serializedVersion: 2
+        x: 1131
+        y: 1173
+        width: 94
+        height: 35
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 919af8dd9187a53f0800000000000000
+      internalID: -911283922102408935
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: JudgementThunderIcon_4
+      rect:
+        serializedVersion: 2
+        x: 88
+        y: 1092
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 53824cafb0cbcd7a0800000000000000
+      internalID: -6350994614861420491
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: JudgementThunderIcon_5
+      rect:
+        serializedVersion: 2
+        x: 1141
+        y: 1028
+        width: 78
+        height: 114
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8c0a3fe496943ef20800000000000000
+      internalID: 3450682456140914888
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: JudgementThunderIcon_6
+      rect:
+        serializedVersion: 2
+        x: 1077
+        y: 947
+        width: 31
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 75d3409f15d310a40800000000000000
+      internalID: 5332610856062827863
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: JudgementThunderIcon_7
+      rect:
+        serializedVersion: 2
+        x: 1131
+        y: 943
+        width: 12
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7e02fbdd3f8776f40800000000000000
+      internalID: 5721674840390181095
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: JudgementThunderIcon_8
+      rect:
+        serializedVersion: 2
+        x: 1163
+        y: 805
+        width: 72
+        height: 153
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fcb52d6b7dfbe1d40800000000000000
+      internalID: 5557089923427883983
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: JudgementThunderIcon_9
+      rect:
+        serializedVersion: 2
+        x: 1133
+        y: 771
+        width: 8
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ad355cee72e2b00c0800000000000000
+      internalID: -4608539044639058982
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: JudgementThunderIcon_10
+      rect:
+        serializedVersion: 2
+        x: 1131
+        y: 755
+        width: 10
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 281dc7d4fa85a2280800000000000000
+      internalID: -9067337389814525566
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: JudgementThunderIcon_11
+      rect:
+        serializedVersion: 2
+        x: 1131
+        y: 746
+        width: 8
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e03ac6438315fce90800000000000000
+      internalID: -7003289593698278642
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: JudgementThunderIcon_12
+      rect:
+        serializedVersion: 2
+        x: 116
+        y: 744
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9279aceedb8e3f610800000000000000
+      internalID: 1653921390627821353
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: JudgementThunderIcon_13
+      rect:
+        serializedVersion: 2
+        x: 1149
+        y: 725
+        width: 6
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 973764c96424299a0800000000000000
+      internalID: -6227842463662967943
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: JudgementThunderIcon_14
+      rect:
+        serializedVersion: 2
+        x: 168
+        y: 698
+        width: 8
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4e06ee7d92614f160800000000000000
+      internalID: 7058290884968603876
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: JudgementThunderIcon_15
+      rect:
+        serializedVersion: 2
+        x: 110
+        y: 596
+        width: 6
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 036c1158c60207b30800000000000000
+      internalID: 4282958896090433072
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: JudgementThunderIcon_16
+      rect:
+        serializedVersion: 2
+        x: 118
+        y: 592
+        width: 6
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fffe27505fee43760800000000000000
+      internalID: 7436831620821348351
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: JudgementThunderIcon_17
+      rect:
+        serializedVersion: 2
+        x: 112
+        y: 570
+        width: 10
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 493aade20f418c2b0800000000000000
+      internalID: -5564174317805460588
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: JudgementThunderIcon_18
+      rect:
+        serializedVersion: 2
+        x: 1107
+        y: 507
+        width: 17
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a7d6bd766cfc9d0d0800000000000000
+      internalID: -3397455992821420678
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: JudgementThunderIcon_19
+      rect:
+        serializedVersion: 2
+        x: 86
+        y: 468
+        width: 8
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d749a22edf03b3f30800000000000000
+      internalID: 4556289314994689149
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: JudgementThunderIcon_20
+      rect:
+        serializedVersion: 2
+        x: 1108
+        y: 120
+        width: 8
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2c907e5938bc053d0800000000000000
+      internalID: -3219849967553803838
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: JudgementThunderIcon_21
+      rect:
+        serializedVersion: 2
+        x: 1099
+        y: 103
+        width: 13
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c3c4bbd188c45d9f0800000000000000
+      internalID: -444364840728048580
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      JudgementThunderIcon_0: -2505074191093375964
+      JudgementThunderIcon_1: 1394563981495525316
+      JudgementThunderIcon_10: -9067337389814525566
+      JudgementThunderIcon_11: -7003289593698278642
+      JudgementThunderIcon_12: 1653921390627821353
+      JudgementThunderIcon_13: -6227842463662967943
+      JudgementThunderIcon_14: 7058290884968603876
+      JudgementThunderIcon_15: 4282958896090433072
+      JudgementThunderIcon_16: 7436831620821348351
+      JudgementThunderIcon_17: -5564174317805460588
+      JudgementThunderIcon_18: -3397455992821420678
+      JudgementThunderIcon_19: 4556289314994689149
+      JudgementThunderIcon_2: 7278180527294959338
+      JudgementThunderIcon_20: -3219849967553803838
+      JudgementThunderIcon_21: -444364840728048580
+      JudgementThunderIcon_3: -911283922102408935
+      JudgementThunderIcon_4: -6350994614861420491
+      JudgementThunderIcon_5: 3450682456140914888
+      JudgementThunderIcon_6: 5332610856062827863
+      JudgementThunderIcon_7: 5721674840390181095
+      JudgementThunderIcon_8: 5557089923427883983
+      JudgementThunderIcon_9: -4608539044639058982
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

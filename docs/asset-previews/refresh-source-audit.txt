@@ -1,0 +1,34 @@
+Arrow_v1 | Arrow_v1 | ea3b6bb1382ab4e128a2a128d0d640f0 | 21300000 | (x:0.00, y:0.00, width:1000.00, height:1000.00) | (1.00, 1.00, 0.20) | (500.00, 500.00)
+lightning | lightning_0 | 6b40519766fff4ae996a0bf4cb346dc3 | -2983090718515566234 | (x:136.00, y:0.00, width:130.00, height:512.00) | (1.30, 5.12, 0.20) | (65.00, 256.00)
+lightning | lightning_1 | 6b40519766fff4ae996a0bf4cb346dc3 | -1461059339494140160 | (x:538.00, y:0.00, width:122.00, height:512.00) | (1.22, 5.12, 0.20) | (61.00, 256.00)
+lightning | lightning_2 | 6b40519766fff4ae996a0bf4cb346dc3 | -7846319024340782248 | (x:893.00, y:0.00, width:116.00, height:512.00) | (1.16, 5.12, 0.20) | (58.00, 256.00)
+LightningStroke | LightningStroke_0 | be0f4edf7f67e473b9db1dd82dcf6c19 | 7091245485742556852 | (x:29.60, y:9.80, width:187.61, height:235.18) | (9.19, 11.52, 0.20) | (93.81, 117.59)
+LightningStroke | LightningStroke_1 | be0f4edf7f67e473b9db1dd82dcf6c19 | -4651728359486146311 | (x:167.40, y:222.93, width:1.43, height:2.25) | (0.07, 0.11, 0.20) | (0.71, 1.12)
+LightningStroke | LightningStroke_2 | be0f4edf7f67e473b9db1dd82dcf6c19 | -1040562157697596832 | (x:65.53, y:108.40, width:1.22, height:1.22) | (0.06, 0.06, 0.20) | (0.61, 0.61)
+LightningStroke | LightningStroke_3 | be0f4edf7f67e473b9db1dd82dcf6c19 | 135226252278072430 | (x:66.76, y:109.22, width:1.22, height:1.22) | (0.06, 0.06, 0.20) | (0.61, 0.61)
+ChalkStroke | ChalkStroke_0 | 0bef19cb6d75149aea4f2a4fa2629d5a | 7186179348502450225 | (x:32.87, y:63.69, width:126.78, height:181.49) | (6.21, 8.89, 0.20) | (63.39, 90.74)
+FlameDab | FlameDab_0 | 2f2ef61f6d6024a35b44fd47618c9c15 | 5441799439263147200 | (x:32.87, y:8.37, width:214.35, height:237.01) | (10.50, 11.61, 0.20) | (107.18, 118.51)
+FlameDab | FlameDab_1 | 2f2ef61f6d6024a35b44fd47618c9c15 | 6203823754956816347 | (x:180.06, y:66.55, width:2.65, height:2.86) | (0.13, 0.14, 0.20) | (1.33, 1.43)
+IceChip | IceChip_0 | ad0ef76174781466b8474b3f1f18cdc9 | 7922154895108286289 | (x:21.23, y:14.49, width:225.58, height:189.24) | (11.05, 9.27, 0.20) | (112.79, 94.62)
+WoodCrumb | WoodCrumb_0 | 9fd106be00ffd46a0b9a5023a540fde3 | -4873349075266261673 | (x:43.07, y:71.04, width:119.63, height:102.28) | (5.86, 5.01, 0.20) | (59.81, 51.14)
+DustPuff | DustPuff_0 | 8ba001f49132e45c49cec75f941f421c | -5294026334478247828 | (x:29.60, y:21.03, width:217.21, height:224.36) | (10.64, 10.99, 0.20) | (108.61, 112.18)
+eyejelly_cross | eyejelly_cross | 3a7787516b4b6004988739aa10b153bc | 21300000 | (x:0.00, y:0.00, width:54.00, height:54.00) | (0.84, 0.84, 0.20) | (27.00, 27.00)
+HpBarWhite | HpBarWhite | 4a3d4c6ab334e3542986fe9d06e1c2c4 | 21300000 | (x:0.00, y:0.00, width:4.00, height:4.00) | (1.00, 1.00, 0.20) | (0.00, 2.00)
+REFERENCE | DustPuff | Assets/_Project/Sprites/DustPuffParticleSprite.asset
+REFERENCE | WoodCrumb | Assets/_Project/Sprites/WoodCrumbParticleSprite.asset
+REFERENCE | lightning | Assets/_Project/Materials/LightningFrames.mat
+REFERENCE | LightningStroke | Assets/_Project/Materials/LightningStroke.mat
+REFERENCE | Arrow_v1 | Assets/_Project/Prefabs/Skills/Arrow_v1.prefab
+REFERENCE | Arrow_v1 | Assets/_Project/Prefabs/Skills/ArrowShard.prefab
+REFERENCE | WoodCrumb | Assets/_Project/Materials/WoodCrumb.mat
+REFERENCE | IceChip | Assets/_Project/Materials/IceChip.mat
+REFERENCE | HpBarWhite | Assets/_Project/Resources/UI/EnemyHpBar.prefab
+REFERENCE | ChalkStroke | Assets/_Project/Materials/ChalkStroke.mat
+REFERENCE | eyejelly_cross | Assets/_Project/Prefabs/Monsters/EyeJelly_Animated.prefab
+REFERENCE | DustPuff | Assets/_Project/Materials/DustPuff.mat
+REFERENCE | IceChip | Assets/_Project/Sprites/IceChipParticleSprite.asset
+REFERENCE | FlameDab | Assets/_Project/Materials/FlameDab.mat
+REFERENCE | FlameDab | Assets/_Project/Sprites/FlameDabParticleSprite.asset
+REFERENCE | LightningStroke | Assets/_Project/Sprites/LightningStrokeParticleSprite.asset
+REFERENCE | IceChip | Assets/_Project/Sprites/IceChipSprite.asset
+REFERENCE | ChalkStroke | Assets/_Project/Sprites/ChalkStrokeParticleSprite.asset

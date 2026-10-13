@@ -1,0 +1,70 @@
+using System;
+using System.IO;
+using System.Linq;
+using Game.Core;
+using Game.Network;
+using NUnit.Framework;
+
+namespace Game.Tests
+{
+    public class LocalStageApiTests
+    {
+        private string _filePath;
+        private LocalSaveStore _store;
+        private LocalStageApi _api;
+        private GameDataStore _data;
+
+        [SetUp]
+        public void SetUp()
+        {
+            _filePath = Path.Combine(Path.GetTempPath(), $"local-stage-test-{Guid.NewGuid()}.json");
+            _store = new LocalSaveStore(_filePath);
+            _data = new GameDataStore();
+            _api = new LocalStageApi(_store, _data);
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            if (File.Exists(_filePath))
+            {
+                File.Delete(_filePath);
+            }
+        }
+
+        [Test(Description = "clearRating까지의 미수령 보상을 한 번에 지급하고 claimedRating을 갱신한다")]
+        public void ClaimRatingReward_WithUnclaimedRewards_GrantsSumAndUpdatesClaimed()
+        {
+            var save = _store.Load();
+            save.stageProgress[0].clearRating = 2;
+            _store.Flush(save);
+
+            int expectedGold = save.wallet.gold + _data.Stages.GetOrThrow(1).RatingRewards.Take(2).Sum();
+            var snap = _api.ClaimRatingReward(1).GetAwaiter().GetResult();
+
+            Assert.AreEqual(expectedGold, snap.gold);
+            Assert.AreEqual(2, _store.Load().stageProgress[0].claimedRating);
+        }
+
+        [Test(Description = "이미 수령한 rating을 다시 수령하려 하면 NO_REWARD로 거절한다(중복 지급 방지)")]
+        public void ClaimRatingReward_CalledTwice_SecondCallThrowsNoReward()
+        {
+            var save = _store.Load();
+            save.stageProgress[0].clearRating = 1;
+            _store.Flush(save);
+            _api.ClaimRatingReward(1).GetAwaiter().GetResult();
+
+            var ex = Assert.Throws<ApiException>(() => _api.ClaimRatingReward(1).GetAwaiter().GetResult());
+
+            Assert.AreEqual("NO_REWARD", ex.Code);
+        }
+
+        [Test(Description = "존재하지 않는 스테이지 진행도면 INVALID_ID로 거절한다")]
+        public void ClaimRatingReward_UnknownStage_ThrowsInvalidId()
+        {
+            var ex = Assert.Throws<ApiException>(() => _api.ClaimRatingReward(999).GetAwaiter().GetResult());
+
+            Assert.AreEqual("INVALID_ID", ex.Code);
+        }
+    }
+}

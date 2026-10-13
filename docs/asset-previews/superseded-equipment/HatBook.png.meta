@@ -1,0 +1,756 @@
+fileFormatVersion: 2
+guid: 5a230fb2b23bfd3439080ed4069abb04
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 4917989347310430638
+    second: HatBook_0
+  - first:
+      213: 3202368332271396277
+    second: HatBook_1
+  - first:
+      213: 7450708430346554871
+    second: HatBook_2
+  - first:
+      213: 262363889938199720
+    second: HatBook_3
+  - first:
+      213: 5642304833818135844
+    second: HatBook_4
+  - first:
+      213: -2772615808223721630
+    second: HatBook_5
+  - first:
+      213: -6827154150331513826
+    second: HatBook_6
+  - first:
+      213: 1356813191227712264
+    second: HatBook_7
+  - first:
+      213: 1218488773428452794
+    second: HatBook_8
+  - first:
+      213: -3818380317649127500
+    second: HatBook_9
+  - first:
+      213: -8000467815475292371
+    second: HatBook_10
+  - first:
+      213: -3372025478408206326
+    second: HatBook_11
+  - first:
+      213: 8157581820668796705
+    second: HatBook_12
+  - first:
+      213: -1660620108494466105
+    second: HatBook_13
+  - first:
+      213: 951455855127117794
+    second: HatBook_14
+  - first:
+      213: -3877527169094315783
+    second: HatBook_15
+  - first:
+      213: -6081327675362178165
+    second: HatBook_16
+  - first:
+      213: -2988161297595962787
+    second: HatBook_17
+  - first:
+      213: 363340686813588912
+    second: HatBook_18
+  - first:
+      213: 5238564357071917891
+    second: HatBook_19
+  - first:
+      213: -6591522813321853294
+    second: HatBook_20
+  - first:
+      213: 8878252609574554723
+    second: HatBook_21
+  - first:
+      213: 1478066559757758334
+    second: HatBook_22
+  - first:
+      213: -8317208691349420282
+    second: HatBook_23
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: HatBook_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 1243
+        height: 1234
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ea9e7973145304440800000000000000
+      internalID: 4917989347310430638
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HatBook_1
+      rect:
+        serializedVersion: 2
+        x: 822
+        y: 1162
+        width: 9
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5b52ff40809117c20800000000000000
+      internalID: 3202368332271396277
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HatBook_2
+      rect:
+        serializedVersion: 2
+        x: 884
+        y: 1080
+        width: 7
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7fd80d387db366760800000000000000
+      internalID: 7450708430346554871
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HatBook_3
+      rect:
+        serializedVersion: 2
+        x: 506
+        y: 1068
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8a4f7ad519a14a300800000000000000
+      internalID: 262363889938199720
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HatBook_4
+      rect:
+        serializedVersion: 2
+        x: 526
+        y: 1066
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 42d03362a5e7d4e40800000000000000
+      internalID: 5642304833818135844
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HatBook_5
+      rect:
+        serializedVersion: 2
+        x: 659
+        y: 1062
+        width: 15
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2674134cc90b589d0800000000000000
+      internalID: -2772615808223721630
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HatBook_6
+      rect:
+        serializedVersion: 2
+        x: 814
+        y: 1049
+        width: 21
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e1408aad8731141a0800000000000000
+      internalID: -6827154150331513826
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HatBook_7
+      rect:
+        serializedVersion: 2
+        x: 723
+        y: 1054
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 80321b1a86e54d210800000000000000
+      internalID: 1356813191227712264
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HatBook_8
+      rect:
+        serializedVersion: 2
+        x: 729
+        y: 1046
+        width: 12
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: abd11076511f8e010800000000000000
+      internalID: 1218488773428452794
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HatBook_9
+      rect:
+        serializedVersion: 2
+        x: 1079
+        y: 919
+        width: 7
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4b73e2de453620bc0800000000000000
+      internalID: -3818380317649127500
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HatBook_10
+      rect:
+        serializedVersion: 2
+        x: 1093
+        y: 889
+        width: 11
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d2756adf8e0a8f090800000000000000
+      internalID: -8000467815475292371
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HatBook_11
+      rect:
+        serializedVersion: 2
+        x: 1085
+        y: 853
+        width: 11
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a0889e171b82431d0800000000000000
+      internalID: -3372025478408206326
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HatBook_12
+      rect:
+        serializedVersion: 2
+        x: 1099
+        y: 851
+        width: 9
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 12fd527f17d853170800000000000000
+      internalID: 8157581820668796705
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HatBook_13
+      rect:
+        serializedVersion: 2
+        x: 1107
+        y: 829
+        width: 13
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7c311564fca44f8e0800000000000000
+      internalID: -1660620108494466105
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HatBook_14
+      rect:
+        serializedVersion: 2
+        x: 1085
+        y: 823
+        width: 7
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2ef31582f00443d00800000000000000
+      internalID: 951455855127117794
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HatBook_15
+      rect:
+        serializedVersion: 2
+        x: 1081
+        y: 724
+        width: 15
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9f0153f6591403ac0800000000000000
+      internalID: -3877527169094315783
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HatBook_16
+      rect:
+        serializedVersion: 2
+        x: 1099
+        y: 729
+        width: 9
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b8b094313b8ca9ba0800000000000000
+      internalID: -6081327675362178165
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HatBook_17
+      rect:
+        serializedVersion: 2
+        x: 207
+        y: 576
+        width: 15
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d5ae83db12be786d0800000000000000
+      internalID: -2988161297595962787
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HatBook_18
+      rect:
+        serializedVersion: 2
+        x: 1064
+        y: 463
+        width: 20
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0bd68f9fd68da0500800000000000000
+      internalID: 363340686813588912
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HatBook_19
+      rect:
+        serializedVersion: 2
+        x: 161
+        y: 355
+        width: 15
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3435b44178e13b840800000000000000
+      internalID: 5238564357071917891
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HatBook_20
+      rect:
+        serializedVersion: 2
+        x: 183
+        y: 371
+        width: 9
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2964117bce43684a0800000000000000
+      internalID: -6591522813321853294
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HatBook_21
+      rect:
+        serializedVersion: 2
+        x: 110
+        y: 361
+        width: 8
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 36c40eb95b3e53b70800000000000000
+      internalID: 8878252609574554723
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HatBook_22
+      rect:
+        serializedVersion: 2
+        x: 914
+        y: 39
+        width: 9
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e7faeb874b5238410800000000000000
+      internalID: 1478066559757758334
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HatBook_23
+      rect:
+        serializedVersion: 2
+        x: 936
+        y: 0
+        width: 12
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 607835df2c6539c80800000000000000
+      internalID: -8317208691349420282
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      HatBook_0: 4917989347310430638
+      HatBook_1: 3202368332271396277
+      HatBook_10: -8000467815475292371
+      HatBook_11: -3372025478408206326
+      HatBook_12: 8157581820668796705
+      HatBook_13: -1660620108494466105
+      HatBook_14: 951455855127117794
+      HatBook_15: -3877527169094315783
+      HatBook_16: -6081327675362178165
+      HatBook_17: -2988161297595962787
+      HatBook_18: 363340686813588912
+      HatBook_19: 5238564357071917891
+      HatBook_2: 7450708430346554871
+      HatBook_20: -6591522813321853294
+      HatBook_21: 8878252609574554723
+      HatBook_22: 1478066559757758334
+      HatBook_23: -8317208691349420282
+      HatBook_3: 262363889938199720
+      HatBook_4: 5642304833818135844
+      HatBook_5: -2772615808223721630
+      HatBook_6: -6827154150331513826
+      HatBook_7: 1356813191227712264
+      HatBook_8: 1218488773428452794
+      HatBook_9: -3818380317649127500
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

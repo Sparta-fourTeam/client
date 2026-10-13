@@ -1,0 +1,81 @@
+using System;
+using System.Collections.Generic;
+using Game.Core.Messages;
+using Game.Core.Stage;
+using MessagePipe;
+using NUnit.Framework;
+
+namespace Game.Tests
+{
+    public sealed class StageJudgeTests
+    {
+        private IPublisher<WallDestroyed> _wallDestroyed;
+        private IPublisher<AllEnemiesCleared> _allCleared;
+        private List<StageEnded> _ended;
+        private IDisposable _endedSubscription;
+        private StageJudge _judge;
+
+        [SetUp]
+        public void Setup()
+        {
+            var builder = new BuiltinContainerBuilder();
+            builder.AddMessagePipe();
+            builder.AddMessageBroker<WallDestroyed>();
+            builder.AddMessageBroker<AllEnemiesCleared>();
+            builder.AddMessageBroker<StageEnded>();
+            IServiceProvider provider = builder.BuildServiceProvider();
+
+            _wallDestroyed = provider.GetRequiredService<IPublisher<WallDestroyed>>();
+            _allCleared = provider.GetRequiredService<IPublisher<AllEnemiesCleared>>();
+
+            _ended = new List<StageEnded>();
+            _endedSubscription = provider.GetRequiredService<ISubscriber<StageEnded>>()
+                .Subscribe(m => _ended.Add(m));
+
+            _judge = new StageJudge(
+                provider.GetRequiredService<ISubscriber<WallDestroyed>>(),
+                provider.GetRequiredService<ISubscriber<AllEnemiesCleared>>(),
+                provider.GetRequiredService<IPublisher<StageEnded>>());
+            _judge.Initialize();
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            _judge.Dispose();
+            _endedSubscription.Dispose();
+        }
+
+        [Test(Description = "실패로 판정된 뒤에 웨이브 완료가 와도 다시 판정하지 않는다")]
+        public void AfterFail_FinalWave_DoesNotPublishAgain()
+        {
+            Assert.IsEmpty(_ended, "신호가 없으면 판정하지 않는다");
+            _wallDestroyed.Publish(new WallDestroyed());
+
+            _allCleared.Publish(new AllEnemiesCleared());
+
+            Assert.AreEqual(1, _ended.Count);
+            Assert.AreEqual(StageOutcome.Fail, _ended[0].Outcome);
+        }
+
+        [Test(Description = "Dispose 뒤에는 벽이 파괴돼도 판정하지 않는다")]
+        public void AfterDispose_PublishesNothing()
+        {
+            _judge.Dispose();
+
+            _wallDestroyed.Publish(new WallDestroyed());
+            Assert.AreEqual(0, _ended.Count);
+        }
+
+        [Test(Description = "클리어로 판정된 뒤에 벽이 파괴돼도 다시 판정하지 않는다")]
+        public void AfterClear_WallDestroyed_DoesNotPublishAgain()
+        {
+            _allCleared.Publish(new AllEnemiesCleared());
+
+            _wallDestroyed.Publish(new WallDestroyed());
+
+            Assert.AreEqual(1, _ended.Count);
+            Assert.AreEqual(StageOutcome.Clear, _ended[0].Outcome);
+        }
+    }
+}

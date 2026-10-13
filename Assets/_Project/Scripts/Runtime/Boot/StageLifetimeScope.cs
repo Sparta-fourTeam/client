@@ -1,0 +1,49 @@
+using Game.Core;
+using Game.Core.Defense;
+using Game.Core.Stage;
+using Game.View;
+using UnityEngine;
+using VContainer;
+using VContainer.Unity;
+
+
+namespace Game.Boot
+{
+    public sealed class StageLifetimeScope : LifetimeScope
+    {
+        [SerializeField] private UiHost _uiHost;
+
+        protected override void Configure(IContainerBuilder builder)
+        {
+            new UiInstaller(_uiHost).Install(builder);
+            // 어떤 스테이지인지는 로비에서 정해 StageContext에 남긴다. Stage 씬을 바로 열었으면 첫 스테이지 값을 쓴다
+            builder.Register(resolver =>
+                resolver.Resolve<GameDataStore>().StageOrFirst(resolver.Resolve<StageContext>().StageId), Lifetime.Scoped);
+            builder.Register(resolver => EnemySpawnConfig.From(resolver.Resolve<StageDefinition>().Spawn), Lifetime.Scoped);
+            builder.RegisterComponentInHierarchy<Wall>();
+            builder.RegisterComponentInHierarchy<SkillController>().AsSelf().As<IUpgradeChoiceSource>();
+            builder.Register<CardDeck>(Lifetime.Scoped);
+            builder.Register<ISkillDataProvider, DefaultSkillDataProvider>(Lifetime.Scoped);
+            builder.Register<IWeaponProgression, ProfileWeaponProgression>(Lifetime.Scoped);
+            builder.Register<IPermanentSkillEffects, ProfilePermanentSkillEffects>(Lifetime.Scoped);
+            builder.Register<IStartingSkills, DefaultStartingSkills>(Lifetime.Scoped);
+            builder.Register<ISkillUnlock, ProfileSkillUnlock>(Lifetime.Scoped);
+            builder.RegisterEntryPoint<StageClock>().AsSelf();
+            builder.RegisterEntryPoint<StageManager>().AsSelf();
+            builder.RegisterEntryPoint<StageJudge>();
+            builder.Register(resolver => resolver.Resolve<GameDataStore>().StageRewards.GetOrThrow(resolver.Resolve<StageDefinition>().Id), Lifetime.Scoped);
+            builder.Register<StageItemCache>(Lifetime.Scoped).AsSelf().As<IStageItemInfo>();
+            builder.RegisterEntryPoint<StageRewardTracker>().AsSelf();
+            // BattleStats는 WaveProgress보다 먼저 EnemyDied를 구독해야 스테이지를 끝내는 마지막 처치까지 센다 (순서 변경 금지)
+            builder.RegisterEntryPoint<BattleStats>().AsSelf();
+            builder.Register<EncounteredMonsters>(Lifetime.Scoped);
+            builder.RegisterEntryPoint<WaveProgress>();
+            builder.Register<IRandomProvider, UnityRandomProvider>(Lifetime.Scoped);
+            builder.RegisterComponentInHierarchy<EnemyFactory>().AsImplementedInterfaces();
+            builder.RegisterComponentInHierarchy<SpawnArea>();
+            builder.Register<EnemyProjectileSystem>(Lifetime.Scoped);
+            builder.RegisterEntryPoint<EnemySpawner>(Lifetime.Scoped).AsSelf().As<IEnemyTargetProvider>();
+            builder.RegisterEntryPoint<WaveManager>();
+        }
+    }
+}

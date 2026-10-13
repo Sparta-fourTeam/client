@@ -1,0 +1,637 @@
+using System;
+using System.Collections.Generic;
+using Game.Core;
+using Game.Core.Combat;
+using Game.Core.Messages;
+using MessagePipe;
+using NUnit.Framework;
+using UnityEngine;
+
+namespace Game.Tests
+{
+    public class EnemyModelTests
+    {
+        private class FakePublisher<T> : IPublisher<T>
+        {
+            public readonly List<T> Published = new();
+            public void Publish(T message) => Published.Add(message);
+        }
+
+        private static readonly EnemyAttackStats TestAttack = new EnemyAttackStats(AttackType.Melee, 10, 1f, 0f);
+
+        private FakePublisher<EnemyHpChanged> _hpChanged;
+        private FakePublisher<EnemyDied> _died;
+
+        [SetUp]
+        public void SetUp()
+        {
+            _hpChanged = new FakePublisher<EnemyHpChanged>();
+            _died = new FakePublisher<EnemyDied>();
+        }
+
+        // 위치(Transform)는 Enemy가, 규칙(HP, 상태이상)은 enemy.Model이 갖는다
+        private Enemy CreateEnemy(int id = 1, int maxHp = 10, float speed = 0f, Vector2 position = default)
+        {
+            return TestEnemy.Create(CreateModel(id, maxHp, speed), position);
+        }
+
+        private EnemyModel CreateModel(int id = 1, int maxHp = 10, float speed = 0f) =>
+            new EnemyModel(id, speed, EnemyType.Normal, maxHp, TestAttack, _hpChanged, _died);
+
+        [Test]
+        public void AreaSlow_StrongestSourceWinsAndRemovalRestoresMovement()
+        {
+            var enemy = CreateModel(speed: 10);
+            var weak = new object(); var strong = new object();
+            enemy.SetAreaSlow(weak, .3f); enemy.SetAreaSlow(strong, .6f);
+            Assert.AreEqual(.4f, enemy.MovementMultiplier, .001f);
+            Assert.AreEqual(4, enemy.MoveSpeed, .001f);
+            enemy.RemoveAreaSlow(strong);
+            Assert.AreEqual(7, enemy.MoveSpeed, .001f);
+            enemy.RemoveAreaSlow(weak); Assert.AreEqual(1, enemy.MovementMultiplier);
+            enemy.SetAreaSlow(weak, float.NaN); enemy.SetAreaSlow(weak, 1); enemy.SetAreaSlow(null, .3f);
+            Assert.AreEqual(1, enemy.MovementMultiplier);
+            enemy.SetAreaSlow(weak, .3f); enemy.TakeDamage(100);
+            Assert.AreEqual(1, enemy.MovementMultiplier);
+        }
+
+        [Test]
+        public void Stun_StopsMovementAndAttackIndependentlyOfParalysisAndExpires()
+        {
+            var enemy = CreateModel(speed: 1);
+            enemy.ApplyStun(1);
+            Assert.DoesNotThrow(() => enemy.Attack(1, Vector2.zero, null, null));
+            enemy.ApplyParalysis(2);
+            Assert.AreEqual(0, enemy.MoveSpeed);
+            enemy.ApplyStun(.5f); Assert.AreEqual(1, enemy.StunRemaining);
+            enemy.TickStatus(1); Assert.IsFalse(enemy.IsStunned); Assert.IsTrue(enemy.IsParalyzed);
+            enemy.TickStatus(1); Assert.AreEqual(1, enemy.MoveSpeed);
+            enemy.ApplyStun(float.NaN); enemy.ApplyStun(-1); Assert.AreEqual(0, enemy.StunRemaining);
+        }
+
+        [Test]
+        public void TimedSlow_DoesNotStackWithAreaSlowAndRestoresStrongestRemainingSource()
+        {
+            var enemy = CreateModel(speed: 10);
+            var source = new object(); enemy.SetAreaSlow(source, .6f); enemy.ApplySlow(.3f, 2);
+            Assert.AreEqual(.4f, enemy.MovementMultiplier, .001f);
+            enemy.RemoveAreaSlow(source); Assert.AreEqual(.7f, enemy.MovementMultiplier, .001f);
+            enemy.ApplySlow(.2f, 1); Assert.AreEqual(2, enemy.SlowRemaining);
+            Assert.AreEqual(7, enemy.MoveSpeed, .001f);
+            enemy.TickStatus(2); Assert.AreEqual(1, enemy.MovementMultiplier);
+            enemy.ApplySlow(float.NaN, 1); enemy.ApplySlow(1, 2); Assert.AreEqual(0, enemy.SlowRemaining);
+        }
+
+        [Test]
+        public void Vulnerability_AmplifiesAllReceivedDamageWithoutStackingAndExpires()
+        {
+            var enemy = CreateModel(maxHp: 1000);
+            enemy.TakeDamage(10); Assert.AreEqual(990, enemy.Hp);
+            enemy.ApplyVulnerability(.2f, 6); enemy.ApplyVulnerability(.2f, 6);
+            enemy.TakeDamage(10); Assert.AreEqual(978, enemy.Hp);
+            enemy.ApplyBurn(10, 1); enemy.ApplyFrostbite(10);
+            enemy.TickStatus(1); Assert.AreEqual(954, enemy.Hp);
+            Assert.AreEqual(5, enemy.VulnerabilityRemaining);
+            enemy.TickStatus(5);
+            enemy.TakeDamage(10); Assert.AreEqual(884, enemy.Hp);
+            Assert.AreEqual(0, enemy.VulnerabilityRatio);
+            enemy.ApplyVulnerability(float.NaN, 1); Assert.AreEqual(0, enemy.VulnerabilityRemaining);
+            enemy.ApplyVulnerability(.2f, 1); enemy.TakeDamage(1000);
+            Assert.IsTrue(enemy.IsDead); Assert.AreEqual(0, enemy.VulnerabilityRemaining);
+        }
+
+        [Test]
+        public void Vulnerability_LargeStatusTickOnlyAmplifiesDamageBeforeExpiry()
+        {
+            var enemy = CreateModel(maxHp: 100);
+            enemy.ApplyBurn(10, 3); enemy.ApplyVulnerability(.2f, 1);
+            enemy.TickStatus(3);
+            Assert.AreEqual(68, enemy.Hp); Assert.AreEqual(0, enemy.VulnerabilityRemaining);
+        }
+
+        private class LightningProvider : IEnemyTargetProvider
+        {
+            public readonly List<IEnemyTarget> Targets = new();
+            public int GetNearest(Vector2 from, int count, List<IEnemyTarget> results)
+            { results.Clear(); results.AddRange(Targets); return results.Count; }
+        }
+
+        [Test]
+        public void LightningKill_SpawnsOneTargetedSecondaryWithoutInheritedEffectsOrRecursion()
+        {
+            var prefab = new GameObject("KillLightningTest");
+            var flags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance;
+            try
+            {
+                var position = new Vector2(1000, 1000);
+                prefab.transform.position = position;
+                var victim = CreateEnemy(maxHp: 10, position: position);
+                var neighbour = CreateEnemy(2, 24, position: position + Vector2.right * 2);
+                var farther = CreateEnemy(3, 100, position: position + Vector2.right * 3);
+                var dead = CreateEnemy(4, 1, position: position + Vector2.right); dead.TakeDamage(1);
+                victim.gameObject.AddComponent<CircleCollider2D>(); victim.gameObject.AddComponent<BoxCollider2D>();
+                var template = prefab.AddComponent<HitscanEffect>();
+                typeof(HitscanEffect).GetField("radius", flags).SetValue(template, .5f);
+                typeof(HitscanEffect).GetField("targetMask", flags).SetValue(template, (LayerMask)(-1));
+                var provider = new LightningProvider(); provider.Targets.AddRange(new IEnemyTarget[] { victim, farther, dead, neighbour });
+                var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 3);
+                using var weapon = Casters.Hitscan(data, prefab, prefab.transform, provider);
+                Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == "lightning_sanction")));
+                Assert.IsFalse(weapon.LevelUp(data.upgrades.Find(c => c.id == "lightning_sanction")));
+                typeof(SkillCaster).GetMethod("OnFire", flags).Invoke(weapon, null);
+                HitscanEffect main = null;
+                foreach (var effect in UnityEngine.Object.FindObjectsByType<HitscanEffect>(FindObjectsSortMode.None))
+                { if (effect.name == "KillLightningTest(Clone)") { main = effect; } }
+                // Upgrades after casting must not change this kill callback's damage snapshot.
+                weapon.LevelUp(data.upgrades.Find(c => c.id == "lightning_voltage"));
+                Physics2D.SyncTransforms();
+                var hit = typeof(HitscanEffect).GetMethod("Hit", flags);
+                int deathsBeforeHit = _died.Published.Count;
+                hit.Invoke(main, null); hit.Invoke(main, null);
+                Assert.IsTrue(victim.IsDead);
+                HitscanEffect secondary = null; int count = 0;
+                foreach (var effect in UnityEngine.Object.FindObjectsByType<HitscanEffect>(FindObjectsSortMode.None))
+                { if (effect.name == "KillLightningTest(Clone)") { count++; if (effect != main) { secondary = effect; } } }
+                Assert.AreEqual(2, count);
+                hit.Invoke(secondary, null); hit.Invoke(secondary, null);
+                Assert.IsTrue(neighbour.IsDead); Assert.AreEqual(100, farther.Model.Hp);
+                Assert.AreEqual(0, neighbour.Model.ParalysisRemaining);
+                Assert.AreEqual(deathsBeforeHit + 2, _died.Published.Count, "연쇄 처치 뒤 추가 사망을 만들지 않는다");
+            }
+            finally
+            {
+                foreach (var effect in UnityEngine.Object.FindObjectsByType<HitscanEffect>(FindObjectsSortMode.None))
+                { if (effect.name == "KillLightningTest(Clone)") { UnityEngine.Object.DestroyImmediate(effect.gameObject); } }
+                UnityEngine.Object.DestroyImmediate(prefab);
+            }
+        }
+
+        [Test]
+        public void SecondaryLightning_SkipsDeadTargetAndClearsTargetAndKillCallbackOnReuse()
+        {
+            var go = new GameObject("SecondaryReuseTest");
+            try
+            {
+                var target = CreateEnemy(maxHp: 1); target.TakeDamage(1);
+                var effect = go.AddComponent<HitscanEffect>();
+                var pool = new UnityEngine.Pool.ObjectPool<HitscanEffect>(() => effect);
+                var flags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance;
+                var hit = typeof(HitscanEffect).GetMethod("Hit", flags);
+                int kills = 0;
+                pool.Get().Init(pool, Vector3.zero, 10, directTarget: target,
+                    reactions: new HitReactionBuilder().On(AttackEvent.Kill, new CastSkillReaction(_ => kills++)).Build());
+                hit.Invoke(effect, null);
+                Assert.AreEqual(1, _died.Published.Count); Assert.AreEqual(0, kills);
+                pool.Release(effect);
+                var next = CreateEnemy(2, 10, position: Vector2.one * 2000);
+                next.gameObject.AddComponent<CircleCollider2D>();
+                typeof(HitscanEffect).GetField("radius", flags).SetValue(effect, .5f);
+                typeof(HitscanEffect).GetField("targetMask", flags).SetValue(effect, (LayerMask)(-1));
+                pool.Get().Init(pool, next.transform.position, 10);
+                Physics2D.SyncTransforms();
+                hit.Invoke(effect, null);
+                hit.Invoke(effect, null);
+                Assert.IsTrue(next.IsDead, "이전 직접 대상이 남지 않고 새 영역 피해를 처리한다");
+                Assert.AreEqual(2, _died.Published.Count);
+                Assert.AreEqual(0, kills, "이전 처치 callback은 재사용 후 실행되지 않는다");
+            }
+            finally { UnityEngine.Object.DestroyImmediate(go); }
+        }
+
+        [Test]
+        public void KillLightning_NoSurvivingTargetWithinRangeCreatesNoEffect()
+        {
+            var go = new GameObject("NoKillTargetTest"); go.AddComponent<HitscanEffect>();
+            try
+            {
+                var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 3);
+                var provider = new LightningProvider();
+                provider.Targets.Add(CreateEnemy(position: Vector2.right * (data.baseStats.cast.range + 1)));
+                using var weapon = Casters.Hitscan(data, go, go.transform, provider);
+                weapon.LevelUp(data.upgrades.Find(c => c.id == "lightning_sanction"));
+                var pool = (UnityEngine.Pool.ObjectPool<HitscanEffect>)Casters.Hitscan(weapon).Pool;
+                var callback = new HitscanCastEffects(weapon.Stats, data.baseStats.cast.range, provider, pool, null, Vector3.one)
+                    .CreateKillLightningCallback();
+                callback(Vector2.zero);
+                foreach (var effect in UnityEngine.Object.FindObjectsByType<HitscanEffect>(FindObjectsSortMode.None))
+                { Assert.AreNotEqual("NoKillTargetTest(Clone)", effect.name); }
+            }
+            finally { UnityEngine.Object.DestroyImmediate(go); }
+        }
+
+        [Test]
+        public void Knockback_NormalizesDirectionWorksDuringFreezeAndRejectsInvalidValues()
+        {
+            var enemy = CreateEnemy(position: new Vector2(0, 5));
+            enemy.ApplyFreeze(2);
+            enemy.ApplyKnockback(new Vector2(0, 10), 0.6f);
+            Assert.AreEqual(5.6f, enemy.Position.y, 0.001f);
+            enemy.ApplyKnockback(Vector2.up, float.NaN);
+            enemy.ApplyKnockback(Vector2.up, -1);
+            enemy.ApplyKnockback(new Vector2(float.PositiveInfinity, 0), 1);
+            Assert.AreEqual(5.6f, enemy.Position.y, 0.001f);
+            enemy.TakeDamage(10);
+            enemy.ApplyKnockback(Vector2.up, 1);
+            Assert.AreEqual(5.6f, enemy.Position.y, 0.001f);
+        }
+
+        [Test(Description = "밀치기는 위아래로만 민다: 비스듬히 맞아도 거리 그대로 y로, 정확히 옆에서 맞으면 위로, 아래로 맞으면 아래로")]
+        public void Knockback_PushesOnlyAlongY()
+        {
+            var enemy = CreateEnemy(position: new Vector2(2, 5));
+
+            enemy.ApplyKnockback(new Vector2(1, 1), 1f);
+            Assert.AreEqual(new Vector2(2, 6), enemy.Position);
+
+            enemy.ApplyKnockback(new Vector2(-1, 0), 0.5f);
+            Assert.AreEqual(new Vector2(2, 6.5f), enemy.Position);
+
+            enemy.ApplyKnockback(new Vector2(3, -1), 1f);
+            Assert.AreEqual(new Vector2(2, 5.5f), enemy.Position);
+        }
+
+        [Test(Description = "끌어당기기는 방향 그대로(좌우 포함) 움직인다")]
+        public void Pull_MovesAlongDirection()
+        {
+            var enemy = CreateEnemy(position: new Vector2(2, 5));
+
+            ((IPullTarget)enemy).ApplyPull(new Vector2(-1, 0), 0.5f);
+
+            Assert.AreEqual(1.5f, enemy.Position.x, 0.0001f);
+            Assert.AreEqual(5f, enemy.Position.y, 0.0001f);
+        }
+
+        [Test]
+        public void Frostbite_StacksToFiveTicksEachSecondAndExpiresAtTenSeconds()
+        {
+            var enemy = CreateModel(maxHp: 1000);
+            for (int i = 0; i < 6; i++)
+            {
+                enemy.ApplyFrostbite(2);
+            }
+
+            Assert.AreEqual(5, enemy.FrostbiteStacks);
+            enemy.TickStatus(0);
+            Assert.AreEqual(1000, enemy.Hp);
+            enemy.TickStatus(0.5f);
+            Assert.AreEqual(1000, enemy.Hp);
+            enemy.TickStatus(0.5f);
+            Assert.AreEqual(990, enemy.Hp);
+            enemy.TickStatus(20);
+            Assert.AreEqual(900, enemy.Hp);
+            Assert.AreEqual(0, enemy.FrostbiteStacks);
+        }
+
+        [Test]
+        public void Frostbite_DeathPublishesOnceAndRejectsInvalidDamage()
+        {
+            var enemy = CreateModel();
+            enemy.ApplyFrostbite(float.NaN);
+            enemy.ApplyFrostbite(-1);
+            Assert.AreEqual(0, enemy.FrostbiteStacks);
+            enemy.ApplyFrostbite(20);
+            enemy.TickStatus(10);
+            enemy.TickStatus(10);
+            Assert.AreEqual(1, _died.Published.Count);
+            Assert.AreEqual(0, enemy.FrostbiteStacks);
+        }
+
+        // ───────── 생성 ─────────
+
+        [Test]
+        public void Paralysis_StopsMovementAndAttackExpiresAndRemainsIndependentOfFreeze()
+        {
+            var enemy = CreateModel(speed: 1);
+            enemy.ApplyParalysis(1);
+            enemy.ApplyParalysis(0.1f);
+            enemy.Attack(1, Vector2.zero, null, null);
+            Assert.AreEqual(0, enemy.MoveSpeed);
+            enemy.TickStatus(0);
+            Assert.AreEqual(1, enemy.ParalysisRemaining);
+            enemy.ApplyFreeze(2);
+            enemy.TickStatus(1);
+            Assert.IsFalse(enemy.IsParalyzed);
+            Assert.IsTrue(enemy.IsFrozen);
+            enemy.TickStatus(1);
+            Assert.AreEqual(1, enemy.MoveSpeed);
+        }
+
+        [Test]
+        public void Burn_RefreshDoesNotResetTickProgressOrStackAndExpires()
+        {
+            var enemy = CreateModel(maxHp: 100);
+            enemy.ApplyBurn(2, 6);
+            enemy.TickStatus(0.5f);
+            enemy.ApplyBurn(1, 6);
+            enemy.TickStatus(0);
+            Assert.AreEqual(100, enemy.Hp);
+            enemy.TickStatus(0.5f);
+            Assert.AreEqual(98, enemy.Hp);
+            enemy.TickStatus(20);
+            Assert.AreEqual(88, enemy.Hp);
+            Assert.AreEqual(0, enemy.BurnRemaining);
+        }
+
+        [Test]
+        public void Burn_CoexistsWithFreezeAndFrostbiteAndPublishesDeathOnce()
+        {
+            var enemy = CreateModel(maxHp: 10);
+            enemy.ApplyBurn(float.NaN, 6);
+            Assert.AreEqual(0, enemy.BurnRemaining);
+            enemy.ApplyBurn(3, 6);
+            enemy.ApplyFreeze(2);
+            enemy.ApplyFrostbite(2);
+            enemy.TickStatus(1);
+            Assert.AreEqual(5, enemy.Hp);
+            Assert.IsTrue(enemy.IsFrozen);
+            enemy.TickStatus(20);
+            enemy.TickStatus(20);
+            Assert.AreEqual(1, _died.Published.Count);
+            Assert.AreEqual(0, enemy.BurnRemaining);
+        }
+
+        [Test]
+        public void Inferno_AddsMaxHpDamagePerBurnTick()
+        {
+            var enemy = CreateModel(maxHp: 100);
+            enemy.ApplyBurn(2, 6, 0.03f);
+            enemy.TickStatus(1);
+            Assert.AreEqual(95, enemy.Hp);
+            enemy.TickStatus(5);
+            Assert.AreEqual(70, enemy.Hp);
+        }
+
+        [Test]
+        public void BurnDeathExplosion_TriggersOnceIncludingLastTickAndNotAfterExpiry()
+        {
+            var enemy = CreateModel(maxHp: 6);
+            int explosions = 0;
+            enemy.DeathExplosionRequested += explosion => explosion(Vector2.zero);
+            enemy.ApplyBurn(1, 6, onDeath: position => { explosions++; enemy.TakeDamage(10); });
+            enemy.TickStatus(6);
+            enemy.TakeDamage(10);
+            Assert.AreEqual(1, explosions);
+            Assert.AreEqual(1, _died.Published.Count);
+            var expired = CreateModel(id: 2, maxHp: 100);
+            expired.DeathExplosionRequested += explosion => explosion(Vector2.zero);
+            expired.ApplyBurn(1, 6, onDeath: position => explosions++);
+            expired.TickStatus(6);
+            expired.TakeDamage(100);
+            Assert.AreEqual(1, explosions);
+        }
+
+        private sealed class BurnTargets : IEnemyTargetProvider
+        {
+            public readonly List<IEnemyTarget> Targets = new();
+            public int GetNearest(Vector2 from, int count, List<IEnemyTarget> results)
+            { results.Clear(); results.AddRange(Targets); return results.Count; }
+        }
+
+        [Test]
+        public void BurnDeathExplosion_ChainKillsEachEnemyOnce()
+        {
+            var provider = new BurnTargets();
+            var enemies = new[] { CreateEnemy(1), CreateEnemy(2), CreateEnemy(3) };
+            int explosions = 0;
+            foreach (var enemy in enemies)
+            {
+                provider.Targets.Add(enemy);
+                enemy.ApplyBurn(1, 6, onDeath: position => { explosions++; AreaDamage.Apply(provider, position, 1, 10); });
+            }
+            enemies[0].TakeDamage(10);
+            Assert.AreEqual(3, explosions);
+            Assert.AreEqual(3, _died.Published.Count);
+            foreach (var enemy in enemies)
+            {
+                Assert.IsTrue(enemy.IsDead);
+            }
+        }
+
+        [Test]
+        public void PiercingProjectile_SkipsEnemyKilledByEarlierExplosion()
+        {
+            var go = new GameObject("PiercingExplosionTest");
+            try
+            {
+                var provider = new BurnTargets();
+                var first = CreateEnemy(1, position: Vector2.right * 0.5f);
+                var second = CreateEnemy(2, position: Vector2.right * 0.7f);
+                provider.Targets.Add(first); provider.Targets.Add(second);
+                var projectile = go.AddComponent<Projectile>();
+                var pool = new UnityEngine.Pool.ObjectPool<Projectile>(() => projectile);
+                int impacts = 0;
+                pool.Get().Init(pool, Vector3.zero, Vector3.right, 10, 10, 3, provider, pierceCount: 2,
+                    onHit: (position, direction, target) => { impacts++; AreaDamage.Apply(provider, position, 1, 10); });
+                typeof(Projectile).GetMethod("Tick", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                    .Invoke(projectile, new object[] { 0.1f });
+                Assert.AreEqual(1, impacts);
+                Assert.IsTrue(second.IsDead);
+                Assert.AreEqual(2, _died.Published.Count);
+            }
+            finally { UnityEngine.Object.DestroyImmediate(go); }
+        }
+
+        [Test]
+        public void Hitscan_ParalyzesActualEnemyOnceAndClearsCallbackOnReuse()
+        {
+            var effectGo = new GameObject("HitscanStatusEffect");
+            try
+            {
+                var position = new Vector3(1000, 1000, 0);
+                var model = CreateEnemy(maxHp: 100, position: position);
+                model.gameObject.AddComponent<CircleCollider2D>();
+                model.gameObject.AddComponent<BoxCollider2D>();
+                var effect = effectGo.AddComponent<HitscanEffect>();
+                var flags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance;
+                typeof(HitscanEffect).GetField("radius", flags).SetValue(effect, 1f);
+                typeof(HitscanEffect).GetField("targetMask", flags).SetValue(effect, (LayerMask)(-1));
+                var hit = typeof(HitscanEffect).GetMethod("Hit", flags);
+                var pool = new UnityEngine.Pool.ObjectPool<HitscanEffect>(() => effect);
+                int procs = 0;
+                pool.Get().Init(pool, position, 1, reactions: new HitReactionBuilder()
+                    .On(AttackEvent.Hit, new StatusReaction<IParalyzableTarget>(1, (t, _) => { procs++; t.ApplyParalysis(2.5f); })).Build());
+                Physics2D.SyncTransforms();
+                hit.Invoke(effect, null); hit.Invoke(effect, null);
+                Assert.AreEqual(99, model.Model.Hp);
+                Assert.AreEqual(1, procs);
+                Assert.AreEqual(2.5f, model.Model.ParalysisRemaining);
+                model.TickStatus(1);
+                pool.Release(effect);
+                pool.Get().Init(pool, position, 1);
+                hit.Invoke(effect, null);
+                Assert.AreEqual(98, model.Model.Hp);
+                Assert.AreEqual(1, procs);
+                Assert.AreEqual(1.5f, model.Model.ParalysisRemaining);
+            }
+            finally { UnityEngine.Object.DestroyImmediate(effectGo); }
+        }
+
+        [Test]
+        public void Freeze_StopsMovementRefreshesWithoutStackingAndExpires()
+        {
+            var enemy = CreateModel(speed: 1);
+            enemy.ApplyFreeze(2);
+            Assert.AreEqual(0, enemy.MoveSpeed);
+            enemy.TickStatus(1);
+            enemy.ApplyFreeze(0.5f);
+            Assert.AreEqual(1, enemy.FreezeRemaining);
+            enemy.TickStatus(0);
+            Assert.IsTrue(enemy.IsFrozen);
+            enemy.TickStatus(1);
+            Assert.IsFalse(enemy.IsFrozen);
+            Assert.AreEqual(1, enemy.MoveSpeed);
+        }
+
+        [Test]
+        public void Freeze_StopsAttackAndRejectsInvalidOrDeadTarget()
+        {
+            var enemy = CreateModel();
+            int attacks = 0;
+            enemy.Attacked += () => attacks++;
+            enemy.ApplyFreeze(2);
+            // 빙결 중에는 벽/투사체를 접근하거나 공격 타이머를 진행하지 않는다.
+            enemy.Attack(1, Vector2.zero, null, null);
+            Assert.AreEqual(0, attacks);
+            enemy.ApplyFreeze(float.NaN);
+            enemy.ApplyFreeze(float.PositiveInfinity);
+            enemy.ApplyFreeze(-1);
+            Assert.AreEqual(2, enemy.FreezeRemaining);
+            enemy.TickStatus(2);
+            enemy.TakeDamage(10);
+            enemy.ApplyFreeze(2);
+            Assert.IsFalse(enemy.IsFrozen);
+        }
+
+        [TestCase(0)]
+        [TestCase(-5)]
+        public void Constructor_NonPositiveMaxHp_Throws(int maxHp)
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => CreateModel(maxHp: maxHp));
+        }
+
+        // ───────── 체력 감소 ─────────
+
+        [Test]
+        public void TakeDamage_ReducesHp_AndPublishesHpChanged()
+        {
+            var enemy = CreateModel(id: 7, maxHp: 10);
+
+            enemy.TakeDamage(new DamageInfo(3, 42, Element.Fire, CastType.Projectile, true));
+
+            Assert.AreEqual(3, _hpChanged.Published[0].Damage.Amount);
+            Assert.AreEqual(42, _hpChanged.Published[0].Damage.SkillId);
+            Assert.AreEqual(Element.Fire, _hpChanged.Published[0].Damage.Element);
+            Assert.IsTrue(_hpChanged.Published[0].Damage.IsImpact);
+            Assert.AreEqual(7, enemy.Hp);
+            Assert.AreEqual(1, _hpChanged.Published.Count);
+            Assert.AreEqual(7, _hpChanged.Published[0].EnemyId);
+            Assert.AreEqual(7, _hpChanged.Published[0].Current);
+            Assert.AreEqual(10, _hpChanged.Published[0].Max);
+            Assert.AreEqual(0, _died.Published.Count);
+        }
+
+        [TestCase(0)]
+        [TestCase(-3)]
+        public void TakeDamage_NonPositive_Ignored(int amount)
+        {
+            var enemy = CreateModel(maxHp: 10);
+
+            enemy.TakeDamage(amount);
+
+            Assert.AreEqual(10, enemy.Hp);
+            Assert.AreEqual(0, _hpChanged.Published.Count);
+            Assert.AreEqual(0, _died.Published.Count);
+        }
+
+        // ───────── 사망 ─────────
+
+        [Test]
+        public void HpChanged_StatusDamageReportsAppliedLossWithoutImpact()
+        {
+            var enemy = CreateModel(maxHp: 100);
+            enemy.ApplyVulnerability(.5f, 3);
+            enemy.ApplyBurn(4, 1);
+            enemy.TickStatus(1);
+            Assert.AreEqual(94, enemy.Hp);
+            Assert.AreEqual(6, _hpChanged.Published[0].Damage.Amount);
+            Assert.IsFalse(_hpChanged.Published[0].Damage.IsImpact);
+            Assert.IsFalse(_hpChanged.Published[0].Damage.IsFromSkill);
+        }
+
+        [Test]
+        public void TakeDamage_ExactlyToZero_Dies_AndPublishesEnemyDied()
+        {
+            var enemy = CreateModel(id: 5, maxHp: 10);
+
+            enemy.TakeDamage(10);
+
+            Assert.AreEqual(0, enemy.Hp);
+            Assert.IsTrue(enemy.IsDead);
+            Assert.AreEqual(1, _died.Published.Count);
+            Assert.AreEqual(5, _died.Published[0].EnemyId);
+        }
+
+        [Test]
+        public void TakeDamage_Overkill_ClampsToZero()
+        {
+            var enemy = CreateModel(maxHp: 10);
+
+            enemy.TakeDamage(999);
+
+            Assert.AreEqual(0, enemy.Hp);
+            Assert.AreEqual(0, _hpChanged.Published[0].Current); // 음수로 안 나감
+            Assert.AreEqual(10, _hpChanged.Published[0].Damage.Amount, "과잉 피해는 메시지에 포함하지 않는다");
+            Assert.IsTrue(enemy.IsDead);
+            enemy.TakeDamage(5);
+            enemy.TakeDamage(5);
+            Assert.AreEqual(0, enemy.Hp);
+            Assert.AreEqual(1, _hpChanged.Published.Count);
+            Assert.AreEqual(1, _died.Published.Count);
+        }
+
+        [Test]
+        public void TakeDamage_PublishesHpChangedBeforeEnemyDied()
+        {
+            var order = new List<string>();
+            var hp = new OrderRecorder<EnemyHpChanged>(order, "hp");
+            var died = new OrderRecorder<EnemyDied>(order, "died");
+            var enemy = new EnemyModel(1, 0f, EnemyType.Normal, 10, TestAttack, hp, died);
+
+            enemy.TakeDamage(10);
+
+            CollectionAssert.AreEqual(new[] { "hp", "died" }, order); // Wall과 같은 순서
+        }
+
+        // ───────── 이동 ─────────
+
+        [Test]
+        public void Move_Alive_MovesDown()
+        {
+            var enemy = CreateEnemy(maxHp: 10, speed: 3f, position: new Vector2(0f, 5f));
+
+            enemy.Move(1f);
+
+            Assert.AreEqual(2f, enemy.Position.y, 0.0001f);
+            enemy.TakeDamage(10);
+            enemy.Move(1f);
+            Assert.AreEqual(2f, enemy.Position.y, 0.0001f);
+        }
+
+        // ───────── IEnemyTarget ─────────
+
+        // 두 Publisher의 발행 순서를 하나의 목록에 기록
+        private class OrderRecorder<T> : IPublisher<T>
+        {
+            private readonly List<string> _order;
+            private readonly string _name;
+
+            public OrderRecorder(List<string> order, string name)
+            {
+                _order = order;
+                _name = name;
+            }
+
+            public void Publish(T message) => _order.Add(_name);
+        }
+    }
+}

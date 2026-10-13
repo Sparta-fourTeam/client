@@ -1,0 +1,102 @@
+ | MissionScreen | _closedChest | 3-Sheet_19 -> ChestClosed
+ | MissionScreen | _openedChest | 3-Sheet_15 -> ChestOpen
+ | Icon | m_Sprite | 2-Sheet_0 -> Heart
+ | Chest | m_Sprite | 3-Sheet_19 -> ChestClosed
+ | Chest | m_Sprite | 3-Sheet_19 -> ChestClosed
+ | Chest | m_Sprite | 3-Sheet_19 -> ChestClosed
+ | Tiny Crooked Lightning Orb | UVModule.sprites.Array.data[0].sprite | LightningStrokeParticleSprite -> LightningStrokeParticleSprite
+Assets/_Project/Materials/LightningFrames.mat | LightningFrames | m_SavedProperties.m_TexEnvs.Array.data[0].second.m_Texture | lightning -> LightningFrames
+Assets/_Project/Data/ItemIconTable.asset | ItemIconTable | _coin | 6-sheet_1 -> Coin
+ | Tiny Wonky Bolt | UVModule.sprites.Array.data[0].sprite | LightningStrokeParticleSprite -> LightningStrokeParticleSprite
+ | Tiny Contact Ticks | UVModule.sprites.Array.data[0].sprite | ChalkStrokeParticleSprite -> ChalkStrokeParticleSprite
+ | Quick Chalk Ticks | UVModule.sprites.Array.data[0].sprite | ChalkStrokeParticleSprite -> ChalkStrokeParticleSprite
+ | Wood Crumbs | UVModule.sprites.Array.data[0].sprite | WoodCrumbParticleSprite -> WoodCrumbParticleSprite
+ | Tiny Dust | UVModule.sprites.Array.data[0].sprite | DustPuffParticleSprite -> DustPuffParticleSprite
+ | Icon | m_Sprite | 6-sheet_1 -> Coin
+ | Icon | m_Sprite | 6-sheet_1 -> Coin
+ | Icon | m_Sprite | 6-sheet_1 -> Coin
+ | Icon | m_Sprite | 6-sheet_1 -> Coin
+ | Icon | m_Sprite | 6-sheet_1 -> Coin
+ | Electric Rim | UVModule.sprites.Array.data[0].sprite | LightningStrokeParticleSprite -> LightningStrokeParticleSprite
+ | Freeze | UVModule.sprites.Array.data[0].sprite | IceChipParticleSprite -> IceChipParticleSprite
+ | Burn | UVModule.sprites.Array.data[0].sprite | FlameDabParticleSprite -> FlameDabParticleSprite
+ | Paralysis | UVModule.sprites.Array.data[0].sprite | LightningStrokeParticleSprite -> LightningStrokeParticleSprite
+ | Stun | UVModule.sprites.Array.data[0].sprite | ChalkStrokeParticleSprite -> ChalkStrokeParticleSprite
+ | Frostbite | UVModule.sprites.Array.data[0].sprite | IceChipParticleSprite -> IceChipParticleSprite
+ | Slow | UVModule.sprites.Array.data[0].sprite | DustPuffParticleSprite -> DustPuffParticleSprite
+ | Vulnerability | UVModule.sprites.Array.data[0].sprite | ChalkStrokeParticleSprite -> ChalkStrokeParticleSprite
+ | Wood Splinters | UVModule.sprites.Array.data[0].sprite | WoodCrumbParticleSprite -> WoodCrumbParticleSprite
+ | Scruffy Dust | UVModule.sprites.Array.data[0].sprite | DustPuffParticleSprite -> DustPuffParticleSprite
+Assets/_Project/Materials/LightningStroke.mat | LightningStroke | m_SavedProperties.m_TexEnvs.Array.data[0].second.m_Texture | LightningStroke -> LightningStroke
+ | Arrow | m_Sprite | Arrow_v1 -> ArrowProjectile
+ | SpeedTrail | UVModule.sprites.Array.data[0].sprite | ChalkStrokeParticleSprite -> ChalkStrokeParticleSprite
+ | Arrow | m_Sprite | Arrow_v1 -> ArrowProjectile
+ | SpeedTrail | UVModule.sprites.Array.data[0].sprite | ChalkStrokeParticleSprite -> ChalkStrokeParticleSprite
+Assets/_Project/Materials/WoodCrumb.mat | WoodCrumb | m_SavedProperties.m_TexEnvs.Array.data[0].second.m_Texture | WoodCrumb -> WoodCrumb
+ | Sparks | UVModule.sprites.Array.data[0].sprite | ChalkStrokeParticleSprite -> ChalkStrokeParticleSprite
+ | Crooked Electric Tick | UVModule.sprites.Array.data[0].sprite | LightningStrokeParticleSprite -> LightningStrokeParticleSprite
+ | Three Heavy Lightning Strokes | UVModule.sprites.Array.data[0].sprite | LightningStrokeParticleSprite -> LightningStrokeParticleSprite
+ | Short Ground Crackles | UVModule.sprites.Array.data[0].sprite | LightningStrokeParticleSprite -> LightningStrokeParticleSprite
+ | Scruffy Radius Ticks | UVModule.sprites.Array.data[0].sprite | ChalkStrokeParticleSprite -> ChalkStrokeParticleSprite
+ | Expanding Dust Bits | UVModule.sprites.Array.data[0].sprite | DustPuffParticleSprite -> DustPuffParticleSprite
+Assets/_Project/Materials/IceChip.mat | IceChip | m_SavedProperties.m_TexEnvs.Array.data[0].second.m_Texture | IceChip -> IceChip
+ | IceShard | m_Sprite | IceChipSprite -> IceChipParticleSprite
+ | Drifting Ice Flecks | UVModule.sprites.Array.data[0].sprite | IceChipParticleSprite -> IceChipParticleSprite
+ | Chip 0 | UVModule.sprites.Array.data[0].sprite | IceChipParticleSprite -> IceChipParticleSprite
+ | Chip 1 | UVModule.sprites.Array.data[0].sprite | IceChipParticleSprite -> IceChipParticleSprite
+ | Chip 2 | UVModule.sprites.Array.data[0].sprite | IceChipParticleSprite -> IceChipParticleSprite
+Assets/_Project/Materials/ChalkStroke.mat | ChalkStroke | m_SavedProperties.m_TexEnvs.Array.data[0].second.m_Texture | ChalkStroke -> ChalkStroke
+ | Cross0 | m_Sprite | eyejelly_cross -> EyeJellyCross
+ | Cross1 | m_Sprite | eyejelly_cross -> EyeJellyCross
+ | Cross2 | m_Sprite | eyejelly_cross -> EyeJellyCross
+ | Cross3 | m_Sprite | eyejelly_cross -> EyeJellyCross
+ | Cross4 | m_Sprite | eyejelly_cross -> EyeJellyCross
+ | Cross5 | m_Sprite | eyejelly_cross -> EyeJellyCross
+ | Cross6 | m_Sprite | eyejelly_cross -> EyeJellyCross
+ | Cross7 | m_Sprite | eyejelly_cross -> EyeJellyCross
+ | Cross8 | m_Sprite | eyejelly_cross -> EyeJellyCross
+ | Cross9 | m_Sprite | eyejelly_cross -> EyeJellyCross
+ | IceSpear | m_Sprite | IceChipSprite -> IceChipParticleSprite
+ | Drifting Ice Flecks | UVModule.sprites.Array.data[0].sprite | IceChipParticleSprite -> IceChipParticleSprite
+ | Chip 0 | UVModule.sprites.Array.data[0].sprite | IceChipParticleSprite -> IceChipParticleSprite
+ | Chip 1 | UVModule.sprites.Array.data[0].sprite | IceChipParticleSprite -> IceChipParticleSprite
+ | Chip 2 | UVModule.sprites.Array.data[0].sprite | IceChipParticleSprite -> IceChipParticleSprite
+ | Brown Chalk Stick | UVModule.sprites.Array.data[0].sprite | WoodCrumbParticleSprite -> WoodCrumbParticleSprite
+ | Wonky Wooden End 0 | UVModule.sprites.Array.data[0].sprite | WoodCrumbParticleSprite -> WoodCrumbParticleSprite
+ | Wonky Wooden End 1 | UVModule.sprites.Array.data[0].sprite | WoodCrumbParticleSprite -> WoodCrumbParticleSprite
+ | Charred Brown Stick | UVModule.sprites.Array.data[0].sprite | WoodCrumbParticleSprite -> WoodCrumbParticleSprite
+ | Little Flames On Wood | UVModule.sprites.Array.data[0].sprite | FlameDabParticleSprite -> FlameDabParticleSprite
+ | Brown Chalk Stick | UVModule.sprites.Array.data[0].sprite | WoodCrumbParticleSprite -> WoodCrumbParticleSprite
+ | Wonky Wooden End 0 | UVModule.sprites.Array.data[0].sprite | WoodCrumbParticleSprite -> WoodCrumbParticleSprite
+ | Wonky Wooden End 1 | UVModule.sprites.Array.data[0].sprite | WoodCrumbParticleSprite -> WoodCrumbParticleSprite
+Assets/_Project/Materials/DustPuff.mat | DustPuff | m_SavedProperties.m_TexEnvs.Array.data[0].second.m_Texture | DustPuff -> DustPuff
+Assets/_Project/Materials/fx_ring.mat | fx_ring | m_SavedProperties.m_TexEnvs.Array.data[1].second.m_Texture | fx_ring -> FxRing
+ | Small Broken Ice | UVModule.sprites.Array.data[0].sprite | IceChipParticleSprite -> IceChipParticleSprite
+ | Cold Chalk Ticks | UVModule.sprites.Array.data[0].sprite | ChalkStrokeParticleSprite -> ChalkStrokeParticleSprite
+ | Wobbly Fire Head | UVModule.sprites.Array.data[0].sprite | FlameDabParticleSprite -> FlameDabParticleSprite
+ | Trailing Flame Dabs | UVModule.sprites.Array.data[0].sprite | FlameDabParticleSprite -> FlameDabParticleSprite
+ | Tiny Orange Ticks | UVModule.sprites.Array.data[0].sprite | ChalkStrokeParticleSprite -> ChalkStrokeParticleSprite
+ | Messy Wide Flames | UVModule.sprites.Array.data[0].sprite | FlameDabParticleSprite -> FlameDabParticleSprite
+ | Short Orange Splats | UVModule.sprites.Array.data[0].sprite | FlameDabParticleSprite -> FlameDabParticleSprite
+ | Warm Chalk Sparks | UVModule.sprites.Array.data[0].sprite | ChalkStrokeParticleSprite -> ChalkStrokeParticleSprite
+ | Little Soot | UVModule.sprites.Array.data[0].sprite | DustPuffParticleSprite -> DustPuffParticleSprite
+ | Small Broken Ice | UVModule.sprites.Array.data[0].sprite | LightningStrokeParticleSprite -> LightningStrokeParticleSprite
+ | Cold Chalk Ticks | UVModule.sprites.Array.data[0].sprite | LightningStrokeParticleSprite -> LightningStrokeParticleSprite
+Assets/_Project/Materials/ElectricFrames.mat | ElectricFrames | m_SavedProperties.m_TexEnvs.Array.data[0].second.m_Texture | Electric01_3x3 -> ElectricFrames3x3
+ | CoinIcon | m_Sprite | 6-sheet_1 -> Coin
+ | Icon | m_Sprite | 6-sheet_1 -> Coin
+ | Icon | m_Sprite | 6-sheet_1 -> Coin
+ | Icon | m_Sprite | 6-sheet_1 -> Coin
+ | Icon | m_Sprite | 6-sheet_1 -> Coin
+ | Icon | m_Sprite | 6-sheet_1 -> Coin
+Assets/_Project/Materials/FlameDab.mat | FlameDab | m_SavedProperties.m_TexEnvs.Array.data[0].second.m_Texture | FlameDab -> FlameDab
+ | Icon | m_Sprite | 4-sheet_8 -> Heart
+ | Icon | m_Sprite | 4-sheet_9 -> HeartBundle
+ | Icon (1) | m_Sprite | 4-sheet_12 -> Gem
+ | Wobbly Fire Head | UVModule.sprites.Array.data[0].sprite | FlameDabParticleSprite -> FlameDabParticleSprite
+ | Trailing Flame Dabs | UVModule.sprites.Array.data[0].sprite | FlameDabParticleSprite -> FlameDabParticleSprite
+ | Tiny Orange Ticks | UVModule.sprites.Array.data[0].sprite | ChalkStrokeParticleSprite -> ChalkStrokeParticleSprite
+ | Messy Wide Flames | UVModule.sprites.Array.data[0].sprite | FlameDabParticleSprite -> FlameDabParticleSprite
+ | Icon | m_Sprite | 6-sheet_1 -> Coin
+ | CoinIcon | m_Sprite | 6-sheet_1 -> Coin
+Assets/_Project/Materials/fx_soft.mat | fx_soft | m_SavedProperties.m_TexEnvs.Array.data[1].second.m_Texture | fx_soft -> FxSoft
