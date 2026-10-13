@@ -20,13 +20,45 @@ namespace Game.Tests
                 byte[] contents = System.Text.Encoding.UTF8.GetBytes("{\"gold\":123,\"name\":\"검증\"}");
                 File.WriteAllBytes(save, contents);
                 string backup = PlaytestWindow.Backup(save);
+                Assert.That(Path.GetFileName(backup), Does.Match(@"^save\.json\.\d{8}-\d{6}\.\d{7}\.bak$"));
                 Assert.That(File.ReadAllBytes(save), Is.EqualTo(contents));
                 Assert.That(File.ReadAllBytes(backup), Is.EqualTo(contents));
                 string nextBackup = PlaytestWindow.Backup(save);
                 Assert.That(nextBackup, Is.Not.EqualTo(backup));
+                Assert.That(PlaytestWindow.LatestBackup(save), Is.EqualTo(nextBackup));
                 Assert.That(File.ReadAllBytes(backup), Is.EqualTo(contents));
                 Assert.That(File.ReadAllBytes(nextBackup), Is.EqualTo(contents));
                 Assert.That(File.ReadAllBytes(save), Is.EqualTo(contents));
+            }
+            finally { Directory.Delete(folder, true); }
+        }
+
+        [Test(Description = "같은 초 안의 서로 다른 백업은 세이브의 수정 시각이나 무작위 접미사와 관계없이 최신 내용을 복원한다")]
+        public void SaveRestoreUsesLatestSameSecondBackupAndPreservesCurrentSave()
+        {
+            string folder = Path.Combine(Path.GetTempPath(), "nova-tools-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(folder);
+            try
+            {
+                string save = Path.Combine(folder, "save.json");
+                string older = save + ".20991013-120000.0000001.bak";
+                string newer = save + ".20991013-120000.0000002.bak";
+                File.WriteAllText(older, "older");
+                File.WriteAllText(newer, "newer");
+                File.SetLastWriteTimeUtc(older, new DateTime(2026, 10, 14, 0, 0, 0, DateTimeKind.Utc));
+                File.SetLastWriteTimeUtc(newer, new DateTime(2026, 10, 13, 0, 0, 0, DateTimeKind.Utc));
+                File.WriteAllText(save, "current");
+
+                string latest = PlaytestWindow.LatestBackup(save);
+                Assert.That(latest, Is.EqualTo(newer));
+                string preserved = PlaytestWindow.Restore(save, latest);
+                Assert.That(preserved, Is.EqualTo(save + ".20991013-120000.0000003.bak"),
+                    "시계가 기존 백업보다 앞서 있어도 생성 순서가 유지되어야 한다");
+                Assert.That(PlaytestWindow.LatestBackup(save), Is.EqualTo(preserved));
+                Assert.That(File.ReadAllText(save), Is.EqualTo("newer"));
+                Assert.That(File.ReadAllText(preserved), Is.EqualTo("current"));
+                Assert.That(File.ReadAllText(older), Is.EqualTo("older"));
+                Assert.That(File.ReadAllText(newer), Is.EqualTo("newer"));
             }
             finally { Directory.Delete(folder, true); }
         }

@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using Cysharp.Threading.Tasks;
@@ -210,7 +211,7 @@ namespace Game.Editor
             catch (Exception error) { rootVisualElement.Q<Label>("saveStatus").text = error.Message; Debug.LogException(error); }
         }
 
-        /// <summary>가장 최근 .bak. 파일명에 UTC 시각이 들어 있어 이름 순서가 시간 순서다</summary>
+        /// <summary>가장 최근 .bak. 새 백업은 같은 시각에도 증가하는 UTC tick을 파일명에 사용한다</summary>
         internal static string LatestBackup(string path)
         {
             string directory = Path.GetDirectoryName(path);
@@ -236,7 +237,18 @@ namespace Game.Editor
 
         internal static string Backup(string path)
         {
-            string backup = path + "." + DateTime.UtcNow.ToString("yyyyMMdd-HHmmss") + "-" + Guid.NewGuid().ToString("N")[..8] + ".bak";
+            const string format = "yyyyMMdd-HHmmss.fffffff";
+            var time = DateTime.UtcNow;
+            string latest = LatestBackup(path);
+            // 같은 tick, 시계 역행, 에디터 재로드 뒤에도 기존 백업보다 뒤에 정렬되게 한다
+            if (latest != null && DateTime.TryParseExact(
+                Path.GetFileName(latest)[(Path.GetFileName(path).Length + 1)..^4], format,
+                CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
+                out var previous) && time <= previous)
+            {
+                time = previous.AddTicks(1);
+            }
+            string backup = path + "." + time.ToString(format, CultureInfo.InvariantCulture) + ".bak";
             File.Copy(path, backup, false);
             return backup;
         }
