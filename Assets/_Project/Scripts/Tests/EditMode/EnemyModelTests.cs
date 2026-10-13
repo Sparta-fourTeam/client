@@ -235,7 +235,7 @@ namespace Game.Tests
             Assert.AreEqual(5.6f, enemy.Position.y, 0.001f);
         }
 
-        [Test(Description = "밀치기는 위아래로만 민다: 비스듬히 맞아도 거리 그대로 y로, 정확히 옆에서 맞으면 위로, 아래로 맞으면 아래로")]
+        [Test(Description = "밀치기는 항상 위로만 민다: 비스듬히·옆에서·아래 방향으로 맞아도 거리 그대로 위로 (튕긴 투사체 회귀)")]
         public void Knockback_PushesOnlyAlongY()
         {
             var enemy = CreateEnemy(position: new Vector2(2, 5));
@@ -247,7 +247,10 @@ namespace Game.Tests
             Assert.AreEqual(new Vector2(2, 6.5f), enemy.Position);
 
             enemy.ApplyKnockback(new Vector2(3, -1), 1f);
-            Assert.AreEqual(new Vector2(2, 5.5f), enemy.Position);
+            Assert.AreEqual(new Vector2(2, 7.5f), enemy.Position);
+
+            enemy.ApplyKnockback(Vector2.down, 0.5f);
+            Assert.AreEqual(new Vector2(2, 8f), enemy.Position);
         }
 
         [Test(Description = "끌어당기기는 방향 그대로(좌우 포함) 움직인다")]
