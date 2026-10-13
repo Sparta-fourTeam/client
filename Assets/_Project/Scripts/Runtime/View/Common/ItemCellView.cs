@@ -15,6 +15,8 @@ namespace Game.View
         [SerializeField] private Image _background;
         [SerializeField] private Image _icon;
         [SerializeField] private TMP_Text _count;
+        [Tooltip("개수 글자 뒤의 배지. 개수가 비어 있으면 함께 숨긴다 (비워 두면 쓰지 않는다)")]
+        [SerializeField] private GameObject _countBadge;
 
         private Color _baseColor;
         private bool _hasBaseColor;
@@ -36,6 +38,7 @@ namespace Game.View
 
             _icon.enabled = true;
             _count.text = count;
+            ShowCountBadge(count);
             SetBackground(1f);
             SlotClick.Set(gameObject, onClick);
             gameObject.SetActive(true);
@@ -47,12 +50,18 @@ namespace Game.View
             IsEmpty = true;
             _icon.enabled = false;
             _count.text = string.Empty;
+            ShowCountBadge(string.Empty);
             SetBackground(EmptyDim);
             SlotClick.Set(gameObject, null);
             gameObject.SetActive(true);
         }
 
         public void Hide() => gameObject.SetActive(false);
+
+        private void ShowCountBadge(string count)
+        {
+            if (_countBadge != null) { _countBadge.SetActive(!string.IsNullOrEmpty(count)); }
+        }
 
         private void SetBackground(float brightness)
         {
