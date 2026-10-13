@@ -46,7 +46,7 @@
           <ui:Button name="speed4Button" text="4x" />
           <ui:Button name="speed8Button" text="8x" />
         </ui:VisualElement>
-        <ui:Label text="배속은 일시정지·재개 시 StageManager가 1x/설정값으로 되돌립니다." class="note" />
+        <ui:Label text="치트 배속은 현재 전투에서 일시정지·보상 후에도 유지됩니다. 1x를 누르거나 전투를 나가면 해제됩니다." class="note" />
       </ui:VisualElement>
       <ui:VisualElement class="section">
         <ui:Label text="세이브 백업 · 삭제" class="section-title" />
