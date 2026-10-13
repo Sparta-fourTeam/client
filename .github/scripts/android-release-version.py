@@ -29,6 +29,8 @@ def release_number(policy, requested_version, main_policy=None):
             if number in consumed and consumed[number] != name:
                 raise ValueError('Conflicting confirmed Play upload records')
             consumed[number] = name
+        if sorted(seen) != list(range(1, len(seen) + 1)):
+            raise ValueError('Each confirmed Play upload ledger must be sequential from 1')
     if sorted(consumed) != list(range(1, len(consumed) + 1)):
         raise ValueError('Confirmed Play upload codes must be sequential from 1')
     if len(set(consumed.values())) != len(consumed):

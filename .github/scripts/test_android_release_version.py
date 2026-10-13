@@ -54,6 +54,17 @@ class ReleaseNumberTests(unittest.TestCase):
             module.release_number(policy(), '1.0')
         self.assertEqual(module.release_number(policy(1, '1.0.2'), '1.0.2', policy()), ('1.0.2', 1))
 
+    def test_union_cannot_hide_a_gap_in_either_ledger(self):
+        rows = [{'versionName': f'1.0.{n}', 'versionCode': n} for n in [1, 2, 3]]
+        local_gap = policy(4, '1.0.4', [rows[0], rows[2]])
+        main_contiguous = policy(3, '1.0.3', rows[:2])
+        with self.assertRaises(ValueError):
+            module.release_number(local_gap, '1.0.4', main_contiguous)
+        local_contiguous = policy(4, '1.0.4', rows)
+        main_gap = policy(4, '1.0.4', [rows[0], rows[2]])
+        with self.assertRaises(ValueError):
+            module.release_number(local_contiguous, '1.0.4', main_gap)
+
     def test_cli_ignores_old_high_code_build_tag_and_checks_new_tag_tree(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
