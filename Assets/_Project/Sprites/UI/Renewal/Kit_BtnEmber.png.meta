@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: c48f8ed6ba9f14070bc7ccb794020d8e
+guid: 9b036c3421ac6486d8296554641be9eb
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 3543429552795423976
-    second: Cd_BtnSky_0
+      213: 6542800463127252080
+    second: Kit_BtnEmber_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -52,7 +52,7 @@ TextureImporter:
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
   spritePixelsToUnits: 100
-  spriteBorder: {x: 38, y: 30, z: 38, w: 30}
+  spriteBorder: {x: 44, y: 38, z: 44, w: 38}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
   alphaIsTransparency: 1
@@ -128,13 +128,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Cd_BtnSky_0
+      name: Kit_BtnEmber_0
       rect:
         serializedVersion: 2
-        x: 2
-        y: 2
-        width: 416
-        height: 117
+        x: 0
+        y: 0
+        width: 360
+        height: 96
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -143,8 +143,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 8e41ef4876acc2130800000000000000
-      internalID: 3543429552795423976
+      spriteID: 07c06f02b52bcca50800000000000000
+      internalID: 6542800463127252080
       vertices: []
       indices: 
       edges: []
@@ -163,7 +163,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Cd_BtnSky_0: 3543429552795423976
+      Kit_BtnEmber_0: 6542800463127252080
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: b9e91626bd1ea4519a63101ed10d6479
+guid: 1e56cbf47540e428c83fd47536dcf195
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -8817555057601291994
-    second: Ribbon_PlainGold_0
+      213: 4178450146851767919
+    second: Kit_BtnDust_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -52,7 +52,7 @@ TextureImporter:
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
   spritePixelsToUnits: 100
-  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteBorder: {x: 44, y: 38, z: 44, w: 38}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
   alphaIsTransparency: 1
@@ -128,13 +128,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Ribbon_PlainGold_0
+      name: Kit_BtnDust_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 1000
-        height: 185
+        width: 360
+        height: 92
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -143,8 +143,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 629d93c7460c1a580800000000000000
-      internalID: -8817555057601291994
+      spriteID: f6647ca2546dcf930800000000000000
+      internalID: 4178450146851767919
       vertices: []
       indices: 
       edges: []
@@ -163,7 +163,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Ribbon_PlainGold_0: -8817555057601291994
+      Kit_BtnDust_0: 4178450146851767919
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

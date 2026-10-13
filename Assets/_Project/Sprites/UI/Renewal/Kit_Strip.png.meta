@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 74490bf9e7e2044f89a9092c82fe14b5
+guid: 0d699f5358e0948acbee2c4f54d49033
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -7588962075024593859
-    second: Ribbon_PlainRose_0
+      213: -2185386733601441128
+    second: Kit_Strip_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -52,7 +52,7 @@ TextureImporter:
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
   spritePixelsToUnits: 100
-  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteBorder: {x: 30, y: 30, z: 30, w: 30}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
   alphaIsTransparency: 1
@@ -128,13 +128,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Ribbon_PlainRose_0
+      name: Kit_Strip_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 0
-        width: 1000
-        height: 178
+        y: 2
+        width: 698
+        height: 100
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -143,8 +143,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: d3c6f3863379ea690800000000000000
-      internalID: -7588962075024593859
+      spriteID: 89ab5de2852fba1e0800000000000000
+      internalID: -2185386733601441128
       vertices: []
       indices: 
       edges: []
@@ -163,7 +163,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Ribbon_PlainRose_0: -7588962075024593859
+      Kit_Strip_0: -2185386733601441128
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
