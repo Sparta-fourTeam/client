@@ -19,7 +19,6 @@ namespace Game.Core
         public string desc;
 
         /// <summary>SkillAssetTable에서 이 스킬의 프리팹과 아이콘을 찾는 키. 스킬마다 유일해야 한다</summary>
-        public string assetKey;
         public CastType castType;
 
         /// <summary>속성(무·화·빙·풍·뇌·토). 숫자: 0 Neutral, 1 Fire, 2 Ice, 3 Wind, 4 Lightning, 5 Earth. 적의 약점·저항이 이 값을 본다. 생략하면 무속성이다.

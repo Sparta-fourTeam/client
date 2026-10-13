@@ -41,8 +41,8 @@
 - 밸런스 값은 코드나 프리팹에 박지 않고 `GameDataStore`의 테이블(`MockData/*.json`)에 둔다. 테이블: `Monsters`(체력, 속도, 공격 값, 투사체 속도), `Stages`(방벽 체력, 스폰 간격, 웨이브 목록, 보상, 몬스터 강화 `MonsterBonuses`: 능력치 Hp·Damage·Speed별 증가율(%)을 여러 줄 함께 쓸 수 있다), `Skills`(스킬과 스킬 카드), `Upgrades`, `Energy`, `GeneralCards`(스킬이 아닌 카드: 방벽 수리 등), `CodexRewards`(몬스터 도감 등록 보상. 몬스터마다가 아니라 등급 Normal·Elite·Boss별 골드). 새 테이블은 `GameDataStore.TableNames`에 넣으면 버전 목록과 원문 조회(`IDataApi`)에도 자동으로 포함된다
 - 카드는 두 곳에서 관리한다. 스킬 카드는 `Skills.json`의 각 스킬 `upgrades`에, 스킬이 아닌 카드(방벽 수리 등)는 `GeneralCards.json`에 둔다. 뽑는 것은 `CardDeck` 하나가 합친다. 일반 카드는 `Condition`(언제 나오는가)과 `Effect`(고르면 무엇이 되는가)를 `GeneralCardRules`에 등록된 이름으로 적고, `Forced`이면 조건이 맞을 때 3장 중 한 칸을 먼저 차지한다 (한 번에 최대 1장)
 - 적 프리팹 엔트리(`EnemyPrefabEntry`)는 프리팹과 공격 방식만 갖고, 수치는 `MonsterId`로 `Monsters` 행을 가리킨다. Stage 씬은 `StageContext.StageId`로 `StageDefinition`을 한 번 정해 방벽, 웨이브, 스폰에 나눠 준다 (Stage 씬을 바로 열면 첫 스테이지)
-- 프리팹·아이콘은 테이블의 `PrefabKey`/`IconKey`로 찾는다
-- 스킬의 프리팹과 아이콘은 `Skills.json`의 `assetKey`로 `SkillAssetTable`(`Data/`)에서 찾는다. 플레이어 프리팹에는 스킬 목록을 두지 않는다
+- 서버 데이터에는 에셋 키(`assetKey`, `IconKey`, `PrefabKey` 등)를 두지 않고, enum에 해당하는 값은 문자열로 둔다. 프리팹·아이콘은 클라이언트가 서버가 준 id로 찾는다
+- 스킬의 프리팹과 아이콘은 스킬 id의 문자열을 키로 `SkillAssetTable`(`Data/`)에서 찾고, 아이템 아이콘은 아이템 `Id`로 `ItemIconTable`에서 찾는다. 일반 카드 아이콘은 카드 `Id`를 키로 `SkillAssetTable`에서 찾는다. 플레이어 프리팹에는 스킬 목록을 두지 않는다
 - 1주차는 저장되는 Local 구현(`Network/Local`)을 쓴다. 에디터에서는 프로젝트별 `UserSettings/LocalSave/save.json`을 사용하고, 플레이어 빌드에서는 `Application.persistentDataPath/save.json`을 사용한다. 에디터의 첫 사용 시 기존 공유 세이브를 원본을 남긴 채 복사하며, 이후 프로젝트 세이브를 삭제해도 다시 가져오지 않는다. `MockData` 폴더는 Local이 읽는 초기 테이블 JSON을 두는 곳이다
 - Local도 ApiDog 명세와 같은 DTO(`Network/Dto`)로 변환하고, 서버와 같은 오류 코드(`INSUFFICIENT_GOLD` 등)로 `ApiException`을 던진다
 - 서버 전환은 `BackendSettings`(ScriptableObject)의 스위치로 그룹 단위로 한다: Account(`IAuthApi`, `IDataApi`)를 먼저, Player(`IPlayerApi`, `IBattleApi`, `IUpgradeApi`, `IEnergyApi`, `IStageApi`, `ICodexApi`) 6개는 한 번에 전환한다. 여섯 다 지갑을 건드리므로 따로 바꾸면 로컬과 서버 잔액이 어긋난다
@@ -75,7 +75,7 @@ Assets/_Project/
 - 이름 규칙: 한글, 공백, 대문자 확장자(`.PNG`)를 쓰지 않는다. 프리팹, 재질, 애니메이션, 씬 같은 Unity 에셋은 PascalCase로 짓는다(`SkillScreen`, `ResultPopup`). 기존 소재 이미지(`fx_ring.png`, `bg_1.png`)는 영문 snake_case 이름을 유지해도 된다. 새 파일은 숫자로 시작하지 않고 버전은 `_v2`처럼 접미로 붙인다. 폴더를 합쳤으므로 다른 종류의 파일과 이름이 겹치지 않게 접두사를 붙인다.
 - 실험용 씬이나 테스트용 복제 프리팹은 커밋하지 않는다. 빌드에 연결되지 않은 에셋은 쓰임을 확인하고 지운다.
 - 임포트 설정은 에셋마다 쓰임에 묶여 있다. Pixels Per Unit은 프리팹 크기가 그 값에 맞춰져 있으므로 임의로 통일하지 않는다(몬스터 공격 연출 `fx_*` 64, `Arrow_v1` 1000 등). Max Size는 화면에서 보이는 크기에 맞춘다(파티클용 손그림 텍스처는 256). 스프라이트는 밉맵을 끈다. 다만 파티클 셰이더가 쓰는 텍스처(`lightning`, `Electric01_3x3`)는 켠 상태를 유지한다.
-- 아이콘과 프리팹은 테이블의 `IconKey`/`PrefabKey`로 찾는다(위 "데이터와 API").
+- 아이콘과 프리팹은 서버 데이터의 id로 클라이언트가 찾는다(위 "데이터와 API").
 - 기존 예외: `Sprites`의 `N-Sheet.png`(1~6)는 UI 시트라 역할이 확정될 때 이름을 바꾼다.
 - Unity가 자동으로 다시 저장한 변경(`.meta`의 플랫폼 블록, `m_Name:` 뒤 공백, `ProjectSettings` 형식 변경)은 `git restore`로 되돌리지 않는다. 되돌리면 Unity가 저장할 때마다 같은 변경이 다시 생긴다. 의도한 변경과 분리해 "Unity 직렬화 형식으로 정리" 커밋으로 한 번 반영한다.
 - Unity YAML(`.unity`, `.prefab`, `.mat`, `.asset`, `.meta`, `.anim`, `.controller`)은 스크립트나 IDE로 직접 편집하지 않고 Unity에서 저장한다. 팀이 같은 Unity 버전(`ProjectSettings/ProjectVersion.txt`)을 쓰는지도 확인한다.

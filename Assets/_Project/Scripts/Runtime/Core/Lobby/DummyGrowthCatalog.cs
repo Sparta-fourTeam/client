@@ -139,7 +139,6 @@ namespace Game.Core
                 list.Add(new SkillInfo
                 {
                     Id = data.id.ToString(),
-                    AssetKey = data.assetKey,
                     UpgradeId = upgradable ? data.progressionId : null,
                     Name = data.name,
                     Description = data.desc ?? string.Empty,

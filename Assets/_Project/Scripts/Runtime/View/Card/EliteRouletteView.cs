@@ -93,7 +93,7 @@ namespace Game.View
         {
             for (int i = 0; i < _weaponIcons.Length; i++)
             {
-                var icon = _assets.GetHudIcon(round.Slots[i].skill.Data.assetKey);
+                var icon = _assets.GetHudIcon(round.Slots[i].skill.Data.id);
                 _weaponIcons[i].sprite = icon;
                 _weaponIcons[i].enabled = icon != null;
             }
@@ -112,8 +112,8 @@ namespace Game.View
             var card = _rewardCards[_shownCards];
             // 레벨이 실제로 오르기 전에 표시를 묶어 현재 → 다음 레벨을 올바르게 보존한다.
             card.Bind(_shownCards, round.Winner,
-                _assets.GetCardIcon(round.Winner.skill.Data.assetKey, SkillCardIcon.Upgrade), _cardBackground, null,
-                hint => _assets.GetFormIcon(hint.Form, hint.Skill.assetKey));
+                _assets.GetCardIcon(round.Winner.skill.Data.id, SkillCardIcon.Upgrade), _cardBackground, null,
+                hint => _assets.GetFormIcon(hint.Form, hint.Skill.id));
             if (_manager.ApplyRouletteReward(round))
             {
                 card.gameObject.SetActive(true);

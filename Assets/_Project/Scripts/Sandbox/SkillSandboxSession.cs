@@ -17,14 +17,12 @@ namespace Game.Sandbox
         {
             public int Id { get; }
             public string Name { get; }
-            public string AssetKey { get; }
             public CastType CastType { get; }
             public bool HasPrefab { get; }
             public SkillInfo(SkillData data, bool hasPrefab)
             {
                 Id = data.id;
                 Name = data.name;
-                AssetKey = data.assetKey;
                 CastType = data.castType;
                 HasPrefab = hasPrefab;
             }

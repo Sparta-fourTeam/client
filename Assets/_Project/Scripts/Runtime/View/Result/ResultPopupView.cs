@@ -110,7 +110,7 @@ namespace Game.View
             if (_damageList != null)
             {
                 _damageList.Show(SkillDamageRows.Build(result.SkillDamages, _ownedSkills,
-                    status => _skillAssets != null ? _skillAssets.GetHudIcon(status.AssetKey) : null));
+                    status => _skillAssets != null ? _skillAssets.GetHudIcon(status.Id) : null));
             }
             _lobbyButton.interactable = true;
             PopupPanel.Set(_panel, _transition, true);

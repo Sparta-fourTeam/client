@@ -70,13 +70,13 @@ namespace Game.Core
         private SkillCaster CreateChild(int skillId)
         {
             GameObject prefab = null;
-            if (!dataTable.TryGetValue(skillId, out var data) || (prefab = assets.GetPrefab(data.assetKey)) == null)
+            if (!dataTable.TryGetValue(skillId, out var data) || (prefab = assets.GetPrefab(data.id)) == null)
             {
-                Debug.LogWarning($"[SkillController] 자식 스킬 skillId={skillId}의 데이터 또는 프리팹이 없어 시전하지 못합니다 (SkillAssetTable의 assetKey 확인).");
+                Debug.LogWarning($"[SkillController] 자식 스킬 skillId={skillId}의 데이터 또는 프리팹이 없어 시전하지 못합니다 (SkillAssetTable의 스킬 id 항목 확인).");
                 return null;
             }
             var child = SkillFactory.Create(data, prefab, transform, targetProvider, wall, CreateConfig(data),
-                reservations: reservations, formPrefabs: assets.GetFormPrefabs(data.assetKey));
+                reservations: reservations, formPrefabs: assets.GetFormPrefabs(data.id));
             child.UseChildCaster(childCaster);
             return child;
         }
@@ -105,15 +105,15 @@ namespace Game.Core
                 return false;
             }
 
-            var prefab = assets.GetPrefab(data.assetKey);
+            var prefab = assets.GetPrefab(data.id);
             if (prefab == null)
             {
-                Debug.LogWarning($"[SkillController] weaponId={weaponId}(assetKey={data.assetKey})에 해당하는 프리팹이 SkillAssetTable에 없습니다.");
+                Debug.LogWarning($"[SkillController] weaponId={weaponId}에 해당하는 프리팹이 SkillAssetTable에 없습니다.");
                 return false;
             }
 
             var weapon = SkillFactory.Create(data, prefab, transform, targetProvider, wall, CreateConfig(data),
-                reservations: reservations, formPrefabs: assets.GetFormPrefabs(data.assetKey));
+                reservations: reservations, formPrefabs: assets.GetFormPrefabs(data.id));
             weapon.UseChildCaster(childCaster);
             weapon.Fired += OnSkillFired;
             skills.Add(weapon);
@@ -142,7 +142,7 @@ namespace Game.Core
 
         /// <summary>이 스킬을 얻을 때 쓸 프리팹이 연결돼 있는지</summary>
         public bool HasPrefab(int weaponId) =>
-            assets != null && dataTable != null && dataTable.TryGetValue(weaponId, out var data) && assets.HasPrefab(data.assetKey);
+            assets != null && dataTable != null && dataTable.TryGetValue(weaponId, out var data) && assets.HasPrefab(data.id);
 
         /// <summary>보유 스킬을 모두 정리하고 목록을 비운다 (샌드박스 같은 도구가 처음부터 다시 쌓을 때 쓴다)</summary>
         public void ClearWeapons()

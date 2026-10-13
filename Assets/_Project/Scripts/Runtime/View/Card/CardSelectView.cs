@@ -83,21 +83,21 @@ namespace Game.View
             }
         }
 
-        // 스킬 카드는 스킬의 assetKey로, 일반 카드는 IconKey로 찾는다 (일반 카드는 강화 아이콘 칸을 쓴다)
+        // 스킬 카드는 스킬 id로, 일반 카드는 카드 Id로 찾는다 (일반 카드는 강화 아이콘 칸을 쓴다)
         private Sprite FindIcon(UpgradeChoice choice)
         {
             if (choice.IsGeneral)
             {
-                return _assets.GetCardIcon(choice.GeneralCard.IconKey, SkillCardIcon.Upgrade);
+                return _assets.GetCardIcon(choice.GeneralCard.Id, SkillCardIcon.Upgrade);
             }
 
             return choice.IsNewWeapon
-                ? _assets.GetCardIcon(choice.newSkillData.assetKey, SkillCardIcon.New)
-                : _assets.GetCardIcon(choice.skill.Data.assetKey, SkillCardIcon.Upgrade);
+                ? _assets.GetCardIcon(choice.newSkillData.id, SkillCardIcon.New)
+                : _assets.GetCardIcon(choice.skill.Data.id, SkillCardIcon.Upgrade);
         }
 
         private Sprite FindFormIcon(FormHint hint) =>
-            _assets != null ? _assets.GetFormIcon(hint.Form, hint.Skill.assetKey) : null;
+            _assets != null ? _assets.GetFormIcon(hint.Form, hint.Skill.id) : null;
 
         // 고른 카드는 부풀고 나머지는 사라진 뒤에 실제로 고른다. 그 사이 일시정지되면 PickCard가 무시하고,
         // 돌아와 다시 Show되면 처음 상태로 새로 그려진다

@@ -19,15 +19,13 @@ namespace Game.Core
     {
         public string ItemId { get; }
         public string Name { get; }
-        public string IconKey { get; }
         public int Quantity { get; }
         public InventoryCategory Category { get; }
 
-        public InventoryItem(string itemId, string name, string iconKey, int quantity, InventoryCategory category)
+        public InventoryItem(string itemId, string name, int quantity, InventoryCategory category)
         {
             ItemId = itemId;
             Name = name;
-            IconKey = iconKey;
             Quantity = quantity;
             Category = category;
         }
@@ -57,7 +55,7 @@ namespace Game.Core
                     continue;
                 }
 
-                items.Add(new InventoryItem(definition.Id, definition.Name, definition.IconKey, quantity, category));
+                items.Add(new InventoryItem(definition.Id, definition.Name, quantity, category));
             }
 
             items.Sort((a, b) =>

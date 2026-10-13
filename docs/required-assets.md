@@ -24,29 +24,29 @@ Unity 실제 스프라이트 임포트·테이블·프리팹 참조 검사는 `a
 
 | 우선순위 | 필요한 에셋 | 수량/역할 | 현재 상태 | 연결 위치 |
 |---|---|---|---|---|
-| P1 | 서리 결정 아이콘 | HUD·신규 카드·강화 카드, 3역할 | 화살과 세 아이콘이 모두 동일 | `Data/SkillAssetTable.asset` → `weapon_frost_crystal` |
-| P1 | 나무뿌리 아이콘 | 3역할 | 화살과 세 아이콘이 모두 동일 | 위 테이블 → `weapon_log` |
-| P1 | 냉기 지대 아이콘 | 3역할 | 화살과 세 아이콘이 모두 동일 | 위 테이블 → `weapon_cold_zone` |
-| P1 | 전기 구름 아이콘 | 3역할 | 벼락과 세 아이콘이 모두 동일 | 위 테이블 → `weapon_lightning_cloud` |
-| P1 | 에너지 빔 아이콘 | 3역할 | 화염구와 세 아이콘이 모두 동일 | 위 테이블 → `weapon_energy_beam` |
-| P1 | 연쇄 번개 아이콘 | 3역할 | 벼락과 세 아이콘이 모두 동일 | 위 테이블 → `weapon_chain_lightning` |
+| P1 | 서리 결정 아이콘 | HUD·신규 카드·강화 카드, 3역할 | 화살과 세 아이콘이 모두 동일 | `Data/SkillAssetTable.asset` → `4` |
+| P1 | 나무뿌리 아이콘 | 3역할 | 화살과 세 아이콘이 모두 동일 | 위 테이블 → `5` |
+| P1 | 냉기 지대 아이콘 | 3역할 | 화살과 세 아이콘이 모두 동일 | 위 테이블 → `6` |
+| P1 | 전기 구름 아이콘 | 3역할 | 벼락과 세 아이콘이 모두 동일 | 위 테이블 → `7` |
+| P1 | 에너지 빔 아이콘 | 3역할 | 화염구와 세 아이콘이 모두 동일 | 위 테이블 → `16` |
+| P1 | 연쇄 번개 아이콘 | 3역할 | 벼락과 세 아이콘이 모두 동일 | 위 테이블 → `18` |
 | P1 | 방벽 수리 카드 아이콘 | 강화 카드 1역할 | `upgradeCardIcon` 없음, 공용 fallback 사용 | 위 테이블 → `wall_repair` |
 | P1 | 코인·경험치 아이콘 | 2종 | `_coin`, `_exp`가 모두 비어 있음 | `Data/ItemIconTable.asset` |
-| P1 | 스킬 마법부 아이콘 | 9종 | `_items: []`, 모든 IconKey 미등록 | 아래 아이템 키 목록 |
-| P1 | 장비 마법부 아이콘 | 7종 | `_items: []`, 모든 IconKey 미등록 | 아래 아이템 키 목록 |
-| P1 | 보석상자 아이콘 | 1종 | `GemChest` 미등록 | `ItemIconTable` → `GemChest` |
+| P1 | 스킬 마법부 아이콘 | 9종 | `_items: []`, 모든 아이템 Id 미등록 | 아래 아이템 키 목록 |
+| P1 | 장비 마법부 아이콘 | 7종 | `_items: []`, 모든 아이템 Id 미등록 | 아래 아이템 키 목록 |
+| P1 | 보석상자 아이콘 | 1종 | `chest.gem` 미등록 | `ItemIconTable` → `chest.gem` |
 | P1 | 랜덤 스킬·장비 재료 아이콘 | 2종 | 코드에는 필드가 있지만 저장 에셋에 값 없음 | `_randomSkillMaterial`, `_randomEquipmentMaterial` |
 | P1 | 몬스터 표시 아이콘 | 14 ID 대응 | 기존 5항목은 icon 없음, 나머지 9항목은 행 자체 없음 | `Data/MonsterDisplayTable.asset` |
 
 스킬 중복 교체는 **6개 스킬 × 3역할 = 18슬롯**이다. HUD·신규·강화를 한 원화에서 파생할지 각각 제작할지는 디자인 결정이다. 아이템·재화·랜덤 재료는 **21종**, 몬스터 표시는 **14 ID**에 대한 연결이 필요하다. 몬스터 미니형은 기존 그림을 재사용할 수 있으므로 14개의 신규 원화가 반드시 필요한 것은 아니다.
 
-### 아이템 아이콘 키
+### 아이템 아이콘 키 (아이템 Id)
 
 | 구분 | 필요한 키 |
 |---|---|
-| 스킬 마법부 9종 | `ArrowBook`, `FireballBook`, `LightningBook`, `FrostCrystalBook`, `LogBook`, `ColdZoneBook`, `LightningCloudBook`, `EnergyBeamBook`, `ChainLightningBook` |
-| 장비 마법부 7종 | `HatBook`, `TopBook`, `ShoesBook`, `WeaponBook`, `RingBook`, `TieBook`, `EmployeeIdBook` |
-| 상자 1종 | `GemChest` |
+| 스킬 마법부 9종 | `book.arrow`, `book.fireball`, `book.lightning`, `book.frost_crystal`, `book.log`, `book.cold_zone`, `book.lightning_cloud`, `book.energy_beam`, `book.chain_lightning` |
+| 장비 마법부 7종 | `equipment.hat`, `equipment.top`, `equipment.shoes`, `equipment.weapon`, `equipment.ring`, `equipment.tie`, `equipment.employee_id` |
+| 상자 1종 | `chest.gem` |
 
 정의 근거: `Resources/MockData/Items.json`. 누락 영향: 보상 목록·일시정지 획득 가능 목록·결과 화면에서 전용 아이콘을 받지 못하고 자리표시 그림이 남는다. 현재 UI에 이미 재화 그림이 있는 경우 그 그림을 테이블에 연결하면 된다.
 
@@ -91,7 +91,7 @@ ID 대응은 `MonsterAssetTable.asset` 기준. `MonsterList.prefab`의 5개 Icon
 
 ## 3. 누락으로 세지 않은 참조
 
-- `weapon_ice_shard`, `weapon_frost_crystal_aux`, `weapon_arrow_shard`, `weapon_fireball_shard`, `weapon_lightning_orb`, `weapon_energy_beam_aux`: `Skills.json`에서 `childOnly: true`. 아이콘 3칸이 비어 있지만 독립 신규/강화 카드용 제작 목록에는 넣지 않는다. 별도 UI 노출 요구가 생기면 추가한다.
+- `8`, `12`, `13`, `14`, `15`, `17`: `Skills.json`에서 `childOnly: true`. 아이콘 3칸이 비어 있지만 독립 신규/강화 카드용 제작 목록에는 넣지 않는다. 별도 UI 노출 요구가 생기면 추가한다.
 - `wall_repair.prefab`의 빈 참조: 일반 수리 카드이므로 공격 프리팹 제작 대상이 아니다. 현재 카드 조회는 강화 아이콘 칸을 사용한다.
 - HUD·CardSelect의 빈 Icon 슬롯: `SkillAssetTable`에서 런타임에 공급하는 자리다. 슬롯 수만큼 새 그림을 제작할 필요가 없다.
 - `RewardList`의 동일 아이콘 5개: 항목별 그림은 `ItemIconTable`에서 공급한다. 원인은 보상 슬롯이 아니라 비어 있는 아이콘 테이블이다.

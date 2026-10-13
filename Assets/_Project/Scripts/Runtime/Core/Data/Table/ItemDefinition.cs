@@ -8,17 +8,15 @@ namespace Game.Core
     {
         public string Id;
         public string Name;
-        public string IconKey;
 
         /// <summary>마법북 또는 인챈트 주문서로 강화할 스킬 또는 장비의 ID.</summary>
         public string TargetId;
 
         public void Validate()
         {
-            if (string.IsNullOrWhiteSpace(Id) || string.IsNullOrWhiteSpace(Name)
-                || string.IsNullOrWhiteSpace(IconKey))
+            if (string.IsNullOrWhiteSpace(Id) || string.IsNullOrWhiteSpace(Name))
             {
-                throw new InvalidOperationException("Items: Id, Name, IconKey가 필요합니다.");
+                throw new InvalidOperationException("Items: Id, Name이 필요합니다.");
             }
 
             if (Id != ItemIds.GemChest && string.IsNullOrWhiteSpace(TargetId))

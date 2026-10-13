@@ -72,7 +72,7 @@ namespace Game.Tests
         public void ArrowSpread_UsesDefaultFormWithoutInheritingParentStatuses(SkillForm form, bool formFirst)
         {
             var catalog = JsonConvert.DeserializeObject<List<SkillData>>(Resources.Load<TextAsset>("MockData/Skills").text);
-            var arrow = catalog.Find(skill => skill.assetKey == "weapon_arrow");
+            var arrow = catalog.Find(skill => skill.id == 1);
             var spread = arrow.upgrades.Find(card => card.id == "arrow_spread");
             var formCard = arrow.upgrades.Find(card => card.id ==
                 (form == SkillForm.ThunderArrow ? "arrow_thunder" : "arrow_flame"));
@@ -233,7 +233,6 @@ namespace Game.Tests
             var child = Child();
             parent.castType = CastType.Projectile;
             child.castType = CastType.Projectile;
-            parent.assetKey = "p"; child.assetKey = "c";
             configure(parent, child);
             return new List<SkillData> { parent, child };
         }
@@ -273,7 +272,7 @@ namespace Game.Tests
         {
             var catalog = Catalog((p, c) =>
             {
-                var grand = Child(); grand.id = GrandchildId; grand.name = "손자"; grand.castType = CastType.Projectile; grand.assetKey = "g";
+                var grand = Child(); grand.id = GrandchildId; grand.name = "손자"; grand.castType = CastType.Projectile;
                 p.upgrades.Add(Card("link", Link()));
                 p.upgrades.Add(Card("attach", new EffectDef { kind = "onEvent", trigger = AttackEvent.Hit, skillId = GrandchildId, target = ChildId }));
                 p.upgrades.Add(Card("boost", new EffectDef { kind = "damage", value = 10, target = GrandchildId }));

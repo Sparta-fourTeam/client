@@ -57,7 +57,7 @@ namespace Game.Tests
 
             foreach (var item in Data.Items.Values)
             {
-                Assert.IsNotNull(icons.Get(item.IconKey), item.Id);
+                Assert.IsNotNull(icons.Get(item.Id), item.Id);
             }
         }
 

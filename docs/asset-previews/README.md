@@ -64,7 +64,7 @@
 | `equipment.tie` | 해골 목걸이 | SkullNecklace | SkullNecklaceScroll |
 | `equipment.employee_id` | 인장 | Seal | SealScroll |
 
-`book.*` 아이템 ID와 `equipment.*` 강화 ID는 기존 저장 데이터와 호환되도록 유지한다. 표시 이름과 `IconKey`만 현재 콘셉트에 맞춘다.
+`book.*` 아이템 ID와 `equipment.*` 강화 ID는 기존 저장 데이터와 호환되도록 유지한다. 표시 이름만 현재 콘셉트에 맞춘다.
 
 첫 제작은 새 원화 38장과 기존 PSD를 픽셀 변경 없이 PNG로 추출한 11장이다. 초기 승인 시안 3장은 `Generated/Review`에 별도로 보관한다. 다른 콘텐츠의 자리표시 아이콘을 교체하고, 같은 콘텐츠의 HUD/카드 아이콘은 같은 원화를 공유한다. 기본 스킬 3종은 추가 제작에서 프레임 없는 새 그림으로 교체했다.
 

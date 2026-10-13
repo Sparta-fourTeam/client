@@ -73,9 +73,9 @@ namespace Game.View
             _nameText.text = info.Name;
             _levelText.text = isMax ? "MAX" : $"Lv. {info.Level}";
             _descText.text = info.Description;
-            SetIcon(_skillIcon, _assets != null ? _assets.GetHudIcon(info.AssetKey) : null);
+            SetIcon(_skillIcon, _assets != null ? _assets.GetHudIcon(info.Id) : null);
             var book = _itemIcons != null && info.MaterialItemId != null && _data.Items.Contains(info.MaterialItemId)
-                ? _itemIcons.Get(_data.Items.GetOrThrow(info.MaterialItemId).IconKey)
+                ? _itemIcons.Get(info.MaterialItemId)
                 : null;
             SetIcon(_bookIcon, book);
 
