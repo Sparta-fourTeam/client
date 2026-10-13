@@ -33,17 +33,16 @@ namespace Game.Tests
             finally { Directory.Delete(folder, true); }
         }
 
-        [TestCase(false)]
-        [TestCase(true)]
-        public void SaveRestoreUsesLatestSameSecondBackupAndPreservesCurrentSave(bool legacy)
+        [Test]
+        public void SaveRestoreUsesLatestSameSecondBackupAndPreservesCurrentSave()
         {
             string folder = Path.Combine(Path.GetTempPath(), "nova-tools-" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(folder);
             try
             {
                 string save = Path.Combine(folder, "save.json");
-                string older = save + (legacy ? ".20991013-120000-00000000.bak" : ".20991013-120000.0000001.bak");
-                string newer = save + (legacy ? ".20991013-120000-ffffffff.bak" : ".20991013-120000.0000002.bak");
+                string older = save + ".20991013-120000.0000001.bak";
+                string newer = save + ".20991013-120000.0000002.bak";
                 File.WriteAllText(older, "older");
                 File.WriteAllText(newer, "newer");
                 File.SetLastWriteTimeUtc(older, new DateTime(2026, 10, 14, 0, 0, 0, DateTimeKind.Utc));
@@ -53,9 +52,39 @@ namespace Game.Tests
                 string latest = PlaytestWindow.LatestBackup(save);
                 Assert.That(latest, Is.EqualTo(newer));
                 string preserved = PlaytestWindow.Restore(save, latest);
-                Assert.That(preserved, Is.EqualTo(save + (legacy ? ".20991013-120000.0000001.bak" : ".20991013-120000.0000003.bak")),
+                Assert.That(preserved, Is.EqualTo(save + ".20991013-120000.0000003.bak"),
                     "시계가 기존 백업보다 앞서 있어도 생성 순서가 유지되어야 한다");
                 Assert.That(PlaytestWindow.LatestBackup(save), Is.EqualTo(preserved));
+                Assert.That(File.ReadAllText(save), Is.EqualTo("newer"));
+                Assert.That(File.ReadAllText(preserved), Is.EqualTo("current"));
+                Assert.That(File.ReadAllText(older), Is.EqualTo("older"));
+                Assert.That(File.ReadAllText(newer), Is.EqualTo("newer"));
+            }
+            finally { Directory.Delete(folder, true); }
+        }
+
+        [Test]
+        public void SaveLegacySameSecondBackupsDoNotGuessLatestAndNewBackupFollowsBoth()
+        {
+            string folder = Path.Combine(Path.GetTempPath(), "nova-tools-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(folder);
+            try
+            {
+                string save = Path.Combine(folder, "save.json");
+                string older = save + ".20991013-120000-ffffffff.bak";
+                string newer = save + ".20991013-120000-00000000.bak";
+                File.WriteAllText(save, "older");
+                File.Copy(save, older);
+                File.WriteAllText(save, "newer");
+                File.Copy(save, newer);
+                File.SetLastWriteTimeUtc(newer, File.GetLastWriteTimeUtc(older));
+                Assert.IsNull(PlaytestWindow.LatestBackup(save), "구형 GUID/복사된 메타데이터로 최신 스냅샷을 추측하면 안 된다");
+
+                string next = PlaytestWindow.Backup(save);
+                Assert.That(next, Is.EqualTo(save + ".20991013-120000.0000001.bak"));
+                Assert.That(PlaytestWindow.LatestBackup(save), Is.EqualTo(next), "신형/구형이 섞여도 확정된 새 백업을 선택한다");
+                File.WriteAllText(save, "current");
+                string preserved = PlaytestWindow.Restore(save, next);
                 Assert.That(File.ReadAllText(save), Is.EqualTo("newer"));
                 Assert.That(File.ReadAllText(preserved), Is.EqualTo("current"));
                 Assert.That(File.ReadAllText(older), Is.EqualTo("older"));
