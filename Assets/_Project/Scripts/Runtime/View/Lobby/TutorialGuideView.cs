@@ -22,6 +22,7 @@ namespace Game.View
             _ui = registry;
             _levelUp = registry.Get<LevelUpPopupView>();
             _dialogue = registry.Get<DialogueView>();
+            _contentUnlock = registry.Get<ContentUnlockView>();
         }
 
         [SerializeField] private GameObject _root;
@@ -59,6 +60,7 @@ namespace Game.View
         private IUiRegistry _ui;
         private LevelUpPopupView _levelUp;
         private DialogueView _dialogue;
+        private ContentUnlockView _contentUnlock;
         private LobbyArrival _arrival;
         private PlayerProfile _profile;
         private GameDataStore _data;
@@ -131,7 +133,8 @@ namespace Game.View
             }
 
             bool tabLocked = TutorialProgress.IsTabLocked(_data.Tutorials, TutorialFacts.From(_profile), SkillTab);
-            nav.SetSkillLocked(tabLocked);
+            // 새 컨텐츠 해금·레벨업 연출이 끝날 때까지는 잠긴 채로 둔다
+            nav.SetSkillLocked(tabLocked || tabWasLocked);
 
             var battle = TutorialProgress.ActiveBattle(_data.Tutorials, TutorialFacts.From(_profile));
             if (battle != null)
@@ -174,6 +177,24 @@ namespace Game.View
             if (this == null)
             {
                 return;
+            }
+
+            // 레벨업 화면 다음에, 새 컨텐츠(스킬 탭)가 열렸으면 해금 연출을 보여 준다
+            if (tabWasLocked && !tabLocked)
+            {
+                try
+                {
+                    await _contentUnlock.ShowAsync(nav.SkillTabName, nav.SkillTabIcon);
+                }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }
+
+                if (this == null)
+                {
+                    return;
+                }
             }
 
             if (tabWasLocked && !tabLocked)

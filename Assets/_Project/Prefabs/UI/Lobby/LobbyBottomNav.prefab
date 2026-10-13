@@ -61,6 +61,8 @@ MonoBehaviour:
   _skillSelected: {fileID: 3758889413539838802}
   _shopSelected: {fileID: 5204588178078446796}
   _skillLock: {fileID: 8896112365625873486}
+  _skillIcon: {fileID: 5087168171386782727}
+  _skillLabel: {fileID: 3091173996707425994}
 --- !u!114 &5230937775762244118
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -965,6 +967,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 09533d27d89a4874a99bafddb56c2033, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Game.View::Game.View.NotificationBadgeView
+--- !u!114 &3091173996707425994 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7074406665975430635, guid: 1a1aca41d0c8688498227fbc8db74d8c, type: 3}
+  m_PrefabInstance: {fileID: 5245384317293908769}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
 --- !u!1 &3758889413539838802 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8998503489381460083, guid: 1a1aca41d0c8688498227fbc8db74d8c, type: 3}
@@ -981,6 +994,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
+--- !u!114 &5087168171386782727 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1031915033574741798, guid: 1a1aca41d0c8688498227fbc8db74d8c, type: 3}
+  m_PrefabInstance: {fileID: 5245384317293908769}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
 --- !u!224 &7076111310780067513 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 3096291271797259672, guid: 1a1aca41d0c8688498227fbc8db74d8c, type: 3}

@@ -133,3 +133,7 @@ MonoBehaviour:
     Prefab: {fileID: 2794873178454166603, guid: ec0afc53b7f9643ed87e9db366b22196, type: 3}
     ParentPath: NavUI/Overlays
     SiblingIndex: 4
+  - Id: ContentUnlock
+    Prefab: {fileID: 3663958771333720694, guid: bd9f440ce147447cab5ca49733e68514, type: 3}
+    ParentPath: NavUI/Popups
+    SiblingIndex: 13

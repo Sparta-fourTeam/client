@@ -192,6 +192,16 @@ namespace Game.Tests
             }
 
             yield return ClickGameButton(tapArea);
+            // 레벨업 다음에 새 컨텐츠(스킬 탭) 해금 연출이 나온다. 탭으로 건너뛰고 닫는다
+            var contentUnlock = ui.Get<ContentUnlockView>();
+            yield return WaitFor(() => contentUnlock.IsOpen);
+            var contentTap = Field<Button>(contentUnlock, "_tapArea");
+            if (contentUnlock.IsPlaying)
+            {
+                yield return ClickGameButton(contentTap);
+            }
+
+            yield return ClickGameButton(contentTap);
             // 팝업 뒤 가이드 시작 전에 대사 장면이 먼저 나온다. SKIP으로 건너뛴다
             var dialogue = ui.Get<DialogueView>();
             yield return WaitFor(() => dialogue.IsOpen);

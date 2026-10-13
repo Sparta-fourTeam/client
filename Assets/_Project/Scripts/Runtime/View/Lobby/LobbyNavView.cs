@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -20,6 +21,9 @@ namespace Game.View
         [SerializeField] private GameObject _inventorySelected, _characterSelected, _homeSelected, _skillSelected, _shopSelected;
         [Tooltip("스킬 탭 위의 자물쇠. 잠겨 있는 동안 켜지고 탭이 눌리지 않는다")]
         [SerializeField] private RectTransform _skillLock;
+        [Tooltip("해금 연출에서 보여 줄 스킬 탭의 아이콘·이름")]
+        [SerializeField] private Image _skillIcon;
+        [SerializeField] private TMP_Text _skillLabel;
         private bool _skillLocked;
         private Sequence _unlock;
         private InventoryScreenView _inventoryScreen;
@@ -56,6 +60,12 @@ namespace Game.View
         {
             Select(Tab.Home);
         }
+
+        /// <summary>해금 연출에 보여 줄 스킬 탭의 아이콘 (없으면 null)</summary>
+        public Sprite SkillTabIcon => _skillIcon != null ? _skillIcon.sprite : null;
+
+        /// <summary>해금 연출에 보여 줄 스킬 탭의 이름</summary>
+        public string SkillTabName => _skillLabel != null ? _skillLabel.text : string.Empty;
 
         /// <summary>튜토리얼이 강조하는 스킬 탭 버튼</summary>
         public RectTransform SkillTab => (RectTransform)_skillTab.transform;

@@ -173,8 +173,9 @@ namespace Game.View
             var seq = DOTween.Sequence().SetUpdate(true).SetLink(gameObject);
             if (_ribbon != null)
             {
-                _ribbon.localScale = new Vector3(0f, 1f, 1f);
-                seq.Append(_ribbon.DOScale(Vector3.one, 0.3f).SetEase(Ease.OutCubic));
+                // 가는 빛줄기로 시작해 좌우로 촥 펼쳐진다
+                _ribbon.localScale = new Vector3(0f, 0.12f, 1f);
+                seq.Append(_ribbon.DOScale(Vector3.one, 0.4f).SetEase(Ease.OutCubic));
             }
 
             if (leveled)
