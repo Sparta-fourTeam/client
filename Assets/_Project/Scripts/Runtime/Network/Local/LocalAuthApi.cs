@@ -16,7 +16,8 @@ namespace Game.Network
             _data = data;
         }
 
-        public UniTask<LoginResponse> Login()
+        // 로컬에는 계정 구분이 없어 방식과 계정 ID는 쓰지 않는다 (기기의 저장 파일 하나가 계정이다)
+        public UniTask<LoginResponse> Login(LoginMethod method, string accountId)
         {
             bool isNewAccount = !_store.Exists();
             var save = _store.Load();

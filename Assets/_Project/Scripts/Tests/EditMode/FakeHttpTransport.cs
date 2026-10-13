@@ -10,6 +10,9 @@ namespace Game.Tests
     public sealed class FakeHttpTransport : IHttpTransport
     {
         public HttpResponseData Response = new HttpResponseData(200, "{}");
+
+        /// <summary>요청 순서대로 돌려줄 응답. 비면 Response를 돌려준다</summary>
+        public readonly Queue<HttpResponseData> Queued = new();
         public Exception ToThrow;
         public readonly List<HttpRequestData> Requests = new();
         public float LastTimeout;
@@ -24,7 +27,7 @@ namespace Game.Tests
                 throw ToThrow;
             }
 
-            return UniTask.FromResult(Response);
+            return UniTask.FromResult(Queued.Count > 0 ? Queued.Dequeue() : Response);
         }
     }
 }

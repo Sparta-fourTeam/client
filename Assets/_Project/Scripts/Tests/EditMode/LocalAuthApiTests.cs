@@ -34,7 +34,7 @@ namespace Game.Tests
         [Test(Description = "신규 계정으로 로그인한 직후 바로 StartBattle이 INSUFFICIENT_ENERGY 없이 성공한다")]
         public void Login_AllowsFirstBattleAndPreservesExistingEnergy()
         {
-            _api.Login().GetAwaiter().GetResult();
+            _api.Login(LoginMethod.Guest, null).GetAwaiter().GetResult();
             var battleApi = new LocalBattleApi(_store, _data);
 
             var response = battleApi.StartBattle(1).GetAwaiter().GetResult();
@@ -44,7 +44,7 @@ namespace Game.Tests
             save.wallet.energyStored = 3;
             save.wallet.energyUpdatedAt = DateTime.UtcNow.ToString("O");
             _store.Flush(save);
-            _api.Login().GetAwaiter().GetResult();
+            _api.Login(LoginMethod.Guest, null).GetAwaiter().GetResult();
             Assert.AreEqual(3, _store.Load().wallet.energyStored);
         }
 

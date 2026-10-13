@@ -15,6 +15,7 @@
 | [monsters-contract.md](monsters-contract.md) | 몬스터·스킬 데이터의 서버 계약: 클라이언트가 읽는 방식, 결정 사항, 시트 컬럼 |
 | [items.md](items.md) | 아이템 종류, 식별·수량 및 소유량 저장 계약 |
 | [google-sign-in.md](google-sign-in.md) | Android Google 로그인 구조, Google Cloud OAuth 클라이언트·SHA-1 설정, 확인 방법 |
+| [server-auth.md](server-auth.md) | 서버 인증 연결: 서버 주소·API, 로그인 흐름, 켜고 끄는 조건, 아직 안 한 것 |
 | [level-design.md](level-design.md) | 원본 게임 레벨 디자인 참고: 관문별 요마 능력치 증가·등장 요마·보상, 원본 요마, 성장 수치, `MonsterBonuses` 적용 방법 |
 | [ninjutsu/](ninjutsu/README.md) | 스킬 원문 요구사항, 확정·보류 결정, 구현 이력, 카드별 대응표 |
 | [performance-baseline.md](performance-baseline.md) | 성능 기준선 측정 절차: 준비, 측정 장면, 기록할 수치, 통과 기준, 기록 표 |
