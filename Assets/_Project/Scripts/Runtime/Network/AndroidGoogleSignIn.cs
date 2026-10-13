@@ -12,9 +12,8 @@ namespace Game.Network
     {
         // Google Cloud 콘솔의 "웹 애플리케이션" 유형 OAuth 클라이언트 ID. ID 토큰의 aud가 되고 서버(GOOGLE_CLIENT_IDS)가 같은 값으로 검증한다.
         // Android 유형 클라이언트 ID가 아니다. Android 클라이언트(패키지명 + 서명 SHA-1)는 같은 프로젝트에 따로 등록만 하면 된다.
-        // 클라이언트 ID는 비밀값이 아니라 코드에 둔다
-        // TODO(google): 웹 클라이언트 ID를 받으면 채운다
-        private const string WebClientId = "";
+        // 클라이언트 ID는 비밀값이 아니라 코드에 둔다 (Google Cloud 프로젝트 TeamDoodle의 웹 클라이언트)
+        private const string WebClientId = "961722707844-cbu71g50il4274edtmv39i6ctrqqjvj5.apps.googleusercontent.com";
 
         private const string BridgeClass = "com.teamdoodle.auth.GoogleSignInBridge";
 
