@@ -206,7 +206,14 @@ namespace Game.Tests
             yield return StartFromBoot(save => save.tutorials = new List<string>());
             var dialogue = Object.FindAnyObjectByType<DialogueView>();
             yield return WaitFor(() => dialogue.IsOpen);
+            // SKIP은 확인창을 거친다. 취소하면 대화가 그대로 남는다
+            var confirm = Object.FindAnyObjectByType<LobbyLifetimeScope>().Container.Resolve<IUiRegistry>().Get<ConfirmPopupView>();
             yield return ClickGameButton(Field<Button>(dialogue, "_skipButton"));
+            yield return WaitFor(() => confirm.IsOpen);
+            yield return ClickGameButton(Field<Button>(confirm, "_cancelButton"));
+            yield return WaitFor(() => !Field<GameObject>(confirm, "_panel").activeSelf);
+            Assert.That(dialogue.IsOpen, Is.True);
+            yield return SkipDialogue(dialogue, confirm);
             yield return WaitFor(() => SceneManager.GetActiveScene().name == "Stage");
             var root = Object.FindAnyObjectByType<RootLifetimeScope>().Container;
             int tutorialStage = root.Resolve<GameDataStore>().Tutorials.First(t => t.IsBattle).StageId;
@@ -283,7 +290,7 @@ namespace Game.Tests
             // 팝업 뒤 가이드 시작 전에 대사 장면이 먼저 나온다. SKIP으로 건너뛴다
             var dialogue = ui.Get<DialogueView>();
             yield return WaitFor(() => dialogue.IsOpen);
-            yield return ClickGameButton(Field<Button>(dialogue, "_skipButton"));
+            yield return SkipDialogue(dialogue, ui.Get<ConfirmPopupView>());
             yield return WaitFor(() => !dialogue.IsOpen);
             var guide = ui.Get<TutorialGuideView>();
             var nav = ui.Get<LobbyNavView>();
@@ -299,6 +306,14 @@ namespace Game.Tests
             Assert.That(profile.UpgradeLevel(upgradeId), Is.EqualTo(1));
             Assert.That(Field<GameObject>(guide, "_root").activeSelf, Is.False);
             LogAssert.NoUnexpectedReceived();
+        }
+
+        // 대화 SKIP → 확인창에서 건너뛰기
+        private IEnumerator SkipDialogue(DialogueView dialogue, ConfirmPopupView confirm)
+        {
+            yield return ClickGameButton(Field<Button>(dialogue, "_skipButton"));
+            yield return WaitFor(() => confirm.IsOpen);
+            yield return ClickGameButton(Field<Button>(confirm, "_confirmButton"));
         }
 
         // button 가운데를 실제로 눌렀을 때 가장 위에 맞는 오브젝트 이름
