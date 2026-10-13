@@ -142,7 +142,8 @@ def recover(play, bundle, name, record):
     require(release.get('versionCodes') == ['2'] and release.get('name') == name,
             'Prepared internal release mismatch')
     record('commit_requested', edit_id=edit_id)
-    committed = play.call('POST', path + ':commit')
+    committed = play.call('POST', path + ':commit',
+                          params={'changesInReviewBehavior': 'ERROR_IF_IN_REVIEW'})
     require(committed.get('id') == edit_id, 'Uncertain commit result; inspect state before any new attempt')
     record('committed', edit_id=edit_id)
 
@@ -158,7 +159,7 @@ class PlayApi:
         credentials.refresh(Request())
         self.session = AuthorizedSession(credentials, max_refresh_attempts=0)
 
-    def call(self, method, suffix, body=None, bundle=None):
+    def call(self, method, suffix, body=None, bundle=None, params=None):
         base = 'https://androidpublisher.googleapis.com/'
         route = 'androidpublisher/v3/applications/' + PACKAGE + '/edits' + suffix
         if bundle:
@@ -168,7 +169,7 @@ class PlayApi:
                     headers={'Content-Type': 'application/octet-stream'}, timeout=(10, 180),
                     allow_redirects=False)
         else:
-            response = self.session.request(method, base + route, json=body,
+            response = self.session.request(method, base + route, json=body, params=params,
                                             timeout=(10, 120), allow_redirects=False)
         require(200 <= response.status_code < 300,
                 f'Play {method} request failed (HTTP {response.status_code}); stop without retry or version increase')

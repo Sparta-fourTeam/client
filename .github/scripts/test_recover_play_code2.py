@@ -23,8 +23,8 @@ class FakePlay:
                                                'name': '1.0.2(2)' if internal_code == '2' else 'previous'}]},
             {'track': 'production', 'releases': [{'versionCodes': ['9'], 'status': 'completed'}]}]}
 
-    def call(self, method, suffix, body=None, bundle=None):
-        self.calls.append((method, suffix, body, bundle))
+    def call(self, method, suffix, body=None, bundle=None, params=None):
+        self.calls.append((method, suffix, body, bundle, params))
         if method == 'POST' and suffix == '':
             return {'id': 'edit-123', 'expiryTimeSeconds': '9999999999'}
         if suffix.endswith('/tracks'):
@@ -45,6 +45,10 @@ class FakePlay:
                 self.tracks['tracks'][1]['releases'] = []
             return {'id': 'edit-123'}
         if suffix.endswith(':commit'):
+            if self.failure == 'in-review':
+                if params != {'changesInReviewBehavior': 'ERROR_IF_IN_REVIEW'}:
+                    raise AssertionError('Would cancel the existing Play review')
+                raise recovery.StopRecovery('Changes already in review; stop without canceling')
             if self.failure == 'commit-timeout':
                 raise TimeoutError('ambiguous commit')
             return {'id': 'edit-123'}
@@ -121,6 +125,15 @@ class RecoveryTests(unittest.TestCase):
         with self.assertRaises(TimeoutError):
             self.run_recovery(play)
         self.assertEqual(sum(c[1].endswith(':commit') for c in play.calls), 1)
+        self.assertEqual(self.records[-1][0], 'commit_requested')
+
+    def test_existing_play_review_is_rejected_instead_of_cancelled(self):
+        play = FakePlay(existing=True, failure='in-review')
+        with self.assertRaisesRegex(recovery.StopRecovery, 'Changes already in review'):
+            self.run_recovery(play)
+        commits = [c for c in play.calls if c[1].endswith(':commit')]
+        self.assertEqual(len(commits), 1)
+        self.assertEqual(commits[0][4], {'changesInReviewBehavior': 'ERROR_IF_IN_REVIEW'})
         self.assertEqual(self.records[-1][0], 'commit_requested')
 
     def test_already_published_matching_release_does_not_upload_or_commit(self):
@@ -214,6 +227,23 @@ class RecoveryTests(unittest.TestCase):
         with self.assertRaisesRegex(recovery.StopRecovery, 'stop without retry or version increase'):
             play.call('POST', '/edit-123/bundles', bundle=self.bundle)
         self.assertEqual(len(calls), 1)
+
+    def test_http_commit_passes_review_guard_as_query_parameter(self):
+        calls = []
+        class Session:
+            def request(inner, method, url, **kwargs):
+                calls.append((method, url, kwargs))
+                class Response:
+                    status_code = 200
+                    def json(inner):
+                        return {'id': 'edit-123'}
+                return Response()
+        play = recovery.PlayApi.__new__(recovery.PlayApi)
+        play.session = Session()
+        play.call('POST', '/edit-123:commit', params={'changesInReviewBehavior': 'ERROR_IF_IN_REVIEW'})
+        self.assertEqual(calls[0][2]['params'], {'changesInReviewBehavior': 'ERROR_IF_IN_REVIEW'})
+        self.assertIsNone(calls[0][2]['json'])
+        self.assertFalse(calls[0][2]['allow_redirects'])
 
 
 if __name__ == '__main__':
