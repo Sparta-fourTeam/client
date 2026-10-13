@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using Game.Core;
 using Game.View;
@@ -32,6 +33,10 @@ namespace Game.Editor
 
         internal static List<string> Samples(string id)
         {
+            if (id is "HudCanvas" or "SkillHud" or "StageControls")
+            {
+                return new() { "기본", "피해 / 쿨타임" };
+            }
             if (id == "UpgradeConfirmPopup")
             {
                 return new() { "기본" };
@@ -72,6 +77,8 @@ namespace Game.Editor
                 SceneManager.MoveGameObjectToScene(container, scene);
                 container.GetComponent<Canvas>().renderMode = RenderMode.WorldSpace;
                 ((RectTransform)container.transform).sizeDelta = canvasSize;
+                bool stagePreview = composition != null && composition.name == "StageUi";
+                if (stagePreview) { AddStageBackdrop(container.transform); }
                 GameObject selected;
                 if (composition == null)
                 {
@@ -94,7 +101,7 @@ namespace Game.Editor
                     foreach (var entry in composition.Entries)
                     {
                         bool isSelected = entryId == null ? entry.Prefab == prefab : entry.Id == entryId;
-                        bool chrome = sceneName == "Loading" ? false : sceneName == "Lobby" ? entry.ParentPath == "NavUI/SafeArea" : entry.Id == "HudCanvas" || entry.Id == "SkillHud" || entry.Id == "StageControls";
+                        bool chrome = sceneName == "Loading" ? entry.Id == "LoadingScreen" : sceneName == "Lobby" ? entry.ParentPath == "NavUI/SafeArea" : entry.Id == "HudCanvas" || entry.Id == "SkillHud" || entry.Id == "StageControls";
                         if (!isSelected && !chrome)
                         {
                             continue;
@@ -119,6 +126,7 @@ namespace Game.Editor
                         throw new InvalidOperationException("선택한 프리팹이 화면 구성에 없습니다.");
                     }
                 }
+                if (stagePreview) { ApplyStageSample(container, sample); }
                 ApplySample(selected, sample);
                 foreach (var text in container.GetComponentsInChildren<TMP_Text>(true))
                 {
@@ -131,6 +139,7 @@ namespace Game.Editor
                 }
 
                 Canvas.ForceUpdateCanvases();
+                if (stagePreview) { PlaceStagePreviewStars(container); }
                 var cameraRoot = new GameObject("Preview Camera", typeof(Camera));
                 SceneManager.MoveGameObjectToScene(cameraRoot, scene);
                 var camera = cameraRoot.GetComponent<Camera>();
@@ -170,6 +179,12 @@ namespace Game.Editor
             private PressScaleAnimator _press;
             private float _releaseAfter;
             private bool _particlesPlaying;
+            private float _particleAge;
+            private bool _particlesPrepared;
+            private bool _rewardReady;
+            // Keep the optional renderer package outside Game.Editor's assembly dependencies.
+            private static readonly Type UiParticleType = Type.GetType("Coffee.UIExtensions.UIParticle, Coffee.UIParticle");
+            private static readonly Type UiParticleRendererType = Type.GetType("Coffee.UIExtensions.UIParticleRenderer, Coffee.UIParticle");
             private bool _disposed;
 
             internal Session(Scene scene, GameObject container, GameObject selected, Camera camera, Device device)
@@ -218,6 +233,96 @@ namespace Game.Editor
                 _releaseAfter = 0.2f;
             }
 
+            internal bool HasScenario => _selected.GetComponentInChildren<RewardPopupView>(true) != null
+                || _selected.GetComponentInChildren<ContentUnlockView>(true) != null
+                || _selected.GetComponentInChildren<LevelUpPopupView>(true) != null
+                || _selected.GetComponentInChildren<EliteRouletteView>(true) != null;
+
+            // 보상·해금·레벨 업 팝업의 실제 등장 연출을 편집용 예시 데이터로 재생한다 (서버·프로필·재화는 건드리지 않는다)
+            internal void PlayScenario()
+            {
+                var data = new GameDataStore();
+                var icons = AssetDatabase.LoadAssetAtPath<ItemIconTable>("Assets/_Project/Data/ItemIconTable.asset");
+                OwnTweens(() =>
+                {
+                    if (_selected.GetComponentInChildren<RewardPopupView>(true) is { } reward)
+                    {
+                        if (!_rewardReady)
+                        {
+                            // Awake가 편집 모드에서는 돌지 않아, 탭 영역·칸 배치 캐시를 같은 방식으로 준비한다
+                            typeof(RewardPopupView).GetMethod("Awake", System.Reflection.BindingFlags.Instance
+                                | System.Reflection.BindingFlags.NonPublic)?.Invoke(reward, null);
+                            _rewardReady = true;
+                        }
+                        reward.Show(new[]
+                        {
+                            new ResultRewardItem(icons != null ? icons.Coin : null, 1200),
+                            new ResultRewardItem(icons != null ? icons.GetRandom(ItemIds.RandomSkillMaterial) : null, 3, ItemIds.RandomSkillMaterial),
+                            new ResultRewardItem(icons != null ? icons.GetRandom(ItemIds.RandomEquipmentMaterial) : null, 2, ItemIds.RandomEquipmentMaterial)
+                        });
+                    }
+
+                    if (_selected.GetComponentInChildren<ContentUnlockView>(true) is { } unlock)
+                    {
+                        unlock.Initialize();
+                        unlock.ShowAsync("스킬 탭", null).Forget();
+                    }
+
+                    if (_selected.GetComponentInChildren<EliteRouletteView>(true) is { } roulette)
+                    {
+                        PlayRoulette(roulette);
+                    }
+
+                    if (_selected.GetComponentInChildren<LevelUpPopupView>(true) is { } levelUp)
+                    {
+                        levelUp.Initialize();
+                        levelUp.Construct(data);
+                        levelUp.ShowAsync(new LevelUpNews
+                        {
+                            FromLevel = 4,
+                            ToLevel = 5,
+                            RewardGold = 500,
+                            RewardItems = new[] { new ItemAmount { itemId = ItemIds.RandomSkillMaterial, quantity = 2 } },
+                            Unlocks = new[]
+                            {
+                                new UnlockNotice { Kind = UnlockKind.Feature, Name = "스킬 탭" },
+                                new UnlockNotice { Kind = UnlockKind.Equipment, Name = "후드" }
+                            }
+                        }).Forget();
+                    }
+                });
+            }
+
+            // 룰렛은 스테이지 상태·세션 없이 회전과 카드 등장만 예시 순서(3회)로 재생한다
+            private static void PlayRoulette(EliteRouletteView view)
+            {
+                view.Initialize();
+                var so = new SerializedObject(view);
+                ((GameObject)so.FindProperty("_panel").objectReferenceValue).SetActive(true);
+                var spinner = (RectTransform)so.FindProperty("_spinner").objectReferenceValue;
+                spinner.localRotation = Quaternion.identity;
+                var cards = view.GetComponentsInChildren<CardSlotView>(true);
+                int count = Mathf.Min(3, cards.Length);
+                for (int i = 0; i < cards.Length; i++)
+                {
+                    cards[i].gameObject.SetActive(false);
+                    ((RectTransform)cards[i].transform.parent).anchoredPosition = new Vector2((i - (count - 1) * 0.5f) * 228f, 0f);
+                }
+
+                int[] winners = { 2, 5, 1 };
+                void Round(int index)
+                {
+                    if (index >= count) { return; }
+                    view.PlaySpin(winners[index], () =>
+                    {
+                        cards[index].gameObject.SetActive(true);
+                        cards[index].PlayEntrance(0f);
+                        DOVirtual.DelayedCall(0.4f, () => Round(index + 1), true).SetLink(view.gameObject);
+                    });
+                }
+                Round(0);
+            }
+
             internal void PlayParticles()
             {
                 foreach (var particle in _selected.GetComponentsInChildren<ParticleSystem>(true))
@@ -225,6 +330,15 @@ namespace Game.Editor
                     particle.gameObject.SetActive(true);
                     particle.Simulate(0f, false, true, false);
                 }
+                _particleAge = 0f;
+                if (UiParticleType != null)
+                {
+                    foreach (var particle in _selected.GetComponentsInChildren(UiParticleType, true))
+                    {
+                        UiParticleType.GetMethod("RefreshParticles", Type.EmptyTypes)?.Invoke(particle, null);
+                    }
+                }
+                _particlesPrepared = true;
                 _particlesPlaying = true;
             }
 
@@ -251,19 +365,37 @@ namespace Game.Editor
                 _tweens.RemoveAll(t => !t.IsActive());
                 if (_particlesPlaying)
                 {
+                    _particleAge += seconds;
                     var particles = _selected.GetComponentsInChildren<ParticleSystem>(true);
                     foreach (var particle in particles)
                     {
                         // Simulate each system once; recursively simulating every parent would double-step children.
                         particle.Simulate(seconds, false, false, false);
                     }
-                    _particlesPlaying = particles.Any(p => p.main.loop || p.time < p.main.duration || p.IsAlive(false));
+                    // IsAlive stays true after manual simulation on some non-looping systems.
+                    // Wait past the emission window and for every actually emitted particle to expire.
+                    _particlesPlaying = particles.Any(p => p.main.loop
+                        || _particleAge < p.main.startDelay.constantMax + p.main.duration || p.particleCount > 0);
                 }
             }
 
             internal Texture2D Capture(Texture2D shot = null)
             {
                 Canvas.ForceUpdateCanvases();
+                if (_particlesPrepared && UiParticleType != null && UiParticleRendererType != null)
+                {
+                    foreach (var particle in _selected.GetComponentsInChildren(UiParticleType, false))
+                    {
+                        // Scale/geometry helpers, never Awake/Start/Update or the package's global updater.
+                        UiParticleType.GetMethod("UpdateTransformScale", System.Reflection.BindingFlags.Instance
+                            | System.Reflection.BindingFlags.NonPublic)?.Invoke(particle, null);
+                    }
+                    foreach (var renderer in _selected.GetComponentsInChildren(UiParticleRendererType, false))
+                    {
+                        // Use this session's camera rather than creating the package's shared bake camera.
+                        UiParticleRendererType.GetMethod("UpdateMesh")?.Invoke(renderer, new object[] { _camera });
+                    }
+                }
                 var previous = RenderTexture.active;
                 var rt = RenderTexture.GetTemporary(_device.Width, _device.Height, 24);
                 try
@@ -295,6 +427,82 @@ namespace Game.Editor
                     foreach (var view in _container.GetComponentsInChildren<HudView>(true)) { view.Dispose(); }
                 }
                 finally { EditorSceneManager.ClosePreviewScene(_scene); }
+            }
+        }
+
+        private static void AddStageBackdrop(Transform parent)
+        {
+            var sprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Project/Sprites/StageBackground_v2.png");
+            if (sprite == null) { return; }
+            var backdrop = new GameObject("Stage Backdrop (preview only)", typeof(RectTransform), typeof(Image));
+            backdrop.transform.SetParent(parent, false);
+            var rect = (RectTransform)backdrop.transform;
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = rect.offsetMax = Vector2.zero;
+            var image = backdrop.GetComponent<Image>();
+            image.sprite = sprite;
+            image.color = Color.white;
+            image.raycastTarget = false;
+            backdrop.transform.SetAsFirstSibling();
+        }
+
+        private static void ApplyStageSample(GameObject container, string sample)
+        {
+            bool damaged = sample == "피해 / 쿨타임";
+            foreach (var view in container.GetComponentsInChildren<HudView>(true))
+            {
+                var so = new SerializedObject(view);
+                if (view is WaveHudView)
+                {
+                    if (so.FindProperty("_waveValueText")?.objectReferenceValue is TMP_Text wave) { wave.text = "1/20"; }
+                    if (so.FindProperty("_gaugeFill")?.objectReferenceValue is Image fill) { fill.fillAmount = damaged ? 0.65f : 1f; }
+                }
+                if (view is WallHpHudView)
+                {
+                    if (so.FindProperty("_hpText")?.objectReferenceValue is TMP_Text hp) { hp.text = damaged ? "40 / 100" : "100 / 100"; }
+                    if (so.FindProperty("_hpFill")?.objectReferenceValue is Image fill) { fill.fillAmount = damaged ? 0.4f : 1f; }
+                }
+                if (view is TimerHudView && so.FindProperty("_timeText")?.objectReferenceValue is TMP_Text timer) { timer.text = "00:06"; }
+                if (view is StageLabelHudView && so.FindProperty("_label")?.objectReferenceValue is TMP_Text stage) { stage.text = "Stage 3"; }
+                if (view is SkillHudView)
+                {
+                    var assets = (SkillAssetTable)so.FindProperty("_assets").objectReferenceValue;
+                    var slots = so.FindProperty("_slots");
+                    for (int i = 0; i < slots.arraySize; i++)
+                    {
+                        var slot = slots.GetArrayElementAtIndex(i).objectReferenceValue as SkillSlotView;
+                        if (slot == null) { continue; }
+                        slot.Clear();
+                        if (i != 0) { continue; }
+                        // Display-only data on the clone; no skills, messages, timers or game rules run.
+                        var slotSo = new SerializedObject(slot);
+                        var icon = (Image)slotSo.FindProperty("_icon").objectReferenceValue;
+                        icon.sprite = assets != null ? assets.GetHudIcon(1) : null;
+                        icon.enabled = icon.sprite != null;
+                        var frame = (Image)slotSo.FindProperty("_activeFrame").objectReferenceValue;
+                        frame.sprite = (Sprite)slotSo.FindProperty("_activeSprite").objectReferenceValue;
+                        frame.enabled = true;
+                        var level = (TMP_Text)slotSo.FindProperty("_levelText").objectReferenceValue;
+                        level.gameObject.SetActive(true);
+                        level.text = "1";
+                        var cooldown = (Image)slotSo.FindProperty("_cooldownOverlay").objectReferenceValue;
+                        cooldown.gameObject.SetActive(damaged);
+                        cooldown.fillAmount = 0.6f;
+                    }
+                }
+            }
+        }
+
+        private static void PlaceStagePreviewStars(GameObject container)
+        {
+            foreach (var view in container.GetComponentsInChildren<WaveHudView>(true))
+            {
+                var so = new SerializedObject(view);
+                if (so.FindProperty("_gaugeFill")?.objectReferenceValue is not Image fill
+                    || so.FindProperty("_gaugeStar")?.objectReferenceValue is not RectTransform star) { continue; }
+                var rect = fill.rectTransform.rect;
+                star.position = fill.transform.TransformPoint(new Vector3(rect.xMin + rect.width * fill.fillAmount, rect.center.y, 0));
             }
         }
 
@@ -381,6 +589,14 @@ namespace Game.Editor
             foreach (var group in root.GetComponentsInChildren<CanvasGroup>(true))
             {
                 group.alpha = 1;
+            }
+            // 번쩍임 판은 연출 중에만 보이는 흰 판이라, 정지 화면에서는 투명으로 둔다
+            foreach (var behaviour in root.GetComponentsInChildren<MonoBehaviour>(true))
+            {
+                if (behaviour != null && new SerializedObject(behaviour).FindProperty("_flash")?.objectReferenceValue is CanvasGroup flash)
+                {
+                    flash.alpha = 0f;
+                }
             }
         }
 

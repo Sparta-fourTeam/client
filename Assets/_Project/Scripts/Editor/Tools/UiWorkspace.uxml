@@ -33,6 +33,7 @@
         <ui:VisualElement class="row">
           <ui:Button name="showMotionButton" text="열기 연출" />
           <ui:Button name="hideMotionButton" text="닫기 연출" />
+          <ui:Button name="scenarioMotionButton" text="등장 연출" />
           <ui:Button name="particleMotionButton" text="파티클 재생" />
           <ui:Button name="resetMotionButton" text="연출 초기화" />
         </ui:VisualElement>

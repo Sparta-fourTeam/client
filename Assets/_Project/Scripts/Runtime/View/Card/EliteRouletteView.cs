@@ -80,13 +80,19 @@ namespace Game.View
                 return;
             }
             _heading.text = $"엘리트 보상  {session.CompletedRolls + 1} / {session.CardCount}";
+            _animation = PlaySpin(round.WinnerIndex, () => Reveal(run, round));
+        }
+
+        /// <summary>바늘이 여러 바퀴 돌아 winnerIndex 칸에 멈추는 회전 연출</summary>
+        public Tween PlaySpin(int winnerIndex, TweenCallback onComplete = null)
+        {
             float start = _spinner.localEulerAngles.z;
-            float target = -(22.5f + round.WinnerIndex * 45f);
+            float target = -(22.5f + winnerIndex * 45f);
             float travel = Mathf.Repeat(start - target, 360f) + 1080f;
-            _animation = DOVirtual.Float(0f, travel, SpinSeconds,
+            return DOVirtual.Float(0f, travel, SpinSeconds,
                 angle => _spinner.localRotation = Quaternion.Euler(0f, 0f, start - angle))
                 .SetEase(Ease.OutQuart).SetUpdate(true).SetLink(gameObject)
-                .OnComplete(() => Reveal(run, round));
+                .OnComplete(onComplete);
         }
 
         private void ShowSlots()

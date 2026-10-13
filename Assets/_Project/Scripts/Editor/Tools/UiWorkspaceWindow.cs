@@ -167,6 +167,7 @@ namespace Game.Editor
             Button("showMotionButton", () => PlayMotion(() => _preview.Transition(true)));
             Button("hideMotionButton", () => PlayMotion(() => _preview.Transition(false)));
             Button("pressMotionButton", () => PlayMotion(() => _preview.Press(_motionButton.value)));
+            Button("scenarioMotionButton", () => PlayMotion(() => _preview.PlayScenario()));
             Button("particleMotionButton", () => PlayMotion(() => _preview.PlayParticles()));
             Button("resetMotionButton", Render);
             Refresh();
@@ -302,6 +303,7 @@ namespace Game.Editor
             rootVisualElement.Q<Button>("showMotionButton").SetEnabled(available && _preview.HasTransition);
             rootVisualElement.Q<Button>("hideMotionButton").SetEnabled(available && _preview.HasTransition);
             rootVisualElement.Q<Button>("pressMotionButton").SetEnabled(available && _preview.Buttons.Length > 0);
+            rootVisualElement.Q<Button>("scenarioMotionButton").SetEnabled(available && _preview.HasScenario);
             rootVisualElement.Q<Button>("particleMotionButton").SetEnabled(available && _preview.HasParticles);
             rootVisualElement.Q<Button>("resetMotionButton").SetEnabled(available);
             _motionButton?.SetEnabled(available && _preview.Buttons.Length > 0);
