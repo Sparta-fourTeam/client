@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Game.Core
 {
@@ -19,7 +20,11 @@ namespace Game.Core
         public int MinLevel;
         public int StageId;
         public string Script;
+        /// <summary>이 튜토리얼이 시작되기 전까지 잠가 둘 하단 탭 (예: skill). 시작되면 해금 연출과 함께 열린다. 비우면 없음</summary>
+        public string UnlocksTab;
         public List<string> Lines = new();
+        /// <summary>가이드 시작 전에 재생하는 대사 장면 (레벨업 연출 직후 한 번). 비우면 바로 가이드로 간다</summary>
+        public List<DialogueLine> Dialogue = new();
         public TutorialCondition Complete;
         public List<TutorialReward> Rewards = new();
 
@@ -49,12 +54,28 @@ namespace Game.Core
                 throw new InvalidOperationException($"{name}: 가이드 튜토리얼은 Script와 Lines가 필요합니다");
             }
 
+            if (Dialogue != null && Dialogue.Any(line => line == null || string.IsNullOrWhiteSpace(line.Speaker) || string.IsNullOrWhiteSpace(line.Text)))
+            {
+                throw new InvalidOperationException($"{name}: Dialogue의 Speaker와 Text는 비울 수 없습니다");
+            }
+
             Complete.Validate(data, name);
             foreach (var reward in Rewards ?? new List<TutorialReward>())
             {
                 reward.Validate(data, name);
             }
         }
+    }
+
+    /// <summary>대사 한 줄. Side는 화자 초상이 서는 쪽 (left 기본, right)</summary>
+    [Serializable]
+    public sealed class DialogueLine
+    {
+        public string Speaker;
+        public string Side;
+        public string Text;
+
+        public bool IsRight => Side == "right";
     }
 
     /// <summary>튜토리얼 완료 조건. stageCleared(StageId), upgradeLevel(UpgradeId를 Level 이상), playerLevel(Level 이상)</summary>

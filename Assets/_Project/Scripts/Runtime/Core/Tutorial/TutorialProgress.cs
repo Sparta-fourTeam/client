@@ -21,11 +21,19 @@ namespace Game.Core
 
         /// <summary>진행 중인 전투 튜토리얼의 스테이지. 없으면 0. 이 스테이지로는 로비 대신 바로 보내고 에너지를 받지 않는다</summary>
         public static int BattleStage(IEnumerable<TutorialDefinition> tutorials, TutorialFacts facts) =>
-            tutorials.FirstOrDefault(t => t.IsBattle && IsInProgress(t, facts))?.StageId ?? 0;
+            ActiveBattle(tutorials, facts)?.StageId ?? 0;
+
+        /// <summary>진행 중인 전투 튜토리얼. 없으면 null. 대사(Dialogue)가 있으면 로비에서 대사를 보여 준 뒤 전투로 보낸다</summary>
+        public static TutorialDefinition ActiveBattle(IEnumerable<TutorialDefinition> tutorials, TutorialFacts facts) =>
+            tutorials.FirstOrDefault(t => t.IsBattle && IsInProgress(t, facts));
 
         /// <summary>지금 이끌 가이드 튜토리얼. 없으면 null</summary>
         public static TutorialDefinition ActiveGuide(IEnumerable<TutorialDefinition> tutorials, TutorialFacts facts) =>
             tutorials.FirstOrDefault(t => t.IsGuide && IsInProgress(t, facts));
+
+        /// <summary>탭을 열어 주는 튜토리얼(UnlocksTab)이 아직 시작 전이면 잠겨 있다. 시작했거나 완료했으면 열려 있다</summary>
+        public static bool IsTabLocked(IEnumerable<TutorialDefinition> tutorials, TutorialFacts facts, string tab) =>
+            tutorials.Any(t => t.UnlocksTab == tab && !facts.IsDone(t.Id) && !IsStarted(t, facts));
 
         public static List<TutorialDefinition> Completable(IEnumerable<TutorialDefinition> tutorials, TutorialFacts facts) =>
             tutorials.Where(t => IsCompletable(t, facts)).ToList();

@@ -141,9 +141,14 @@ namespace Game.Tests
         }
 
         [UnityTest]
-        public IEnumerator Tutorial_NewAccountStartsInTutorialBattleInsteadOfLobby()
+        public IEnumerator Tutorial_NewAccountSeesIntroDialogueInLobbyThenStartsTutorialBattle()
         {
-            yield return StartFromBoot(save => save.tutorials = new List<string>(), "Stage");
+            // 첫 시작: 로비에서 도입 대사가 먼저 나오고, 건너뛰면 전투 튜토리얼 스테이지로 간다
+            yield return StartFromBoot(save => save.tutorials = new List<string>());
+            var dialogue = Object.FindAnyObjectByType<DialogueView>();
+            yield return WaitFor(() => dialogue.IsOpen);
+            yield return ClickGameButton(Field<Button>(dialogue, "_skipButton"));
+            yield return WaitFor(() => SceneManager.GetActiveScene().name == "Stage");
             var root = Object.FindAnyObjectByType<RootLifetimeScope>().Container;
             int tutorialStage = root.Resolve<GameDataStore>().Tutorials.First(t => t.IsBattle).StageId;
             Assert.That(root.Resolve<StageContext>().StageId, Is.EqualTo(tutorialStage));
@@ -172,14 +177,26 @@ namespace Game.Tests
             var ui = lobby.Container.Resolve<IUiRegistry>();
             var levelUp = ui.Get<LevelUpPopupView>();
             yield return WaitFor(() => levelUp.IsOpen);
-            var lines = levelUp.GetComponentsInChildren<LevelUpLineView>().Select(line => line.GetComponentInChildren<TMP_Text>().text).ToList();
-            Assert.That(lines, Has.Count.EqualTo(3));
-            Assert.That(lines[0], Does.Contain("Lv.1").And.Contain("Lv.2"));
-            Assert.That(lines[1], Does.Contain(weapon));
-            Assert.That(lines[2], Does.Contain($"×{upgrade.MaterialAt(1)}"));
+            // 해금 카드와 보상 카드만 센다 (레벨은 큰 숫자로 보여 준다). 풀에 남은 숨은 카드는 제외
+            var cards = levelUp.GetComponentsInChildren<LevelUpLineView>().Where(line => line.gameObject.activeSelf)
+                .Select(line => line.GetComponentInChildren<TMP_Text>().text).ToList();
+            Assert.That(cards, Has.Count.EqualTo(2));
+            Assert.That(cards[0], Does.Contain(weapon));
+            Assert.That(cards[1], Does.Contain($"×{upgrade.MaterialAt(1)}"));
             Assert.That(profile.Level, Is.EqualTo(intro.Rewards.Single(r => r.Kind == TutorialReward.SetLevel).Level));
 
-            yield return ClickGameButton(Field<Button>(levelUp, "_confirmButton"));
+            var tapArea = Field<Button>(levelUp, "_confirmButton");
+            if (levelUp.IsPlaying)
+            {
+                yield return ClickGameButton(tapArea);   // 첫 탭은 연출만 건너뛴다
+            }
+
+            yield return ClickGameButton(tapArea);
+            // 팝업 뒤 가이드 시작 전에 대사 장면이 먼저 나온다. SKIP으로 건너뛴다
+            var dialogue = ui.Get<DialogueView>();
+            yield return WaitFor(() => dialogue.IsOpen);
+            yield return ClickGameButton(Field<Button>(dialogue, "_skipButton"));
+            yield return WaitFor(() => !dialogue.IsOpen);
             var guide = ui.Get<TutorialGuideView>();
             var nav = ui.Get<LobbyNavView>();
             yield return WaitFor(() => Field<GameObject>(guide, "_root").activeSelf);

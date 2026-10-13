@@ -53,8 +53,9 @@ namespace Game.Boot
             }
 
             // 전투 발급이 거절되면(에너지 부족 등) 로비로 간다. 로비에서 다시 1스테이지로 보낸다
-            int tutorialStage = TutorialProgress.BattleStage(_data.Tutorials, TutorialFacts.From(_profile));
-            if (tutorialStage > 0 && await _launcher.Launch(tutorialStage))
+            // 도입 대사가 있는 전투 튜토리얼은 로비에서 대사를 본 뒤 전투로 간다 (TutorialGuideView)
+            var battle = TutorialProgress.ActiveBattle(_data.Tutorials, TutorialFacts.From(_profile));
+            if (battle != null && battle.Dialogue.Count == 0 && await _launcher.Launch(battle.StageId))
             {
                 return;
             }
