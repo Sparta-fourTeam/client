@@ -39,6 +39,18 @@ namespace Game.View
         {
             _settings = settings;
             _game = game;
+            _game.Changed += RefreshLanguage;
+        }
+
+        /// <summary>설정 변경 구독을 해제한다</summary>
+        protected override void DisposeView()
+        {
+            if (_game != null)
+            {
+                _game.Changed -= RefreshLanguage;
+            }
+
+            base.DisposeView();
         }
 
         protected override void InitializeView()
@@ -68,7 +80,7 @@ namespace Game.View
             _autoEnterToggle.SetIsOnWithoutNotify(_game.AutoEnterHighestStage);
             _frameHighToggle.SetIsOnWithoutNotify(_game.FrameRate == FrameRateMode.High);
             _frameStandardToggle.SetIsOnWithoutNotify(_game.FrameRate == FrameRateMode.Standard);
-            _languageLabel.text = LanguagePopupView.NativeName(_game.Language);
+            RefreshLanguage();
             for (int i = 0; i < _sliders.Length && i < Channels.Length; i++)
             {
                 float volume = _settings != null ? _settings.Get(Channels[i]) : SoundSettings.DefaultVolume;
@@ -78,6 +90,8 @@ namespace Game.View
         }
 
         public void Close() => PopupPanel.Set(_panel, _transition, false);
+
+        private void RefreshLanguage() => _languageLabel.text = LanguagePopupView.NativeName(_game.Language);
 
         private void OnSlider(int index, float value)
         {

@@ -94,9 +94,11 @@ namespace Game.View
 
         private void Finish(bool confirmed)
         {
-            PopupPanel.Set(_panel, _transition, false);
-            _result?.TrySetResult(confirmed);
+            var result = _result;
             _result = null;
+            PopupPanel.Set(_panel, _transition, false);
+            // 대기자가 동기적으로 다음 확인창을 열어도 새 완료소스를 지우지 않는다
+            result?.TrySetResult(confirmed);
         }
     }
 }

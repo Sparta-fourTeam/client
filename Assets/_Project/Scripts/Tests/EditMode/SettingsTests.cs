@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Reflection;
+using Cysharp.Threading.Tasks;
 using Game.Core;
 using Game.View;
 using NUnit.Framework;
@@ -38,6 +39,24 @@ namespace Game.Tests
             public string AccountId => "guest";
             public void Save(LoginMethod method, string accountId) { }
             public void Clear() { }
+        }
+
+        private sealed class MemoryAccountApi : IAccountApi
+        {
+            public int Deleted;
+            public readonly UniTaskCompletionSource Completion = new();
+            public UniTask DeleteAccount() { Deleted++; return Completion.Task; }
+            public UniTask LinkAccount(LoginMethod method, string accountId) => UniTask.CompletedTask;
+        }
+
+        private sealed class MemoryNavigator : ISceneNavigator
+        {
+            public int LoadingCalls;
+            public SceneId Current => default;
+            public UniTask GoToLoading() { LoadingCalls++; return UniTask.CompletedTask; }
+            public UniTask GoToLobby() => UniTask.CompletedTask;
+            public UniTask GoToStage(int stageId) => UniTask.CompletedTask;
+            public UniTask RestartStage() => UniTask.CompletedTask;
         }
 
         private static T Field<T>(object target, string name) => (T)target.GetType().GetField(name, Flags).GetValue(target);
@@ -164,6 +183,119 @@ namespace Game.Tests
         }
 
         // ---------- 메뉴 팝업 ----------
+
+        [Test(Description = "두 단계 삭제 확인이 동기적으로 이어져도 닉네임 확인을 완료하고, 처리 중 연타를 막으며 완료 뒤 다시 열린다")]
+        public void Menu_DeleteAccount_CompletesSecondPromptAndReopens()
+        {
+            var (menu, confirm, api, nav) = CreateDeleteMenu();
+            var delete = Field<Button>(menu, "_deleteAccountButton");
+            var accept = Field<Button>(confirm, "_confirmButton");
+            var input = Field<TMP_InputField>(confirm, "_input");
+
+            delete.onClick.Invoke();
+            delete.onClick.Invoke();
+            accept.onClick.Invoke();
+            Assert.IsTrue(confirm.IsOpen, "첫 확인의 continuation이 두 번째 창을 연다");
+            Assert.IsTrue(input.gameObject.activeSelf);
+            Assert.IsFalse(accept.interactable);
+            input.text = "wrong";
+            Assert.IsFalse(accept.interactable);
+            input.text = "Review_Ninja";
+            Assert.IsTrue(accept.interactable);
+            accept.onClick.Invoke();
+            Assert.AreEqual(1, api.Deleted, "두 번째 완료소스가 살아 있어야 삭제 흐름이 이어진다");
+            Assert.AreEqual(0, nav.LoadingCalls);
+            accept.onClick.Invoke();
+            delete.onClick.Invoke();
+            Assert.IsFalse(Field<PopupTransition>(confirm, "_transition").IsShown, "계정 API 완료 전에는 연타로 새 흐름을 시작하지 않는다");
+            Assert.AreEqual(1, api.Deleted);
+
+            api.Completion.TrySetResult();
+            Assert.AreEqual(1, nav.LoadingCalls);
+            delete.onClick.Invoke();
+            Assert.IsTrue(confirm.IsOpen, "완료 후 메뉴 busy가 풀린다");
+            Field<Button>(confirm, "_cancelButton").onClick.Invoke();
+        }
+
+        [TestCase(false, false)]
+        [TestCase(false, true)]
+        [TestCase(true, false)]
+        [TestCase(true, true)]
+        public void Menu_DeleteAccount_CancelOrCloseAtEitherStepAllowsRetry(bool secondStep, bool close)
+        {
+            var (menu, confirm, api, nav) = CreateDeleteMenu();
+            var delete = Field<Button>(menu, "_deleteAccountButton");
+            delete.onClick.Invoke();
+            if (secondStep)
+            {
+                Field<Button>(confirm, "_confirmButton").onClick.Invoke();
+                Field<TMP_InputField>(confirm, "_input").text = "Review_Ninja";
+            }
+
+            Field<Button>(confirm, close ? "_closeButton" : "_cancelButton").onClick.Invoke();
+            Assert.IsFalse(Field<PopupTransition>(confirm, "_transition").IsShown);
+            Assert.AreEqual(0, api.Deleted);
+            Assert.AreEqual(0, nav.LoadingCalls);
+            delete.onClick.Invoke();
+            Assert.IsTrue(confirm.IsOpen);
+            Assert.IsFalse(Field<TMP_InputField>(confirm, "_input").gameObject.activeSelf, "재시도는 첫 확인부터 시작한다");
+            Field<Button>(confirm, "_cancelButton").onClick.Invoke();
+        }
+
+        private (LobbyMenuPopupView, ConfirmPopupView, MemoryAccountApi, MemoryNavigator) CreateDeleteMenu()
+        {
+            var menu = Spawn<LobbyMenuPopupView>("LobbyMenuPopup");
+            var confirm = Spawn<ConfirmPopupView>("ConfirmPopup");
+            var api = new MemoryAccountApi();
+            var nav = new MemoryNavigator();
+            var profile = new PlayerProfile(null);
+            profile.Apply(new PlayerSnapshot { nickname = "Review_Ninja" });
+            menu.Construct(new AccountService(api, new GuestCredentials(), nav, null), profile);
+            typeof(LobbyMenuPopupView).GetField("_confirm", Flags).SetValue(menu, confirm);
+            menu.Open();
+            return (menu, confirm, api, nav);
+        }
+
+        [Test(Description = "언어 선택 즉시 열려 있는 설정 표시가 바뀌고, 취소·재열기·반복 선택도 저장값과 일치한다")]
+        public void SettingsPopup_LanguageSelectionRefreshesOpenLabel()
+        {
+            var store = new MemorySettingsStore();
+            var game = new GameSettings(store);
+            var settings = Spawn<SettingsPopupView>("SettingsPopup");
+            var language = Spawn<LanguagePopupView>("LanguagePopup");
+            settings.Construct(new SoundSettings(new MemoryStore()), game);
+            language.Construct(game);
+            typeof(SettingsPopupView).GetField("_language", Flags).SetValue(settings, language);
+            var label = Field<TMP_Text>(settings, "_languageLabel");
+            var options = Field<Toggle[]>(language, "_options");
+            var open = Field<Button>(settings, "_languageButton");
+            settings.Open();
+            Assert.AreEqual("한국어", label.text);
+            open.onClick.Invoke();
+            options[1].isOn = true;
+            Assert.IsTrue(settings.IsOpen);
+            Assert.IsFalse(Field<PopupTransition>(language, "_transition").IsShown);
+            Assert.AreEqual("English", label.text);
+            Assert.AreEqual(GameLanguage.English, new GameSettings(store).Language);
+
+            open.onClick.Invoke();
+            Assert.IsTrue(options[1].isOn);
+            Field<Button>(language, "_closeButton").onClick.Invoke();
+            Assert.AreEqual("English", label.text);
+            Assert.AreEqual(GameLanguage.English, game.Language);
+            open.onClick.Invoke();
+            options[0].isOn = true;
+            Assert.AreEqual("한국어", label.text);
+            settings.Close();
+            settings.Open();
+            open.onClick.Invoke();
+            options[1].isOn = true;
+            Assert.AreEqual("English", label.text);
+
+            settings.Dispose();
+            game.SetLanguage(GameLanguage.Korean);
+            Assert.AreEqual("English", label.text, "Dispose 뒤에는 변경 구독이 남지 않는다");
+        }
 
         [Test(Description = "메뉴 바깥을 누르면 닫히고, 설정을 누르면 메뉴가 닫히고 설정 팝업이 열린다")]
         public void Menu_ClosesOnBackground_AndOpensSettings()
