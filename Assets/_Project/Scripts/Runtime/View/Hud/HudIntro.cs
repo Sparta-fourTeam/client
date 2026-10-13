@@ -45,6 +45,8 @@ namespace Game.View
         private const float DropSeconds = 0.3f;
         private const float SwingSeconds = 2.4f;
         private const float SwingDecay = 2.2f;
+        // 씬 전환 커튼이 이 정도까지 걷히면 연출을 시작한다 (다 걷힐 때까지 기다리면 첫 움직임을 놓친다)
+        private const float CurtainOpenEnough = 0.55f;
 
         [SerializeField] private Item[] _items = Array.Empty<Item>();
         [Tooltip("켜면 오브젝트가 처음 시작될 때 자동으로 재생한다")]
@@ -53,6 +55,8 @@ namespace Game.View
         private Vector2[] _home;
         private Vector3[] _homeScale;
         private Sequence _sequence;
+        private TransitionCurtain _curtain;
+        private bool _waitingForCurtain;
 
         private void Start()
         {
@@ -63,6 +67,16 @@ namespace Game.View
         }
 
         private void OnDestroy() => _sequence?.Kill();
+
+        // 씬 전환 커튼에 가려진 동안 연출이 끝나 버리지 않도록, 커튼이 걷히기 시작할 때 재생한다
+        private void Update()
+        {
+            if (_waitingForCurtain && (_curtain == null || _curtain.Coverage < CurtainOpenEnough))
+            {
+                _waitingForCurtain = false;
+                _sequence?.Play();
+            }
+        }
 
         /// <summary>처음부터 다시 재생한다. 진행 중이던 연출은 자리로 돌려놓고 끊는다</summary>
         public void Play()
@@ -76,11 +90,20 @@ namespace Game.View
                 if (item?.Target == null) { continue; }
                 _sequence.Insert(item.Delay, Build(item, _home[i], _homeScale[i]));
             }
+
+            // 조각은 이미 화면 밖에 있으므로, 커튼이 덮고 있다면 멈춰 둔 채 기다린다
+            _curtain = FindFirstObjectByType<TransitionCurtain>();
+            _waitingForCurtain = _curtain != null && _curtain.Coverage >= CurtainOpenEnough;
+            if (_waitingForCurtain)
+            {
+                _sequence.Pause();
+            }
         }
 
         /// <summary>연출을 끊고 모든 조각을 프리팹에 저장된 자리로 돌려놓는다</summary>
         public void Stop()
         {
+            _waitingForCurtain = false;
             _sequence?.Kill();
             _sequence = null;
             if (_home == null) { return; }
