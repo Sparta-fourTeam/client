@@ -1,4 +1,4 @@
-"""Validate a release candidate against confirmed Play releases, not build history."""
+"""Validate a release candidate against confirmed Play uploads, not build history."""
 import argparse
 import json
 import os
@@ -16,27 +16,28 @@ def release_number(policy, requested_version, main_policy=None):
         raise ValueError('Invalid candidate version code')
     if requested_version != version:
         raise ValueError('Requested version must match the committed release candidate')
-    released = {}
+    consumed = {}
     for ledger in [policy, main_policy or {}]:
         seen = set()
-        for row in ledger.get('playReleases', []):
+        for row in ledger.get('playUploads', []):
             number, name = row['versionCode'], row['versionName']
             if type(number) is not int or number <= 0 or not isinstance(name, str) or not re.fullmatch(r'\d+(?:\.\d+){1,2}', name):
-                raise ValueError('Invalid confirmed Play release record')
+                raise ValueError('Invalid confirmed Play upload record')
             if number in seen:
-                raise ValueError('Duplicate code in one confirmed Play release ledger')
+                raise ValueError('Duplicate code in one confirmed Play upload ledger')
             seen.add(number)
-            if number in released and released[number] != name:
-                raise ValueError('Conflicting confirmed Play release records')
-            released[number] = name
-    if sorted(released) != list(range(1, len(released) + 1)):
-        raise ValueError('Confirmed Play release codes must be sequential from 1')
-    if len(set(released.values())) != len(released):
-        raise ValueError('A Play version name cannot consume multiple release codes')
-    if code != len(released) + 1 or version in released.values():
-        raise ValueError('Candidate must use the next unpublished release code and version name')
-    if main_policy and code == main_policy['versionCode'] and version != main_policy['versionName']:
-        raise ValueError('The same pending release code cannot name a different main candidate')
+            if number in consumed and consumed[number] != name:
+                raise ValueError('Conflicting confirmed Play upload records')
+            consumed[number] = name
+    if sorted(consumed) != list(range(1, len(consumed) + 1)):
+        raise ValueError('Confirmed Play upload codes must be sequential from 1')
+    if len(set(consumed.values())) != len(consumed):
+        raise ValueError('A Play version name cannot consume multiple upload codes')
+    if code != len(consumed) + 1 or version in consumed.values():
+        raise ValueError('Candidate must use the next unused code and version name')
+    legacy = [row['versionCode'] for ledger in [policy, main_policy or {}] for row in ledger.get('legacyDraftUploads', [])]
+    if code in legacy:
+        raise ValueError('Candidate code has already been uploaded as a legacy draft')
     return version, code
 
 
@@ -46,7 +47,7 @@ def main():
     args = parser.parse_args()
     policy = json.loads(Path('.github/android-release.json').read_text())
     # Checkout fetch-depth: 0 supplies origin/main. This also catches a stale branch
-    # after a newer main commit records a confirmed Play release.
+    # after a newer main commit records a confirmed Play upload.
     subprocess.run(['git', 'rev-parse', '--verify', 'refs/remotes/origin/main'], check=True, capture_output=True)
     current = subprocess.run(['git', 'show', 'refs/remotes/origin/main:.github/android-release.json'],
                              text=True, capture_output=True)

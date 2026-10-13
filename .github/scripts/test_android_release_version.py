@@ -13,7 +13,8 @@ spec.loader.exec_module(module)
 
 
 def policy(code=1, version='1.0.1', released=None):
-    return {'versionName': version, 'versionCode': code, 'playReleases': released or []}
+    return {'versionName': version, 'versionCode': code, 'playUploads': released or [],
+            'legacyDraftUploads': [{'versionName': '1.0', 'versionCode': 214011987}]}
 
 
 class ReleaseNumberTests(unittest.TestCase):
@@ -21,14 +22,21 @@ class ReleaseNumberTests(unittest.TestCase):
         self.assertEqual(module.release_number(policy(), '1.0.1'), ('1.0.1', 1))
         self.assertEqual(module.release_number(policy(), '1.0.1', policy()), ('1.0.1', 1))
 
-    def test_next_confirmed_release_increments_by_one(self):
+    def test_next_confirmed_upload_increments_by_one(self):
         released = [{'versionName': '1.0.1', 'versionCode': 1}]
         self.assertEqual(module.release_number(policy(2, '1.0.2', released), '1.0.2', policy()), ('1.0.2', 2))
 
-    def test_stale_checkout_cannot_reuse_code_released_on_main(self):
+    def test_stale_checkout_cannot_reuse_code_uploaded_on_main(self):
         main = policy(2, '1.0.2', [{'versionName': '1.0.1', 'versionCode': 1}])
         with self.assertRaises(ValueError):
             module.release_number(policy(), '1.0.1', main)
+
+    def test_accepted_legacy_draft_code_is_unavailable_without_raising_the_floor(self):
+        self.assertEqual(module.release_number(policy(), '1.0.1'), ('1.0.1', 1))
+        used = policy()
+        used['legacyDraftUploads'].append({'versionName': '0.9.0', 'versionCode': 1})
+        with self.assertRaises(ValueError):
+            module.release_number(policy(), '1.0.1', used)
 
     def test_code_skip_gap_duplicate_and_conflict_are_rejected(self):
         invalid = [policy(2), policy(True), policy(214011987),
@@ -41,11 +49,10 @@ class ReleaseNumberTests(unittest.TestCase):
             module.release_number(policy(2, released=[{'versionName': '1.0.0', 'versionCode': 1}]), '1.0.1',
                                   policy(2, released=[{'versionName': '0.9.0', 'versionCode': 1}]))
 
-    def test_requested_version_and_pending_main_candidate_cannot_diverge(self):
+    def test_requested_version_must_match_and_unuploaded_candidate_can_change_name(self):
         with self.assertRaises(ValueError):
             module.release_number(policy(), '1.0')
-        with self.assertRaises(ValueError):
-            module.release_number(policy(1, '1.0.2'), '1.0.2', policy())
+        self.assertEqual(module.release_number(policy(1, '1.0.2'), '1.0.2', policy()), ('1.0.2', 1))
 
     def test_cli_ignores_old_high_code_build_tag_and_checks_new_tag_tree(self):
         with tempfile.TemporaryDirectory() as folder:

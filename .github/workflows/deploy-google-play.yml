@@ -198,7 +198,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Reject a candidate already recorded as released
+      - name: Reject a candidate already recorded as uploaded
         env:
           RELEASE_VERSION: ${{ inputs.release_version }}
         run: python3 .github/scripts/android-release-version.py --version "$RELEASE_VERSION"
