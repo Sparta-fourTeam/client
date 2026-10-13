@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace Game.Core
 {
@@ -18,8 +19,11 @@ namespace Game.Core
         public string UpgradeId;
         public int MaxLevel;
 
-        /// <summary>level(1부터)에 도달하기 위한 코인 비용. 첫 구매(레벨 0 → 1)는 index 0이다</summary>
+        /// <summary>level(1부터)에 도달하기 위한 코인 비용. 첫 구매(레벨 0 → 1)는 index 0이다.
+        /// 배열을 직접 적지 않고 CostBase·CostStep(레벨 L의 비용 = CostBase + CostStep × (L - 1))으로 줄여 적을 수 있다</summary>
         public int[] LevelCosts;
+        public int CostBase;
+        public int CostStep;
 
         /// <summary>이 플레이어 레벨부터 강화할 수 있다. 값을 쓰지 않으면 처음부터 가능하다</summary>
         public int UnlockLevel = 1;
@@ -29,8 +33,26 @@ namespace Game.Core
 
         /// <summary>level(1부터)에 도달하기 위한 재료 수량. 재료를 쓰는 강화만 MaxLevel개를 채운다</summary>
         public int[] MaterialCosts;
+        public int MaterialBase;
+        public int MaterialStep;
 
         public List<UpgradeStatEffect> Effects = new();
+
+        /// <summary>배열이 없고 Base가 있으면 Base·Step으로 MaxLevel개를 채운다. 배열을 적었으면 그 값이 우선한다</summary>
+        [OnDeserialized]
+        private void ExpandLinearCosts(StreamingContext _)
+        {
+            if (MaxLevel < 1 || MaxLevel > 1000) { return; }
+            if (LevelCosts == null && CostBase > 0) { LevelCosts = Linear(CostBase, CostStep); }
+            if (MaterialCosts == null && MaterialBase > 0) { MaterialCosts = Linear(MaterialBase, MaterialStep); }
+        }
+
+        private int[] Linear(int start, int step)
+        {
+            var values = new int[MaxLevel];
+            for (int i = 0; i < values.Length; i++) { values[i] = start + step * i; }
+            return values;
+        }
 
         public bool UsesMaterial => !string.IsNullOrWhiteSpace(MaterialItemId);
 

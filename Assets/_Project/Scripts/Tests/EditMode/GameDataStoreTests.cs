@@ -107,5 +107,29 @@ namespace Game.Tests
             unknownCondition.Condition = new GeneralCardRule { Kind = "nope" };
             Assert.Throws<InvalidOperationException>(() => unknownCondition.Validate());
         }
+
+        [Test(Description = "강화 비용을 Base·Step으로 줄여 적어도 레벨별 배열로 펼쳐지고, 배열을 적으면 배열이 우선한다")]
+        public void Upgrade_ExpandsLinearCostsAndPrefersExplicitArrays()
+        {
+            var linear = JsonConvert.DeserializeObject<UpgradeDefinition>(
+                "{\"UpgradeId\":\"a\",\"MaxLevel\":4,\"CostBase\":100,\"CostStep\":30,\"MaterialItemId\":\"book.arrow\",\"MaterialBase\":2,\"MaterialStep\":3}");
+            Assert.That(linear.LevelCosts, Is.EqualTo(new[] { 100, 130, 160, 190 }));
+            Assert.That(linear.MaterialCosts, Is.EqualTo(new[] { 2, 5, 8, 11 }));
+            linear.Validate();
+
+            var explicitCosts = JsonConvert.DeserializeObject<UpgradeDefinition>(
+                "{\"UpgradeId\":\"b\",\"MaxLevel\":2,\"LevelCosts\":[7,9],\"CostBase\":100,\"CostStep\":30}");
+            Assert.That(explicitCosts.LevelCosts, Is.EqualTo(new[] { 7, 9 }));
+        }
+
+        [Test(Description = "PlayerLevels는 시작값과 증가분으로 레벨별 필요 경험치를 만든다")]
+        public void PlayerLevels_BuildsRequiredExpFromBaseAndStep()
+        {
+            var table = JsonConvert.DeserializeObject<PlayerLevelConfig>("{\"BaseExp\":10,\"StepExp\":5,\"MaxLevel\":4}").ToTable();
+            Assert.AreEqual(4, table.MaxLevel);
+            Assert.AreEqual(10, table.RequiredToNext(1));
+            Assert.AreEqual(20, table.RequiredToNext(3));
+            Assert.AreEqual(0, table.RequiredToNext(4));
+        }
     }
 }

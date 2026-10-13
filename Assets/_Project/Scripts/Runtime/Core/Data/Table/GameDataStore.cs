@@ -112,7 +112,7 @@ namespace Game.Core
             Items.GetOrThrow(ItemIds.GemChest);
             StageRewards = new Table<int, StageRewardBalance>(rewards);
             Energy = JsonConvert.DeserializeObject<EnergyConfig>(_rawJson["Energy"]);
-            PlayerLevels = new PlayerLevelTable(JsonConvert.DeserializeObject<List<PlayerLevelRow>>(_rawJson["PlayerLevels"]));
+            PlayerLevels = JsonConvert.DeserializeObject<PlayerLevelConfig>(_rawJson["PlayerLevels"]).ToTable();
             var tutorials = JsonConvert.DeserializeObject<List<TutorialDefinition>>(_rawJson["Tutorials"]);
             var tutorialIds = new HashSet<string>();
             foreach (var tutorial in tutorials)
