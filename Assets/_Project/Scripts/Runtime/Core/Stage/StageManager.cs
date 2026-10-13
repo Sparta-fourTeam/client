@@ -137,6 +137,16 @@ namespace Game.Core
             }
         }
 
+#if UNITY_EDITOR
+        /// <summary>현재 전투에만 치트 배속을 적용한다. 멈춘 상태의 늦은 클릭은 무시하고 일반 배속 선호값은 저장하지 않는다</summary>
+        public void SetPlaytestSpeed(float speed)
+        {
+            if (State != StageState.Playing || speed is not (1f or 4f or 8f)) { return; }
+            _speed = speed;
+            Time.timeScale = _speed;
+        }
+#endif
+
         /// <summary>마지막이 아닌 웨이브가 끝나면 카드 3장을 제시하고 CardSelect로 전환한다. 적 이동·스폰도 timeScale로 함께 멈춘다</summary>
         private void OnWaveCompleted(WaveCompleted e)
         {

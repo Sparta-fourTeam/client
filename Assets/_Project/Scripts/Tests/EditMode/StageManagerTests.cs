@@ -309,6 +309,61 @@ namespace Game.Tests
             Assert.AreEqual(0f, Time.timeScale);
         }
 
+        [TestCase(1f)]
+        [TestCase(4f)]
+        [TestCase(8f)]
+        public void PlaytestSpeed_LateClicksStayPaused_AndRewardsRestoreSessionSpeed(float speed)
+        {
+            _manager.SetSpeed(2f);
+            _manager.SetPlaytestSpeed(speed);
+            Assert.AreEqual(speed, Time.timeScale);
+
+            _manager.Pause();
+            _manager.SetPlaytestSpeed(speed == 8f ? 4f : 8f);
+            Assert.AreEqual(StageState.Paused, _manager.State);
+            Assert.AreEqual(0f, Time.timeScale);
+            _manager.Resume();
+            Assert.AreEqual(speed, Time.timeScale);
+
+            FillGauge(false);
+            _manager.SetPlaytestSpeed(speed == 8f ? 4f : 8f);
+            Assert.AreEqual(StageState.CardSelect, _manager.State);
+            Assert.AreEqual(0f, Time.timeScale);
+            _manager.PickCard(0);
+            Assert.AreEqual(speed, Time.timeScale);
+
+            _enemyDied.Publish(new EnemyDied(1001, type: EnemyType.Elite));
+            _manager.SetPlaytestSpeed(speed == 8f ? 4f : 8f);
+            Assert.AreEqual(StageState.EliteRoulette, _manager.State);
+            Assert.AreEqual(0f, Time.timeScale);
+            CompleteRoulette();
+            Assert.AreEqual(speed, Time.timeScale);
+            Assert.AreEqual(2f, PlayerPrefs.GetFloat("stage_speed"));
+
+            _manager.SetSpeed(2f);
+            Assert.AreEqual(2f, Time.timeScale, "일반 배속을 선택하면 세션 치트 배속을 대체한다");
+        }
+
+        [Test]
+        public void PlaytestSpeed_DoesNotCreatePreference_OrResumeEndedStage()
+        {
+            _manager.SetPlaytestSpeed(8f);
+            Assert.IsFalse(PlayerPrefs.HasKey("stage_speed"));
+            _api.ToThrow = new ApiException(ApiErrorKind.Network, "NETWORK");
+            _stageEnded.Publish(new StageEnded(StageOutcome.Fail));
+            _manager.SetPlaytestSpeed(4f);
+            Assert.AreEqual(StageState.Submitting, _manager.State);
+            Assert.AreEqual(0f, Time.timeScale);
+            _api.ToThrow = null;
+            _manager.RetrySubmit();
+            _manager.SetPlaytestSpeed(8f);
+            Assert.AreEqual(StageState.Finished, _manager.State);
+            Assert.AreEqual(0f, Time.timeScale);
+            Assert.IsFalse(PlayerPrefs.HasKey("stage_speed"));
+            _manager.Dispose();
+            Assert.AreEqual(1f, Time.timeScale);
+        }
+
         [Test(Description = "마지막 웨이브가 끝나면 카드 선택으로 가지 않는다")]
         public void GaugeFilled_Final_StaysPlaying()
         {
