@@ -29,6 +29,8 @@ namespace Game.Boot
             builder.Register<ISocialSignIn, PlaceholderAppleSignIn>(Lifetime.Singleton);
             // TODO(server): 호출부 없음 — 예: BootFlow에서 GetVersions() 비교 후 GetTable()로 갱신
             builder.Register<IDataApi, LocalDataApi>(Lifetime.Singleton);
+            builder.Register<IAccountApi, LocalAccountApi>(Lifetime.Singleton);
+            builder.Register<AccountService>(Lifetime.Singleton);
             builder.Register<IPlayerApi, LocalPlayerApi>(Lifetime.Singleton);
             builder.Register<IBattleApi, LocalBattleApi>(Lifetime.Singleton).AsSelf().As<ISubmitFaultSwitch>();
             builder.Register<IUpgradeApi, LocalUpgradeApi>(Lifetime.Singleton);
@@ -42,6 +44,10 @@ namespace Game.Boot
             builder.Register<IVolumeStore, PlayerPrefsVolumeStore>(Lifetime.Singleton);
             builder.Register<SoundSettings>(Lifetime.Singleton);
             builder.RegisterEntryPoint<SoundVolumeApplier>();
+            // 데미지 표시·프레임레이트 같은 나머지 기기 설정도 기기에 저장하고 시작할 때와 바뀔 때 적용한다
+            builder.Register<ISettingsStore, PlayerPrefsSettingsStore>(Lifetime.Singleton);
+            builder.Register<GameSettings>(Lifetime.Singleton);
+            builder.RegisterEntryPoint<GameSettingsApplier>();
 
             builder.Register<StageContext>(Lifetime.Singleton);
             builder.RegisterInstance<ITransitionCurtain>(curtain);

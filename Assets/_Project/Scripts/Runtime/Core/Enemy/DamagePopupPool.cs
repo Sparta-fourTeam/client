@@ -16,6 +16,9 @@ namespace Game.Core
         private static DamagePopupPool s_instance;
         private static bool s_warned;
 
+        /// <summary>false면 데미지 숫자를 띄우지 않는다 (설정의 데미지 표시)</summary>
+        public static bool Enabled { get; set; } = true;
+
         private readonly List<DamagePopup> _active = new(); // 오래된 순서
         private readonly Stack<DamagePopup> _free = new();
         private DamagePopup _prefab;
@@ -26,7 +29,7 @@ namespace Game.Core
         /// <summary>amount만큼의 피해를 position에 띄운다. scene은 풀을 둘 씬(보통 피해를 받은 적이 있는 씬)이다</summary>
         public static void Show(int amount, Vector3 position, Scene scene)
         {
-            if (amount <= 0)
+            if (amount <= 0 || !Enabled)
             {
                 return;
             }

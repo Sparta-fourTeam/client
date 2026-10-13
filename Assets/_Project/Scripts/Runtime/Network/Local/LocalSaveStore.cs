@@ -82,9 +82,13 @@ namespace Game.Network
                 ? JsonConvert.DeserializeObject<LocalSave>(File.ReadAllText(_filePath), ReplaceCollections)
                 : NewSave();
             // 튜토리얼이 생기기 전 저장 파일은 이미 플레이한 계정이므로 튜토리얼을 마친 것으로 본다
+            save.nickname = string.IsNullOrEmpty(save.nickname) ? NewNickname() : save.nickname;
             save.tutorials ??= save.exp > 0 ? new List<string>(_legacyTutorials) : new List<string>();
             return save;
         }
+
+        // 서버가 닉네임을 정해 주기 전까지 Local 계정에 붙이는 임시 닉네임. 저장 파일에 남아 같은 계정이면 같은 값이 유지된다
+        private static string NewNickname() => $"Ninja_{UnityEngine.Random.Range(100000, 1000000)}";
 
         private LocalSave NewSave()
         {
@@ -92,6 +96,12 @@ namespace Game.Network
             save.wallet.energyStored = _startEnergy;
             save.wallet.energyUpdatedAt = DateTime.UtcNow.ToString("O");
             return save;
+        }
+
+        /// <summary>저장 파일을 지운다. 파일이 없으면 아무것도 하지 않는다</summary>
+        public void Delete()
+        {
+            if (File.Exists(_filePath)) { File.Delete(_filePath); }
         }
 
         /// <summary>이전 저장 내용을 덮어쓴다</summary>

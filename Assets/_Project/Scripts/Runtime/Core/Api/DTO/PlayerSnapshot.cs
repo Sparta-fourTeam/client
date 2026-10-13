@@ -7,6 +7,8 @@ namespace Game.Core
     [Serializable]
     public class PlayerSnapshot
     {
+        /// <summary>플레이어 닉네임. 계정을 만들 때 정해지고, 계정 삭제를 확인할 때 입력받는다</summary>
+        public string nickname;
         public int gold;
         public int exp;
         public int energyStored;

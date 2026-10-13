@@ -8,6 +8,8 @@ namespace Game.Network
     [Serializable]
     public class LocalSave
     {
+        /// <summary>닉네임. 비어 있는 이전 저장 파일은 LocalSaveStore가 불러올 때 만들어 채운다</summary>
+        public string nickname;
         public WalletRow wallet = new();
         public int exp;
         public List<StageProgressRow> stageProgress = new() { new StageProgressRow { stageId = 1, clearRating = 0 } };

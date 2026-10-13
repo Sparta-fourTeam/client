@@ -15,6 +15,9 @@ namespace Game.Core
         private readonly bool[] playing = new bool[7];
         private static readonly string[] Names = { "Freeze", "Burn", "Paralysis", "Stun", "Frostbite", "Slow", "Vulnerability" };
 
+        /// <summary>false면 상태이상 이펙트를 그리지 않는다 (설정의 디버프 이펙트). 상태이상 자체의 효과는 그대로다</summary>
+        public static bool Enabled { get; set; } = true;
+
         public void Bind(EnemyModel target)
         {
             StopAll();
@@ -59,13 +62,14 @@ namespace Game.Core
                 if (order != appliedOrder) { sortingGroup.sortingOrder = order; appliedOrder = order; }
             }
             if (model == null || model.IsDead) { StopAll(); return; }
-            Set(0, model.IsFrozen);
-            Set(1, model.BurnRemaining > 0);
-            Set(2, model.IsParalyzed);
-            Set(3, model.IsStunned);
-            Set(4, model.FrostbiteStacks > 0 && !model.IsFrozen);
-            Set(5, !model.IsFrozen && model.MovementMultiplier < 1);
-            Set(6, model.VulnerabilityRemaining > 0);
+            bool show = Enabled;
+            Set(0, show && model.IsFrozen);
+            Set(1, show && model.BurnRemaining > 0);
+            Set(2, show && model.IsParalyzed);
+            Set(3, show && model.IsStunned);
+            Set(4, show && model.FrostbiteStacks > 0 && !model.IsFrozen);
+            Set(5, show && !model.IsFrozen && model.MovementMultiplier < 1);
+            Set(6, show && model.VulnerabilityRemaining > 0);
         }
 
         private void Set(int index, bool active)
