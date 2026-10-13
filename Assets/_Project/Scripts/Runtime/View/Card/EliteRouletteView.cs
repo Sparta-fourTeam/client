@@ -20,6 +20,8 @@ namespace Game.View
         [SerializeField] private SkillAssetTable _assets;
         [SerializeField] private Sprite _cardBackground;
         [SerializeField] private UnityEngine.UI.Button _skipButton;
+        [Tooltip("당첨 칸을 칠하는 부채꼴 (Radial360, 12시 기준 시계 방향 45도 채움). 비워 두면 표시하지 않는다")]
+        [SerializeField] private RectTransform _winGlow;
 
         private StageManager _manager;
         private Tween _animation;
@@ -52,6 +54,7 @@ namespace Game.View
                 return;
             }
             _panel.SetActive(true);
+            HideWinGlow();
             _skipButton.interactable = true;
             _skipButtonLabel.text = "스킵";
             _shownCards = 0;
@@ -73,6 +76,7 @@ namespace Game.View
         {
             if (!Current(run)) { return; }
             var session = _manager.Roulette;
+            HideWinGlow();
             var round = session.PrepareRound();
             if (round == null)
             {
@@ -93,6 +97,19 @@ namespace Game.View
                 angle => _spinner.localRotation = Quaternion.Euler(0f, 0f, start - angle))
                 .SetEase(Ease.OutQuart).SetUpdate(true).SetLink(gameObject)
                 .OnComplete(onComplete);
+        }
+
+        // 당첨된 칸을 민트색으로 칠한다. 12시에서 시계 방향으로 칸 번호 × 45도만큼 돌려 해당 칸에 맞춘다
+        private void ShowWinGlow(int winnerIndex)
+        {
+            if (_winGlow == null) { return; }
+            _winGlow.localRotation = Quaternion.Euler(0f, 0f, -winnerIndex * 45f);
+            _winGlow.gameObject.SetActive(true);
+        }
+
+        private void HideWinGlow()
+        {
+            if (_winGlow != null) { _winGlow.gameObject.SetActive(false); }
         }
 
         private void ShowSlots()
@@ -121,6 +138,7 @@ namespace Game.View
         {
             if (!Current(run)) { return; }
             ShowReward(round);
+            ShowWinGlow(round.WinnerIndex);
             if (!Current(run)) { return; }
             _animation = DOVirtual.DelayedCall(0.4f, () => SpinNext(run), ignoreTimeScale: true).SetLink(gameObject);
         }
@@ -162,6 +180,7 @@ namespace Game.View
                 if (round == null) { break; }
                 _spinner.localRotation = Quaternion.Euler(0f, 0f, -(22.5f + round.WinnerIndex * 45f));
                 ShowReward(round);
+                ShowWinGlow(round.WinnerIndex);
             }
             if (Current(run)) { ShowCompletion(run); }
         }

@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 47cd0d7af5d5b4eacb6e2770dce17d63
+guid: eb082e34e818846bc9ad551e0d33e376
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -6267966932671368392
-    second: Rl_Needle_0
+      213: 4189080597395037512
+    second: Rl_Hub_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -128,13 +128,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Rl_Needle_0
+      name: Rl_Hub_0
       rect:
         serializedVersion: 2
-        x: 24
-        y: 39
-        width: 817
-        height: 984
+        x: 0
+        y: 0
+        width: 200
+        height: 209
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -143,8 +143,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 8337a3aa845b309a0800000000000000
-      internalID: -6267966932671368392
+      spriteID: 84d563fcb9a922a30800000000000000
+      internalID: 4189080597395037512
       vertices: []
       indices: 
       edges: []
@@ -163,7 +163,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Rl_Needle_0: -6267966932671368392
+      Rl_Hub_0: 4189080597395037512
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
