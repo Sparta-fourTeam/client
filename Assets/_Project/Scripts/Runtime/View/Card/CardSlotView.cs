@@ -22,9 +22,8 @@ namespace Game.View
         [SerializeField] private Image _iconImage;
         [SerializeField] private Image _iconFrame;
         [Header("신규 / 강화 스타일 (비워 두면 그 부분은 바꾸지 않는다)")]
-        [Tooltip("아이콘 메달 테두리 색. 새 무기와 강화 카드가 다르다")]
-        [SerializeField] private Color _newMedalColor = new Color(0.25f, 0.66f, 1f, 1f);
-        [SerializeField] private Color _upgradeMedalColor = new Color(0.24f, 0.92f, 0.71f, 1f);
+        [Tooltip("메달 테두리 색은 무기 속성을 따른다. 일반 카드(속성 없음)는 Mist 색")]
+        [SerializeField] private Color _generalMedalColor = new Color(0.77f, 0.75f, 0.89f, 1f);
         [Tooltip("새 무기일 때만 보이는 NEW 태그")]
         [SerializeField] private GameObject _newBadge;
         [Tooltip("강화 단계(1 → 2) 리본. 새 무기와 일반 카드에서는 숨긴다")]
@@ -218,16 +217,34 @@ namespace Game.View
             }
 
             if (_iconFrame != null) { _iconFrame.enabled = _iconImage.enabled && icon != null; }
-            ApplyStyle(choice.IsNewWeapon);
+            ApplyStyle(choice);
         }
 
-        // 새 무기는 파란 메달 테두리와 NEW 태그, 그 밖의 카드는 초록 메달 테두리와 강화 단계 리본을 쓴다
-        private void ApplyStyle(bool isNew)
+        // 메달 테두리는 무기 속성 색, 새 무기는 NEW 태그, 강화 카드는 단계 리본을 쓴다
+        private void ApplyStyle(UpgradeChoice choice)
         {
-            if (_iconFrame != null) { _iconFrame.color = isNew ? _newMedalColor : _upgradeMedalColor; }
-            if (_newBadge != null) { _newBadge.SetActive(isNew); }
-            if (_levelPlate != null) { _levelPlate.SetActive(!isNew && !string.IsNullOrEmpty(_levelText.text)); }
+            if (_iconFrame != null) { _iconFrame.color = MedalColor(choice); }
+            if (_newBadge != null) { _newBadge.SetActive(choice.IsNewWeapon); }
+            if (_levelPlate != null) { _levelPlate.SetActive(!choice.IsNewWeapon && !string.IsNullOrEmpty(_levelText.text)); }
         }
+
+        private Color MedalColor(UpgradeChoice choice)
+        {
+            if (choice.IsGeneral) { return _generalMedalColor; }
+            var data = choice.IsNewWeapon ? choice.newSkillData : choice.skill?.Data;
+            return data == null ? _generalMedalColor : ElementColor(data.element);
+        }
+
+        // 팔레트의 의미색: 불=Ember, 얼음=Sky, 번개=Violet, 바람=아쿠아, 대지=금갈색, 속성 없음=Spirit
+        private static Color ElementColor(Element element) => element switch
+        {
+            Element.Fire => new Color(1f, 0.48f, 0.16f, 1f),
+            Element.Ice => new Color(0.25f, 0.66f, 1f, 1f),
+            Element.Lightning => new Color(0.64f, 0.45f, 1f, 1f),
+            Element.Wind => new Color(0.38f, 0.84f, 0.91f, 1f),
+            Element.Earth => new Color(0.88f, 0.63f, 0.04f, 1f),
+            _ => new Color(0.24f, 0.92f, 0.71f, 1f),
+        };
 
         // 이 카드가 조건이 되는 변환은 그대로, 이 카드를 고르면 막히는 변환은 X 표시로 보인다
         private void ShowFormHints(IReadOnlyList<FormHint> hints, Func<FormHint, Sprite> formIcon)
