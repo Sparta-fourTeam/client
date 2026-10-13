@@ -452,6 +452,17 @@ namespace Game.Tests
                 var view = ui.Get<EliteRouletteView>();
                 var stats = stage.Container.Resolve<BattleStats>();
                 var data = stage.Container.Resolve<GameDataStore>();
+                var definition = stage.Container.Resolve<StageDefinition>();
+                var skills = stage.Container.Resolve<SkillController>();
+                var assets = Field<SkillAssetTable>(view, "_assets");
+                foreach (var skill in data.LoadSkills().Where(skill => !skill.childOnly && assets.HasPrefab(skill.id)))
+                {
+                    if (skills.Skills.Count >= SkillSlotLimit.Max) { break; }
+                    if (skills.Skills.All(owned => owned.Data.id != skill.id)) { Assert.That(skills.AddWeapon(skill.id), Is.True); }
+                }
+                int eligibleCards = stage.Container.Resolve<CardDeck>().GetWeaponUpgradeCandidates().Count;
+                Assert.That(eligibleCards, Is.GreaterThanOrEqualTo(definition.EliteRouletteMaxCards),
+                    "실제 보유 무기의 서로 다른 강화 카드로 여러 회차를 검증한다");
                 var elite = data.Monsters.Values.First(monster => monster.GetEnemyType() == EnemyType.Elite);
                 // 실제 factory/model의 사망을 쓴다. 웨이브 밖에서 생성하므로 게이지 집계 대상에서 제외한다.
                 var enemy = stage.Container.Resolve<IEnemyFactory>().Create(elite.Id, new Vector2(99, 99), isSummoned: true);
@@ -463,8 +474,9 @@ namespace Game.Tests
                 var panel = Field<GameObject>(view, "_panel");
                 Assert.That(panel.activeSelf, Is.True);
                 int count = manager.Roulette.CardCount;
-                var definition = stage.Container.Resolve<StageDefinition>();
-                Assert.That(count, Is.InRange(definition.EliteRouletteMinCards, definition.EliteRouletteMaxCards));
+                Assert.That(count, Is.EqualTo(definition.EliteRouletteMaxCards));
+                var weaponIcons = Field<UnityEngine.UI.Image[]>(view, "_weaponIcons");
+                var wheel = weaponIcons.Select(icon => icon.sprite).ToArray();
                 var spinner = Field<RectTransform>(view, "_spinner");
                 float initial = spinner.localEulerAngles.z;
                 yield return WaitFor(() => Mathf.Abs(Mathf.DeltaAngle(initial, spinner.localEulerAngles.z)) > 5f);
@@ -485,6 +497,7 @@ namespace Game.Tests
                     yield return WaitFor(() => File.Exists(preview));
                     yield return ClickGameButton(skipButton);
                     Assert.That(manager.Roulette.IsComplete, Is.True, "스킵 입력에서 남은 회차를 모두 적용해야 한다");
+                    CollectionAssert.AreEqual(wheel, weaponIcons.Select(icon => icon.sprite), "스킵해도 무기 배치를 바꾸지 않는다");
                     Assert.That(stats.BuildLog.Count - priorCards, Is.EqualTo(count));
                     Assert.That(stats.BuildLog[priorCards], Is.EqualTo(pending.Winner.Option.id), "진행 중인 당첨 무기를 다시 뽑지 않는다");
                     Assert.That(cards.Count(card => card.gameObject.activeSelf), Is.EqualTo(count));
@@ -501,12 +514,16 @@ namespace Game.Tests
                     Assert.That(Time.timeScale, Is.Zero, "대기 중인 다음 룰렛까지 전투는 정지 상태를 유지한다");
                     Assert.That(stats.BuildLog.Count - priorCards, Is.EqualTo(count));
                     count = manager.Roulette.CardCount;
+                    wheel = weaponIcons.Select(icon => icon.sprite).ToArray();
                     totalRewards += count;
                     yield return ClickGameButton(skipButton);
                     Assert.That(manager.Roulette.IsComplete, Is.True);
                 }
-                yield return WaitFor(() => manager.Roulette.IsComplete
-                    && Field<TMP_Text>(view, "_heading").text == "강화 완료");
+                yield return WaitFor(() =>
+                {
+                    CollectionAssert.AreEqual(wheel, weaponIcons.Select(icon => icon.sprite), "회차마다 무기 위치를 리셋하지 않는다");
+                    return manager.Roulette.IsComplete && Field<TMP_Text>(view, "_heading").text == "강화 완료";
+                });
                 var confirmButton = Field<Button>(view, "_skipButton");
                 yield return WaitFor(() => confirmButton.interactable
                     && confirmButton.GetComponentInChildren<TMP_Text>(true).text == "확인");
@@ -518,6 +535,8 @@ namespace Game.Tests
                 Assert.That(manager.State, Is.EqualTo(StageState.EliteRoulette));
                 Assert.That(Time.timeScale, Is.Zero);
                 Assert.That(cards.Count(card => card.gameObject.activeSelf), Is.EqualTo(count));
+                int selectedSlots = weaponIcons.Count(icon => icon.enabled && icon.color.a < 1f);
+                Assert.That(selectedSlots, Is.EqualTo(count), "당첨된 강화 카드의 칸만 흐리게 표시한다");
                 yield return ClickGameButton(confirmButton);
                 yield return WaitFor(() => manager.State == StageState.Playing);
                 Assert.That(panel.activeSelf, Is.False);

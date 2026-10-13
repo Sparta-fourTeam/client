@@ -62,6 +62,7 @@ namespace Game.View
                 var rect = (RectTransform)card.transform.parent;
                 rect.anchoredPosition = new Vector2((i - (_manager.Roulette.CardCount - 1) * 0.5f) * 228f, 0f);
             }
+            ShowSlots();
             _spinner.localRotation = Quaternion.identity;
             SpinNext(_run);
         }
@@ -79,7 +80,6 @@ namespace Game.View
                 return;
             }
             _heading.text = $"엘리트 보상  {session.CompletedRolls + 1} / {session.CardCount}";
-            ShowSlots(round);
             float start = _spinner.localEulerAngles.z;
             float target = -(22.5f + round.WinnerIndex * 45f);
             float travel = Mathf.Repeat(start - target, 360f) + 1080f;
@@ -89,13 +89,25 @@ namespace Game.View
                 .OnComplete(() => Reveal(run, round));
         }
 
-        private void ShowSlots(EliteRouletteRound round)
+        private void ShowSlots()
         {
+            var slots = _manager.Roulette.Slots;
             for (int i = 0; i < _weaponIcons.Length; i++)
             {
-                var icon = _assets.GetHudIcon(round.Slots[i].skill.Data.id);
+                var icon = i < slots.Count && slots[i].skill != null ? _assets.GetHudIcon(slots[i].skill.Data.id) : null;
                 _weaponIcons[i].sprite = icon;
                 _weaponIcons[i].enabled = icon != null;
+                _weaponIcons[i].color = Color.white;
+            }
+        }
+
+        private void RefreshSelectedSlots()
+        {
+            var session = _manager.Roulette;
+            for (int i = 0; i < _weaponIcons.Length && i < session.Slots.Count; i++)
+            {
+                _weaponIcons[i].color = session.IsSlotSelected(i)
+                    ? new Color(1f, 1f, 1f, 0.3f) : Color.white;
             }
         }
 
@@ -121,6 +133,7 @@ namespace Game.View
                 card.PlayEntrance(0f);
                 _shownCards++;
             }
+            RefreshSelectedSlots();
         }
 
         private void OnActionClicked()
@@ -136,12 +149,11 @@ namespace Game.View
             int run = ++_run;
             _animation?.Kill();
             var session = _manager.Roulette;
-            // 진행 중인 당첨 결과를 보존하고, 각 강화 적용 후 다음 회차 후보를 다시 뽑는다.
+            // 진행 중인 당첨 결과와 배치를 보존하고, 남은 강화 카드를 중복 없이 뽑는다.
             while (Current(run))
             {
                 var round = session.PrepareRound();
                 if (round == null) { break; }
-                ShowSlots(round);
                 _spinner.localRotation = Quaternion.Euler(0f, 0f, -(22.5f + round.WinnerIndex * 45f));
                 ShowReward(round);
             }
