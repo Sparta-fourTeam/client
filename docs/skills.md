@@ -59,7 +59,7 @@ flowchart TD
 | 필드 | 설명 |
 |---|---|
 | `id` | 스킬 ID. 새 스킬은 가장 큰 번호의 다음 번호를 쓴다 |
-| `name`, `desc` | 이름과 설명 |
+| `name`, `desc` | 이름과 설명. 서버 `Skills.json`에는 없고 `Resources/ClientData/DisplayTexts.json`의 `skills`(스킬 id), `cards`(카드 id), `variants`(`카드id#minPermanentLevel`)에서 채운다. 이름이 없으면 로드가 실패한다 |
 | `castType` | 공격 종류. **이름 문자열**: `Projectile`, `Hitscan`, `Area`, `Beam`, `Chain` |
 | `element` | 속성. **이름 문자열**: `Neutral`(무), `Fire`(화), `Ice`(빙), `Wind`(풍), `Lightning`(뇌), `Earth`(토). 생략하면 무속성이다. 적의 약점·저항이 이 값을 본다. 자식 스킬(`childOnly`)의 피해는 가장 바깥 스킬(부모)의 속성과 `castType`을 이어받는다 |
 | `projectilePath` | 투사체 경로. **이름 문자열**: `Aimed`(가장 가까운 적, 생략 시 기본), `RollingLane`(대상 줄을 따라 굴러감), `Radial`(발 수만큼 사방으로) |
@@ -79,10 +79,10 @@ flowchart TD
 
 ```json
 {
-  "id": "arrow_multishot", "name": "화살 일제 사격", "desc": "발사 수 +1 / 공격력 -20%",
+  "id": "arrow_multishot",
   "maxPickCount": 2,
   "effects": [ { "kind": "projectileCount", "value": 1 }, { "kind": "damage", "value": -20 } ],
-  "variants": [ { "minPermanentLevel": 9, "name": "화살 일제 사격(+)", "desc": "발사 수 +1",
+  "variants": [ { "minPermanentLevel": 9,
                  "effects": [ { "kind": "projectileCount", "value": 1 } ] } ]
 }
 ```
@@ -99,7 +99,7 @@ flowchart TD
 | `requiredWeaponIds` | 이 스킬들을 가지고 있어야 한다 |
 | `exclusions` | `{skillId, cardId, belowPermanentLevel}`: 그 카드를 이미 골랐으면 나오지 않는다. `belowPermanentLevel`이 양수면 영구 레벨이 그 값 미만일 때만 적용 |
 | `sharedId` | 두 스킬이 같은 선택 횟수를 공유하는 강화의 키. 같은 키를 가진 카드의 스킬이 함께 올라간다. 대상 스킬 목록은 데이터에 적지 않고 읽을 때 모은다(적어도 무시된다) |
-| `enabled`, `disabledReason` | false면 후보에서 빼고, 샌드박스에는 사유를 보여 준다 |
+| `enabled`, `disabledReason` | false면 후보에서 빼고, 샌드박스에는 사유를 보여 준다. `disabledReason` 문구는 `DisplayTexts.json`의 `cards`에 있다 |
 
 조건은 한 방향으로만 건다. 서리 결정 연발→일제 사격→관통처럼 제외 조건을 양방향으로 바꾸면 선택 가능한 순서가 사라진다.
 
@@ -165,7 +165,7 @@ flowchart TD
 **일반 카드**(`GeneralCards.json`)의 한 행:
 
 ```json
-{ "Id": "wall_repair", "Name": "방벽 수리", "Desc": "방벽 체력 +20",
+{ "Id": "wall_repair",
   "MaxPicks": 999, "Forced": true, "Priority": 0,
   "Condition": { "Kind": "wallHpBelow", "Value": 50 },
   "Effect":    { "Kind": "wallRepair",  "Value": 20 } }
@@ -203,7 +203,7 @@ flowchart TD
 
 ### A. 기존 공격 종류로 새 스킬 만들기
 
-1. **정의**: `Skills.json`에 스킬을 추가한다. `id`, `name`, `castType`, `baseStats`(필요한 묶음), `maxLevel`, `upgrades`(처음에는 비어 있어도 된다). 다른 스킬의 효과로만 쓰면 `childOnly: true`.
+1. **정의**: `Skills.json`에 스킬을 추가한다. `id`, `castType`, `baseStats`(필요한 묶음), `maxLevel`, `upgrades`(처음에는 비어 있어도 된다). 다른 스킬의 효과로만 쓰면 `childOnly: true`.
 2. **프리팹**: `Prefabs/Skills/`에 공격 실체 프리팹을 만든다. 4절 표의 컴포넌트가 붙어 있어야 한다. 같은 컴포넌트를 쓰는 기존 프리팹을 복제해 시작하면 쉽다.
 3. **에셋 표 항목**: `Assets/_Project/Data/SkillAssetTable`을 열어 항목을 하나 추가한다. `key`는 `Skills.json`의 `id` 문자열과 같게 하고 `prefab`에 2번 프리팹을 넣는다. 프리팹이 없으면 새 스킬 카드로 나오지 않는다. 플레이어 프리팹은 건드리지 않는다.
 4. **아이콘**: 같은 항목에 `hudIcon`, `newCardIcon`, `upgradeCardIcon`을 넣는다. 아트가 아직 없으면 기존 아이콘을 임시로 연결한다. 자식 전용 스킬은 아이콘이 필요 없다.

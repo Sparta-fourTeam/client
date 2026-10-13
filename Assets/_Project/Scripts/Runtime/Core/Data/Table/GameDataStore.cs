@@ -11,6 +11,7 @@ namespace Game.Core
     {
         private static readonly string[] TableNames = { "Monsters", "Stages", "Upgrades", "Energy", "GeneralCards", "Skills", "Items", "StageRewards", "PlayerLevels", "CodexRewards", "Tutorials" };
         private readonly Dictionary<string, string> _rawJson;
+        private readonly DisplayTexts _texts;
         private readonly Dictionary<string, int> _skillUnlockLevels;
 
         public Dictionary<string, int> Revisions { get; }
@@ -50,6 +51,10 @@ namespace Game.Core
 
                 _rawJson[name] = asset.text;
             }
+
+            var textAsset = Resources.Load<TextAsset>("ClientData/DisplayTexts")
+                ?? throw new InvalidOperationException("Resources/ClientData/DisplayTexts.json을 찾을 수 없습니다");
+            _texts = JsonConvert.DeserializeObject<DisplayTexts>(textAsset.text);
 
             var monsters = ParseIndexed<int, MonsterDefinition>("Monsters", d => d.Id);
             foreach (var monster in monsters.Values)
@@ -91,6 +96,7 @@ namespace Game.Core
             var upgrades = ParseIndexed<string, UpgradeDefinition>("Upgrades", d => d.UpgradeId);
             Upgrades = new Table<string, UpgradeDefinition>(upgrades);
             var items = ParseIndexed<string, ItemDefinition>("Items", d => d.Id);
+            _texts.ApplyTo(items.Values);
             foreach (var item in items.Values) { item.Validate(); }
             Items = new Table<string, ItemDefinition>(items);
             foreach (var upgrade in upgrades.Values)
@@ -147,6 +153,7 @@ namespace Game.Core
             CodexRewardGold = codexRewards.ToDictionary(pair => pair.Key, pair => pair.Value.Gold);
 
             var generalCards = ParseIndexed<string, GeneralCardDefinition>("GeneralCards", d => d.Id).Values.ToList();
+            _texts.ApplyTo(generalCards);
             foreach (var card in generalCards)
             {
                 card.Validate();
@@ -208,11 +215,13 @@ namespace Game.Core
         public int UnlockLevelOf(UpgradeDefinition def) => UpgradeUnlockRule.LevelOf(def, _skillUnlockLevels);
 
         /// <summary>스킬 정의 목록. 호출마다 새 객체를 만들고 카탈로그 검증을 통과해야 돌려준다</summary>
-        public List<SkillData> LoadSkills() => ParseSkills(_rawJson["Skills"]);
+        public List<SkillData> LoadSkills() => ParseSkills(_rawJson["Skills"], _texts);
 
-        public static List<SkillData> ParseSkills(string json)
+        /// <summary>texts가 있으면 검증 전에 이름·설명을 채운다(검증이 카드·변형 이름을 본다)</summary>
+        public static List<SkillData> ParseSkills(string json, DisplayTexts texts = null)
         {
             var weapons = JsonConvert.DeserializeObject<List<SkillData>>(json);
+            texts?.ApplyTo(weapons);
             SkillCatalogValidator.Validate(weapons);
             return weapons;
         }

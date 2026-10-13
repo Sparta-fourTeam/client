@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Game.Core;
-using Newtonsoft.Json;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -124,7 +123,7 @@ namespace Game.Tests
         [Test]
         public void Validator_RejectsCastTypeWithoutRegisteredStrategy()
         {
-            var catalog = JsonConvert.DeserializeObject<List<SkillData>>(Resources.Load<TextAsset>("MockData/Skills").text);
+            var catalog = new GameDataStore().LoadSkills();
             catalog[0].castType = (CastType)99;
             var error = Assert.Throws<InvalidOperationException>(() => SkillCatalogValidator.Validate(catalog));
             StringAssert.Contains(catalog[0].name, error.Message);

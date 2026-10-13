@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Game.Core;
-using Newtonsoft.Json;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
@@ -207,7 +206,7 @@ namespace Game.Tests
         [Test]
         public void Validator_RejectsAreaEffectOnProjectileWeapon()
         {
-            var catalog = JsonConvert.DeserializeObject<List<SkillData>>(Resources.Load<TextAsset>("MockData/Skills").text);
+            var catalog = new GameDataStore().LoadSkills();
             var weapon = catalog.Find(w => w.castType == CastType.Projectile);
             weapon.upgrades[0].effects.Add(new EffectDef { kind = "areaRadius", value = 10 });
             var error = Assert.Throws<InvalidOperationException>(() => SkillCatalogValidator.Validate(catalog));

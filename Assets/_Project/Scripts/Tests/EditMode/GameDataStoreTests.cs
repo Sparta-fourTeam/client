@@ -131,5 +131,21 @@ namespace Game.Tests
             Assert.AreEqual(20, table.RequiredToNext(3));
             Assert.AreEqual(0, table.RequiredToNext(4));
         }
+
+        [Test(Description = "표시 문구는 클라이언트 표가 id로 채우고, 이름이 없는 스킬·카드는 데이터 오류로 거부한다")]
+        public void DisplayTexts_FillNamesByIdAndRejectMissingNames()
+        {
+            var texts = JsonConvert.DeserializeObject<DisplayTexts>(
+                "{\"skills\":{\"1\":{\"name\":\"스킬\",\"desc\":\"설명\"}},\"cards\":{\"a\":{\"name\":\"카드\"}}}");
+            string json = "[{\"id\":1,\"maxLevel\":1,\"baseStats\":{},\"upgrades\":[{\"id\":\"a\",\"effects\":[]}]}]";
+
+            var skill = GameDataStore.ParseSkills(json, texts).Single();
+            Assert.AreEqual("스킬", skill.name);
+            Assert.AreEqual("설명", skill.desc);
+            Assert.AreEqual("카드", skill.upgrades[0].name);
+
+            var missing = JsonConvert.DeserializeObject<DisplayTexts>("{\"skills\":{\"1\":{\"name\":\"스킬\"}}}");
+            Assert.Throws<InvalidOperationException>(() => GameDataStore.ParseSkills(json, missing));
+        }
     }
 }

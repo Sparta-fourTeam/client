@@ -9,16 +9,16 @@
 - 장비 강화 재료는 후드, 로브, 장화, 무기(지팡이), 뼈 반지, 해골 목걸이, 인장의 **인챈트 주문서**다. 기존 무기 슬롯은 무기이며, 기존 사원증 슬롯의 표시 콘셉트는 인장이다. Local 테이블의 `TargetId`와 저장 ID는 호환성을 위해 기존 `equipment.*`, `book.*`를 유지한다. 아이콘은 아이템 `Id`로 `ItemIconTable`에서 찾는다.
 - `ItemDefinition.Id`는 저장·API에서 사용하는 콘텐츠 고유 ID다. 각 종류는 서로 다른 ID와 소유량을 가진다.
 - `TargetId`는 강화 재료가 대상으로 하는 스킬 또는 장비의 ID다. 아이템 자체의 식별자와 강화 대상의 식별자는 구분한다.
-- `Name`은 표시 이름이고, 아이콘은 `Id`로 클라이언트 표(`ItemIconTable`)에서 찾는다. Unity 오브젝트를 API나 저장 데이터에 넣지 않는다.
+- 표시 이름은 서버 테이블이 아니라 `Resources/ClientData/DisplayTexts.json`의 `items`에서 `Id`로 찾고, 아이콘은 `Id`로 클라이언트 표(`ItemIconTable`)에서 찾는다. Unity 오브젝트를 API나 저장 데이터에 넣지 않는다.
 - `ItemAmount.itemId`는 정의 ID, `quantity`는 0 이상의 절대 수량이다. 소비는 음수 수량 대신 소비 동작으로 표현한다. 실제 드랍·지급 행은 양수만 사용한다.
 
 `Resources/MockData/Items.json`에 정의를 등록하고 `GameDataStore.Items`에서 조회한다. 아이콘 키와 실제 스프라이트의 연결은 UI 구현에서 구성한다. 정의 예시:
 
 ```json
 [
-  { "Id": "book.arrow", "Name": "화살 마법북", "TargetId": "1" },
-  { "Id": "book.fireball", "Name": "화염구 마법북", "TargetId": "2" },
-  { "Id": "book.weapon", "Name": "무기 인챈트 주문서", "TargetId": "equipment.weapon" }
+  { "Id": "book.arrow", "TargetId": "1" },
+  { "Id": "book.fireball", "TargetId": "2" },
+  { "Id": "book.weapon", "TargetId": "equipment.weapon" }
 ]
 ```
 
