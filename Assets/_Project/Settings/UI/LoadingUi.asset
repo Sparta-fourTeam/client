@@ -25,3 +25,7 @@ MonoBehaviour:
     Prefab: {fileID: 6901025688278750536, guid: 17dad5a1e0133c54586f0d4b14833b48, type: 3}
     ParentPath: LoadingUI/Popups
     SiblingIndex: 0
+  - Id: ConfirmPopup
+    Prefab: {fileID: 3468135605265646659, guid: aeb0c6dd7a1684a1d8bc3b925beadc4f, type: 3}
+    ParentPath: LoadingUI/Popups
+    SiblingIndex: 1
