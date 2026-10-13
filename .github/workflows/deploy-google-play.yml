@@ -219,6 +219,10 @@ jobs:
           path: verified
 
       - name: Recheck artifact identity
+        id: artifact
+        env:
+          RELEASE_VERSION: ${{ inputs.release_version }}
+          ANDROID_VERSION_CODE: ${{ needs.build.outputs.version_code }}
         run: |
           python3 - <<'PY'
           import hashlib, json, os, pathlib
@@ -230,6 +234,14 @@ jobs:
               raise SystemExit('Artifact package/signature mismatch')
           if hashlib.sha256(files[0].read_bytes()).hexdigest() != evidence['artifact_sha256']:
               raise SystemExit('Artifact hash mismatch')
+          actual = evidence['actual']
+          if actual['version_name'] != os.environ['RELEASE_VERSION'] or actual['version_code'] != int(os.environ['ANDROID_VERSION_CODE']):
+              raise SystemExit('Artifact version mismatch')
+          release_name = f"{actual['version_name']}({actual['version_code']})"
+          if len(release_name) > 50:
+              raise SystemExit('Play release name exceeds 50 characters')
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write('release_name=' + release_name + '\n')
           PY
 
       - name: Publish explicitly approved internal test release
@@ -240,4 +252,4 @@ jobs:
           releaseFiles: verified/Android/*.aab
           tracks: internal
           status: completed
-          releaseName: internal-${{ needs.build.outputs.version_code }}-${{ github.sha }}
+          releaseName: ${{ steps.artifact.outputs.release_name }}
