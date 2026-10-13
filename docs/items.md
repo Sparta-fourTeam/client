@@ -64,11 +64,10 @@
 - `LocalItemRewards`는 두 Local API가 공유하는 내부 검증·합산 함수다. 별도 DI 등록이나 아이템 지급 원장은 없다.
 - 알려진 Items ID와 양수 수량만 받으며 같은 ID는 합산한다. 잘못된 보상은 `INVALID_ITEM_REWARD`, 없는 ID는 `UNKNOWN_DATA_ID`, 수량 초과는 `ITEM_QUANTITY_OVERFLOW`로 거절한다.
 
-Stage 테이블의 `ClearItems`는 클리어 마법북, `RatingItemRewards`는 등급별 1회성 마법북 목록이다. 누락되거나 빈 목록이면 아이템 보상 없이 기존 골드 동작을 유지한다. 설정 형식 예시:
+Stage 테이블의 `RatingItemRewards`는 등급별 1회성 마법북 목록이다. 누락되거나 빈 목록이면 아이템 보상 없이 기존 골드 동작을 유지한다. 전투 보상은 `StageRewards` 테이블에서 정한다. 설정 형식 예시:
 
 ```json
 {
-  "ClearItems": [ { "itemId": "book.arrow", "quantity": 2 } ],
   "RatingItemRewards": [
     [ { "itemId": "book.weapon", "quantity": 1 } ],
     [],

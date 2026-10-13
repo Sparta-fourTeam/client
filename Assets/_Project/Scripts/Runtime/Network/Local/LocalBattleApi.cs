@@ -59,8 +59,7 @@ namespace Game.Network
                 stageId = stageId,
                 seed = new Random().Next(),
                 status = "Issued",
-                rewardGold = 0,
-                rewardRuleVersion = 1
+                rewardGold = 0
             };
             save.battles.Add(row);
             _store.Flush(save);
@@ -97,31 +96,17 @@ namespace Game.Network
                 });
             }
 
-            var stage = _data.Stages.GetOrThrow(battle.stageId);
-
             int rating = req.cleared ? StageRewardRules.ClearRating(req.wallHpPercent) : 0;
-            int reward, rewardExp = 0;
-            IEnumerable<ItemAmount> rewards;
-            if (battle.rewardRuleVersion == 0)
-            {
-                // 업데이트 전에 발급한 전투만 기존 지급 규칙으로 마무리한다.
-                // TODO: 규칙 도입 전 전투가 모두 정산되면 이 분기와 StageDefinition.ClearGold·ClearItems를 제거한다.
-                reward = req.cleared ? stage.ClearGold : 0;
-                rewards = req.cleared ? stage.ClearItems : null;
-            }
-            else
-            {
-                if (req.completedWaves < 0 || req.completedWaves > StageRewardRules.WaveCount
-                    || req.reachedWave < req.completedWaves || req.reachedWave > StageRewardRules.WaveCount
-                    || (req.cleared && req.completedWaves != StageRewardRules.WaveCount))
-                { throw new ApiException(ApiErrorKind.Rejected, "INVALID_COMPLETED_WAVES"); }
-                var calculated = StageRewardRules.Calculate(_data.StageRewards.GetOrThrow(battle.stageId),
-                    req.completedWaves, req.cleared, rating);
-                reward = calculated.Coin;
-                rewardExp = calculated.Exp;
-                rewards = RandomMaterialResolver.Resolve(calculated.Items, UnlockedSkillIds?.Invoke(),
-                    UnlockedEquipmentIds?.Invoke(), _data, battle.seed, MaterialDistribution);
-            }
+            if (req.completedWaves < 0 || req.completedWaves > StageRewardRules.WaveCount
+                || req.reachedWave < req.completedWaves || req.reachedWave > StageRewardRules.WaveCount
+                || (req.cleared && req.completedWaves != StageRewardRules.WaveCount))
+            { throw new ApiException(ApiErrorKind.Rejected, "INVALID_COMPLETED_WAVES"); }
+            var calculated = StageRewardRules.Calculate(_data.StageRewards.GetOrThrow(battle.stageId),
+                req.completedWaves, req.cleared, rating);
+            int reward = calculated.Coin;
+            int rewardExp = calculated.Exp;
+            var rewards = RandomMaterialResolver.Resolve(calculated.Items, UnlockedSkillIds?.Invoke(),
+                UnlockedEquipmentIds?.Invoke(), _data, battle.seed, MaterialDistribution);
             int totalGold, totalExp;
             try { totalGold = checked(save.wallet.gold + reward); totalExp = checked(save.exp + rewardExp); }
             catch (OverflowException) { throw new ApiException(ApiErrorKind.Rejected, "REWARD_QUANTITY_OVERFLOW"); }

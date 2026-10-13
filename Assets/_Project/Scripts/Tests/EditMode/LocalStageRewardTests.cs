@@ -62,9 +62,8 @@ namespace Game.Tests
         [TestCase(100, 3, 150)]
         [TestCase(50, 2, 100)]
         [TestCase(20, 1, 100)]
-        public void Wave20Clear_PaysExpByRating_AndDoesNotAlsoPayLegacyClearGold(int hp, int rating, int exp)
+        public void Wave20Clear_PaysExpByRating(int hp, int rating, int exp)
         {
-            _data.Stages.GetOrThrow(1).ClearGold = 9999;
             var issued = _api.StartBattle(1, 1).GetAwaiter().GetResult();
             var result = _api.SubmitResult(new SubmitResultRequest
             { battleId = issued.battleId, completedWaves = 20, reachedWave = 20, cleared = true, wallHpPercent = hp }).GetAwaiter().GetResult();

@@ -31,16 +31,6 @@ namespace Game.Tests
         }
 
         private static ItemAmount Book(string id, int quantity) => new() { itemId = id, quantity = quantity };
-        // 업데이트 전에 발급한 전투의 기존 보상·재제출 계약을 검증한다.
-        private StartBattleResponse StartLegacyBattle(LocalBattleApi api)
-        {
-            var issued = api.StartBattle(1, 1).GetAwaiter().GetResult();
-            var save = _store.Load();
-            save.battles.Find(row => row.battleKey == issued.battleId).rewardRuleVersion = 0;
-            _store.Flush(save);
-            return issued;
-        }
-
         private StageDefinition Stage => _data.Stages.GetOrThrow(1);
 
         private void SetRating(int rating)
@@ -77,44 +67,6 @@ namespace Game.Tests
             Assert.AreEqual(3, snapshot.stageProgress[0].claimedRating);
         }
 
-        [Test]
-        public void BattleReward_PersistsBooksAndReplaysOriginalResultAfterRestart()
-        {
-            Stage.ClearItems = new() { Book(ItemIds.ArrowBook, 2), Book(ItemIds.WeaponBook, 1), Book(ItemIds.ArrowBook, 3) };
-            var api = new LocalBattleApi(_store, _data);
-            var issued = StartLegacyBattle(api);
-            var request = new SubmitResultRequest { battleId = issued.battleId, cleared = true, wallHpPercent = 100 };
-            var result = api.SubmitResult(request).GetAwaiter().GetResult();
-            Assert.AreEqual(100, result.rewardGold);
-            Assert.AreEqual(5, result.rewardItems.Find(item => item.itemId == ItemIds.ArrowBook).quantity);
-            result.rewardItems[0].quantity = 999;
-            Stage.ClearItems = new() { Book(ItemIds.ArrowBook, 1000) };
-            request.cleared = false;
-            var replay = new LocalBattleApi(new LocalSaveStore(_path), _data).SubmitResult(request).GetAwaiter().GetResult();
-            Assert.IsTrue(replay.cleared);
-            Assert.AreEqual(5, replay.rewardItems.Find(item => item.itemId == ItemIds.ArrowBook).quantity);
-            var snapshot = new LocalPlayerApi(_store).GetMe().GetAwaiter().GetResult();
-            Assert.AreEqual(100, snapshot.gold);
-            Assert.AreEqual(5, snapshot.items.Find(item => item.itemId == ItemIds.ArrowBook).quantity);
-            Assert.AreEqual(1, snapshot.items.Find(item => item.itemId == ItemIds.WeaponBook).quantity);
-        }
-
-        [Test]
-        public void FailedBattle_DoesNotPayClearItemsOrRemoveExistingInventory()
-        {
-            Stage.ClearItems = new() { Book(ItemIds.ArrowBook, 2) };
-            var save = _store.Load();
-            save.items.Add(Book(ItemIds.ArrowBook, 5));
-            _store.Flush(save);
-            var api = new LocalBattleApi(_store, _data);
-            var issued = StartLegacyBattle(api);
-            var result = api.SubmitResult(new SubmitResultRequest { battleId = issued.battleId, cleared = false })
-                .GetAwaiter().GetResult();
-            Assert.IsEmpty(result.rewardItems);
-            Assert.AreEqual(0, result.rewardGold);
-            Assert.AreEqual(5, _store.Load().items[0].quantity);
-        }
-
         [TestCase("unknown")]
         [TestCase("gold")]
         [TestCase("coin")]
@@ -126,20 +78,6 @@ namespace Game.Tests
             var error = Assert.Throws<ApiException>(() => new LocalStageApi(_store, _data)
                 .ClaimRatingReward(1).GetAwaiter().GetResult());
             Assert.AreEqual("UNKNOWN_DATA_ID", error.Code);
-            Assert.AreEqual(before, File.ReadAllText(_path));
-        }
-
-        [TestCase(0)]
-        [TestCase(-1)]
-        public void BattleReward_InvalidQuantityDoesNotFinalizeOrPay(int quantity)
-        {
-            Stage.ClearItems = new() { Book(ItemIds.ArrowBook, quantity) };
-            var api = new LocalBattleApi(_store, _data);
-            var issued = StartLegacyBattle(api);
-            var before = File.ReadAllText(_path);
-            var error = Assert.Throws<ApiException>(() => api.SubmitResult(new SubmitResultRequest
-            { battleId = issued.battleId, cleared = true }).GetAwaiter().GetResult());
-            Assert.AreEqual("INVALID_ITEM_REWARD", error.Code);
             Assert.AreEqual(before, File.ReadAllText(_path));
         }
 
@@ -159,17 +97,6 @@ namespace Game.Tests
             Stage.RatingItemRewards = new() { new() { Book(ItemIds.ArrowBook, 2) } };
             var snapshot = api.ClaimRatingReward(1).GetAwaiter().GetResult();
             Assert.AreEqual(2, snapshot.items.Find(item => item.itemId == ItemIds.ArrowBook).quantity);
-        }
-
-        [Test]
-        public void LegacyBattleWithoutItemRewards_ReplaysGoldAndEmptyItemList()
-        {
-            File.WriteAllText(_path, "{\"wallet\":{\"gold\":123},\"battles\":[{\"battleKey\":\"old\",\"stageId\":1,\"status\":\"Cleared\",\"rewardGold\":100}]}");
-            var response = new LocalBattleApi(_store, _data).SubmitResult(new SubmitResultRequest
-            { battleId = "old", cleared = true }).GetAwaiter().GetResult();
-            Assert.AreEqual(100, response.rewardGold);
-            Assert.IsEmpty(response.rewardItems);
-            Assert.AreEqual(123, _store.Load().wallet.gold);
         }
     }
 }

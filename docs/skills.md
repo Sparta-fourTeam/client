@@ -69,7 +69,6 @@ flowchart TD
 | `maxLevel` | 최초 습득을 제외한 전투 중 강화 횟수 상한 |
 | `childOnly` | true면 다른 스킬의 효과로만 시전되고, 새 스킬 카드로 제시하지 않는다 |
 | `progressionId` | 로비 영구 성장 ID(`Upgrades` 테이블의 ID). 없으면 영구 레벨 0 |
-| `prototypeBalanceSourceId` | 기본 수치 자료가 없을 때 참고한 다른 스킬 ID. 기록용이고 코드는 읽지 않는다 |
 
 `baseStats` 묶음: `cast`(cooldown, baseDamage, range, projectileCount, castCount, castInterval), `projectile`, `reserve`, `status`, `explosion`, `field`, `area`, `beam`, `chain`. 적지 않은 묶음과 값은 클래스의 기본값(`castCount` 1, 확률 1 등)을 쓴다. 정의는 `SkillBaseStats`.
 
