@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+using DG.Tweening;
 using Game.Core;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 using VContainer;
 
 namespace Game.View
@@ -19,31 +21,58 @@ namespace Game.View
         {
             _ui = registry;
             _levelUp = registry.Get<LevelUpPopupView>();
+            _dialogue = registry.Get<DialogueView>();
+            _contentUnlock = registry.Get<ContentUnlockView>();
         }
 
         [SerializeField] private GameObject _root;
         [SerializeField] private TutorialRaycastHole _blocker;
         [Tooltip("강조 표시. 대상 오른쪽 위에서 위아래로 흔들린다 (나중에 연필 이미지로 교체)")]
         [SerializeField] private RectTransform _pointer;
-        [Tooltip("강조 대상 둘레를 덮는 반투명 검정 판 4장 (위, 아래, 왼쪽, 오른쪽). 대상 자리만 비워 둔다")]
-        [SerializeField] private RectTransform[] _dim;
+        [Tooltip("화면 전체를 덮는 스포트라이트 판 (Game/UI/Spotlight 머티리얼). 강조 대상 자리만 둥글게 뚫고 둘레에 펄스 링을 그린다. 포인터와 같은 부모 안에서 화면을 꽉 채워야 한다")]
+        [SerializeField] private Image _spotlight;
         [SerializeField] private RectTransform _dialog;
         [SerializeField] private TMP_Text _dialogText;
         [Tooltip("표시 중심을 대상 오른쪽 위 꼭짓점에서 표시 크기의 몇 배만큼 바깥으로 둘지")]
         [SerializeField] private float _pointerOffset = 0.3f;
-        [SerializeField] private float _bobHeight = 12f;
-        [SerializeField] private float _bobSpeed = 4f;
+        [Tooltip("손가락이 대상을 누르는 한 번의 길이(초)")]
+        [SerializeField] private float _tapSeconds = 1.25f;
+        [Tooltip("구멍을 대상보다 사방으로 키우는 여유(px)")]
+        [SerializeField] private float _holePadding = 14f;
+        [SerializeField] private float _holeRadius = 36f;
+        [SerializeField] private float _holeSoftness = 10f;
+        [Tooltip("펄스 링이 구멍 가장자리에서 퍼지는 최대 거리(px)")]
+        [SerializeField] private float _ringSpread = 70f;
+        [SerializeField] private float _ringThickness = 7f;
+        [SerializeField] private Color _ringColor = new Color(1f, 0.82f, 0.35f, 1f);
+        [Tooltip("강조 구멍이 새 대상으로 옮겨 가는 속도 (클수록 빠르다)")]
+        [SerializeField] private float _holeFollow = 14f;
         [Tooltip("대화창을 화면 가운데에서 위/아래로 띄우는 거리. 강조 대상과 반대쪽 절반에 둔다")]
         [SerializeField] private float _dialogOffset = 520f;
 
+        private const float PressAt = 0.5f;
+        private static readonly int HoleId = Shader.PropertyToID("_Hole");
+        private static readonly int ParamsId = Shader.PropertyToID("_Params");
+        private static readonly int RingId = Shader.PropertyToID("_Ring");
+        private static readonly int RingColorId = Shader.PropertyToID("_RingColor");
+        private const string SkillTab = "skill";
+
         private IUiRegistry _ui;
         private LevelUpPopupView _levelUp;
+        private DialogueView _dialogue;
+        private ContentUnlockView _contentUnlock;
         private LobbyArrival _arrival;
         private PlayerProfile _profile;
         private GameDataStore _data;
         private BattleLauncher _launcher;
         private bool _ready;
         private bool _completing;
+        private CanvasGroup _rootGroup;
+        private Material _spotlightMaterial;
+        private Tween _fade;
+        private Vector2 _holeMin, _holeMax;
+        private bool _holeShown;
+        private string _shownLine;
         private TutorialDefinition _guide;
         private IReadOnlyList<TutorialStep> _steps;
 
@@ -57,10 +86,32 @@ namespace Game.View
             _profile.Changed += OnProfileChanged;
         }
 
-        protected override void InitializeView() => _root.SetActive(false);
+        protected override void InitializeView()
+        {
+            if (_spotlight != null)
+            {
+                // 이 가이드만의 머티리얼 복사본 (구멍 위치는 매 프레임 바뀐다)
+                _spotlightMaterial = new Material(_spotlight.material);
+                _spotlight.material = _spotlightMaterial;
+            }
+
+            _rootGroup = _root.GetComponent<CanvasGroup>();
+            if (_rootGroup == null)
+            {
+                _rootGroup = _root.AddComponent<CanvasGroup>();
+            }
+
+            _root.SetActive(false);
+        }
 
         protected override void DisposeView()
         {
+            _fade?.Kill();
+            if (_spotlightMaterial != null)
+            {
+                Destroy(_spotlightMaterial);
+            }
+
             if (_profile != null)
             {
                 _profile.Changed -= OnProfileChanged;
@@ -71,16 +122,42 @@ namespace Game.View
 
         private async UniTask RunAsync()
         {
+            // 해금 전이면 스킬 탭에 자물쇠를 걸어 두었다가 레벨업 연출 뒤에 푼다
+            var nav = _ui.Get<LobbyNavView>();
+            bool tabWasLocked = TutorialProgress.IsTabLocked(_data.Tutorials, TutorialFacts.From(_profile), SkillTab);
+            nav.SetSkillLocked(tabWasLocked);
             var news = await _arrival.CollectAsync();
             if (this == null)
             {
                 return;
             }
 
-            int battleStage = TutorialProgress.BattleStage(_data.Tutorials, TutorialFacts.From(_profile));
-            if (battleStage > 0)
+            bool tabLocked = TutorialProgress.IsTabLocked(_data.Tutorials, TutorialFacts.From(_profile), SkillTab);
+            // 새 컨텐츠 해금·레벨업 연출이 끝날 때까지는 잠긴 채로 둔다
+            nav.SetSkillLocked(tabLocked || tabWasLocked);
+
+            var battle = TutorialProgress.ActiveBattle(_data.Tutorials, TutorialFacts.From(_profile));
+            if (battle != null)
             {
-                await _launcher.Launch(battleStage);
+                // 첫 시작: 로비에서 도입 대사를 보여 준 뒤 전투로 보낸다
+                if (battle.Dialogue.Count > 0)
+                {
+                    try
+                    {
+                        await _dialogue.PlayAsync(battle.Dialogue);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        return;
+                    }
+
+                    if (this == null)
+                    {
+                        return;
+                    }
+                }
+
+                await _launcher.Launch(battle.StageId);
                 return;
             }
 
@@ -93,6 +170,53 @@ namespace Game.View
                 catch (OperationCanceledException)
                 {
                     // 팝업을 닫기 전에 로비가 사라지면(재생 종료·씬 전환) 기다림이 취소된다. 오류가 아니므로 조용히 끝낸다
+                    return;
+                }
+            }
+
+            if (this == null)
+            {
+                return;
+            }
+
+            // 레벨업 화면 다음에, 새 컨텐츠(스킬 탭)가 열렸으면 해금 연출을 보여 준다
+            if (tabWasLocked && !tabLocked)
+            {
+                try
+                {
+                    await _contentUnlock.ShowAsync(nav.SkillTabName, nav.SkillTabIcon);
+                }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }
+
+                if (this == null)
+                {
+                    return;
+                }
+            }
+
+            if (tabWasLocked && !tabLocked)
+            {
+                nav.SetSkillLocked(true);
+                await nav.PlaySkillUnlockAsync();
+                if (this == null)
+                {
+                    return;
+                }
+            }
+
+            // 레벨업 직후 처음 시작되는 가이드에 대사 장면이 있으면 재생한다
+            var starting = TutorialProgress.ActiveGuide(_data.Tutorials, TutorialFacts.From(_profile));
+            if (!news.IsEmpty && starting != null && starting.Dialogue.Count > 0)
+            {
+                try
+                {
+                    await _dialogue.PlayAsync(starting.Dialogue);
+                }
+                catch (OperationCanceledException)
+                {
                     return;
                 }
             }
@@ -178,7 +302,25 @@ namespace Game.View
         // target 위에 표시를 띄우고 그 버튼만 누를 수 있게 한다. target이 null이면 가린 것을 모두 거둔다
         private void Point(RectTransform target, string line)
         {
-            _root.SetActive(target != null);
+            bool shown = target != null;
+            if (shown != _root.activeSelf)
+            {
+                _fade?.Kill();
+                if (shown)
+                {
+                    // 새로 나타날 때는 구멍을 바로 대상에 두고 판만 부드럽게 나타낸다
+                    _holeShown = false;
+                    _shownLine = null;
+                    _root.SetActive(true);
+                    _rootGroup.alpha = 0f;
+                    _fade = DOTween.To(() => _rootGroup.alpha, a => _rootGroup.alpha = a, 1f, 0.25f).SetUpdate(true).SetLink(gameObject);
+                }
+                else
+                {
+                    _root.SetActive(false);
+                }
+            }
+
             _blocker.Target = target;
             if (target == null)
             {
@@ -198,38 +340,87 @@ namespace Game.View
 
             Vector2 min = Local(corners[0]);
             Vector2 max = Local(corners[2]);
+            // 구멍과 표시는 대상이 바뀌면 새 위치로 미끄러져 간다
+            if (!_holeShown)
+            {
+                _holeMin = min;
+                _holeMax = max;
+                _holeShown = true;
+            }
+            else
+            {
+                float k = 1f - Mathf.Exp(-_holeFollow * Time.unscaledDeltaTime);
+                _holeMin = Vector2.Lerp(_holeMin, min, k);
+                _holeMax = Vector2.Lerp(_holeMax, max, k);
+            }
+
+            min = _holeMin;
+            max = _holeMax;
             Vector2 center = (min + max) * 0.5f;
 
-            float bob = (Mathf.Sin(Time.unscaledTime * _bobSpeed) + 1f) * 0.5f * _bobHeight;
-            Vector2 size = _pointer.rect.size;
-            _pointer.localPosition = new Vector3(max.x + size.x * _pointerOffset, max.y + size.y * _pointerOffset + bob, 0f);
-            Dim(area.rect, min, max);
+            Spotlight(min, max);
+            TapPointer(center, (max - min) * 0.5f);
 
             // 대화창은 강조 대상과 반대쪽 절반에 둔다
             _dialog.localPosition = new Vector3(0f, center.y < 0f ? _dialogOffset : -_dialogOffset, 0f);
-            _dialogText.text = line;
+            if (line != _shownLine)
+            {
+                // 대사가 바뀌면 말풍선이 톡 튄다
+                _shownLine = line;
+                _dialogText.text = line;
+                _dialog.DOKill();
+                _dialog.localScale = Vector3.one;
+                _dialog.DOPunchScale(Vector3.one * 0.08f, 0.25f, 6).SetUpdate(true).SetLink(_dialog.gameObject);
+            }
         }
 
-        // 대상 사각형(min~max)만 비우고 둘레를 판 4장으로 덮는다. 판은 왼쪽 아래 기준(pivot 0,0)이다
-        private void Dim(Rect area, Vector2 min, Vector2 max)
+        // 대상 사각형(min~max)을 padding만큼 키워 둥글게 뚫고, 펄스 링은 손가락이 누르는 순간에 맞춰 퍼뜨린다
+        private void Spotlight(Vector2 min, Vector2 max)
         {
-            if (_dim == null || _dim.Length < 4)
+            if (_spotlightMaterial == null)
             {
                 return;
             }
 
-            min = Vector2.Max(min, area.min);
-            max = Vector2.Min(max, area.max);
-            Place(_dim[0], new Vector2(area.xMin, max.y), new Vector2(area.xMax, area.yMax));
-            Place(_dim[1], new Vector2(area.xMin, area.yMin), new Vector2(area.xMax, min.y));
-            Place(_dim[2], new Vector2(area.xMin, min.y), new Vector2(min.x, max.y));
-            Place(_dim[3], new Vector2(max.x, min.y), new Vector2(area.xMax, max.y));
+            Vector2 center = (min + max) * 0.5f;
+            Vector2 half = (max - min) * 0.5f + Vector2.one * _holePadding;
+            _spotlightMaterial.SetVector(HoleId, new Vector4(center.x, center.y, half.x, half.y));
+            _spotlightMaterial.SetVector(ParamsId, new Vector4(_holeRadius, _holeSoftness, 0f, 0f));
+            float cycle = TapCycle();
+            // 누르는 순간(0.5)부터 링이 퍼진다. 그 전에는 링을 숨긴다
+            float progress = Mathf.Clamp01((cycle - PressAt) / (1f - PressAt));
+            _spotlightMaterial.SetVector(RingId, new Vector4(progress, _ringSpread, _ringThickness, 0f));
+            _spotlightMaterial.SetColor(RingColorId, cycle < PressAt ? new Color(_ringColor.r, _ringColor.g, _ringColor.b, 0f) : _ringColor);
         }
 
-        private static void Place(RectTransform panel, Vector2 from, Vector2 to)
+        private float TapCycle() => Mathf.Repeat(Time.unscaledTime / Mathf.Max(0.1f, _tapSeconds), 1f);
+
+        // 손가락이 대상으로 다가가 누르고(살짝 작아짐) 물러나는 것을 반복한다
+        private void TapPointer(Vector2 center, Vector2 half)
         {
-            panel.localPosition = new Vector3(from.x, from.y, 0f);
-            panel.sizeDelta = Vector2.Max(Vector2.zero, to - from);
+            Vector2 size = _pointer.rect.size;
+            Vector2 far = new Vector2(half.x * 0.5f + size.x * 0.9f, -half.y * 0.5f - size.y * 0.9f);
+            Vector2 near = new Vector2(size.x * _pointerOffset, -size.y * _pointerOffset);
+            float c = TapCycle();
+            float t;
+            float scale = 1f;
+            if (c < PressAt - 0.05f)
+            {
+                t = Mathf.SmoothStep(0f, 1f, c / (PressAt - 0.05f));
+            }
+            else if (c < PressAt + 0.05f)
+            {
+                t = 1f;
+                scale = 0.85f;
+            }
+            else
+            {
+                t = 1f - Mathf.SmoothStep(0f, 1f, (c - PressAt - 0.05f) / (1f - PressAt - 0.05f));
+            }
+
+            Vector2 offset = Vector2.Lerp(far, near, t);
+            _pointer.localPosition = new Vector3(center.x + offset.x, center.y + offset.y, 0f);
+            _pointer.localScale = Vector3.one * scale;
         }
     }
 }
