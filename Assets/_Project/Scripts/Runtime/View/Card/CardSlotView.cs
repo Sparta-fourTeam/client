@@ -213,7 +213,7 @@ namespace Game.View
             {
                 _iconImage.enabled = true;
                 _titleText.text = choice.DisplayName ?? choice.Option.name;
-                _levelText.text = $"{choice.skill.Level} → {choice.skill.Level + 1}";
+                _levelText.text = $"{choice.skill.Level} <color=#FF7A29>→</color> {choice.skill.Level + 1}";
                 _descText.text = choice.DisplayDescription ?? choice.Option.desc ?? string.Empty;
             }
 
