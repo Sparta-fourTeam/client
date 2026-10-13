@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using VContainer.Unity;
@@ -28,11 +30,20 @@ namespace Game.Core
         public int LevelBefore { get; private set; }
 
         private bool _hadProfile;
+        private HashSet<int> _clearedBefore = new();
+
+        /// <summary>다시 받기 전에 깬 스테이지였는지. 전투에서 돌아왔으면 전투 전 기록이라 스테이지 클리어 해금 연출이 이것과 비교한다.
+        /// 받기 전 프로필이 비어 있었으면 받은 뒤 기록과 같다</summary>
+        public bool WasStageCleared(int stageId) => _clearedBefore.Contains(stageId);
+
+        private HashSet<int> ClearedNow() =>
+            _profile.Snapshot().stageProgress.Where(row => row.IsCleared).Select(row => row.stageId).ToHashSet();
 
         public void Start()
         {
             _hadProfile = _profile.IsLoaded;
             LevelBefore = _profile.Level;
+            _clearedBefore = ClearedNow();
             RefreshAsync().Forget(Debug.LogException);
         }
 
@@ -45,6 +56,7 @@ namespace Game.Core
                 if (!_hadProfile)
                 {
                     LevelBefore = _profile.Level;
+                    _clearedBefore = ClearedNow();
                 }
             }
             catch (Exception ex)

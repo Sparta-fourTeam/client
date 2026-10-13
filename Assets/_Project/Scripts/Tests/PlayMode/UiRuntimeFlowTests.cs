@@ -141,7 +141,7 @@ namespace Game.Tests
         [UnityTest]
         public IEnumerator UpgradeButtonsRequireConfirmationAndEquipmentBatchSpendsExactTotals()
         {
-            yield return StartFromBoot();
+            yield return StartFromBoot(UnlockLobbyFeatures);
             var lobby = Object.FindAnyObjectByType<LobbyLifetimeScope>();
             var data = lobby.Container.Resolve<GameDataStore>();
             var profile = lobby.Container.Resolve<PlayerProfile>();
@@ -233,6 +233,13 @@ namespace Game.Tests
             yield return WaitFor(() => Field<bool>(ui.Get<TutorialGuideView>(), "_ready"));
             Assert.That(SceneManager.GetActiveScene().name, Is.EqualTo("Lobby"));
             Assert.That(ui.Get<DialogueView>().IsOpen, Is.False);
+            // 스테이지를 깨기 전에는 캐릭터 탭이 자물쇠 판에 덮여 열리지 않고, 판을 누르면 안내가 뜬다
+            var nav = ui.Get<LobbyNavView>();
+            var characterLock = Field<Button>(nav.GetComponentsInChildren<FeatureLockView>(true).Single(l => Field<string>(l, "_feature") == "character"), "_lock");
+            Assert.That(characterLock.gameObject.activeInHierarchy, Is.True);
+            yield return ClickGameButton(characterLock);
+            Assert.That(Field<GameObject>(ui.Get<ComingSoonToastView>(), "_panel").activeSelf, Is.True);
+            Assert.That(Field<GameObject>(ui.Get<CharacterScreenView>(), "_panel").activeSelf, Is.False);
             Assert.That(root.Resolve<PlayerProfile>().IsTutorialDone(root.Resolve<GameDataStore>().Tutorials.First(t => t.IsBattle).Id), Is.False);
         }
 
@@ -306,6 +313,89 @@ namespace Game.Tests
             Assert.That(profile.UpgradeLevel(upgradeId), Is.EqualTo(1));
             Assert.That(Field<GameObject>(guide, "_root").activeSelf, Is.False);
             LogAssert.NoUnexpectedReceived();
+        }
+
+        [UnityTest]
+        public IEnumerator StageClearUnlock_ShowsContentUnlockOnLobbyReturnThenOpensTab()
+        {
+            // 캐릭터 탭을 여는 스테이지 바로 앞까지 깬 세이브로 시작한다
+            var root = VContainer.Unity.VContainerSettings.Instance.GetOrCreateRootLifetimeScopeInstance() as RootLifetimeScope;
+            int unlockStage = root.Container.Resolve<GameDataStore>().FeatureUnlocks.RequiredStage("character");
+            void SetCleared(LocalSave save, int stageId, int rating)
+            {
+                var row = save.stageProgress.Find(p => p.stageId == stageId);
+                if (row == null)
+                {
+                    save.stageProgress.Add(row = new StageProgressRow { stageId = stageId });
+                }
+
+                row.clearRating = row.claimedRating = rating;
+            }
+
+            yield return StartFromBoot(save =>
+            {
+                for (int id = 1; id < unlockStage; id++)
+                {
+                    SetCleared(save, id, 1);
+                }
+
+                SetCleared(save, unlockStage, 0);
+            });
+            var characterLock = Object.FindAnyObjectByType<LobbyLifetimeScope>().Container.Resolve<IUiRegistry>()
+                .GetAll<FeatureLockView>().Single(l => Field<string>(l, "_feature") == "character");
+            Assert.That(characterLock.IsLocked, Is.True);
+
+            // 전투에서 그 스테이지를 깬 것처럼 세이브만 바꾸고 로비로 돌아온다. 프로필은 로비가 새로 받을 때 바뀐다
+            var cleared = _store.Load();
+            SetCleared(cleared, unlockStage, 1);
+            _store.Flush(cleared);
+            yield return Object.FindAnyObjectByType<LobbyLifetimeScope>().Container.Resolve<BattleLauncher>().Launch(1).ToCoroutine();
+            yield return WaitFor(() => SceneManager.GetActiveScene().name == "Stage");
+            yield return root.Container.Resolve<ISceneNavigator>().GoToLobby().ToCoroutine();
+            yield return WaitFor(() => SceneManager.GetActiveScene().name == "Lobby");
+
+            var ui = Object.FindAnyObjectByType<LobbyLifetimeScope>().Container.Resolve<IUiRegistry>();
+            var data = root.Container.Resolve<GameDataStore>();
+            var opened = ui.GetAll<FeatureLockView>().Where(l => data.FeatureUnlocks.RequiredStage(Field<string>(l, "_feature")) == unlockStage).ToList();
+            var contentUnlock = ui.Get<ContentUnlockView>();
+            var tap = Field<Button>(contentUnlock, "_tapArea");
+            var shown = new List<string>();
+            // 이번에 열린 기능마다 컨텐츠 해금 화면이 한 번씩 뜬다. 탭으로 넘긴다
+            foreach (var _ in opened)
+            {
+                yield return WaitFor(() => contentUnlock.IsOpen);
+                shown.Add(Field<TMP_Text>(contentUnlock, "_contentName").text);
+                if (contentUnlock.IsPlaying)
+                {
+                    yield return ClickGameButton(tap);
+                }
+
+                yield return ClickGameButton(tap);
+                yield return WaitFor(() => !contentUnlock.IsOpen);
+            }
+
+            Assert.That(shown, Is.EquivalentTo(opened.Select(l => l.ContentName)));
+            yield return WaitFor(() => opened.All(l => !Field<Button>(l, "_lock").gameObject.activeSelf));
+            var nav = ui.Get<LobbyNavView>();
+            yield return ClickGameButton(Field<Button>(nav, "_characterTab"));
+            Assert.That(Field<GameObject>(ui.Get<CharacterScreenView>(), "_panel").activeSelf, Is.True);
+        }
+
+        // 스테이지 클리어로 열리는 로비 기능(FeatureUnlocks)이 모두 열린 세이브로 만든다
+        private static void UnlockLobbyFeatures(LocalSave save)
+        {
+            var data = VContainer.Unity.VContainerSettings.Instance.GetOrCreateRootLifetimeScopeInstance().Container.Resolve<GameDataStore>();
+            foreach (var stage in data.Stages.Values)
+            {
+                var row = save.stageProgress.Find(p => p.stageId == stage.Id);
+                if (row == null)
+                {
+                    row = new StageProgressRow { stageId = stage.Id };
+                    save.stageProgress.Add(row);
+                }
+
+                row.clearRating = row.claimedRating = 1;
+            }
         }
 
         // 대화 SKIP → 확인창에서 건너뛰기
@@ -519,7 +609,7 @@ namespace Game.Tests
         [UnityTest]
         public IEnumerator GameButtonsNavigatePickCardsAndShowDefeat()
         {
-            yield return StartFromBoot();
+            yield return StartFromBoot(UnlockLobbyFeatures);
             var lobby = Object.FindAnyObjectByType<LobbyLifetimeScope>();
             var ui = lobby.Container.Resolve<IUiRegistry>();
             var nav = ui.Get<LobbyNavView>();
@@ -564,6 +654,12 @@ namespace Game.Tests
             yield return ClickGameButton(Field<Button>(ui.Get<MissionButtonView>(), "_button"));
             var mission = ui.Get<MissionScreenView>();
             Assert.That(Field<GameObject>(mission, "_panel").activeSelf, Is.True);
+            // 기능을 열려고 뒤 스테이지까지 깬 세이브라 가장 높은 스테이지가 보인다. 아래 확인은 첫 스테이지 기준이라 이전 화살표로 돌아간다
+            while (Field<int>(mission, "_stageId") > 1)
+            {
+                yield return ClickGameButton(Field<Button>(mission, "_prevButton"));
+            }
+
             yield return ClickGameButton(Field<Button>(mission, "_infoButton"));
             var details = Field<MissionPopupView>(mission, "_detailsPopup");
             Assert.That(Field<GameObject>(details, "_panel").activeSelf, Is.True);

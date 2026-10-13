@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Game.View
@@ -7,6 +8,9 @@ namespace Game.View
     public interface IUiRegistry
     {
         T Get<T>() where T : Component;
+
+        /// <summary>같은 종류가 여러 개인 구성 요소(버튼마다 붙는 잠금 등)를 모두 돌려준다. 없으면 빈 목록</summary>
+        IReadOnlyList<T> GetAll<T>() where T : Component;
     }
 
     public interface IUiBindable
@@ -49,6 +53,9 @@ namespace Game.View
 
             return (T)list[0];
         }
+
+        public IReadOnlyList<T> GetAll<T>() where T : Component =>
+            _components.TryGetValue(typeof(T), out var list) ? list.Where(c => c != null).Cast<T>().ToList() : new List<T>();
 
         public void Clear() => _components.Clear();
     }
