@@ -33,16 +33,17 @@ namespace Game.Tests
             finally { Directory.Delete(folder, true); }
         }
 
-        [Test(Description = "같은 초 안의 서로 다른 백업은 세이브의 수정 시각이나 무작위 접미사와 관계없이 최신 내용을 복원한다")]
-        public void SaveRestoreUsesLatestSameSecondBackupAndPreservesCurrentSave()
+        [TestCase(false)]
+        [TestCase(true)]
+        public void SaveRestoreUsesLatestSameSecondBackupAndPreservesCurrentSave(bool legacy)
         {
             string folder = Path.Combine(Path.GetTempPath(), "nova-tools-" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(folder);
             try
             {
                 string save = Path.Combine(folder, "save.json");
-                string older = save + ".20991013-120000.0000001.bak";
-                string newer = save + ".20991013-120000.0000002.bak";
+                string older = save + (legacy ? ".20991013-120000-00000000.bak" : ".20991013-120000.0000001.bak");
+                string newer = save + (legacy ? ".20991013-120000-ffffffff.bak" : ".20991013-120000.0000002.bak");
                 File.WriteAllText(older, "older");
                 File.WriteAllText(newer, "newer");
                 File.SetLastWriteTimeUtc(older, new DateTime(2026, 10, 14, 0, 0, 0, DateTimeKind.Utc));
@@ -52,7 +53,7 @@ namespace Game.Tests
                 string latest = PlaytestWindow.LatestBackup(save);
                 Assert.That(latest, Is.EqualTo(newer));
                 string preserved = PlaytestWindow.Restore(save, latest);
-                Assert.That(preserved, Is.EqualTo(save + ".20991013-120000.0000003.bak"),
+                Assert.That(preserved, Is.EqualTo(save + (legacy ? ".20991013-120000.0000001.bak" : ".20991013-120000.0000003.bak")),
                     "시계가 기존 백업보다 앞서 있어도 생성 순서가 유지되어야 한다");
                 Assert.That(PlaytestWindow.LatestBackup(save), Is.EqualTo(preserved));
                 Assert.That(File.ReadAllText(save), Is.EqualTo("newer"));

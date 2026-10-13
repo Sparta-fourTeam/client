@@ -238,13 +238,14 @@ namespace Game.Editor
         internal static string Backup(string path)
         {
             const string format = "yyyyMMdd-HHmmss.fffffff";
+            const DateTimeStyles styles = DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal;
             var time = DateTime.UtcNow;
             string latest = LatestBackup(path);
+            string timestamp = latest == null ? null : Path.GetFileName(latest)[(Path.GetFileName(path).Length + 1)..^4];
             // 같은 tick, 시계 역행, 에디터 재로드 뒤에도 기존 백업보다 뒤에 정렬되게 한다
-            if (latest != null && DateTime.TryParseExact(
-                Path.GetFileName(latest)[(Path.GetFileName(path).Length + 1)..^4], format,
-                CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
-                out var previous) && time <= previous)
+            if (timestamp != null && (DateTime.TryParseExact(timestamp, format, CultureInfo.InvariantCulture, styles, out var previous)
+                || (timestamp.Length == 24 && DateTime.TryParseExact(timestamp[..15], "yyyyMMdd-HHmmss",
+                    CultureInfo.InvariantCulture, styles, out previous))) && time <= previous)
             {
                 time = previous.AddTicks(1);
             }
