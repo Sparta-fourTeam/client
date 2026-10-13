@@ -415,6 +415,26 @@ namespace Game.Tests
             {
                 var lobby = Object.FindAnyObjectByType<LobbyLifetimeScope>();
                 var ui = lobby.Container.Resolve<IUiRegistry>();
+                var mission = ui.Get<MissionScreenView>();
+                var recovery = ui.Get<EnergyRecoverPopupView>();
+                var recoveryPanel = Field<GameObject>(recovery, "_panel");
+                var missionEnergy = mission.GetComponentInChildren<EnergyView>(true);
+                var lobbyEnergy = Object.FindObjectsByType<EnergyView>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+                    .Single(view => view.gameObject.scene == lobby.gameObject.scene && !view.transform.IsChildOf(mission.transform));
+                // 두 화면의 실제 하트 이미지에 터치해 동일한 충전 팝업이 열리는지 확인한다.
+                yield return ClickGameButton(Field<Button>(lobbyEnergy, "_button"), (RectTransform)lobbyEnergy.transform.Find("Icon"));
+                Assert.That(recoveryPanel.activeSelf, Is.True);
+                yield return ClickGameButton(Field<Button>(recovery, "_closeButton"));
+                yield return WaitFor(() => !recoveryPanel.activeSelf);
+                yield return ClickGameButton(Field<Button>(ui.Get<MissionButtonView>(), "_button"));
+                Assert.That(Field<GameObject>(mission, "_panel").activeSelf, Is.True);
+                yield return ClickGameButton(Field<Button>(missionEnergy, "_button"), (RectTransform)missionEnergy.transform.Find("Icon"));
+                Assert.That(recoveryPanel.activeSelf, Is.True);
+                yield return ClickGameButton(Field<Button>(recovery, "_closeButton"));
+                yield return WaitFor(() => !recoveryPanel.activeSelf);
+                Assert.That(Field<GameObject>(mission, "_panel").activeSelf, Is.True, "충전 창을 닫아도 전투 준비 화면은 유지한다");
+                yield return ClickGameButton(Field<Button>(mission, "_backButton"));
+                yield return WaitFor(() => !Field<GameObject>(mission, "_panel").activeSelf);
                 ui.Get<ProfilePopupView>().Open();
                 Assert.That(Field<GameObject>(ui.Get<ProfilePopupView>(), "_panel").activeSelf, Is.True);
                 ui.Get<CharacterScreenView>().SetVisible(true);
@@ -768,7 +788,7 @@ namespace Game.Tests
             return ((GameObject)slot.GetType().GetField("Root").GetValue(slot)).GetComponent<Button>();
         }
 
-        private static IEnumerator ClickGameButton(Button button)
+        private static IEnumerator ClickGameButton(Button button, RectTransform hitArea = null)
         {
             // A focused tool/preview can temporarily supply Screen's editor dimensions.
             // Overlay raycasters must read the same Game View size as the canvas.
@@ -781,7 +801,7 @@ namespace Game.Tests
             yield return WaitFor(() => button != null && button.gameObject.activeInHierarchy && button.IsInteractable());
             Canvas.ForceUpdateCanvases();
             var canvas = button.GetComponentInParent<Canvas>();
-            var rect = (RectTransform)button.transform;
+            var rect = hitArea != null ? hitArea : (RectTransform)button.transform;
             PointerEventData pointer = null;
             var hits = new List<RaycastResult>();
             bool sampled = false;
