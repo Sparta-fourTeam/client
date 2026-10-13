@@ -156,11 +156,11 @@ namespace Game.Tests
             var frost = world.Create(FrostCrystalId);
             var coldBefore = cold.Stats.Cast.Cooldown;
             var frostBefore = frost.Stats.Cast.Cooldown;
-            var option = cold.Data.upgrades.Find(c => c.id == "cold_zone_polish");
+            var option = cold.Data.upgrades.Find(c => c.id == "80");
 
             Assert.IsTrue(SkillUpgradeTransaction.TryApply(cold, option, new[] { (SkillBase)cold, frost }, 0));
             float coldReduction = option.effects.Find(e => e.kind == "attackSpeed").value / 100;
-            float frostReduction = frost.Data.upgrades.Find(c => c.id == "frost_crystal_polish").effects.Find(e => e.kind == "attackSpeed").value / 100;
+            float frostReduction = frost.Data.upgrades.Find(c => c.id == "62").effects.Find(e => e.kind == "attackSpeed").value / 100;
 
             Assert.AreEqual(coldBefore * (1 - coldReduction), cold.Stats.Cast.Cooldown, .0001f);
             Assert.AreEqual(frostBefore * (1 - frostReduction), frost.Stats.Cast.Cooldown, .0001f);

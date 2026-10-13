@@ -5,13 +5,13 @@ using Newtonsoft.Json.Serialization;
 
 namespace Game.Core
 {
-    /// <summary>Aimed: 가장 가까운 적을 향해, RollingLane: 대상 줄을 따라 굴러감, Radial: 시전 위치에서 발 수만큼 사방으로 고르게 퍼짐(조준 없음)</summary>
+    /// <summary>Aimed: 가장 가까운 적을 향해, Cloud: 대상 줄을 따라 굴러감, Radial: 시전 위치에서 발 수만큼 사방으로 고르게 퍼짐(조준 없음)</summary>
     [JsonConverter(typeof(StringEnumConverter), typeof(DefaultNamingStrategy), new object[0], false)]
-    public enum ProjectilePath { Aimed, RollingLane, Radial }
+    public enum ProjectilePath { Aimed, Cloud, Radial }
 
-    /// <summary>Projectile: 날아가 맞춤(투척), Hitscan: 대상 위치에 즉시 타격, Area: 위치에 머무는 범위, Beam: 지속하며 닿는 모든 적을 공격하는 광선, Chain: 여러 적을 연쇄적으로 튕기며 공격</summary>
+    /// <summary>Projectile: 날아가 맞춤(투척), Instant: 대상 위치에 즉시 타격, Area: 위치에 머무는 범위, Beam: 지속하며 닿는 모든 적을 공격하는 광선, Chain: 여러 적을 연쇄적으로 튕기며 공격</summary>
     [JsonConverter(typeof(StringEnumConverter), typeof(DefaultNamingStrategy), new object[0], false)]
-    public enum CastType { Projectile, Hitscan, Area, Beam, Chain }
+    public enum CastType { Projectile, Instant, Area, Beam, Chain }
     public enum SkillForm { Default, Enbakutsu, JudgementThunder, TriangleIce, LargeLog, FireLog, FlameArrow, ThunderArrow }
 
     public class SkillData

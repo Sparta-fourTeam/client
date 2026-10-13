@@ -61,10 +61,10 @@ namespace Game.Tests
                 data.baseStats.reserve.distance = 1;
                 data.baseStats.reserve.interval = .1f;
                 data.baseStats.reserve.cooldown = 10;
-                data.upgrades.Find(c => c.id == "log_reserve").effects.Find(e => e.kind == "reserveCasts").value = 3;
+                data.upgrades.Find(c => c.id == "72").effects.Find(e => e.kind == "reserveCasts").value = 3;
                 using var weapon = SkillFactory.Create(data, prefab, prefab.transform, provider, wall);
-                Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == "log_reserve")));
-                Assert.IsFalse(weapon.LevelUp(data.upgrades.Find(c => c.id == "log_reserve")));
+                Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == "72")));
+                Assert.IsFalse(weapon.LevelUp(data.upgrades.Find(c => c.id == "72")));
                 weapon.Tick(0); Assert.AreEqual(1, CountLogs());
                 provider.Target.Position = new Vector2(3, 1.1f);
                 weapon.Tick(.01f); Assert.AreEqual(1, CountLogs());

@@ -36,7 +36,7 @@ namespace Game.Core
     {
         /// <param name="wallAttackLineY">벽 앞선의 높이. 벽이 없으면 null</param>
         public static SkillRange For(SkillData data, float range, Vector2 casterPosition, float? wallAttackLineY) =>
-            data.projectilePath == ProjectilePath.RollingLane && wallAttackLineY.HasValue
+            data.projectilePath == ProjectilePath.Cloud && wallAttackLineY.HasValue
                 ? SkillRange.Line(wallAttackLineY.Value + range)
                 : SkillRange.Arc(casterPosition, range);
     }

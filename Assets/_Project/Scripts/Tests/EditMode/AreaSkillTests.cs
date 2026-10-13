@@ -155,7 +155,7 @@ namespace Game.Tests
             const string IceSpearPrefab = "Assets/_Project/Prefabs/Skills/IceSpear.prefab";
             var data = FrostPrison();
             var all = new DefaultSkillDataProvider(new GameDataStore()).LoadAll();
-            var link = data.upgrades.Find(c => c.id == "cold_zone_shatter").effects.Single(e => e.kind == "onEvent");
+            var link = data.upgrades.Find(c => c.id == "79").effects.Single(e => e.kind == "onEvent");
             var iceData = all.Find(w => w.id == link.skillId);
             var icePrefab = AssetDatabase.LoadAssetAtPath<GameObject>(IceSpearPrefab);
             Assert.IsNotNull(icePrefab, IceSpearPrefab);
@@ -172,7 +172,7 @@ namespace Game.Tests
             try
             {
                 caster.UseChildCaster(children);
-                Assert.IsTrue(caster.LevelUp(data.upgrades.Find(c => c.id == "cold_zone_shatter")));
+                Assert.IsTrue(caster.LevelUp(data.upgrades.Find(c => c.id == "79")));
                 typeof(SkillCaster).GetMethod("OnFire", Flags).Invoke(caster, null);
                 Assert.AreEqual(0, ActiveProjectiles().Count, "영역이 유지되는 동안에는 얼음창이 없다");
                 var zone = Zones().Single();
@@ -199,7 +199,7 @@ namespace Game.Tests
         {
             var data = FrostPrison();
             var caster = CreateCaster(data, new Provider(), out _);
-            Assert.IsFalse(caster.LevelUp(data.upgrades.Find(c => c.id == "cold_zone_shatter")),
+            Assert.IsFalse(caster.LevelUp(data.upgrades.Find(c => c.id == "79")),
                 "시전기가 연결되지 않으면 조용히 무시하지 않고 실패한다");
         }
 
@@ -285,7 +285,7 @@ namespace Game.Tests
             try
             {
                 var builder = new SkillConfigBuilder(SkillConfig.FromDefinition(data).WithChildCaster(children));
-                var effects = data.upgrades.Find(c => c.id == "lightning_cloud_guide").effects;
+                var effects = data.upgrades.Find(c => c.id == "90").effects;
                 var chance = effects.Single(e => e.kind == "onEvent").chance;
                 Assert.IsTrue(builder.TryApplyCatalog(effects));
                 var pool = ZonePool();

@@ -72,9 +72,9 @@ namespace Game.Tests
         {
             var catalog = new GameDataStore().LoadSkills();
             var arrow = catalog.Find(skill => skill.id == 1);
-            var spread = arrow.upgrades.Find(card => card.id == "arrow_spread");
+            var spread = arrow.upgrades.Find(card => card.id == "12");
             var formCard = arrow.upgrades.Find(card => card.id ==
-                (form == SkillForm.ThunderArrow ? "arrow_thunder" : "arrow_flame"));
+                (form == SkillForm.ThunderArrow ? "16" : "21"));
             var recorder = new Recorder();
             var builder = NewBuilder(recorder);
             if (formFirst) { Assert.IsTrue(builder.TryApplyCatalog(formCard.effects)); }
@@ -300,7 +300,7 @@ namespace Game.Tests
         {
             var catalog = Catalog((p, c) =>
             {
-                c.castType = CastType.Hitscan;
+                c.castType = CastType.Instant;
                 p.upgrades.Add(Card("link", Link(), ForChild("pierceCount", 1)));   // Hitscan 자식은 관통을 쓰지 않는다
             });
             var error = Assert.Throws<InvalidOperationException>(() => SkillCatalogValidator.Validate(catalog));

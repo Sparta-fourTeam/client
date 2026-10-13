@@ -12,7 +12,7 @@ namespace Game.Tests
     /// <summary>연쇄(연쇄 번개): 튕김 규칙, 이벤트, 경로 피해, 카드 효과</summary>
     public sealed class ChainSkillTests
     {
-        private const int ChainLightningId = 18;
+        private const int ChainLightningId = 15;
         private const BindingFlags Flags = BindingFlags.NonPublic | BindingFlags.Instance;
         private readonly List<GameObject> created = new List<GameObject>();
         private CatalogWorld world;
@@ -194,7 +194,7 @@ namespace Game.Tests
         [Test]
         public void IonBurstCard_ExplodesOnBouncesWithRadiusAndSpreadCard()
         {
-            var chain = ChainLightning("chain_lightning_ion_burst", "chain_lightning_ion_spread");
+            var chain = ChainLightning("110", "112");
             Assert.AreEqual(.8f * 2, chain.Stats.Explosion.Radius, .001f, "이온 확산: 폭발 범위 +100%");
             var a = world.AddEnemy(3, 0); var b = world.AddEnemy(5, 0);
             var bystander = world.AddEnemy(5, 1.2f);

@@ -24,8 +24,8 @@ namespace Game.Core
         /// <summary>코인을 뺀 아이템 보상. 랜덤 재료도 같은 ID 필드로 표현한다. 새 아이템 보상은 항목만 추가한다</summary>
         public List<StageRewardEntry> Items = new();
 
-        public bool UsesRandomSkillMaterial => HasPositive(ItemIds.RandomSkillMaterial);
-        public bool UsesRandomEquipmentMaterial => HasPositive(ItemIds.RandomEquipmentMaterial);
+        [Newtonsoft.Json.JsonIgnore] public bool UsesRandomSkillMaterial => HasPositive(ItemIds.RandomSkillMaterial);
+        [Newtonsoft.Json.JsonIgnore] public bool UsesRandomEquipmentMaterial => HasPositive(ItemIds.RandomEquipmentMaterial);
 
         private bool HasPositive(string itemId) => Items.Exists(item => item.itemId == itemId && item.finalAmount > 0);
 

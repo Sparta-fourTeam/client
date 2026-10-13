@@ -159,7 +159,7 @@
       },
       "runtime": {
         "weaponId": 1,
-        "cardId": "arrow_multishot",
+        "cardId": 1,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -195,7 +195,7 @@
       },
       "runtime": {
         "weaponId": 1,
-        "cardId": "arrow_sharp",
+        "cardId": 2,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -229,7 +229,7 @@
       },
       "runtime": {
         "weaponId": 1,
-        "cardId": "arrow_light",
+        "cardId": 3,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -270,7 +270,7 @@
       },
       "runtime": {
         "weaponId": 1,
-        "cardId": "arrow_spread",
+        "cardId": 12,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -322,7 +322,7 @@
       },
       "runtime": {
         "weaponId": 1,
-        "cardId": "arrow_burst",
+        "cardId": 4,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -360,7 +360,7 @@
       },
       "runtime": {
         "weaponId": 1,
-        "cardId": "arrow_barrage",
+        "cardId": 13,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -398,7 +398,7 @@
       },
       "runtime": {
         "weaponId": 1,
-        "cardId": "arrow_aux_damage",
+        "cardId": 14,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -437,7 +437,7 @@
       },
       "runtime": {
         "weaponId": 1,
-        "cardId": "arrow_amplify",
+        "cardId": 15,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -475,7 +475,7 @@
       },
       "runtime": {
         "weaponId": 1,
-        "cardId": "arrow_rapid",
+        "cardId": 5,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -516,7 +516,7 @@
       },
       "runtime": {
         "weaponId": 1,
-        "cardId": "arrow_storm",
+        "cardId": 6,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "connected",
@@ -562,7 +562,7 @@
       },
       "runtime": {
         "weaponId": 1,
-        "cardId": "arrow_explosion",
+        "cardId": 8,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -600,7 +600,7 @@
       },
       "runtime": {
         "weaponId": 1,
-        "cardId": "arrow_explosion_damage",
+        "cardId": 9,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -638,7 +638,7 @@
       },
       "runtime": {
         "weaponId": 1,
-        "cardId": "arrow_explosion_radius",
+        "cardId": 10,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -681,7 +681,7 @@
       },
       "runtime": {
         "weaponId": 1,
-        "cardId": "arrow_aux_explosion",
+        "cardId": 20,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -724,7 +724,7 @@
       },
       "runtime": {
         "weaponId": 1,
-        "cardId": "arrow_flame",
+        "cardId": 21,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -768,7 +768,7 @@
       },
       "runtime": {
         "weaponId": 1,
-        "cardId": "arrow_shock",
+        "cardId": 11,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -812,7 +812,7 @@
       },
       "runtime": {
         "weaponId": 1,
-        "cardId": "arrow_thunder",
+        "cardId": 16,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -850,7 +850,7 @@
       },
       "runtime": {
         "weaponId": 1,
-        "cardId": "arrow_quick",
+        "cardId": 17,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -889,7 +889,7 @@
       },
       "runtime": {
         "weaponId": 1,
-        "cardId": "arrow_rod",
+        "cardId": 18,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -932,7 +932,7 @@
       },
       "runtime": {
         "weaponId": 1,
-        "cardId": "arrow_aux_rod",
+        "cardId": 19,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -969,7 +969,7 @@
       },
       "runtime": {
         "weaponId": 1,
-        "cardId": "arrow_pierce",
+        "cardId": 7,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -1014,7 +1014,7 @@
       },
       "runtime": {
         "weaponId": 1,
-        "cardId": "arrow_neutral_1",
+        "cardId": 22,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "connected",
@@ -1059,7 +1059,7 @@
       },
       "runtime": {
         "weaponId": 1,
-        "cardId": "arrow_neutral_2",
+        "cardId": 23,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "connected",
@@ -1100,7 +1100,7 @@
       },
       "runtime": {
         "weaponId": 2,
-        "cardId": "fireball_burst",
+        "cardId": 24,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -1135,7 +1135,7 @@
       },
       "runtime": {
         "weaponId": 2,
-        "cardId": "fireball_explosion_damage",
+        "cardId": 26,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -1171,7 +1171,7 @@
       },
       "runtime": {
         "weaponId": 2,
-        "cardId": "fireball_impact_damage",
+        "cardId": 31,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -1218,7 +1218,7 @@
       },
       "runtime": {
         "weaponId": 2,
-        "cardId": "fireball_burst_ii",
+        "cardId": 25,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -1259,7 +1259,7 @@
       },
       "runtime": {
         "weaponId": 2,
-        "cardId": "fireball_explosion_radius",
+        "cardId": 27,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -1298,7 +1298,7 @@
       },
       "runtime": {
         "weaponId": 2,
-        "cardId": "fireball_burn",
+        "cardId": 28,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -1336,7 +1336,7 @@
       },
       "runtime": {
         "weaponId": 2,
-        "cardId": "fireball_inferno",
+        "cardId": 29,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -1376,7 +1376,7 @@
       },
       "runtime": {
         "weaponId": 2,
-        "cardId": "fireball_spreading_burn",
+        "cardId": 30,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -1416,7 +1416,7 @@
       },
       "runtime": {
         "weaponId": 2,
-        "cardId": "fireball_training",
+        "cardId": 32,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -1459,7 +1459,7 @@
       },
       "runtime": {
         "weaponId": 2,
-        "cardId": "fireball_flames",
+        "cardId": 33,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -1511,7 +1511,7 @@
       },
       "runtime": {
         "weaponId": 2,
-        "cardId": "fireball_phoenix",
+        "cardId": 34,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -1559,7 +1559,7 @@
       },
       "runtime": {
         "weaponId": 4,
-        "cardId": "frost_crystal_repeat",
+        "cardId": 50,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -1595,7 +1595,7 @@
       },
       "runtime": {
         "weaponId": 4,
-        "cardId": "frost_crystal_split",
+        "cardId": 56,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -1631,7 +1631,7 @@
       },
       "runtime": {
         "weaponId": 4,
-        "cardId": "frost_crystal_extreme",
+        "cardId": 52,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -1667,7 +1667,7 @@
       },
       "runtime": {
         "weaponId": 4,
-        "cardId": "frost_crystal_pierce",
+        "cardId": 53,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -1701,7 +1701,7 @@
       },
       "runtime": {
         "weaponId": 4,
-        "cardId": "frost_crystal_damage",
+        "cardId": 51,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -1734,7 +1734,7 @@
       },
       "runtime": {
         "weaponId": 4,
-        "cardId": "frost_crystal_impact",
+        "cardId": 58,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -1772,7 +1772,7 @@
       },
       "runtime": {
         "weaponId": 4,
-        "cardId": "frost_crystal_shard_damage",
+        "cardId": 57,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -1810,7 +1810,7 @@
       },
       "runtime": {
         "weaponId": 4,
-        "cardId": "frost_crystal_heavy",
+        "cardId": 54,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -1856,7 +1856,7 @@
       },
       "runtime": {
         "weaponId": 4,
-        "cardId": "frost_crystal_volley",
+        "cardId": 55,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -1900,7 +1900,7 @@
       },
       "runtime": {
         "weaponId": 4,
-        "cardId": "frost_crystal_frostbite",
+        "cardId": 59,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -1943,7 +1943,7 @@
       },
       "runtime": {
         "weaponId": 4,
-        "cardId": "frost_crystal_shard_frostbite",
+        "cardId": 60,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -1994,7 +1994,7 @@
       },
       "runtime": {
         "weaponId": 4,
-        "cardId": "frost_crystal_triangle",
+        "cardId": 61,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -2040,7 +2040,7 @@
       },
       "runtime": {
         "weaponId": 3,
-        "cardId": "lightning_burst",
+        "cardId": 36,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -2075,7 +2075,7 @@
       },
       "runtime": {
         "weaponId": 3,
-        "cardId": "lightning_storm",
+        "cardId": 37,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -2110,7 +2110,7 @@
       },
       "runtime": {
         "weaponId": 3,
-        "cardId": "lightning_voltage",
+        "cardId": 40,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -2147,7 +2147,7 @@
       },
       "runtime": {
         "weaponId": 3,
-        "cardId": "lightning_damage",
+        "cardId": 35,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -2186,7 +2186,7 @@
       },
       "runtime": {
         "weaponId": 3,
-        "cardId": "lightning_storm_damage",
+        "cardId": 38,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -2225,7 +2225,7 @@
       },
       "runtime": {
         "weaponId": 3,
-        "cardId": "lightning_field",
+        "cardId": 45,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -2263,7 +2263,7 @@
       },
       "runtime": {
         "weaponId": 3,
-        "cardId": "lightning_storm_radius",
+        "cardId": 39,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -2301,7 +2301,7 @@
       },
       "runtime": {
         "weaponId": 3,
-        "cardId": "lightning_field_stable",
+        "cardId": 46,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -2339,7 +2339,7 @@
       },
       "runtime": {
         "weaponId": 3,
-        "cardId": "lightning_field_voltage",
+        "cardId": 47,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -2383,7 +2383,7 @@
       },
       "runtime": {
         "weaponId": 3,
-        "cardId": "lightning_split",
+        "cardId": 41,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -2421,7 +2421,7 @@
       },
       "runtime": {
         "weaponId": 3,
-        "cardId": "lightning_particle_voltage",
+        "cardId": 42,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -2462,7 +2462,7 @@
       },
       "runtime": {
         "weaponId": 3,
-        "cardId": "lightning_sanction",
+        "cardId": 43,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -2511,7 +2511,7 @@
       },
       "runtime": {
         "weaponId": 3,
-        "cardId": "lightning_judgement",
+        "cardId": 44,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -2556,14 +2556,14 @@
       },
       "runtime": {
         "weaponId": 3,
-        "cardId": "lightning_polish",
+        "cardId": 49,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "connected",
         "variantConnected": false,
         "companion": {
-          "weaponId": 18,
-          "cardId": "chain_lightning_polish"
+          "weaponId": 15,
+          "cardId": 116
         }
       },
       "decisionStatus": "source-defined",
@@ -2605,7 +2605,7 @@
       },
       "runtime": {
         "weaponId": 3,
-        "cardId": "lightning_neutral",
+        "cardId": 48,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "connected",
@@ -2642,7 +2642,7 @@
       },
       "runtime": {
         "weaponId": 5,
-        "cardId": "log_size",
+        "cardId": 65,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -2686,7 +2686,7 @@
       },
       "runtime": {
         "weaponId": 5,
-        "cardId": "log_repeat",
+        "cardId": 64,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -2720,7 +2720,7 @@
       },
       "runtime": {
         "weaponId": 5,
-        "cardId": "log_impact",
+        "cardId": 67,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -2755,7 +2755,7 @@
       },
       "runtime": {
         "weaponId": 5,
-        "cardId": "log_weight",
+        "cardId": 68,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -2788,7 +2788,7 @@
       },
       "runtime": {
         "weaponId": 5,
-        "cardId": "log_speed",
+        "cardId": 66,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -2821,7 +2821,7 @@
       },
       "runtime": {
         "weaponId": 5,
-        "cardId": "log_wound",
+        "cardId": 69,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -2857,7 +2857,7 @@
       },
       "runtime": {
         "weaponId": 5,
-        "cardId": "log_damage",
+        "cardId": 63,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -2897,7 +2897,7 @@
       },
       "runtime": {
         "weaponId": 5,
-        "cardId": "log_reserve",
+        "cardId": 72,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -2953,7 +2953,7 @@
       },
       "runtime": {
         "weaponId": 5,
-        "cardId": "log_large",
+        "cardId": 70,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -3008,7 +3008,7 @@
       },
       "runtime": {
         "weaponId": 5,
-        "cardId": "log_fire",
+        "cardId": 71,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -3045,8 +3045,8 @@
         ]
       },
       "runtime": {
-        "weaponId": 16,
-        "cardId": "energy_beam_overload",
+        "weaponId": 13,
+        "cardId": 92,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -3081,8 +3081,8 @@
         ]
       },
       "runtime": {
-        "weaponId": 16,
-        "cardId": "energy_beam_amplify",
+        "weaponId": 13,
+        "cardId": 93,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -3116,8 +3116,8 @@
         ]
       },
       "runtime": {
-        "weaponId": 16,
-        "cardId": "energy_beam_stable",
+        "weaponId": 13,
+        "cardId": 94,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -3149,8 +3149,8 @@
         ]
       },
       "runtime": {
-        "weaponId": 16,
-        "cardId": "energy_beam_split",
+        "weaponId": 13,
+        "cardId": 95,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -3182,8 +3182,8 @@
         ]
       },
       "runtime": {
-        "weaponId": 16,
-        "cardId": "energy_beam_dazzle",
+        "weaponId": 13,
+        "cardId": 96,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -3216,8 +3216,8 @@
         ]
       },
       "runtime": {
-        "weaponId": 16,
-        "cardId": "energy_beam_weaken",
+        "weaponId": 13,
+        "cardId": 97,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -3257,8 +3257,8 @@
         ]
       },
       "runtime": {
-        "weaponId": 16,
-        "cardId": "energy_beam_judgement",
+        "weaponId": 13,
+        "cardId": 98,
         "enabled": false,
         "state": "disabled",
         "conditionMapping": "partial",
@@ -3297,8 +3297,8 @@
         ]
       },
       "runtime": {
-        "weaponId": 16,
-        "cardId": "energy_beam_spread",
+        "weaponId": 13,
+        "cardId": 99,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -3347,8 +3347,8 @@
         ]
       },
       "runtime": {
-        "weaponId": 16,
-        "cardId": "energy_beam_fire",
+        "weaponId": 13,
+        "cardId": 100,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -3392,8 +3392,8 @@
         ]
       },
       "runtime": {
-        "weaponId": 16,
-        "cardId": "energy_beam_positron",
+        "weaponId": 13,
+        "cardId": 101,
         "enabled": false,
         "state": "disabled",
         "conditionMapping": "partial",
@@ -3449,8 +3449,8 @@
         ]
       },
       "runtime": {
-        "weaponId": 16,
-        "cardId": "energy_beam_barrage",
+        "weaponId": 13,
+        "cardId": 102,
         "enabled": false,
         "state": "disabled",
         "conditionMapping": "partial",
@@ -3494,8 +3494,8 @@
         ]
       },
       "runtime": {
-        "weaponId": 16,
-        "cardId": "energy_beam_neutral_1",
+        "weaponId": 13,
+        "cardId": 103,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "connected",
@@ -3531,8 +3531,8 @@
         ]
       },
       "runtime": {
-        "weaponId": 16,
-        "cardId": "energy_beam_freeze",
+        "weaponId": 13,
+        "cardId": 104,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -3576,8 +3576,8 @@
         ]
       },
       "runtime": {
-        "weaponId": 16,
-        "cardId": "energy_beam_neutral_3",
+        "weaponId": 13,
+        "cardId": 105,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "connected",
@@ -3611,8 +3611,8 @@
         ]
       },
       "runtime": {
-        "weaponId": 19,
-        "cardId": "focus_beam_focus",
+        "weaponId": 16,
+        "cardId": 117,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "connected",
@@ -3646,8 +3646,8 @@
         ]
       },
       "runtime": {
-        "weaponId": 19,
-        "cardId": "focus_beam_continuous",
+        "weaponId": 16,
+        "cardId": 118,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -3681,8 +3681,8 @@
         ]
       },
       "runtime": {
-        "weaponId": 19,
-        "cardId": "focus_beam_amplify",
+        "weaponId": 16,
+        "cardId": 119,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -3722,8 +3722,8 @@
         ]
       },
       "runtime": {
-        "weaponId": 19,
-        "cardId": "focus_beam_ultimate",
+        "weaponId": 16,
+        "cardId": 124,
         "enabled": false,
         "state": "disabled",
         "conditionMapping": "partial",
@@ -3760,8 +3760,8 @@
         ]
       },
       "runtime": {
-        "weaponId": 19,
-        "cardId": "focus_beam_blast",
+        "weaponId": 16,
+        "cardId": 120,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "connected",
@@ -3800,8 +3800,8 @@
         ]
       },
       "runtime": {
-        "weaponId": 19,
-        "cardId": "focus_beam_adjust",
+        "weaponId": 16,
+        "cardId": 121,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "connected",
@@ -3840,8 +3840,8 @@
         ]
       },
       "runtime": {
-        "weaponId": 19,
-        "cardId": "focus_beam_refract",
+        "weaponId": 16,
+        "cardId": 122,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "connected",
@@ -3885,8 +3885,8 @@
         ]
       },
       "runtime": {
-        "weaponId": 19,
-        "cardId": "focus_beam_neutral_2",
+        "weaponId": 16,
+        "cardId": 125,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "connected",
@@ -3930,8 +3930,8 @@
         ]
       },
       "runtime": {
-        "weaponId": 19,
-        "cardId": "focus_beam_arrow",
+        "weaponId": 16,
+        "cardId": 123,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "connected",
@@ -3975,8 +3975,8 @@
         ]
       },
       "runtime": {
-        "weaponId": 19,
-        "cardId": "focus_beam_neutral_3",
+        "weaponId": 16,
+        "cardId": 126,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "connected",
@@ -4009,7 +4009,7 @@
       },
       "runtime": {
         "weaponId": 6,
-        "cardId": "cold_zone_cast",
+        "cardId": 73,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -4043,7 +4043,7 @@
       },
       "runtime": {
         "weaponId": 6,
-        "cardId": "cold_zone_damage",
+        "cardId": 74,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -4077,7 +4077,7 @@
       },
       "runtime": {
         "weaponId": 6,
-        "cardId": "cold_zone_extreme",
+        "cardId": 75,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -4115,7 +4115,7 @@
       },
       "runtime": {
         "weaponId": 6,
-        "cardId": "cold_zone_core",
+        "cardId": 76,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "connected",
@@ -4153,7 +4153,7 @@
       },
       "runtime": {
         "weaponId": 6,
-        "cardId": "cold_zone_zero",
+        "cardId": 77,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "connected",
@@ -4191,7 +4191,7 @@
       },
       "runtime": {
         "weaponId": 6,
-        "cardId": "cold_zone_expand",
+        "cardId": 78,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -4228,7 +4228,7 @@
       },
       "runtime": {
         "weaponId": 6,
-        "cardId": "cold_zone_shatter",
+        "cardId": 79,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -4273,14 +4273,14 @@
       },
       "runtime": {
         "weaponId": 6,
-        "cardId": "cold_zone_polish",
+        "cardId": 80,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "connected",
         "variantConnected": false,
         "companion": {
           "weaponId": 4,
-          "cardId": "frost_crystal_polish"
+          "cardId": 62
         }
       },
       "decisionStatus": "source-defined",
@@ -4319,7 +4319,7 @@
       },
       "runtime": {
         "weaponId": 6,
-        "cardId": "cold_zone_bitter",
+        "cardId": 81,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "connected",
@@ -4353,8 +4353,8 @@
         ]
       },
       "runtime": {
-        "weaponId": 18,
-        "cardId": "chain_lightning_cross",
+        "weaponId": 15,
+        "cardId": 106,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -4387,8 +4387,8 @@
         ]
       },
       "runtime": {
-        "weaponId": 18,
-        "cardId": "chain_lightning_continuous",
+        "weaponId": 15,
+        "cardId": 107,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -4422,8 +4422,8 @@
         ]
       },
       "runtime": {
-        "weaponId": 18,
-        "cardId": "chain_lightning_voltage",
+        "weaponId": 15,
+        "cardId": 108,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -4456,8 +4456,8 @@
         ]
       },
       "runtime": {
-        "weaponId": 18,
-        "cardId": "chain_lightning_amplify",
+        "weaponId": 15,
+        "cardId": 109,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -4495,8 +4495,8 @@
         ]
       },
       "runtime": {
-        "weaponId": 18,
-        "cardId": "chain_lightning_ion_burst",
+        "weaponId": 15,
+        "cardId": 110,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -4535,8 +4535,8 @@
         ]
       },
       "runtime": {
-        "weaponId": 18,
-        "cardId": "chain_lightning_resonance",
+        "weaponId": 15,
+        "cardId": 111,
         "enabled": false,
         "state": "disabled",
         "conditionMapping": "partial",
@@ -4573,8 +4573,8 @@
         ]
       },
       "runtime": {
-        "weaponId": 18,
-        "cardId": "chain_lightning_ion_spread",
+        "weaponId": 15,
+        "cardId": 112,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -4611,8 +4611,8 @@
         ]
       },
       "runtime": {
-        "weaponId": 18,
-        "cardId": "chain_lightning_ion_voltage",
+        "weaponId": 15,
+        "cardId": 113,
         "enabled": false,
         "state": "disabled",
         "conditionMapping": "partial",
@@ -4659,8 +4659,8 @@
         ]
       },
       "runtime": {
-        "weaponId": 18,
-        "cardId": "chain_lightning_conduction",
+        "weaponId": 15,
+        "cardId": 114,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -4704,8 +4704,8 @@
         ]
       },
       "runtime": {
-        "weaponId": 18,
-        "cardId": "chain_lightning_neutral",
+        "weaponId": 15,
+        "cardId": 115,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "connected",
@@ -6129,7 +6129,7 @@
       },
       "runtime": {
         "weaponId": 7,
-        "cardId": "lightning_cloud_expand",
+        "cardId": 82,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -6164,7 +6164,7 @@
       },
       "runtime": {
         "weaponId": 7,
-        "cardId": "lightning_cloud_duration",
+        "cardId": 83,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -6198,7 +6198,7 @@
       },
       "runtime": {
         "weaponId": 7,
-        "cardId": "lightning_cloud_speed",
+        "cardId": 84,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -6234,7 +6234,7 @@
       },
       "runtime": {
         "weaponId": 7,
-        "cardId": "lightning_cloud_damage",
+        "cardId": 85,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -6267,7 +6267,7 @@
       },
       "runtime": {
         "weaponId": 7,
-        "cardId": "lightning_cloud_voltage",
+        "cardId": 86,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -6302,7 +6302,7 @@
       },
       "runtime": {
         "weaponId": 7,
-        "cardId": "lightning_cloud_magnet",
+        "cardId": 87,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -6348,7 +6348,7 @@
       },
       "runtime": {
         "weaponId": 7,
-        "cardId": "lightning_cloud_singularity",
+        "cardId": 88,
         "enabled": false,
         "state": "disabled",
         "conditionMapping": "partial",
@@ -6393,7 +6393,7 @@
       },
       "runtime": {
         "weaponId": 7,
-        "cardId": "lightning_cloud_split",
+        "cardId": 89,
         "enabled": false,
         "state": "disabled",
         "conditionMapping": "partial",
@@ -6435,7 +6435,7 @@
       },
       "runtime": {
         "weaponId": 7,
-        "cardId": "lightning_cloud_guide",
+        "cardId": 90,
         "enabled": true,
         "state": "prototype-active",
         "conditionMapping": "partial",
@@ -6484,7 +6484,7 @@
       },
       "runtime": {
         "weaponId": 7,
-        "cardId": "lightning_cloud_storm",
+        "cardId": 91,
         "enabled": false,
         "state": "disabled",
         "conditionMapping": "partial",

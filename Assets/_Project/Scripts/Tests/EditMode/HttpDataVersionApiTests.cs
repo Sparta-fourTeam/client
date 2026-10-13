@@ -17,10 +17,14 @@ namespace Game.Tests
             _api = new HttpDataVersionApi(client);
         }
 
-        [Test(Description = "버전 endpoint의 정상 응답에서 테이블 버전을 복원한다")]
-        public void GetVersions_CallsVersionEndpoint()
+        [TestCase(false)]
+        [TestCase(true)]
+        [Test(Description = "전체 revision이 없어도 테이블별 버전을 복원하고, 이전 응답의 revision은 사용하지 않는다")]
+        public void GetVersions_CallsVersionEndpoint(bool hasLegacyRevision)
         {
-            _transport.Response = new HttpResponseData(200, "{\"revision\":3,\"tables\":{\"Skills\":2}}");
+            _transport.Response = new HttpResponseData(200, hasLegacyRevision
+                ? "{\"revision\":3,\"tables\":{\"Skills\":2}}"
+                : "{\"tables\":{\"Skills\":2}}");
 
             var versions = _api.GetVersions().GetAwaiter().GetResult();
 

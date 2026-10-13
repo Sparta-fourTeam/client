@@ -14,7 +14,7 @@ namespace Game.Core
         /// <summary>지금까지 1회성 보상을 수령한 최고 rating. clearRating보다 낮으면 받을 보상이 남아있다</summary>
         public int claimedRating;
 
-        public bool IsCleared => clearRating != 0;
-        public bool HasUnclaimedReward => clearRating > claimedRating;
+        [Newtonsoft.Json.JsonIgnore] public bool IsCleared => clearRating != 0;
+        [Newtonsoft.Json.JsonIgnore] public bool HasUnclaimedReward => clearRating > claimedRating;
     }
 }

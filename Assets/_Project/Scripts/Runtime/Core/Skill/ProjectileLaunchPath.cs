@@ -36,7 +36,7 @@ namespace Game.Core
                 return new ProjectileLaunchPath(caster, new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0), 3f, pierceCount);
             }
 
-            if (path == ProjectilePath.RollingLane)
+            if (path == ProjectilePath.Cloud)
             {
                 float startY = wallAttackLineY.HasValue ? wallAttackLineY.Value + RollingWallFrontOffset : caster.y;
                 return new ProjectileLaunchPath(new Vector3(target.x, startY, caster.z), Vector3.up,

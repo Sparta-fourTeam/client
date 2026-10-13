@@ -85,7 +85,7 @@ Enemy (MonoBehaviour)            위치, 이동 적용, 밀치기 적용, 연출
 - **스킬이 속성을 가진다.** `SkillData.element`(`Neutral`, `Fire`, `Ice`, `Wind`, `Lightning`, `Earth` 이름 문자열)가 `Skills.json`에 있다. 생략하면 무속성이다. 속성과 시전 형태는 `DamageAttribution` 범위의 `DamageSource`로 피해까지 따라가므로, 가장 바깥 스킬이 이겨서 자식 스킬(`childOnly`)의 피해는 부모의 속성과 `castType`을 이어받는다.
 - 약점/저항은 `Monsters.json`의 `Resists`(속성 이름 → 비율)다. 약점은 양수(받는 피해 +50% = 0.5), 저항은 음수(-70% = -0.7), -1은 무효다. 키는 `Neutral`, `Fire`, `Ice`, `Wind`, `Lightning`, `Earth`이고 대소문자를 구분한다.
 - **지상 공격 면역은 토속성 저항 100%(`"Earth": -1`)로 표현한다.** 별도의 지상/공중 태그를 만들지 않는다.
-- **투사체 감쇠는 시전 형태별 비율로 표현한다.** `Monsters.json`의 `CastResists`(`Projectile`, `Hitscan`, `Area`, `Beam`, `Chain` → 비율)다. 예: `"CastResists": {"Projectile": -0.7}`.
+- **투사체 감쇠는 시전 형태별 비율로 표현한다.** `Monsters.json`의 `CastResists`(`Projectile`, `Instant`, `Area`, `Beam`, `Chain` → 비율)다. 예: `"CastResists": {"Projectile": -0.7}`.
 - 속성과 시전 형태의 배율은 곱하고, 줄어도 무효(-1)가 아니면 최소 1은 들어간다. 약점 키는 속성만 쓴다. 특정 스킬 단위 약점은 두지 않는다.
 - `DamageProfile`은 스킬에서 나온 피해(`DamageInfo.SkillId != 0`)에만 적용한다. 점화·동상 같은 상태이상 지속 피해는 속성 계산을 받지 않는다.
 

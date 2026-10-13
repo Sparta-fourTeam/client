@@ -21,8 +21,8 @@ namespace Game.Core
         public TutorialCondition Complete;
         public List<TutorialReward> Rewards = new();
 
-        public bool IsBattle => Kind == Battle;
-        public bool IsGuide => Kind == Guide;
+        [Newtonsoft.Json.JsonIgnore] public bool IsBattle => Kind == Battle;
+        [Newtonsoft.Json.JsonIgnore] public bool IsGuide => Kind == Guide;
 
         public void Validate(GameDataStore data, ICollection<string> earlierIds)
         {

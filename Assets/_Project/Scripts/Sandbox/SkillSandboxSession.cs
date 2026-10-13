@@ -215,7 +215,7 @@ namespace Game.Sandbox
             {
                 foreach (var requirement in option.requiredCardCounts)
                 {
-                    int owner = requirement.skillId == 0 ? id : requirement.skillId;
+                    int owner = requirement.OwnerSkillId;
                     string count = requirement.count > 1 ? $" x{requirement.count}" : string.Empty;
                     lines.Add($"선행 {CardName(owner, requirement.cardId, id)}{count} {Mark(controller.GetAcquiredCount(owner, requirement.cardId) >= requirement.count)}");
                 }
@@ -224,7 +224,7 @@ namespace Game.Sandbox
             {
                 foreach (var exclusion in option.exclusions)
                 {
-                    int owner = UpgradeEligibility.ExclusionOwner(exclusion, id);
+                    int owner = exclusion.OwnerSkillId;
                     string until = exclusion.belowPermanentLevel > 0 ? $" (영구 Lv {exclusion.belowPermanentLevel} 미만에서만)" : string.Empty;
                     bool applies = UpgradeEligibility.ExclusionApplies(exclusion, id, controller);
                     bool clear = !applies || controller.GetAcquiredCount(owner, exclusion.cardId) == 0;

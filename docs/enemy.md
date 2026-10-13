@@ -41,7 +41,7 @@ flowchart LR
 
 1. **아트 확인**: `Prefabs/Monsters/<이름>_Animated.prefab`(리그)과 `Animations/<이름>.controller`, `<이름>_Move/Attack/Die.anim`이 있어야 한다. **컨트롤러에 상태가 실제로 채워져 있는지 연다.** 파일만 있고 레이어가 비어 있으면 클립이 있어도 재생되지 않는다(ArmoredCrab, BrainSpider, EyeJelly가 그랬다). 예전 일괄 애니메이션 베이커는 현재 상태 구조와 맞지 않아 삭제했다. 새 몬스터는 `Ghost.controller`와 같은 구조로 직접 만든다: 파라미터 `Attack`·`Die`(트리거), `Move`(기본, 반복) → `Attack` 트리거로 `Attack` → 끝나면 `Move`, 어느 상태에서든 `Die` 트리거로 `Die`.
 2. **웨이브 프리팹**: `Prefabs/Stage/Skeleton.prefab`을 복사해 `Prefabs/Stage/<이름>.prefab`을 만든다. Prefab Mode에서 기존 `Visual`을 새 리그 프리팹으로 교체하고 이름을 `Visual`로 맞춘다. 기존 Visual의 위치·크기·레이어·SortingGroup 설정을 기준으로 조정한다. 리그의 원래 재질과 색상을 사용하고 등급에 따른 채도·밝기 변경을 적용하지 않는다. 기존 루트 SpriteRenderer는 비활성 상태를 유지한다. 연결 목록을 코드에 추가하는 일괄 덮어쓰기 도구는 삭제했다.
-3. **`Monsters.json` 행**: [필드](#monsters-json-필드)와 [패시브](#passives)를 보고 새 `Id`로 행을 더한다. 현재 구현된 몬스터는 모두 일반 등급이며 `IsBoss`와 `IsElite`가 false다.
+3. **`Monsters.json` 행**: [필드](#monsters-json-필드)와 [패시브](#passives)를 보고 새 `Id`로 행을 더한다. 등급은 서버의 `Grade`(`Normal`, `Elite`, `Boss`) 한 값으로 정한다.
 4. **`MonsterAssetTable.asset`**(`Data/`): 인스펙터의 표에 `Key`(= `MonsterId`)와 `prefab`(웨이브 프리팹의 `Enemy`)을 더한다. 원거리(`ProjectileSpeed > 0`)면 `projectilePrefab`도 연결한다(예: `Slime_Projectile`).
 5. **스테이지 배치**: 웨이브에 나오게 하려면 `Stages.json`의 해당 스테이지 `Waves[].Spawns`에 `{MonsterId, Count}`를 더한다. 소환·분열로만 나오는 몬스터는 넣지 않는다.
 6. **이름·아이콘**(선택): `MonsterDisplayTable.asset`에 항목을 더한다. 없으면 일시정지 창에는 `#Id`로 보인다.
@@ -63,12 +63,11 @@ flowchart LR
 | `AttackInterval` | float | 필수, 0 초과 | 공격 간격(초) |
 | `AttackRange` | float | 0 이상 | 원거리가 공격하는 거리. 근접은 0 |
 | `ProjectileSpeed` | float | 0 이상 | 0보다 크면 **원거리**, 0이면 근접 |
-| `IsBoss` | bool | false | 보스 등급 |
-| `IsElite` | bool | false | 엘리트 등급(`IsBoss`와 함께 켤 수 없다) |
+| `Grade` | enum 이름 문자열 | 필수 | `Normal`, `Elite`, `Boss` 중 하나. 게임 모델의 보스·엘리트 상태는 이 값에서 정한다 |
 | `BurstCount` | int | 1 | 공격 한 번에 연달아 나가는 횟수. 1이면 연속 공격이 아니다 |
 | `BurstInterval` | float | 0 | 연속 공격의 타격 간격(초). `BurstCount`가 2 이상일 때 필요하고 `AttackInterval > BurstInterval * (BurstCount - 1)`이어야 한다 |
 | `Resists` | {속성 이름: 비율} | 비어 있음 | 속성별 약점(+)/저항(-), -1은 무효. 키는 `Neutral`, `Fire`, `Ice`, `Wind`, `Lightning`, `Earth`(대소문자 구분) |
-| `CastResists` | {시전 형태: 비율} | 비어 있음 | 시전 형태별 가감. 키는 `Projectile`, `Hitscan`, `Area`, `Beam`, `Chain`(대소문자 구분) |
+| `CastResists` | {시전 형태: 비율} | 비어 있음 | 시전 형태별 가감. 키는 `Projectile`, `Instant`, `Area`, `Beam`, `Chain`(대소문자 구분) |
 | `BlocksProjectile` | bool | false | 투사체의 직접 충격 피해를 무효로 하고 관통을 막는다. 부가 반응(폭발·상태이상)은 그대로 걸린다 |
 | `Passives` | 목록 | 비어 있음 | [패시브](#passives) |
 

@@ -47,6 +47,20 @@ namespace Game.Tests
             Assert.IsTrue(sawSame && sawDifferent, "같은 재료가 두 번 뽑히는 경우와 서로 다른 두 재료가 뽑히는 경우가 모두 나와야 합니다.");
         }
 
+        [TestCase(13, ItemIds.EnergyBeamBook)]
+        [TestCase(15, ItemIds.ChainLightningBook)]
+        [Test(Description = "서버 ID로 해당 스킬만 열려 있으면 랜덤 보상은 그 스킬의 재료를 지급한다. ID 재정렬 후 누락·잘못된 스킬 재료 지급을 막는다")]
+        public void RandomSkillMaterial_ServerSkillIdAwardsItsOwnBook(int skillId, string expectedBook)
+        {
+            var data = new GameDataStore();
+            var rewards = new[] { new ItemAmount { itemId = ItemIds.RandomSkillMaterial, quantity = 7 } };
+            var resolved = RandomMaterialResolver.Resolve(rewards, new[] { skillId }, null, data, seed: 1);
+
+            Assert.That(resolved.Count, Is.EqualTo(1));
+            Assert.That(resolved[0].itemId, Is.EqualTo(expectedBook));
+            Assert.That(resolved[0].quantity, Is.EqualTo(7));
+        }
+
         [Test]
         public void RandomEquipmentMaterial_PicksOnlyUnlockedEquipment()
         {

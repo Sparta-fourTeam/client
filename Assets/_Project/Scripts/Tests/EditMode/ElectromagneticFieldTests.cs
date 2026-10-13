@@ -111,9 +111,9 @@ namespace Game.Tests
             {
                 var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 3);
                 using var weapon = Casters.Hitscan(data, go, go.transform, new Provider());
-                Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == "lightning_field")));
-                string first = voltageFirst ? "lightning_field_voltage" : "lightning_field_stable";
-                string second = voltageFirst ? "lightning_field_stable" : "lightning_field_voltage";
+                Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == "45")));
+                string first = voltageFirst ? "47" : "46";
+                string second = voltageFirst ? "46" : "47";
                 Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == first)));
                 Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == second)));
                 Assert.IsFalse(weapon.LevelUp(data.upgrades.Find(c => c.id == first)));
@@ -131,15 +131,15 @@ namespace Game.Tests
                 var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 3);
                 var provider = new Provider(); var target = new Target { Position = Vector2.up * 2 }; provider.Targets.Add(target);
                 using var weapon = Casters.Hitscan(data, go, go.transform, provider);
-                weapon.LevelUp(data.upgrades.Find(c => c.id == "lightning_field"));
+                weapon.LevelUp(data.upgrades.Find(c => c.id == "45"));
                 var snapshot = weapon.Stats;
                 int expectedDamage = (int)((snapshot.Cast.Damage * snapshot.Field.DamageRatio + snapshot.Field.FlatDamage) * snapshot.Field.DamageMultiplier);
                 typeof(SkillCaster).GetMethod("OnFire", Flags).Invoke(weapon, null);
                 var fields = Object.FindObjectsByType<ElectromagneticField>(FindObjectsSortMode.None);
                 Assert.AreEqual(1, fields.Length); var field = fields[0];
                 Assert.AreEqual((Vector3)target.Position, field.transform.position);
-                weapon.LevelUp(data.upgrades.Find(c => c.id == "lightning_field_stable"));
-                weapon.LevelUp(data.upgrades.Find(c => c.id == "lightning_field_voltage"));
+                weapon.LevelUp(data.upgrades.Find(c => c.id == "46"));
+                weapon.LevelUp(data.upgrades.Find(c => c.id == "47"));
                 Tick(field, 1); Assert.AreEqual(expectedDamage, target.DamageTaken, "발사 뒤 강화가 이미 생성된 필드의 피해를 바꾸지 않는다");
                 Assert.AreEqual(1, target.Slows.Count);
                 int hitscans = 0;

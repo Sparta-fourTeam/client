@@ -136,14 +136,14 @@ namespace Game.Tests
                 var provider = new LightningProvider(); provider.Targets.AddRange(new IEnemyTarget[] { victim, farther, dead, neighbour });
                 var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 3);
                 using var weapon = Casters.Hitscan(data, prefab, prefab.transform, provider);
-                Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == "lightning_sanction")));
-                Assert.IsFalse(weapon.LevelUp(data.upgrades.Find(c => c.id == "lightning_sanction")));
+                Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == "43")));
+                Assert.IsFalse(weapon.LevelUp(data.upgrades.Find(c => c.id == "43")));
                 typeof(SkillCaster).GetMethod("OnFire", flags).Invoke(weapon, null);
                 HitscanEffect main = null;
                 foreach (var effect in UnityEngine.Object.FindObjectsByType<HitscanEffect>(FindObjectsSortMode.None))
                 { if (effect.name == "KillLightningTest(Clone)") { main = effect; } }
                 // Upgrades after casting must not change this kill callback's damage snapshot.
-                weapon.LevelUp(data.upgrades.Find(c => c.id == "lightning_voltage"));
+                weapon.LevelUp(data.upgrades.Find(c => c.id == "40"));
                 Physics2D.SyncTransforms();
                 var hit = typeof(HitscanEffect).GetMethod("Hit", flags);
                 int deathsBeforeHit = _died.Published.Count;
@@ -208,7 +208,7 @@ namespace Game.Tests
                 var provider = new LightningProvider();
                 provider.Targets.Add(CreateEnemy(position: Vector2.right * (data.baseStats.cast.range + 1)));
                 using var weapon = Casters.Hitscan(data, go, go.transform, provider);
-                weapon.LevelUp(data.upgrades.Find(c => c.id == "lightning_sanction"));
+                weapon.LevelUp(data.upgrades.Find(c => c.id == "43"));
                 var pool = (UnityEngine.Pool.ObjectPool<HitscanEffect>)Casters.Hitscan(weapon).Pool;
                 var callback = new HitscanCastEffects(weapon.Stats, data.baseStats.cast.range, provider, pool, null, Vector3.one)
                     .CreateKillLightningCallback();

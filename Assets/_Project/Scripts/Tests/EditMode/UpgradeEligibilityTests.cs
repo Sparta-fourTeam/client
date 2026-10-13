@@ -20,7 +20,7 @@ namespace Game.Tests
         public void TriangleCard_AppliesDeclaredFormOnce()
         {
             var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 4);
-            var triangle = data.upgrades.Find(c => c.id == "frost_crystal_triangle");
+            var triangle = data.upgrades.Find(c => c.id == "61");
             var go = new UnityEngine.GameObject("TriangleCardTest");
             try
             {
@@ -32,8 +32,8 @@ namespace Game.Tests
             finally { UnityEngine.Object.DestroyImmediate(go); }
         }
 
-        [TestCase("arrow_flame", SkillForm.FlameArrow)]
-        [TestCase("arrow_thunder", SkillForm.ThunderArrow)]
+        [TestCase("21", SkillForm.FlameArrow)]
+        [TestCase("16", SkillForm.ThunderArrow)]
         public void ArrowTransformCards_EnableActualForm(string cardId, SkillForm expected)
         {
             var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 1);
@@ -50,7 +50,11 @@ namespace Game.Tests
         }
 
         private static State Owned(int level = 1) => new State { Levels = { [1] = level } };
-        private static SkillUpgradeOption Option(string id = "upgrade") => new SkillUpgradeOption { id = id, maxPickCount = 3 };
+        private static SkillUpgradeOption Option(string id = "upgrade") => new SkillUpgradeOption
+        { id = id, maxPickCount = 3, effects = new List<EffectDef>() };
+
+        private static SkillData Skill(int id, params SkillUpgradeOption[] cards) => new()
+        { id = id, maxLevel = 100, baseStats = new SkillBaseStats(), upgrades = new List<SkillUpgradeOption>(cards) };
 
         [Test]
         public void RequiredWeapons_AllMustBeOwned()
@@ -67,6 +71,7 @@ namespace Game.Tests
         {
             var s = Owned(); var o = Option();
             o.requiredCardCounts = new[] { new CardCountRequirement { cardId = "repeat", count = 2 } };
+            SkillCatalogValidator.Validate(new List<SkillData> { Skill(1, o, Option("repeat")) });
             s.Counts[(1, "repeat")] = 1;
             Assert.IsFalse(UpgradeEligibility.CanAcquire(o, 1, s));
             s.Counts[(1, "repeat")] = 2;
@@ -77,11 +82,43 @@ namespace Game.Tests
         public void CrossWeaponRequirements_DoNotUseSameNamedLocalCard()
         {
             var s = Owned(); var o = Option();
-            o.requiredCardCounts = new[] { new CardCountRequirement { skillId = 2, cardId = "explosion" } };
+            o.requiredCardCounts = new[] { new CardCountRequirement { cardId = "explosion" } };
+            SkillCatalogValidator.Validate(new List<SkillData> { Skill(1, o), Skill(2, Option("explosion")) });
             s.Counts[(1, "explosion")] = 1;
             Assert.IsFalse(UpgradeEligibility.CanAcquire(o, 1, s));
             s.Counts[(2, "explosion")] = 1;
             Assert.IsTrue(UpgradeEligibility.CanAcquire(o, 1, s));
+        }
+
+        [Test(Description = "다른 스킬의 cardId로 선행·배타 변환 힌트를 찾고, 배타 해제는 변환 스킬의 영구 레벨을 따른다")]
+        public void FormHints_ResolveForeignCardOwnersWithoutSkillId()
+        {
+            var transform = Option("transform");
+            transform.effects.Add(new EffectDef { kind = "form", value = (int)SkillForm.FlameArrow });
+            transform.requiredCardCounts = new[] { new CardCountRequirement { cardId = "source" } };
+            transform.exclusions = new[] { new CardExclusion { cardId = "blocked", belowPermanentLevel = 5 } };
+            var catalog = new List<SkillData> { Skill(1, transform), Skill(2, Option("source"), Option("blocked")) };
+            SkillCatalogValidator.Validate(catalog);
+            var state = Owned();
+
+            Assert.That(FormHintFinder.For(2, null, catalog, state)[0].Kind, Is.EqualTo(FormHintKind.Enables));
+            Assert.That(FormHintFinder.For(2, "source", catalog, state)[0].Kind, Is.EqualTo(FormHintKind.Enables));
+            Assert.That(FormHintFinder.For(2, "blocked", catalog, state)[0].Kind, Is.EqualTo(FormHintKind.Blocks));
+            state.Counts[(2, "blocked")] = 1;
+            Assert.IsEmpty(FormHintFinder.For(2, "source", catalog, state));
+            state.PermanentLevels[1] = 5;
+            Assert.That(FormHintFinder.For(2, "source", catalog, state)[0].Kind, Is.EqualTo(FormHintKind.Enables));
+        }
+
+        [Test(Description = "카드 81은 서리 결정 보유만으로 나오지 않고 그 스킬의 선행 카드를 골라야 나온다")]
+        public void BitterFrost_RequiresForeignCardEvenWithoutDuplicateOwnedSkillCondition()
+        {
+            var data = new GameDataStore().LoadSkills();
+            var option = data.Find(w => w.id == 6).upgrades.Find(c => c.id == "81");
+            var state = new State { Levels = { [6] = 1, [4] = 1 }, PermanentLevels = { [6] = 13 } };
+            Assert.IsFalse(UpgradeEligibility.CanAcquire(option, 6, state));
+            state.Counts[(4, "52")] = 1;
+            Assert.IsTrue(UpgradeEligibility.CanAcquire(option, 6, state));
         }
 
         [TestCase(12, false)]
@@ -98,6 +135,7 @@ namespace Game.Tests
         {
             var s = Owned(); s.PermanentLevels[1] = level; s.Counts[(1, "repeat")] = 1;
             var o = Option(); o.exclusions = new[] { new CardExclusion { cardId = "repeat", belowPermanentLevel = 25 } };
+            SkillCatalogValidator.Validate(new List<SkillData> { Skill(1, o, Option("repeat")) });
             Assert.AreEqual(allowed, UpgradeEligibility.CanAcquire(o, 1, s));
         }
 
@@ -107,6 +145,7 @@ namespace Game.Tests
         {
             var s = Owned(99); s.Counts[(1, picked)] = 1;
             var o = Option(next); o.exclusions = new[] { new CardExclusion { cardId = picked } };
+            SkillCatalogValidator.Validate(new List<SkillData> { Skill(1, o, Option(picked)) });
             Assert.IsFalse(UpgradeEligibility.CanAcquire(o, 1, s));
         }
 
@@ -117,6 +156,7 @@ namespace Game.Tests
             var repeat = Option("repeat"); repeat.exclusions = new[] { new CardExclusion { cardId = "volley" } };
             var volley = Option("volley"); volley.exclusions = new[] { new CardExclusion { cardId = "pierce" } };
             var pierce = Option("pierce");
+            SkillCatalogValidator.Validate(new List<SkillData> { Skill(1, repeat, volley, pierce) });
             Assert.IsTrue(UpgradeEligibility.CanAcquire(repeat, 1, s)); s.Counts[(1, "repeat")] = 1;
             Assert.IsTrue(UpgradeEligibility.CanAcquire(volley, 1, s)); s.Counts[(1, "volley")] = 1;
             Assert.IsFalse(UpgradeEligibility.CanAcquire(repeat, 1, s));
@@ -130,6 +170,7 @@ namespace Game.Tests
         {
             var s = Owned();
             var thunder = Option("thunder"); thunder.exclusions = new[] { new CardExclusion { cardId = "storm" } };
+            SkillCatalogValidator.Validate(new List<SkillData> { Skill(1, thunder, Option("storm")) });
             Assert.IsTrue(UpgradeEligibility.CanAcquire(thunder, 1, s)); s.Counts[(1, "thunder")] = 1;
             Assert.IsTrue(UpgradeEligibility.CanAcquire(Option("storm"), 1, s));
             s.Counts[(1, "storm")] = 1;

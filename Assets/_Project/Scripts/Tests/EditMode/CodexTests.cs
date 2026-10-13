@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Game.Core;
 using Game.Network;
+using Newtonsoft.Json;
 using NUnit.Framework;
 
 namespace Game.Tests
@@ -71,19 +72,23 @@ namespace Game.Tests
             Assert.IsFalse(codex[0].claimed);
         }
 
-        [Test(Description = "몬스터마다 등급 보상 골드를 한 번씩만 지급하고, 같은 몬스터를 다시 받으려 하면 ALREADY_CLAIMED로 거절한다")]
-        public void ClaimMonsterReward_PaysGradeRewardOnce()
+        [TestCase(EnemyType.Normal)]
+        [TestCase(EnemyType.Elite)]
+        [TestCase(EnemyType.Boss)]
+        [Test(Description = "서버 Grade 한 값이 등급별 실제 골드 지급에 적용되고, 같은 몬스터 보상은 중복 지급되지 않는다")]
+        public void ClaimMonsterReward_PaysGradeRewardOnce(EnemyType grade)
         {
-            var normals = MonstersOf(EnemyType.Normal);
-            Register(normals[0], normals[1]);
+            var monsters = _data.Monsters.Values.Take(2).ToArray();
+            foreach (var monster in monsters) { JsonConvert.PopulateObject("{\"Grade\":\"" + grade + "\"}", monster); }
+            Register(monsters[0].Id, monsters[1].Id);
             int before = _store.Load().wallet.gold;
 
-            var first = _codex.ClaimMonsterReward(normals[0]).GetAwaiter().GetResult();
-            var second = _codex.ClaimMonsterReward(normals[1]).GetAwaiter().GetResult();
-            var again = Assert.Throws<ApiException>(() => _codex.ClaimMonsterReward(normals[0]).GetAwaiter().GetResult());
+            var first = _codex.ClaimMonsterReward(monsters[0].Id).GetAwaiter().GetResult();
+            var second = _codex.ClaimMonsterReward(monsters[1].Id).GetAwaiter().GetResult();
+            var again = Assert.Throws<ApiException>(() => _codex.ClaimMonsterReward(monsters[0].Id).GetAwaiter().GetResult());
 
-            Assert.AreEqual(before + _data.CodexRewardGold[EnemyType.Normal], first.gold);
-            Assert.AreEqual(first.gold + _data.CodexRewardGold[EnemyType.Normal], second.gold);
+            Assert.AreEqual(before + _data.CodexRewardGold[grade], first.gold);
+            Assert.AreEqual(first.gold + _data.CodexRewardGold[grade], second.gold);
             Assert.AreEqual("ALREADY_CLAIMED", again.Code);
             Assert.AreEqual(second.gold, _store.Load().wallet.gold);
         }

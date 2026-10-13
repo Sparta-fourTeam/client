@@ -1,5 +1,8 @@
 using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Serialization;
 
 namespace Game.Core
 {
@@ -16,7 +19,22 @@ namespace Game.Core
         /// <summary>원거리 몬스터의 투사체 속도. 근접은 0</summary>
         public float ProjectileSpeed;
 
-        public bool IsBoss;
+        [JsonIgnore] public bool IsBoss;
+
+        /// <summary>서버의 등급 한 값. 기존 게임 모델의 보스·엘리트 상태는 이 값에서 정한다.</summary>
+        [JsonProperty(Required = Required.Always)]
+        [JsonConverter(typeof(StringEnumConverter), typeof(DefaultNamingStrategy), new object[0], false)]
+        public EnemyType Grade
+        {
+            get => GetEnemyType();
+            set
+            {
+                if (!Enum.IsDefined(typeof(EnemyType), value))
+                { throw new InvalidOperationException($"Monsters {Id}: 알 수 없는 Grade입니다: {value}"); }
+                IsBoss = value == EnemyType.Boss;
+                IsElite = value == EnemyType.Elite;
+            }
+        }
 
         /// <summary>공격 한 번에 연달아 나가는 횟수. 1이면 연속 공격이 아니다(생략하면 1)</summary>
         public int BurstCount = 1;
@@ -25,13 +43,13 @@ namespace Game.Core
         public float BurstInterval;
 
         /// <summary>엘리트 등급. 웨이브가 정한 엘리트 수만큼 스테이지의 엘리트 몬스터 중에서 나온다</summary>
-        public bool IsElite;
+        [JsonIgnore] public bool IsElite;
 
         /// <summary>속성별 받는 피해의 가감. 키는 Element 이름(Neutral, Fire, Ice, Wind, Lightning, Earth), 값은 약점 +, 저항 -, -1은 무효다.
         /// 예: {"Fire": 0.5}는 화속성 피해를 50% 더 받는다. 비우면 속성에 따른 변화가 없다</summary>
         public Dictionary<string, float> Resists = new Dictionary<string, float>();
 
-        /// <summary>시전 형태별 받는 피해의 가감. 키는 CastType 이름(Projectile, Hitscan, Area, Beam, Chain). 예: {"Projectile": -0.7}은 투사체 피해를 70% 덜 받는다</summary>
+        /// <summary>시전 형태별 받는 피해의 가감. 키는 CastType 이름(Projectile, Instant, Area, Beam, Chain). 예: {"Projectile": -0.7}은 투사체 피해를 70% 덜 받는다</summary>
         public Dictionary<string, float> CastResists = new Dictionary<string, float>();
 
         /// <summary>켜면 투사체의 직접 충격 피해를 무효로 하고 관통을 막는다. 폭발, 상태이상 같은 부가 반응은 그대로 걸린다</summary>

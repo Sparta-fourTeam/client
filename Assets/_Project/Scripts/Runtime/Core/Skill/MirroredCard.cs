@@ -5,7 +5,8 @@ namespace Game.Core
     /// <summary>자식 스킬이 시전될 때 효과를 가져올 다른 스킬의 카드 하나. 그 카드를 얻은 횟수만큼 효과가 적용된다.</summary>
     public class MirroredCard
     {
-        public int skillId;
+        // 카탈로그를 읽을 때 cardId로 찾는 소속 스킬. 서버 필드가 아니다.
+        [Newtonsoft.Json.JsonIgnore] public int OwnerSkillId { get; internal set; } = -1;
         public string cardId;
     }
 
@@ -19,11 +20,11 @@ namespace Game.Core
             if (child?.mirrorCards == null || state == null) { return effects; }
             foreach (var mirrored in child.mirrorCards)
             {
-                if (mirrored == null || !catalog.TryGetValue(mirrored.skillId, out var owner)) { continue; }
-                int count = state.GetAcquiredCount(mirrored.skillId, mirrored.cardId);
+                if (mirrored == null || !catalog.TryGetValue(mirrored.OwnerSkillId, out var owner)) { continue; }
+                int count = state.GetAcquiredCount(mirrored.OwnerSkillId, mirrored.cardId);
                 var option = owner.upgrades?.Find(c => c.id == mirrored.cardId);
                 if (count <= 0 || option == null
-                    || !SkillUpgradeResolver.TryResolve(option, state.GetPermanentWeaponLevel(mirrored.skillId), out var resolved)) { continue; }
+                    || !SkillUpgradeResolver.TryResolve(option, state.GetPermanentWeaponLevel(mirrored.OwnerSkillId), out var resolved)) { continue; }
                 for (int i = 0; i < count; i++) { effects.AddRange(resolved.Effects); }
             }
             return effects;

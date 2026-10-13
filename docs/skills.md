@@ -17,7 +17,7 @@ flowchart TD
     D --> C[SkillController<br/>보유 스킬, 카드 후보와 적용]
     C -->|AddWeapon| F[SkillFactory<br/>castType별 전략 선택]
     F --> S[SkillCaster<br/>쿨타임, 시전 수 관리]
-    S -->|Fire| A[IAttackStrategy<br/>Projectile, Hitscan, Area, Beam, Chain]
+    S -->|Fire| A[IAttackStrategy<br/>Projectile, Instant, Area, Beam, Chain]
     A --> E[공격 이벤트<br/>Start, Hit, Kill, Expired, Tick, Bounce, Impact]
     E --> R[반응<br/>피해, 상태이상, 폭발, 자식 스킬 시전]
     R --> K[ChildSkillCaster<br/>자식 스킬 공격]
@@ -60,26 +60,27 @@ flowchart TD
 |---|---|
 | `id` | 스킬 ID. 새 스킬은 가장 큰 번호의 다음 번호를 쓴다 |
 | `name`, `desc` | 이름과 설명. 서버 `Skills.json`에는 없고 `Resources/ClientData/DisplayTexts.json`의 `skills`(스킬 id), `cards`(카드 id), `variants`(`카드id#minPermanentLevel`)에서 채운다. 이름이 없으면 로드가 실패한다 |
-| `castType` | 공격 종류. **이름 문자열**: `Projectile`, `Hitscan`, `Area`, `Beam`, `Chain` |
+| `castType` | 공격 종류. **이름 문자열**: `Projectile`, `Instant`, `Area`, `Beam`, `Chain` |
 | `element` | 속성. **이름 문자열**: `Neutral`(무), `Fire`(화), `Ice`(빙), `Wind`(풍), `Lightning`(뇌), `Earth`(토). 생략하면 무속성이다. 적의 약점·저항이 이 값을 본다. 자식 스킬(`childOnly`)의 피해는 가장 바깥 스킬(부모)의 속성과 `castType`을 이어받는다 |
-| `projectilePath` | 투사체 경로. **이름 문자열**: `Aimed`(가장 가까운 적, 생략 시 기본), `RollingLane`(대상 줄을 따라 굴러감), `Radial`(발 수만큼 사방으로) |
+| `projectilePath` | 투사체 경로. **이름 문자열**: `Aimed`(가장 가까운 적, 생략 시 기본), `Cloud`(대상 줄을 따라 굴러감), `Radial`(발 수만큼 사방으로) |
 | `baseStats` | 기본 수치. 필요한 묶음만 적는다(아래) |
 | `upgrades` | 이 스킬의 카드 목록 |
 | `maxLevel` | 최초 습득을 제외한 전투 중 강화 횟수 상한 |
 | `childOnly` | true면 다른 스킬의 효과로만 시전되고, 새 스킬 카드로 제시하지 않는다 |
+| `mirrorCards` | `[{cardId}]`: 유일한 카드 ID로 소속 스킬을 찾아 그 스킬에서 얻은 카드 효과를 가져온다. 소속 스킬의 영구 레벨 변형도 적용한다 |
 | `progressionId` | 로비 영구 성장 ID(`Upgrades` 테이블의 ID). 없으면 영구 레벨 0 |
 
 `baseStats` 묶음: `cast`(cooldown, baseDamage, range, projectileCount, castCount, castInterval), `projectile`, `reserve`, `status`, `explosion`, `field`, `area`, `beam`, `chain`. 적지 않은 묶음과 값은 클래스의 기본값(`castCount` 1, 확률 1 등)을 쓴다. 정의는 `SkillBaseStats`.
 
 **스킬 슬롯 수**: 한 번에 가질 수 있는 스킬은 `SkillSlotLimit.Max`(5)개다. `SkillController.AddWeapon`이 이를 넘는 획득을 거절하고, 슬롯이 다 차면 새 스킬 카드는 후보에서 빠지며(이미 가진 스킬의 강화 카드만 나온다), 샌드박스도 같은 값을 쓴다. 스킬 HUD 프리팹(`SkillHud`)의 슬롯 수는 이 값과 같아야 하고 테스트가 확인한다. 자식 스킬은 슬롯을 차지하지 않는다.
 
-**사정거리(`cast.range`)**: 공격이 닿는 거리가 아니라 시전을 일으키는 조건이다. 시전 위치(플레이어)에서 이 거리 안에 살아 있는 적이 있어야 시전하고, 없으면 쿨타임을 쓰지 않고 기다린다. 굴러가는 공격(나무뿌리, `projectilePath: RollingLane`)은 플레이어에서 발사되지 않으므로 가로 위치(x)는 보지 않고 **벽 앞선에서 위로의 높이(y)** 가 이 거리 이내인 적을 노린다(벽에 가까운 순). 스킬 HUD 슬롯을 누르고 있는 동안 이 사정거리가 점선으로 보인다: 플레이어 기준 스킬은 플레이어를 중심으로 한 반원, 나무뿌리는 벽 앞선에서 사정거리만큼 위의 가로선이다(`SkillRangeResolver`, `SkillRangeIndicator`). 표시는 실제 판정 값 그대로다. 현재 값은 화면(월드 6.0 × 10.67) 안에 들어오도록 플레이어 기준 스킬 8, 나무뿌리 7이다. 나무뿌리가 벽 앞선에서 굴러가는 거리(`ProjectileLaunchPath.RollingTravelDistance`, 12)는 사정거리와 별개다.
+**사정거리(`cast.range`)**: 공격이 닿는 거리가 아니라 시전을 일으키는 조건이다. 시전 위치(플레이어)에서 이 거리 안에 살아 있는 적이 있어야 시전하고, 없으면 쿨타임을 쓰지 않고 기다린다. 굴러가는 공격(나무뿌리, `projectilePath: Cloud`)은 플레이어에서 발사되지 않으므로 가로 위치(x)는 보지 않고 **벽 앞선에서 위로의 높이(y)** 가 이 거리 이내인 적을 노린다(벽에 가까운 순). 스킬 HUD 슬롯을 누르고 있는 동안 이 사정거리가 점선으로 보인다: 플레이어 기준 스킬은 플레이어를 중심으로 한 반원, 나무뿌리는 벽 앞선에서 사정거리만큼 위의 가로선이다(`SkillRangeResolver`, `SkillRangeIndicator`). 표시는 실제 판정 값 그대로다. 현재 값은 화면(월드 6.0 × 10.67) 안에 들어오도록 플레이어 기준 스킬 8, 나무뿌리 7이다. 나무뿌리가 벽 앞선에서 굴러가는 거리(`ProjectileLaunchPath.RollingTravelDistance`, 12)는 사정거리와 별개다.
 
 ### 카드 (`upgrades`의 항목)
 
 ```json
 {
-  "id": "arrow_multishot",
+  "id": 1,
   "maxPickCount": 2,
   "effects": [ { "kind": "projectileCount", "value": 1 }, { "kind": "damage", "value": -20 } ],
   "variants": [ { "minPermanentLevel": 9,
@@ -89,15 +90,15 @@ flowchart TD
 
 | 필드 | 설명 |
 |---|---|
-| `id` | 카드 ID. 모든 스킬을 통틀어 유일해야 한다 |
+| `id` | 서버의 숫자 카드 ID. 모든 스킬을 통틀어 유일해야 한다. 전투 카드와 일반 카드의 공통 식별 타입은 문자열이므로 서버 숫자의 문자열 표현을 그대로 사용한다 |
 | `maxPickCount` | 한 판에서 고를 수 있는 최대 횟수. 선택에 성공했을 때만 센다(제시만 되고 안 골랐거나 적용에 실패하면 세지 않는다) |
 | `effects` | 효과 목록. 위에서부터 순서대로 적용하고, 하나라도 실패하면 카드 전체가 적용되지 않는다 |
 | `variants` | `minPermanentLevel` 이상일 때 이름, 설명, 효과 **전체**를 교체한다. 카드 ID와 선택 횟수는 그대로다. 일반과 (+)는 같은 카드다 |
 | `minBattleLevel` | 이 스킬의 전투 중 레벨이 이 값 이상일 때만 나온다 (기본 1) |
 | `minPermanentLevel` | 로비 영구 레벨이 이 값 이상일 때만 나온다 |
-| `requiredCardCounts` | `{skillId, cardId, count}`: 지정한 스킬의 카드를 count번 이상 골라야 한다. `skillId` 0은 자기 스킬. 같은 스킬의 카드를 한 번 먼저 고르라는 조건은 `{cardId, count: 1}`로 적는다 |
-| `requiredWeaponIds` | 이 스킬들을 가지고 있어야 한다 |
-| `exclusions` | `{skillId, cardId, belowPermanentLevel}`: 그 카드를 이미 골랐으면 나오지 않는다. `belowPermanentLevel`이 양수면 영구 레벨이 그 값 미만일 때만 적용 |
+| `requiredCardCounts` | `{cardId, count}`: 카탈로그 전체에서 유일한 `cardId`로 소속 스킬을 찾아 그 카드를 count번 이상 골라야 한다. `count` 생략은 1회다. 다른 스킬의 카드도 같은 형식이다. 조건이 없으면 배열 자체를 생략한다 |
+| `requiredWeaponIds` | 이 스킬들을 가지고 있어야 한다. 카드 선택 조건과 별개다. 조건이 없으면 배열 자체를 생략한다 |
+| `exclusions` | `{cardId, belowPermanentLevel}`: `cardId`로 소속 스킬을 찾아 그 카드를 이미 골랐으면 나오지 않는다. `belowPermanentLevel`이 양수면 이 배타 조건을 가진 스킬의 영구 레벨이 그 값 미만일 때만 적용 |
 | `sharedId` | 두 스킬이 같은 선택 횟수를 공유하는 강화의 키. 같은 키를 가진 카드의 스킬이 함께 올라간다. 대상 스킬 목록은 데이터에 적지 않고 읽을 때 모은다(적어도 무시된다) |
 | `enabled`, `disabledReason` | false면 후보에서 빼고, 샌드박스에는 사유를 보여 준다. `disabledReason` 문구는 `DisplayTexts.json`의 `cards`에 있다 |
 
@@ -111,16 +112,16 @@ flowchart TD
 |---|---|---|
 | 시전 | `attackSpeed`(%, 쿨타임 감소), `damage`(%), `projectileCount`(+), `castCount`(+) | 전체 |
 | 시전 | `reserveCasts`(=, 예비 시전 수) | Projectile |
-| 시전 | `impactDamage`(%, 타격 지점 피해) | Projectile, Hitscan |
-| 변형 | `form`(변형 이름, 아래) | Projectile, Hitscan |
+| 시전 | `impactDamage`(%, 타격 지점 피해) | Projectile, Instant |
+| 변형 | `form`(변형 이름, 아래) | Projectile, Instant |
 | 투사체 | `pierceCount`(+), `projectileSpeed`(%), `projectileSize`(%), `knockback`(%) | Projectile |
-| 폭발 | `enableExplosion`(=, 반경), `explosionDamage`(%), `explosionRadius`(%) | Projectile, Hitscan, Chain |
+| 폭발 | `enableExplosion`(=, 반경), `explosionDamage`(%), `explosionRadius`(%) | Projectile, Instant, Chain |
 | 상태이상 | `freezeDuration`, `frostbite`, `stunDuration`, `slowDuration`, `vulnerabilityRatio`, `vulnerabilityDuration`, `stunChance` | Projectile, Area, Beam, Chain |
 | 상태이상 | `paralysis`, `paralysisDuration` | 전체 |
 | 점화 | `burnDuration`, `burnRatio`, `burnMaxHp`, `burnDeathExplosion` | Projectile |
 | 번개 | `lightningStrike` | Projectile |
-| 번개 | `killLightning` | Hitscan |
-| 전자기장 | `fieldDuration`, `fieldDamageFlat`, `fieldDamageMultiplier` | Hitscan |
+| 번개 | `killLightning` | Instant |
+| 전자기장 | `fieldDuration`, `fieldDamageFlat`, `fieldDamageMultiplier` | Instant |
 | 영역 | `areaRadius`, `areaDuration`, `areaMoveSpeed`, `areaPull`(모두 %) | Area |
 | 광선 | `beamLength`, `beamWidth`, `beamDuration`, `beamPulses`(%), `beamPulsesFlat`(+) | Beam |
 | 연쇄 | `chainBounces`(+), `chainPath`(=, 경로 폭) | Chain |
@@ -135,7 +136,7 @@ flowchart TD
 | `castType` | 전략 | 프리팹에 필요한 컴포넌트 | 동작 |
 |---|---|---|---|
 | Projectile | `ProjectileStrategy` | `Projectile` | 날아가 맞춘다. 경로(`projectilePath`), 관통, 폭발, 점화 |
-| Hitscan | `HitscanStrategy` | `HitscanEffect` | 대상 위치에 즉시 타격. 벼락, 전자기장 |
+| Instant | `HitscanStrategy` | `HitscanEffect` | 대상 위치에 즉시 타격. 벼락, 전자기장 |
 | Area | `AreaStrategy` | `AreaZone` | 위치에 머무는 범위. 이동, 끌어당김, 펄스 피해 (냉기 지대, 전기 구름) |
 | Beam | `BeamStrategy` | `AreaZone` | 지속하며 닿는 모든 적을 공격하는 선 (에너지 빔) |
 | Chain | `ChainStrategy` | `ChainBolt` | 여러 적을 연쇄로 튕기며 공격 (연쇄 번개) |
@@ -156,11 +157,11 @@ flowchart TD
 
 | 표시 | 언제 |
 |---|---|
-| 아이콘만 (`Enables`) | 이 카드가 변환의 조건이다. 새 스킬 카드는 그 스킬의 변환과 그 스킬을 `requiredWeaponIds`로 요구하는 변환에 붙는다. 강화 카드는 아직 안 가진 `requiredCardCounts`일 때만 붙는다 |
+| 아이콘만 (`Enables`) | 이 카드가 변환의 조건이다. 새 스킬 카드는 그 스킬의 변환과 그 스킬을 `requiredWeaponIds` 또는 다른 스킬의 선행 카드로 요구하는 변환에 붙는다. 강화 카드는 아직 안 가진 `requiredCardCounts`일 때만 붙는다 |
 | 아이콘 + X (`Blocks`) | 이 카드를 고르면 변환을 더는 얻을 수 없다. 변환 카드의 `exclusions`에 이 카드가 있고 지금 영구 레벨에서 그 배타가 살아 있을 때 |
 | 안 보임 | 이미 얻은 변환, 이미 막힌 변환(배타 카드 보유), 꺼진 변환, 영구 레벨이 모자라 이번 판에 못 얻는 변환. 일반 카드와 변환 카드 자신에도 붙지 않는다 |
 
-전투 레벨, 필수 카드, 필수 스킬은 판 안에서 채울 수 있어서 "안 보임" 판정에 쓰지 않는다. 배타 판정은 `UpgradeEligibility`와 같은 함수(`ExclusionOwner`, `ExclusionApplies`)를 써서 표시와 실제 획득이 어긋나지 않는다. 예: 통나무를 가진 상태에서 `log_large` 카드가 나오면 아래에 불타는 뿌리 아이콘이 X와 함께 붙는다.
+전투 레벨, 필수 카드, 필수 스킬은 판 안에서 채울 수 있어서 "안 보임" 판정에 쓰지 않는다. 배타 판정은 `UpgradeEligibility`와 같은 함수(`ExclusionOwner`, `ExclusionApplies`)를 써서 표시와 실제 획득이 어긋나지 않는다. 예: 통나무를 가진 상태에서 `70` 카드가 나오면 아래에 불타는 뿌리 아이콘이 X와 함께 붙는다.
 
 **일반 카드**(`GeneralCards.json`)의 한 행:
 
@@ -180,7 +181,7 @@ flowchart TD
 **자식 스킬**: 다른 스킬의 이벤트 위치에서 시전되는 스킬이다. 자식도 평범한 스킬이고 `childOnly: true`만 다르다.
 
 ```json
-{ "kind": "onEvent", "trigger": "Hit", "skillId": 13, "count": 2, "excludeHit": true,
+{ "kind": "onEvent", "trigger": "Hit", "skillId": 10, "count": 2, "excludeHit": true,
   "inherit": { "damage": 0.5, "projectileSpeed": 1 } }
 ```
 
