@@ -683,13 +683,22 @@ namespace Game.Tests
             yield return ClickGameButton(Field<Button>(ui.Get<MissionButtonView>(), "_button"));
             var mission = ui.Get<MissionScreenView>();
             Assert.That(Field<GameObject>(mission, "_panel").activeSelf, Is.True);
+            // 카드를 오른쪽으로 끌었다 놓으면 옆 카드가 가운데로 와서 이전 관문으로 넘어간다
+            int shownStage = Field<int>(mission, "_stageId");
+            Assert.That(shownStage, Is.GreaterThan(1));
+            var carousel = Field<StageCarouselView>(mission, "_carousel");
+            var swipe = new PointerEventData(EventSystem.current) { delta = new Vector2(Screen.width * 0.5f, 0f) };
+            ExecuteEvents.Execute(carousel.gameObject, swipe, ExecuteEvents.beginDragHandler);
+            ExecuteEvents.Execute(carousel.gameObject, swipe, ExecuteEvents.dragHandler);
+            ExecuteEvents.Execute(carousel.gameObject, swipe, ExecuteEvents.endDragHandler);
+            yield return WaitFor(() => Field<int>(mission, "_stageId") == shownStage - 1 && !carousel.IsSliding);
             // 기능을 열려고 뒤 스테이지까지 깬 세이브라 가장 높은 스테이지가 보인다. 아래 확인은 첫 스테이지 기준이라 이전 화살표로 돌아간다
             while (Field<int>(mission, "_stageId") > 1)
             {
                 yield return ClickGameButton(Field<Button>(mission, "_prevButton"));
             }
 
-            yield return ClickGameButton(Field<Button>(mission, "_infoButton"));
+            yield return ClickGameButton(Field<StageCardView>(mission, "_card").InfoButton);
             var details = Field<MissionPopupView>(mission, "_detailsPopup");
             Assert.That(Field<GameObject>(details, "_panel").activeSelf, Is.True);
             // 몬스터·보상 칸을 실제로 눌러(레이캐스트) 공용 상세 창이 열리는지 본다
