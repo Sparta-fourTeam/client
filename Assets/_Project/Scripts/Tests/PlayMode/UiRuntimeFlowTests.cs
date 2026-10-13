@@ -241,6 +241,17 @@ namespace Game.Tests
         [UnityTest]
         public IEnumerator EliteDeath_RouletteAnimatesDuringPause_AppliesRewardsAndRestoresSpeed()
         {
+            yield return EliteRouletteFlow(skip: false);
+        }
+
+        [UnityTest]
+        public IEnumerator EliteDeath_RouletteSkipPreservesRewards_AndProcessesQueuedElite()
+        {
+            yield return EliteRouletteFlow(skip: true);
+        }
+
+        private IEnumerator EliteRouletteFlow(bool skip)
+        {
             yield return StartFromBoot();
             var rouletteStage = Object.FindAnyObjectByType<RootLifetimeScope>().Container.Resolve<GameDataStore>().StageOrFirst(1);
             int originalMinimum = rouletteStage.EliteRouletteMinCards;
@@ -276,15 +287,58 @@ namespace Game.Tests
                 yield return WaitFor(() => Mathf.Abs(Mathf.DeltaAngle(initial, spinner.localEulerAngles.z)) > 5f);
                 Assert.That(Time.timeScale, Is.Zero, "회전은 unscaled time, 전투는 정지 상태여야 한다");
                 var cards = Field<CardSlotView[]>(view, "_rewardCards");
+                int totalRewards = count;
+                if (skip)
+                {
+                    var skipButton = Field<Button>(view, "_skipButton");
+                    var pending = manager.Roulette.PendingRound;
+                    Assert.That(pending, Is.Not.Null);
+                    // 두 번째 엘리트 보상은 첫 번째 스킵으로 함께 소비되면 안 된다.
+                    var queuedEnemy = stage.Container.Resolve<IEnemyFactory>().Create(elite.Id, new Vector2(99, 99), isSummoned: true);
+                    queuedEnemy.TakeDamage(queuedEnemy.Model.Hp);
+                    string preview = Path.GetFullPath(Path.Combine(Application.dataPath, "../Temp/elite-roulette-skip-button.png"));
+                    if (File.Exists(preview)) { File.Delete(preview); }
+                    ScreenCapture.CaptureScreenshot(preview);
+                    yield return WaitFor(() => File.Exists(preview));
+                    yield return ClickGameButton(skipButton);
+                    Assert.That(manager.Roulette.IsComplete, Is.True, "스킵 입력에서 남은 회차를 모두 적용해야 한다");
+                    Assert.That(stats.BuildLog.Count - priorCards, Is.EqualTo(count));
+                    Assert.That(stats.BuildLog[priorCards], Is.EqualTo(pending.Winner.Option.id), "진행 중인 당첨 무기를 다시 뽑지 않는다");
+                    Assert.That(cards.Count(card => card.gameObject.activeSelf), Is.EqualTo(count));
+                    Assert.That(skipButton.interactable, Is.False);
+                    skipButton.onClick.Invoke();
+                    Assert.That(stats.BuildLog.Count - priorCards, Is.EqualTo(count), "반복 입력으로 중복 지급하지 않는다");
+                    Assert.That(Time.timeScale, Is.Zero);
+                    yield return WaitFor(() => skipButton.interactable && skipButton.GetComponentInChildren<TMP_Text>(true).text == "확인");
+                    Assert.That(manager.State, Is.EqualTo(StageState.EliteRoulette), "결과 확인 전에는 다음 룰렛으로 넘어가지 않는다");
+                    Assert.That(panel.activeSelf, Is.True);
+                    yield return ClickGameButton(skipButton);
+                    yield return WaitFor(() => !manager.Roulette.IsComplete && skipButton.interactable);
+                    Assert.That(manager.State, Is.EqualTo(StageState.EliteRoulette));
+                    Assert.That(Time.timeScale, Is.Zero, "대기 중인 다음 룰렛까지 전투는 정지 상태를 유지한다");
+                    Assert.That(stats.BuildLog.Count - priorCards, Is.EqualTo(count));
+                    count = manager.Roulette.CardCount;
+                    totalRewards += count;
+                    yield return ClickGameButton(skipButton);
+                    Assert.That(manager.Roulette.IsComplete, Is.True);
+                }
                 yield return WaitFor(() => manager.Roulette.IsComplete
                     && Field<TMP_Text>(view, "_heading").text == "강화 완료");
+                var confirmButton = Field<Button>(view, "_skipButton");
+                yield return WaitFor(() => confirmButton.interactable
+                    && confirmButton.GetComponentInChildren<TMP_Text>(true).text == "확인");
                 string screenshot = Path.GetFullPath(Path.Combine(Application.dataPath, "../Temp/elite-roulette-live.png"));
                 if (File.Exists(screenshot)) { File.Delete(screenshot); }
                 ScreenCapture.CaptureScreenshot(screenshot);
                 yield return WaitFor(() => File.Exists(screenshot));
+                Assert.That(panel.activeSelf, Is.True, "스킵 여부와 관계없이 전체 카드 결과를 확인할 때까지 유지한다");
+                Assert.That(manager.State, Is.EqualTo(StageState.EliteRoulette));
+                Assert.That(Time.timeScale, Is.Zero);
+                Assert.That(cards.Count(card => card.gameObject.activeSelf), Is.EqualTo(count));
+                yield return ClickGameButton(confirmButton);
                 yield return WaitFor(() => manager.State == StageState.Playing);
                 Assert.That(panel.activeSelf, Is.False);
-                Assert.That(stats.BuildLog.Count - priorCards, Is.EqualTo(count));
+                Assert.That(stats.BuildLog.Count - priorCards, Is.EqualTo(totalRewards));
                 Assert.That(cards.Count(card => card.gameObject.activeSelf), Is.EqualTo(count));
                 Assert.That(Time.timeScale, Is.EqualTo(2f));
                 LogAssert.NoUnexpectedReceived();
