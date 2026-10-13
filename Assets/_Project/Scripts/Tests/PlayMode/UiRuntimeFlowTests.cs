@@ -81,6 +81,64 @@ namespace Game.Tests
             (T)target.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(target);
 
         [UnityTest]
+        public IEnumerator RewardPopup_LargeClaimsFitAndRepeatedOpenRestoresSmallClaims()
+        {
+            yield return StartFromBoot();
+            var ui = Object.FindAnyObjectByType<LobbyLifetimeScope>().Container.Resolve<IUiRegistry>();
+            var popup = ui.Get<RewardPopupView>();
+            var list = Field<ResultRewardListView>(popup, "_rewards");
+            var area = (RectTransform)list.transform;
+            var slots = (RectTransform)list.Cells[0].transform.parent;
+            var panel = Field<GameObject>(popup, "_panel");
+            var tap = Field<Button>(popup, "_tapArea");
+            var corners = new Vector3[4];
+
+            foreach (int count in new[] { 9, 40, 3, 8, 0, 12, 3 })
+            {
+                var rewards = Enumerable.Range(0, count).Select(i => new ResultRewardItem(null, i + 1)).ToArray();
+                popup.Show(rewards);
+                yield return WaitFor(() => Field<PopupTransition>(popup, "_transition").Progress >= 0.99f);
+                if (popup.IsPlaying) { yield return ClickGameButton(tap); }
+                yield return WaitFor(() => !popup.IsPlaying);
+                Canvas.ForceUpdateCanvases();
+                Assert.That(panel.activeSelf, Is.True, "스킵 탭은 팝업을 닫으면 안 된다");
+                Assert.That(list.Cells.Count(cell => cell.gameObject.activeSelf), Is.EqualTo(count));
+                foreach (var cell in list.Cells.Where(cell => cell.gameObject.activeSelf))
+                {
+                    ((RectTransform)cell.transform).GetWorldCorners(corners);
+                    foreach (var corner in corners)
+                    {
+                        var point = area.InverseTransformPoint(corner);
+                        Assert.That(point.x, Is.InRange(area.rect.xMin - 0.1f, area.rect.xMax + 0.1f));
+                        Assert.That(point.y, Is.InRange(area.rect.yMin - 0.1f, area.rect.yMax + 0.1f));
+                    }
+                }
+                if (count <= 8) { Assert.That(slots.localScale, Is.EqualTo(Vector3.one)); }
+                if (count == 9 || count == 40 || count == 3)
+                {
+                    string capture = Path.GetFullPath(Path.Combine(Application.dataPath, $"../Temp/reward-popup-{count}.png"));
+                    if (File.Exists(capture)) { File.Delete(capture); }
+                    ScreenCapture.CaptureScreenshot(capture);
+                    yield return WaitFor(() => File.Exists(capture));
+                }
+                yield return ClickGameButton(tap);
+                yield return WaitFor(() => !panel.activeSelf);
+            }
+
+            // 닫는 전환 중에 다시 열어도 이전 큰 목록의 축소와 트윈이 남지 않는다.
+            popup.Show(Enumerable.Range(0, 40).Select(i => new ResultRewardItem(null, i + 1)).ToArray());
+            popup.Close();
+            popup.Show(new[] { new ResultRewardItem(null, 1) });
+            yield return WaitFor(() => !popup.IsPlaying);
+            Assert.That(panel.activeSelf, Is.True);
+            Assert.That(slots.localScale, Is.EqualTo(Vector3.one));
+            Assert.That(list.Cells.Count(cell => cell.gameObject.activeSelf), Is.EqualTo(1));
+            yield return ClickGameButton(tap);
+            yield return WaitFor(() => !panel.activeSelf);
+            LogAssert.NoUnexpectedReceived();
+        }
+
+        [UnityTest]
         public IEnumerator UpgradeButtonsRequireConfirmationAndEquipmentBatchSpendsExactTotals()
         {
             yield return StartFromBoot();

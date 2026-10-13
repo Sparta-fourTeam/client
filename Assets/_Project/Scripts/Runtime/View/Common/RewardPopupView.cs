@@ -30,6 +30,10 @@ namespace Game.View
         private Sequence _sequence;
         private Tween _hintBlink;
         private bool _playing;
+        private GridLayoutGroup _rewardGrid;
+        private RectTransform _rewardContent;
+        private float _rewardAreaHeight;
+        private Vector2 _rewardPosition;
 
         /// <summary>등장 연출이 아직 재생 중인가 (이때 탭하면 연출만 건너뛴다)</summary>
         public bool IsPlaying => _playing;
@@ -38,17 +42,53 @@ namespace Game.View
         {
             _panel.SetActive(false);
             _tapArea.onClick.AddListener(OnTap);
+            if (_rewards.Cells.Count > 0)
+            {
+                _rewardContent = _rewards.Cells[0].transform.parent as RectTransform;
+                _rewardGrid = _rewardContent.GetComponent<GridLayoutGroup>();
+                _rewardAreaHeight = _rewardContent.rect.height;
+                _rewardPosition = _rewardContent.anchoredPosition;
+            }
         }
 
         private void OnDestroy() => KillTweens();
 
+        /// <summary>보상 목록을 표시하고, 목록 크기에 맞춘 전체 화면 등장 연출을 시작한다</summary>
         public void Show(IReadOnlyList<ResultRewardItem> rewards, string description = "보상을 받았어요.", string title = "보상 획득")
         {
             _title.text = title;
             _description.text = description;
             _rewards.Show(rewards);
             PopupPanel.Set(_panel, _transition, true);
+            FitRewards(rewards.Count);
             Play(rewards.Count);
+        }
+
+        // 두 행까지는 원래 크기를 유지하고, 더 많은 보상은 같은 영역 안에 모두 보여 준다.
+        // 칸의 크기만 줄이면 글자/아이콘은 넘칠 수 있으므로 콘텐츠 전체를 함께 축소한다.
+        private void FitRewards(int count)
+        {
+            if (_rewardGrid == null || _rewardGrid.constraint != GridLayoutGroup.Constraint.FixedColumnCount)
+            {
+                return;
+            }
+
+            int rows = Mathf.CeilToInt(count / (float)_rewardGrid.constraintCount);
+            float height = _rewardGrid.padding.vertical + rows * _rewardGrid.cellSize.y
+                + Mathf.Max(0, rows - 1) * _rewardGrid.spacing.y;
+            height = Mathf.Max(_rewardAreaHeight, height);
+            _rewardContent.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
+            float inset = 0f;
+            if (height > _rewardAreaHeight)
+            {
+                var description = RectTransformUtility.CalculateRelativeRectTransformBounds(_rewards.transform, _description.rectTransform);
+                inset = Mathf.Clamp(_rewardAreaHeight * 0.5f - description.min.y + _rewardGrid.spacing.y, 0f, _rewardAreaHeight * 0.5f);
+            }
+
+            _rewardContent.anchoredPosition = _rewardPosition - new Vector2(0f, inset * 0.5f);
+            float scale = (_rewardAreaHeight - inset) / height;
+            _rewardContent.localScale = new Vector3(scale, scale, 1f);
+            LayoutRebuilder.ForceRebuildLayoutImmediate(_rewardContent);
         }
 
         public void Close()
