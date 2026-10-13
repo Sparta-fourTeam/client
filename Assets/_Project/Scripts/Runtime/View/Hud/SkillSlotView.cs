@@ -14,6 +14,8 @@ namespace Game.View
         [SerializeField] private Image _icon;
         [SerializeField] private Image _cooldownOverlay;
         [SerializeField] private TMP_Text _levelText;
+        [Tooltip("레벨 숫자 뒤의 배지. 스킬이 없는 칸에서는 숫자와 함께 숨긴다")]
+        [SerializeField] private GameObject _levelBadge;
         [SerializeField] private Image _activeFrame;
         [SerializeField] private Sprite _activeSprite;
         [Tooltip("칸의 바탕. 스킬이 없는 칸은 비활성 색으로 살짝 어둡게 보인다")]
@@ -46,6 +48,7 @@ namespace Game.View
             _icon.enabled = icon != null;
             _levelText.text = status.Level.ToString();
             _levelText.gameObject.SetActive(true);
+            if (_levelBadge != null) { _levelBadge.SetActive(true); }
             _cooldownOverlay.gameObject.SetActive(true);
             _cooldownOverlay.fillAmount = Mathf.Clamp01(status.CooldownRatio);
 
@@ -60,6 +63,7 @@ namespace Game.View
             _status = null;
             _icon.enabled = false;
             _levelText.gameObject.SetActive(false);
+            if (_levelBadge != null) { _levelBadge.SetActive(false); }
             _cooldownOverlay.gameObject.SetActive(false);
             _activeFrame.enabled = false;
             SetBackground(_emptyTint);
