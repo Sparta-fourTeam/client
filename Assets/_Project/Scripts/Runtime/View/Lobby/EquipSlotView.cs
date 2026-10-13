@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 namespace Game.View
 {
-    /// <summary>캐릭터 화면의 장비 칸 하나. 잠긴 칸은 가리고 눌러도 반응하지 않는다</summary>
+    /// <summary>캐릭터 화면·프로필 팝업의 장비 칸 하나. 잠긴 칸은 자물쇠로 가리고, 누르면 열리는 플레이어 레벨을 안내한다</summary>
     public sealed class EquipSlotView : MonoBehaviour
     {
         [SerializeField] private Button _button;
@@ -20,12 +20,13 @@ namespace Game.View
             _button.onClick.AddListener(() => _onClick?.Invoke());
         }
 
-        public void Bind(EquipInfo info, Action onClick)
+        public void Bind(EquipInfo info, Action onClick, ComingSoonToastView toast)
         {
             gameObject.SetActive(true);
             _levelText.text = $"Lv.{info.Level}";
             _lock.SetActive(!info.IsUnlocked);
-            _onClick = info.IsUnlocked ? onClick : null;
+            int unlockLevel = info.UnlockLevel;
+            _onClick = info.IsUnlocked ? onClick : () => toast?.Show($"플레이어 레벨 {unlockLevel}이 되면 열려요");
         }
 
         public void Hide()

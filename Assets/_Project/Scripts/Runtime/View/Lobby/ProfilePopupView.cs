@@ -17,6 +17,7 @@ namespace Game.View
         public void BindUi(IUiRegistry registry)
         {
             _equipPopup = registry.Get<EquipUpgradePopupView>();
+            _toast = registry.Get<ComingSoonToastView>();
         }
 
         [SerializeField] private GameObject _panel;
@@ -28,6 +29,7 @@ namespace Game.View
         [SerializeField] private EquipSlotView[] _equipSlots;   // IGrowthCatalog.Equips와 같은 순서
         [SerializeField] private TMP_Text[] _equipNames;        // 장비 칸 아래 이름 (_equipSlots와 같은 순서)
         private EquipUpgradePopupView _equipPopup;
+        private ComingSoonToastView _toast;
 
         private IGrowthCatalog _catalog;
         private PlayerProfile _profile;
@@ -103,7 +105,7 @@ namespace Game.View
                 }
 
                 int slot = i;
-                _equipSlots[i].Bind(equips[i], () => _equipPopup.Open(slot));
+                _equipSlots[i].Bind(equips[i], () => _equipPopup.Open(slot), _toast);
             }
         }
     }
