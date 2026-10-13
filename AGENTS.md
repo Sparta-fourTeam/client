@@ -2,7 +2,7 @@
 
 개발 전 [docs/conventions.md](docs/conventions.md), [docs/architecture.md](docs/architecture.md), [docs/messages.md](docs/messages.md)를 확인한다. 기존 어셈블리 경계와 `Game.Tests` 네임스페이스, VContainer DI 및 MessagePipe 메시징 구조를 유지한다.
 
-Unity 에셋은 `Assets/_Project/` 안에 둔다. 이동할 때 `.meta`를 함께 이동해 GUID를 보존한다. Unity YAML은 직접 편집하지 않고 Unity에서 저장한다. 사용자가 이미 수정한 파일은 보존한다.
+Unity 에셋은 `Assets/_Project/` 안에 둔다. 이동할 때 `.meta`를 함께 이동해 GUID를 보존한다. 사용자가 이미 수정한 파일은 보존한다.
 
 ## Unity Test Policy
 
