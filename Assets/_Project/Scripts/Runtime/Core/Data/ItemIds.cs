@@ -15,6 +15,7 @@ namespace Game.Core
         public const string LightningCloudBook = "book.lightning_cloud";
         public const string EnergyBeamBook = "book.energy_beam";
         public const string ChainLightningBook = "book.chain_lightning";
+        public const string FocusBeamBook = "book.focus_beam";
 
         public const string HatBook = "book.hat";
         public const string TopBook = "book.top";
@@ -25,7 +26,7 @@ namespace Game.Core
         public const string EmployeeIdBook = "book.employee_id";
 
         public static readonly System.Collections.Generic.IReadOnlyList<string> SkillMaterials = System.Array.AsReadOnly(new[]
-        { ArrowBook, FireballBook, LightningBook, FrostCrystalBook, LogBook, ColdZoneBook, LightningCloudBook, EnergyBeamBook, ChainLightningBook });
+        { ArrowBook, FireballBook, LightningBook, FrostCrystalBook, LogBook, ColdZoneBook, LightningCloudBook, EnergyBeamBook, ChainLightningBook, FocusBeamBook });
         public static readonly System.Collections.Generic.IReadOnlyList<string> EquipmentMaterials = System.Array.AsReadOnly(new[]
         { HatBook, TopBook, ShoesBook, WeaponBook, RingBook, TieBook, EmployeeIdBook });
     }
