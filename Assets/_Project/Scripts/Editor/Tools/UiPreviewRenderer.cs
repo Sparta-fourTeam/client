@@ -558,6 +558,8 @@ namespace Game.Editor
                     if (so.FindProperty("_expText")?.objectReferenceValue is TMP_Text exp) { exp.text = "40 / 180"; }
                     if (so.FindProperty("_expFill")?.objectReferenceValue is Image fill) { fill.fillAmount = 40f / 180f; }
                 }
+                // 편집 모드에서는 Awake가 돌지 않아, 스킬이 없는 칸이 게임처럼 빈 틀로 보이도록 같은 정리를 한다
+                if (behaviour is SkillSlotView emptySlot) { emptySlot.Clear(); }
                 if (behaviour is EnergyView && so.FindProperty("_value")?.objectReferenceValue is TMP_Text energy)
                 { energy.text = "97/100"; }
                 if (behaviour is WalletView && so.FindProperty("_value")?.objectReferenceValue is TMP_Text gold)
