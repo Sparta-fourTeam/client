@@ -58,6 +58,7 @@ namespace Game.Tests
         private static void Set(object target, string name, object value) =>
             target.GetType().GetField(name, Private).SetValue(target, value);
         private static T Get<T>(object target, string name) => (T)target.GetType().GetField(name, Private).GetValue(target);
+        private StageCardView Card => Get<StageCardView>(_screen, "_card");
         private UniTask Claim() => (UniTask)typeof(MissionScreenView).GetMethod("ClaimRewardsAsync", Private).Invoke(_screen, null);
 
         private static PlayerSnapshot Snapshot(int clear, int claimed, int gold = 0) => new()
@@ -115,7 +116,7 @@ namespace Game.Tests
             Claim().GetAwaiter().GetResult();
             Assert.AreEqual(1, _profile.ClaimedRating(1));
             Assert.AreEqual(0, _profile.Gold);
-            Assert.IsTrue(Get<MissionRewardNodeView[]>(_screen, "_rewardNodes")[1].Button.interactable);
+            Assert.IsTrue(Get<MissionRewardNodeView[]>(Card, "_rewardNodes")[1].Button.interactable);
 
             _api.Fail = false;
             _api.Response.TrySetResult(Snapshot(3, 3, 150));
@@ -144,9 +145,9 @@ namespace Game.Tests
 
             Assert.IsFalse(Get<bool>(_screen, "_launching"));
             Assert.IsTrue(enter.interactable);
-            Assert.IsTrue(Get<UnityEngine.UI.Button>(_screen, "_infoButton").interactable);
-            Assert.IsTrue(Get<UnityEngine.UI.Button>(_screen, "_rewardAreaButton").interactable);
-            StringAssert.Contains("입장하지 못했어요", Get<TMPro.TMP_Text>(_screen, "_rewardStatus").text);
+            Assert.IsTrue(Get<UnityEngine.UI.Button>(Card, "_infoButton").interactable);
+            Assert.IsTrue(Get<UnityEngine.UI.Button>(Card, "_rewardAreaButton").interactable);
+            StringAssert.Contains("입장하지 못했어요", Get<TMPro.TMP_Text>(Card, "_rewardStatus").text);
             var back = Get<UnityEngine.UI.Button>(_screen, "_backButton");
             Assert.IsTrue(back.interactable);
             back.onClick.Invoke();
@@ -160,11 +161,11 @@ namespace Game.Tests
         {
             _profile.Apply(Snapshot(2, 1));
             _screen.Open();
-            var nodes = Get<MissionRewardNodeView[]>(_screen, "_rewardNodes");
+            var nodes = Get<MissionRewardNodeView[]>(Card, "_rewardNodes");
             nodes[2].Button.onClick.Invoke();
             nodes[0].Button.onClick.Invoke();
             Assert.AreEqual(0, _api.Calls);
-            var area = Get<UnityEngine.UI.Button>(_screen, "_rewardAreaButton");
+            var area = Get<UnityEngine.UI.Button>(Card, "_rewardAreaButton");
             Assert.IsTrue(area.gameObject.activeSelf);
             area.onClick.Invoke();
             area.onClick.Invoke();

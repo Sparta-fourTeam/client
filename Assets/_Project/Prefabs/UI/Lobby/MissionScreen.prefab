@@ -322,22 +322,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Game.View::Game.View.MissionScreenView
   _panel: {fileID: 4720616956435530626}
-  _stageText: {fileID: 7230735956426857026}
-  _lockOverlay: {fileID: 5985173777519038292}
+  _card: {fileID: 8233617499605268864}
+  _carousel: {fileID: 3164250525001024935}
   _prevButton: {fileID: 3698309715552380188}
   _nextButton: {fileID: 4735784317584824181}
   _backButton: {fileID: 4688022536869749504}
   _enterButton: {fileID: 2549391951129291388}
   _costText: {fileID: 870955071582257183}
-  _rewardFill: {fileID: 6327591836809573468}
-  _rewardNodes:
-  - {fileID: 8162134424271400315}
-  - {fileID: 1221715442602857383}
-  - {fileID: 6450125791061676010}
-  _rewardAreaButton: {fileID: 3537527985485778491}
-  _infoButton: {fileID: 1970847005342614630}
-  _rewardBadge: {fileID: 4067905078461933478}
-  _rewardStatus: {fileID: 6931477757739702823}
   _itemIcons: {fileID: 11400000, guid: f34505c2814664c11a32703a31869720, type: 2}
 --- !u!114 &136945959631733600
 MonoBehaviour:
@@ -678,6 +669,7 @@ GameObject:
   - component: {fileID: 6464775964166146057}
   - component: {fileID: 2357178889917602814}
   - component: {fileID: 5131936093346303809}
+  - component: {fileID: 8233617499605268864}
   m_Layer: 5
   m_Name: StageCard
   m_TagString: Untagged
@@ -750,6 +742,29 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 4
+--- !u!114 &8233617499605268864
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1094372797296800645}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ebaeaa46fed9ac448a339a5e4eb1c2d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.StageCardView
+  _stageText: {fileID: 7230735956426857026}
+  _lockOverlay: {fileID: 5985173777519038292}
+  _rewardFill: {fileID: 6327591836809573468}
+  _rewardNodes:
+  - {fileID: 8162134424271400315}
+  - {fileID: 1221715442602857383}
+  - {fileID: 6450125791061676010}
+  _rewardAreaButton: {fileID: 3537527985485778491}
+  _infoButton: {fileID: 1970847005342614630}
+  _rewardBadge: {fileID: 4067905078461933478}
+  _rewardStatus: {fileID: 6931477757739702823}
 --- !u!1 &1250753756174833000
 GameObject:
   m_ObjectHideFlags: 0
@@ -5655,6 +5670,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5933554798231767514}
+  - component: {fileID: 3164250525001024935}
+  - component: {fileID: 5543863791668787262}
+  - component: {fileID: 1726842416197758947}
   m_Layer: 5
   m_Name: StageCarousel
   m_TagString: Untagged
@@ -5684,6 +5702,62 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 130}
   m_SizeDelta: {x: 0, y: 500}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &3164250525001024935
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7581446928235014125}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 27d04f0323333954ebbda0e50cc12c21, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.StageCarouselView
+  _center: {fileID: 8233617499605268864}
+  _sideScale: 0.85
+  _sideAlpha: 0.6
+  _gap: 40
+  _swipeThreshold: 0.2
+  _slideSeconds: 0.25
+--- !u!222 &5543863791668787262
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7581446928235014125}
+  m_CullTransparentMesh: 1
+--- !u!114 &1726842416197758947
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7581446928235014125}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 0, g: 0, b: 0, a: 0}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 0}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!1 &7595800890783802727
 GameObject:
   m_ObjectHideFlags: 0
