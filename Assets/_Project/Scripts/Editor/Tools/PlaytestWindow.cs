@@ -1,9 +1,11 @@
 using System;
 using System.IO;
 using System.Linq;
+using Cysharp.Threading.Tasks;
 using Game.Boot;
 using Game.Core;
 using Game.Core.Defense;
+using Game.Network;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -45,7 +47,44 @@ namespace Game.Editor
             Button("clearFaultButton", () => { var fault = Resolve<ISubmitFaultSwitch>(); if (fault != null) { fault.FailNextSubmits = 0; } });
             Button("backupSaveButton", BackupSave);
             Button("deleteSaveButton", DeleteSave);
+            Button("restoreSaveButton", RestoreSave);
+            Button("addGoldButton", () => Cheat((save, _) => PlaytestCheats.AddGold(save, Int("goldField"))));
+            Button("fillEnergyButton", () => Cheat((save, data) => PlaytestCheats.FillEnergy(save, data.Energy)));
+            Button("setLevelButton", () => Cheat((save, data) => PlaytestCheats.SetLevel(save, data.PlayerLevels, Int("levelField"), false)));
+            Button("setLevelEdgeButton", () => Cheat((save, data) => PlaytestCheats.SetLevel(save, data.PlayerLevels, Int("levelField"), true)));
+            Button("completeTutorialsButton", () => Cheat(PlaytestCheats.CompleteTutorials));
+            Button("resetTutorialsButton", () => Cheat((save, _) => PlaytestCheats.ResetTutorials(save)));
+            Button("unlockStagesButton", () => Cheat(PlaytestCheats.UnlockAllStages));
+            Button("healWallButton", () => { var wall = ActiveWall(); if (wall != null) { wall.Repair(wall.MaxHp); } });
+            Button("speed1Button", () => Time.timeScale = 1f);
+            Button("speed4Button", () => Time.timeScale = 4f);
+            Button("speed8Button", () => Time.timeScale = 8f);
             Refresh();
+        }
+
+        private int Int(string name) => rootVisualElement.Q<IntegerField>(name).value;
+
+        // Local 세이브를 고쳐 저장하고 프로필에 즉시 반영한다
+        private void Cheat(Action<LocalSave, GameDataStore> mutate)
+        {
+            var store = Resolve<LocalSaveStore>();
+            var data = Resolve<GameDataStore>();
+            var api = Resolve<IPlayerApi>();
+            var profile = Resolve<PlayerProfile>();
+            if (store == null || data == null || api == null || profile == null)
+            {
+                return;
+            }
+
+            try
+            {
+                var save = store.Load();
+                mutate(save, data);
+                store.Flush(save);
+                api.GetMe().ContinueWith(snapshot => profile.Apply(snapshot)).Forget(Debug.LogException);
+                rootVisualElement.Q<Label>("cheatStatus").text = "적용함 " + DateTime.Now.ToString("HH:mm:ss");
+            }
+            catch (Exception error) { rootVisualElement.Q<Label>("cheatStatus").text = error.Message; Debug.LogException(error); }
         }
 
         private void Button(string name, Action action) => rootVisualElement.Q<Button>(name).clicked += action;
@@ -95,6 +134,19 @@ namespace Game.Editor
             Enable("clearFaultButton", fault != null && fault.FailNextSubmits > 0);
             rootVisualElement.Q<Label>("faultStatus").text = fault == null ? "Local 백엔드로 재생할 때 사용할 수 있습니다." : $"남은 실패 횟수: {fault.FailNextSubmits}";
             rootVisualElement.Q<Label>("savePath").text = SavePath;
+            bool local = Resolve<LocalSaveStore>() != null;
+            foreach (string name in new[] { "addGoldButton", "fillEnergyButton", "setLevelButton", "setLevelEdgeButton", "completeTutorialsButton", "resetTutorialsButton", "unlockStagesButton" })
+            {
+                Enable(name, local);
+            }
+
+            Enable("healWallButton", manager?.State == StageState.Playing && wall != null && !wall.IsDestroyed);
+            foreach (string name in new[] { "speed1Button", "speed4Button", "speed8Button" })
+            {
+                Enable(name, manager?.State == StageState.Playing);
+            }
+
+            Enable("restoreSaveButton", !EditorApplication.isPlayingOrWillChangePlaymode && LatestBackup(SavePath) != null);
             Enable("backupSaveButton", !EditorApplication.isPlayingOrWillChangePlaymode && File.Exists(SavePath));
             Enable("deleteSaveButton", !EditorApplication.isPlayingOrWillChangePlaymode && File.Exists(SavePath));
         }
@@ -135,6 +187,44 @@ namespace Game.Editor
                 rootVisualElement.Q<Label>("saveStatus").text = "삭제함 (백업: " + backup + ")";
             }
             catch (Exception error) { rootVisualElement.Q<Label>("saveStatus").text = error.Message; Debug.LogException(error); }
+        }
+
+        private void RestoreSave()
+        {
+            string backup = LatestBackup(SavePath);
+            if (EditorApplication.isPlayingOrWillChangePlaymode || backup == null)
+            {
+                return;
+            }
+
+            if (!EditorUtility.DisplayDialog("세이브 복원", "현재 save.json을 백업한 뒤 아래 파일로 되돌립니다.\n" + Path.GetFileName(backup), "복원", "취소"))
+            {
+                return;
+            }
+
+            try
+            {
+                string saved = Restore(SavePath, backup);
+                rootVisualElement.Q<Label>("saveStatus").text = "복원함 (이전 세이브 백업: " + (saved ?? "없음") + ")";
+            }
+            catch (Exception error) { rootVisualElement.Q<Label>("saveStatus").text = error.Message; Debug.LogException(error); }
+        }
+
+        /// <summary>가장 최근 .bak. 파일명에 UTC 시각이 들어 있어 이름 순서가 시간 순서다</summary>
+        internal static string LatestBackup(string path)
+        {
+            string directory = Path.GetDirectoryName(path);
+            return Directory.Exists(directory)
+                ? Directory.GetFiles(directory, Path.GetFileName(path) + ".*.bak").OrderBy(f => f, StringComparer.Ordinal).LastOrDefault()
+                : null;
+        }
+
+        /// <summary>현재 세이브가 있으면 먼저 백업하고 backup 내용으로 되돌린다. 백업 파일은 남겨 둔다</summary>
+        internal static string Restore(string path, string backup)
+        {
+            string saved = File.Exists(path) ? Backup(path) : null;
+            File.Copy(backup, path, true);
+            return saved;
         }
 
         internal static string Delete(string path)

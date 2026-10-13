@@ -19,12 +19,45 @@
         <ui:Label name="wallStatus" class="status" />
       </ui:VisualElement>
       <ui:VisualElement class="section">
+        <ui:Label text="프로필 치트 (재생 중 · Local)" class="section-title" />
+        <ui:Label text="세이브를 고친 뒤 즉시 프로필에 반영합니다. 레벨업 팝업은 로비 진입 시 비교하므로 전투 후 로비로 돌아올 때 확인하세요." class="note" />
+        <ui:VisualElement class="row">
+          <ui:IntegerField name="goldField" value="1000" class="grow" />
+          <ui:Button name="addGoldButton" text="골드 지급" />
+          <ui:Button name="fillEnergyButton" text="에너지 충전" />
+        </ui:VisualElement>
+        <ui:VisualElement class="row">
+          <ui:IntegerField name="levelField" value="2" class="grow" />
+          <ui:Button name="setLevelButton" text="레벨 설정" />
+          <ui:Button name="setLevelEdgeButton" text="레벨업 직전" />
+        </ui:VisualElement>
+        <ui:VisualElement class="row playtest-actions">
+          <ui:Button name="completeTutorialsButton" text="튜토리얼 모두 완료" />
+          <ui:Button name="resetTutorialsButton" text="튜토리얼 초기화" />
+          <ui:Button name="unlockStagesButton" text="스테이지 모두 해금" />
+        </ui:VisualElement>
+        <ui:Label name="cheatStatus" class="status" />
+      </ui:VisualElement>
+      <ui:VisualElement class="section">
+        <ui:Label text="전투 치트" class="section-title" />
+        <ui:VisualElement class="row playtest-actions">
+          <ui:Button name="healWallButton" text="방벽 전체 회복" />
+          <ui:Button name="speed1Button" text="1x" />
+          <ui:Button name="speed4Button" text="4x" />
+          <ui:Button name="speed8Button" text="8x" />
+        </ui:VisualElement>
+        <ui:Label text="배속은 일시정지·재개 시 StageManager가 1x/설정값으로 되돌립니다." class="note" />
+      </ui:VisualElement>
+      <ui:VisualElement class="section">
         <ui:Label text="세이브 백업 · 삭제" class="section-title" />
         <ui:Label text="재생을 종료하면 현재 save.json을 같은 폴더에 백업하거나 지울 수 있습니다. 지우기 전에는 자동으로 백업하며, 다음 재생은 새 세이브로 시작합니다." class="note" />
         <ui:Label name="savePath" class="note" />
         <ui:VisualElement class="row playtest-actions">
           <ui:Button name="backupSaveButton" text="세이브 백업" />
           <ui:Button name="deleteSaveButton" text="세이브 삭제" />
+        </ui:VisualElement>
+        <ui:VisualElement class="row playtest-actions">
+          <ui:Button name="restoreSaveButton" text="최근 백업으로 복원" />
         </ui:VisualElement>
         <ui:Label name="saveStatus" class="status" />
       </ui:VisualElement>

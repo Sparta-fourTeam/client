@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using Game.Core;
 using Game.Editor;
 using NUnit.Framework;
 
@@ -45,6 +46,22 @@ namespace Game.Tests
                 Assert.That(File.ReadAllBytes(backup), Is.EqualTo(contents));
             }
             finally { Directory.Delete(folder, true); }
+        }
+
+        // 레벨 치트가 레벨업 팝업 재현에 쓰이므로, 설정한 exp가 실제 레벨 계산에서 의도한 레벨·직전 상태가 되는지 본다
+        [Test]
+        public void LevelCheatExpLandsOnRequestedLevelOrJustBeforeNext()
+        {
+            var table = new PlayerLevelTable(new[]
+            {
+                new PlayerLevelRow { Level = 1, RequiredExp = 10 },
+                new PlayerLevelRow { Level = 2, RequiredExp = 25 },
+                new PlayerLevelRow { Level = 3, RequiredExp = 40 },
+            });
+
+            Assert.That(table.At(PlaytestCheats.ExpFor(table, 3, false)), Is.EqualTo((3, 0)));
+            Assert.That(table.At(PlaytestCheats.ExpFor(table, 3, true)), Is.EqualTo((3, 39)));
+            Assert.That(table.At(PlaytestCheats.ExpFor(table, 99, true)).level, Is.EqualTo(table.MaxLevel));
         }
 
     }

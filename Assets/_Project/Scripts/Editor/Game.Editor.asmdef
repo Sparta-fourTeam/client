@@ -3,6 +3,7 @@
     "rootNamespace": "Game.Editor",
     "references": [
         "Game.Core",
+        "Game.Network",
         "Game.View",
         "Game.Boot",
         "VContainer",
