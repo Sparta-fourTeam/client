@@ -24,6 +24,22 @@ namespace Game.Tests
             public void Set(string key, float value) => Values[key] = value;
         }
 
+        private sealed class MemorySettingsStore : ISettingsStore
+        {
+            public readonly Dictionary<string, int> Values = new();
+            public bool TryGet(string key, out int value) => Values.TryGetValue(key, out value);
+            public void Set(string key, int value) => Values[key] = value;
+        }
+
+        private sealed class GuestCredentials : IAuthCredentialStore
+        {
+            public bool HasCredential => true;
+            public LoginMethod Method => LoginMethod.Guest;
+            public string AccountId => "guest";
+            public void Save(LoginMethod method, string accountId) { }
+            public void Clear() { }
+        }
+
         private static T Field<T>(object target, string name) => (T)target.GetType().GetField(name, Flags).GetValue(target);
 
         private readonly List<GameObject> _spawned = new();
@@ -76,6 +92,30 @@ namespace Game.Tests
             Assert.AreEqual(0.25f, new SoundSettings(store).Get(SoundChannel.Music), 0.0001f, "다시 켜도 남는다");
         }
 
+        [Test(Description = "기기 설정은 저장된 값이 없으면 기본값이고, 바꾸면 저장되어 다시 켜도 남으며 알린다")]
+        public void GameSettings_DefaultsPersistAndNotify()
+        {
+            var store = new MemorySettingsStore();
+            var settings = new GameSettings(store);
+            Assert.IsTrue(settings.DamageIndication);
+            Assert.IsTrue(settings.DebuffEffects);
+            Assert.IsFalse(settings.AutoEnterHighestStage);
+            Assert.AreEqual(FrameRateMode.High, settings.FrameRate);
+
+            int changes = 0;
+            settings.Changed += () => changes++;
+            settings.SetDamageIndication(false);
+            settings.SetDamageIndication(false);
+            settings.SetFrameRate(FrameRateMode.Standard);
+            settings.SetLanguage(GameLanguage.English);
+
+            Assert.AreEqual(3, changes, "같은 값은 알리지 않는다");
+            var reloaded = new GameSettings(store);
+            Assert.IsFalse(reloaded.DamageIndication);
+            Assert.AreEqual(GameSettings.StandardFrameRate, reloaded.TargetFrameRate);
+            Assert.AreEqual(GameLanguage.English, reloaded.Language);
+        }
+
         [Test(Description = "볼륨은 데시벨로 바뀐다: 1 → 0dB, 0.5 → 약 -6dB, 0 → -80dB(무음)")]
         public void ToDecibel()
         {
@@ -106,7 +146,7 @@ namespace Game.Tests
             store.Values[SoundSettings.Key(SoundChannel.Music)] = 0.4f;
             var settings = new SoundSettings(store);
             var popup = Spawn<SettingsPopupView>("SettingsPopup");
-            popup.Construct(settings);
+            popup.Construct(settings, new GameSettings(new MemorySettingsStore()));
 
             popup.Open();
             var sliders = Field<Slider[]>(popup, "_sliders");
@@ -114,7 +154,7 @@ namespace Game.Tests
             Assert.IsTrue(popup.IsOpen);
             Assert.AreEqual(0.4f, sliders[0].value, 0.0001f);
             Assert.AreEqual("40%", texts[0].text);
-            Assert.AreEqual("100%", texts[2].text);
+            Assert.AreEqual("100%", texts[1].text);
 
             sliders[1].value = 0.55f;
 
@@ -125,18 +165,18 @@ namespace Game.Tests
 
         // ---------- 메뉴 팝업 ----------
 
-        [Test(Description = "메뉴는 설정만 누를 수 있고, 바깥을 누르면 닫히며, 설정을 누르면 메뉴가 닫히고 설정 팝업이 열린다")]
-        public void Menu_OnlySettingsEnabled_AndOpensSettings()
+        [Test(Description = "메뉴 바깥을 누르면 닫히고, 설정을 누르면 메뉴가 닫히고 설정 팝업이 열린다")]
+        public void Menu_ClosesOnBackground_AndOpensSettings()
         {
             var menu = Spawn<LobbyMenuPopupView>("LobbyMenuPopup");
             var settings = Spawn<SettingsPopupView>("SettingsPopup");
-            settings.Construct(new SoundSettings(new MemoryStore()));
+            settings.Construct(new SoundSettings(new MemoryStore()), new GameSettings(new MemorySettingsStore()));
             typeof(LobbyMenuPopupView).GetField("_settings", Flags).SetValue(menu, settings);
+            menu.Construct(new AccountService(null, new GuestCredentials(), null, null), new PlayerProfile(null));
 
             menu.Toggle();
             Assert.IsTrue(menu.IsOpen);
             Assert.IsTrue(Field<Button>(menu, "_settingsButton").interactable);
-            foreach (var button in Field<Button[]>(menu, "_disabledButtons")) { Assert.IsFalse(button.interactable, button.name); }
 
             Field<PointerClickRelay>(menu, "_background").OnPointerClick(new PointerEventData(null));
             Assert.IsFalse(menu.IsOpen, "바깥을 누르면 닫힌다");
