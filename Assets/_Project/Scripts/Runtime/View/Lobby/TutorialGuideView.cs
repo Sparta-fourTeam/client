@@ -5,6 +5,7 @@ using DG.Tweening;
 using Game.Core;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 using VContainer;
 
@@ -14,7 +15,7 @@ namespace Game.View
     /// 들어오면 완료 조건을 채운 튜토리얼을 완료하고 레벨업 팝업을 띄운다. 진행 중인 전투 튜토리얼이 남았으면(전투 발급 실패 등) 그 스테이지로 다시 보낸다.
     /// 그다음 진행 중인 가이드 튜토리얼(Tutorials.json)이 있으면 Script 템플릿(LobbyTutorialScripts)의 단계를 하나씩 강조하고,
     /// 완료 조건을 채우면 완료를 저장한 뒤 다음 가이드로 넘어간다.
-    /// 강조하는 동안 강조한 버튼 외의 화면을 반투명 검정으로 덮고 터치를 막는다. 표시는 버튼 오른쪽 위에 놓인다</summary>
+    /// 강조하는 동안 강조한 버튼 외의 화면을 반투명 검정으로 덮고 터치를 막는다. 강조한 버튼 둘레로 펄스 링이 퍼진다</summary>
     public sealed class TutorialGuideView : HudView, IUiBindable
     {
         public void BindUi(IUiRegistry registry)
@@ -27,16 +28,13 @@ namespace Game.View
 
         [SerializeField] private GameObject _root;
         [SerializeField] private TutorialRaycastHole _blocker;
-        [Tooltip("강조 표시. 대상 오른쪽 위에서 위아래로 흔들린다 (나중에 연필 이미지로 교체)")]
-        [SerializeField] private RectTransform _pointer;
-        [Tooltip("화면 전체를 덮는 스포트라이트 판 (Game/UI/Spotlight 머티리얼). 강조 대상 자리만 둥글게 뚫고 둘레에 펄스 링을 그린다. 포인터와 같은 부모 안에서 화면을 꽉 채워야 한다")]
+        [Tooltip("화면 전체를 덮는 스포트라이트 판 (Game/UI/Spotlight 머티리얼). 강조 대상 자리만 둥글게 뚫고 둘레에 펄스 링을 그린다. _root 안에서 화면을 꽉 채워야 한다")]
         [SerializeField] private Image _spotlight;
         [SerializeField] private RectTransform _dialog;
         [SerializeField] private TMP_Text _dialogText;
-        [Tooltip("표시 중심을 대상 오른쪽 위 꼭짓점에서 표시 크기의 몇 배만큼 바깥으로 둘지")]
-        [SerializeField] private float _pointerOffset = 0.3f;
-        [Tooltip("손가락이 대상을 누르는 한 번의 길이(초)")]
-        [SerializeField] private float _tapSeconds = 1.25f;
+        [Tooltip("펄스 링이 한 번 퍼지는 길이(초)")]
+        [FormerlySerializedAs("_tapSeconds")]
+        [SerializeField] private float _pulseSeconds = 1.25f;
         [Tooltip("구멍을 대상보다 사방으로 키우는 여유(px)")]
         [SerializeField] private float _holePadding = 14f;
         [SerializeField] private float _holeRadius = 36f;
@@ -50,7 +48,6 @@ namespace Game.View
         [Tooltip("대화창을 화면 가운데에서 위/아래로 띄우는 거리. 강조 대상과 반대쪽 절반에 둔다")]
         [SerializeField] private float _dialogOffset = 520f;
 
-        private const float PressAt = 0.5f;
         private static readonly int HoleId = Shader.PropertyToID("_Hole");
         private static readonly int ParamsId = Shader.PropertyToID("_Params");
         private static readonly int RingId = Shader.PropertyToID("_Ring");
@@ -331,7 +328,7 @@ namespace Game.View
                 return;
             }
 
-            var area = (RectTransform)_pointer.parent;
+            var area = (RectTransform)_root.transform;
             Camera ownCamera = TutorialRaycastHole.CameraOf(area);
             Camera targetCamera = TutorialRaycastHole.CameraOf(target);
             var corners = new Vector3[4];
@@ -344,7 +341,7 @@ namespace Game.View
 
             Vector2 min = Local(corners[0]);
             Vector2 max = Local(corners[2]);
-            // 구멍과 표시는 대상이 바뀌면 새 위치로 미끄러져 간다
+            // 구멍은 대상이 바뀌면 새 위치로 미끄러져 간다
             if (!_holeShown)
             {
                 _holeMin = min;
@@ -363,7 +360,6 @@ namespace Game.View
             Vector2 center = (min + max) * 0.5f;
 
             Spotlight(min, max);
-            TapPointer(center, (max - min) * 0.5f);
 
             // 대화창은 강조 대상과 반대쪽 절반에 둔다
             _dialog.localPosition = new Vector3(0f, center.y < 0f ? _dialogOffset : -_dialogOffset, 0f);
@@ -378,7 +374,7 @@ namespace Game.View
             }
         }
 
-        // 대상 사각형(min~max)을 padding만큼 키워 둥글게 뚫고, 펄스 링은 손가락이 누르는 순간에 맞춰 퍼뜨린다
+        // 대상 사각형(min~max)을 padding만큼 키워 둥글게 뚫고, 둘레에 펄스 링을 반복해서 퍼뜨린다
         private void Spotlight(Vector2 min, Vector2 max)
         {
             if (_spotlightMaterial == null)
@@ -390,41 +386,9 @@ namespace Game.View
             Vector2 half = (max - min) * 0.5f + Vector2.one * _holePadding;
             _spotlightMaterial.SetVector(HoleId, new Vector4(center.x, center.y, half.x, half.y));
             _spotlightMaterial.SetVector(ParamsId, new Vector4(_holeRadius, _holeSoftness, 0f, 0f));
-            float cycle = TapCycle();
-            // 누르는 순간(0.5)부터 링이 퍼진다. 그 전에는 링을 숨긴다
-            float progress = Mathf.Clamp01((cycle - PressAt) / (1f - PressAt));
+            float progress = Mathf.Repeat(Time.unscaledTime / Mathf.Max(0.1f, _pulseSeconds), 1f);
             _spotlightMaterial.SetVector(RingId, new Vector4(progress, _ringSpread, _ringThickness, 0f));
-            _spotlightMaterial.SetColor(RingColorId, cycle < PressAt ? new Color(_ringColor.r, _ringColor.g, _ringColor.b, 0f) : _ringColor);
-        }
-
-        private float TapCycle() => Mathf.Repeat(Time.unscaledTime / Mathf.Max(0.1f, _tapSeconds), 1f);
-
-        // 손가락이 대상으로 다가가 누르고(살짝 작아짐) 물러나는 것을 반복한다
-        private void TapPointer(Vector2 center, Vector2 half)
-        {
-            Vector2 size = _pointer.rect.size;
-            Vector2 far = new Vector2(half.x * 0.5f + size.x * 0.9f, -half.y * 0.5f - size.y * 0.9f);
-            Vector2 near = new Vector2(size.x * _pointerOffset, -size.y * _pointerOffset);
-            float c = TapCycle();
-            float t;
-            float scale = 1f;
-            if (c < PressAt - 0.05f)
-            {
-                t = Mathf.SmoothStep(0f, 1f, c / (PressAt - 0.05f));
-            }
-            else if (c < PressAt + 0.05f)
-            {
-                t = 1f;
-                scale = 0.85f;
-            }
-            else
-            {
-                t = 1f - Mathf.SmoothStep(0f, 1f, (c - PressAt - 0.05f) / (1f - PressAt - 0.05f));
-            }
-
-            Vector2 offset = Vector2.Lerp(far, near, t);
-            _pointer.localPosition = new Vector3(center.x + offset.x, center.y + offset.y, 0f);
-            _pointer.localScale = Vector3.one * scale;
+            _spotlightMaterial.SetColor(RingColorId, _ringColor);
         }
     }
 }
