@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Reflection;
 using Cysharp.Threading.Tasks;
+using Game.Core;
 using Game.View;
 using NUnit.Framework;
 using TMPro;
@@ -9,6 +10,7 @@ using TMPro;
 using UnityEditor;
 #endif
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.TestTools;
 using UnityEngine.UI;
 
@@ -47,6 +49,75 @@ namespace Game.Tests
         }
 
 #if UNITY_EDITOR
+        private sealed class MemorySettingsStore : ISettingsStore
+        {
+            public bool TryGet(string key, out int value) { value = 0; return false; }
+            public void Set(string key, int value) { }
+        }
+
+        [UnityTest]
+        public IEnumerator SettingsDiagnosticCopy_RemainsClickableAfterRepeatedTransitions()
+        {
+            string clipboard = GUIUtility.systemCopyBuffer;
+            var canvas = new GameObject("Settings test canvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
+            canvas.GetComponent<Canvas>().renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.GetComponent<CanvasScaler>().uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            canvas.GetComponent<CanvasScaler>().referenceResolution = new Vector2(1080, 1920);
+            var events = new GameObject("Settings test events", typeof(EventSystem));
+            try
+            {
+                UnityEngine.Object.Destroy(_go);
+                _go = UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(
+                    "Assets/_Project/Prefabs/UI/Lobby/SettingsPopup.prefab"), canvas.transform, false);
+                var settings = _go.GetComponent<SettingsPopupView>();
+                var game = new GameSettings(new MemorySettingsStore());
+                settings.Construct(null, game);
+                var flags = BindingFlags.Instance | BindingFlags.NonPublic;
+                _popup = (PopupTransition)typeof(SettingsPopupView).GetField("_transition", flags).GetValue(settings);
+                var copy = (Button)typeof(SettingsPopupView).GetField("_diagnosticCopyButton", flags).GetValue(settings);
+                var label = (TMP_Text)typeof(SettingsPopupView).GetField("_diagnosticCopyLabel", flags).GetValue(settings);
+                var scroll = _go.GetComponentInChildren<ScrollRect>(true);
+                int frame = Time.frameCount;
+                for (int i = 0; i < 3; i++)
+                {
+                    settings.Open();
+                    yield return Until(() => _popup.Progress == 1f);
+                    typeof(SettingsPopupView).GetField("_diagnosticId", flags).SetValue(settings, "synthetic-runtime-installation-id");
+                    game.SetLanguage(GameLanguage.English);
+                    Canvas.ForceUpdateCanvases();
+                    scroll.verticalNormalizedPosition = 0;
+                    yield return null;
+                    var pointer = new PointerEventData(events.GetComponent<EventSystem>())
+                    {
+                        position = RectTransformUtility.WorldToScreenPoint(null, ((RectTransform)copy.transform).TransformPoint(((RectTransform)copy.transform).rect.center)),
+                        button = PointerEventData.InputButton.Left
+                    };
+                    var hits = new System.Collections.Generic.List<RaycastResult>();
+                    events.GetComponent<EventSystem>().RaycastAll(pointer, hits);
+                    Assert.IsTrue(hits.Count > 0 && ExecuteEvents.GetEventHandler<IPointerClickHandler>(hits[0].gameObject) == copy.gameObject, "스크롤 하단의 복사 버튼에 실제 UI raycast가 도달한다");
+                    ExecuteEvents.Execute(copy.gameObject, pointer, ExecuteEvents.pointerClickHandler);
+                    Assert.IsTrue(GUIUtility.systemCopyBuffer == "synthetic-runtime-installation-id");
+                    Assert.AreEqual("Copied", label.text);
+                    game.SetLanguage(GameLanguage.Korean);
+                    Assert.AreEqual("복사 완료", label.text);
+                    settings.Close();
+                    yield return Until(() => !settings.IsOpen);
+                }
+                Assert.Greater(Time.frameCount, frame, "실제 프레임이 진행해야 전환 검증으로 인정한다");
+                settings.Open(); settings.Close(); settings.Open();
+                yield return Until(() => _popup.Progress == 1f);
+                Assert.IsTrue(settings.IsOpen);
+                Assert.AreEqual("ID 복사", label.text);
+                LogAssert.NoUnexpectedReceived();
+            }
+            finally
+            {
+                GUIUtility.systemCopyBuffer = clipboard;
+                UnityEngine.Object.Destroy(canvas);
+                UnityEngine.Object.Destroy(events);
+            }
+        }
+
         [UnityTest]
         public IEnumerator ConfirmPopup_SecondPromptSurvivesClosingTransitionAndCanReopen()
         {
