@@ -1,9 +1,11 @@
+import hashlib
 import importlib.util
 import json
 import os
 from pathlib import Path
 import subprocess
 import tempfile
+import textwrap
 import unittest
 
 SCRIPT = Path(__file__).with_name('android-release-version.py').resolve()
@@ -132,6 +134,55 @@ class ReleaseNumberTests(unittest.TestCase):
             play = subprocess.run(command, cwd=root, env=env, capture_output=True)
             self.assertNotEqual(play.returncode, 0)
             self.assertEqual(output.read_bytes(), before)
+
+
+class PlayReleaseNameTests(unittest.TestCase):
+    def run_artifact_preflight(self, version='1.0.2', code=2, requested_version=None, expected_code=None):
+        # Execute the workflow's real pre-upload check without Play access or an AAB upload.
+        workflow = SCRIPT.parent.parent / 'workflows/deploy-google-play.yml'
+        step = workflow.read_text().split('      - name: Recheck artifact identity\n', 1)[1]
+        step = step.split('      - name:', 1)[0]
+        script = textwrap.dedent(step.split("          python3 - <<'PY'\n", 1)[1].rsplit('          PY', 1)[0])
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            bundle = root / 'verified/Android/test.aab'
+            bundle.parent.mkdir(parents=True)
+            bundle.write_bytes(b'local preflight fixture')
+            evidence = {'source_commit': 'fixture-sha', 'signature_verified': True,
+                        'artifact_sha256': hashlib.sha256(bundle.read_bytes()).hexdigest(),
+                        'actual': {'package': 'com.teamdoodle.doodledefense',
+                                   'version_name': version, 'version_code': code}}
+            (root / 'verified/artifact-manifest.json').write_text(json.dumps(evidence))
+            output = root / 'output.txt'
+            env = dict(os.environ, GITHUB_SHA='fixture-sha', GITHUB_OUTPUT=str(output),
+                       RELEASE_VERSION=version if requested_version is None else requested_version,
+                       ANDROID_VERSION_CODE=str(code if expected_code is None else expected_code))
+            result = subprocess.run(['python3', '-c', script], cwd=root, env=env, capture_output=True, text=True)
+            return result, output.read_text() if output.exists() else ''
+
+    def test_verified_aab_version_and_code_form_release_name(self):
+        result, output = self.run_artifact_preflight()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(output, 'release_name=1.0.2(2)\n')
+        workflow = (SCRIPT.parent.parent / 'workflows/deploy-google-play.yml').read_text()
+        self.assertIn('releaseName: ${{ steps.artifact.outputs.release_name }}', workflow)
+
+    def test_release_name_accepts_50_characters_and_rejects_51_before_upload(self):
+        result, output = self.run_artifact_preflight(version='1' * 45 + '.0')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(len(output.removeprefix('release_name=').strip()), 50)
+        result, output = self.run_artifact_preflight(version='1' * 46 + '.0')
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('Play release name exceeds 50 characters', result.stderr)
+        self.assertEqual(output, '')
+
+    def test_artifact_version_mismatch_cannot_produce_publish_name(self):
+        for overrides in [{'requested_version': '1.0.3'}, {'expected_code': 3}]:
+            with self.subTest(overrides=overrides):
+                result, output = self.run_artifact_preflight(**overrides)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn('Artifact version mismatch', result.stderr)
+                self.assertEqual(output, '')
 
 
 if __name__ == '__main__':
