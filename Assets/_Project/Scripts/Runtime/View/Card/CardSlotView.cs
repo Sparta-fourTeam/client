@@ -22,12 +22,12 @@ namespace Game.View
         [SerializeField] private Image _iconImage;
         [SerializeField] private Image _iconFrame;
         [Header("신규 / 강화 스타일 (비워 두면 그 부분은 바꾸지 않는다)")]
-        [SerializeField] private Image _titleRibbon;
-        [SerializeField] private Sprite _newRibbon, _upgradeRibbon;
-        [SerializeField] private Sprite _newMedal, _upgradeMedal;
-        [Tooltip("새 무기일 때만 보이는 NEW 배지")]
+        [Tooltip("아이콘 메달 테두리 색. 새 무기와 강화 카드가 다르다")]
+        [SerializeField] private Color _newMedalColor = new Color(0.25f, 0.66f, 1f, 1f);
+        [SerializeField] private Color _upgradeMedalColor = new Color(0.24f, 0.92f, 0.71f, 1f);
+        [Tooltip("새 무기일 때만 보이는 NEW 태그")]
         [SerializeField] private GameObject _newBadge;
-        [Tooltip("강화 단계(1 → 2) 표시판. 새 무기와 일반 카드에서는 숨긴다")]
+        [Tooltip("강화 단계(1 → 2) 리본. 새 무기와 일반 카드에서는 숨긴다")]
         [SerializeField] private GameObject _levelPlate;
         [Tooltip("카드 아래 형태 변환 아이콘 칸. 관련 변환이 칸보다 많으면 앞에서부터 칸 수만큼만 보인다")]
         [SerializeField] private FormHintIconView[] _formHints;
@@ -221,13 +221,10 @@ namespace Game.View
             ApplyStyle(choice.IsNewWeapon);
         }
 
-        // 새 무기는 파란 리본·메달과 NEW 배지, 그 밖의 카드는 금색 리본·메달과 강화 단계 표시판을 쓴다
+        // 새 무기는 파란 메달 테두리와 NEW 태그, 그 밖의 카드는 초록 메달 테두리와 강화 단계 리본을 쓴다
         private void ApplyStyle(bool isNew)
         {
-            var ribbon = isNew ? _newRibbon : _upgradeRibbon;
-            if (_titleRibbon != null && ribbon != null) { _titleRibbon.sprite = ribbon; }
-            var medal = isNew ? _newMedal : _upgradeMedal;
-            if (_iconFrame != null && medal != null) { _iconFrame.sprite = medal; }
+            if (_iconFrame != null) { _iconFrame.color = isNew ? _newMedalColor : _upgradeMedalColor; }
             if (_newBadge != null) { _newBadge.SetActive(isNew); }
             if (_levelPlate != null) { _levelPlate.SetActive(!isNew && !string.IsNullOrEmpty(_levelText.text)); }
         }
