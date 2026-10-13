@@ -122,8 +122,8 @@ MonoBehaviour:
   - {fileID: 642243079930181018}
   - {fileID: 8794230165095012186}
   _assets: {fileID: 11400000, guid: cc930aa35823f4e5a857c88730f82b00, type: 2}
-  _newWeaponBg: {fileID: 191224051486034082, guid: 4c2076fac087b7e4590ff6dd0d5665e1, type: 3}
-  _upgradeBg: {fileID: -8292161289858236984, guid: 3a9f30f8654e99b48a9981d919dbd5ee, type: 3}
+  _newWeaponBg: {fileID: 21300000, guid: c92779d2d98b4454489effd7add87737, type: 3}
+  _upgradeBg: {fileID: 21300000, guid: 194251df8059a45fb9a83d9e6a68ace0, type: 3}
 --- !u!114 &8437604065413831379
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -217,7 +217,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 0.43137255}
+  m_Color: {r: 0.118, g: 0.09, b: 0.22, a: 0.72}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1

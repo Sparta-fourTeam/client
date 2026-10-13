@@ -21,6 +21,14 @@ namespace Game.View
         [SerializeField] private Image _background;
         [SerializeField] private Image _iconImage;
         [SerializeField] private Image _iconFrame;
+        [Header("신규 / 강화 스타일 (비워 두면 그 부분은 바꾸지 않는다)")]
+        [SerializeField] private Image _titleRibbon;
+        [SerializeField] private Sprite _newRibbon, _upgradeRibbon;
+        [SerializeField] private Sprite _newMedal, _upgradeMedal;
+        [Tooltip("새 무기일 때만 보이는 NEW 배지")]
+        [SerializeField] private GameObject _newBadge;
+        [Tooltip("강화 단계(1 → 2) 표시판. 새 무기와 일반 카드에서는 숨긴다")]
+        [SerializeField] private GameObject _levelPlate;
         [Tooltip("카드 아래 형태 변환 아이콘 칸. 관련 변환이 칸보다 많으면 앞에서부터 칸 수만큼만 보인다")]
         [SerializeField] private FormHintIconView[] _formHints;
 
@@ -210,6 +218,18 @@ namespace Game.View
             }
 
             if (_iconFrame != null) { _iconFrame.enabled = _iconImage.enabled && icon != null; }
+            ApplyStyle(choice.IsNewWeapon);
+        }
+
+        // 새 무기는 파란 리본·메달과 NEW 배지, 그 밖의 카드는 금색 리본·메달과 강화 단계 표시판을 쓴다
+        private void ApplyStyle(bool isNew)
+        {
+            var ribbon = isNew ? _newRibbon : _upgradeRibbon;
+            if (_titleRibbon != null && ribbon != null) { _titleRibbon.sprite = ribbon; }
+            var medal = isNew ? _newMedal : _upgradeMedal;
+            if (_iconFrame != null && medal != null) { _iconFrame.sprite = medal; }
+            if (_newBadge != null) { _newBadge.SetActive(isNew); }
+            if (_levelPlate != null) { _levelPlate.SetActive(!isNew && !string.IsNullOrEmpty(_levelText.text)); }
         }
 
         // 이 카드가 조건이 되는 변환은 그대로, 이 카드를 고르면 막히는 변환은 X 표시로 보인다
