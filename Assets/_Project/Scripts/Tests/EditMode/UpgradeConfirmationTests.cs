@@ -123,7 +123,9 @@ namespace Game.Tests
             CreatePopup();
             var plan = UpgradePurchasePlan.Create(_profile, _data, Id, true);
             int gold = _profile.Gold, material = _profile.ItemQuantity(plan.MaterialItemId);
-            _view.Show("후드", Id, true); Confirm(); Confirm();
+            _view.Show("후드", Id, true); Confirm();
+            Assert.That(_view.IsOpen, Is.False, "성공하면 구매 확인창을 닫는다");
+            Confirm(); // 닫힌 확인창의 늦은 클릭으로 추가 구매하지 않는다.
             Assert.That(_api.Calls, Is.EqualTo(2));
             Assert.That(_profile.UpgradeLevel(Id), Is.EqualTo(2));
             Assert.That(_profile.Gold, Is.EqualTo(gold - plan.CoinCost));

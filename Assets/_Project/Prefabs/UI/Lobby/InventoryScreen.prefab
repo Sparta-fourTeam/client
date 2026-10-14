@@ -2708,6 +2708,14 @@ PrefabInstance:
       propertyPath: m_PixelsPerUnitMultiplier
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 5301908610255377978, guid: 587b25d9722340b41974a7d7320e94a2, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3155499411222161, guid: 587b25d9722340b41974a7d7320e94a2, type: 3}
+      propertyPath: _countBadge
+      value:
+      objectReference: {fileID: 58635069286409658}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
@@ -2718,7 +2726,7 @@ PrefabInstance:
       insertIndex: 1
       addedObject: {fileID: 753529088209631108}
     - targetCorrespondingSourceObject: {fileID: 4669784442659506048, guid: 587b25d9722340b41974a7d7320e94a2, type: 3}
-      insertIndex: 3
+      insertIndex: 6
       addedObject: {fileID: 3484529495615545372}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 3093561407465343631, guid: 587b25d9722340b41974a7d7320e94a2, type: 3}

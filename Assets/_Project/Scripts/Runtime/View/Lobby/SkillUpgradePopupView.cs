@@ -16,7 +16,9 @@ namespace Game.View
         [SerializeField] private PopupTransition _transition;
         [SerializeField] private Button _closeButton;
         [SerializeField] private Button _upgradeButton;
+        [SerializeField] private Button _upgradeAllButton;
         [SerializeField] private TMP_Text _upgradeLabel;
+        [SerializeField] private TMP_Text _upgradeAllLabel;
         [SerializeField] private GameObject _maxLevel;
         [SerializeField] private TMP_Text _maxLevelLabel;                // MaxLevel/Label. 잠긴 스킬이면 해금 레벨을 대신 쓴다
         [SerializeField] private TMP_Text _nameText, _levelText, _descText, _coinText, _bookText;
@@ -50,7 +52,8 @@ namespace Game.View
         {
             _panel.SetActive(false);
             _closeButton.onClick.AddListener(() => PopupPanel.Set(_panel, _transition, false));
-            _upgradeButton.onClick.AddListener(() => RequestUpgrade());
+            _upgradeButton.onClick.AddListener(() => RequestUpgrade(false));
+            _upgradeAllButton.onClick.AddListener(() => RequestUpgrade(true));
 
             // 프리팹에 미리 만들어 둔 행을 재사용하고, 모자라면 BindRewards에서 복제한다
             _rewardRows.AddRange(_rewardContent.GetComponentsInChildren<LevelRewardRowView>(true));
@@ -105,9 +108,11 @@ namespace Game.View
             _maxLevel.SetActive(isMax || locked);
             _maxLevelLabel.text = locked ? $"레벨 {info.UnlockLevel}에 해금" : "최대 레벨";
             _upgradeButton.gameObject.SetActive(!isMax && !locked);
+            _upgradeAllButton.gameObject.SetActive(!isMax && !locked);
             if (isMax || locked || !upgradable)
             {
                 _upgradeButton.interactable = false;
+                _upgradeAllButton.interactable = false;
                 RefreshUpgradeLabel();
                 return;
             }
@@ -117,6 +122,7 @@ namespace Game.View
             _bookText.text = CostFormat.HaveNeed(material, info.MaterialCost);
             _coinText.text = CostFormat.HaveNeed(coin, info.CoinCost);
             _upgradeButton.interactable = LobbyAvailability.CanUpgrade(_profile, info);
+            _upgradeAllButton.interactable = _upgradeButton.interactable;
             RefreshUpgradeLabel();
         }
 
@@ -128,6 +134,7 @@ namespace Game.View
                     ? new Color(1f, 0.965f, 0.878f, 1f)
                     : new Color(0.769f, 0.745f, 0.890f, 1f);
             }
+            if (_upgradeAllLabel != null) { _upgradeAllLabel.color = _upgradeLabel.color; }
         }
 
         private static void SetIcon(Image image, Sprite sprite)
@@ -137,12 +144,12 @@ namespace Game.View
             image.enabled = sprite != null;
         }
 
-        private void RequestUpgrade()
+        private void RequestUpgrade(bool all)
         {
             var info = _catalog.Skills[_index];
             if (LobbyAvailability.CanUpgrade(_profile, info))
             {
-                _confirmation.Show(info.Name, info.UpgradeId, false);
+                _confirmation.Show(info.Name, info.UpgradeId, all);
             }
         }
 
