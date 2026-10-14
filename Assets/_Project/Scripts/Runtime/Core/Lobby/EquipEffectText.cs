@@ -22,15 +22,17 @@ namespace Game.Core
         {
             string label = Labels.TryGetValue(effect.Kind, out var known) ? known : effect.Kind;
             string text = $"{label} {Value(effect, level)} ▲";
-            return isMaxLevel ? text : $"{text} (+{Value(effect, 1)})";
+            return isMaxLevel ? text : $"{text} (+{Format(effect, effect.ValueAt(level + 1) - effect.ValueAt(level))})";
         }
 
         /// <summary>능력치 줄의 이름. 예: "스킬 대미지". 모르는 종류는 Kind를 그대로 쓴다</summary>
         public static string Name(UpgradeStatEffect effect) => Names.TryGetValue(effect.Kind, out var known) ? known : effect.Kind;
 
         /// <summary>level의 효과량. 예: 레벨 3, 레벨당 5% → "15%"</summary>
-        public static string Value(UpgradeStatEffect effect, int level) =>
-            $"{Number(effect.ValuePerLevel * level)}{(effect.Kind.EndsWith("Percent") ? "%" : string.Empty)}";
+        public static string Value(UpgradeStatEffect effect, int level) => Format(effect, effect.ValueAt(level));
+
+        private static string Format(UpgradeStatEffect effect, float value) =>
+            $"{Number(value)}{(effect.Kind.EndsWith("Percent") ? "%" : string.Empty)}";
 
         private static string Number(float value) => value.ToString("0.##", CultureInfo.InvariantCulture);
     }
