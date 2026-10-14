@@ -47,7 +47,7 @@ Items의 장비 재료와 스킬 재료 예:
 | --- | --- | --- |
 | Skills | 스킬 ID·공격 형태·속성·경로·기본 스탯·영구 성장 ID·강화 상한·자식 전용 여부, 카드 효과·변형·공유 ID·선행·배타·복제 조건 | 카드 소속 ID만 파생한다. `effects[].skillId`는 시전할 자식 스킬이라 유지한다. 속성·발동 확률·상속 배율·선택 상한은 독립 게임 규칙이다 |
 | Items | `Id`, `TargetId`, 클라이언트 이름 | 장비의 역참조만 제거한다. 스킬 대상과 아이템 자체 ID는 다른 정보다. 이름은 표시 표에서 찾는다 |
-| Upgrades | `UpgradeId`, `MaxLevel`, `UnlockLevel`, 코인·재료 비용의 Base·Step 또는 배열, `MaterialItemId`, `Effects[].Kind/ValuePerLevel` | 비용·강화 상한·재료 선택·성장 효과는 독립 규칙이다. 스킬 해금은 Skills에서 정하고 장비 해금은 여기서 정한다. 선형 비용은 Base·Step, 비선형은 배열을 보내며 같은 비용을 양쪽 형식으로 중복 전송하지 않는다 |
+| Upgrades | `UpgradeId`, `MaxLevel`, `UnlockLevel`, 코인·재료 비용의 Base·Step 또는 배열, `MaterialItemId`, `Effects[].Kind`와 `ValuePerLevel` 또는 `LevelValues`(레벨마다 늘어나는 양, MaxLevel개) | 비용·강화 상한·재료 선택·성장 효과는 독립 규칙이다. 스킬 해금은 Skills에서 정하고 장비 해금은 여기서 정한다. 선형 비용은 Base·Step, 비선형은 배열을 보내며 같은 비용을 양쪽 형식으로 중복 전송하지 않는다 |
 | Monsters | ID·체력·피해·속도·공격 간격·사거리·투사체 속도·등급·연속 타격·속성/시전 저항·투사체 차단·패시브 | 등급을 하나로 합친다. 공격 방식은 투사체 속도로 이미 계산한다. 사거리와 투사체 속도는 도달 범위와 이동 시간이라 별개다 |
 | Monsters.Passives | `Kind`, `Trigger`, `MonsterId`, `Count`, `Interval`, `MaxTotal`, `Statuses`, `Target`, `Multiplier`, `Hits`, `Duration`, `Chance`, `HpRatio`, `HealRatio`, `Invulnerable`, `SpeedMultiplier`, `Element` | Kind가 다르면 쓰는 필드도 다르다. 생성 대상·발동 시점·빈도·총량, 방어 횟수·시간, 발동 체력·회복량은 서로 다른 조건이다. 해당 Kind가 사용하지 않는 필드는 보내지 않는다 |
 | Stages | `Id`, 룰렛 최소·최대 횟수, 최초 등급별 코인·아이템 보상, `MonsterBonuses[].Stat/Percent`, 방벽 HP, 스폰 최소·최대 간격·휴식, `Waves[].Spawns[].MonsterId/Count` | 웨이브 ID로 몬스터를 찾지만 마릿수·강화율·스폰 시간은 계산할 수 없다. 최초 등급 보상은 반복 전투 보상과 별개다. 등장 몬스터·게이지 수는 이미 파생한다 |

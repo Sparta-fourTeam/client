@@ -203,7 +203,10 @@ namespace Game.Tests
             Assert.That(profile.Gold, Is.EqualTo(coins));
             yield return ClickGameButton(Field<Button>(equip, "_upgradeAllButton"));
             yield return ClickGameButton(Field<Button>(confirm, "_confirmButton"));
-            yield return WaitFor(() => !Field<GameObject>(confirm, "_panel").activeSelf);
+            yield return WaitFor(() => !confirm.IsBusy && !Field<GameObject>(confirm, "_panel").activeSelf);
+            var toast = ui.Get<ComingSoonToastView>();
+            Assert.That(Field<TMP_Text>(toast, "_message").text, Does.Contain("Lv.2 강화 완료!"));
+            yield return WaitFor(() => !Field<GameObject>(toast, "_panel").activeSelf);
             Assert.That(profile.UpgradeLevel("equipment.hat"), Is.EqualTo(2));
             Assert.That(profile.Gold, Is.EqualTo(coins - quote.CoinCost));
             Assert.That(profile.ItemQuantity(quote.MaterialItemId), Is.EqualTo(material - quote.MaterialCost));
@@ -217,10 +220,21 @@ namespace Game.Tests
             skill.Open(index);
             yield return ClickGameButton(Field<Button>(skill, "_upgradeButton"));
             Assert.That(profile.UpgradeLevel(firstSkill.UpgradeId), Is.Zero);
-            yield return ClickGameButton(Field<Button>(confirm, "_confirmButton"));
+            Assert.That(Field<UpgradePurchasePlan>(confirm, "_plan").Count, Is.EqualTo(1));
+            yield return ClickGameButton(Field<Button>(confirm, "_cancelButton"));
             yield return WaitFor(() => !Field<GameObject>(confirm, "_panel").activeSelf);
-            Assert.That(profile.UpgradeLevel(firstSkill.UpgradeId), Is.EqualTo(1));
-            Assert.That(Field<TMP_Text>(skill, "_levelText").text, Does.Contain("1"));
+            var skillQuote = UpgradePurchasePlan.Create(profile, data, firstSkill.UpgradeId, true);
+            int skillCoins = profile.Gold, skillMaterial = profile.ItemQuantity(skillQuote.MaterialItemId);
+            yield return ClickGameButton(Field<Button>(skill, "_upgradeAllButton"));
+            Assert.That(Field<UpgradePurchasePlan>(confirm, "_plan").Count, Is.EqualTo(2));
+            yield return ClickGameButton(Field<Button>(confirm, "_confirmButton"));
+            yield return WaitFor(() => !confirm.IsBusy && !Field<GameObject>(confirm, "_panel").activeSelf);
+            Assert.That(Field<TMP_Text>(toast, "_message").text, Does.Contain("Lv.2 강화 완료!"));
+            yield return WaitFor(() => !Field<GameObject>(toast, "_panel").activeSelf);
+            Assert.That(profile.UpgradeLevel(firstSkill.UpgradeId), Is.EqualTo(2));
+            Assert.That(profile.Gold, Is.EqualTo(skillCoins - skillQuote.CoinCost));
+            Assert.That(profile.ItemQuantity(skillQuote.MaterialItemId), Is.EqualTo(skillMaterial - skillQuote.MaterialCost));
+            Assert.That(Field<TMP_Text>(skill, "_levelText").text, Does.Contain("2"));
             LogAssert.NoUnexpectedReceived();
         }
 
@@ -252,6 +266,7 @@ namespace Game.Tests
             wall.TakeDamage(wall.CurrentHp);
             yield return WaitFor(() => stage.Container.Resolve<StageManager>().State == StageState.Finished);
             var result = stage.Container.Resolve<IUiRegistry>().Get<ResultPopupView>();
+            yield return WaitFor(() => Field<Button>(result, "_lobbyButton").interactable);
             Field<ResultTipView>(result, "_tip").OnPointerClick(new PointerEventData(EventSystem.current));
             yield return ClickGameButton(Field<Button>(result, "_lobbyButton"));
             yield return WaitFor(() => SceneManager.GetActiveScene().name == "Lobby");
@@ -589,7 +604,7 @@ namespace Game.Tests
                 Assert.That(panel.activeSelf, Is.False);
                 Assert.That(stats.BuildLog.Count - priorCards, Is.EqualTo(totalRewards));
                 Assert.That(cards.Count(card => card.gameObject.activeSelf), Is.EqualTo(count));
-                Assert.That(Time.timeScale, Is.EqualTo(2f));
+                Assert.That(Time.timeScale, Is.EqualTo(data.Combat.BaseTimeScale * 2f));
                 LogAssert.NoUnexpectedReceived();
             }
             finally { rouletteStage.EliteRouletteMinCards = originalMinimum; }
@@ -766,7 +781,7 @@ namespace Game.Tests
             var stats = stage.Container.Resolve<BattleStats>();
             var controls = stageUi.Get<StageControlView>();
             yield return ClickGameButton(Field<Button>(controls, "_speedButton"));
-            Assert.That(Time.timeScale, Is.EqualTo(2));
+            Assert.That(Time.timeScale, Is.EqualTo(stage.Container.Resolve<GameDataStore>().Combat.BaseTimeScale * 2f));
             yield return ClickGameButton(Field<Button>(controls, "_pauseButton"));
             Assert.That(manager.State, Is.EqualTo(StageState.Paused));
             Assert.That(Time.timeScale, Is.Zero);
@@ -787,7 +802,7 @@ namespace Game.Tests
             Assert.That(stageInfo.IsShown, Is.False);
             yield return ClickGameButton(Field<Button>(stageUi.Get<PauseMenuView>(), "_resumeButton"));
             Assert.That(manager.State, Is.EqualTo(StageState.Playing));
-            Assert.That(Time.timeScale, Is.EqualTo(2));
+            Assert.That(Time.timeScale, Is.EqualTo(stage.Container.Resolve<GameDataStore>().Combat.BaseTimeScale * 2f));
             yield return CompleteEnemiesUntil(stage, () => manager.State == StageState.CardSelect);
             var cards = stageUi.Get<CardSelectView>();
             Assert.That(Field<GameObject>(cards, "_panel").activeSelf, Is.True);
@@ -796,18 +811,21 @@ namespace Game.Tests
             Assert.That(slots.Count(s => s.gameObject.activeSelf), Is.EqualTo(manager.Choices.Count));
             int priorCards = stats.BuildLog.Count;
             yield return ClickGameButton(Field<Button>(slots.First(s => s.gameObject.activeSelf), "_button"));
-            yield return WaitFor(() => manager.State == StageState.Playing);
+            yield return WaitFor(() => manager.State == StageState.Playing, "카드 선택 후 전투 재개");
             Assert.That(stats.BuildLog.Count, Is.EqualTo(priorCards + 1));
-            Assert.That(Time.timeScale, Is.EqualTo(2));
+            Assert.That(Time.timeScale, Is.EqualTo(stage.Container.Resolve<GameDataStore>().Combat.BaseTimeScale * 2f));
             var wall = stage.Container.Resolve<Wall>();
             wall.TakeDamage(10);
             Assert.That(Field<TMP_Text>(stageUi.Get<WallHpHudView>(), "_hpText").text, Is.EqualTo($"{wall.CurrentHp} / {wall.MaxHp}"));
             wall.TakeDamage(wall.CurrentHp);
-            yield return WaitFor(() => manager.State == StageState.Finished);
+            yield return WaitFor(() => manager.State == StageState.Finished, "전투 종료 결과 제출 완료");
             Assert.That(wall.IsDestroyed, Is.True);
             var result = stageUi.Get<ResultPopupView>();
-            Assert.That(Field<TMP_Text>(result, "_titleText").text, Is.EqualTo("Fail !"));
+            Assert.That(Field<TMP_Text>(result, "_titleText").text, Is.EqualTo("방어 실패"));
+            yield return WaitFor(() => Field<Button>(result, "_lobbyButton").interactable, "종료 안내 뒤 결과 화면 공개");
             var tip = Field<ResultTipView>(result, "_tip");
+            Assert.That(tip.IsShown, Is.False, "결과를 읽기 전에 실패 팁이 화면을 덮지 않는다");
+            yield return ClickGameButton(Field<Button>(result, "_tipButton"));
             Assert.That(tip.IsShown, Is.True);
             int tipClosed = 0;
             System.Action onTipClosed = () => tipClosed++;
@@ -861,7 +879,8 @@ namespace Game.Tests
             }
             yield return WaitFor(() => manager.State == StageState.Finished);
             var result = ui.Get<ResultPopupView>();
-            Assert.That(Field<TMP_Text>(result, "_titleText").text, Is.EqualTo("Clear !"));
+            Assert.That(Field<TMP_Text>(result, "_titleText").text, Is.EqualTo("방어 성공!"));
+            yield return WaitFor(() => Field<Button>(result, "_lobbyButton").interactable);
             Assert.That(stats.ReachedWave, Is.EqualTo(stage.Container.Resolve<StageDefinition>().Waves.Count));
             Assert.That(stats.BuildLog.Count, Is.GreaterThan(0));
             Assert.That(Field<ResultTipView>(result, "_tip").IsShown, Is.False);
@@ -1011,7 +1030,7 @@ namespace Game.Tests
 #endif
             yield return null;
             yield return WaitFor(() => target != null && target.gameObject.activeInHierarchy
-                && (target is not Button button || button.IsInteractable()));
+                && (target is not Button button || button.IsInteractable()), $"클릭 가능: {target?.name}");
             Canvas.ForceUpdateCanvases();
             var canvas = target.GetComponentInParent<Canvas>();
             var rect = hitArea != null ? hitArea : (RectTransform)target.transform;
@@ -1088,12 +1107,12 @@ namespace Game.Tests
             }
         }
 
-        private static IEnumerator WaitFor(Func<bool> condition)
+        private static IEnumerator WaitFor(Func<bool> condition, string step = null)
         {
             float deadline = Time.realtimeSinceStartup + 20f;
             while (!condition())
             {
-                Assert.That(Time.realtimeSinceStartup, Is.LessThan(deadline), $"UI flow did not complete in 20 seconds. Scene={SceneManager.GetActiveScene().name}, Playing={Application.isPlaying}");
+                Assert.That(Time.realtimeSinceStartup, Is.LessThan(deadline), $"UI flow did not complete in 20 seconds. Step={step}, Scene={SceneManager.GetActiveScene().name}, Playing={Application.isPlaying}");
                 yield return null;
             }
         }

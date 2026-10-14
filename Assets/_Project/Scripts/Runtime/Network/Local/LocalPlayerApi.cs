@@ -27,7 +27,9 @@ namespace Game.Network
             upgrades = save.upgrades,
             items = save.items ?? new(),
             codex = save.codex ?? new(),
-            tutorials = save.tutorials ?? new()
+            tutorials = save.tutorials ?? new(),
+            quests = save.quests?.rows ?? new(),
+            questChests = save.quests?.chests ?? new()
         };
     }
 }

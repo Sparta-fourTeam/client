@@ -2,7 +2,7 @@
   {
     "Id": 1,
     "Hp": 36,
-    "Damage": 2,
+    "Damage": 60,
     "Speed": 0.11,
     "AttackInterval": 3,
     "AttackRange": 1.4,
@@ -20,7 +20,7 @@
   {
     "Id": 2,
     "Hp": 24,
-    "Damage": 3,
+    "Damage": 90,
     "Speed": 0.21,
     "AttackInterval": 2,
     "AttackRange": 0.0,
@@ -30,7 +30,7 @@
   {
     "Id": 3,
     "Hp": 12,
-    "Damage": 1,
+    "Damage": 30,
     "Speed": 0.15,
     "AttackInterval": 2,
     "AttackRange": 0.0,
@@ -40,7 +40,7 @@
   {
     "Id": 4,
     "Hp": 84,
-    "Damage": 6,
+    "Damage": 180,
     "Speed": 0.1,
     "AttackInterval": 2.8,
     "AttackRange": 0.0,
@@ -63,7 +63,7 @@
   {
     "Id": 5,
     "Hp": 72,
-    "Damage": 4,
+    "Damage": 120,
     "Speed": 0.12,
     "AttackInterval": 2.6,
     "AttackRange": 0.0,
@@ -83,7 +83,7 @@
   {
     "Id": 6,
     "Hp": 10,
-    "Damage": 1,
+    "Damage": 30,
     "Speed": 0.26,
     "AttackInterval": 2,
     "AttackRange": 0.0,
@@ -93,7 +93,7 @@
   {
     "Id": 11,
     "Hp": 180,
-    "Damage": 5,
+    "Damage": 150,
     "Speed": 0.125,
     "AttackInterval": 3,
     "AttackRange": 1.4,
@@ -103,7 +103,7 @@
   {
     "Id": 12,
     "Hp": 140,
-    "Damage": 6,
+    "Damage": 180,
     "Speed": 0.25,
     "AttackInterval": 2,
     "AttackRange": 0.0,
@@ -113,7 +113,7 @@
   {
     "Id": 13,
     "Hp": 420,
-    "Damage": 12,
+    "Damage": 360,
     "Speed": 0.115,
     "AttackInterval": 2.8,
     "AttackRange": 0.0,
@@ -136,7 +136,7 @@
   {
     "Id": 14,
     "Hp": 360,
-    "Damage": 8,
+    "Damage": 240,
     "Speed": 0.138,
     "AttackInterval": 2.6,
     "AttackRange": 0.0,
@@ -156,7 +156,7 @@
   {
     "Id": 15,
     "Hp": 600,
-    "Damage": 12,
+    "Damage": 360,
     "Speed": 0.115,
     "AttackInterval": 2.8,
     "AttackRange": 0.0,
@@ -190,7 +190,7 @@
   {
     "Id": 16,
     "Hp": 320,
-    "Damage": 8,
+    "Damage": 240,
     "Speed": 0.23,
     "AttackInterval": 2,
     "AttackRange": 0.0,
@@ -211,7 +211,7 @@
   {
     "Id": 17,
     "Hp": 400,
-    "Damage": 8,
+    "Damage": 240,
     "Speed": 0.172,
     "AttackInterval": 2.5,
     "AttackRange": 0.0,
@@ -236,10 +236,10 @@
   },
   {
     "Id": 18,
-    "Hp": 260,
-    "Damage": 8,
-    "Speed": 0.345,
-    "AttackInterval": 2,
+    "Hp": 200,
+    "Damage": 180,
+    "Speed": 0.288,
+    "AttackInterval": 3,
     "AttackRange": 0.0,
     "ProjectileSpeed": 0.0,
     "Grade": "Elite",
@@ -250,7 +250,7 @@
   {
     "Id": 19,
     "Hp": 1100,
-    "Damage": 16,
+    "Damage": 480,
     "Speed": 0.092,
     "AttackInterval": 3,
     "AttackRange": 0.0,
@@ -279,7 +279,7 @@
   {
     "Id": 21,
     "Hp": 120,
-    "Damage": 6,
+    "Damage": 180,
     "Speed": 0.1,
     "AttackInterval": 2.8,
     "AttackRange": 0.0,
@@ -313,7 +313,7 @@
   {
     "Id": 22,
     "Hp": 64,
-    "Damage": 4,
+    "Damage": 120,
     "Speed": 0.2,
     "AttackInterval": 2,
     "AttackRange": 0.0,
@@ -334,7 +334,7 @@
   {
     "Id": 23,
     "Hp": 80,
-    "Damage": 4,
+    "Damage": 120,
     "Speed": 0.15,
     "AttackInterval": 2.5,
     "AttackRange": 0.0,
@@ -359,10 +359,10 @@
   },
   {
     "Id": 24,
-    "Hp": 52,
-    "Damage": 4,
-    "Speed": 0.3,
-    "AttackInterval": 2,
+    "Hp": 40,
+    "Damage": 90,
+    "Speed": 0.25,
+    "AttackInterval": 3,
     "AttackRange": 0.0,
     "ProjectileSpeed": 0.0,
     "Grade": "Normal",
@@ -373,7 +373,7 @@
   {
     "Id": 25,
     "Hp": 220,
-    "Damage": 8,
+    "Damage": 240,
     "Speed": 0.08,
     "AttackInterval": 3,
     "AttackRange": 0.0,
@@ -402,7 +402,7 @@
   {
     "Id": 100,
     "Hp": 1200,
-    "Damage": 10,
+    "Damage": 300,
     "Speed": 0.09,
     "AttackInterval": 2.5,
     "AttackRange": 0.0,

@@ -26,6 +26,7 @@ namespace Game.Core
         private readonly StageRewardTracker _rewards;
         private readonly ISubscriber<EnemyDied> _enemyDied;
         private readonly EliteRouletteSession _roulette;
+        private readonly IGameplayAnalytics _analytics;
         private readonly HashSet<int> _rewardedElites = new();
         private int _pendingElites, _pendingCardSelections;
 
@@ -33,6 +34,7 @@ namespace Game.Core
         public const int AutoRetryCount = 3;
 
         private float _speed = 1f;
+        private readonly float _baseTimeScale;
         private StageState _beforePause;
         private string _battleId;
         private IDisposable _subscription;
@@ -66,7 +68,8 @@ namespace Game.Core
             CardDeck deck,
             IPublisher<SubmitRejected> submitRejected,
             IPublisher<SubmitFailed> submitFailed, StageRewardTracker rewards = null, EncounteredMonsters encountered = null,
-            ISubscriber<EnemyDied> enemyDied = null, EliteRouletteSession roulette = null)
+            ISubscriber<EnemyDied> enemyDied = null, EliteRouletteSession roulette = null,
+            IGameplayAnalytics analytics = null, CombatConfig combat = null)
         {
             _stateChanged = stateChanged;
             _stageEnded = stageEnded;
@@ -83,6 +86,9 @@ namespace Game.Core
             _encountered = encountered;
             _enemyDied = enemyDied;
             _roulette = roulette;
+            _analytics = analytics;
+            _baseTimeScale = combat?.BaseTimeScale ?? 1f;
+            _speed = _baseTimeScale;
         }
 
         public void Start()
@@ -95,7 +101,9 @@ namespace Game.Core
 
             // 전투는 Lobby의 BattleLauncher가 이미 발급받아 StageContext에 채워뒀다 — 여기선 꺼내 쓰기만 한다
             _battleId = _stageContext.BattleId;
+            Time.timeScale = _speed;
             ChangeState(StageState.Playing);
+            _analytics?.BattleStarted(_stageContext.StageId);
         }
 
         public void Dispose()
@@ -131,8 +139,9 @@ namespace Game.Core
 
         public void SetSpeed(float speed)
         {
-            _speed = speed >= 2f ? 2f : 1f;
-            PlayerPrefs.SetFloat("stage_speed", _speed);
+            float multiplier = speed >= 2f ? 2f : 1f;
+            _speed = multiplier * _baseTimeScale;
+            PlayerPrefs.SetFloat("stage_speed", multiplier);
             if (State == StageState.Playing)
             {
                 Time.timeScale = _speed;
@@ -184,6 +193,7 @@ namespace Game.Core
             }
             _stats.RecordCard(choice.IsGeneral ? choice.GeneralCard.Id
                 : choice.IsNewWeapon ? $"weapon_{choice.newSkillData.id}" : choice.Option.id);
+            _analytics?.CardPicked(_stageContext.StageId, _stats.BuildLog[^1], _stats.BuildLog.Count, "wave");
             _choices = new List<UpgradeChoice>();
 
             ContinueRewards();
@@ -202,6 +212,7 @@ namespace Game.Core
         {
             if (State != StageState.EliteRoulette || !_roulette.TryApply(round)) { return false; }
             _stats.RecordCard(round.Winner.Option.id);
+            _analytics?.CardPicked(_stageContext.StageId, _stats.BuildLog[^1], _stats.BuildLog.Count, "elite_roulette");
             return true;
         }
 
@@ -244,10 +255,10 @@ namespace Game.Core
                 return;
             }
 
-            OnStageEnded(false).Forget(Debug.LogException);
+            OnStageEnded(false, forfeited: true).Forget(Debug.LogException);
         }
 
-        private async UniTask OnStageEnded(bool cleared)
+        private async UniTask OnStageEnded(bool cleared, bool forfeited = false)
         {
             if (State is StageState.Submitting or StageState.Finished) { return; }
             _rewards?.Stop();
@@ -260,12 +271,15 @@ namespace Game.Core
 
             _resultKills = _stats.Kills;
             _resultPlayTime = _clock.ElapsedSeconds;
+            _analytics?.BattleEnded(_stageContext.StageId, cleared, forfeited, _stats.ReachedWave,
+                _resultKills, _resultPlayTime, _stats.SkillDamageRanking());
             _pendingRequest = new SubmitResultRequest
             {
                 battleId = _battleId,
                 cleared = cleared,
                 reachedWave = _stats.ReachedWave,
                 completedWaves = _rewards?.CompletedWaves ?? 0,
+                killedMonsters = _resultKills,
                 wallHpPercent = cleared ? _stats.WallHpPercent : 0,
                 encounteredMonsterIds = _encountered == null ? new List<int>() : new List<int>(_encountered.Ids)
             };

@@ -19,6 +19,7 @@ namespace Game.Boot
             builder.Register<GameDataStore>(Lifetime.Singleton);
             builder.Register<LocalSaveStore>(Lifetime.Singleton);
             builder.Register<PlayerProfile>(Lifetime.Singleton);
+            builder.RegisterEntryPoint<GameAnalyticsService>().As<IGameplayAnalytics>();
 
             // 서버 통신. 서버 인증을 쓰는 빌드(Android 개발 빌드)에서만 로그인이 서버로 간다
             builder.RegisterInstance(new HttpApiConfig(ServerConfig.BaseUrl));
@@ -32,7 +33,9 @@ namespace Game.Boot
             builder.Register<IAuthApi>(c => ServerConfig.UseServerAuth ? c.Resolve<ServerBackedAuthApi>() : c.Resolve<LocalAuthApi>(),
                 Lifetime.Singleton);
             // 로그인 정보는 백엔드(Local/서버)와 상관없이 기기에 저장한다
-            builder.Register<IAuthCredentialStore, PlayerPrefsAuthCredentialStore>(Lifetime.Singleton);
+            builder.Register<PlayerPrefsAuthCredentialStore>(Lifetime.Singleton);
+            builder.Register<IAuthCredentialStore>(c => new SessionAuthCredentialStore(
+                c.Resolve<PlayerPrefsAuthCredentialStore>(), c.Resolve<AuthSession>()), Lifetime.Singleton);
             // 외부 계정 로그인. 구글은 Android 빌드에서 진짜 로그인을 하고, 에디터에서는 가짜 계정으로 바로 성공한다.
             // 애플은 SDK가 붙기 전까지 자리표시 구현이다
 #if UNITY_EDITOR
@@ -52,6 +55,7 @@ namespace Game.Boot
             builder.Register<IEnergyApi, LocalEnergyApi>(Lifetime.Singleton);
             builder.Register<IStageApi, LocalStageApi>(Lifetime.Singleton);
             builder.Register<ICodexApi, LocalCodexApi>(Lifetime.Singleton);
+            builder.Register<IQuestApi, LocalQuestApi>(Lifetime.Singleton);
             builder.Register<ITutorialApi, LocalTutorialApi>(Lifetime.Singleton);
 
             // 음악·효과음·음성 볼륨은 기기 설정이라 기기에 저장하고, 시작할 때와 바뀔 때 오디오 믹서에 적용한다

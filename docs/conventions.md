@@ -14,6 +14,8 @@
 ## 인게임
 
 - `Time.timeScale`은 StageManager만 바꾼다
+- 화면의 1배속은 `Combat.BaseTimeScale`, 2배속은 그 값의 두 배다. `stage_speed`에는 화면 배속 1/2를 저장한다. 에디터 Playtest의 1/4/8은 검증용 실제 시간 배율이며 로비로 나가면 Unity 시간 배율은 1로 복원한다.
+- HUD와 결과의 전투 시간은 scaled time을 쓰므로 실제 판당 시간과 구분한다. 판당 약 5분 목표는 카드 선택·룰렛을 포함한 실제 경과 시간으로 확인한다.
 - 팝업 연출과 Local 백엔드 지연은 unscaled time을 쓴다 (`UniTask.Delay(..., ignoreTimeScale: true)`)
 - 클리어·실패 판정은 StageJudge 한 곳에서, 먼저 도착한 신호로 판당 한 번만 한다. 매 프레임 확인하지 않고 메시지를 받을 때 판정한다
 - 엔트리포인트끼리 실행 순서에 기대지 않는다. 순서가 필요하면 메시지나 명시적 호출로 연결한다
@@ -38,7 +40,7 @@
 
 - 밸런스 수치·해금·재화·보상은 서버, 판 안의 진행 상태·쿨타임·에셋은 클라이언트
 - 게임 테이블은 도메인 모델로 변환해 쓴다. 전투 발급·제출 요청과 응답만 예외로 `Core/Api`의 타입을 그대로 쓴다
-- 밸런스 값은 코드나 프리팹에 박지 않고 `GameDataStore`의 테이블(`MockData/*.json`)에 둔다. 테이블: `Monsters`(체력, 속도, 공격 값, 투사체 속도), `Stages`(방벽 체력, 스폰 간격, 웨이브 목록, 보상, 몬스터 강화 `MonsterBonuses`: 능력치 Hp·Damage·Speed별 증가율(%)을 여러 줄 함께 쓸 수 있다), `Skills`(스킬과 스킬 카드), `Upgrades`, `Energy`, `GeneralCards`(스킬이 아닌 카드: 방벽 수리 등), `CodexRewards`(몬스터 도감 등록 보상. 몬스터마다가 아니라 등급 Normal·Elite·Boss별 골드). 새 테이블은 `GameDataStore.TableNames`에 넣으면 버전 목록과 원문 조회(`IDataApi`)에도 자동으로 포함된다
+- 밸런스 값은 코드나 프리팹에 박지 않고 `GameDataStore`의 테이블(`MockData/*.json`)에 둔다. 테이블: `Monsters`(체력, 속도, 공격 값, 투사체 속도), `Stages`(방벽 체력, 스폰 간격, 웨이브 목록, 보상, 몬스터 강화 `MonsterBonuses`: 능력치 Hp·Damage·Speed별 증가율(%)을 여러 줄 함께 쓸 수 있다), `Skills`(스킬과 스킬 카드), `Upgrades`, `Energy`, `GeneralCards`(스킬이 아닌 카드: 방벽 수리 등), `CodexRewards`(몬스터 도감 등록 보상. 몬스터마다가 아니라 등급 Normal·Elite·Boss별 골드), `Quests`(일일·주간 보드. 퀘스트는 종류 Login·SpendEnergy·KillMonsters와 목표·점수, 보물상자는 점수 임계값과 골드·에너지 보상. 퀘스트를 받으면 점수가 오르고 게이지가 닿은 상자를 열 수 있다. 매일 04:00에 초기화되고 주간은 월요일 04:00). 새 테이블은 `GameDataStore.TableNames`에 넣으면 버전 목록과 원문 조회(`IDataApi`)에도 자동으로 포함된다
 - 카드는 두 곳에서 관리한다. 스킬 카드는 `Skills.json`의 각 스킬 `upgrades`에, 스킬이 아닌 카드(방벽 수리 등)는 `GeneralCards.json`에 둔다. 뽑는 것은 `CardDeck` 하나가 합친다. 일반 카드는 `Condition`(언제 나오는가)과 `Effect`(고르면 무엇이 되는가)를 `GeneralCardRules`에 등록된 이름으로 적고, `Forced`이면 조건이 맞을 때 3장 중 한 칸을 먼저 차지한다 (한 번에 최대 1장)
 - 적 프리팹 엔트리(`EnemyPrefabEntry`)는 프리팹과 공격 방식만 갖고, 수치는 `MonsterId`로 `Monsters` 행을 가리킨다. Stage 씬은 `StageContext.StageId`로 `StageDefinition`을 한 번 정해 방벽, 웨이브, 스폰에 나눠 준다 (Stage 씬을 바로 열면 첫 스테이지)
 - 서버 테이블에는 id와 수치만 두고 표시·화면 연결 정보는 클라이언트 전용 데이터에 둔다. 스킬·강화 카드·아이템·일반 카드의 이름과 설명은 `Resources/ClientData/DisplayTexts.json`이 id로 짝을 맞추며, 로컬라이징을 도입하면 이 표를 id 기반 문자열 키 조회로 바꾼다. 튜토리얼의 대사·가이드 템플릿 이름·탭 잠금은 `Resources/ClientData/TutorialPresentations.json`이 튜토리얼 `Id`로 짝을 맞춘다

@@ -34,6 +34,7 @@ namespace Game.Core
         protected override bool OnFire()
         {
             using var scope = Game.Core.Combat.DamageAttribution.BeginOutermost(Data.ToDamageSource());
+            environment.CastIndex = CastIndex;
             bool hasTarget = Fired != null && Strategy.HasTargets(Config, environment);
             bool fired = Strategy.Fire(Config, environment);
             if (hasTarget) { Fired?.Invoke(); }

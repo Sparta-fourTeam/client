@@ -80,6 +80,9 @@ namespace Game.Core
         /// <summary>시전하고 실제로 쏘았는지 돌려준다. false면 쿨타임을 쓰지 않는다(<see cref="CastClock"/>)</summary>
         protected abstract bool OnFire();
 
+        /// <summary>지금 시전이 연발 중 몇 번째인지 (0부터). <see cref="OnFire"/> 안에서 읽는다</summary>
+        protected int CastIndex => castClock.CastIndex;
+
         protected IReadOnlyList<IEnemyTarget> FindTargets(float maxRange) =>
             targets.Select(caster.position, maxRange);
 

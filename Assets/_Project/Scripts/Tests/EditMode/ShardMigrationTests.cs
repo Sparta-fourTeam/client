@@ -118,7 +118,7 @@ namespace Game.Tests
             var lightning = world.Create(3);
             world.Take(lightning, "40", "35", "41");
             if (voltage) { world.Take(lightning, "42"); }
-            var struck = world.AddEnemy(5, 5);
+            var struck = world.AddEnemy(4, 4);
 
             typeof(SkillCaster).GetMethod("OnFire", Flags).Invoke(lightning, null);
             typeof(HitscanEffect).GetMethod("Hit", Flags).Invoke(Strike(), null);
@@ -133,7 +133,7 @@ namespace Game.Tests
                 Assert.AreEqual(expected, r.Damage, "선언된 본체 피해 상속 × 입자 피해 보정");
                 Assert.AreEqual(voltage ? Effect(3, "42", "paralysis").value : 0, r.Paralysis);
                 Assert.AreSame(struck, Ignored(orb), "맞은 적은 지나친다");
-                Assert.AreEqual(new Vector3(5, 5, 0), orb.transform.position, "타격 지점에서 퍼진다");
+                Assert.AreEqual(new Vector3(4, 4, 0), orb.transform.position, "타격 지점에서 퍼진다");
             }
             var angles = orbs.Select(o => Mathf.RoundToInt(Mathf.Atan2(CatalogWorld.Direction(o).y, CatalogWorld.Direction(o).x) * 100)).Distinct().Count();
             Assert.AreEqual(orbs.Count, angles, "각 구체는 서로 다른 방사 방향으로 나간다");
@@ -144,7 +144,7 @@ namespace Game.Tests
         {
             world = new CatalogWorld();
             var lightning = world.Create(3);
-            world.AddEnemy(5, 5);
+            world.AddEnemy(4, 4);
             typeof(SkillCaster).GetMethod("OnFire", Flags).Invoke(lightning, null);
             typeof(HitscanEffect).GetMethod("Hit", Flags).Invoke(Strike(), null);
             Assert.AreEqual(0, CatalogWorld.Active().Count);

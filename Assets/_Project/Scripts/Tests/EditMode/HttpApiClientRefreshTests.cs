@@ -226,6 +226,63 @@ namespace Game.Tests
             Assert.AreEqual(1, _transport.Count("api/auth/refresh"));
         }
 
+        [TestCase(false, 200, NewTokens)]
+        [TestCase(true, 200, NewTokens)]
+        [TestCase(true, 401, "")]
+        [TestCase(true, 200, "{}")]
+        public void PendingRefresh_AfterLogoutCannotRestoreOrOverwriteSession(bool signInAgain, int status, string body)
+        {
+            var gate = new UniTaskCompletionSource<HttpResponseData>();
+            ExpireOldToken(_ => gate.Task);
+            var pending = _client.Get<Ping>("api/ping");
+            try
+            {
+                Assert.AreEqual(1, _transport.Count("api/auth/refresh"));
+                _session.Clear();
+                // 같은 문자열로 다시 로그인해도 옛 응답은 새 세션에 속하지 않는다.
+                if (signInAgain) { _session.Set("old-access", "old-refresh"); }
+            }
+            finally
+            {
+                gate.TrySetResult(new HttpResponseData(status, body));
+            }
+
+            var ex = Assert.Throws<ApiException>(() => Run(pending));
+            Assert.AreEqual(HttpErrorMapper.SessionExpired, ex.Code);
+            Assert.AreEqual(signInAgain ? "old-access" : null, _session.AccessToken);
+            Assert.AreEqual(signInAgain ? "old-refresh" : null, _session.RefreshToken);
+            Assert.AreEqual(2, _transport.Requests.Count, "옛 요청을 새 로그인으로 재시도하지 않는다");
+        }
+
+        [Test]
+        public void OldRefreshCompletion_DoesNotDiscardNewSessionsSharedRefresh()
+        {
+            var oldGate = new UniTaskCompletionSource<HttpResponseData>();
+            var newGate = new UniTaskCompletionSource<HttpResponseData>();
+            ExpireOldToken(request => request.Body.Contains("other-refresh") ? newGate.Task : oldGate.Task);
+            var oldRequest = _client.Get<Ping>("api/old");
+            _session.Clear();
+            _session.Set("other-access", "other-refresh");
+            var newRequest = _client.Get<Ping>("api/new");
+            try
+            {
+                oldGate.TrySetResult(new HttpResponseData(200, NewTokens));
+                var ex = Assert.Throws<ApiException>(() => Run(oldRequest));
+                Assert.AreEqual(HttpErrorMapper.SessionExpired, ex.Code);
+                var sharedRequest = _client.Get<Ping>("api/shared");
+                Assert.AreEqual(2, _transport.Count("api/auth/refresh"), "새 세션은 자체 재발급 하나를 계속 공유한다");
+                newGate.TrySetResult(new HttpResponseData(200, NewTokens));
+                Assert.AreEqual("ok", Run(newRequest).name);
+                Assert.AreEqual("ok", Run(sharedRequest).name);
+                Assert.AreEqual("new-refresh", _session.RefreshToken);
+            }
+            finally
+            {
+                oldGate.TrySetResult(new HttpResponseData(200, NewTokens));
+                newGate.TrySetResult(new HttpResponseData(200, NewTokens));
+            }
+        }
+
         [Test(Description = "요청을 보낸 뒤 다른 요청이 이미 새 토큰을 받아 두었으면 재발급 없이 새 토큰으로 다시 보낸다")]
         public void AlreadyRefreshedByAnotherRequest_RetriesWithoutRefresh()
         {
@@ -233,7 +290,7 @@ namespace Game.Tests
             {
                 if (Bearer(request) == "Bearer old-access")
                 {
-                    _session.Set("new-access", "new-refresh"); // 이 요청이 오는 사이에 다른 요청이 재발급을 끝냈다
+                    Assert.IsTrue(_session.TryRefresh(_session.Generation, "new-access", "new-refresh")); // 같은 세션의 다른 요청이 재발급을 끝냈다
                     return Reply(401);
                 }
 

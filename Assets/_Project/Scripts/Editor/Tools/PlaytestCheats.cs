@@ -11,6 +11,23 @@ namespace Game.Editor
         internal static void AddGold(LocalSave save, int amount) =>
             save.wallet.gold = (int)Math.Clamp((long)save.wallet.gold + amount, 0, int.MaxValue);
 
+        internal static void SetAllResources(LocalSave save, GameDataStore data)
+        {
+            save.wallet.gold = 999;
+            save.wallet.energyStored = 999;
+            save.wallet.energyUpdatedAt = DateTime.UtcNow.ToString("O");
+            save.items ??= new();
+            foreach (var definition in data.Items.Values)
+            {
+                var item = save.items.Find(row => row.itemId == definition.Id);
+                if (item == null)
+                {
+                    save.items.Add(new ItemAmount { itemId = definition.Id, quantity = 999 });
+                }
+                else { item.quantity = 999; }
+            }
+        }
+
         internal static void FillEnergy(LocalSave save, EnergyConfig energy)
         {
             save.wallet.energyStored = energy.Max;

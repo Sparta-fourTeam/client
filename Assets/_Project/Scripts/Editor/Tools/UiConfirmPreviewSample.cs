@@ -10,10 +10,30 @@ namespace Game.Editor
         internal static void Apply(GameObject root, string sample)
         {
             if (sample == "기본" || root.GetComponent<ConfirmPopupView>() is not { } view) { return; }
-            var source = PrefabUtility.GetCorrespondingObjectFromSource(root);
-            if (AssetDatabase.GetAssetPath(source).Contains("/Loading/")) { return; }
             var request = sample switch
             {
+                "게스트 로그인" => new ConfirmRequest
+                {
+                    Title = "게스트 로그인",
+                    Message = "게스트로 로그인할까요?",
+                    Warning = "게스트 계정은 앱을 삭제하거나 기기를 바꾸면 데이터가 사라질 수 있어요.",
+                    ConfirmLabel = "로그인",
+                    CancelLabel = "취소"
+                },
+                "구글 로그인" => new ConfirmRequest
+                {
+                    Title = "구글 로그인",
+                    Message = "구글 계정으로 로그인할까요?",
+                    ConfirmLabel = "로그인",
+                    CancelLabel = "취소"
+                },
+                "애플 로그인" => new ConfirmRequest
+                {
+                    Title = "애플 로그인",
+                    Message = "애플 계정으로 로그인할까요?",
+                    ConfirmLabel = "로그인",
+                    CancelLabel = "취소"
+                },
                 "안내" => new ConfirmRequest { Title = "알림", Message = "계정이 연동되었습니다.", ConfirmLabel = "확인" },
                 "경고" => new ConfirmRequest
                 {

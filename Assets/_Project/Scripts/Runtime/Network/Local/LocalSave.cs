@@ -22,5 +22,7 @@ namespace Game.Network
         public List<CodexRow> codex = new();
         /// <summary>완료한 튜토리얼 단계. 기본값이 null이어야 튜토리얼이 생기기 전 저장 파일을 LocalSaveStore가 알아본다</summary>
         public List<string> tutorials;
+        /// <summary>일일·주간 퀘스트 진행과 연 상자. 주기가 바뀌면 LocalSaveStore가 불러올 때 비운다</summary>
+        public QuestSave quests = new();
     }
 }

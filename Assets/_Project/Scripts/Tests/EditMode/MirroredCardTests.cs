@@ -83,7 +83,7 @@ namespace Game.Tests
             world.Take(arrow, "1", "1");
             var beam = world.Create(FocusBeamId);
             world.Take(beam, "117", "123");
-            world.AddEnemy(0, 6);
+            world.AddEnemy(0, 4);
 
             typeof(SkillCaster).GetMethod("OnFire", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Invoke(beam, null);
 
@@ -98,7 +98,7 @@ namespace Game.Tests
             world.Create(ArrowId);
             var beam = world.Create(FocusBeamId);
             world.Take(beam, "117", "123");
-            world.AddEnemy(0, 6);
+            world.AddEnemy(0, 4);
 
             typeof(SkillCaster).GetMethod("OnFire", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Invoke(beam, null);
 

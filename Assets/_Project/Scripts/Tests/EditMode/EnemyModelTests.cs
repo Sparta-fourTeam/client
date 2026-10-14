@@ -219,20 +219,50 @@ namespace Game.Tests
             finally { UnityEngine.Object.DestroyImmediate(go); }
         }
 
+        // 밀치기·끌어당기기는 몇 프레임에 나눠 움직인다. 다 움직일 만큼 시간을 보낸다
+        private static void Settle(Enemy enemy)
+        {
+            for (int i = 0; i < 3; i++) { enemy.TickDisplacement(1f); }
+        }
+
+        private static void AssertPosition(Vector2 expected, Enemy enemy)
+        {
+            Assert.AreEqual(expected.x, enemy.Position.x, 0.0001f);
+            Assert.AreEqual(expected.y, enemy.Position.y, 0.0001f);
+        }
+
         [Test]
         public void Knockback_NormalizesDirectionWorksDuringFreezeAndRejectsInvalidValues()
         {
             var enemy = CreateEnemy(position: new Vector2(0, 5));
             enemy.ApplyFreeze(2);
             enemy.ApplyKnockback(new Vector2(0, 10), 0.6f);
+            Settle(enemy);
             Assert.AreEqual(5.6f, enemy.Position.y, 0.001f);
             enemy.ApplyKnockback(Vector2.up, float.NaN);
             enemy.ApplyKnockback(Vector2.up, -1);
             enemy.ApplyKnockback(new Vector2(float.PositiveInfinity, 0), 1);
+            Settle(enemy);
             Assert.AreEqual(5.6f, enemy.Position.y, 0.001f);
             enemy.TakeDamage(10);
             enemy.ApplyKnockback(Vector2.up, 1);
+            Settle(enemy);
             Assert.AreEqual(5.6f, enemy.Position.y, 0.001f);
+        }
+
+        [Test(Description = "밀치기는 순간이동하지 않고 몇 프레임에 걸쳐 같은 거리를 움직인다")]
+        public void Knockback_MovesOverFramesNotInstantly()
+        {
+            var enemy = CreateEnemy(position: new Vector2(0, 5));
+            enemy.ApplyKnockback(Vector2.up, 1f);
+            Assert.AreEqual(5f, enemy.Position.y, 0.0001f, "맞은 순간에는 아직 움직이지 않는다");
+
+            enemy.TickDisplacement(1f / 60f);
+            Assert.Greater(enemy.Position.y, 5f);
+            Assert.Less(enemy.Position.y, 6f, "한 프레임에 다 움직이지 않는다");
+
+            Settle(enemy);
+            Assert.AreEqual(6f, enemy.Position.y, 0.0001f, "결국 밀치기 거리만큼 움직인다");
         }
 
         [Test(Description = "밀치기는 항상 위로만 민다: 비스듬히·옆에서·아래 방향으로 맞아도 거리 그대로 위로 (튕긴 투사체 회귀)")]
@@ -241,16 +271,79 @@ namespace Game.Tests
             var enemy = CreateEnemy(position: new Vector2(2, 5));
 
             enemy.ApplyKnockback(new Vector2(1, 1), 1f);
-            Assert.AreEqual(new Vector2(2, 6), enemy.Position);
+            Settle(enemy);
+            AssertPosition(new Vector2(2, 6), enemy);
 
             enemy.ApplyKnockback(new Vector2(-1, 0), 0.5f);
-            Assert.AreEqual(new Vector2(2, 6.5f), enemy.Position);
+            Settle(enemy);
+            AssertPosition(new Vector2(2, 6.5f), enemy);
 
             enemy.ApplyKnockback(new Vector2(3, -1), 1f);
-            Assert.AreEqual(new Vector2(2, 7.5f), enemy.Position);
+            Settle(enemy);
+            AssertPosition(new Vector2(2, 7.5f), enemy);
 
             enemy.ApplyKnockback(Vector2.down, 0.5f);
-            Assert.AreEqual(new Vector2(2, 8f), enemy.Position);
+            Settle(enemy);
+            AssertPosition(new Vector2(2, 8f), enemy);
+        }
+
+        [TestCase(1, false)]
+        [TestCase(2, false)]
+        [TestCase(1, true)]
+        public void AreaPull_OverlappingOrCatchUpPulsesStopAtCenter(int overlappingZones, bool catchUpPulse)
+        {
+            var area = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 7).baseStats.area;
+            Assert.Greater(area.pull, 0);
+            Vector2 center = new Vector2(0, 5);
+            var enemy = CreateEnemy(maxHp: 1000,
+                position: center + Vector2.right * Mathf.Min(area.pull * .5f, area.radius * .5f));
+            var provider = new LightningProvider(); provider.Targets.Add(enemy);
+            var objects = new List<GameObject>();
+            var pool = new UnityEngine.Pool.ObjectPool<AreaZone>(
+                () => { var go = new GameObject("AreaPullRegression"); objects.Add(go); return go.AddComponent<AreaZone>(); },
+                zone => zone.gameObject.SetActive(true), zone => zone.gameObject.SetActive(false));
+            try
+            {
+                for (int i = 0; i < overlappingZones; i++)
+                {
+                    var zone = pool.Get();
+                    zone.Init(pool, provider, center,
+                        new AreaSettings(area.radius, area.duration, area.pulseInterval, area.moveSpeed, area.pull),
+                        AttackReactions.Empty, AttackReactions.Empty);
+                    typeof(AreaZone).GetMethod("Tick", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                        .Invoke(zone, new object[] { catchUpPulse ? area.pulseInterval : 0f });
+                }
+                for (int frame = 0; frame < 30; frame++)
+                {
+                    enemy.TickDisplacement(1f / 60f);
+                    Assert.GreaterOrEqual(enemy.Position.x, center.x - .0001f, "당김 이동 중에도 중심을 넘으면 안 된다");
+                }
+                Settle(enemy);
+                AssertPosition(center, enemy);
+            }
+            finally
+            {
+                pool.Dispose();
+                foreach (var go in objects) { UnityEngine.Object.DestroyImmediate(go); }
+            }
+        }
+
+        [TestCase(false)]
+        [TestCase(true)]
+        public void Pull_DoesNotReduceQueuedKnockback(bool knockbackFirst)
+        {
+            var enemy = CreateEnemy(position: new Vector2(0, 5));
+            if (knockbackFirst) { enemy.ApplyKnockback(Vector2.up, 1f); }
+            enemy.ApplyPull(Vector2.left, .5f);
+            if (!knockbackFirst) { enemy.ApplyKnockback(Vector2.up, 1f); }
+
+            enemy.TickDisplacement(1f / 60f);
+            Assert.Less(enemy.Position.x, 0);
+            Assert.Greater(enemy.Position.x, -.5f);
+            Assert.Greater(enemy.Position.y, 5);
+            Assert.Less(enemy.Position.y, 6);
+            Settle(enemy);
+            AssertPosition(new Vector2(-.5f, 6), enemy);
         }
 
         [Test(Description = "끌어당기기는 방향 그대로(좌우 포함) 움직인다")]
@@ -259,9 +352,18 @@ namespace Game.Tests
             var enemy = CreateEnemy(position: new Vector2(2, 5));
 
             ((IPullTarget)enemy).ApplyPull(new Vector2(-1, 0), 0.5f);
+            Settle(enemy);
 
             Assert.AreEqual(1.5f, enemy.Position.x, 0.0001f);
             Assert.AreEqual(5f, enemy.Position.y, 0.0001f);
+
+            enemy.ApplyKnockback(Vector2.up, .25f);
+            enemy.ApplyPull(Vector2.zero, 1f);
+            enemy.ApplyPull(new Vector2(float.NaN, 0), .5f);
+            enemy.ApplyPull(Vector2.left, float.NaN);
+            enemy.ApplyPull(Vector2.left, -1f);
+            Settle(enemy);
+            AssertPosition(new Vector2(1.5f, 5.25f), enemy);
         }
 
         [Test]

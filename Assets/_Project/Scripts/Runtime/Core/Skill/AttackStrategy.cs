@@ -46,6 +46,9 @@ namespace Game.Core
         /// 조준할 다른 적이 없을 때 이 방향 기준으로 부채꼴로 퍼지는 데 쓴다.</summary>
         public Vector3 Direction { get; }
 
+        /// <summary>연발 중 몇 번째 시전인지 (0부터). 자식 시전처럼 연발이 아닌 시전은 0</summary>
+        public int CastIndex { get; set; }
+
         public AttackEnvironment(Transform caster, IEnemyTargetProvider targets,
             Func<Vector2, float, IReadOnlyList<IEnemyTarget>> select, Vector3? origin = null, IEnemyTarget exclude = null,
             Vector3 direction = default, TargetReservations reservations = null)

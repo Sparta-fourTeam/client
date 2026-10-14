@@ -15,8 +15,11 @@ namespace Game.Editor
             var serialized = new SerializedObject(view);
             var assets = (SkillAssetTable)serialized.FindProperty("_assets").objectReferenceValue;
             var background = (Sprite)serialized.FindProperty("_cardBackground").objectReferenceValue;
-            var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Single(s => s.id == 1);
-            var options = data.upgrades.Where(o => string.IsNullOrEmpty(o.sharedId)).ToArray();
+            bool longDescriptions = sample == "긴 설명 4장" || sample == "긴 설명 5장";
+            var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Single(s => s.id == (longDescriptions ? 7 : 1));
+            var options = data.upgrades.Where(o => string.IsNullOrEmpty(o.sharedId) && (!longDescriptions || o.enabled))
+                .OrderByDescending(o => longDescriptions ? (o.desc?.Length ?? 0) : 0).ToArray();
+            int visibleCount = sample == "보상 5장" || sample == "긴 설명 5장" ? 5 : longDescriptions ? 4 : 2;
             using var owned = SkillFactory.Create(data, assets.GetPrefab(data.id), null, null);
             var cards = serialized.FindProperty("_rewardCards");
             for (int i = 0; i < cards.arraySize; i++)
@@ -33,7 +36,7 @@ namespace Game.Editor
                 };
                 card.Bind(i, choice, assets.GetCardIcon(data.id, SkillCardIcon.Upgrade), background, null,
                     hint => assets.GetFormIcon(hint.Form, hint.Skill.id));
-                card.gameObject.SetActive(sample == "보상 5장" || i < 2);
+                card.gameObject.SetActive(i < visibleCount);
                 card.GetComponentInChildren<UnityEngine.UI.Button>(true).interactable = false;
                 if (i == 0) { owned.LevelUp(option); }
             }

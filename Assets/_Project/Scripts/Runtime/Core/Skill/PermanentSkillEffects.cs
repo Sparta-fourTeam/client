@@ -58,7 +58,7 @@ namespace Game.Core
             return effects;
         }
 
-        /// <summary>장비 효과 합계. 장비마다 ValuePerLevel × 레벨을 같은 종류끼리 더해 종류별 효과 하나로 만든다 (장비끼리는 더한다).
+        /// <summary>장비 효과 합계. 장비마다 레벨의 효과량(UpgradeStatEffect.ValueAt)을 같은 종류끼리 더해 종류별 효과 하나로 만든다 (장비끼리는 더한다).
         /// 레벨 0인 장비는 효과가 없다. 장비는 해금된 뒤에만 강화할 수 있으므로(LocalUpgradeApi의 LOCKED) 레벨이 있으면 해금된 장비다</summary>
         public static List<EffectDef> Equipment(GameDataStore data, Func<string, int> levelOf)
         {
@@ -71,7 +71,7 @@ namespace Game.Core
                 foreach (var effect in def.Effects)
                 {
                     string kind = EquipmentKinds[effect.Kind];
-                    totals[kind] = (totals.TryGetValue(kind, out var sum) ? sum : 0f) + effect.ValuePerLevel * level;
+                    totals[kind] = (totals.TryGetValue(kind, out var sum) ? sum : 0f) + effect.ValueAt(level);
                 }
             }
 
@@ -102,14 +102,14 @@ namespace Game.Core
             }
         }
 
-        /// <summary>level의 효과. 효과량은 ValuePerLevel × level로 단순 합산한다 (레벨 0 이하면 빈 목록)</summary>
+        /// <summary>level의 효과. 효과량은 <see cref="UpgradeStatEffect.ValueAt"/>이다 (레벨 0 이하면 빈 목록)</summary>
         public static List<EffectDef> At(UpgradeDefinition def, int level)
         {
             var effects = new List<EffectDef>();
             if (level <= 0) { return effects; }
             foreach (var effect in def.Effects)
             {
-                effects.Add(new EffectDef { kind = effect.Kind, value = effect.ValuePerLevel * level });
+                effects.Add(new EffectDef { kind = effect.Kind, value = effect.ValueAt(level) });
             }
 
             return effects;

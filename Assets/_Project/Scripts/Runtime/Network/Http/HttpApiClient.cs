@@ -21,6 +21,9 @@ namespace Game.Network
         string RefreshToken { get; }
         void Set(string accessToken, string refreshToken);
         void Clear();
+        long Generation { get; }
+        bool TryRefresh(long generation, string accessToken, string refreshToken);
+        bool TryClear(long generation);
     }
 
     public sealed class NoAuthHeaders : IAuthHeaderProvider
@@ -49,6 +52,7 @@ namespace Game.Network
         // 재발급은 한 번에 하나만 한다. 서버는 쓴 리프레시 토큰을 무효로 하고, 이미 쓴 토큰이 또 오면 저장된 토큰까지 지워
         // 다시 로그인하게 만든다. 요청이 동시에 401을 받아도 재발급을 두 번 보내면 로그인이 풀리기 때문이다
         private UniTaskCompletionSource<RefreshOutcome> _refreshing;
+        private long _refreshingGeneration;
 
         // 재발급 결과. 같은 재발급을 기다리는 요청에게 성공·실패·오류를 그대로 전한다 (예외로 완료하면 기다리는 요청이 없을 때 처리되지 않은 예외로 기록된다)
         private sealed class RefreshOutcome
@@ -91,6 +95,7 @@ namespace Game.Network
 
         private async UniTask<string> Execute(HttpVerb verb, string path, string jsonBody, CancellationToken cancellationToken)
         {
+            long generation = _tokens?.Generation ?? 0;
             string sentAccessToken = _tokens?.AccessToken;
             var response = await Send(verb, path, jsonBody, cancellationToken);
 
@@ -105,7 +110,7 @@ namespace Game.Network
                 throw error;
             }
 
-            if (!await RefreshAsync(sentAccessToken, cancellationToken))
+            if (!await RefreshAsync(generation, sentAccessToken, cancellationToken))
             {
                 throw new ApiException(ApiErrorKind.Rejected, HttpErrorMapper.SessionExpired);
             }
@@ -136,9 +141,10 @@ namespace Game.Network
 
         /// <summary>새 토큰을 받았거나 다른 요청이 이미 받아 둔 상태면 true. 리프레시 토큰이 거절돼 로그인이 필요하면 false(토큰을 비운다).
         /// 네트워크 오류나 서버 오류처럼 로그인이 풀린 것이 아닌 실패는 예외로 던지고 토큰은 그대로 둔다</summary>
-        private async UniTask<bool> RefreshAsync(string sentAccessToken, CancellationToken cancellationToken)
+        private async UniTask<bool> RefreshAsync(long generation, string sentAccessToken, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            if (_tokens.Generation != generation) { return false; }
             // 이 요청을 보낸 뒤 다른 요청이 이미 새 토큰을 받았으면 그 토큰으로 다시 보내면 된다
             if (!string.IsNullOrEmpty(_tokens.AccessToken) && _tokens.AccessToken != sentAccessToken)
             {
@@ -146,22 +152,24 @@ namespace Game.Network
             }
 
             var refreshing = _refreshing;
-            if (refreshing == null)
+            if (refreshing == null || _refreshingGeneration != generation)
             {
                 string refreshToken = _tokens.RefreshToken;
                 if (string.IsNullOrEmpty(refreshToken))
                 {
-                    _tokens.Clear();
+                    _tokens.TryClear(generation);
                     return false;
                 }
 
                 refreshing = _refreshing = new UniTaskCompletionSource<RefreshOutcome>();
-                CompleteRefreshAsync(refreshing, refreshToken).Forget();
+                _refreshingGeneration = generation;
+                CompleteRefreshAsync(refreshing, generation, refreshToken).Forget();
             }
 
             // 개별 요청의 취소는 기다림만 끝낸다. 재발급 전송까지 취소하면 서버가 이미 회전시킨 토큰을
             // 다른 요청이 다시 사용할 수 있어, 공유 전송은 HttpApiConfig의 제한 시간 안에서 끝까지 받는다.
             var shared = await refreshing.Task.AttachExternalCancellation(cancellationToken);
+            if (_tokens.Generation != generation) { return false; }
             if (shared.Error != null)
             {
                 throw shared.Error;
@@ -170,12 +178,12 @@ namespace Game.Network
             return shared.Refreshed;
         }
 
-        private async UniTask CompleteRefreshAsync(UniTaskCompletionSource<RefreshOutcome> refreshing, string refreshToken)
+        private async UniTask CompleteRefreshAsync(UniTaskCompletionSource<RefreshOutcome> refreshing, long generation, string refreshToken)
         {
             var outcome = new RefreshOutcome();
             try
             {
-                outcome.Refreshed = await RequestNewTokensAsync(refreshToken, CancellationToken.None);
+                outcome.Refreshed = await RequestNewTokensAsync(generation, refreshToken, CancellationToken.None);
             }
             catch (Exception ex)
             {
@@ -183,12 +191,12 @@ namespace Game.Network
             }
             finally
             {
-                _refreshing = null;
+                if (ReferenceEquals(_refreshing, refreshing)) { _refreshing = null; }
                 refreshing.TrySetResult(outcome);
             }
         }
 
-        private async UniTask<bool> RequestNewTokensAsync(string refreshToken, CancellationToken cancellationToken)
+        private async UniTask<bool> RequestNewTokensAsync(long generation, string refreshToken, CancellationToken cancellationToken)
         {
             // 재발급 요청에는 만료된 액세스 토큰을 붙이지 않는다
             var url = $"{_config.BaseUrl}/{RefreshPath}";
@@ -196,13 +204,14 @@ namespace Game.Network
             var response = await _transport.Send(new HttpRequestData(HttpVerb.Post, url, new Dictionary<string, string>(), body),
                 _config.TimeoutSeconds, cancellationToken);
 
+            if (_tokens.Generation != generation) { return false; }
             ApiException error = HttpErrorMapper.Map(response, _errorCodeReader);
             if (error != null)
             {
                 // 서버가 리프레시 토큰을 거절하면(만료·이미 사용) 로그인이 필요하다. 그 밖의 실패는 잠시 뒤 다시 시도할 수 있다
                 if (error.Kind == ApiErrorKind.Rejected)
                 {
-                    _tokens.Clear();
+                    _tokens.TryClear(generation);
                     return false;
                 }
 
@@ -220,12 +229,11 @@ namespace Game.Network
 
             if (tokens == null || string.IsNullOrEmpty(tokens.accessToken) || string.IsNullOrEmpty(tokens.refreshToken))
             {
-                _tokens.Clear();
+                _tokens.TryClear(generation);
                 return false;
             }
 
-            _tokens.Set(tokens.accessToken, tokens.refreshToken);
-            return true;
+            return _tokens.TryRefresh(generation, tokens.accessToken, tokens.refreshToken);
         }
 
         private static T Deserialize<T>(string json, Func<T, bool> isValid)
