@@ -19,7 +19,7 @@
 1. **Google Cloud 콘솔**에서 OAuth 동의 화면을 만든다. "테스트" 상태면 등록한 테스트 사용자만 로그인할 수 있다
 2. 같은 프로젝트에 OAuth 클라이언트를 두 개 만든다
    - **웹 애플리케이션** (만들었음): `961722707844-cbu71g50il4274edtmv39i6ctrqqjvj5.apps.googleusercontent.com`. 이 ID는 `AndroidGoogleSignIn.WebClientId`에 들어 있고, 서버 환경변수 `GOOGLE_CLIENT_IDS`에도 같은 값을 넣어야 한다. ID 토큰의 `aud`가 이 값이다. 클라이언트 보안 비밀번호는 쓰지 않는다
-   - **Android**: 패키지 이름 `com.teamdoodle.doodledoodle`과 서명 인증서 SHA-1을 등록한다. 앱에 넣는 값은 없다
+   - **Android**: 패키지 이름 `com.teamdoodle.doodledefense`(Player Settings의 Android 패키지 이름과 같아야 한다)와 서명 인증서 SHA-1을 등록한다. 앱에 넣는 값은 없다
 3. Android 클라이언트는 **SHA-1 하나당 하나씩** 만든다 (아래 키 세 개면 클라이언트 세 개). 빠진 키로 서명된 앱에서는 로그인이 `DEVELOPER_ERROR`류 오류로 실패한다
    - 디버그 키 (`%USERPROFILE%\.android\debug.keystore`, 에디터에서 바로 빌드할 때)
    - 업로드 키 (릴리스 빌드 키스토어)
