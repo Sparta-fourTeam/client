@@ -149,6 +149,25 @@ namespace Game.Tests
             Assert.AreEqual(caster.Stats.Status.SlowDuration, target.SlowDuration);
         }
 
+        // 시전 수가 늘면 연발의 각 시전이 서로 다른 적에게 영역을 깐다 (같은 적에게 겹쳐 깔지 않는다)
+        [Test]
+        public void CastCountCard_EachCastInBurstTargetsDifferentEnemy()
+        {
+            var data = FrostPrison();
+            var near = new HitRecorder { Position = new Vector2(0, 1) };
+            var far = new HitRecorder { Position = new Vector2(1, 3) };
+            var provider = new Provider(); provider.Targets.Add(near); provider.Targets.Add(far);
+            var caster = CreateCaster(data, provider, out _);
+            Assert.IsTrue(caster.LevelUp(data.upgrades.Find(c => c.id == "73")));
+            Assert.AreEqual(2, caster.Stats.Cast.Count);
+
+            caster.Tick(0);
+            caster.Tick(caster.Stats.Cast.Interval);
+
+            var positions = Zones().Select(z => (Vector2)z.transform.position).ToList();
+            CollectionAssert.AreEquivalent(new[] { near.Position, far.Position }, positions);
+        }
+
         [Test]
         public void ShatterCard_EndToEnd_SpawnsRealFrostCrystalProjectilesFromExpiredZone()
         {
