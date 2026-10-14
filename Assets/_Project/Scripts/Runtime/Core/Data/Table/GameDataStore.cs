@@ -133,6 +133,7 @@ namespace Game.Core
             StageRewards = new Table<int, StageRewardBalance>(rewards);
             Energy = JsonConvert.DeserializeObject<EnergyConfig>(_rawJson["Energy"]);
             Combat = JsonConvert.DeserializeObject<CombatConfig>(_rawJson["Combat"]);
+            Combat.Validate();
             PlayerLevels = JsonConvert.DeserializeObject<PlayerLevelConfig>(_rawJson["PlayerLevels"]).ToTable();
             var tutorials = JsonConvert.DeserializeObject<List<TutorialDefinition>>(_rawJson["Tutorials"]);
             var tutorialIds = new HashSet<string>();
@@ -176,8 +177,9 @@ namespace Game.Core
                 PermanentSkillEffect.ValidateEquipment(upgrade);
             }
 
-            // TODO(server): 전부 1 고정 — 예: 빌드에 포함된 테이블 버전 메타데이터로 교체
+            // TODO(server): 빌드에 포함된 테이블 버전 메타데이터로 교체. Combat 2는 BaseTimeScale을 추가한 개정이다.
             Revisions = TableNames.ToDictionary(n => n, _ => 1);
+            Revisions["Combat"] = 2;
         }
 
         public string RawJson(string name) => _rawJson[name];

@@ -39,6 +39,7 @@ namespace Game.Boot
             builder.Register<IStartingSkills, DefaultStartingSkills>(Lifetime.Scoped);
             builder.Register<ISkillUnlock, ProfileSkillUnlock>(Lifetime.Scoped);
             builder.RegisterEntryPoint<StageClock>().AsSelf();
+            builder.Register(resolver => resolver.Resolve<GameDataStore>().Combat, Lifetime.Scoped);
             builder.RegisterEntryPoint<StageManager>().AsSelf();
             builder.RegisterEntryPoint<StageJudge>();
             builder.Register(resolver => resolver.Resolve<GameDataStore>().StageRewards.GetOrThrow(resolver.Resolve<StageDefinition>().Id), Lifetime.Scoped);

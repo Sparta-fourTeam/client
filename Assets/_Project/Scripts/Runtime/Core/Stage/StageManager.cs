@@ -34,6 +34,7 @@ namespace Game.Core
         public const int AutoRetryCount = 3;
 
         private float _speed = 1f;
+        private readonly float _baseTimeScale;
         private StageState _beforePause;
         private string _battleId;
         private IDisposable _subscription;
@@ -68,7 +69,7 @@ namespace Game.Core
             IPublisher<SubmitRejected> submitRejected,
             IPublisher<SubmitFailed> submitFailed, StageRewardTracker rewards = null, EncounteredMonsters encountered = null,
             ISubscriber<EnemyDied> enemyDied = null, EliteRouletteSession roulette = null,
-            IGameplayAnalytics analytics = null)
+            IGameplayAnalytics analytics = null, CombatConfig combat = null)
         {
             _stateChanged = stateChanged;
             _stageEnded = stageEnded;
@@ -86,6 +87,8 @@ namespace Game.Core
             _enemyDied = enemyDied;
             _roulette = roulette;
             _analytics = analytics;
+            _baseTimeScale = combat?.BaseTimeScale ?? 1f;
+            _speed = _baseTimeScale;
         }
 
         public void Start()
@@ -98,6 +101,7 @@ namespace Game.Core
 
             // 전투는 Lobby의 BattleLauncher가 이미 발급받아 StageContext에 채워뒀다 — 여기선 꺼내 쓰기만 한다
             _battleId = _stageContext.BattleId;
+            Time.timeScale = _speed;
             ChangeState(StageState.Playing);
             _analytics?.BattleStarted(_stageContext.StageId);
         }
@@ -135,8 +139,9 @@ namespace Game.Core
 
         public void SetSpeed(float speed)
         {
-            _speed = speed >= 2f ? 2f : 1f;
-            PlayerPrefs.SetFloat("stage_speed", _speed);
+            float multiplier = speed >= 2f ? 2f : 1f;
+            _speed = multiplier * _baseTimeScale;
+            PlayerPrefs.SetFloat("stage_speed", multiplier);
             if (State == StageState.Playing)
             {
                 Time.timeScale = _speed;
