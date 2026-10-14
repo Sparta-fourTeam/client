@@ -1,6 +1,7 @@
 using System;
 using Cysharp.Threading.Tasks;
 using Game.Core;
+using UnityEngine;
 
 namespace Game.Network
 {
@@ -27,8 +28,11 @@ namespace Game.Network
 
         public async UniTask<LoginResponse> Login(LoginMethod method, string accountId)
         {
+            // 토큰이 아닌 요청 종류와 결과만 남긴다. 실패는 호출한 쪽(LoginFlow)이 예외로 기록한다
+            Debug.Log($"[Auth] 서버 로그인 요청: {method}");
             var response = method == LoginMethod.Guest ? await GuestLoginAsync(accountId) : await SocialLoginAsync(method, accountId);
             _session.Set(response.accessToken, response.refreshToken);
+            Debug.Log($"[Auth] 서버 로그인 성공: {method}");
             await _local.Login(method, accountId);
             return response;
         }
@@ -41,14 +45,18 @@ namespace Game.Network
             {
                 try
                 {
+                    Debug.Log("[Auth] POST guest/login (저장된 게스트 ID)");
                     var tokens = await _client.Post<GuestLoginRequest, AuthTokens>(GuestLoginPath,
                         new GuestLoginRequest { guestId = guestId }, isValid: HasTokens);
                     return ToResponse(tokens, guestId);
                 }
                 catch (ApiException error) when (IsUnknownGuest(error))
                 {
+                    Debug.Log($"[Auth] 서버가 저장된 게스트 ID를 모른다({error.Code}) → 새로 가입");
                 }
             }
+
+            Debug.Log("[Auth] POST guest/signup");
 
             var signUp = await _client.Post<object, GuestSignUpResponse>(GuestSignUpPath, new object(),
                 isValid: r => !string.IsNullOrEmpty(r.guestId) && HasTokens(r.tokens));
@@ -58,6 +66,7 @@ namespace Game.Network
         // 외부 계정의 ID 토큰을 서버에 보내 검증받는다. 처음 로그인하는 계정이면 서버가 가입시킨다
         private async UniTask<LoginResponse> SocialLoginAsync(LoginMethod method, string idToken)
         {
+            Debug.Log($"[Auth] POST social/login ({method})");
             var tokens = await _client.Post<SocialLoginRequest, AuthTokens>(SocialLoginPath,
                 new SocialLoginRequest { provider = ProviderOf(method), idToken = idToken }, isValid: HasTokens);
             return ToResponse(tokens, null);

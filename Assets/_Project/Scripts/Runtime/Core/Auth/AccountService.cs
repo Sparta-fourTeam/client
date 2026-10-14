@@ -70,8 +70,10 @@ namespace Game.Core
                     return LinkResult.Cancelled;
                 }
 
+                Debug.Log($"[Auth] 계정 연동: {social.Method}");
                 await _api.LinkAccount(social.Method, accountId);
                 _credentials.Save(social.Method, AuthCredentials.IdToSave(social.Method, accountId));
+                Debug.Log($"[Auth] 계정 연동 완료: {social.Method}");
                 return LinkResult.Linked;
             }
 
@@ -81,6 +83,7 @@ namespace Game.Core
         /// <summary>로그아웃한다. 게스트면 계정 데이터도 지운다</summary>
         public async UniTask LogoutAsync()
         {
+            Debug.Log($"[Auth] 로그아웃 (게스트={IsGuest})");
             if (IsGuest)
             {
                 await _api.DeleteAccount();
@@ -91,6 +94,7 @@ namespace Game.Core
 
         public async UniTask DeleteAccountAsync()
         {
+            Debug.Log("[Auth] 계정 삭제");
             await _api.DeleteAccount();
             await ReturnToLoginAsync();
         }
