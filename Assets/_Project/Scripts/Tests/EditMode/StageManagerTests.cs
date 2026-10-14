@@ -48,10 +48,15 @@ namespace Game.Tests
         {
             public readonly List<int> Starts = new();
             public readonly List<(bool cleared, bool forfeited)> Ends = new();
+            public readonly List<(int skillId, int damage)> SkillDamages = new();
             public readonly List<(string cardId, int index, string source)> Cards = new();
             public void BattleStarted(int stageId) => Starts.Add(stageId);
-            public void BattleEnded(int stageId, bool cleared, bool forfeited, int reachedWave, int kills, float playTime)
-                => Ends.Add((cleared, forfeited));
+            public void BattleEnded(int stageId, bool cleared, bool forfeited, int reachedWave, int kills, float playTime,
+                IReadOnlyList<SkillDamage> skillDamages)
+            {
+                Ends.Add((cleared, forfeited));
+                foreach (var skill in skillDamages) { SkillDamages.Add((skill.SkillId, skill.Damage)); }
+            }
             public void CardPicked(int stageId, string cardId, int pickIndex, string source)
                 => Cards.Add((cardId, pickIndex, source));
         }
@@ -446,8 +451,10 @@ namespace Game.Tests
                 new[] { StageState.Playing, StageState.Submitting, StageState.Finished }, _states);
         }
 
-        [Test(Description = "StageResult에 스킬별 피해량이 피해량 순서로 담긴다")]
-        public void StageResult_CarriesSkillDamageRanking()
+        [TestCase(StageOutcome.Clear, false)]
+        [TestCase(StageOutcome.Fail, false)]
+        [TestCase(StageOutcome.Fail, true)]
+        public void StageResult_CarriesSkillDamageRanking(StageOutcome outcome, bool forfeited)
         {
             _stats.Initialize();   // 이 픽스처의 다른 테스트는 구독이 필요 없어 기본으로는 초기화하지 않는다
             try
@@ -455,8 +462,11 @@ namespace Game.Tests
                 using (Game.Core.Combat.DamageAttribution.Begin(5)) { Game.Core.Combat.DamageAttribution.Report(40); }
                 using (Game.Core.Combat.DamageAttribution.Begin(2)) { Game.Core.Combat.DamageAttribution.Report(90); }
 
-                _stageEnded.Publish(new StageEnded(StageOutcome.Clear));
+                if (forfeited) { _manager.Pause(); _manager.Forfeit(); }
+                else { _stageEnded.Publish(new StageEnded(outcome)); }
 
+                CollectionAssert.AreEqual(new[] { (2, 90), (5, 40) }, _analytics.SkillDamages);
+                CollectionAssert.AreEqual(new[] { (outcome == StageOutcome.Clear, forfeited) }, _analytics.Ends);
                 Assert.AreEqual(2, _results[0].SkillDamages.Count);
                 Assert.AreEqual((2, 90), (_results[0].SkillDamages[0].SkillId, _results[0].SkillDamages[0].Damage));
                 Assert.AreEqual((5, 40), (_results[0].SkillDamages[1].SkillId, _results[0].SkillDamages[1].Damage));
@@ -515,22 +525,29 @@ namespace Game.Tests
         [Test(Description = "자동 재시도가 모두 실패한 뒤 RetrySubmit하면 같은 요청을 다시 보내고, 성공하면 결과를 발행하고 Finished가 된다")]
         public void RetrySubmit_AfterFailure_SendsSameRequestAndFinishes()
         {
-            _api.ToThrow = new ApiException(ApiErrorKind.Network, "NETWORK");
-            _stageEnded.Publish(new StageEnded(StageOutcome.Clear));
-            var first = _api.Requests[0];
-            _api.ToThrow = null;
+            _stats.Initialize();
+            try
+            {
+                using (Game.Core.Combat.DamageAttribution.Begin(5)) { Game.Core.Combat.DamageAttribution.Report(40); }
+                _api.ToThrow = new ApiException(ApiErrorKind.Network, "NETWORK");
+                _stageEnded.Publish(new StageEnded(StageOutcome.Clear));
+                var first = _api.Requests[0];
+                _api.ToThrow = null;
 
-            _states.Clear();
-            _manager.RetrySubmit();
-            Assert.AreEqual(StageState.Submitting, _states[0]);
+                _states.Clear();
+                _manager.RetrySubmit();
+                Assert.AreEqual(StageState.Submitting, _states[0]);
 
-            Assert.AreEqual(1 + StageManager.AutoRetryCount + 1, _api.Requests.Count);
-            Assert.AreSame(first, _api.LastRequest);
-            _stageEnded.Publish(new StageEnded(StageOutcome.Clear));
-            CollectionAssert.AreEqual(new[] { (true, false) }, _analytics.Ends, "제출 재시도와 중복 종료는 진행 이벤트를 재전송하지 않는다");
-            Assert.AreEqual(1, _results.Count);
-            Assert.AreEqual(StageState.Finished, _manager.State);
-            Assert.AreEqual(1, _failed.Count);
+                Assert.AreEqual(1 + StageManager.AutoRetryCount + 1, _api.Requests.Count);
+                Assert.AreSame(first, _api.LastRequest);
+                _stageEnded.Publish(new StageEnded(StageOutcome.Clear));
+                CollectionAssert.AreEqual(new[] { (true, false) }, _analytics.Ends, "제출 재시도와 중복 종료는 진행 이벤트를 재전송하지 않는다");
+                CollectionAssert.AreEqual(new[] { (5, 40) }, _analytics.SkillDamages, "제출 재시도와 중복 종료는 피해량을 재전송하지 않는다");
+                Assert.AreEqual(1, _results.Count);
+                Assert.AreEqual(StageState.Finished, _manager.State);
+                Assert.AreEqual(1, _failed.Count);
+            }
+            finally { _stats.Dispose(); }
         }
 
         [Test(Description = "수동 재시도가 다시 실패하면 자동 재시도 없이 한 번만 보내고 다시 SubmitFailed를 발행한다")]
