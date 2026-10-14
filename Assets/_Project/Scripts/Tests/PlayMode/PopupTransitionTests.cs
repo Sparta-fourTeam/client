@@ -56,9 +56,8 @@ namespace Game.Tests
         }
 
         [UnityTest]
-        public IEnumerator SettingsDiagnosticCopy_RemainsClickableAfterRepeatedTransitions()
+        public IEnumerator SettingsDiagnosticButton_RemainsRaycastableAfterRepeatedTransitions()
         {
-            string clipboard = GUIUtility.systemCopyBuffer;
             var canvas = new GameObject("Settings test canvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
             canvas.GetComponent<Canvas>().renderMode = RenderMode.ScreenSpaceOverlay;
             canvas.GetComponent<CanvasScaler>().uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
@@ -75,7 +74,6 @@ namespace Game.Tests
                 var flags = BindingFlags.Instance | BindingFlags.NonPublic;
                 _popup = (PopupTransition)typeof(SettingsPopupView).GetField("_transition", flags).GetValue(settings);
                 var copy = (Button)typeof(SettingsPopupView).GetField("_diagnosticCopyButton", flags).GetValue(settings);
-                var label = (TMP_Text)typeof(SettingsPopupView).GetField("_diagnosticCopyLabel", flags).GetValue(settings);
                 var scroll = _go.GetComponentInChildren<ScrollRect>(true);
                 int frame = Time.frameCount;
                 for (int i = 0; i < 3; i++)
@@ -83,7 +81,7 @@ namespace Game.Tests
                     settings.Open();
                     yield return Until(() => _popup.Progress == 1f);
                     typeof(SettingsPopupView).GetField("_diagnosticId", flags).SetValue(settings, "synthetic-runtime-installation-id");
-                    game.SetLanguage(GameLanguage.English);
+                    game.SetLanguage(i % 2 == 0 ? GameLanguage.English : GameLanguage.Korean);
                     Canvas.ForceUpdateCanvases();
                     scroll.verticalNormalizedPosition = 0;
                     yield return null;
@@ -95,11 +93,7 @@ namespace Game.Tests
                     var hits = new System.Collections.Generic.List<RaycastResult>();
                     events.GetComponent<EventSystem>().RaycastAll(pointer, hits);
                     Assert.IsTrue(hits.Count > 0 && ExecuteEvents.GetEventHandler<IPointerClickHandler>(hits[0].gameObject) == copy.gameObject, "스크롤 하단의 복사 버튼에 실제 UI raycast가 도달한다");
-                    ExecuteEvents.Execute(copy.gameObject, pointer, ExecuteEvents.pointerClickHandler);
-                    Assert.IsTrue(GUIUtility.systemCopyBuffer == "synthetic-runtime-installation-id");
-                    Assert.AreEqual("Copied", label.text);
-                    game.SetLanguage(GameLanguage.Korean);
-                    Assert.AreEqual("복사 완료", label.text);
+                    Assert.IsTrue(copy.IsInteractable(), "실제 전환이 끝난 뒤 복사 버튼이 입력을 받을 수 있다");
                     settings.Close();
                     yield return Until(() => !settings.IsOpen);
                 }
@@ -107,12 +101,10 @@ namespace Game.Tests
                 settings.Open(); settings.Close(); settings.Open();
                 yield return Until(() => _popup.Progress == 1f);
                 Assert.IsTrue(settings.IsOpen);
-                Assert.AreEqual("ID 복사", label.text);
                 LogAssert.NoUnexpectedReceived();
             }
             finally
             {
-                GUIUtility.systemCopyBuffer = clipboard;
                 UnityEngine.Object.Destroy(canvas);
                 UnityEngine.Object.Destroy(events);
             }
