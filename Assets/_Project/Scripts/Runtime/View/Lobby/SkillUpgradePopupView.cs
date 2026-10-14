@@ -16,6 +16,7 @@ namespace Game.View
         [SerializeField] private PopupTransition _transition;
         [SerializeField] private Button _closeButton;
         [SerializeField] private Button _upgradeButton;
+        [SerializeField] private TMP_Text _upgradeLabel;
         [SerializeField] private GameObject _maxLevel;
         [SerializeField] private TMP_Text _nameText, _levelText, _descText, _coinText, _bookText;
         [SerializeField] private StatCellView[] _statCells;             // Stats/StatCell1~4
@@ -103,6 +104,7 @@ namespace Game.View
             if (isMax || !upgradable)
             {
                 _upgradeButton.interactable = false;
+                RefreshUpgradeLabel();
                 return;
             }
 
@@ -111,6 +113,17 @@ namespace Game.View
             _bookText.text = CostFormat.HaveNeed(material, info.MaterialCost);
             _coinText.text = CostFormat.HaveNeed(coin, info.CoinCost);
             _upgradeButton.interactable = LobbyAvailability.CanUpgrade(_profile, info);
+            RefreshUpgradeLabel();
+        }
+
+        private void RefreshUpgradeLabel()
+        {
+            if (_upgradeLabel != null)
+            {
+                _upgradeLabel.color = _upgradeButton.interactable
+                    ? new Color(1f, 0.965f, 0.878f, 1f)
+                    : new Color(0.769f, 0.745f, 0.890f, 1f);
+            }
         }
 
         private static void SetIcon(Image image, Sprite sprite)

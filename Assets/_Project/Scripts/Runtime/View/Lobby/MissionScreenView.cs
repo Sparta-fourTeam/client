@@ -118,7 +118,7 @@ namespace Game.View
             _prevButton.interactable = !busy;
             _nextButton.interactable = !busy;
             _backButton.interactable = !busy;
-            _costText.text = $"에너지 x{_profile.EnergyConfig.Cost}";
+            _costText.text = $"x{_profile.EnergyConfig.Cost}";
         }
 
         private void OnProfileChanged(PlayerProfile profile)

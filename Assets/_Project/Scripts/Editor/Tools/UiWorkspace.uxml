@@ -28,6 +28,7 @@
           <ui:DropdownField name="sampleField" label="상태" class="sample grow" />
           <ui:Button name="previewButton" text="미리보기 갱신" />
           <ui:Button name="saveButton" text="PNG 저장" />
+          <ui:Button name="reviewButton" text="시안 검토 자료" />
         </ui:VisualElement>
         <ui:Label text="편집 미리보기 · 수치와 아이콘은 편집용 예시 · 실제 터치는 게임 뷰·디바이스 시뮬레이터에서 확인" class="note" />
         <ui:VisualElement class="row">

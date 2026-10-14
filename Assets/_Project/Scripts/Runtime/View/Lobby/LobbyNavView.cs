@@ -15,6 +15,7 @@ namespace Game.View
             _characterScreen = registry.Get<CharacterScreenView>();
             _skillScreen = registry.Get<SkillScreenView>();
             _shopScreen = registry.Get<ShopScreenView>();
+            _homeHeader = registry.Get<LobbyHomeHeaderView>();
         }
 
         [SerializeField] private Button _inventoryTab, _characterTab, _homeTab, _skillTab, _shopTab;
@@ -30,6 +31,7 @@ namespace Game.View
         private CharacterScreenView _characterScreen;
         private SkillScreenView _skillScreen;
         private ShopScreenView _shopScreen;
+        private LobbyHomeHeaderView _homeHeader;
 
         private enum Tab
         {
@@ -119,6 +121,7 @@ namespace Game.View
         // 화면은 한 번에 하나만 연다
         private void Select(Tab tab)
         {
+            _homeHeader.SetVisible(tab == Tab.Home);
             _inventoryScreen.SetVisible(tab == Tab.Inventory);
             _characterScreen.SetVisible(tab == Tab.Character);
             _skillScreen.SetVisible(tab == Tab.Skill);

@@ -33,6 +33,8 @@ namespace Game.Editor
 
         internal static List<string> Samples(string id)
         {
+            if (id == "SettingsPopup") { return new() { "기본", "표준 프레임" }; }
+
             if (id == "UpgradeConfirmPopup")
             {
                 return new() { "기본" };
@@ -41,6 +43,11 @@ namespace Game.Editor
             if (id == "ResultPopup")
             {
                 return new() { "기본", "클리어", "패배" };
+            }
+
+            if (id == "MissionScreen")
+            {
+                return new() { "기본", "보상 수령 가능", "수령 완료" };
             }
 
             if (id?.Contains("Upgrade") == true)
@@ -73,6 +80,7 @@ namespace Game.Editor
                 SceneManager.MoveGameObjectToScene(container, scene);
                 container.GetComponent<Canvas>().renderMode = RenderMode.WorldSpace;
                 ((RectTransform)container.transform).sizeDelta = canvasSize;
+                if (composition != null && composition.name == "StageUi") { AddReviewBackdrop(container.transform); }
                 GameObject selected;
                 if (composition == null)
                 {
@@ -96,7 +104,10 @@ namespace Game.Editor
                     {
                         bool isSelected = entryId == null ? entry.Prefab == prefab : entry.Id == entryId;
                         bool chrome = sceneName == "Loading" ? entry.Id == "LoadingScreen" : sceneName == "Lobby" ? entry.ParentPath == "NavUI/SafeArea" : entry.Id == "HudCanvas" || entry.Id == "SkillHud" || entry.Id == "StageControls";
-                        if (!isSelected && !chrome)
+                        bool context = sceneName == "Lobby" && ReviewContext(entryId).Contains(entry.Id);
+                        if (sceneName == "Lobby" && entry.Id == "LobbyTopBar"
+                            && IsLobbyTabContext(entryId)) { chrome = false; }
+                        if (!isSelected && !chrome && !context)
                         {
                             continue;
                         }
@@ -109,7 +120,8 @@ namespace Game.Editor
 
                         var instance = Instantiate(entry.Prefab, scene, parent);
                         instance.transform.SetSiblingIndex(entry.SiblingIndex);
-                        Prepare(instance, isSelected, device, safeArea, viewport, canvasSize);
+                        Prepare(instance, isSelected || context, device, safeArea, viewport, canvasSize);
+                        if (context) { ApplySample(instance, "기본"); }
                         if (isSelected)
                         {
                             selected = instance;
@@ -120,7 +132,12 @@ namespace Game.Editor
                         throw new InvalidOperationException("선택한 프리팹이 화면 구성에 없습니다.");
                     }
                 }
+                foreach (var header in container.GetComponentsInChildren<LobbyHomeHeaderView>(true))
+                {
+                    header.SetVisible(!IsLobbyTabContext(entryId));
+                }
                 ApplySample(selected, sample);
+                ApplyNavSample(container, entryId);
                 foreach (var text in container.GetComponentsInChildren<TMP_Text>(true))
                 {
                     text.ForceMeshUpdate();
@@ -132,6 +149,10 @@ namespace Game.Editor
                 }
 
                 Canvas.ForceUpdateCanvases();
+                foreach (var text in container.GetComponentsInChildren<TMP_Text>(true))
+                {
+                    text.ForceMeshUpdate(true);
+                }
                 var cameraRoot = new GameObject("Preview Camera", typeof(Camera));
                 SceneManager.MoveGameObjectToScene(cameraRoot, scene);
                 var camera = cameraRoot.GetComponent<Camera>();
@@ -139,6 +160,7 @@ namespace Game.Editor
                 camera.orthographic = true;
                 camera.orthographicSize = canvasSize.y / 2;
                 camera.rect = viewport;
+                camera.aspect = device.Width * viewport.width / (device.Height * viewport.height);
                 camera.transform.position = new Vector3(0, 0, -100);
                 camera.clearFlags = CameraClearFlags.SolidColor;
                 camera.backgroundColor = new Color(0.035f, 0.045f, 0.07f);
@@ -151,6 +173,35 @@ namespace Game.Editor
                 EditorSceneManager.ClosePreviewScene(scene);
                 throw;
             }
+        }
+
+        private static bool IsLobbyTabContext(string id) => id is
+            "InventoryScreen" or "CharacterScreen" or "SkillScreen" or "ShopScreen" or "MissionScreen"
+            or "EquipUpgradePopup" or "UpgradeConfirmPopup" or "SkillUpgradePopup" or "DetailPopup"
+            or "RewardOddsPopup" or "RewardPopup" or "MissionDetailsPopup" or "MissionRewardInfoPopup";
+
+        private static string[] ReviewContext(string id) => id switch
+        {
+            "EquipUpgradePopup" => new[] { "CharacterScreen" },
+            "UpgradeConfirmPopup" => new[] { "CharacterScreen", "EquipUpgradePopup" },
+            "SkillUpgradePopup" => new[] { "SkillScreen" },
+            "DetailPopup" or "RewardOddsPopup" or "RewardPopup" => new[] { "InventoryScreen" },
+            "MissionDetailsPopup" or "MissionRewardInfoPopup" => new[] { "MissionScreen" },
+            "LanguagePopup" => new[] { "SettingsPopup" },
+            _ => Array.Empty<string>()
+        };
+
+        private static void AddReviewBackdrop(Transform parent)
+        {
+            var sprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Project/Sprites/StageBackground_v2.png");
+            if (sprite == null) { return; }
+            var backdrop = new GameObject("Review Stage Backdrop", typeof(RectTransform), typeof(UnityEngine.UI.Image));
+            backdrop.transform.SetParent(parent, false);
+            var rect = (RectTransform)backdrop.transform;
+            rect.anchorMin = Vector2.zero; rect.anchorMax = Vector2.one;
+            rect.offsetMin = rect.offsetMax = Vector2.zero;
+            var image = backdrop.GetComponent<UnityEngine.UI.Image>();
+            image.sprite = sprite; image.color = Color.white; image.raycastTarget = false;
         }
 
         internal static Texture2D Capture(GameObject prefab, UiComposition composition, Device device, bool safeArea, string sample, string entryId = null)
@@ -180,6 +231,9 @@ namespace Game.Editor
             private static readonly Type UiParticleType = Type.GetType("Coffee.UIExtensions.UIParticle, Coffee.UIParticle");
             private static readonly Type UiParticleRendererType = Type.GetType("Coffee.UIExtensions.UIParticleRenderer, Coffee.UIParticle");
             private bool _disposed;
+
+            internal GameObject ReviewRoot => _selected;
+            internal Camera ReviewCamera => _camera;
 
             internal Session(Scene scene, GameObject container, GameObject selected, Camera camera, Device device)
             {
@@ -573,26 +627,8 @@ namespace Game.Editor
                 ((GameObject)new SerializedObject(odds).FindProperty("_panel").objectReferenceValue).SetActive(true);
             }
 
-            if (root.GetComponent<DetailPopupView>() is { } detailView && sample != "기본")
-            {
-                var detailSo = new SerializedObject(detailView);
-                SetComponentActive(detailSo, "_claimButton", sample == "도감 보상 수령");
-                SetComponentActive(detailSo, "_oddsButton", sample == "확률 정보");
-                SetComponentActive(detailSo, "_goButton", false);
-                var data = new GameDataStore();
-                var icons = AssetDatabase.LoadAssetAtPath<ItemIconTable>("Assets/_Project/Data/ItemIconTable.asset");
-                if (sample == "도감 보상 수령")
-                {
-                    detailView.Show(AssetDatabase.LoadAllAssetsAtPath("Assets/_Project/Sprites/Generated/Monsters/Slime.png").OfType<Sprite>().FirstOrDefault(), "슬라임", "일반 · 근접 공격", "· 쓰러지면 작은 슬라임 2마리로 나뉘어요");
-                    SetComponentActive(detailSo, "_claimButton", true);
-                    ((GameObject)detailSo.FindProperty("_claimBadge").objectReferenceValue)?.SetActive(true);
-                }
-                else
-                {
-                    detailView.Show(icons.GetRandom(ItemIds.RandomSkillMaterial), "랜덤 마법북", "최대 6개 획득", ItemInfo.DescriptionOf(ItemIds.RandomSkillMaterial));
-                    SetComponentActive(detailSo, "_oddsButton", true);
-                }
-            }
+            UiDetailPreviewSample.Apply(root, sample);
+            UiCardSelectPreviewSample.Apply(root);
 
             foreach (var behaviour in root.GetComponentsInChildren<MonoBehaviour>(true))
             {
@@ -602,8 +638,11 @@ namespace Game.Editor
                 }
 
                 var so = new SerializedObject(behaviour);
-                SetActive(so, "_lockOverlay", sample == "잠금");
-                SetActive(so, "_lock", sample == "잠금");
+                if (sample == "잠금")
+                {
+                    SetActive(so, "_lockOverlay", true);
+                    SetActive(so, "_lock", true);
+                }
                 SetActive(so, "_maxLevel", sample == "최대 레벨");
                 SetActive(so, "_cost", sample != "최대 레벨");
                 SetActive(so, "_next", sample != "최대 레벨");
@@ -627,6 +666,54 @@ namespace Game.Editor
                     if (behaviour is ResultStarsView stars)
                     {
                         stars.Show(sample == "클리어", sample == "클리어" ? 3 : 0);
+                    }
+                }
+            }
+            UiSkillPreviewSample.Apply(root);
+            ApplyCharacterSample(root);
+            UiInventoryPreviewSample.Apply(root);
+            UiMissionPreviewSample.Apply(root, sample);
+            UiEnergyPreviewSample.Apply(root);
+            UiEquipPreviewSample.Apply(root);
+            UiSkillUpgradePreviewSample.Apply(root, sample);
+            UiProfilePreviewSample.Apply(root);
+            UiSettingsPreviewSample.Apply(root, sample);
+        }
+
+        private static void ApplyCharacterSample(GameObject root)
+        {
+            if (root.GetComponent<CharacterScreenView>() is not { } character) { return; }
+            var serialized = new SerializedObject(character);
+            var slots = serialized.FindProperty("_equipSlots");
+            for (int i = 0; i < slots.arraySize; i++)
+            {
+                if (slots.GetArrayElementAtIndex(i).objectReferenceValue is not EquipSlotView slot) { continue; }
+                slot.Bind(new EquipInfo { Slot = i, Level = 0, IsUnlocked = i < 4 || i == 6 }, null);
+                foreach (var badge in slot.GetComponentsInChildren<NotificationBadgeView>(true))
+                {
+                    badge.SetVisible(i == 3);
+                }
+            }
+        }
+
+        private static void ApplyNavSample(GameObject container, string entryId)
+        {
+            string selected = entryId switch
+            {
+                "CharacterScreen" or "EquipUpgradePopup" or "UpgradeConfirmPopup" => "character",
+                "SkillScreen" or "SkillUpgradePopup" => "skill",
+                "InventoryScreen" => "inventory",
+                "ShopScreen" => "shop",
+                _ => "home"
+            };
+            foreach (var nav in container.GetComponentsInChildren<LobbyNavView>(true))
+            {
+                var serialized = new SerializedObject(nav);
+                foreach (string tab in new[] { "inventory", "character", "home", "skill", "shop" })
+                {
+                    if (serialized.FindProperty("_" + tab + "Selected")?.objectReferenceValue is GameObject marker)
+                    {
+                        marker.SetActive(tab == selected);
                     }
                 }
             }

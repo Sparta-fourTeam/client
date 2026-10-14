@@ -14,6 +14,22 @@ namespace Game.View
         [SerializeField] private GameObject _lock;
         [SerializeField] private TMP_Text _lockLabel;
         [SerializeField] private Image _icon;
+        [SerializeField] private Image _levelBadge;
+        [SerializeField] private Sprite _idleLevelBadge;
+        [SerializeField] private Sprite _learnedLevelBadge;
+        [SerializeField] private Image _elementRing;
+        [Tooltip("속성별 링. 목록에 없는 속성은 속성 없음(Neutral) 링을 쓴다")]
+        [SerializeField] private ElementRingSprite[] _elementRings = Array.Empty<ElementRingSprite>();
+        [Tooltip("레벨 글자의 아웃라인 머티리얼. 배운 스킬(민트 배지)과 아직 못 배운 스킬(어두운 배지)이 서로 다른 색 아웃라인을 쓴다")]
+        [SerializeField] private Material _learnedLevelMaterial;
+        [SerializeField] private Material _idleLevelMaterial;
+
+        [Serializable]
+        private struct ElementRingSprite
+        {
+            public Element Element;
+            public Sprite Ring;
+        }
 
         private Action _onClick;
 
@@ -32,9 +48,35 @@ namespace Game.View
                 _icon.enabled = icon != null;
             }
             _levelText.text = $"Lv.{info.Level}";
+            var levelMaterial = info.Level > 0 ? _learnedLevelMaterial : _idleLevelMaterial;
+            if (levelMaterial != null) { _levelText.fontSharedMaterial = levelMaterial; }
+            var levelBadgeSprite = info.Level > 0 ? _learnedLevelBadge : _idleLevelBadge;
+            if (_levelBadge != null && levelBadgeSprite != null)
+            {
+                _levelBadge.sprite = levelBadgeSprite;
+            }
+            if (_levelBadge != null) { _levelBadge.gameObject.SetActive(info.IsUnlocked); }
+            if (_elementRing != null)
+            {
+                _elementRing.gameObject.SetActive(info.IsUnlocked);
+                var ring = RingFor(info.Element);
+                if (ring != null) { _elementRing.sprite = ring; }
+            }
             _lock.SetActive(!info.IsUnlocked);
             _lockLabel.text = $"레벨 {info.UnlockLevel}에 해금";
             _onClick = info.IsUnlocked ? onClick : null;
+        }
+
+        private Sprite RingFor(Element element)
+        {
+            Sprite fallback = null;
+            foreach (var entry in _elementRings)
+            {
+                if (entry.Element == element) { return entry.Ring; }
+                if (entry.Element == Element.Neutral) { fallback = entry.Ring; }
+            }
+
+            return fallback;
         }
 
         public void Hide()

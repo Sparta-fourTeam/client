@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Game.View;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -162,6 +163,7 @@ namespace Game.Editor
             Button("refreshButton", Refresh);
             Button("previewButton", Render);
             Button("saveButton", Save);
+            Button("reviewButton", ExportReview);
             Button("auditButton", Audit);
             _motionButton = rootVisualElement.Q<DropdownField>("motionButtonField");
             Button("showMotionButton", () => PlayMotion(() => _preview.Transition(true)));
@@ -245,9 +247,19 @@ namespace Game.Editor
 
         private void Edit()
         {
-            if (_selected?.Prefab != null)
+            if (_selected?.Prefab == null || EditorApplication.isPlayingOrWillChangePlaymode) { return; }
+
+            var stage = PrefabStageUtility.OpenPrefab(AssetDatabase.GetAssetPath(_selected.Prefab));
+            if (stage == null || stage.prefabContentsRoot == null) { return; }
+            Selection.activeGameObject = stage.prefabContentsRoot;
+            Tools.current = Tool.Rect;
+            var sceneView = SceneView.lastActiveSceneView;
+            if (sceneView != null)
             {
-                AssetDatabase.OpenAsset(_selected.Prefab);
+                // uGUI는 Gizmos가 꺼져 있으면 Scene에서 클릭으로 선택할 수 없다.
+                sceneView.drawGizmos = true;
+                sceneView.FrameSelected();
+                sceneView.Focus();
             }
         }
 
@@ -274,6 +286,7 @@ namespace Game.Editor
             ClearShot();
             bool canRender = _selected?.Prefab != null && !EditorApplication.isPlayingOrWillChangePlaymode;
             rootVisualElement.Q<Button>("previewButton").SetEnabled(canRender);
+            rootVisualElement.Q<Button>("reviewButton").SetEnabled(canRender);
             rootVisualElement.Q<Button>("saveButton").SetEnabled(false);
             SetMotionControls(false);
             var status = rootVisualElement.Q<Label>("statusLabel");
@@ -369,6 +382,20 @@ namespace Game.Editor
             {
                 File.WriteAllBytes(path, _shot.EncodeToPNG());
             }
+        }
+
+        private void ExportReview()
+        {
+            if (_selected?.Prefab == null || EditorApplication.isPlayingOrWillChangePlaymode) { return; }
+            string group = _group switch { 0 => "Loading", 1 => "Lobby", 2 => "Stage", _ => "Common" };
+            string directory = Path.Combine(Path.GetDirectoryName(UiWorkspaceReview.ReferenceRoot), "review");
+            try
+            {
+                string path = UiWorkspaceReview.Export(group, _selected.Id, directory, 0, _device, _sample.value);
+                EditorUtility.RevealInFinder(path);
+                rootVisualElement.Q<Label>("statusLabel").text = "검토 이미지와 글자·틴트·레이아웃 검사 자료를 내보냈습니다.";
+            }
+            catch (Exception error) { Debug.LogException(error); }
         }
 
         private void Audit()
