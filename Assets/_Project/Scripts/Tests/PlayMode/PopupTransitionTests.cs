@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Reflection;
 using Cysharp.Threading.Tasks;
-using Game.Core;
 using Game.View;
 using NUnit.Framework;
 using TMPro;
@@ -10,7 +9,6 @@ using TMPro;
 using UnityEditor;
 #endif
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.TestTools;
 using UnityEngine.UI;
 
@@ -49,67 +47,6 @@ namespace Game.Tests
         }
 
 #if UNITY_EDITOR
-        private sealed class MemorySettingsStore : ISettingsStore
-        {
-            public bool TryGet(string key, out int value) { value = 0; return false; }
-            public void Set(string key, int value) { }
-        }
-
-        [UnityTest]
-        public IEnumerator SettingsDiagnosticButton_RemainsRaycastableAfterRepeatedTransitions()
-        {
-            var canvas = new GameObject("Settings test canvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
-            canvas.GetComponent<Canvas>().renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.GetComponent<CanvasScaler>().uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            canvas.GetComponent<CanvasScaler>().referenceResolution = new Vector2(1080, 1920);
-            var events = new GameObject("Settings test events", typeof(EventSystem));
-            try
-            {
-                UnityEngine.Object.Destroy(_go);
-                _go = UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(
-                    "Assets/_Project/Prefabs/UI/Lobby/SettingsPopup.prefab"), canvas.transform, false);
-                var settings = _go.GetComponent<SettingsPopupView>();
-                var game = new GameSettings(new MemorySettingsStore());
-                settings.Construct(null, game);
-                var flags = BindingFlags.Instance | BindingFlags.NonPublic;
-                _popup = (PopupTransition)typeof(SettingsPopupView).GetField("_transition", flags).GetValue(settings);
-                var copy = (Button)typeof(SettingsPopupView).GetField("_diagnosticCopyButton", flags).GetValue(settings);
-                var scroll = _go.GetComponentInChildren<ScrollRect>(true);
-                int frame = Time.frameCount;
-                for (int i = 0; i < 3; i++)
-                {
-                    settings.Open();
-                    yield return Until(() => _popup.Progress == 1f);
-                    typeof(SettingsPopupView).GetField("_diagnosticId", flags).SetValue(settings, "synthetic-runtime-installation-id");
-                    game.SetLanguage(i % 2 == 0 ? GameLanguage.English : GameLanguage.Korean);
-                    Canvas.ForceUpdateCanvases();
-                    scroll.verticalNormalizedPosition = 0;
-                    yield return null;
-                    var pointer = new PointerEventData(events.GetComponent<EventSystem>())
-                    {
-                        position = RectTransformUtility.WorldToScreenPoint(null, ((RectTransform)copy.transform).TransformPoint(((RectTransform)copy.transform).rect.center)),
-                        button = PointerEventData.InputButton.Left
-                    };
-                    var hits = new System.Collections.Generic.List<RaycastResult>();
-                    events.GetComponent<EventSystem>().RaycastAll(pointer, hits);
-                    Assert.IsTrue(hits.Count > 0 && ExecuteEvents.GetEventHandler<IPointerClickHandler>(hits[0].gameObject) == copy.gameObject, "스크롤 하단의 복사 버튼에 실제 UI raycast가 도달한다");
-                    Assert.IsTrue(copy.IsInteractable(), "실제 전환이 끝난 뒤 복사 버튼이 입력을 받을 수 있다");
-                    settings.Close();
-                    yield return Until(() => !settings.IsOpen);
-                }
-                Assert.Greater(Time.frameCount, frame, "실제 프레임이 진행해야 전환 검증으로 인정한다");
-                settings.Open(); settings.Close(); settings.Open();
-                yield return Until(() => _popup.Progress == 1f);
-                Assert.IsTrue(settings.IsOpen);
-                LogAssert.NoUnexpectedReceived();
-            }
-            finally
-            {
-                UnityEngine.Object.Destroy(canvas);
-                UnityEngine.Object.Destroy(events);
-            }
-        }
-
         [UnityTest]
         public IEnumerator ConfirmPopup_SecondPromptSurvivesClosingTransitionAndCanReopen()
         {

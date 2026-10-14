@@ -35,6 +35,9 @@ namespace Game.Core
 
         public bool IsGuest => !_credentials.HasCredential || _credentials.Method == LoginMethod.Guest;
 
+        /// <summary>게스트로 로그인했을 때 서버가 정한 게스트 ID. 외부 계정이거나 로그인 정보가 없으면 null</summary>
+        public string GuestId => _credentials.HasCredential && _credentials.Method == LoginMethod.Guest ? _credentials.AccountId : null;
+
         /// <summary>게스트 계정을 첫 번째로 쓸 수 있는 외부 계정에 연결한다. 이미 연결된 계정이면 아무것도 하지 않는다</summary>
         public async UniTask<LinkResult> LinkAsync()
         {
