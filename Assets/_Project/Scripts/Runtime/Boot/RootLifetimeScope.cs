@@ -33,7 +33,9 @@ namespace Game.Boot
             builder.Register<IAuthApi>(c => ServerConfig.UseServerAuth ? c.Resolve<ServerBackedAuthApi>() : c.Resolve<LocalAuthApi>(),
                 Lifetime.Singleton);
             // 로그인 정보는 백엔드(Local/서버)와 상관없이 기기에 저장한다
-            builder.Register<IAuthCredentialStore, PlayerPrefsAuthCredentialStore>(Lifetime.Singleton);
+            builder.Register<PlayerPrefsAuthCredentialStore>(Lifetime.Singleton);
+            builder.Register<IAuthCredentialStore>(c => new SessionAuthCredentialStore(
+                c.Resolve<PlayerPrefsAuthCredentialStore>(), c.Resolve<AuthSession>()), Lifetime.Singleton);
             // 외부 계정 로그인. 구글은 Android 빌드에서 진짜 로그인을 하고, 에디터에서는 가짜 계정으로 바로 성공한다.
             // 애플은 SDK가 붙기 전까지 자리표시 구현이다
 #if UNITY_EDITOR

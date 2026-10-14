@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Game.Core;
+using Game.Network;
 using NUnit.Framework;
 
 namespace Game.Tests
@@ -49,6 +50,7 @@ namespace Game.Tests
         private FakeAccountApi _api;
         private MemoryCredentials _credentials;
         private FakeNav _nav;
+        private AuthSession _session;
 
         [SetUp]
         public void SetUp()
@@ -56,9 +58,11 @@ namespace Game.Tests
             _api = new FakeAccountApi();
             _credentials = new MemoryCredentials();
             _nav = new FakeNav();
+            _session = new AuthSession();
+            _session.Set("access", "refresh");
         }
 
-        private AccountService Create(params ISocialSignIn[] social) => new(_api, _credentials, _nav, new List<ISocialSignIn>(social));
+        private AccountService Create(params ISocialSignIn[] social) => new(_api, new SessionAuthCredentialStore(_credentials, _session), _nav, new List<ISocialSignIn>(social));
 
         [Test(Description = "게스트가 로그아웃하면 데이터를 지우고 로그인 정보를 비우고 Loading으로 돌아간다")]
         public void Logout_Guest_DeletesData()
@@ -70,6 +74,9 @@ namespace Game.Tests
             Assert.AreEqual(1, _api.Deleted);
             Assert.IsFalse(_credentials.HasCredential);
             Assert.AreEqual(1, _nav.LoadingCalls);
+            Assert.IsNull(_session.AccessToken);
+            Assert.IsNull(_session.RefreshToken);
+            Assert.IsFalse(_session.GetHeaders().ContainsKey("Authorization"), "로그아웃/삭제 후 서버 인증 헤더가 남으면 안 된다");
         }
 
         [Test(Description = "연동한 계정이 로그아웃하면 데이터는 남기고 로그인 정보만 비운다")]
@@ -82,6 +89,9 @@ namespace Game.Tests
             Assert.AreEqual(0, _api.Deleted);
             Assert.IsFalse(_credentials.HasCredential);
             Assert.AreEqual(1, _nav.LoadingCalls);
+            Assert.IsNull(_session.AccessToken);
+            Assert.IsNull(_session.RefreshToken);
+            Assert.IsFalse(_session.GetHeaders().ContainsKey("Authorization"), "로그아웃/삭제 후 서버 인증 헤더가 남으면 안 된다");
         }
 
         [Test(Description = "계정 삭제는 로그인 방식과 상관없이 데이터를 지우고 Loading으로 돌아간다")]
@@ -94,6 +104,9 @@ namespace Game.Tests
             Assert.AreEqual(1, _api.Deleted);
             Assert.IsFalse(_credentials.HasCredential);
             Assert.AreEqual(1, _nav.LoadingCalls);
+            Assert.IsNull(_session.AccessToken);
+            Assert.IsNull(_session.RefreshToken);
+            Assert.IsFalse(_session.GetHeaders().ContainsKey("Authorization"), "로그아웃/삭제 후 서버 인증 헤더가 남으면 안 된다");
         }
 
         [Test(Description = "게스트는 쓸 수 있는 외부 계정에 연동되고 로그인 정보가 그 방식으로 바뀐다")]
