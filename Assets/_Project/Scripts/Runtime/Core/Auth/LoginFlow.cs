@@ -73,7 +73,8 @@ namespace Game.Core
             }
 
             // 서버가 게스트 ID를 새로 정해 주면(가입하거나, 저장한 ID가 거절돼 다시 가입한 경우) 그 ID로 바꿔 저장한다
-            string saveId = response.accountId ?? accountId ?? Guid.NewGuid().ToString("N");
+            // 외부 계정의 ID 토큰은 저장하지 않는다 (AuthCredentials.SocialAccountId)
+            string saveId = AuthCredentials.IdToSave(method.Value, response.accountId ?? accountId ?? Guid.NewGuid().ToString("N"));
             if (!_credentials.HasCredential || _credentials.Method != method.Value || _credentials.AccountId != saveId)
             {
                 _credentials.Save(method.Value, saveId);

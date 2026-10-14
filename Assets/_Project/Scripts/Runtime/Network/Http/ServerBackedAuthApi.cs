@@ -70,7 +70,8 @@ namespace Game.Network
             _ => throw new ArgumentOutOfRangeException(nameof(method), method, "서버에 소셜 로그인으로 보낼 수 없는 방식입니다"),
         };
 
-        // 서버는 UUID가 아닌 ID에 400, 일치하는 게스트가 없으면 401을 돌려준다
+        // 서버는 UUID가 아닌 ID에 400, 일치하는 게스트가 없으면 401을 돌려준다.
+        // 이 판단은 상태 코드(HTTP_400, HTTP_401)에 기대므로, 오류 코드를 서버 본문에서 읽게 바꾸면 이 비교도 함께 고쳐야 한다
         private static bool IsUnknownGuest(ApiException error) =>
             error.Kind == ApiErrorKind.Rejected && (error.Code == "HTTP_401" || error.Code == "HTTP_400");
 

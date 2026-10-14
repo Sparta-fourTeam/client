@@ -162,7 +162,7 @@ namespace Game.Tests
             Assert.AreEqual(1, google.Calls);
             Assert.AreEqual(1, _auth.Calls);
             Assert.AreEqual(LoginMethod.Google, _credentials.Method);
-            Assert.AreEqual("google-account", _credentials.AccountId);
+            Assert.AreEqual(AuthCredentials.SocialAccountId, _credentials.AccountId, "ID 토큰은 기기에 저장하지 않는다");
         }
 
         [Test(Description = "외부 계정 로그인을 취소하면 서버 로그인 없이 로그인창으로 돌아간다")]
@@ -216,7 +216,7 @@ namespace Game.Tests
 
             Assert.AreEqual(1, google.Calls);
             Assert.AreEqual(2, _auth.Calls);
-            Assert.AreEqual("google-account", _credentials.AccountId);
+            Assert.AreEqual(AuthCredentials.SocialAccountId, _credentials.AccountId);
         }
 
         [Test(Description = "로그인 정보가 있어도 로그인에 실패하면 로비로 넘어가지 않고 재시도를 기다린다")]
@@ -244,6 +244,18 @@ namespace Game.Tests
             Assert.AreEqual(1, google.Calls);
             Assert.AreEqual(LoginMethod.Google, _auth.LastMethod);
             Assert.AreEqual("fresh-token", _auth.LastAccountId);
+        }
+
+        [Test(Description = "저장된 방식이 구글이어도 저장 값은 바뀌지 않고, 서버에는 새로 받은 토큰을 보낸다 (토큰을 기기에 남기지 않는다)")]
+        public void SavedGoogle_KeepsMarkerAndNeverStoresToken()
+        {
+            _credentials.Save(LoginMethod.Google, AuthCredentials.SocialAccountId);
+            var google = new FakeSocial(LoginMethod.Google, available: true, "fresh-token");
+
+            Flow(google).RunAsync().GetAwaiter().GetResult();
+
+            Assert.AreEqual("fresh-token", _auth.LastAccountId);
+            Assert.AreEqual(AuthCredentials.SocialAccountId, _credentials.AccountId);
         }
 
         [Test(Description = "저장된 방식으로 바로 들어가는 구글 로그인은 계정 선택 없이 시도한다")]
