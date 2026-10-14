@@ -9,6 +9,16 @@ namespace Game.Tests
 {
     public class GameDataStoreTests
     {
+        [TestCase(0f)]
+        [TestCase(-1f)]
+        [TestCase(float.NaN)]
+        [TestCase(float.PositiveInfinity)]
+        public void InvalidCombatTempo_IsRejectedBeforeEnteringBattle(float timeScale)
+        {
+            var combat = new CombatConfig { BaseTimeScale = timeScale };
+            Assert.Throws<InvalidOperationException>(() => combat.Validate());
+        }
+
 
         [Test(Description = "한 전투에서 변경한 스킬 정의가 다음 로딩의 기본 정의를 오염시키지 않는다")]
         public void LoadSkills_ReturnsFreshObjectsEachCall()

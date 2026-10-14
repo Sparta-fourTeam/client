@@ -74,6 +74,7 @@ namespace Game.Tests
         private BattleStats _stats;
         private StageClock _clock;
         private StageManager _manager;
+        private Func<CombatConfig, StageManager> _createManager;
         private SkillController _skills;
         private readonly List<GameObject> _objects = new();
         private readonly List<StageState> _states = new();
@@ -149,7 +150,7 @@ namespace Game.Tests
 
             var deck = new CardDeck(_skills, null, new List<GeneralCardDefinition>(), new UnityRandomProvider());
             _roulette = new EliteRouletteSession(deck, new UnityRandomProvider(), 1, 1);
-            _manager = new StageManager(
+            _createManager = combat => new StageManager(
                 provider.GetRequiredService<IBufferedPublisher<StageStateChanged>>(),
                 provider.GetRequiredService<ISubscriber<StageEnded>>(),
                 provider.GetRequiredService<IPublisher<StageResult>>(),
@@ -161,7 +162,8 @@ namespace Game.Tests
                 deck,
                 provider.GetRequiredService<IPublisher<SubmitRejected>>(),
                 provider.GetRequiredService<IPublisher<SubmitFailed>>(),
-                enemyDied: provider.GetRequiredService<ISubscriber<EnemyDied>>(), roulette: _roulette, analytics: _analytics);
+                enemyDied: provider.GetRequiredService<ISubscriber<EnemyDied>>(), roulette: _roulette, analytics: _analytics, combat: combat);
+            _manager = _createManager(null);
             _manager.RetryDelay = TimeSpan.Zero;
             _manager.Start();
         }
@@ -284,6 +286,33 @@ namespace Game.Tests
         {
             Assert.AreEqual(StageState.Playing, _manager.State);
             CollectionAssert.AreEqual(new[] { StageState.Playing }, _states);
+        }
+
+        [Test]
+        public void ConfiguredTempo_AppliesUiMultiplierAndSurvivesPauseAndRewards()
+        {
+            _manager.Dispose();
+            _manager = _createManager(new CombatConfig { BaseTimeScale = 0.75f });
+            _manager.Start();
+            Assert.AreEqual(0.75f, Time.timeScale);
+            _manager.SetSpeed(2f);
+            Assert.AreEqual(1.5f, Time.timeScale);
+            Assert.AreEqual(2f, PlayerPrefs.GetFloat("stage_speed"));
+            _manager.Pause();
+            _manager.SetSpeed(1f);
+            Assert.AreEqual(0f, Time.timeScale);
+            _manager.Resume();
+            Assert.AreEqual(0.75f, Time.timeScale);
+            FillGauge(false);
+            Assert.AreEqual(0f, Time.timeScale);
+            _manager.PickCard(0);
+            Assert.AreEqual(0.75f, Time.timeScale);
+            _enemyDied.Publish(new EnemyDied(1001, type: EnemyType.Elite));
+            Assert.AreEqual(0f, Time.timeScale);
+            CompleteRoulette();
+            Assert.AreEqual(0.75f, Time.timeScale);
+            _manager.Dispose();
+            Assert.AreEqual(1f, Time.timeScale);
         }
 
         [Test(Description = "Playing에서 Pause하면 시간이 멈추고 Paused가 된다")]

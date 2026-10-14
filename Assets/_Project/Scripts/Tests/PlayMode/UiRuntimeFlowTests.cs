@@ -589,7 +589,7 @@ namespace Game.Tests
                 Assert.That(panel.activeSelf, Is.False);
                 Assert.That(stats.BuildLog.Count - priorCards, Is.EqualTo(totalRewards));
                 Assert.That(cards.Count(card => card.gameObject.activeSelf), Is.EqualTo(count));
-                Assert.That(Time.timeScale, Is.EqualTo(2f));
+                Assert.That(Time.timeScale, Is.EqualTo(data.Combat.BaseTimeScale * 2f));
                 LogAssert.NoUnexpectedReceived();
             }
             finally { rouletteStage.EliteRouletteMinCards = originalMinimum; }
@@ -766,7 +766,7 @@ namespace Game.Tests
             var stats = stage.Container.Resolve<BattleStats>();
             var controls = stageUi.Get<StageControlView>();
             yield return ClickGameButton(Field<Button>(controls, "_speedButton"));
-            Assert.That(Time.timeScale, Is.EqualTo(2));
+            Assert.That(Time.timeScale, Is.EqualTo(stage.Container.Resolve<GameDataStore>().Combat.BaseTimeScale * 2f));
             yield return ClickGameButton(Field<Button>(controls, "_pauseButton"));
             Assert.That(manager.State, Is.EqualTo(StageState.Paused));
             Assert.That(Time.timeScale, Is.Zero);
@@ -787,7 +787,7 @@ namespace Game.Tests
             Assert.That(stageInfo.IsShown, Is.False);
             yield return ClickGameButton(Field<Button>(stageUi.Get<PauseMenuView>(), "_resumeButton"));
             Assert.That(manager.State, Is.EqualTo(StageState.Playing));
-            Assert.That(Time.timeScale, Is.EqualTo(2));
+            Assert.That(Time.timeScale, Is.EqualTo(stage.Container.Resolve<GameDataStore>().Combat.BaseTimeScale * 2f));
             yield return CompleteEnemiesUntil(stage, () => manager.State == StageState.CardSelect);
             var cards = stageUi.Get<CardSelectView>();
             Assert.That(Field<GameObject>(cards, "_panel").activeSelf, Is.True);
@@ -798,7 +798,7 @@ namespace Game.Tests
             yield return ClickGameButton(Field<Button>(slots.First(s => s.gameObject.activeSelf), "_button"));
             yield return WaitFor(() => manager.State == StageState.Playing);
             Assert.That(stats.BuildLog.Count, Is.EqualTo(priorCards + 1));
-            Assert.That(Time.timeScale, Is.EqualTo(2));
+            Assert.That(Time.timeScale, Is.EqualTo(stage.Container.Resolve<GameDataStore>().Combat.BaseTimeScale * 2f));
             var wall = stage.Container.Resolve<Wall>();
             wall.TakeDamage(10);
             Assert.That(Field<TMP_Text>(stageUi.Get<WallHpHudView>(), "_hpText").text, Is.EqualTo($"{wall.CurrentHp} / {wall.MaxHp}"));
