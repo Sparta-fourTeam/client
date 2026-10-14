@@ -287,6 +287,47 @@ namespace Game.Tests
             AssertPosition(new Vector2(2, 8f), enemy);
         }
 
+        [TestCase(1, false)]
+        [TestCase(2, false)]
+        [TestCase(1, true)]
+        public void AreaPull_OverlappingOrCatchUpPulsesStopAtCenter(int overlappingZones, bool catchUpPulse)
+        {
+            var area = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 7).baseStats.area;
+            Assert.Greater(area.pull, 0);
+            Vector2 center = new Vector2(0, 5);
+            var enemy = CreateEnemy(maxHp: 1000,
+                position: center + Vector2.right * Mathf.Min(area.pull * .5f, area.radius * .5f));
+            var provider = new LightningProvider(); provider.Targets.Add(enemy);
+            var objects = new List<GameObject>();
+            var pool = new UnityEngine.Pool.ObjectPool<AreaZone>(
+                () => { var go = new GameObject("AreaPullRegression"); objects.Add(go); return go.AddComponent<AreaZone>(); },
+                zone => zone.gameObject.SetActive(true), zone => zone.gameObject.SetActive(false));
+            try
+            {
+                for (int i = 0; i < overlappingZones; i++)
+                {
+                    var zone = pool.Get();
+                    zone.Init(pool, provider, center,
+                        new AreaSettings(area.radius, area.duration, area.pulseInterval, area.moveSpeed, area.pull),
+                        AttackReactions.Empty, AttackReactions.Empty);
+                    typeof(AreaZone).GetMethod("Tick", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                        .Invoke(zone, new object[] { catchUpPulse ? area.pulseInterval : 0f });
+                }
+                for (int frame = 0; frame < 30; frame++)
+                {
+                    enemy.TickDisplacement(1f / 60f);
+                    Assert.GreaterOrEqual(enemy.Position.x, center.x - .0001f, "당김 이동 중에도 중심을 넘으면 안 된다");
+                }
+                Settle(enemy);
+                AssertPosition(center, enemy);
+            }
+            finally
+            {
+                pool.Dispose();
+                foreach (var go in objects) { UnityEngine.Object.DestroyImmediate(go); }
+            }
+        }
+
         [Test(Description = "끌어당기기는 방향 그대로(좌우 포함) 움직인다")]
         public void Pull_MovesAlongDirection()
         {
@@ -297,6 +338,14 @@ namespace Game.Tests
 
             Assert.AreEqual(1.5f, enemy.Position.x, 0.0001f);
             Assert.AreEqual(5f, enemy.Position.y, 0.0001f);
+
+            enemy.ApplyKnockback(Vector2.up, .25f);
+            enemy.ApplyPull(Vector2.zero, 1f);
+            enemy.ApplyPull(new Vector2(float.NaN, 0), .5f);
+            enemy.ApplyPull(Vector2.left, float.NaN);
+            enemy.ApplyPull(Vector2.left, -1f);
+            Settle(enemy);
+            AssertPosition(new Vector2(1.5f, 5.25f), enemy);
         }
 
         [Test]

@@ -364,7 +364,11 @@ namespace Game.Core
         // 장판 중심 쪽으로 끌려간다 (좌우 포함). 실제 이동은 TickDisplacement가 몇 프레임에 나눠 한다
         public void ApplyPull(Vector2 direction, float distance)
         {
-            _pendingDisplacement += _enemyModel.ResolvePull(direction, distance);
+            var resolved = _enemyModel.ResolvePull(direction, distance);
+            if (resolved == Vector2.zero) { return; }
+            // direction은 현재 위치에서 중심까지의 벡터다. 이미 예약한 도착점에서
+            // 중심까지 남은 거리만 당겨, 같은 프레임의 중첩·catch-up 펄스가 중심을 넘지 않게 한다.
+            _pendingDisplacement = Vector2.MoveTowards(_pendingDisplacement, direction, resolved.magnitude);
         }
     }
 }
