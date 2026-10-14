@@ -34,7 +34,8 @@ namespace Game.Editor
         internal static List<string> Samples(string id)
         {
             if (id is "CardSelect" or "CardSlot") { return new() { "기본", "형태변환" }; }
-            if (id == "ConfirmPopup") { return new() { "기본", "안내", "경고", "입력 확인", "입력 완료" }; }
+            if (id == "ConfirmPopup") { return new() { "기본", "게스트 로그인", "구글 로그인", "애플 로그인", "안내", "경고", "입력 확인", "입력 완료" }; }
+            if (id == "EliteRoulette") { return new() { "기본", "보상 5장", "긴 설명 4장", "긴 설명 5장" }; }
 
             if (id == "MissionRewardInfoPopup") { return new() { "기본", "수령 완료" }; }
 
@@ -641,11 +642,11 @@ namespace Game.Editor
 
                 var so = new SerializedObject(behaviour);
                 // Display-only values on the preview clone; no profile, wallet or balance table is changed.
-                if (behaviour is PlayerLevelView)
+                if (behaviour is PlayerLevelView playerLevel)
                 {
                     if (so.FindProperty("_levelText")?.objectReferenceValue is TMP_Text level) { level.text = "Lv.5"; }
                     if (so.FindProperty("_expText")?.objectReferenceValue is TMP_Text exp) { exp.text = "40 / 180"; }
-                    if (so.FindProperty("_expFill")?.objectReferenceValue is Image fill) { fill.fillAmount = 40f / 180f; }
+                    playerLevel.SetProgress(40f / 180f);
                 }
                 // 편집 모드에서는 Awake가 돌지 않아, 스킬이 없는 칸이 게임처럼 빈 틀로 보이도록 같은 정리를 한다
                 if (behaviour is SkillSlotView emptySlot) { emptySlot.Clear(); }
