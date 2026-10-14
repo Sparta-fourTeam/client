@@ -48,6 +48,48 @@ namespace Game.Tests
 
         // ───────── DamageInfo 오버로드 ─────────
 
+        [TearDown]
+        public void ResetCriticalHit() => CriticalHit.Reset();
+
+        [Test(Description = "스킬 피해는 확률에 걸리면 배율만큼 늘고 치명타 표시가 남아 피해 파이프라인을 지나도 유지된다. 걸리지 않으면 그대로다")]
+        public void CriticalHit_ScalesSkillDamageOnlyWhenRollSucceeds()
+        {
+            CriticalHit.Configure(0.25f, 2f);
+            using (DamageAttribution.Begin(new DamageSource(7)))
+            {
+                CriticalHit.Roller = () => 0.24f; // 확률 안
+                var hit = DamageInfo.FromCurrent(100);
+                Assert.IsTrue(hit.IsCritical);
+                Assert.AreEqual(200, hit.Amount);
+                Assert.IsTrue(hit.WithAmount(150).IsCritical, "저항으로 피해가 줄어도 치명타 표시는 남아야 팝업이 구분한다");
+
+                CriticalHit.Roller = () => 0.25f; // 확률 밖(경계)
+                var normal = DamageInfo.FromCurrent(100);
+                Assert.IsFalse(normal.IsCritical);
+                Assert.AreEqual(100, normal.Amount);
+            }
+        }
+
+        [Test(Description = "스킬 밖의 피해(상태이상 지속 피해 등)는 확률이 100%여도 치명타가 나지 않는다")]
+        public void CriticalHit_NeverAppliesOutsideSkillDamage()
+        {
+            CriticalHit.Configure(1f, 3f);
+            CriticalHit.Roller = () => 0f;
+
+            var dot = DamageInfo.FromCurrent(40);
+
+            Assert.IsFalse(dot.IsCritical);
+            Assert.AreEqual(40, dot.Amount);
+        }
+
+        [Test(Description = "데미지 숫자 종류: 치명타 > 스킬 일반 > 스킬 밖 상태이상")]
+        public void DamagePopupKinds_SeparatesCriticalNormalAndStatus()
+        {
+            Assert.AreEqual(DamagePopupKind.Critical, DamagePopupKinds.Of(new DamageInfo(10, skillId: 3, isCritical: true)));
+            Assert.AreEqual(DamagePopupKind.Normal, DamagePopupKinds.Of(new DamageInfo(10, skillId: 3)));
+            Assert.AreEqual(DamagePopupKind.Status, DamagePopupKinds.Of(new DamageInfo(10)));
+        }
+
         [Test(Description = "DamageInfo를 모르는 대상은 피해량만 받는다")]
         public void LegacyTarget_ReceivesAmountOnly()
         {

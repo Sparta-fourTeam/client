@@ -1,4 +1,5 @@
 using Game.Core;
+using Game.Core.Combat;
 using Game.Core.Defense;
 using Game.Core.Stage;
 using Game.View;
@@ -16,6 +17,12 @@ namespace Game.Boot
         protected override void Configure(IContainerBuilder builder)
         {
             new UiInstaller(_uiHost).Install(builder);
+            // 치명타는 스테이지 안에서만 켠다. 확률·배율은 Combat 테이블이 정한다
+            builder.RegisterBuildCallback(resolver =>
+            {
+                var combat = resolver.Resolve<GameDataStore>().Combat;
+                CriticalHit.Configure(combat.CriticalChance, combat.CriticalMultiplier);
+            });
             // 어떤 스테이지인지는 로비에서 정해 StageContext에 남긴다. Stage 씬을 바로 열었으면 첫 스테이지 값을 쓴다
             builder.Register(resolver =>
                 resolver.Resolve<GameDataStore>().StageOrFirst(resolver.Resolve<StageContext>().StageId), Lifetime.Scoped);
@@ -47,6 +54,12 @@ namespace Game.Boot
             builder.Register<EnemyProjectileSystem>(Lifetime.Scoped);
             builder.RegisterEntryPoint<EnemySpawner>(Lifetime.Scoped).AsSelf().As<IEnemyTargetProvider>();
             builder.RegisterEntryPoint<WaveManager>();
+        }
+
+        protected override void OnDestroy()
+        {
+            CriticalHit.Reset();
+            base.OnDestroy();
         }
     }
 }

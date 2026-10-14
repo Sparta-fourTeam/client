@@ -32,7 +32,7 @@
 
 ## 필드 규칙
 
-- **이름 규칙**: `Monsters`, `Stages`, `StageRewards`, `Items`, `Upgrades`, `GeneralCards`, `PlayerLevels`, `Energy`는 PascalCase이고 `Skills`만 camelCase다. 표마다 자기 스타일을 지킨다.
+- **이름 규칙**: `Monsters`, `Stages`, `StageRewards`, `Items`, `Upgrades`, `GeneralCards`, `PlayerLevels`, `Energy`, `Combat`은 PascalCase이고 `Skills`만 camelCase다. 표마다 자기 스타일을 지킨다.
 - **속성 이름**: `Neutral`, `Fire`, `Ice`, `Wind`, `Lightning`, `Earth`. 스킬의 `element`도 같은 이름 문자열로 적는다.
 - **시전 형태 이름**: `Projectile`, `Hitscan`, `Area`, `Beam`, `Chain`. 스킬의 `castType`도 같은 이름 문자열로 적는다. `projectilePath`는 `Aimed`(생략 시 기본), `RollingLane`, `Radial`이다.
 - **패시브 Kind**: `Spawn`, `Immunity`, `Modifier`, `Shield`, `Evade`, `LowHp`, `HealOnHit`, `SpeedBoost`.
