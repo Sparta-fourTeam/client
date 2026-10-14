@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     env:
-      DEV_SOURCE_COMMIT: c83a82d57a43be308b6655f3cbe0191946d738bf
+      DEV_SOURCE_COMMIT: a7d831fa29031da57710f1fff84677dd81f56116
     outputs:
       version_code: ${{ steps.version.outputs.code }}
     steps:
@@ -42,7 +42,10 @@ jobs:
           import hashlib, json, os, pathlib, re, subprocess
           allowed = {'Assets/Settings/Build Profiles/Android_Release.asset',
                      'Assets/_Project/Scripts/Editor/CiBuild.cs',
-                     'Assets/_Project/Scripts/Tests/EditMode/EditorToolsTests.cs'}
+                     'Assets/_Project/Scripts/Tests/EditMode/EditorToolsTests.cs',
+                     'Assets/_Project/Scripts/Runtime/Network/ServerConfig.cs',
+                     'Assets/_Project/Scripts/Runtime/Boot/RootLifetimeScope.cs',
+                     'Assets/_Project/Scripts/Tests/EditMode/ServerBackedAuthApiTests.cs'}
           changed = set(subprocess.check_output(['git', 'diff', '--name-only', os.environ['DEV_SOURCE_COMMIT'],
                         'HEAD', '--', 'Assets', 'Packages', 'ProjectSettings'], text=True).splitlines())
           if changed - allowed:
@@ -70,6 +73,9 @@ jobs:
           pathlib.Path('build/release-inputs.json').write_text(json.dumps({
               'source_commit': os.environ['GITHUB_SHA'], 'source_dev_commit': os.environ['DEV_SOURCE_COMMIT'], 'package': package,
               'version_name': version, 'release_tag': release_tag, 'target_api': target,
+              'authentication_backend': 'server', 'gameplay_backend': 'local', 'account_delete_backend': 'local',
+              'server_auth_config_sha256': hashlib.sha256(pathlib.Path(
+                  'Assets/_Project/Scripts/Runtime/Network/ServerConfig.cs').read_bytes()).hexdigest(),
               'profile_sha256': hashlib.sha256(profile.read_bytes()).hexdigest()
           }, indent=2) + '\n')
           with open(os.environ['GITHUB_OUTPUT'], 'a') as output:

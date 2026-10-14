@@ -21,7 +21,7 @@ namespace Game.Boot
             builder.Register<PlayerProfile>(Lifetime.Singleton);
             builder.RegisterEntryPoint<GameAnalyticsService>().As<IGameplayAnalytics>();
 
-            // 서버 통신. 서버 인증을 쓰는 빌드(Android 개발 빌드)에서만 로그인이 서버로 간다
+            // 서버 통신. Android 릴리스·개발 빌드의 로그인이 서버로 간다. 저장·계정 삭제 API는 아래 Local 구현을 유지한다
             builder.RegisterInstance(new HttpApiConfig(ServerConfig.BaseUrl));
             builder.Register<IHttpTransport, UnityWebRequestTransport>(Lifetime.Singleton);
             builder.Register<AuthSession>(Lifetime.Singleton).AsSelf().As<IAuthHeaderProvider>();

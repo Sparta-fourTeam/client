@@ -3,6 +3,7 @@ using System.IO;
 using Game.Core;
 using Game.Network;
 using NUnit.Framework;
+using UnityEngine;
 
 namespace Game.Tests
 {
@@ -35,6 +36,18 @@ namespace Game.Tests
         }
 
         private LoginResponse Login(LoginMethod method, string accountId) => _api.Login(method, accountId).GetAwaiter().GetResult();
+
+        [TestCase(RuntimePlatform.Android, false, "", true)]
+        [TestCase(RuntimePlatform.Android, false, "0", true)]
+        [TestCase(RuntimePlatform.Android, true, "", true)]
+        [TestCase(RuntimePlatform.Android, true, "0", false)]
+        [TestCase(RuntimePlatform.OSXEditor, true, "", false)]
+        [TestCase(RuntimePlatform.OSXEditor, true, "1", true)]
+        public void AuthBackend_AndroidReleaseCannotBeDowngradedByDevelopmentPreference(
+            RuntimePlatform platform, bool development, string preference, bool expected)
+        {
+            Assert.AreEqual(expected, ServerConfig.SelectServerAuth(platform, development, preference));
+        }
 
         [Test(Description = "구글은 provider GOOGLE과 ID 토큰을 소셜 로그인 경로로 보내고, 받은 토큰을 세션에 담는다")]
         public void Google_PostsIdTokenAndStoresTokens()
