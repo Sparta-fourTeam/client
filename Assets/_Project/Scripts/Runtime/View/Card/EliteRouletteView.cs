@@ -13,11 +13,13 @@ namespace Game.View
     public sealed class EliteRouletteView : HudView
     {
         private const float SpinSeconds = 2.2f * 2f / 3f;
-        private const float PegDegrees = 22.5f;     // 알전구 사이 각도 (원판에 16개)
+        private const float PegDegrees = 45f;       // 알전구 사이 각도 (원판에 8개)
         private const float PinKickDegrees = 28f;
         private const float PinReturnSeconds = 0.16f;
         private const float WinFxEmitSeconds = 0.18f;
+        private const float WinGlowAlpha = 0.65f;
         private Tween _winFxStop;
+        private Tween _winGlowTween;
         [SerializeField] private GameObject _panel;
         [Tooltip("돌아가는 원판 (원판 면·알전구·무기 아이콘 칸·당첨 칸 하이라이트가 들어 있다)")]
         [SerializeField] private RectTransform _spinner;
@@ -33,6 +35,7 @@ namespace Game.View
         [SerializeField] private SkillAssetTable _assets;
         [SerializeField] private Sprite _cardBackground;
         [SerializeField] private UnityEngine.UI.Button _skipButton;
+        [SerializeField] private PointerClickRelay _background;
         [Tooltip("당첨 칸을 칠하는 부채꼴 (Radial360, 12시 기준 시계 방향 45도 채움). 비워 두면 표시하지 않는다")]
         [SerializeField] private RectTransform _winGlow;
 
@@ -54,11 +57,13 @@ namespace Game.View
             _panel.SetActive(false);
             _skipButtonLabel = _skipButton.GetComponentInChildren<TMP_Text>(true);
             _skipButton.onClick.AddListener(OnActionClicked);
+            if (_background != null) { _background.Clicked += SkipCurrentRound; }
         }
 
         private void OnStateChanged(StageStateChanged message)
         {
             _animation?.Kill();
+            HideWinGlow();
             _run++;
             _awaitingConfirmation = false;
             if (message.State != StageState.EliteRoulette)
@@ -67,7 +72,6 @@ namespace Game.View
                 return;
             }
             _panel.SetActive(true);
-            HideWinGlow();
             if (_pin != null) { _pin.DOKill(); _pin.localRotation = Quaternion.identity; }
             _skipButton.interactable = true;
             _skipButtonLabel.text = "스킵";
@@ -90,7 +94,6 @@ namespace Game.View
         {
             if (!Current(run)) { return; }
             var session = _manager.Roulette;
-            HideWinGlow();
             var round = session.PrepareRound();
             if (round == null)
             {
@@ -105,6 +108,7 @@ namespace Game.View
         /// 알전구가 핀을 지날 때마다 핀이 튕긴다</summary>
         public Tween PlaySpin(int winnerIndex, TweenCallback onComplete = null)
         {
+            HideWinGlow();
             float start = _spinner.localEulerAngles.z;
             float target = 22.5f + winnerIndex * 45f;
             float travel = Mathf.Repeat(start - target, 360f) + 1080f;
@@ -146,9 +150,9 @@ namespace Game.View
             if (_winGlow != null && _winGlow.TryGetComponent<UnityEngine.UI.Image>(out var glow))
             {
                 var color = glow.color;
-                color.a = 1f;
+                color.a = 0.95f;
                 glow.color = color;
-                DOTween.To(() => glow.color.a, a => { var c = glow.color; c.a = a; glow.color = c; }, 0.62f, 0.5f)
+                _winGlowTween = DOTween.To(() => glow.color.a, a => { var c = glow.color; c.a = a; glow.color = c; }, WinGlowAlpha, 0.3f)
                     .SetUpdate(true).SetLink(gameObject);
             }
 
@@ -165,12 +169,20 @@ namespace Game.View
         private void ShowWinGlow(int winnerIndex)
         {
             if (_winGlow == null) { return; }
+            _winGlowTween?.Kill();
+            if (_winGlow.TryGetComponent<UnityEngine.UI.Image>(out var glow))
+            {
+                var color = glow.color;
+                color.a = WinGlowAlpha;
+                glow.color = color;
+            }
             _winGlow.localRotation = Quaternion.Euler(0f, 0f, -winnerIndex * 45f);
             _winGlow.gameObject.SetActive(true);
         }
 
         private void HideWinGlow()
         {
+            _winGlowTween?.Kill();
             if (_winGlow != null) { _winGlow.gameObject.SetActive(false); }
         }
 
@@ -222,6 +234,32 @@ namespace Game.View
             RefreshSelectedSlots();
         }
 
+        private void SkipCurrentRound()
+        {
+            if (_manager == null || _manager.State != StageState.EliteRoulette || !_skipButton.interactable) { return; }
+            if (_awaitingConfirmation)
+            {
+                OnActionClicked();
+                return;
+            }
+
+            int run = ++_run;
+            _animation?.Kill();
+            var session = _manager.Roulette;
+            // dim 한 번은 현재 회차만 끝낸다. 이미 준비된 당첨 결과를 그대로 적용한다.
+            var round = session.PrepareRound();
+            if (round == null) { ShowCompletion(run); return; }
+            _spinner.localRotation = Quaternion.Euler(0f, 0f, 22.5f + round.WinnerIndex * 45f);
+            ShowReward(round);
+            PlayWinEffect(round.WinnerIndex);
+            if (!Current(run)) { return; }
+            if (session.IsComplete) { ShowCompletion(run); }
+            else
+            {
+                _animation = DOVirtual.DelayedCall(0.4f, () => SpinNext(run), ignoreTimeScale: true).SetLink(gameObject);
+            }
+        }
+
         private void OnActionClicked()
         {
             if (_manager == null || _manager.State != StageState.EliteRoulette || !_skipButton.interactable) { return; }
@@ -266,7 +304,9 @@ namespace Game.View
             _run++;
             _animation?.Kill();
             _winFxStop?.Kill();
+            _winGlowTween?.Kill();
             _skipButton.onClick.RemoveListener(OnActionClicked);
+            if (_background != null) { _background.Clicked -= SkipCurrentRound; }
             base.DisposeView();
         }
     }

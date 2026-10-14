@@ -27,6 +27,8 @@ namespace Game.View
         [SerializeField] private GameObject _root;
         [SerializeField] private Image _leftPortrait;
         [SerializeField] private Image _rightPortrait;
+        [SerializeField] private Image _leftPortraitGlyph;
+        [SerializeField] private Image _rightPortraitGlyph;
         [SerializeField] private RectTransform _nameTag;
         [SerializeField] private TMP_Text _nameText;
         [SerializeField] private TMP_Text _bodyText;
@@ -36,6 +38,8 @@ namespace Game.View
         [SerializeField] private Button _autoButton;
         [SerializeField] private Image _autoBackground;
         [SerializeField] private TMP_Text _autoLabel;
+        [SerializeField] private Sprite _autoOnSprite;
+        [SerializeField] private Sprite _autoOffSprite;
         [SerializeField] private Color _autoOnColor = new Color(0.95f, 0.65f, 0.25f, 1f);
         [SerializeField] private Color _autoOffColor = new Color(0.55f, 0.55f, 0.62f, 1f);
         [Tooltip("AUTO일 때 줄이 다 나온 뒤 다음 줄로 넘어가기까지 기다리는 시간(초)")]
@@ -104,7 +108,16 @@ namespace Game.View
         {
             if (_autoBackground != null)
             {
-                _autoBackground.color = _auto ? _autoOnColor : _autoOffColor;
+                var sprite = _auto ? _autoOnSprite : _autoOffSprite;
+                if (sprite != null)
+                {
+                    _autoBackground.sprite = sprite;
+                    _autoBackground.color = Color.white;
+                }
+                else
+                {
+                    _autoBackground.color = _auto ? _autoOnColor : _autoOffColor;
+                }
             }
 
             if (_autoLabel != null)
@@ -176,10 +189,16 @@ namespace Game.View
             if (other.gameObject.activeSelf)
             {
                 other.rectTransform.localScale = Vector3.one * 0.95f;
-                other.canvasRenderer.SetColor(new Color(0.45f, 0.45f, 0.45f, 1f));
+                foreach (var graphic in other.GetComponentsInChildren<Graphic>(true))
+                {
+                    graphic.canvasRenderer.SetColor(new Color(0.45f, 0.45f, 0.45f, 1f));
+                }
             }
 
-            portrait.canvasRenderer.SetColor(Color.white);
+            foreach (var graphic in portrait.GetComponentsInChildren<Graphic>(true))
+            {
+                graphic.canvasRenderer.SetColor(Color.white);
+            }
             portrait.rectTransform.localScale = Vector3.one;
             if (entering)
             {
@@ -211,6 +230,8 @@ namespace Game.View
 
         private void Apply(Image image, string speaker)
         {
+            var glyph = image == _leftPortrait ? _leftPortraitGlyph : _rightPortraitGlyph;
+            if (glyph != null) { image = glyph; }
             image.sprite = null;
             image.color = Color.white;
             foreach (var portrait in _portraits ?? Array.Empty<Portrait>())

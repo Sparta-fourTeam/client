@@ -217,11 +217,13 @@ namespace Game.Tests
             Field<Button>(confirm, "_cancelButton").onClick.Invoke();
         }
 
-        [TestCase(false, false)]
-        [TestCase(false, true)]
-        [TestCase(true, false)]
-        [TestCase(true, true)]
-        public void Menu_DeleteAccount_CancelOrCloseAtEitherStepAllowsRetry(bool secondStep, bool close)
+        [TestCase(false, 0)]
+        [TestCase(false, 1)]
+        [TestCase(false, 2)]
+        [TestCase(true, 0)]
+        [TestCase(true, 1)]
+        [TestCase(true, 2)]
+        public void Menu_DeleteAccount_CancelOrCloseAtEitherStepAllowsRetry(bool secondStep, int dismissal)
         {
             var (menu, confirm, api, nav) = CreateDeleteMenu();
             var delete = Field<Button>(menu, "_deleteAccountButton");
@@ -232,7 +234,20 @@ namespace Game.Tests
                 Field<TMP_InputField>(confirm, "_input").text = "Review_Ninja";
             }
 
-            Field<Button>(confirm, close ? "_closeButton" : "_cancelButton").onClick.Invoke();
+            if (dismissal == 2)
+            {
+                var panel = Field<GameObject>(confirm, "_panel");
+                var background = panel.GetComponent<PointerClickRelay>();
+                var window = Field<Button>(confirm, "_confirmButton").transform.parent as RectTransform;
+                background.OnPointerClick(new PointerEventData(null)
+                {
+                    position = RectTransformUtility.WorldToScreenPoint(null, window.TransformPoint(window.rect.center))
+                });
+                Assert.IsTrue(Field<PopupTransition>(confirm, "_transition").IsShown, "창 안쪽 클릭은 취소로 처리하지 않는다");
+                background.OnPointerClick(
+                    new PointerEventData(null) { position = new Vector2(-10000f, -10000f) });
+            }
+            else { Field<Button>(confirm, dismissal == 1 ? "_closeButton" : "_cancelButton").onClick.Invoke(); }
             Assert.IsFalse(Field<PopupTransition>(confirm, "_transition").IsShown);
             Assert.AreEqual(0, api.Deleted);
             Assert.AreEqual(0, nav.LoadingCalls);

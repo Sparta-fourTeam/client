@@ -1058,10 +1058,6 @@ PrefabInstance:
       propertyPath: m_Color.a
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 8544989912913922510, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
-      propertyPath: m_RaycastTarget
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 9063113207887022782, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
       propertyPath: m_SizeDelta.x
       value: -24
@@ -1071,7 +1067,8 @@ PrefabInstance:
       value: -24
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 7357781830544555454, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 350114631761655792, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
       insertIndex: 0
@@ -1328,10 +1325,6 @@ PrefabInstance:
       propertyPath: m_Color.a
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 8544989912913922510, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
-      propertyPath: m_RaycastTarget
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 9063113207887022782, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
       propertyPath: m_SizeDelta.x
       value: -24
@@ -1341,7 +1334,8 @@ PrefabInstance:
       value: -24
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 7357781830544555454, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 350114631761655792, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
       insertIndex: 0
@@ -1598,10 +1592,6 @@ PrefabInstance:
       propertyPath: m_Color.a
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 8544989912913922510, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
-      propertyPath: m_RaycastTarget
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 9063113207887022782, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
       propertyPath: m_SizeDelta.x
       value: -24
@@ -1611,7 +1601,8 @@ PrefabInstance:
       value: -24
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 7357781830544555454, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 350114631761655792, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
       insertIndex: 0
@@ -1868,10 +1859,6 @@ PrefabInstance:
       propertyPath: m_Color.a
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 8544989912913922510, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
-      propertyPath: m_RaycastTarget
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 9063113207887022782, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
       propertyPath: m_SizeDelta.x
       value: -24
@@ -1881,7 +1868,8 @@ PrefabInstance:
       value: -24
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 7357781830544555454, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 350114631761655792, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
       insertIndex: 3
@@ -2135,10 +2123,6 @@ PrefabInstance:
       propertyPath: m_Color.a
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 8544989912913922510, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
-      propertyPath: m_RaycastTarget
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 9063113207887022782, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
       propertyPath: m_SizeDelta.x
       value: -24
@@ -2148,7 +2132,8 @@ PrefabInstance:
       value: -24
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 7357781830544555454, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 350114631761655792, guid: 4db8abaecdba3428badcceb32e1e42c4, type: 3}
       insertIndex: 0

@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: b0508108a9e2b47debc4b70111ebf543
+guid: 0502b83cdd95a444d86a9ec8a0df2b2b
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -1491718163045717341
-    second: BubbleTail_A_0
+      213: -3342343072625431626
+    second: GrowthTipEquipment_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -74,10 +74,10 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 2048
+    maxTextureSize: 256
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 1
+    textureCompression: 0
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -128,13 +128,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: BubbleTail_A_0
+      name: GrowthTipEquipment_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 117
-        height: 101
+        width: 1219
+        height: 1233
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -143,8 +143,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 3aa69a2fb3a5c4be0800000000000000
-      internalID: -1491718163045717341
+      spriteID: 6bb6ca61fac9d91d0800000000000000
+      internalID: -3342343072625431626
       vertices: []
       indices: 
       edges: []
@@ -163,7 +163,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      BubbleTail_A_0: -1491718163045717341
+      GrowthTipEquipment_0: -3342343072625431626
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

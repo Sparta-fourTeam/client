@@ -61,6 +61,10 @@ MonoBehaviour:
     Prefab: {fileID: 7205013585301103754, guid: 996e94392fdd8d740b080a08dbff02d0, type: 3}
     ParentPath: PopupCanvas/Popups
     SiblingIndex: 1
+  - Id: ConfirmPopup
+    Prefab: {fileID: 3468135605265646659, guid: aeb0c6dd7a1684a1d8bc3b925beadc4f, type: 3}
+    ParentPath: PopupCanvas/Overlays
+    SiblingIndex: 5
   - Id: SpecialWarning
     Prefab: {fileID: 3973263401396974945, guid: 044b72f37a2614bc8a3d616bf967f1bd, type: 3}
     ParentPath: HudLayer
