@@ -50,7 +50,11 @@ namespace Game.Boot
             builder.Register<IDataApi, LocalDataApi>(Lifetime.Singleton);
             builder.Register<IAccountApi, LocalAccountApi>(Lifetime.Singleton);
             builder.Register<AccountService>(Lifetime.Singleton);
-            builder.Register<IPlayerApi, LocalPlayerApi>(Lifetime.Singleton);
+            // 플레이어 상태는 기본이 로컬이고, 서버(GET /api/user/me)는 dev.server_player가 켜진 개발 중에만 쓴다
+            builder.Register<LocalPlayerApi>(Lifetime.Singleton);
+            builder.Register<HttpPlayerApi>(Lifetime.Singleton);
+            builder.Register<IPlayerApi>(c => ServerConfig.UseServerPlayer ? c.Resolve<HttpPlayerApi>() : c.Resolve<LocalPlayerApi>(),
+                Lifetime.Singleton);
             builder.Register<IBattleApi, LocalBattleApi>(Lifetime.Singleton).AsSelf().As<ISubmitFaultSwitch>();
             builder.Register<IUpgradeApi, LocalUpgradeApi>(Lifetime.Singleton);
             // TODO(server): Recover(Ad) 항상 거절 중 — 예: 광고 SDK 콜백에서 Recover(EnergySource.Ad, adTxId) 호출

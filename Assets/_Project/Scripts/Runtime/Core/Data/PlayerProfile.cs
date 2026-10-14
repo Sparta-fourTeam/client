@@ -18,6 +18,7 @@ namespace Game.Core
 
         public string Nickname => _snapshot.nickname ?? string.Empty;
         public int Gold => _snapshot.gold;
+        public int Gems => _snapshot.gems;
         public int Exp => _snapshot.exp;
         public int Level => _data.PlayerLevels.At(_snapshot.exp).level;
         /// <summary>현재 레벨 안에서 쌓은 경험치</summary>

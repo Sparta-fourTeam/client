@@ -34,6 +34,23 @@
 
 아직 인증이 필요한 서버 API가 없어서 실제 요청에서는 쓰이지 않는다. `SESSION_EXPIRED`를 받았을 때 로그인으로 돌려보내는 화면 흐름은 인증이 필요한 API를 붙일 때 함께 만든다.
 
+## 플레이어 상태 (`GET /api/user/me`)
+
+서버 PR #47(머지 전)이 `GET /user/me`로 플레이어 상태를 한 번에 준다. 클라이언트는 `HttpPlayerApi`가 받아 `PlayerSnapshot`으로 바꾼다 (`ServerUserMapper`). **기본은 꺼져 있다.** 서버가 배포되기 전에는 요청이 실패하므로, 개발 중에 `PlayerPrefs`의 `dev.server_player`를 `"1"`로 둘 때만 쓴다.
+
+| 서버 필드 | 클라이언트 | 처리 |
+| --- | --- | --- |
+| `gold`, `energyStored` | 같은 이름 | 그대로 |
+| `jem` | `gems` | 이름만 바꾼다. 상단 재화 표시는 아직 `DummyGrowthCatalog.Gems`(더미)를 쓴다 |
+| `exp`(null 가능) | `exp` | null이면 0 |
+| `energyUpdatedAt`(시간대 없는 `LocalDateTime`) | `energyUpdatedAt` | 클라이언트가 UTC로 읽는다 (`EnergyRule`). **서버가 UTC로 주는지 확인 필요** |
+| `stageProgress[].stageId`, `codex[].monsterId`(`Long`) | `int` | 변환하고, `int` 범위를 넘으면 잘못된 응답 |
+| `upgrades[]`(`upgradeId`, `level`) | 같은 이름 | 레벨이 null이면 0 |
+| 닉네임 | `nickname` | 서버에 없다. 로컬 저장 값을 쓴다 |
+| `items[].itemId`, `tutorials[]`(`Long`) | 문자열 ID(`book.arrow`, `intro_battle`) | **옮기지 않는다.** 서버 ID와 클라이언트 ID의 대응이 정해져야 한다. 틀린 ID로 옮기면 소유량·완료 여부를 잘못 읽기 때문이다 |
+
+서버와 정해야 할 것: 아이템·튜토리얼 ID 대응, 닉네임 필드, 에너지 시각의 시간대.
+
 ## 오류 확인
 
 서버가 거절하면 `ApiException`의 `Code`는 `HTTP_상태코드`이고(게스트 재가입 판단이 여기에 기댄다), 서버가 본문에 적은 `message`는 `Detail`에 담겨 로그에 `(설명)`으로 붙는다. 예: `Rejected: HTTP_401 (소셜 로그인 정보가 올바르지 않습니다)`. 화면에 보여 주거나 분기에 쓰지 않는다.
