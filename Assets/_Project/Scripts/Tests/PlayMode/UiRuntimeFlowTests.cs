@@ -512,6 +512,8 @@ namespace Game.Tests
                 int count = manager.Roulette.CardCount;
                 Assert.That(count, Is.EqualTo(definition.EliteRouletteMaxCards));
                 var weaponIcons = Field<UnityEngine.UI.Image[]>(view, "_weaponIcons");
+                Assert.That(weaponIcons.All(icon => icon.enabled && icon.sprite != null), Is.True,
+                    "룰렛의 모든 칸에 보유 무기 아이콘을 표시한다");
                 var wheel = weaponIcons.Select(icon => icon.sprite).ToArray();
                 var spinner = Field<RectTransform>(view, "_spinner");
                 float initial = spinner.localEulerAngles.z;
@@ -580,8 +582,8 @@ namespace Game.Tests
                 Assert.That(manager.State, Is.EqualTo(StageState.EliteRoulette));
                 Assert.That(Time.timeScale, Is.Zero);
                 Assert.That(cards.Count(card => card.gameObject.activeSelf), Is.EqualTo(count));
-                int selectedSlots = weaponIcons.Count(icon => icon.enabled && icon.color.a < 1f);
-                Assert.That(selectedSlots, Is.EqualTo(count), "당첨된 강화 카드의 칸만 흐리게 표시한다");
+                Assert.That(weaponIcons.All(icon => icon.color.a == 1f), Is.True,
+                    "당첨 후에도 모든 룰렛 칸의 투명도를 유지한다");
                 yield return ClickGameButton(confirmButton);
                 yield return WaitFor(() => manager.State == StageState.Playing);
                 Assert.That(panel.activeSelf, Is.False);

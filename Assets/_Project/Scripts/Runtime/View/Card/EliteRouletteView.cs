@@ -198,16 +198,6 @@ namespace Game.View
             }
         }
 
-        private void RefreshSelectedSlots()
-        {
-            var session = _manager.Roulette;
-            for (int i = 0; i < _weaponIcons.Length && i < session.Slots.Count; i++)
-            {
-                _weaponIcons[i].color = session.IsSlotSelected(i)
-                    ? new Color(1f, 1f, 1f, 0.3f) : Color.white;
-            }
-        }
-
         private void Reveal(int run, EliteRouletteRound round)
         {
             if (!Current(run)) { return; }
@@ -233,7 +223,6 @@ namespace Game.View
                 card.PlayEntrance(0f);
                 _shownCards++;
             }
-            RefreshSelectedSlots();
         }
 
         private void SkipCurrentRound()
