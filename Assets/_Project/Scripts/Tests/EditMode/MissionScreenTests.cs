@@ -181,5 +181,21 @@ namespace Game.Tests
             Assert.IsTrue(Get<UnityEngine.UI.Button>(_screen, "_enterButton").interactable);
         }
 
+        // 지금 도전 중인 관문 뒤의 잠긴 관문은 넘겨 볼 수 없다 (화살표 숨김, 넘기기 무시)
+        [Test]
+        public void LockedStagesAfterCurrentAreNotReachable()
+        {
+            var snapshot = Snapshot(3, 3);
+            snapshot.stageProgress.Add(new StageProgressRow { stageId = 2 });
+            _profile.Apply(snapshot);
+            _screen.Open();
+            Assert.AreEqual(2, _profile.HighestUnlockedStage);
+            Assert.IsTrue(_data.Stages.Contains(3));
+            Assert.AreEqual(2, Get<int>(_screen, "_stageId"));
+            Assert.IsFalse(Get<UnityEngine.UI.Button>(_screen, "_nextButton").gameObject.activeSelf);
+            Assert.IsTrue(Get<UnityEngine.UI.Button>(_screen, "_prevButton").gameObject.activeSelf);
+            typeof(MissionScreenView).GetMethod("Move", Private).Invoke(_screen, new object[] { 1 });
+            Assert.AreEqual(2, Get<int>(_screen, "_stageId"));
+        }
     }
 }
