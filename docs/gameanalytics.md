@@ -19,11 +19,14 @@ SDK 설정은 `Resources/GameAnalytics/Settings`라는 고정 경로로 읽으�
 | 전투 시작 | Progression Start | `stage / stage_{stageId}` | 없음 |
 | 클리어 | Progression Complete | 위와 동일 | score: 처치 수, `outcome=clear`, `reached_wave`, `play_time_seconds` |
 | 실패·포기 | Progression Fail | 위와 동일 | score: 처치 수, `outcome=fail` 또는 `forfeit`, `reached_wave`, `play_time_seconds` |
+| 전투 종료 시 스킬별 피해량 | Design | `battle:skill_damage:stage_{stageId}:skill_{skillId}` | value: 누적 실제 피해량, `outcome`: clear / fail / forfeit |
 | 카드 적용 성공 | Design | `card:picked:stage_{stageId}:{source}:{cardId}` | `pick_index`: 이번 전투의 1부터 시작하는 선택 순서 |
 
 `source`는 웨이브 카드 `wave`, 엘리트 룰렛 `elite_roulette`다. 카드 ID와 순서는 `BattleStats.BuildLog`에 실제로 기록된 값을 쓴다. 적용에 실패하거나 오래된 후보를 갱신한 경우에는 보내지 않는다. ID는 카탈로그의 안정적인 ID를 쓰며 사용자 입력이나 전투 ID를 이벤트 이름에 넣지 않는다.
 
-전투 종료 이벤트는 결과 제출을 시작할 때 한 번 기록한다. 서버 제출 성공 여부와 독립적이며, 자동·수동 제출 재시도나 중복 종료 신호로 다시 보내지 않는다. 전투 중 앱을 종료하면 Start만 남을 수 있다. 계정 ID나 로그인 토큰은 이 연동에서 전송하지 않는다.
+스킬별 피해량은 결과 화면과 같은 `BattleStats.SkillDamageRanking()`의 누적 실제 피해량을 사용한다. 피해가 없는 스킬은 보내지 않으며 공격마다 전송하지 않는다. 자식 스킬 피해는 기존 집계 규칙대로 부모 스킬에 포함한다.
+
+전투 종료와 스킬별 피해량 이벤트는 결과 제출을 시작할 때 한 번 기록한다. 서버 제출 성공 여부와 독립적이며, 자동·수동 제출 재시도나 중복 종료 신호로 다시 보내지 않는다. 전투 중 앱을 종료하면 Start만 남을 수 있다. 계정 ID나 로그인 토큰은 이 연동에서 전송하지 않는다.
 
 ## 실제 수신 확인
 

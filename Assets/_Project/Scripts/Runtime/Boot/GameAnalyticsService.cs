@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Game.Core;
+using Game.Core.Messages;
 using GameAnalyticsSDK;
 using UnityEngine;
 using VContainer.Unity;
@@ -42,17 +43,26 @@ namespace Game.Boot
             TrySend(() => GameAnalytics.NewProgressionEvent(GAProgressionStatus.Start, "stage", $"stage_{stageId}"));
         }
 
-        public void BattleEnded(int stageId, bool cleared, bool forfeited, int reachedWave, int kills, float playTime)
+        public void BattleEnded(int stageId, bool cleared, bool forfeited, int reachedWave, int kills, float playTime,
+            IReadOnlyList<SkillDamage> skillDamages)
         {
             if (!_ready || stageId <= 0) { return; }
+            string outcome = cleared ? "clear" : forfeited ? "forfeit" : "fail";
             TrySend(() => GameAnalytics.NewProgressionEvent(
                 cleared ? GAProgressionStatus.Complete : GAProgressionStatus.Fail, "stage", $"stage_{stageId}", kills,
                 new Dictionary<string, object>
                 {
-                    ["outcome"] = cleared ? "clear" : forfeited ? "forfeit" : "fail",
+                    ["outcome"] = outcome,
                     ["reached_wave"] = reachedWave,
                     ["play_time_seconds"] = playTime
                 }));
+            foreach (var skill in skillDamages)
+            {
+                if (skill.Damage <= 0) { continue; }
+                TrySend(() => GameAnalytics.NewDesignEvent(
+                    $"battle:skill_damage:stage_{stageId}:skill_{skill.SkillId}", skill.Damage,
+                    new Dictionary<string, object> { ["outcome"] = outcome }));
+            }
         }
 
         public void CardPicked(int stageId, string cardId, int pickIndex, string source)

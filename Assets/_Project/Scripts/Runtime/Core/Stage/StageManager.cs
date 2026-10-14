@@ -267,7 +267,7 @@ namespace Game.Core
             _resultKills = _stats.Kills;
             _resultPlayTime = _clock.ElapsedSeconds;
             _analytics?.BattleEnded(_stageContext.StageId, cleared, forfeited, _stats.ReachedWave,
-                _resultKills, _resultPlayTime);
+                _resultKills, _resultPlayTime, _stats.SkillDamageRanking());
             _pendingRequest = new SubmitResultRequest
             {
                 battleId = _battleId,
