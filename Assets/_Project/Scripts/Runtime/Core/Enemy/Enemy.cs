@@ -32,7 +32,8 @@ namespace Game.Core
         private Vector2 _lastPosition; // 오브젝트가 파괴된 뒤에도 남은 참조가 읽을 마지막 위치
         private bool _destroyed;
         private bool _deathPlayed;
-        private Vector2 _pendingDisplacement; // 밀치기·끌어당기기로 아직 움직이지 않은 거리. 순간이동 대신 몇 프레임에 나눠 움직인다
+        private Vector2 _pendingDisplacement; // 넉백으로 아직 움직이지 않은 거리
+        private Vector2 _pendingPull; // 중심 제한은 넉백과 별도로 당김에만 적용한다
         private static GameObject s_deathEffect;
 
         private void Awake()
@@ -59,7 +60,7 @@ namespace Game.Core
             _projectilePrefab = projectilePrefab;
             _lastHp = enemyModel.Hp;
             _deathPlayed = false;
-            _pendingDisplacement = Vector2.zero;
+            _pendingDisplacement = _pendingPull = Vector2.zero;
             _previousPosition = transform.position;
             _lastPosition = transform.position;
             _enemyModel.ProjectileFired += OnProjectileFired;
@@ -175,12 +176,17 @@ namespace Game.Core
         /// <summary>밀치기·끌어당기기로 남은 거리를 이번 프레임 몫만큼 실제로 움직인다. 남은 거리가 클수록 빨리 움직이고 끝에서 느려진다</summary>
         public void TickDisplacement(float deltaTime)
         {
-            if (_pendingDisplacement == Vector2.zero || deltaTime <= 0) { return; }
-            var step = _pendingDisplacement.sqrMagnitude <= DisplacementSnap * DisplacementSnap
-                ? _pendingDisplacement
-                : _pendingDisplacement * (1f - Mathf.Exp(-DisplacementRate * deltaTime));
-            transform.position += (Vector3)step;
-            _pendingDisplacement -= step;
+            if (deltaTime <= 0) { return; }
+            float ratio = 1f - Mathf.Exp(-DisplacementRate * deltaTime);
+            transform.position += (Vector3)(ConsumeDisplacement(ref _pendingDisplacement, ratio)
+                + ConsumeDisplacement(ref _pendingPull, ratio));
+        }
+
+        private static Vector2 ConsumeDisplacement(ref Vector2 pending, float ratio)
+        {
+            var step = pending.sqrMagnitude <= DisplacementSnap * DisplacementSnap ? pending : pending * ratio;
+            pending -= step;
+            return step;
         }
 
         private void OnAttacked()
@@ -368,7 +374,7 @@ namespace Game.Core
             if (resolved == Vector2.zero) { return; }
             // direction은 현재 위치에서 중심까지의 벡터다. 이미 예약한 도착점에서
             // 중심까지 남은 거리만 당겨, 같은 프레임의 중첩·catch-up 펄스가 중심을 넘지 않게 한다.
-            _pendingDisplacement = Vector2.MoveTowards(_pendingDisplacement, direction, resolved.magnitude);
+            _pendingPull = Vector2.MoveTowards(_pendingPull, direction, resolved.magnitude);
         }
     }
 }
