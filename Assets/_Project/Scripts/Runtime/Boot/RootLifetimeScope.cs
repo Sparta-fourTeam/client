@@ -29,7 +29,12 @@ namespace Game.Boot
             // 서버에는 아직 인증 외의 API가 없어서 나머지 API는 Local* 구현을 그대로 쓴다. 서버 인증이면 서버 로그인 뒤에 로컬 로그인을 이어서 한다
             builder.Register<LocalAuthApi>(Lifetime.Singleton);
             builder.Register<ServerBackedAuthApi>(Lifetime.Singleton);
-            builder.Register<IAuthApi>(c => ServerConfig.UseServerAuth ? c.Resolve<ServerBackedAuthApi>() : c.Resolve<LocalAuthApi>(),
+            builder.Register<IAuthApi>(c =>
+                {
+                    bool useServer = ServerConfig.UseServerAuth;
+                    Debug.Log($"[Auth] 서버 인증 사용: {useServer} (플랫폼 {Application.platform}, 개발 빌드 {Debug.isDebugBuild})");
+                    return useServer ? c.Resolve<ServerBackedAuthApi>() : c.Resolve<LocalAuthApi>();
+                },
                 Lifetime.Singleton);
             // 로그인 정보는 백엔드(Local/서버)와 상관없이 기기에 저장한다
             builder.Register<IAuthCredentialStore, PlayerPrefsAuthCredentialStore>(Lifetime.Singleton);
