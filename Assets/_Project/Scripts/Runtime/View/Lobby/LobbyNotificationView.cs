@@ -5,7 +5,7 @@ using VContainer;
 
 namespace Game.View
 {
-    public enum LobbyNotificationKind { Equipment, Skill, Reward }
+    public enum LobbyNotificationKind { Equipment, Skill, Reward, Quest }
 
     public static class LobbyAvailability
     {
@@ -33,12 +33,14 @@ namespace Game.View
         [SerializeField] private int _itemIndex = -1;
         private IGrowthCatalog _catalog;
         private PlayerProfile _profile;
+        private GameDataStore _data;
 
         [Inject]
-        public void Construct(IGrowthCatalog catalog, PlayerProfile profile)
+        public void Construct(IGrowthCatalog catalog, PlayerProfile profile, GameDataStore data)
         {
             _catalog = catalog;
             _profile = profile;
+            _data = data;
             _profile.Changed += Refresh;
             Refresh(profile);
         }
@@ -64,6 +66,9 @@ namespace Game.View
                         break;
                     case LobbyNotificationKind.Reward:
                         available = LobbyAvailability.HasAnyReward(profile);
+                        break;
+                    case LobbyNotificationKind.Quest:
+                        available = QuestRules.HasClaimable(profile, _data.QuestBoards);
                         break;
                 }
             }

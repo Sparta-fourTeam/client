@@ -21,5 +21,9 @@ namespace Game.Core
         public List<CodexRow> codex;
         /// <summary>완료한 튜토리얼 ID (Tutorials.json)</summary>
         public List<string> tutorials;
+        /// <summary>이번 일일·주간 주기의 퀘스트 진행. 진행이 생긴 퀘스트만 줄이 있다</summary>
+        public List<QuestProgressRow> quests;
+        /// <summary>이번 주기에 연 퀘스트 보물상자 ID</summary>
+        public List<string> questChests;
     }
 }

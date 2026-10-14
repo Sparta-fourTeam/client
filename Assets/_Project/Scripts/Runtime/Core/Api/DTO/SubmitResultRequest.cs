@@ -12,6 +12,9 @@ namespace Game.Core
         public int reachedWave;
         public int completedWaves;
 
+        /// <summary>이 전투에서 처치한 몬스터 수(분열·소환 포함). 퀘스트 진행에 쓰인다</summary>
+        public int killedMonsters;
+
         /// <summary>클리어 시점의 벽 잔여 체력 비율(0~100). clearRating(1~3) 판정에 쓰인다</summary>
         public int wallHpPercent;
 

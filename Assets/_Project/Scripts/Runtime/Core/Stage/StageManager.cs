@@ -279,6 +279,7 @@ namespace Game.Core
                 cleared = cleared,
                 reachedWave = _stats.ReachedWave,
                 completedWaves = _rewards?.CompletedWaves ?? 0,
+                killedMonsters = _resultKills,
                 wallHpPercent = cleared ? _stats.WallHpPercent : 0,
                 encounteredMonsterIds = _encountered == null ? new List<int>() : new List<int>(_encountered.Ids)
             };

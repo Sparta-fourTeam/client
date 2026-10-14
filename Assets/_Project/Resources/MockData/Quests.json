@@ -1,0 +1,32 @@
+[
+  {
+    "Id": "Daily",
+    "Quests": [
+      { "Id": "daily.login", "Kind": "Login", "Target": 1, "Points": 40 },
+      { "Id": "daily.energy", "Kind": "SpendEnergy", "Target": 10, "Points": 40 },
+      { "Id": "daily.kill", "Kind": "KillMonsters", "Target": 100, "Points": 20 }
+    ],
+    "Chests": [
+      { "Id": "daily.chest.20", "Points": 20, "Gold": 300, "Energy": 5 },
+      { "Id": "daily.chest.40", "Points": 40, "Gold": 500, "Energy": 5 },
+      { "Id": "daily.chest.60", "Points": 60, "Gold": 800, "Energy": 10 },
+      { "Id": "daily.chest.80", "Points": 80, "Gold": 1200, "Energy": 10 },
+      { "Id": "daily.chest.100", "Points": 100, "Gold": 2000, "Energy": 20 }
+    ]
+  },
+  {
+    "Id": "Weekly",
+    "Quests": [
+      { "Id": "weekly.login", "Kind": "Login", "Target": 5, "Points": 20 },
+      { "Id": "weekly.energy", "Kind": "SpendEnergy", "Target": 100, "Points": 40 },
+      { "Id": "weekly.kill", "Kind": "KillMonsters", "Target": 1000, "Points": 40 }
+    ],
+    "Chests": [
+      { "Id": "weekly.chest.20", "Points": 20, "Gold": 1000, "Energy": 10 },
+      { "Id": "weekly.chest.40", "Points": 40, "Gold": 2000, "Energy": 15 },
+      { "Id": "weekly.chest.60", "Points": 60, "Gold": 3000, "Energy": 20 },
+      { "Id": "weekly.chest.80", "Points": 80, "Gold": 4500, "Energy": 25 },
+      { "Id": "weekly.chest.100", "Points": 100, "Gold": 7000, "Energy": 40 }
+    ]
+  }
+]

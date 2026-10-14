@@ -63,6 +63,13 @@ namespace Game.View
             }
 
             _emptyText.text = index < _emptyMessages.Length ? _emptyMessages[index] : "";
+            OnTabSelected(index);
         }
+
+        /// <summary>탭이 바뀐 뒤 목록을 실제로 채우는 팝업(퀘스트 등)이 덮어쓴다</summary>
+        protected virtual void OnTabSelected(int index) { }
+
+        /// <summary>목록이 비었을 때의 안내 문구 오브젝트. 목록이 있는 탭에서는 끈다</summary>
+        protected TMP_Text EmptyLabel => _emptyText;
     }
 }

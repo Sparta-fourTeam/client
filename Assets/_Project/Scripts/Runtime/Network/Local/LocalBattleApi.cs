@@ -51,6 +51,7 @@ namespace Game.Network
 
             save.wallet.energyStored = current - cost;
             save.wallet.energyUpdatedAt = DateTime.UtcNow.ToString("O");
+            LocalQuests.Add(save, _data, QuestKind.SpendEnergy, cost);
 
             var row = new BattleRow
             {
@@ -117,6 +118,7 @@ namespace Game.Network
             save.wallet.gold = totalGold;
             save.exp = totalExp;
             RegisterEncounters(save, req.encounteredMonsterIds);
+            LocalQuests.Add(save, _data, QuestKind.KillMonsters, req.killedMonsters);
 
             if (req.cleared)
             {
