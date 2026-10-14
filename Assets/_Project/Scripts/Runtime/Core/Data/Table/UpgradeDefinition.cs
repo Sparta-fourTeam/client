@@ -4,12 +4,26 @@ using System.Runtime.Serialization;
 
 namespace Game.Core
 {
-    /// <summary>강화 효과 하나. 레벨마다 ValuePerLevel만큼 늘어난다 (레벨 L의 효과 = ValuePerLevel × L)</summary>
+    /// <summary>강화 효과 하나. 레벨마다 ValuePerLevel만큼 늘어난다 (레벨 L의 효과 = ValuePerLevel × L).
+    /// 레벨마다 늘어나는 양이 다르면 ValuePerLevel 대신 LevelValues에 1레벨부터 MaxLevel개를 적는다 (레벨 L의 효과 = 앞 L개의 합)</summary>
     [Serializable]
     public class UpgradeStatEffect
     {
         public string Kind;
         public float ValuePerLevel;
+        public float[] LevelValues;
+
+        public bool UsesLevelValues => LevelValues != null && LevelValues.Length > 0;
+
+        /// <summary>level의 효과량 (레벨 0 이하면 0)</summary>
+        public float ValueAt(int level)
+        {
+            if (level <= 0) { return 0; }
+            if (!UsesLevelValues) { return ValuePerLevel * level; }
+            float sum = 0;
+            for (int i = 0; i < level && i < LevelValues.Length; i++) { sum += LevelValues[i]; }
+            return sum;
+        }
     }
 
     /// <summary>업그레이드 테이블 한 행. 장비 강화와 스킬 강화가 같은 구조를 쓴다 (장비에는 장착·해제가 없고 강화만 있다)</summary>
@@ -105,6 +119,11 @@ namespace Game.Core
                 if (effect == null || string.IsNullOrWhiteSpace(effect.Kind))
                 {
                     throw new InvalidOperationException($"Upgrades {UpgradeId}: 효과에는 Kind가 필요합니다");
+                }
+
+                if (effect.UsesLevelValues && (effect.LevelValues.Length != MaxLevel || effect.ValuePerLevel != 0))
+                {
+                    throw new InvalidOperationException($"Upgrades {UpgradeId}: 효과 {effect.Kind}의 LevelValues는 MaxLevel({MaxLevel})개여야 하고 ValuePerLevel과 함께 쓸 수 없습니다");
                 }
             }
         }
