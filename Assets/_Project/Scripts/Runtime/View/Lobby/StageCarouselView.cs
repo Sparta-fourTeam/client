@@ -7,7 +7,8 @@ namespace Game.View
 {
     /// <summary>스테이지 선택창의 관문 카드를 좌우로 넘긴다. 가운데 카드 양옆에 이전·다음 관문 카드를 조금 작고 흐리게 살짝 보여 주고,
     /// 끌면 카드들이 따라 움직이다가 놓으면 다음·이전 관문으로 넘어가거나 제자리로 돌아온다. 화살표(Slide)도 같은 움직임으로 넘긴다.
-    /// 양옆 카드는 가운데 카드를 복제한 미리보기라 그리기만 하고 터치는 받지 않는다</summary>
+    /// 양옆 카드는 가운데 카드를 복제한 미리보기라 그리기만 하고 터치는 받지 않는다.
+    /// 넘기는 중에 다시 넘기면 지금 움직임을 바로 끝내고 다음 관문으로 이어서 넘긴다</summary>
     public sealed class StageCarouselView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
     {
         [SerializeField] private StageCardView _center;
@@ -19,7 +20,7 @@ namespace Game.View
         [SerializeField] private float _gap = 40f;
         [Tooltip("카드 간격의 몇 배 이상 끌면 넘어가는지")]
         [SerializeField, Range(0.05f, 0.5f)] private float _swipeThreshold = 0.2f;
-        [SerializeField] private float _slideSeconds = 0.25f;
+        [SerializeField] private float _slideSeconds = 0.15f;
 
         /// <summary>그 관문이 있는지. 없는 쪽은 미리보기를 숨기고 그쪽으로는 넘기지 않는다</summary>
         public Func<int, bool> StageExists = _ => false;
@@ -52,10 +53,16 @@ namespace Game.View
             }
         }
 
-        /// <summary>화살표: delta 쪽 카드가 가운데로 미끄러져 온 뒤 넘어간다</summary>
+        /// <summary>화살표: delta 쪽 카드가 가운데로 미끄러져 온 뒤 넘어간다. 연달아 누르면 앞 움직임을 끝내고 바로 이어 간다</summary>
         public void Slide(int delta)
         {
-            if (_dragging || IsSliding || !CanGo(delta))
+            if (_dragging)
+            {
+                return;
+            }
+
+            FinishSlide();
+            if (!CanGo(delta))
             {
                 return;
             }
@@ -65,7 +72,17 @@ namespace Game.View
 
         public void OnBeginDrag(PointerEventData eventData)
         {
-            _dragging = !IsSliding && CanSlide();
+            FinishSlide();
+            _dragging = CanSlide();
+        }
+
+        // 움직이는 중이면 끝 위치로 보내고 완료 처리(관문 바꾸기)까지 바로 한다
+        private void FinishSlide()
+        {
+            if (IsSliding)
+            {
+                _slide.Complete(true);
+            }
         }
 
         public void OnDrag(PointerEventData eventData)

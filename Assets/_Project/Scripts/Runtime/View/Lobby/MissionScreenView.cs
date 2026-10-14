@@ -72,7 +72,7 @@ namespace Game.View
             }
 
             // 카드를 끌거나 화살표를 누르면 옆 관문으로 넘어간다. 입장·수령 중에는 넘기지 않는다
-            _carousel.StageExists = id => _data.Stages.Contains(id);
+            _carousel.StageExists = IsReachable;
             _carousel.CanSlide = () => !_claiming && !_launching;
             _carousel.Moved = Move;
             _carousel.BindPreview = (card, id) => card.Show(id, _profile, busy: false, claiming: false);
@@ -97,12 +97,15 @@ namespace Game.View
         private void Move(int delta)
         {
             if (_claiming || _launching) { return; }
-            if (_data.Stages.Contains(_stageId + delta))
+            if (IsReachable(_stageId + delta))
             {
                 _stageId += delta;
                 Refresh();
             }
         }
+
+        // 지금 도전 중인 관문(열린 관문)까지만 보여 준다. 잠긴 뒤 관문은 넘겨 볼 수 없다
+        private bool IsReachable(int stageId) => _data.Stages.Contains(stageId) && _profile.IsStageUnlocked(stageId);
 
         private void Refresh()
         {
@@ -112,9 +115,9 @@ namespace Game.View
             _card.Show(_stageId, _profile, busy, _claiming);
             _carousel.Show(_stageId);
             _enterButton.interactable = unlocked && !busy;
-            // 넘어갈 관문이 없는 쪽(첫·마지막 관문)의 화살표는 숨긴다
-            _prevButton.gameObject.SetActive(_data.Stages.Contains(_stageId - 1));
-            _nextButton.gameObject.SetActive(_data.Stages.Contains(_stageId + 1));
+            // 넘어갈 관문이 없는 쪽(첫 관문, 지금 도전 중인 관문)의 화살표는 숨긴다
+            _prevButton.gameObject.SetActive(IsReachable(_stageId - 1));
+            _nextButton.gameObject.SetActive(IsReachable(_stageId + 1));
             _prevButton.interactable = !busy;
             _nextButton.interactable = !busy;
             _backButton.interactable = !busy;
