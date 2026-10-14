@@ -114,6 +114,7 @@ namespace Game.Tests
             var enemy = TestEnemy.Create(Model(modifiers: new EffectModifiers(0.5f, 1f)), new Vector2(0f, 10f));
 
             enemy.ApplyKnockback(Vector2.up, 2f);
+            for (int i = 0; i < 3; i++) { enemy.TickDisplacement(1f); }
 
             Assert.AreEqual(11f, enemy.Position.y, 0.0001f);
         }

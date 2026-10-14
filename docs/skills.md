@@ -114,7 +114,7 @@ flowchart TD
 | 시전 | `reserveCasts`(=, 예비 시전 수) | Projectile |
 | 시전 | `impactDamage`(%, 타격 지점 피해) | Projectile, Instant |
 | 변형 | `form`(변형 이름, 아래) | Projectile, Instant |
-| 투사체 | `pierceCount`(+), `projectileSpeed`(%), `projectileSize`(%), `knockback`(%) | Projectile |
+| 투사체 | `pierceCount`(+), `projectileSpeed`(%), `projectileSize`(%), `knockback`(%), `knockbackFlat`(+%, 15면 밀치기 거리 +0.15) | Projectile |
 | 폭발 | `enableExplosion`(=, 반경), `explosionDamage`(%), `explosionRadius`(%) | Projectile, Instant, Chain |
 | 상태이상 | `freezeDuration`, `frostbite`, `stunDuration`, `slowDuration`, `vulnerabilityRatio`, `vulnerabilityDuration`, `stunChance` | Projectile, Area, Beam, Chain |
 | 상태이상 | `paralysis`, `paralysisDuration` | 전체 |

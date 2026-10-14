@@ -104,6 +104,8 @@ namespace Game.Core
             Add("projectileSpeed", Plain, Projectile, (s, v) => s[Stat.ProjectileSpeed] = Math.Max(0, s[Stat.ProjectileSpeed] * Factor(v)));
             Add("projectileSize", Plain, Projectile, (s, v) => s[Stat.ProjectileSizeMultiplier] *= Factor(v), Positive);
             Add("knockback", Plain, Projectile, (s, v) => s[Stat.KnockbackDistance] = Math.Max(0, s[Stat.KnockbackDistance] * Factor(v)));
+            // 밀치기 거리를 더한다 (%: 15면 +0.15). 기본 밀치기가 0이어도 밀린다
+            Add("knockbackFlat", Plain, Projectile, (s, v) => s[Stat.KnockbackDistance] = Math.Max(0, s[Stat.KnockbackDistance] + v * .01f), Positive);
 
             // 폭발은 두 공격 모두 명중 위치에서 터뜨린다.
             Add("enableExplosion", Reaction, BothChain, (s, v) => s[Stat.ExplosionRadius] = v, Positive);
