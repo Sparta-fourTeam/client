@@ -44,6 +44,19 @@ namespace Game.Tests
             }
         }
 
+        private sealed class RecordingAnalytics : IGameplayAnalytics
+        {
+            public readonly List<int> Starts = new();
+            public readonly List<(bool cleared, bool forfeited)> Ends = new();
+            public readonly List<(string cardId, int index, string source)> Cards = new();
+            public void BattleStarted(int stageId) => Starts.Add(stageId);
+            public void BattleEnded(int stageId, bool cleared, bool forfeited, int reachedWave, int kills, float playTime)
+                => Ends.Add((cleared, forfeited));
+            public void CardPicked(int stageId, string cardId, int pickIndex, string source)
+                => Cards.Add((cardId, pickIndex, source));
+        }
+
+        private RecordingAnalytics _analytics;
         private IPublisher<StageEnded> _stageEnded;
         private IPublisher<WaveCompleted> _waveCompleted;
         private IPublisher<EnemyDied> _enemyDied;
@@ -116,7 +129,9 @@ namespace Game.Tests
                 provider.GetRequiredService<ISubscriber<WallHpChanged>>());
             _clock = new StageClock(_stateChanged);
 
+            _analytics = new RecordingAnalytics();
             var context = new StageContext();
+            context.Set(17);
             context.SetBattle("battle-1");
 
             var player = new GameObject("TestPlayer");
@@ -141,7 +156,7 @@ namespace Game.Tests
                 deck,
                 provider.GetRequiredService<IPublisher<SubmitRejected>>(),
                 provider.GetRequiredService<IPublisher<SubmitFailed>>(),
-                enemyDied: provider.GetRequiredService<ISubscriber<EnemyDied>>(), roulette: _roulette);
+                enemyDied: provider.GetRequiredService<ISubscriber<EnemyDied>>(), roulette: _roulette, analytics: _analytics);
             _manager.RetryDelay = TimeSpan.Zero;
             _manager.Start();
         }
@@ -192,6 +207,7 @@ namespace Game.Tests
             Assert.AreEqual(StageState.Playing, _manager.State);
             Assert.AreEqual(2f, Time.timeScale);
             Assert.AreEqual(1, _stats.BuildLog.Count);
+            CollectionAssert.AreEqual(new[] { (_stats.BuildLog[0], 1, "elite_roulette") }, _analytics.Cards);
         }
 
         [Test]
@@ -411,6 +427,7 @@ namespace Game.Tests
             Assert.IsFalse(_api.LastRequest.cleared);
             Assert.AreEqual("battle-1", _api.LastRequest.battleId);
             Assert.AreEqual(0, _api.LastRequest.wallHpPercent);
+            CollectionAssert.AreEqual(new[] { (false, true) }, _analytics.Ends);
         }
 
         [Test(Description = "스테이지가 클리어로 끝나면 결과를 제출하고 StageResult를 발행한 뒤 Finished가 된다")]
@@ -420,6 +437,8 @@ namespace Game.Tests
 
             Assert.AreEqual(StageState.Finished, _manager.State);
             Assert.IsTrue(_api.LastRequest.cleared);
+            CollectionAssert.AreEqual(new[] { 17 }, _analytics.Starts);
+            CollectionAssert.AreEqual(new[] { (true, false) }, _analytics.Ends);
             Assert.AreEqual(1, _results.Count);
             Assert.IsTrue(_results[0].Cleared);
             Assert.AreEqual(100, _results[0].RewardGold);
@@ -507,6 +526,8 @@ namespace Game.Tests
 
             Assert.AreEqual(1 + StageManager.AutoRetryCount + 1, _api.Requests.Count);
             Assert.AreSame(first, _api.LastRequest);
+            _stageEnded.Publish(new StageEnded(StageOutcome.Clear));
+            CollectionAssert.AreEqual(new[] { (true, false) }, _analytics.Ends, "제출 재시도와 중복 종료는 진행 이벤트를 재전송하지 않는다");
             Assert.AreEqual(1, _results.Count);
             Assert.AreEqual(StageState.Finished, _manager.State);
             Assert.AreEqual(1, _failed.Count);
@@ -587,6 +608,7 @@ namespace Game.Tests
             Assert.AreEqual(StageState.Playing, _manager.State);
             Assert.AreEqual(1, _stats.BuildLog.Count);
             Assert.AreEqual(1f, Time.timeScale);
+            CollectionAssert.AreEqual(new[] { (_stats.BuildLog[0], 1, "wave") }, _analytics.Cards);
         }
 
         [Test]
@@ -607,6 +629,7 @@ namespace Game.Tests
             }
             _manager.PickCard(0);
             Assert.AreEqual(0, _stats.BuildLog.Count);
+            Assert.IsEmpty(_analytics.Cards, "적용되지 않은 카드는 전송하지 않는다");
             Assert.AreEqual(StageState.CardSelect, _manager.State);
             Assert.AreEqual(0f, Time.timeScale);
             Assert.IsNotEmpty(_manager.Choices);
