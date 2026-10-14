@@ -33,7 +33,7 @@ namespace Game.Core
             {
                 if (value != null && value.Length > 0)
                 {
-                    throw new JsonSerializationException($"카드 '{id}': requiredCardIds는 없어졌습니다. requiredCardCounts({{cardId, count, skillId}})로 옮기세요.");
+                    throw new JsonSerializationException($"카드 '{id}': requiredCardIds는 없어졌습니다. requiredCardCounts({{cardId, count}})로 옮기세요.");
                 }
             }
         }

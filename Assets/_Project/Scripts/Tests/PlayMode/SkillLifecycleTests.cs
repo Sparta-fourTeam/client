@@ -159,7 +159,7 @@ namespace Game.Tests
                 {
                     var data = new SkillData
                     {
-                        castType = hitscan ? CastType.Hitscan : CastType.Projectile,
+                        castType = hitscan ? CastType.Instant : CastType.Projectile,
                         baseStats = new SkillBaseStats { cast = { cooldown = 1, baseDamage = 10, projectileCount = 1, range = 5 }, projectile = { speed = 1 } },
                         maxLevel = 10
                     };

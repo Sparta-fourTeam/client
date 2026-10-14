@@ -41,7 +41,7 @@ namespace Game.Tests
                 var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 5);
                 var provider = new Provider(); provider.Target.Position = Vector2.up * 2;
                 using var weapon = Casters.Projectile(data, go, go.transform, provider);
-                weapon.LevelUp(data.upgrades.Find(c => c.id == "log_size"));
+                weapon.LevelUp(data.upgrades.Find(c => c.id == "65"));
                 typeof(SkillCaster).GetMethod("OnFire", Flags).Invoke(weapon, null);
                 Projectile clone = null;
                 foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
@@ -95,7 +95,7 @@ namespace Game.Tests
                 var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 5);
                 var provider = new Provider(); provider.Target.Position = Vector2.up;
                 using var weapon = Casters.Projectile(data, go, go.transform, provider);
-                foreach (var id in new[] { "log_impact", "log_weight", "log_wound" })
+                foreach (var id in new[] { "67", "68", "69" })
                 { Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == id))); Assert.IsFalse(weapon.LevelUp(data.upgrades.Find(c => c.id == id))); }
                 typeof(SkillCaster).GetMethod("OnFire", Flags).Invoke(weapon, null);
                 Projectile clone = null;
@@ -126,9 +126,9 @@ namespace Game.Tests
                 var data = new DefaultSkillDataProvider(new GameDataStore()).LoadAll().Find(w => w.id == 5);
                 var provider = new Provider(); provider.Target.Position = Vector2.up * .1f;
                 using var weapon = Casters.Projectile(data, go, go.transform, provider);
-                foreach (var id in new[] { "log_damage", "log_size", "log_impact", "log_weight", "log_wound", "log_fire" })
+                foreach (var id in new[] { "63", "65", "67", "68", "69", "71" })
                 { Assert.IsTrue(weapon.LevelUp(data.upgrades.Find(c => c.id == id))); }
-                Assert.IsFalse(weapon.LevelUp(data.upgrades.Find(c => c.id == "log_fire")));
+                Assert.IsFalse(weapon.LevelUp(data.upgrades.Find(c => c.id == "71")));
                 typeof(SkillCaster).GetMethod("OnFire", Flags).Invoke(weapon, null);
                 Projectile clone = null;
                 foreach (var projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
@@ -173,8 +173,13 @@ namespace Game.Tests
                 var tick = typeof(Projectile).GetMethod("Tick", Flags);
                 pool.Get().Init(pool, new ProjectileSpawnSettings
                 {
-                    StartPos = Vector3.zero, Direction = Vector3.right, Speed = 100, Lifetime = 3,
-                    PierceCount = 4, TargetProvider = provider, Reactions = reactions
+                    StartPos = Vector3.zero,
+                    Direction = Vector3.right,
+                    Speed = 100,
+                    Lifetime = 3,
+                    PierceCount = 4,
+                    TargetProvider = provider,
+                    Reactions = reactions
                 });
                 tick.Invoke(projectile, new object[] { .1f });
                 CollectionAssert.AreEqual(targets, hits, "네 번째 후보 이후의 경로 적도 이동 순서대로 맞아야 한다");
@@ -183,8 +188,13 @@ namespace Game.Tests
                 Assert.AreSame(projectile, pool.Get());
                 projectile.Init(pool, new ProjectileSpawnSettings
                 {
-                    StartPos = Vector3.right * 10, Direction = Vector3.left, Speed = 100, Lifetime = 3,
-                    PierceCount = 4, TargetProvider = provider, Reactions = reactions
+                    StartPos = Vector3.right * 10,
+                    Direction = Vector3.left,
+                    Speed = 100,
+                    Lifetime = 3,
+                    PierceCount = 4,
+                    TargetProvider = provider,
+                    Reactions = reactions
                 });
                 tick.Invoke(projectile, new object[] { .1f });
                 CollectionAssert.AreEqual(new[] { targets[4], targets[3], targets[2], targets[1], targets[0] }, hits);

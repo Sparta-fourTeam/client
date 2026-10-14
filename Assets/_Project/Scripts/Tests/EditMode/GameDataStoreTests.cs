@@ -21,6 +21,66 @@ namespace Game.Tests
             Assert.AreEqual(originalDamage, store.LoadSkills()[0].baseStats.cast.baseDamage);
         }
 
+        private sealed class NumericCardState : IUpgradeState
+        {
+            public readonly Dictionary<int, int> Levels = new();
+            public readonly Dictionary<int, int> Permanent = new();
+            public readonly Dictionary<(int, string), int> Counts = new();
+            public int GetWeaponLevel(int id) => Levels.TryGetValue(id, out int value) ? value : 0;
+            public int GetPermanentWeaponLevel(int id) => Permanent.TryGetValue(id, out int value) ? value : 0;
+            public int GetAcquiredCount(int id, string card) => Counts.TryGetValue((id, card), out int value) ? value : 0;
+        }
+
+        [Test(Description = "서버 숫자 카드 ID를 직접 읽으며, cardId만으로 소속을 찾고 생략한 count와 다른 스킬·2회·배타 조건이 실제 선택 가능 여부에 적용된다")]
+        public void ParseSkills_NumericCardIdsPreserveOptionalAndScopedConditions()
+        {
+            string json = @"[
+                { 'id':13, 'name':'광선', 'castType':'Beam', 'maxLevel':3, 'baseStats':{},
+                  'upgrades':[
+                    { 'id':92, 'name':'선행', 'effects':[{'kind':'damage','value':20}] },
+                    { 'id':100, 'name':'자식 시전', 'effects':[{'kind':'onEvent','trigger':'Start','skillId':14}],
+                      'requiredWeaponIds':[16],
+                      'requiredCardCounts':[{'cardId':92},{'cardId':117,'count':2}],
+                      'exclusions':[{'cardId':118,'belowPermanentLevel':3}] }
+                  ] },
+                { 'id':14, 'name':'보조 광선', 'castType':'Beam', 'childOnly':true,
+                  'maxLevel':1, 'baseStats':{'cast':{'baseDamage':10}}, 'mirrorCards':[{'cardId':92}], 'upgrades':[] },
+                { 'id':16, 'name':'집중 광선', 'castType':'Beam', 'maxLevel':3, 'baseStats':{},
+                  'upgrades':[
+                    { 'id':117, 'name':'선행', 'maxPickCount':2, 'effects':[{'kind':'damage','value':5}] },
+                    { 'id':118, 'name':'배타', 'effects':[{'kind':'damage','value':10}] }
+                  ] }
+            ]";
+            var catalog = GameDataStore.ParseSkills(json);
+            var card = catalog.Single(w => w.id == 13).upgrades.Single(c => c.id == "100");
+            var state = new NumericCardState();
+            state.Levels[13] = 1;
+            state.Counts[(13, "92")] = 1;
+            state.Counts[(16, "117")] = 2;
+            Assert.IsFalse(UpgradeEligibility.CanAcquire(card, 13, state), "보유해야 하는 스킬의 서버 ID를 직접 사용한다");
+            state.Levels[16] = 1;
+            Assert.IsTrue(UpgradeEligibility.CanAcquire(card, 13, state));
+            state.Counts[(13, "92")] = 0;
+            Assert.IsFalse(UpgradeEligibility.CanAcquire(card, 13, state), "cardId로 같은 스킬을 찾으며 생략한 count는 1회다");
+            state.Counts[(13, "92")] = 1;
+            state.Counts[(16, "117")] = 1;
+            Assert.IsFalse(UpgradeEligibility.CanAcquire(card, 13, state), "다른 스킬의 명시한 2회 조건을 지킨다");
+            state.Counts[(16, "117")] = 2;
+            state.Counts[(16, "118")] = 1;
+            Assert.IsFalse(UpgradeEligibility.CanAcquire(card, 13, state));
+            state.Permanent[13] = 3;
+            Assert.IsTrue(UpgradeEligibility.CanAcquire(card, 13, state), "배타 조건은 그 조건을 가진 스킬의 영구 레벨을 사용한다");
+            var byId = catalog.ToDictionary(w => w.id);
+            var builder = new SkillConfigBuilder(SkillConfig.FromDefinition(byId[14]));
+            Assert.IsTrue(builder.TryApplyCatalog(MirroredEffects.For(byId[14], byId, state)));
+            Assert.AreEqual(12, builder.Build().Stats.Cast.Damage, 0.0001f, "cardId만으로 다른 스킬에서 고른 카드의 효과를 가져온다");
+            foreach (var references in new object[] { card.requiredCardCounts, card.exclusions, byId[14].mirrorCards })
+            {
+                StringAssert.DoesNotContain("skillId", JsonConvert.SerializeObject(references));
+                StringAssert.DoesNotContain("OwnerSkillId", JsonConvert.SerializeObject(references));
+            }
+        }
+
         private static WaveDefinition Wave(int monsterA, int countA, int monsterB, int countB) => new()
         {
             Spawns = new List<WaveSpawn>
@@ -80,6 +140,8 @@ namespace Game.Tests
             var noInterval = JsonConvert.DeserializeObject<MonsterDefinition>(JsonConvert.SerializeObject(monster));
             noInterval.AttackInterval = 0f;
             Assert.Throws<InvalidOperationException>(() => noInterval.Validate());
+            Assert.Throws<JsonSerializationException>(() => JsonConvert.DeserializeObject<MonsterDefinition>("{\"IsBoss\":true}"), "등급 누락을 일반 몬스터로 추측하지 않는다");
+            Assert.Throws<JsonSerializationException>(() => JsonConvert.DeserializeObject<MonsterDefinition>("{\"Grade\":\"Unknown\"}"));
         }
 
         [Test]

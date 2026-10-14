@@ -63,9 +63,39 @@ namespace Game.Core
                 }
             }
             SkillUpgradeTransaction.ValidateCatalog(weapons);
+            ResolveCardOwners(weapons);
             ValidateConditions(weapons);
             ValidateChildSkills(weapons);
             ValidateMirrorCards(weapons);
+        }
+
+        // 카드 ID는 카탈로그 전체에서 유일하다. 소속 스킬을 서버에서 중복 수신하지 않고 로드 때 찾는다.
+        private static void ResolveCardOwners(List<SkillData> weapons)
+        {
+            var owners = new Dictionary<string, int>();
+            foreach (var weapon in weapons)
+            {
+                foreach (var card in weapon.upgrades) { owners.Add(card.id, weapon.id); }
+            }
+            int OwnerOf(string cardId) => !string.IsNullOrEmpty(cardId) && owners.TryGetValue(cardId, out int owner) ? owner : -1;
+            foreach (var weapon in weapons)
+            {
+                foreach (var card in weapon.upgrades)
+                {
+                    foreach (var requirement in card.requiredCardCounts ?? Array.Empty<CardCountRequirement>())
+                    {
+                        if (requirement != null) { requirement.OwnerSkillId = OwnerOf(requirement.cardId); }
+                    }
+                    foreach (var exclusion in card.exclusions ?? Array.Empty<CardExclusion>())
+                    {
+                        if (exclusion != null) { exclusion.OwnerSkillId = OwnerOf(exclusion.cardId); }
+                    }
+                }
+                foreach (var mirrored in weapon.mirrorCards ?? new List<MirroredCard>())
+                {
+                    if (mirrored != null) { mirrored.OwnerSkillId = OwnerOf(mirrored.cardId); }
+                }
+            }
         }
 
         // 다른 스킬의 카드 효과를 가져오는 자식 스킬은 존재하는 스킬·카드만 가리켜야 하고, 그 카드의 효과를 자식이 소비해야 한다(소비하지 않으면 적용돼도 아무 일이 없다)
@@ -78,7 +108,7 @@ namespace Game.Core
                 if (weapon.mirrorCards == null) { continue; }
                 foreach (var mirrored in weapon.mirrorCards)
                 {
-                    var option = mirrored != null && byId.TryGetValue(mirrored.skillId, out var owner) && mirrored.skillId != weapon.id
+                    var option = mirrored != null && byId.TryGetValue(mirrored.OwnerSkillId, out var owner) && mirrored.OwnerSkillId != weapon.id
                         ? owner.upgrades.Find(c => c.id == mirrored.cardId)
                         : null;
                     if (option == null)
@@ -275,7 +305,7 @@ namespace Game.Core
                         foreach (var r in option.requiredCardCounts)
                         {
                             if (r == null) { Invalid(); }
-                            Require(r.cardId, r.skillId == 0 ? weapon.id : r.skillId, r.count);
+                            Require(r.cardId, r.count);
                         }
                     }
                     if (option.exclusions != null)
@@ -283,14 +313,13 @@ namespace Game.Core
                         foreach (var e in option.exclusions)
                         {
                             if (e == null || e.belowPermanentLevel < 0 || string.IsNullOrEmpty(e.cardId)
-                                || !owners.TryGetValue(e.cardId, out var owner)
-                                || owner != (e.skillId == 0 ? weapon.id : e.skillId)) { Invalid(); }
+                                || !owners.ContainsKey(e.cardId)) { Invalid(); }
                         }
                     }
-                    void Require(string id, int owner, int count)
+                    void Require(string id, int count)
                     {
                         if (string.IsNullOrEmpty(id) || id == option.id || count <= 0
-                            || !owners.TryGetValue(id, out var actualOwner) || actualOwner != owner
+                            || !owners.ContainsKey(id)
                             || !options[id].enabled || count > options[id].maxPickCount) { Invalid(); }
                         edges[option.id].Add(id);
                     }

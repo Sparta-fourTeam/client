@@ -34,7 +34,7 @@
 
 - **이름 규칙**: `Monsters`, `Stages`, `StageRewards`, `Items`, `Upgrades`, `GeneralCards`, `PlayerLevels`, `Energy`, `Combat`은 PascalCase이고 `Skills`만 camelCase다. 표마다 자기 스타일을 지킨다.
 - **속성 이름**: `Neutral`, `Fire`, `Ice`, `Wind`, `Lightning`, `Earth`. 스킬의 `element`도 같은 이름 문자열로 적는다.
-- **시전 형태 이름**: `Projectile`, `Hitscan`, `Area`, `Beam`, `Chain`. 스킬의 `castType`도 같은 이름 문자열로 적는다. `projectilePath`는 `Aimed`(생략 시 기본), `RollingLane`, `Radial`이다.
+- **시전 형태 이름**: `Projectile`, `Instant`, `Area`, `Beam`, `Chain`. 스킬의 `castType`도 같은 이름 문자열로 적는다. `projectilePath`는 `Aimed`(생략 시 기본), `Cloud`, `Radial`이다.
 - **패시브 Kind**: `Spawn`, `Immunity`, `Modifier`, `Shield`, `Evade`, `LowHp`, `HealOnHit`, `SpeedBoost`.
 - **면역 이름**: `Stun`, `Burn`, `Paralysis`, `Freeze`, `Slow`, `Frostbite`, `Vulnerability`, `AllDebuffs`.
 
@@ -61,8 +61,7 @@
 | `AttackInterval` | float | 필수 | `2.5` |
 | `AttackRange` | float | | `0` |
 | `ProjectileSpeed` | float | | `0` (0보다 크면 원거리) |
-| `IsBoss` | bool | | `FALSE` |
-| `IsElite` | bool | | `FALSE` |
+| `Grade` | enum 이름 문자열 | 필수 | `Normal`, `Elite`, `Boss` |
 | `BurstCount` | int | | 비우면 1 |
 | `BurstInterval` | float | | 비움 |
 | `Resists` | JSON 문자열 | | `{"Lightning": -1}` |

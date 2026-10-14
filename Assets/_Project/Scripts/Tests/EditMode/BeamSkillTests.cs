@@ -12,8 +12,8 @@ namespace Game.Tests
     /// <summary>광선(에너지 빔): 선 모양 판정, 공격 횟수, 겨눈 적 추적, 카드 효과, 자식 광선</summary>
     public sealed class BeamSkillTests
     {
-        private const int SunBeamId = 16;
-        private const int FocusBeamId = 19;
+        private const int SunBeamId = 13;
+        private const int FocusBeamId = 16;
         private const BindingFlags Flags = BindingFlags.NonPublic | BindingFlags.Instance;
         private readonly List<GameObject> created = new List<GameObject>();
         private CatalogWorld world;
@@ -194,7 +194,7 @@ namespace Game.Tests
         {
             world = new CatalogWorld();
             var beam = world.Create(FocusBeamId);
-            world.Take(beam, "focus_beam_focus");
+            world.Take(beam, "117");
             var main = world.AddEnemy(4, 0);
             var other = world.AddEnemy(8, 0);
             typeof(SkillCaster).GetMethod("OnFire", Flags).Invoke(beam, null);
@@ -411,7 +411,7 @@ namespace Game.Tests
         [Test]
         public void Cards_StatusEffectsReachBeamTargets()
         {
-            var beam = SunBeam("energy_beam_split", "energy_beam_dazzle", "energy_beam_weaken", "energy_beam_freeze");
+            var beam = SunBeam("95", "96", "97", "104");
             var aim = world.AddEnemy(4, 0);
             typeof(SkillCaster).GetMethod("OnFire", Flags).Invoke(beam, null);
             var zone = Zones().Single();
@@ -428,7 +428,7 @@ namespace Game.Tests
         [Test]
         public void FireCard_CastsAnAuxiliaryBeamAtTheStartOfTheMainBeam()
         {
-            var beam = SunBeam("energy_beam_overload", "energy_beam_amplify", "energy_beam_fire");
+            var beam = SunBeam("92", "93", "100");
             world.AddEnemy(4, 0);
             typeof(SkillCaster).GetMethod("OnFire", Flags).Invoke(beam, null);
             Assert.AreEqual(2, Zones().Count, "본 광선과 보조 광선이 함께 나간다");

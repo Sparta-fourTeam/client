@@ -10,7 +10,7 @@ namespace Game.Core
         private static readonly Dictionary<CastType, Func<GameObject, Game.Core.Defense.Wall, IAttackStrategy>> Strategies = new()
         {
             [CastType.Projectile] = (prefab, wall) => new ProjectileStrategy(prefab, wall),
-            [CastType.Hitscan] = (prefab, wall) => new HitscanStrategy(prefab),
+            [CastType.Instant] = (prefab, wall) => new HitscanStrategy(prefab),
             [CastType.Area] = (prefab, wall) => new AreaStrategy(prefab),
             [CastType.Beam] = (prefab, wall) => new BeamStrategy(prefab),
             [CastType.Chain] = (prefab, wall) => new ChainStrategy(prefab)
@@ -30,7 +30,7 @@ namespace Game.Core
             var strategy = config.Attack.Type switch
             {
                 CastType.Projectile => new ProjectileStrategy(prefab, wall, formPrefabs),
-                CastType.Hitscan => new HitscanStrategy(prefab, formPrefabs),
+                CastType.Instant => new HitscanStrategy(prefab, formPrefabs),
                 _ => create(prefab, wall)
             };
             return new SkillCaster(data, caster, targetProvider, strategy, config, reservations);

@@ -32,7 +32,7 @@
     },
     "upgrades": [
       {
-        "id": "arrow_multishot",
+        "id": 1,
         "maxPickCount": 2,
         "effects": [
           {
@@ -57,7 +57,7 @@
         ]
       },
       {
-        "id": "arrow_sharp",
+        "id": 2,
         "maxPickCount": 3,
         "effects": [
           {
@@ -67,7 +67,7 @@
         ]
       },
       {
-        "id": "arrow_light",
+        "id": 3,
         "maxPickCount": 2,
         "effects": [
           {
@@ -81,7 +81,7 @@
         ]
       },
       {
-        "id": "arrow_burst",
+        "id": 4,
         "maxPickCount": 1,
         "effects": [
           {
@@ -95,9 +95,8 @@
         ],
         "requiredCardCounts": [
           {
-            "cardId": "arrow_sharp",
-            "count": 1,
-            "skillId": 0
+            "cardId": 2,
+            "count": 1
           }
         ],
         "variants": [
@@ -117,7 +116,7 @@
         ]
       },
       {
-        "id": "arrow_rapid",
+        "id": 5,
         "maxPickCount": 1,
         "effects": [
           {
@@ -127,14 +126,13 @@
         ],
         "requiredCardCounts": [
           {
-            "cardId": "arrow_burst",
-            "count": 1,
-            "skillId": 0
+            "cardId": 4,
+            "count": 1
           }
         ]
       },
       {
-        "id": "arrow_storm",
+        "id": 6,
         "maxPickCount": 1,
         "effects": [
           {
@@ -144,15 +142,14 @@
         ],
         "requiredCardCounts": [
           {
-            "cardId": "arrow_burst",
-            "count": 1,
-            "skillId": 0
+            "cardId": 4,
+            "count": 1
           }
         ],
         "minPermanentLevel": 21
       },
       {
-        "id": "arrow_pierce",
+        "id": 7,
         "maxPickCount": 2,
         "effects": [
           {
@@ -170,7 +167,7 @@
         ]
       },
       {
-        "id": "arrow_explosion",
+        "id": 8,
         "maxPickCount": 1,
         "effects": [
           {
@@ -183,12 +180,12 @@
         ],
         "exclusions": [
           {
-            "cardId": "arrow_shock"
+            "cardId": 11
           }
         ]
       },
       {
-        "id": "arrow_explosion_damage",
+        "id": 9,
         "maxPickCount": 2,
         "effects": [
           {
@@ -198,15 +195,14 @@
         ],
         "requiredCardCounts": [
           {
-            "cardId": "arrow_explosion",
-            "count": 1,
-            "skillId": 0
+            "cardId": 8,
+            "count": 1
           }
         ],
         "requiredWeaponIds": []
       },
       {
-        "id": "arrow_explosion_radius",
+        "id": 10,
         "maxPickCount": 1,
         "effects": [
           {
@@ -216,15 +212,14 @@
         ],
         "requiredCardCounts": [
           {
-            "cardId": "arrow_explosion_damage",
-            "count": 1,
-            "skillId": 0
+            "cardId": 9,
+            "count": 1
           }
         ],
         "requiredWeaponIds": []
       },
       {
-        "id": "arrow_shock",
+        "id": 11,
         "maxPickCount": 1,
         "effects": [
           {
@@ -238,18 +233,18 @@
         "enabled": true,
         "exclusions": [
           {
-            "cardId": "arrow_explosion"
+            "cardId": 8
           }
         ]
       },
       {
-        "id": "arrow_spread",
+        "id": 12,
         "maxPickCount": 1,
         "effects": [
           {
             "kind": "onEvent",
             "trigger": "Hit",
-            "skillId": 13,
+            "skillId": 10,
             "count": 2,
             "excludeHit": true,
             "inherit": {
@@ -260,53 +255,50 @@
         ],
         "requiredCardCounts": [
           {
-            "cardId": "arrow_sharp",
-            "count": 1,
-            "skillId": 0
+            "cardId": 2,
+            "count": 1
           }
         ],
         "minPermanentLevel": 0
       },
       {
-        "id": "arrow_barrage",
+        "id": 13,
         "maxPickCount": 1,
         "effects": [
           {
             "kind": "projectileCount",
             "value": 4,
-            "target": 13
+            "target": 10
           }
         ],
         "requiredCardCounts": [
           {
-            "cardId": "arrow_spread",
-            "count": 1,
-            "skillId": 0
+            "cardId": 12,
+            "count": 1
           }
         ],
         "minPermanentLevel": 0
       },
       {
-        "id": "arrow_aux_damage",
+        "id": 14,
         "maxPickCount": 1,
         "effects": [
           {
             "kind": "damage",
             "value": 100,
-            "target": 13
+            "target": 10
           }
         ],
         "requiredCardCounts": [
           {
-            "cardId": "arrow_spread",
-            "count": 1,
-            "skillId": 0
+            "cardId": 12,
+            "count": 1
           }
         ],
         "minPermanentLevel": 0
       },
       {
-        "id": "arrow_amplify",
+        "id": 15,
         "maxPickCount": 1,
         "effects": [
           {
@@ -316,15 +308,14 @@
         ],
         "requiredCardCounts": [
           {
-            "cardId": "arrow_spread",
-            "count": 1,
-            "skillId": 0
+            "cardId": 12,
+            "count": 1
           }
         ],
         "minPermanentLevel": 13
       },
       {
-        "id": "arrow_thunder",
+        "id": 16,
         "maxPickCount": 1,
         "effects": [
           {
@@ -342,19 +333,17 @@
         ],
         "requiredCardCounts": [
           {
-            "cardId": "arrow_light",
-            "count": 1,
-            "skillId": 0
+            "cardId": 3,
+            "count": 1
           },
           {
-            "cardId": "arrow_shock",
-            "count": 1,
-            "skillId": 0
+            "cardId": 11,
+            "count": 1
           }
         ]
       },
       {
-        "id": "arrow_quick",
+        "id": 17,
         "maxPickCount": 1,
         "effects": [
           {
@@ -368,14 +357,13 @@
         ],
         "requiredCardCounts": [
           {
-            "cardId": "arrow_thunder",
-            "count": 1,
-            "skillId": 0
+            "cardId": 16,
+            "count": 1
           }
         ]
       },
       {
-        "id": "arrow_rod",
+        "id": 18,
         "maxPickCount": 1,
         "effects": [
           {
@@ -385,42 +373,39 @@
         ],
         "requiredCardCounts": [
           {
-            "cardId": "arrow_quick",
-            "count": 1,
-            "skillId": 0
+            "cardId": 17,
+            "count": 1
           }
         ]
       },
       {
-        "id": "arrow_aux_rod",
+        "id": 19,
         "maxPickCount": 1,
         "effects": [
           {
             "kind": "lightningStrike",
             "value": 50,
-            "target": 13
+            "target": 10
           }
         ],
         "requiredCardCounts": [
           {
-            "cardId": "arrow_spread",
-            "count": 1,
-            "skillId": 0
+            "cardId": 12,
+            "count": 1
           },
           {
-            "cardId": "arrow_rod",
-            "count": 1,
-            "skillId": 0
+            "cardId": 18,
+            "count": 1
           }
         ]
       },
       {
-        "id": "arrow_aux_explosion",
+        "id": 20,
         "maxPickCount": 1,
         "effects": [
           {
             "kind": "inherit",
-            "skillId": 13,
+            "skillId": 10,
             "inherit": {
               "explosionRadius": 1,
               "explosionDamage": 0.5
@@ -429,19 +414,17 @@
         ],
         "requiredCardCounts": [
           {
-            "cardId": "arrow_explosion",
-            "count": 1,
-            "skillId": 0
+            "cardId": 8,
+            "count": 1
           },
           {
-            "cardId": "arrow_spread",
-            "count": 1,
-            "skillId": 0
+            "cardId": 12,
+            "count": 1
           }
         ]
       },
       {
-        "id": "arrow_flame",
+        "id": 21,
         "maxPickCount": 1,
         "effects": [
           {
@@ -459,19 +442,17 @@
         ],
         "requiredCardCounts": [
           {
-            "cardId": "arrow_explosion",
-            "count": 1,
-            "skillId": 0
+            "cardId": 8,
+            "count": 1
           },
           {
-            "cardId": "arrow_sharp",
-            "count": 1,
-            "skillId": 0
+            "cardId": 2,
+            "count": 1
           }
         ]
       },
       {
-        "id": "arrow_neutral_1",
+        "id": 22,
         "maxPickCount": 1,
         "effects": [
           {
@@ -482,11 +463,11 @@
         "enabled": true,
         "sharedId": "shared_arrow_energy_damage",
         "requiredWeaponIds": [
-          16
+          13
         ]
       },
       {
-        "id": "arrow_neutral_2",
+        "id": 23,
         "maxPickCount": 1,
         "effects": [
           {
@@ -497,7 +478,7 @@
         "enabled": true,
         "sharedId": "shared_arrow_focus_damage",
         "requiredWeaponIds": [
-          19
+          16
         ]
       }
     ]
@@ -534,7 +515,7 @@
     },
     "upgrades": [
       {
-        "id": "fireball_burst",
+        "id": 24,
         "maxPickCount": 2,
         "effects": [
           {
@@ -544,19 +525,18 @@
         ],
         "exclusions": [
           {
-            "cardId": "fireball_phoenix",
+            "cardId": 34,
             "belowPermanentLevel": 25
           }
         ]
       },
       {
-        "id": "fireball_burst_ii",
+        "id": 25,
         "maxPickCount": 1,
         "requiredCardCounts": [
           {
-            "cardId": "fireball_burst",
-            "count": 2,
-            "skillId": 0
+            "cardId": 24,
+            "count": 2
           }
         ],
         "effects": [
@@ -582,13 +562,13 @@
         ],
         "exclusions": [
           {
-            "cardId": "fireball_phoenix",
+            "cardId": 34,
             "belowPermanentLevel": 25
           }
         ]
       },
       {
-        "id": "fireball_explosion_damage",
+        "id": 26,
         "maxPickCount": 3,
         "effects": [
           {
@@ -598,7 +578,7 @@
         ]
       },
       {
-        "id": "fireball_explosion_radius",
+        "id": 27,
         "maxPickCount": 1,
         "effects": [
           {
@@ -608,14 +588,13 @@
         ],
         "requiredCardCounts": [
           {
-            "cardId": "fireball_explosion_damage",
-            "count": 1,
-            "skillId": 0
+            "cardId": 26,
+            "count": 1
           }
         ]
       },
       {
-        "id": "fireball_burn",
+        "id": 28,
         "maxPickCount": 1,
         "effects": [
           {
@@ -629,14 +608,13 @@
         ],
         "requiredCardCounts": [
           {
-            "cardId": "fireball_explosion_damage",
-            "count": 1,
-            "skillId": 0
+            "cardId": 26,
+            "count": 1
           }
         ]
       },
       {
-        "id": "fireball_inferno",
+        "id": 29,
         "maxPickCount": 1,
         "effects": [
           {
@@ -646,15 +624,14 @@
         ],
         "requiredCardCounts": [
           {
-            "cardId": "fireball_burn",
-            "count": 1,
-            "skillId": 0
+            "cardId": 28,
+            "count": 1
           }
         ],
         "minPermanentLevel": 0
       },
       {
-        "id": "fireball_spreading_burn",
+        "id": 30,
         "maxPickCount": 1,
         "effects": [
           {
@@ -664,15 +641,14 @@
         ],
         "requiredCardCounts": [
           {
-            "cardId": "fireball_burn",
-            "count": 1,
-            "skillId": 0
+            "cardId": 28,
+            "count": 1
           }
         ],
         "minPermanentLevel": 5
       },
       {
-        "id": "fireball_impact_damage",
+        "id": 31,
         "maxPickCount": 3,
         "effects": [
           {
@@ -682,7 +658,7 @@
         ]
       },
       {
-        "id": "fireball_training",
+        "id": 32,
         "maxPickCount": 1,
         "effects": [
           {
@@ -696,25 +672,23 @@
         ],
         "requiredCardCounts": [
           {
-            "cardId": "fireball_impact_damage",
-            "count": 1,
-            "skillId": 0
+            "cardId": 31,
+            "count": 1
           },
           {
-            "cardId": "fireball_explosion_radius",
-            "count": 1,
-            "skillId": 0
+            "cardId": 27,
+            "count": 1
           }
         ]
       },
       {
-        "id": "fireball_flames",
+        "id": 33,
         "maxPickCount": 1,
         "effects": [
           {
             "kind": "onEvent",
             "trigger": "Hit",
-            "skillId": 14,
+            "skillId": 11,
             "count": 3,
             "excludeHit": true,
             "inherit": {
@@ -725,19 +699,17 @@
         ],
         "requiredCardCounts": [
           {
-            "cardId": "fireball_impact_damage",
-            "count": 1,
-            "skillId": 0
+            "cardId": 31,
+            "count": 1
           },
           {
-            "cardId": "fireball_explosion_damage",
-            "count": 1,
-            "skillId": 0
+            "cardId": 26,
+            "count": 1
           }
         ]
       },
       {
-        "id": "fireball_phoenix",
+        "id": 34,
         "maxPickCount": 1,
         "effects": [
           {
@@ -751,20 +723,18 @@
         ],
         "requiredCardCounts": [
           {
-            "cardId": "fireball_impact_damage",
-            "count": 1,
-            "skillId": 0
+            "cardId": 31,
+            "count": 1
           },
           {
-            "cardId": "fireball_explosion_radius",
-            "count": 1,
-            "skillId": 0
+            "cardId": 27,
+            "count": 1
           }
         ],
         "minPermanentLevel": 13,
         "exclusions": [
           {
-            "cardId": "fireball_burst",
+            "cardId": 24,
             "belowPermanentLevel": 25
           }
         ]
@@ -774,7 +744,7 @@
   {
     "id": 3,
     "unlockLevel": 1,
-    "castType": "Hitscan",
+    "castType": "Instant",
     "element": "Lightning",
     "maxLevel": 14,
     "progressionId": "lightning",
@@ -809,7 +779,7 @@
     },
     "upgrades": [
       {
-        "id": "lightning_damage",
+        "id": 35,
         "maxPickCount": 3,
         "effects": [
           {
@@ -819,7 +789,7 @@
         ]
       },
       {
-        "id": "lightning_burst",
+        "id": 36,
         "maxPickCount": 3,
         "effects": [
           {
@@ -844,7 +814,7 @@
         ]
       },
       {
-        "id": "lightning_storm",
+        "id": 37,
         "maxPickCount": 1,
         "effects": [
           {
@@ -855,7 +825,7 @@
         "requiredWeaponIds": []
       },
       {
-        "id": "lightning_storm_damage",
+        "id": 38,
         "maxPickCount": 1,
         "effects": [
           {
@@ -865,15 +835,14 @@
         ],
         "requiredCardCounts": [
           {
-            "cardId": "lightning_storm",
-            "count": 1,
-            "skillId": 0
+            "cardId": 37,
+            "count": 1
           }
         ],
         "requiredWeaponIds": []
       },
       {
-        "id": "lightning_storm_radius",
+        "id": 39,
         "maxPickCount": 1,
         "effects": [
           {
@@ -883,15 +852,14 @@
         ],
         "requiredCardCounts": [
           {
-            "cardId": "lightning_storm_damage",
-            "count": 1,
-            "skillId": 0
+            "cardId": 38,
+            "count": 1
           }
         ],
         "requiredWeaponIds": []
       },
       {
-        "id": "lightning_voltage",
+        "id": 40,
         "maxPickCount": 1,
         "effects": [
           {
@@ -905,25 +873,23 @@
         ]
       },
       {
-        "id": "lightning_split",
+        "id": 41,
         "maxPickCount": 1,
         "requiredCardCounts": [
           {
-            "cardId": "lightning_voltage",
-            "count": 1,
-            "skillId": 0
+            "cardId": 40,
+            "count": 1
           },
           {
-            "cardId": "lightning_damage",
-            "count": 1,
-            "skillId": 0
+            "cardId": 35,
+            "count": 1
           }
         ],
         "effects": [
           {
             "kind": "onEvent",
             "trigger": "Impact",
-            "skillId": 15,
+            "skillId": 12,
             "count": 6,
             "excludeHit": true,
             "inherit": {
@@ -934,37 +900,35 @@
         ]
       },
       {
-        "id": "lightning_particle_voltage",
+        "id": 42,
         "maxPickCount": 1,
         "requiredCardCounts": [
           {
-            "cardId": "lightning_split",
-            "count": 1,
-            "skillId": 0
+            "cardId": 41,
+            "count": 1
           }
         ],
         "effects": [
           {
             "kind": "damage",
             "value": 40,
-            "target": 15
+            "target": 12
           },
           {
             "kind": "paralysis",
             "value": 0.5,
-            "target": 15
+            "target": 12
           }
         ]
       },
       {
-        "id": "lightning_sanction",
+        "id": 43,
         "maxPickCount": 1,
         "minPermanentLevel": 5,
         "requiredCardCounts": [
           {
-            "cardId": "lightning_damage",
-            "count": 1,
-            "skillId": 0
+            "cardId": 35,
+            "count": 1
           }
         ],
         "effects": [
@@ -979,24 +943,22 @@
         ]
       },
       {
-        "id": "lightning_judgement",
+        "id": 44,
         "maxPickCount": 1,
         "minPermanentLevel": 13,
         "requiredCardCounts": [
           {
-            "cardId": "lightning_voltage",
-            "count": 1,
-            "skillId": 0
+            "cardId": 40,
+            "count": 1
           },
           {
-            "cardId": "lightning_sanction",
-            "count": 1,
-            "skillId": 0
+            "cardId": 43,
+            "count": 1
           }
         ],
         "exclusions": [
           {
-            "cardId": "lightning_storm"
+            "cardId": 37
           }
         ],
         "effects": [
@@ -1011,13 +973,12 @@
         ]
       },
       {
-        "id": "lightning_field",
+        "id": 45,
         "maxPickCount": 1,
         "requiredCardCounts": [
           {
-            "cardId": "lightning_storm",
-            "count": 1,
-            "skillId": 0
+            "cardId": 37,
+            "count": 1
           }
         ],
         "effects": [
@@ -1028,13 +989,12 @@
         ]
       },
       {
-        "id": "lightning_field_stable",
+        "id": 46,
         "maxPickCount": 1,
         "requiredCardCounts": [
           {
-            "cardId": "lightning_field",
-            "count": 1,
-            "skillId": 0
+            "cardId": 45,
+            "count": 1
           }
         ],
         "effects": [
@@ -1049,13 +1009,12 @@
         ]
       },
       {
-        "id": "lightning_field_voltage",
+        "id": 47,
         "maxPickCount": 1,
         "requiredCardCounts": [
           {
-            "cardId": "lightning_field",
-            "count": 1,
-            "skillId": 0
+            "cardId": 45,
+            "count": 1
           }
         ],
         "effects": [
@@ -1066,7 +1025,7 @@
         ]
       },
       {
-        "id": "lightning_neutral",
+        "id": 48,
         "maxPickCount": 1,
         "effects": [
           {
@@ -1077,11 +1036,11 @@
         "enabled": true,
         "sharedId": "shared_lightning_chain_damage",
         "requiredWeaponIds": [
-          18
+          15
         ]
       },
       {
-        "id": "lightning_polish",
+        "id": 49,
         "maxPickCount": 1,
         "effects": [
           {
@@ -1091,7 +1050,7 @@
         ],
         "enabled": true,
         "requiredWeaponIds": [
-          18
+          15
         ],
         "sharedId": "shared_lightning_chain_cooldown",
         "minPermanentLevel": 21
@@ -1129,7 +1088,7 @@
     },
     "upgrades": [
       {
-        "id": "frost_crystal_repeat",
+        "id": 50,
         "maxPickCount": 2,
         "effects": [
           {
@@ -1143,7 +1102,7 @@
         ],
         "exclusions": [
           {
-            "cardId": "frost_crystal_volley"
+            "cardId": 55
           }
         ],
         "variants": [
@@ -1159,7 +1118,7 @@
         ]
       },
       {
-        "id": "frost_crystal_damage",
+        "id": 51,
         "maxPickCount": 3,
         "effects": [
           {
@@ -1169,7 +1128,7 @@
         ]
       },
       {
-        "id": "frost_crystal_extreme",
+        "id": 52,
         "maxPickCount": 1,
         "effects": [
           {
@@ -1183,7 +1142,7 @@
         ]
       },
       {
-        "id": "frost_crystal_pierce",
+        "id": 53,
         "maxPickCount": 3,
         "effects": [
           {
@@ -1197,7 +1156,7 @@
         ]
       },
       {
-        "id": "frost_crystal_heavy",
+        "id": 54,
         "maxPickCount": 1,
         "effects": [
           {
@@ -1215,14 +1174,13 @@
         ],
         "requiredCardCounts": [
           {
-            "cardId": "frost_crystal_pierce",
-            "count": 1,
-            "skillId": 0
+            "cardId": 53,
+            "count": 1
           }
         ]
       },
       {
-        "id": "frost_crystal_volley",
+        "id": 55,
         "maxPickCount": 1,
         "effects": [
           {
@@ -1236,20 +1194,19 @@
         ],
         "requiredCardCounts": [
           {
-            "cardId": "frost_crystal_extreme",
-            "count": 1,
-            "skillId": 0
+            "cardId": 52,
+            "count": 1
           }
         ],
         "minPermanentLevel": 13,
         "exclusions": [
           {
-            "cardId": "frost_crystal_pierce"
+            "cardId": 53
           }
         ]
       },
       {
-        "id": "frost_crystal_split",
+        "id": 56,
         "maxPickCount": 1,
         "effects": [
           {
@@ -1271,7 +1228,7 @@
             "skillId": 8,
             "count": 3,
             "excludeHit": true,
-            "target": 12,
+            "target": 9,
             "inherit": {
               "damage": 0.5,
               "projectileSpeed": 1,
@@ -1282,7 +1239,7 @@
         "enabled": true
       },
       {
-        "id": "frost_crystal_shard_damage",
+        "id": 57,
         "maxPickCount": 1,
         "effects": [
           {
@@ -1294,14 +1251,13 @@
         "enabled": true,
         "requiredCardCounts": [
           {
-            "cardId": "frost_crystal_split",
-            "count": 1,
-            "skillId": 0
+            "cardId": 56,
+            "count": 1
           }
         ]
       },
       {
-        "id": "frost_crystal_impact",
+        "id": 58,
         "maxPickCount": 1,
         "effects": [
           {
@@ -1316,7 +1272,7 @@
         "enabled": true
       },
       {
-        "id": "frost_crystal_frostbite",
+        "id": 59,
         "maxPickCount": 1,
         "effects": [
           {
@@ -1327,19 +1283,17 @@
         "enabled": true,
         "requiredCardCounts": [
           {
-            "cardId": "frost_crystal_pierce",
-            "count": 1,
-            "skillId": 0
+            "cardId": 53,
+            "count": 1
           },
           {
-            "cardId": "frost_crystal_extreme",
-            "count": 1,
-            "skillId": 0
+            "cardId": 52,
+            "count": 1
           }
         ]
       },
       {
-        "id": "frost_crystal_shard_frostbite",
+        "id": 60,
         "maxPickCount": 1,
         "effects": [
           {
@@ -1351,19 +1305,17 @@
         "enabled": true,
         "requiredCardCounts": [
           {
-            "cardId": "frost_crystal_split",
-            "count": 1,
-            "skillId": 0
+            "cardId": 56,
+            "count": 1
           },
           {
-            "cardId": "frost_crystal_frostbite",
-            "count": 1,
-            "skillId": 0
+            "cardId": 59,
+            "count": 1
           }
         ]
       },
       {
-        "id": "frost_crystal_triangle",
+        "id": 61,
         "maxPickCount": 1,
         "effects": [
           {
@@ -1373,7 +1325,7 @@
           {
             "kind": "onEvent",
             "trigger": "Hit",
-            "skillId": 12,
+            "skillId": 9,
             "count": 3,
             "excludeHit": true,
             "inherit": {
@@ -1391,24 +1343,21 @@
         "enabled": true,
         "requiredCardCounts": [
           {
-            "cardId": "frost_crystal_pierce",
-            "count": 1,
-            "skillId": 0
+            "cardId": 53,
+            "count": 1
           },
           {
-            "cardId": "frost_crystal_extreme",
-            "count": 1,
-            "skillId": 0
+            "cardId": 52,
+            "count": 1
           },
           {
-            "cardId": "frost_crystal_damage",
-            "count": 1,
-            "skillId": 0
+            "cardId": 51,
+            "count": 1
           }
         ]
       },
       {
-        "id": "frost_crystal_polish",
+        "id": 62,
         "maxPickCount": 1,
         "effects": [
           {
@@ -1467,7 +1416,7 @@
     },
     "upgrades": [
       {
-        "id": "log_damage",
+        "id": 63,
         "maxPickCount": 2,
         "effects": [
           {
@@ -1477,13 +1426,12 @@
         ]
       },
       {
-        "id": "log_repeat",
+        "id": 64,
         "maxPickCount": 2,
         "requiredCardCounts": [
           {
-            "cardId": "log_damage",
-            "count": 1,
-            "skillId": 0
+            "cardId": 63,
+            "count": 1
           }
         ],
         "effects": [
@@ -1509,13 +1457,12 @@
         ]
       },
       {
-        "id": "log_size",
+        "id": 65,
         "maxPickCount": 1,
         "requiredCardCounts": [
           {
-            "cardId": "log_damage",
-            "count": 1,
-            "skillId": 0
+            "cardId": 63,
+            "count": 1
           }
         ],
         "effects": [
@@ -1526,7 +1473,7 @@
         ]
       },
       {
-        "id": "log_speed",
+        "id": 66,
         "maxPickCount": 1,
         "effects": [
           {
@@ -1540,7 +1487,7 @@
         ]
       },
       {
-        "id": "log_impact",
+        "id": 67,
         "maxPickCount": 1,
         "effects": [
           {
@@ -1554,7 +1501,7 @@
         ]
       },
       {
-        "id": "log_weight",
+        "id": 68,
         "maxPickCount": 1,
         "effects": [
           {
@@ -1564,7 +1511,7 @@
         ]
       },
       {
-        "id": "log_wound",
+        "id": 69,
         "maxPickCount": 1,
         "effects": [
           {
@@ -1578,28 +1525,25 @@
         ]
       },
       {
-        "id": "log_large",
+        "id": 70,
         "maxPickCount": 1,
         "requiredCardCounts": [
           {
-            "cardId": "log_size",
-            "count": 1,
-            "skillId": 0
+            "cardId": 65,
+            "count": 1
           },
           {
-            "cardId": "log_impact",
-            "count": 1,
-            "skillId": 0
+            "cardId": 67,
+            "count": 1
           },
           {
-            "cardId": "log_weight",
-            "count": 1,
-            "skillId": 0
+            "cardId": 68,
+            "count": 1
           }
         ],
         "exclusions": [
           {
-            "cardId": "log_fire"
+            "cardId": 71
           }
         ],
         "effects": [
@@ -1622,19 +1566,17 @@
         ]
       },
       {
-        "id": "log_fire",
+        "id": 71,
         "maxPickCount": 1,
         "minPermanentLevel": 9,
         "requiredCardCounts": [
           {
-            "cardId": "log_size",
-            "count": 1,
-            "skillId": 0
+            "cardId": 65,
+            "count": 1
           },
           {
-            "cardId": "log_damage",
-            "count": 1,
-            "skillId": 0
+            "cardId": 63,
+            "count": 1
           }
         ],
         "requiredWeaponIds": [
@@ -1642,7 +1584,7 @@
         ],
         "exclusions": [
           {
-            "cardId": "log_large"
+            "cardId": 70
           }
         ],
         "effects": [
@@ -1661,14 +1603,13 @@
         ]
       },
       {
-        "id": "log_reserve",
+        "id": 72,
         "maxPickCount": 1,
         "minPermanentLevel": 13,
         "requiredCardCounts": [
           {
-            "cardId": "log_weight",
-            "count": 1,
-            "skillId": 0
+            "cardId": 68,
+            "count": 1
           }
         ],
         "effects": [
@@ -1679,7 +1620,7 @@
         ]
       }
     ],
-    "projectilePath": "RollingLane"
+    "projectilePath": "Cloud"
   },
   {
     "id": 6,
@@ -1709,7 +1650,7 @@
     },
     "upgrades": [
       {
-        "id": "cold_zone_cast",
+        "id": 73,
         "maxPickCount": 2,
         "effects": [
           {
@@ -1719,7 +1660,7 @@
         ]
       },
       {
-        "id": "cold_zone_damage",
+        "id": 74,
         "maxPickCount": 3,
         "effects": [
           {
@@ -1729,7 +1670,7 @@
         ]
       },
       {
-        "id": "cold_zone_extreme",
+        "id": 75,
         "maxPickCount": 1,
         "effects": [
           {
@@ -1743,7 +1684,7 @@
         ]
       },
       {
-        "id": "cold_zone_core",
+        "id": 76,
         "maxPickCount": 1,
         "effects": [
           {
@@ -1754,14 +1695,13 @@
         "enabled": true,
         "requiredCardCounts": [
           {
-            "cardId": "cold_zone_extreme",
-            "count": 1,
-            "skillId": 0
+            "cardId": 75,
+            "count": 1
           }
         ]
       },
       {
-        "id": "cold_zone_zero",
+        "id": 77,
         "maxPickCount": 1,
         "effects": [
           {
@@ -1772,14 +1712,13 @@
         "enabled": true,
         "requiredCardCounts": [
           {
-            "cardId": "cold_zone_core",
-            "count": 1,
-            "skillId": 0
+            "cardId": 76,
+            "count": 1
           }
         ]
       },
       {
-        "id": "cold_zone_expand",
+        "id": 78,
         "maxPickCount": 1,
         "effects": [
           {
@@ -1789,14 +1728,13 @@
         ],
         "requiredCardCounts": [
           {
-            "cardId": "cold_zone_damage",
-            "count": 1,
-            "skillId": 0
+            "cardId": 74,
+            "count": 1
           }
         ]
       },
       {
-        "id": "cold_zone_shatter",
+        "id": 79,
         "maxPickCount": 1,
         "effects": [
           {
@@ -1812,7 +1750,7 @@
         ]
       },
       {
-        "id": "cold_zone_polish",
+        "id": 80,
         "maxPickCount": 1,
         "effects": [
           {
@@ -1828,7 +1766,7 @@
         "sharedId": "shared_cold_frost_cooldown"
       },
       {
-        "id": "cold_zone_bitter",
+        "id": 81,
         "maxPickCount": 1,
         "effects": [
           {
@@ -1837,15 +1775,11 @@
           }
         ],
         "enabled": true,
-        "requiredWeaponIds": [
-          4
-        ],
         "minPermanentLevel": 13,
         "requiredCardCounts": [
           {
-            "cardId": "frost_crystal_extreme",
-            "count": 1,
-            "skillId": 4
+            "cardId": 52,
+            "count": 1
           }
         ]
       }
@@ -1877,7 +1811,7 @@
     },
     "upgrades": [
       {
-        "id": "lightning_cloud_expand",
+        "id": 82,
         "maxPickCount": 1,
         "effects": [
           {
@@ -1887,7 +1821,7 @@
         ]
       },
       {
-        "id": "lightning_cloud_duration",
+        "id": 83,
         "maxPickCount": 3,
         "effects": [
           {
@@ -1897,7 +1831,7 @@
         ]
       },
       {
-        "id": "lightning_cloud_speed",
+        "id": 84,
         "maxPickCount": 2,
         "effects": [
           {
@@ -1911,7 +1845,7 @@
         ]
       },
       {
-        "id": "lightning_cloud_damage",
+        "id": 85,
         "maxPickCount": 3,
         "effects": [
           {
@@ -1921,7 +1855,7 @@
         ]
       },
       {
-        "id": "lightning_cloud_voltage",
+        "id": 86,
         "maxPickCount": 1,
         "effects": [
           {
@@ -1931,7 +1865,7 @@
         ]
       },
       {
-        "id": "lightning_cloud_magnet",
+        "id": 87,
         "maxPickCount": 1,
         "effects": [
           {
@@ -1945,44 +1879,40 @@
         ]
       },
       {
-        "id": "lightning_cloud_singularity",
+        "id": 88,
         "maxPickCount": 1,
         "effects": [],
         "enabled": false,
         "requiredCardCounts": [
           {
-            "cardId": "lightning_cloud_expand",
-            "count": 1,
-            "skillId": 0
+            "cardId": 82,
+            "count": 1
           },
           {
-            "cardId": "lightning_cloud_duration",
-            "count": 1,
-            "skillId": 0
+            "cardId": 83,
+            "count": 1
           }
         ],
         "minPermanentLevel": 21
       },
       {
-        "id": "lightning_cloud_split",
+        "id": 89,
         "maxPickCount": 1,
         "effects": [],
         "enabled": false,
         "requiredCardCounts": [
           {
-            "cardId": "lightning_cloud_duration",
-            "count": 1,
-            "skillId": 0
+            "cardId": 83,
+            "count": 1
           },
           {
-            "cardId": "lightning_cloud_damage",
-            "count": 1,
-            "skillId": 0
+            "cardId": 85,
+            "count": 1
           }
         ]
       },
       {
-        "id": "lightning_cloud_guide",
+        "id": 90,
         "maxPickCount": 1,
         "effects": [
           {
@@ -1997,31 +1927,28 @@
         ],
         "requiredCardCounts": [
           {
-            "cardId": "lightning_cloud_damage",
-            "count": 1,
-            "skillId": 0
+            "cardId": 85,
+            "count": 1
           }
         ],
         "minPermanentLevel": 13
       },
       {
-        "id": "lightning_cloud_storm",
+        "id": 91,
         "maxPickCount": 1,
         "effects": [],
         "enabled": false,
         "requiredWeaponIds": [
-          18
+          15
         ],
         "requiredCardCounts": [
           {
-            "cardId": "lightning_cloud_speed",
-            "count": 1,
-            "skillId": 0
+            "cardId": 84,
+            "count": 1
           },
           {
-            "cardId": "lightning_cloud_damage",
-            "count": 1,
-            "skillId": 0
+            "cardId": 85,
+            "count": 1
           }
         ]
       }
@@ -2050,7 +1977,7 @@
     "upgrades": []
   },
   {
-    "id": 12,
+    "id": 9,
     "castType": "Projectile",
     "element": "Ice",
     "maxLevel": 1,
@@ -2072,7 +1999,7 @@
     "upgrades": []
   },
   {
-    "id": 13,
+    "id": 10,
     "castType": "Projectile",
     "element": "Neutral",
     "maxLevel": 1,
@@ -2095,7 +2022,7 @@
     "upgrades": []
   },
   {
-    "id": 14,
+    "id": 11,
     "castType": "Projectile",
     "element": "Fire",
     "maxLevel": 1,
@@ -2117,7 +2044,7 @@
     "upgrades": []
   },
   {
-    "id": 15,
+    "id": 12,
     "castType": "Projectile",
     "element": "Lightning",
     "maxLevel": 1,
@@ -2140,7 +2067,7 @@
     "projectilePath": "Radial"
   },
   {
-    "id": 16,
+    "id": 13,
     "unlockLevel": 5,
     "castType": "Beam",
     "element": "Neutral",
@@ -2167,7 +2094,7 @@
     },
     "upgrades": [
       {
-        "id": "energy_beam_overload",
+        "id": 92,
         "maxPickCount": 1,
         "effects": [
           {
@@ -2181,7 +2108,7 @@
         ]
       },
       {
-        "id": "energy_beam_amplify",
+        "id": 93,
         "maxPickCount": 3,
         "effects": [
           {
@@ -2191,7 +2118,7 @@
         ]
       },
       {
-        "id": "energy_beam_stable",
+        "id": 94,
         "maxPickCount": 2,
         "effects": [
           {
@@ -2201,7 +2128,7 @@
         ]
       },
       {
-        "id": "energy_beam_split",
+        "id": 95,
         "maxPickCount": 1,
         "effects": [
           {
@@ -2215,7 +2142,7 @@
         ]
       },
       {
-        "id": "energy_beam_dazzle",
+        "id": 96,
         "maxPickCount": 1,
         "effects": [
           {
@@ -2229,7 +2156,7 @@
         ]
       },
       {
-        "id": "energy_beam_weaken",
+        "id": 97,
         "maxPickCount": 1,
         "effects": [
           {
@@ -2239,13 +2166,13 @@
         ]
       },
       {
-        "id": "energy_beam_judgement",
+        "id": 98,
         "maxPickCount": 1,
         "effects": [],
         "enabled": false
       },
       {
-        "id": "energy_beam_spread",
+        "id": 99,
         "maxPickCount": 1,
         "effects": [
           {
@@ -2255,20 +2182,19 @@
         ],
         "requiredCardCounts": [
           {
-            "cardId": "energy_beam_amplify",
-            "count": 1,
-            "skillId": 0
+            "cardId": 93,
+            "count": 1
           }
         ]
       },
       {
-        "id": "energy_beam_fire",
+        "id": 100,
         "maxPickCount": 1,
         "effects": [
           {
             "kind": "onEvent",
             "trigger": "Start",
-            "skillId": 17,
+            "skillId": 14,
             "inherit": {
               "damage": 0.5
             }
@@ -2276,71 +2202,64 @@
         ],
         "requiredCardCounts": [
           {
-            "cardId": "energy_beam_overload",
-            "count": 1,
-            "skillId": 0
+            "cardId": 92,
+            "count": 1
           },
           {
-            "cardId": "energy_beam_amplify",
-            "count": 1,
-            "skillId": 0
+            "cardId": 93,
+            "count": 1
           }
         ],
         "exclusions": [
           {
-            "cardId": "energy_beam_barrage"
+            "cardId": 102
           }
         ]
       },
       {
-        "id": "energy_beam_positron",
+        "id": 101,
         "maxPickCount": 1,
         "effects": [],
         "enabled": false,
         "requiredCardCounts": [
           {
-            "cardId": "energy_beam_overload",
-            "count": 1,
-            "skillId": 0
+            "cardId": 92,
+            "count": 1
           },
           {
-            "cardId": "energy_beam_spread",
-            "count": 1,
-            "skillId": 0
+            "cardId": 99,
+            "count": 1
           }
         ]
       },
       {
-        "id": "energy_beam_barrage",
+        "id": 102,
         "maxPickCount": 1,
         "effects": [],
         "enabled": false,
         "requiredCardCounts": [
           {
-            "cardId": "energy_beam_overload",
-            "count": 1,
-            "skillId": 0
+            "cardId": 92,
+            "count": 1
           },
           {
-            "cardId": "energy_beam_spread",
-            "count": 1,
-            "skillId": 0
+            "cardId": 99,
+            "count": 1
           },
           {
-            "cardId": "energy_beam_weaken",
-            "count": 1,
-            "skillId": 0
+            "cardId": 97,
+            "count": 1
           }
         ],
         "minPermanentLevel": 17,
         "exclusions": [
           {
-            "cardId": "energy_beam_fire"
+            "cardId": 100
           }
         ]
       },
       {
-        "id": "energy_beam_neutral_1",
+        "id": 103,
         "maxPickCount": 1,
         "effects": [
           {
@@ -2355,7 +2274,7 @@
         "sharedId": "shared_arrow_energy_damage"
       },
       {
-        "id": "energy_beam_freeze",
+        "id": 104,
         "maxPickCount": 1,
         "effects": [
           {
@@ -2368,7 +2287,7 @@
         ]
       },
       {
-        "id": "energy_beam_neutral_3",
+        "id": 105,
         "maxPickCount": 1,
         "effects": [
           {
@@ -2379,13 +2298,13 @@
         "enabled": true,
         "sharedId": "shared_energy_focus_damage",
         "requiredWeaponIds": [
-          19
+          16
         ]
       }
     ]
   },
   {
-    "id": 17,
+    "id": 14,
     "castType": "Beam",
     "element": "Neutral",
     "maxLevel": 1,
@@ -2410,7 +2329,7 @@
     "upgrades": []
   },
   {
-    "id": 18,
+    "id": 15,
     "unlockLevel": 6,
     "castType": "Chain",
     "element": "Lightning",
@@ -2435,7 +2354,7 @@
     },
     "upgrades": [
       {
-        "id": "chain_lightning_cross",
+        "id": 106,
         "maxPickCount": 2,
         "effects": [
           {
@@ -2445,7 +2364,7 @@
         ]
       },
       {
-        "id": "chain_lightning_continuous",
+        "id": 107,
         "maxPickCount": 3,
         "effects": [
           {
@@ -2459,7 +2378,7 @@
         ]
       },
       {
-        "id": "chain_lightning_voltage",
+        "id": 108,
         "maxPickCount": 1,
         "effects": [
           {
@@ -2473,7 +2392,7 @@
         ]
       },
       {
-        "id": "chain_lightning_amplify",
+        "id": 109,
         "maxPickCount": 2,
         "effects": [
           {
@@ -2483,7 +2402,7 @@
         ]
       },
       {
-        "id": "chain_lightning_ion_burst",
+        "id": 110,
         "maxPickCount": 1,
         "effects": [
           {
@@ -2493,27 +2412,25 @@
         ],
         "requiredCardCounts": [
           {
-            "cardId": "chain_lightning_voltage",
-            "count": 1,
-            "skillId": 0
+            "cardId": 108,
+            "count": 1
           }
         ]
       },
       {
-        "id": "chain_lightning_resonance",
+        "id": 111,
         "maxPickCount": 1,
         "effects": [],
         "enabled": false,
         "requiredCardCounts": [
           {
-            "cardId": "chain_lightning_voltage",
-            "count": 1,
-            "skillId": 0
+            "cardId": 108,
+            "count": 1
           }
         ]
       },
       {
-        "id": "chain_lightning_ion_spread",
+        "id": 112,
         "maxPickCount": 1,
         "effects": [
           {
@@ -2523,27 +2440,25 @@
         ],
         "requiredCardCounts": [
           {
-            "cardId": "chain_lightning_ion_burst",
-            "count": 1,
-            "skillId": 0
+            "cardId": 110,
+            "count": 1
           }
         ]
       },
       {
-        "id": "chain_lightning_ion_voltage",
+        "id": 113,
         "maxPickCount": 1,
         "effects": [],
         "enabled": false,
         "requiredCardCounts": [
           {
-            "cardId": "chain_lightning_ion_burst",
-            "count": 1,
-            "skillId": 0
+            "cardId": 110,
+            "count": 1
           }
         ]
       },
       {
-        "id": "chain_lightning_conduction",
+        "id": 114,
         "maxPickCount": 1,
         "effects": [
           {
@@ -2557,25 +2472,22 @@
         ],
         "requiredCardCounts": [
           {
-            "cardId": "chain_lightning_continuous",
-            "count": 1,
-            "skillId": 0
+            "cardId": 107,
+            "count": 1
           },
           {
-            "cardId": "chain_lightning_voltage",
-            "count": 1,
-            "skillId": 0
+            "cardId": 108,
+            "count": 1
           },
           {
-            "cardId": "chain_lightning_amplify",
-            "count": 1,
-            "skillId": 0
+            "cardId": 109,
+            "count": 1
           }
         ],
         "minPermanentLevel": 17
       },
       {
-        "id": "chain_lightning_neutral",
+        "id": 115,
         "maxPickCount": 1,
         "effects": [
           {
@@ -2590,7 +2502,7 @@
         "sharedId": "shared_lightning_chain_damage"
       },
       {
-        "id": "chain_lightning_polish",
+        "id": 116,
         "maxPickCount": 1,
         "effects": [
           {
@@ -2608,7 +2520,7 @@
     ]
   },
   {
-    "id": 19,
+    "id": 16,
     "unlockLevel": 7,
     "castType": "Beam",
     "element": "Neutral",
@@ -2633,7 +2545,7 @@
     },
     "upgrades": [
       {
-        "id": "focus_beam_focus",
+        "id": 117,
         "maxPickCount": 1,
         "effects": [
           {
@@ -2643,7 +2555,7 @@
         ]
       },
       {
-        "id": "focus_beam_continuous",
+        "id": 118,
         "maxPickCount": 2,
         "effects": [
           {
@@ -2653,7 +2565,7 @@
         ]
       },
       {
-        "id": "focus_beam_amplify",
+        "id": 119,
         "maxPickCount": 2,
         "effects": [
           {
@@ -2663,7 +2575,7 @@
         ]
       },
       {
-        "id": "focus_beam_blast",
+        "id": 120,
         "maxPickCount": 1,
         "effects": [
           {
@@ -2673,14 +2585,13 @@
         ],
         "requiredCardCounts": [
           {
-            "cardId": "focus_beam_focus",
-            "count": 1,
-            "skillId": 0
+            "cardId": 117,
+            "count": 1
           }
         ]
       },
       {
-        "id": "focus_beam_adjust",
+        "id": 121,
         "maxPickCount": 1,
         "effects": [
           {
@@ -2690,15 +2601,14 @@
         ],
         "requiredCardCounts": [
           {
-            "cardId": "focus_beam_focus",
-            "count": 1,
-            "skillId": 0
+            "cardId": 117,
+            "count": 1
           }
         ],
         "minPermanentLevel": 13
       },
       {
-        "id": "focus_beam_refract",
+        "id": 122,
         "maxPickCount": 2,
         "effects": [
           {
@@ -2708,27 +2618,25 @@
         ],
         "requiredCardCounts": [
           {
-            "cardId": "focus_beam_amplify",
-            "count": 1,
-            "skillId": 0
+            "cardId": 119,
+            "count": 1
           }
         ]
       },
       {
-        "id": "focus_beam_arrow",
+        "id": 123,
         "maxPickCount": 1,
         "effects": [
           {
             "kind": "onEvent",
             "trigger": "Start",
-            "skillId": 20
+            "skillId": 17
           }
         ],
         "requiredCardCounts": [
           {
-            "cardId": "focus_beam_focus",
-            "count": 1,
-            "skillId": 0
+            "cardId": 117,
+            "count": 1
           }
         ],
         "requiredWeaponIds": [
@@ -2736,13 +2644,13 @@
         ]
       },
       {
-        "id": "focus_beam_ultimate",
+        "id": 124,
         "maxPickCount": 1,
         "effects": [],
         "enabled": false
       },
       {
-        "id": "focus_beam_neutral_2",
+        "id": 125,
         "maxPickCount": 1,
         "effects": [
           {
@@ -2757,7 +2665,7 @@
         ]
       },
       {
-        "id": "focus_beam_neutral_3",
+        "id": 126,
         "maxPickCount": 1,
         "effects": [
           {
@@ -2768,13 +2676,13 @@
         "enabled": true,
         "sharedId": "shared_energy_focus_damage",
         "requiredWeaponIds": [
-          16
+          13
         ]
       }
     ]
   },
   {
-    "id": 20,
+    "id": 17,
     "castType": "Projectile",
     "element": "Neutral",
     "maxLevel": 1,
@@ -2782,8 +2690,7 @@
     "childOnly": true,
     "mirrorCards": [
       {
-        "skillId": 1,
-        "cardId": "arrow_multishot"
+        "cardId": 1
       }
     ],
     "baseStats": {

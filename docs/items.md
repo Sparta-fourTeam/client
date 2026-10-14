@@ -6,9 +6,9 @@
 
 - 아이템은 문자열 ID 하나로 식별한다. 화살북과 화염구북, 모자북과 반지북은 각각 다른 ID와 소유량을 가진다. 코드에서는 `ItemIds.ArrowBook` 같은 문자열 상수로 참조해 오타를 줄인다. 상수는 해당 ID의 이름이며 별도 식별자가 아니다. enum은 두지 않는다.
 - 스킬북은 현재 `Skills.json`의 독립 스킬 10종 기준이다: 화살, 화염구, 벼락, 서리 결정, 나무뿌리, 냉기 지대, 전기 구름, 에너지 빔, 연쇄 번개, 집중 광선. 10종 모두 `progressionId`로 `Upgrades`의 스킬 강화 행과 연결되어 마법북을 강화에 쓴다. `childOnly` 보조 효과에는 별도 마법북을 만들지 않는다.
-- 장비 강화 재료는 후드, 로브, 장화, 무기(지팡이), 뼈 반지, 해골 목걸이, 인장의 **인챈트 주문서**다. 기존 무기 슬롯은 무기이며, 기존 사원증 슬롯의 표시 콘셉트는 인장이다. Local 테이블의 `TargetId`와 저장 ID는 호환성을 위해 기존 `equipment.*`, `book.*`를 유지한다. 아이콘은 아이템 `Id`로 `ItemIconTable`에서 찾는다.
+- 장비 강화 재료는 후드, 로브, 장화, 무기(지팡이), 뼈 반지, 해골 목걸이, 인장의 **인챈트 주문서**다. 기존 무기 슬롯은 무기이며, 기존 사원증 슬롯의 표시 콘셉트는 인장이다. 런타임 장비 대상과 저장 ID는 기존 `equipment.*`, `book.*`를 유지한다. 장비 재료의 대상은 `Upgrades.MaterialItemId`에서 역으로 찾으므로 Items JSON에 중복해서 적지 않는다. 아이콘은 아이템 `Id`로 `ItemIconTable`에서 찾는다.
 - `ItemDefinition.Id`는 저장·API에서 사용하는 콘텐츠 고유 ID다. 각 종류는 서로 다른 ID와 소유량을 가진다.
-- `TargetId`는 강화 재료가 대상으로 하는 스킬 또는 장비의 ID다. 아이템 자체의 식별자와 강화 대상의 식별자는 구분한다.
+- 스킬 마법북의 `TargetId`는 대상 스킬 ID이며 유지한다. 장비 재료의 `TargetId`는 전송 필드에서 제외하고 `Upgrades.MaterialItemId`로 소속 장비를 찾는다. 한 장비 재료를 여러 장비가 참조하면 로드를 거절한다. 아이템 자체의 식별자와 강화 대상의 식별자는 구분한다.
 - 표시 이름은 서버 테이블이 아니라 `Resources/ClientData/DisplayTexts.json`의 `items`에서 `Id`로 찾고, 아이콘은 `Id`로 클라이언트 표(`ItemIconTable`)에서 찾는다. Unity 오브젝트를 API나 저장 데이터에 넣지 않는다.
 - `ItemAmount.itemId`는 정의 ID, `quantity`는 0 이상의 절대 수량이다. 소비는 음수 수량 대신 소비 동작으로 표현한다. 실제 드랍·지급 행은 양수만 사용한다.
 
@@ -18,7 +18,7 @@
 [
   { "Id": "book.arrow", "TargetId": "1" },
   { "Id": "book.fireball", "TargetId": "2" },
-  { "Id": "book.weapon", "TargetId": "equipment.weapon" }
+  { "Id": "book.weapon" }
 ]
 ```
 

@@ -10,9 +10,6 @@ namespace Game.Network
     [Serializable]
     public class DataVersionResponse
     {
-        /// <summary>전체 데이터 리비전. 클라이언트의 DataVersions에는 받을 자리가 없어 지금은 쓰지 않는다</summary>
-        public int revision;
-
         /// <summary>테이블 이름별 리비전</summary>
         public Dictionary<string, int> tables;
     }

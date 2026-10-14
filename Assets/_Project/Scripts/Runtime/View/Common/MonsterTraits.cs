@@ -125,7 +125,7 @@ namespace Game.View
         private static string CastName(string cast) => cast switch
         {
             "Projectile" => "투사체",
-            "Hitscan" => "즉발",
+            "Instant" => "즉발",
             "Area" => "범위",
             "Beam" => "광선",
             "Chain" => "연쇄",

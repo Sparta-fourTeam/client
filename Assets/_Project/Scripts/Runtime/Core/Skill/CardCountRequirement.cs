@@ -2,8 +2,8 @@ namespace Game.Core
 {
     public class CardCountRequirement
     {
-        // 0이면 이 강화가 속한 무기. 다른 무기의 강화도 참조할 수 있다.
-        public int skillId;
+        // 소속 스킬은 카탈로그에서 유일한 cardId로 찾는다. 서버에는 cardId·count만 보낸다.
+        [Newtonsoft.Json.JsonIgnore] public int OwnerSkillId { get; internal set; } = -1;
         public string cardId;
         public int count = 1;
     }

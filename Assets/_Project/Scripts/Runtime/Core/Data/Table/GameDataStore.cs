@@ -104,6 +104,7 @@ namespace Game.Core
             Upgrades = new Table<string, UpgradeDefinition>(upgrades);
             var items = ParseIndexed<string, ItemDefinition>("Items", d => d.Id);
             _texts.ApplyTo(items.Values);
+            ResolveEquipmentMaterialTargets(upgrades.Values, items);
             foreach (var item in items.Values) { item.Validate(); }
             Items = new Table<string, ItemDefinition>(items);
             foreach (var upgrade in upgrades.Values)
@@ -111,12 +112,7 @@ namespace Game.Core
                 upgrade.Validate();
                 if (upgrade.UsesMaterial)
                 {
-                    var material = Items.GetOrThrow(upgrade.MaterialItemId);
-                    // 장비 재료는 아이템 TargetId와 강화 행의 MaterialItemId가 같은 연결을 양쪽에서 가진다. 어긋나면 랜덤 재료가 엉뚱한 장비를 가리킨다
-                    if (upgrade.UpgradeId.StartsWith("equipment.") && material.TargetId != upgrade.UpgradeId)
-                    {
-                        throw new InvalidOperationException($"Upgrades {upgrade.UpgradeId}: 재료 {material.Id}의 TargetId({material.TargetId})가 이 강화와 다릅니다");
-                    }
+                    Items.GetOrThrow(upgrade.MaterialItemId);
                 }
             }
             var rewards = ParseIndexed<int, StageRewardBalance>("StageRewards", d => d.StageId);
@@ -185,6 +181,25 @@ namespace Game.Core
         }
 
         public string RawJson(string name) => _rawJson[name];
+
+        /// <summary>장비 재료의 대상은 Upgrades.MaterialItemId에서 역으로 찾는다. 한 재료가 여러 장비에 연결되면 로드를 거절한다.</summary>
+        public static void ResolveEquipmentMaterialTargets(IEnumerable<UpgradeDefinition> upgrades, IReadOnlyDictionary<string, ItemDefinition> items)
+        {
+            var targets = new Dictionary<string, string>();
+            foreach (var upgrade in upgrades)
+            {
+                if (!upgrade.UpgradeId.StartsWith("equipment.", StringComparison.Ordinal) || !upgrade.UsesMaterial) { continue; }
+                if (!items.TryGetValue(upgrade.MaterialItemId, out var material)
+                    || targets.ContainsKey(upgrade.MaterialItemId)
+                    || (!string.IsNullOrEmpty(material.TargetId) && material.TargetId != upgrade.UpgradeId))
+                {
+                    throw new InvalidOperationException($"Upgrades {upgrade.UpgradeId}: 장비 재료 {upgrade.MaterialItemId}의 연결이 없거나 중복·불일치합니다.");
+                }
+                targets.Add(upgrade.MaterialItemId, upgrade.UpgradeId);
+            }
+            // 모든 연결을 확인한 뒤에만 적용하므로 실패 시 일부 대상이 바뀌지 않는다.
+            foreach (var target in targets) { items[target.Key].ResolveEquipmentTarget(target.Value); }
+        }
 
         /// <summary>분열·소환 패시브가 가리키는 몬스터가 있어야 하고, 자기 자신이거나 다시 소환하는 몬스터면 안 된다</summary>
         public static void ValidatePassiveReferences(IReadOnlyDictionary<int, MonsterDefinition> monsters)

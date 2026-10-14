@@ -59,7 +59,7 @@ namespace Game.Core
             {
                 if (candidate == null || candidate.IsDead) { continue; }
                 // 굴러가는 공격은 시전 판정과 같게 가로 위치(x)와 상관없이 벽 앞선에서의 높이(y)로 사정거리를 잰다
-                bool inRange = config.Attack.Path == ProjectilePath.RollingLane
+                bool inRange = config.Attack.Path == ProjectilePath.Cloud
                     ? candidate.Position.y - wall.AttackLineY <= config.Attack.Range
                     : (candidate.Position - (Vector2)origin).sqrMagnitude <= config.Attack.Range * config.Attack.Range;
                 if (candidate.Position.y <= wall.AttackLineY + cast.ReserveDistance && inRange)
@@ -74,7 +74,7 @@ namespace Game.Core
         // 그 밖의 공격은 시전 위치에서의 거리로 잰다
         private IReadOnlyList<IEnemyTarget> FindTargets(SkillConfig config, AttackEnvironment environment)
         {
-            if (config.Attack.Path != ProjectilePath.RollingLane || wall == null) { return environment.FindTargets(config.Attack.Range); }
+            if (config.Attack.Path != ProjectilePath.Cloud || wall == null) { return environment.FindTargets(config.Attack.Range); }
             laneSelector ??= new SkillTargetSelector(environment.Targets, environment.Reservations);
             var lane = laneSelector.SelectLane(wall.AttackLineY, config.Attack.Range);
             if (environment.Exclude == null) { return lane; }
@@ -128,7 +128,7 @@ namespace Game.Core
                     ? ProjectileLaunchPath.Fan(environment.Origin, environment.Direction, current.Projectile.PierceCount, i, count)
                     : ProjectileLaunchPath.Calculate(config.Attack.Path, environment.Origin, aim,
                         wall != null ? wall.AttackLineY : (float?)null,
-                        config.Attack.Path == ProjectilePath.RollingLane ? ProjectileLaunchPath.RollingTravelDistance : config.Attack.Range, current.Projectile.Speed, current.Projectile.PierceCount, i, count);
+                        config.Attack.Path == ProjectilePath.Cloud ? ProjectileLaunchPath.RollingTravelDistance : config.Attack.Range, current.Projectile.Speed, current.Projectile.PierceCount, i, count);
                 var reservation = radial || fan ? null : ReserveHit(environment, targets[i % targets.Count], current, path.Lifetime);
                 try { spawnRules.SpawnMain(path.Start, path.Direction, path.Lifetime, path.PierceCount, environment.Exclude, reservation); }
                 catch { reservation?.Dispose(); throw; }

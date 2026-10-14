@@ -62,7 +62,7 @@ namespace Game.Core
         public static bool Supports(CastType castType, string key)
         {
             if (key == null || !Kinds.TryGetValue(key, out var kind)) { return false; }
-            var user = castType switch { CastType.Hitscan => Users.Hitscan, CastType.Area => Users.Area, CastType.Beam => Users.Beam, CastType.Chain => Users.Chain, _ => Users.Projectile };
+            var user = castType switch { CastType.Instant => Users.Hitscan, CastType.Area => Users.Area, CastType.Beam => Users.Beam, CastType.Chain => Users.Chain, _ => Users.Projectile };
             return (kind.Users & user) != 0;
         }
 

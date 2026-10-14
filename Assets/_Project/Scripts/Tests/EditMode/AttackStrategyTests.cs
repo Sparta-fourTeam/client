@@ -75,7 +75,7 @@ namespace Game.Tests
             SkillCaster caster = null;
             try
             {
-                var data = new SkillData { castType = CastType.Hitscan, baseStats = new SkillBaseStats { cast = { range = 10 } } };
+                var data = new SkillData { castType = CastType.Instant, baseStats = new SkillBaseStats { cast = { range = 10 } } };
                 caster = SkillFactory.Create(data, basic, basic.transform, new FormProvider(), formPrefabs: new[]
                 {
                     new SkillFormPrefabEntry { form = SkillForm.JudgementThunder, prefab = form }

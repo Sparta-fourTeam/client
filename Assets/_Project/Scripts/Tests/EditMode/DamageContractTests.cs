@@ -116,7 +116,7 @@ namespace Game.Tests
         [Test]
         public void DamageReaction_MarksImpactOnlyWhenAsked()
         {
-            var source = new DamageSource(3, Element.Lightning, CastType.Hitscan);
+            var source = new DamageSource(3, Element.Lightning, CastType.Instant);
 
             var impact = RaiseReaction(new DamageReaction(5, isImpact: true), new FakeTarget(), source);
             var extra = RaiseReaction(new DamageReaction(5), new FakeTarget(), source);
@@ -124,7 +124,7 @@ namespace Game.Tests
             Assert.IsTrue(impact.IsImpact);
             Assert.IsFalse(extra.IsImpact);
             Assert.AreEqual(Element.Lightning, impact.Element);
-            Assert.AreEqual(CastType.Hitscan, impact.CastType);
+            Assert.AreEqual(CastType.Instant, impact.CastType);
         }
 
         [Test(Description = "빌더의 Damage는 직접 적중 피해(충격)이고 추가 번개 같은 부가 피해는 아니다")]

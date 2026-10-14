@@ -124,7 +124,8 @@ namespace Game.Core
                     {
                         if (exclusion == null || string.IsNullOrEmpty(exclusion.cardId)
                             || !UpgradeEligibility.ExclusionApplies(exclusion, skillId, state)) { continue; }
-                        int owner = UpgradeEligibility.ExclusionOwner(exclusion, skillId);
+                        int owner = exclusion.OwnerSkillId;
+                        if (owner < 0) { return false; }
                         if (state.GetAcquiredCount(owner, exclusion.cardId) > 0
                             || (owner == chosenSkillId && exclusion.cardId == chosenCardId)) { return false; }
                     }
@@ -135,7 +136,8 @@ namespace Game.Core
                     foreach (var requirement in card.requiredCardCounts)
                     {
                         if (requirement == null || string.IsNullOrEmpty(requirement.cardId)) { continue; }
-                        int owner = requirement.skillId == 0 ? skillId : requirement.skillId;
+                        int owner = requirement.OwnerSkillId;
+                        if (owner < 0) { return false; }
                         if (state.GetAcquiredCount(owner, requirement.cardId) >= requirement.count) { continue; }
                         var required = skills.TryGetValue(owner, out var ownerData)
                             ? ownerData.upgrades?.Find(c => c != null && c.id == requirement.cardId)
@@ -165,6 +167,14 @@ namespace Game.Core
                     }
                 }
 
+                if (card.requiredCardCounts != null)
+                {
+                    foreach (var requirement in card.requiredCardCounts)
+                    {
+                        if (requirement != null && requirement.OwnerSkillId == chosenSkillId) { return true; }
+                    }
+                }
+
                 return false;
             }
 
@@ -173,7 +183,7 @@ namespace Game.Core
                 foreach (var requirement in card.requiredCardCounts)
                 {
                     if (requirement == null || requirement.cardId != chosenCardId) { continue; }
-                    int owner = requirement.skillId == 0 ? skillId : requirement.skillId;
+                    int owner = requirement.OwnerSkillId;
                     if (owner == chosenSkillId && state.GetAcquiredCount(owner, chosenCardId) < requirement.count) { return true; }
                 }
             }
