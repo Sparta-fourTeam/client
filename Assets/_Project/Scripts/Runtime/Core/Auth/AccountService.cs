@@ -71,7 +71,7 @@ namespace Game.Core
                 }
 
                 await _api.LinkAccount(social.Method, accountId);
-                _credentials.Save(social.Method, accountId);
+                _credentials.Save(social.Method, AuthCredentials.IdToSave(social.Method, accountId));
                 return LinkResult.Linked;
             }
 

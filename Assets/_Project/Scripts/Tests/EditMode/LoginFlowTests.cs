@@ -18,12 +18,17 @@ namespace Game.Tests
         {
             public int Calls;
             public int FailFirst;   // 처음 몇 번을 실패시킬지
+            public LoginMethod LastMethod;
+            public string LastAccountId;       // 마지막 호출에 받은 계정 ID
+            public string ReturnAccountId;     // 서버가 정해 주는 계정 ID (null이면 정해 주지 않는다)
 
-            public UniTask<LoginResponse> Login()
+            public UniTask<LoginResponse> Login(LoginMethod method, string accountId)
             {
                 Calls++;
+                LastMethod = method;
+                LastAccountId = accountId;
                 if (Calls <= FailFirst) { throw new InvalidOperationException("로그인 실패 (테스트)"); }
-                return UniTask.FromResult(new LoginResponse { accessToken = "test" });
+                return UniTask.FromResult(new LoginResponse { accessToken = "test", accountId = ReturnAccountId });
             }
         }
 
@@ -73,11 +78,18 @@ namespace Game.Tests
             public bool IsAvailable { get; }
             public string AccountId;    // null이면 사용자가 취소한 것으로 본다
             public int Calls;
+            public int SilentCalls; // SignInSilentAsync로 들어온 횟수. Calls에도 함께 센다
 
             public UniTask<string> SignInAsync()
             {
                 Calls++;
                 return UniTask.FromResult(AccountId);
+            }
+
+            public UniTask<string> SignInSilentAsync()
+            {
+                SilentCalls++;
+                return SignInAsync();
             }
         }
 
@@ -150,7 +162,7 @@ namespace Game.Tests
             Assert.AreEqual(1, google.Calls);
             Assert.AreEqual(1, _auth.Calls);
             Assert.AreEqual(LoginMethod.Google, _credentials.Method);
-            Assert.AreEqual("google-account", _credentials.AccountId);
+            Assert.AreEqual(AuthCredentials.SocialAccountId, _credentials.AccountId, "ID 토큰은 기기에 저장하지 않는다");
         }
 
         [Test(Description = "외부 계정 로그인을 취소하면 서버 로그인 없이 로그인창으로 돌아간다")]
@@ -204,7 +216,7 @@ namespace Game.Tests
 
             Assert.AreEqual(1, google.Calls);
             Assert.AreEqual(2, _auth.Calls);
-            Assert.AreEqual("google-account", _credentials.AccountId);
+            Assert.AreEqual(AuthCredentials.SocialAccountId, _credentials.AccountId);
         }
 
         [Test(Description = "로그인 정보가 있어도 로그인에 실패하면 로비로 넘어가지 않고 재시도를 기다린다")]
@@ -218,6 +230,79 @@ namespace Game.Tests
 
             CollectionAssert.AreEqual(new[] { "signing", "retry", "signing", "hide" }, _prompt.Calls);
             Assert.AreEqual("saved", _credentials.AccountId);
+        }
+
+        [Test(Description = "저장된 방식이 구글이면 저장된 값을 쓰지 않고 구글 로그인을 다시 해서, 새로 받은 토큰으로 서버에 로그인한다")]
+        public void SavedGoogle_SignsInAgainAndSendsFreshToken()
+        {
+            _credentials.Save(LoginMethod.Google, "stale-token");
+            var google = new FakeSocial(LoginMethod.Google, available: true, "fresh-token");
+
+            bool prompted = Flow(google).RunAsync().GetAwaiter().GetResult();
+
+            Assert.IsFalse(prompted, "저장된 방식이 있으니 로그인창은 띄우지 않는다");
+            Assert.AreEqual(1, google.Calls);
+            Assert.AreEqual(LoginMethod.Google, _auth.LastMethod);
+            Assert.AreEqual("fresh-token", _auth.LastAccountId);
+        }
+
+        [Test(Description = "저장된 방식이 구글이어도 저장 값은 바뀌지 않고, 서버에는 새로 받은 토큰을 보낸다 (토큰을 기기에 남기지 않는다)")]
+        public void SavedGoogle_KeepsMarkerAndNeverStoresToken()
+        {
+            _credentials.Save(LoginMethod.Google, AuthCredentials.SocialAccountId);
+            var google = new FakeSocial(LoginMethod.Google, available: true, "fresh-token");
+
+            Flow(google).RunAsync().GetAwaiter().GetResult();
+
+            Assert.AreEqual("fresh-token", _auth.LastAccountId);
+            Assert.AreEqual(AuthCredentials.SocialAccountId, _credentials.AccountId);
+        }
+
+        [Test(Description = "저장된 방식으로 바로 들어가는 구글 로그인은 계정 선택 없이 시도한다")]
+        public void SavedGoogle_SignsInSilently()
+        {
+            _credentials.Save(LoginMethod.Google, "stale-token");
+            var google = new FakeSocial(LoginMethod.Google, available: true, "fresh-token");
+
+            Flow(google).RunAsync().GetAwaiter().GetResult();
+
+            Assert.AreEqual(1, google.SilentCalls, "앱을 켤 때마다 계정 선택창이 뜨지 않게 한다");
+        }
+
+        [Test(Description = "로그인창에서 사용자가 고른 구글 로그인은 계정 선택창을 보여 준다")]
+        public void PromptedGoogle_IsNotSilent()
+        {
+            var google = new FakeSocial(LoginMethod.Google, available: true, "google-account");
+            _prompt.Choices.Enqueue(LoginMethod.Google);
+
+            Flow(google).RunAsync().GetAwaiter().GetResult();
+
+            Assert.AreEqual(1, google.Calls);
+            Assert.AreEqual(0, google.SilentCalls);
+        }
+
+        [Test(Description = "저장된 게스트 ID는 그대로 서버에 보내고, 서버가 새 게스트 ID를 정해 주면 그 값으로 바꿔 저장한다")]
+        public void Guest_SendsSavedIdAndSavesIdFromServer()
+        {
+            _credentials.Save(LoginMethod.Guest, "old-guest-id");
+            _auth.ReturnAccountId = "new-guest-id";
+
+            Flow().RunAsync().GetAwaiter().GetResult();
+
+            Assert.AreEqual("old-guest-id", _auth.LastAccountId);
+            Assert.AreEqual("new-guest-id", _credentials.AccountId);
+            Assert.AreEqual(LoginMethod.Guest, _credentials.Method);
+        }
+
+        [Test(Description = "처음 게스트로 들어오면 계정 ID 없이 서버에 로그인하고, 서버가 정해 준 게스트 ID를 저장한다")]
+        public void NewGuest_SendsNoIdAndSavesIdFromServer()
+        {
+            _auth.ReturnAccountId = "server-guest-id";
+
+            Flow().RunAsync().GetAwaiter().GetResult();
+
+            Assert.IsNull(_auth.LastAccountId);
+            Assert.AreEqual("server-guest-id", _credentials.AccountId);
         }
 
         [Test(Description = "로그인창을 기다리는 중에 취소되면(씬 전환 등) 로그인하지 않고 취소를 그대로 전한다")]

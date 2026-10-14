@@ -1,5 +1,7 @@
 using System;
 using Game.Core;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Game.Network
 {
@@ -10,6 +12,8 @@ namespace Game.Network
         public const string NetworkError = "NETWORK_ERROR";
         public const string Timeout = "TIMEOUT";
         public const string InvalidResponse = "INVALID_RESPONSE";
+
+        private const int MaxDetailLength = 200;
 
         /// <summary>성공(2xx)이면 null, 아니면 던질 예외를 돌려준다.
         /// errorCodeReader는 응답 본문에서 서버의 오류 코드를 읽는 지점이다. 코드를 못 읽으면 HTTP_상태코드를 쓴다</summary>
@@ -35,7 +39,35 @@ namespace Game.Network
                 code = $"HTTP_{status}";
             }
 
-            return new ApiException(IsTransient(status) ? ApiErrorKind.Transient : ApiErrorKind.Rejected, code);
+            return new ApiException(IsTransient(status) ? ApiErrorKind.Transient : ApiErrorKind.Rejected, code, ReadDetail(response.Body));
+        }
+
+        // 서버가 오류 본문에 적어 주는 "message"를 로그에 남기려고 읽는다. 코드로 분기하지는 않는다. JSON이 아니면 없는 것으로 본다
+        private static string ReadDetail(string body)
+        {
+            if (string.IsNullOrEmpty(body) || !body.TrimStart().StartsWith("{", StringComparison.Ordinal))
+            {
+                return null;
+            }
+
+            try
+            {
+                string message = JObject.Parse(body).Value<string>("message");
+                if (string.IsNullOrWhiteSpace(message))
+                {
+                    return null;
+                }
+
+                return message.Length <= MaxDetailLength ? message : message.Substring(0, MaxDetailLength);
+            }
+            catch (JsonException)
+            {
+                return null;
+            }
+            catch (FormatException)
+            {
+                return null;
+            }
         }
 
         // 요청 시간 초과, 요청 과다, 서버 쪽 오류는 잠시 뒤 다시 보내면 성공할 수 있다

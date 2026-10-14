@@ -767,7 +767,7 @@ namespace Game.Editor
             for (int i = 0; i < slots.arraySize; i++)
             {
                 if (slots.GetArrayElementAtIndex(i).objectReferenceValue is not EquipSlotView slot) { continue; }
-                slot.Bind(new EquipInfo { Slot = i, Level = 0, IsUnlocked = i < 4 || i == 6 }, null);
+                slot.Bind(new EquipInfo { Slot = i, Level = 0, IsUnlocked = i < 4 || i == 6 }, null, null);
                 foreach (var badge in slot.GetComponentsInChildren<NotificationBadgeView>(true))
                 {
                     badge.SetVisible(i == 3);

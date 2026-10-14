@@ -99,6 +99,31 @@ namespace Game.Tests
             Assert.AreEqual($"HTTP_{status}", ex.Code);
         }
 
+        [Test(Description = "서버가 오류 본문에 message를 적어 주면 Detail에 담기고, 코드는 그대로 HTTP_상태코드다")]
+        public void ErrorBody_MessageGoesToDetail()
+        {
+            _transport.Response = new HttpResponseData(401, "{\"status\":401,\"message\":\"소셜 로그인 정보가 올바르지 않습니다\"}");
+
+            var ex = Assert.Throws<ApiException>(() => Run(_client.Get<Ping>("api/ping")));
+
+            Assert.AreEqual("HTTP_401", ex.Code);
+            Assert.AreEqual("소셜 로그인 정보가 올바르지 않습니다", ex.Detail);
+            StringAssert.Contains("올바르지 않습니다", ex.Message);
+        }
+
+        [TestCase("oops")]
+        [TestCase("{ not json")]
+        [TestCase("{\"status\":500}")]
+        [Test(Description = "오류 본문이 JSON이 아니거나 message가 없으면 Detail은 없다")]
+        public void ErrorBody_WithoutMessage_HasNoDetail(string body)
+        {
+            _transport.Response = new HttpResponseData(500, body);
+
+            var ex = Assert.Throws<ApiException>(() => Run(_client.Get<Ping>("api/ping")));
+
+            Assert.IsNull(ex.Detail);
+        }
+
         [Test(Description = "제한 시간 안에 응답이 없으면 일시적 실패(TIMEOUT)다")]
         public void Timeout_MapsToTransient()
         {

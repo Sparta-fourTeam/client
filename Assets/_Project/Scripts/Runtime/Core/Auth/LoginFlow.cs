@@ -36,7 +36,12 @@ namespace Game.Core
             bool prompted = false;
             // 저장된 방식을 지금 쓸 수 없으면(예: 외부 계정 SDK가 빠진 빌드) 로그인창부터 다시 띄운다
             LoginMethod? method = _credentials.HasCredential && IsAvailable(_credentials.Method) ? _credentials.Method : null;
-            string accountId = method != null ? _credentials.AccountId : null;
+            // 게스트는 저장한 게스트 ID로 다시 로그인한다. 외부 계정은 저장한 값이 오래된 토큰이라 쓰지 않고,
+            // 실행할 때마다 외부 계정으로 다시 로그인해 새 토큰을 받는다
+            string accountId = method == LoginMethod.Guest ? _credentials.AccountId : null;
+            LoginResponse response;
+            // 저장된 방식으로 바로 들어가는 동안은 계정 선택 없이 로그인을 시도하고, 로그인창에서 사용자가 고른 뒤에는 선택창을 보여 준다
+            bool silent = method != null;
 
             while (true)
             {
@@ -44,13 +49,13 @@ namespace Game.Core
                 {
                     method = await _prompt.WaitForSignInAsync(AvailableMethods());
                     accountId = null;
+                    silent = false;
                     prompted = true;
                 }
 
-                // TODO(sdk): 외부 계정은 실행할 때마다 조용히 다시 로그인해 새 토큰을 받는다 (지금은 저장한 ID를 그대로 쓴다)
                 if (method != LoginMethod.Guest && accountId == null)
                 {
-                    accountId = await SocialSignInAsync(method.Value);
+                    accountId = await SocialSignInAsync(method.Value, silent);
                     if (accountId == null)
                     {
                         method = null; // 취소·실패: 로그인창으로 돌아간다
@@ -58,7 +63,8 @@ namespace Game.Core
                     }
                 }
 
-                if (await TrySignInAsync())
+                response = await TrySignInAsync(method.Value, accountId);
+                if (response != null)
                 {
                     break;
                 }
@@ -66,9 +72,12 @@ namespace Game.Core
                 await _prompt.WaitForRetryAsync();
             }
 
-            if (!_credentials.HasCredential || _credentials.Method != method.Value)
+            // 서버가 게스트 ID를 새로 정해 주면(가입하거나, 저장한 ID가 거절돼 다시 가입한 경우) 그 ID로 바꿔 저장한다
+            // 외부 계정의 ID 토큰은 저장하지 않는다 (AuthCredentials.SocialAccountId)
+            string saveId = AuthCredentials.IdToSave(method.Value, response.accountId ?? accountId ?? Guid.NewGuid().ToString("N"));
+            if (!_credentials.HasCredential || _credentials.Method != method.Value || _credentials.AccountId != saveId)
             {
-                _credentials.Save(method.Value, accountId ?? Guid.NewGuid().ToString("N"));
+                _credentials.Save(method.Value, saveId);
             }
 
             _prompt.Hide();
@@ -104,7 +113,7 @@ namespace Game.Core
             return null;
         }
 
-        private async UniTask<string> SocialSignInAsync(LoginMethod method)
+        private async UniTask<string> SocialSignInAsync(LoginMethod method, bool silent)
         {
             var social = Find(method);
             if (social == null)
@@ -114,7 +123,7 @@ namespace Game.Core
 
             try
             {
-                return await social.SignInAsync();
+                return silent ? await social.SignInSilentAsync() : await social.SignInAsync();
             }
             catch (OperationCanceledException)
             {
@@ -127,16 +136,16 @@ namespace Game.Core
             }
         }
 
-        private async UniTask<bool> TrySignInAsync()
+        /// <summary>로그인하고 플레이어 상태를 프로필에 반영한다. 실패하면 로그만 남기고 null을 돌려준다</summary>
+        private async UniTask<LoginResponse> TrySignInAsync(LoginMethod method, string accountId)
         {
             _prompt.ShowSigningIn();
             try
             {
-                // TODO(server): 로그인 방식과 계정 ID(게스트 자격 증명·외부 계정 토큰)를 넘기는 로그인으로 바꾼다 (#180, server#1)
-                await _auth.Login();
+                var response = await _auth.Login(method, accountId);
                 var snapshot = await _player.GetMe();
                 _profile.Apply(snapshot);
-                return true;
+                return response;
             }
             catch (OperationCanceledException)
             {
@@ -145,7 +154,7 @@ namespace Game.Core
             catch (Exception ex)
             {
                 Debug.LogException(ex);
-                return false;
+                return null;
             }
         }
     }

@@ -38,7 +38,7 @@ namespace Game.View
             _button.onClick.AddListener(() => _onClick?.Invoke());
         }
 
-        /// <summary>잠긴 칸은 눌러도 아무것도 하지 않는다</summary>
+        /// <summary>잠긴 칸도 눌러 강화 팝업에서 스킬 정보를 볼 수 있다 (강화는 팝업이 막는다)</summary>
         public void Bind(SkillInfo info, Action onClick, Sprite icon = null)
         {
             gameObject.SetActive(true);
@@ -64,7 +64,7 @@ namespace Game.View
             }
             _lock.SetActive(!info.IsUnlocked);
             _lockLabel.text = $"레벨 {info.UnlockLevel}에 해금";
-            _onClick = info.IsUnlocked ? onClick : null;
+            _onClick = onClick;
         }
 
         private Sprite RingFor(Element element)

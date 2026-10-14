@@ -184,6 +184,68 @@ namespace Game.Tests
 
         // ---------- 메뉴 팝업 ----------
 
+        [Test(Description = "설치 ID 복사는 반복 재열기·언어 변경 후에도 정확하며, 빈 값은 클립보드를 바꾸지 않는다. 실제 ID는 결과에 출력하지 않는다")]
+        public void SettingsPopup_DiagnosticIdCopiesAndUnavailableDoesNotOverwriteClipboard()
+        {
+            string previousClipboard = GUIUtility.systemCopyBuffer;
+            try
+            {
+                var game = new GameSettings(new MemorySettingsStore());
+                var popup = Spawn<SettingsPopupView>("SettingsPopup");
+                popup.Construct(new SoundSettings(new MemoryStore()), game);
+                var copy = Field<Button>(popup, "_diagnosticCopyButton");
+                var value = Field<TMP_Text>(popup, "_diagnosticIdText");
+                var label = Field<TMP_Text>(popup, "_diagnosticCopyLabel");
+                var info = Field<TMP_Text>(popup, "_diagnosticInfo");
+                for (int i = 0; i < 3; i++)
+                {
+                    popup.Open();
+                    string id = Field<string>(popup, "_diagnosticId");
+                    Assert.IsTrue(value.text == id || string.IsNullOrWhiteSpace(id));
+                    Assert.AreEqual(!string.IsNullOrWhiteSpace(id), copy.interactable);
+                    if (copy.interactable)
+                    {
+                        copy.onClick.Invoke();
+                        Assert.IsTrue(GUIUtility.systemCopyBuffer == id, "설치 ID를 출력하지 않고 일치 여부만 검사한다");
+                        Assert.AreEqual("복사 완료", label.text);
+                        copy.onClick.Invoke();
+                        Assert.IsTrue(GUIUtility.systemCopyBuffer == id);
+                    }
+                    popup.Close();
+                }
+
+                foreach (string unavailable in new[] { null, "", " " })
+                {
+                    typeof(SettingsPopupView).GetField("_diagnosticId", Flags).SetValue(popup, unavailable);
+                    game.SetLanguage(GameLanguage.English);
+                    Assert.IsFalse(copy.interactable);
+                    Assert.AreEqual("ID unavailable on this installation", value.text);
+                    Assert.IsTrue(info.text.Contains("teamdoodle.dev@gmail.com"));
+                    GUIUtility.systemCopyBuffer = "diagnostic-test-sentinel";
+                    copy.onClick.Invoke();
+                    Assert.IsTrue(GUIUtility.systemCopyBuffer == "diagnostic-test-sentinel");
+                    game.SetLanguage(GameLanguage.Korean);
+                    Assert.AreEqual("이 설치에서는 ID를 확인할 수 없습니다", value.text);
+                }
+
+                typeof(SettingsPopupView).GetField("_diagnosticId", Flags).SetValue(popup, "synthetic-installation-id");
+                game.SetLanguage(GameLanguage.English);
+                copy.onClick.Invoke();
+                Assert.IsTrue(GUIUtility.systemCopyBuffer == "synthetic-installation-id");
+                Assert.AreEqual("Copied", label.text);
+                game.SetLanguage(GameLanguage.Korean);
+                Assert.AreEqual("복사 완료", label.text);
+                Assert.IsTrue(info.text.Contains("계정 ID·광고 ID와 다릅니다"));
+                popup.Close();
+                popup.Open();
+                Assert.AreEqual("ID 복사", label.text, "재열기는 복사 피드백을 초기화한다");
+            }
+            finally
+            {
+                GUIUtility.systemCopyBuffer = previousClipboard;
+            }
+        }
+
         [Test(Description = "두 단계 삭제 확인이 동기적으로 이어져도 닉네임 확인을 완료하고, 처리 중 연타를 막으며 완료 뒤 다시 열린다")]
         public void Menu_DeleteAccount_CompletesSecondPromptAndReopens()
         {

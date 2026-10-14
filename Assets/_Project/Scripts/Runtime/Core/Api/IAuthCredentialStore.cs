@@ -1,7 +1,7 @@
 namespace Game.Core
 {
     /// <summary>기기에 저장한 로그인 정보(방식과 계정 ID). 다음 실행에서 로그인창 없이 바로 로그인하는 데 쓴다.
-    /// TODO(server): 자격 증명 형식(server#1: 게스트 uuid 단독 vs guestId+guestSecret, 소셜 토큰)이 정해지면 그 값을 보관하고 IAuthApi.Login에 넘긴다 (#180)</summary>
+    /// 게스트는 서버가 정해 준 게스트 ID를 보관해 IAuthApi.Login에 넘긴다. 외부 계정은 실행할 때마다 다시 로그인해 토큰을 받는다</summary>
     public interface IAuthCredentialStore
     {
         /// <summary>저장된 로그인 정보가 있는지. 최초 진입이면 false</summary>

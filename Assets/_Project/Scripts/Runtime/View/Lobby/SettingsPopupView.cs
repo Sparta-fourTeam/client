@@ -28,6 +28,13 @@ namespace Game.View
         [SerializeField] private Button _languageButton;
         [SerializeField] private TMP_Text _languageLabel;
 
+        [Header("Unity 진단 ID")]
+        [SerializeField] private TMP_Text _diagnosticTitle, _diagnosticInfo, _diagnosticIdText, _diagnosticCopyLabel;
+        [SerializeField] private Button _diagnosticCopyButton;
+
+        private string _diagnosticId;
+        private bool _diagnosticCopied, _diagnosticCopyFailed;
+
         private SoundSettings _settings;
         private GameSettings _game;
         private LanguagePopupView _language;
@@ -63,6 +70,7 @@ namespace Game.View
             _frameHighToggle.onValueChanged.AddListener(on => { if (on) { _game.SetFrameRate(FrameRateMode.High); } });
             _frameStandardToggle.onValueChanged.AddListener(on => { if (on) { _game.SetFrameRate(FrameRateMode.Standard); } });
             _languageButton.onClick.AddListener(() => _language.Open());
+            _diagnosticCopyButton.onClick.AddListener(CopyDiagnosticId);
             for (int i = 0; i < _sliders.Length && i < Channels.Length; i++)
             {
                 int index = i;
@@ -80,6 +88,8 @@ namespace Game.View
             _autoEnterToggle.SetIsOnWithoutNotify(_game.AutoEnterHighestStage);
             _frameHighToggle.SetIsOnWithoutNotify(_game.FrameRate == FrameRateMode.High);
             _frameStandardToggle.SetIsOnWithoutNotify(_game.FrameRate == FrameRateMode.Standard);
+            _diagnosticId = ReadDiagnosticId();
+            _diagnosticCopied = _diagnosticCopyFailed = false;
             RefreshLanguage();
             for (int i = 0; i < _sliders.Length && i < Channels.Length; i++)
             {
@@ -91,7 +101,56 @@ namespace Game.View
 
         public void Close() => PopupPanel.Set(_panel, _transition, false);
 
-        private void RefreshLanguage() => _languageLabel.text = LanguagePopupView.NativeName(_game.Language);
+        private void RefreshLanguage()
+        {
+            _languageLabel.text = LanguagePopupView.NativeName(_game.Language);
+            bool english = _game.Language == GameLanguage.English;
+            _diagnosticTitle.text = english ? "Unity diagnostic ID" : "Unity 진단 ID";
+            _diagnosticInfo.text = english
+                ? "Installation ID for privacy inquiries and diagnostic data deletion requests. Separate from account and advertising IDs.\nContact: teamdoodle.dev@gmail.com"
+                : "개인정보 문의·진단 데이터 삭제 요청에 사용하는 설치 ID입니다. 계정 ID·광고 ID와 다릅니다.\n문의: teamdoodle.dev@gmail.com";
+            bool available = !string.IsNullOrWhiteSpace(_diagnosticId);
+            _diagnosticIdText.text = available ? _diagnosticId : english ? "ID unavailable on this installation" : "이 설치에서는 ID를 확인할 수 없습니다";
+            _diagnosticCopyButton.interactable = available;
+            _diagnosticCopyLabel.text = _diagnosticCopyFailed
+                ? english ? "Copy failed — try again" : "복사 실패 · 다시 시도"
+                : _diagnosticCopied ? english ? "Copied" : "복사 완료"
+                : english ? "Copy ID" : "ID 복사";
+        }
+
+        private static string ReadDiagnosticId()
+        {
+#if UNITY_6000_6_OR_NEWER
+            try
+            {
+                return UnityEngine.Identifiers.Identifiers.installationId;
+            }
+            catch (System.Exception)
+            {
+                // ID나 예외 내용을 기록하지 않는다. 미지원 플랫폼도 같은 안내를 쓴다.
+                return null;
+            }
+#else
+            return null;
+#endif
+        }
+
+        private void CopyDiagnosticId()
+        {
+            if (string.IsNullOrWhiteSpace(_diagnosticId)) { return; }
+            try
+            {
+                GUIUtility.systemCopyBuffer = _diagnosticId;
+                _diagnosticCopied = true;
+                _diagnosticCopyFailed = false;
+            }
+            catch (System.Exception)
+            {
+                _diagnosticCopied = false;
+                _diagnosticCopyFailed = true;
+            }
+            RefreshLanguage();
+        }
 
         private void OnSlider(int index, float value)
         {
