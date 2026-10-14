@@ -18,6 +18,8 @@ namespace Game.Core
         private static readonly int AttackHash = Animator.StringToHash("Attack");
         private const float DefaultDeathDuration = 0.6f;
         private const float DamagePopupJitter = 0.15f; // 연속으로 맞아도 숫자가 한 자리에 겹쳐 쌓이지 않도록 가로로 살짝 흩는다
+        private const float DisplacementRate = 18f; // 밀치기·끌어당기기 남은 거리를 초당 이 비율로 줄인다 (0.15초면 약 93% 이동)
+        private const float DisplacementSnap = 0.002f; // 남은 거리가 이보다 짧으면 한 번에 마저 움직인다
 
         private EnemyModel _enemyModel;
         private Animator _animator; // 몬스터 비주얼 프리팹의 Animator (없으면 애니메이션 없이 동작)
@@ -30,6 +32,7 @@ namespace Game.Core
         private Vector2 _lastPosition; // 오브젝트가 파괴된 뒤에도 남은 참조가 읽을 마지막 위치
         private bool _destroyed;
         private bool _deathPlayed;
+        private Vector2 _pendingDisplacement; // 밀치기·끌어당기기로 아직 움직이지 않은 거리. 순간이동 대신 몇 프레임에 나눠 움직인다
         private static GameObject s_deathEffect;
 
         private void Awake()
@@ -56,6 +59,7 @@ namespace Game.Core
             _projectilePrefab = projectilePrefab;
             _lastHp = enemyModel.Hp;
             _deathPlayed = false;
+            _pendingDisplacement = Vector2.zero;
             _previousPosition = transform.position;
             _lastPosition = transform.position;
             _enemyModel.ProjectileFired += OnProjectileFired;
@@ -141,6 +145,7 @@ namespace Game.Core
                 return;
             }
 
+            TickDisplacement(deltaTime);
             if (IsInAttackRange(wall))
             {
                 Attack(deltaTime, wall, projectiles);
@@ -166,6 +171,17 @@ namespace Game.Core
         }
 
         public void TickStatus(float deltaTime) => _enemyModel.TickStatus(deltaTime);
+
+        /// <summary>밀치기·끌어당기기로 남은 거리를 이번 프레임 몫만큼 실제로 움직인다. 남은 거리가 클수록 빨리 움직이고 끝에서 느려진다</summary>
+        public void TickDisplacement(float deltaTime)
+        {
+            if (_pendingDisplacement == Vector2.zero || deltaTime <= 0) { return; }
+            var step = _pendingDisplacement.sqrMagnitude <= DisplacementSnap * DisplacementSnap
+                ? _pendingDisplacement
+                : _pendingDisplacement * (1f - Mathf.Exp(-DisplacementRate * deltaTime));
+            transform.position += (Vector3)step;
+            _pendingDisplacement -= step;
+        }
 
         private void OnAttacked()
         {
@@ -339,16 +355,16 @@ namespace Game.Core
         public void ApplyBurn(float damagePerSecond, float duration, float maxHpRatio = 0, Action<Vector2> onDeath = null)
             => _enemyModel.ApplyBurn(damagePerSecond, duration, maxHpRatio, onDeath);
 
-        // 모델이 저항 등을 반영해 정한 거리만큼 실제로 밀려난다 (항상 위로)
+        // 모델이 저항 등을 반영해 정한 거리만큼 밀려난다 (항상 위로). 실제 이동은 TickDisplacement가 몇 프레임에 나눠 한다
         public void ApplyKnockback(Vector2 direction, float distance)
         {
-            transform.position += (Vector3)_enemyModel.ResolveKnockback(direction, distance);
+            _pendingDisplacement += _enemyModel.ResolveKnockback(direction, distance);
         }
 
-        // 장판 중심 쪽으로 끌려간다 (좌우 포함)
+        // 장판 중심 쪽으로 끌려간다 (좌우 포함). 실제 이동은 TickDisplacement가 몇 프레임에 나눠 한다
         public void ApplyPull(Vector2 direction, float distance)
         {
-            transform.position += (Vector3)_enemyModel.ResolvePull(direction, distance);
+            _pendingDisplacement += _enemyModel.ResolvePull(direction, distance);
         }
     }
 }
