@@ -1,0 +1,44 @@
+{
+  "versionName": "1.0.3",
+  "versionCode": 4,
+  "playUploads": [
+    {
+      "versionName": "1.0.1",
+      "versionCode": 1,
+      "state": "internal-test-available",
+      "confirmedAtUtc": "2026-10-13T02:43:02Z",
+      "sourceCommit": "61f98f4b45ea1a6d8f1e471de40c78a5949b4a2d",
+      "actionsRun": 38333907262,
+      "aabSha256": "235b4e10436b6e025d4f7d9c0b46897e9ec2860162b5eb37eed586795fd37370",
+      "internalReleaseConfirmedAtUtc": "2026-10-13T02:59Z",
+      "testerCount": 8
+    },
+    {
+      "versionName": "1.0.2",
+      "versionCode": 2,
+      "state": "internal-committed",
+      "sourceCommit": "10090077763379220123eabbabaedf7ae2ea3ed6",
+      "actionsRun": 38355633941,
+      "sourceActionsRun": 38347195550,
+      "aabSha256": "3c6a2d6dbcc86f7efbde3474b88696264b35e26c7c91a9e76f842a5239e3f23a",
+      "recoveryReceiptArtifactId": 11792248055
+    }
+  ],
+  "legacyDraftUploads": [
+    {
+      "versionName": "1.0",
+      "versionCode": 214011987,
+      "excludedFromCurrentDraft": true
+    }
+  ],
+  "sourceDevCommit": "13fd2e670b0c39a2ca0d31f99aa70fe670d94aea",
+  "reservedBuilds": [
+    {
+      "versionName": "1.0.3",
+      "versionCode": 3,
+      "sourceCommit": "a3fa406acf91d70f514bc948be3246b816e49bb1",
+      "artifactSha256": "029f206f444482dc64a8ba59235bbee1066e06305565abf480a196dc10ad6cf2",
+      "reason": "Preserved superseded AAB; not uploaded to Play"
+    }
+  ]
+}
