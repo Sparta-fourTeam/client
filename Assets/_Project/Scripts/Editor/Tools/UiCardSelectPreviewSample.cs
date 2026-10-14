@@ -30,7 +30,7 @@ namespace Game.Editor
             var frost = catalog.Single(s => s.id == 4);
             var arrow = catalog.Single(s => s.id == 1);
             var lightning = catalog.Single(s => s.id == 3);
-            var option = arrow.upgrades.Single(o => o.id == "arrow_multishot");
+            var option = arrow.upgrades.Single(o => o.id == "1"); // 다중 사격(옛 arrow_multishot)
             SkillUpgradeResolver.TryResolve(option, 0, out var upgrade);
             using var owned = SkillFactory.Create(arrow, assets.GetPrefab(arrow.id), null, null);
             var choices = new[]
@@ -41,7 +41,7 @@ namespace Game.Editor
             };
             if (sample == "형태변환")
             {
-                var transform = arrow.upgrades.Single(o => o.id == "arrow_thunder");
+                var transform = arrow.upgrades.Single(o => o.id == "16"); // 번개 화살 형태 변환(옛 arrow_thunder)
                 SkillUpgradeResolver.TryResolve(transform, 0, out var resolved);
                 FormHintFinder.TryGetForm(transform, 0, out var form);
                 choices[standalone != null ? 0 : 2] = new UpgradeChoice
