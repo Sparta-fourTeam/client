@@ -13,7 +13,7 @@
 .details { flex-grow: 1; min-width: 320px; }
 .asset-title { font-size: 16px; -unity-font-style: bold; color: #e8edf5; }
 .asset-path { color: #b9c3d1; white-space: normal; margin-bottom: 8px; }
-.preview { flex-grow: 1; background-color: #171a20; min-height: 240px; }
+.preview { flex-grow: 0; flex-shrink: 0; background-color: #171a20; min-height: 240px; height: 640px; }
 .device { flex-grow: 1; }
 .device > Label { min-width: 60px; }
 .sample > Label { min-width: 40px; }

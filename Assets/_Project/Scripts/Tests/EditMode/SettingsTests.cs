@@ -184,66 +184,20 @@ namespace Game.Tests
 
         // ---------- 메뉴 팝업 ----------
 
-        [Test(Description = "설치 ID 복사는 반복 재열기·언어 변경 후에도 정확하며, 빈 값은 클립보드를 바꾸지 않는다. 실제 ID는 결과에 출력하지 않는다")]
-        public void SettingsPopup_DiagnosticIdCopiesAndUnavailableDoesNotOverwriteClipboard()
+        [Test(Description = "문의 메일은 한글·공백·줄바꿈이 깨지지 않게 인코딩되어 본문이 그대로 복원되고, 값이 없는 정보 줄은 빠진다")]
+        public void SupportMail_EncodesBodyAndOmitsMissingInfo()
         {
-            string previousClipboard = GUIUtility.systemCopyBuffer;
-            try
-            {
-                var game = new GameSettings(new MemorySettingsStore());
-                var popup = Spawn<SettingsPopupView>("SettingsPopup");
-                popup.Construct(new SoundSettings(new MemoryStore()), game);
-                var copy = Field<Button>(popup, "_diagnosticCopyButton");
-                var value = Field<TMP_Text>(popup, "_diagnosticIdText");
-                var label = Field<TMP_Text>(popup, "_diagnosticCopyLabel");
-                var info = Field<TMP_Text>(popup, "_diagnosticInfo");
-                for (int i = 0; i < 3; i++)
-                {
-                    popup.Open();
-                    string id = Field<string>(popup, "_diagnosticId");
-                    Assert.IsTrue(value.text == id || string.IsNullOrWhiteSpace(id));
-                    Assert.AreEqual(!string.IsNullOrWhiteSpace(id), copy.interactable);
-                    if (copy.interactable)
-                    {
-                        copy.onClick.Invoke();
-                        Assert.IsTrue(GUIUtility.systemCopyBuffer == id, "설치 ID를 출력하지 않고 일치 여부만 검사한다");
-                        Assert.AreEqual("복사 완료", label.text);
-                        copy.onClick.Invoke();
-                        Assert.IsTrue(GUIUtility.systemCopyBuffer == id);
-                    }
-                    popup.Close();
-                }
+            string body = SupportMail.Body("닉 네임", "게스트", null, " ", "1.2.3", "Pixel 8", "Android 15");
 
-                foreach (string unavailable in new[] { null, "", " " })
-                {
-                    typeof(SettingsPopupView).GetField("_diagnosticId", Flags).SetValue(popup, unavailable);
-                    game.SetLanguage(GameLanguage.English);
-                    Assert.IsFalse(copy.interactable);
-                    Assert.AreEqual("ID unavailable on this installation", value.text);
-                    Assert.IsTrue(info.text.Contains("teamdoodle.dev@gmail.com"));
-                    GUIUtility.systemCopyBuffer = "diagnostic-test-sentinel";
-                    copy.onClick.Invoke();
-                    Assert.IsTrue(GUIUtility.systemCopyBuffer == "diagnostic-test-sentinel");
-                    game.SetLanguage(GameLanguage.Korean);
-                    Assert.AreEqual("이 설치에서는 ID를 확인할 수 없습니다", value.text);
-                }
+            StringAssert.Contains("닉네임: 닉 네임", body);
+            StringAssert.Contains("앱 버전: 1.2.3", body);
+            StringAssert.DoesNotContain("게스트 ID", body);
+            StringAssert.DoesNotContain("Unity 진단 ID", body);
 
-                typeof(SettingsPopupView).GetField("_diagnosticId", Flags).SetValue(popup, "synthetic-installation-id");
-                game.SetLanguage(GameLanguage.English);
-                copy.onClick.Invoke();
-                Assert.IsTrue(GUIUtility.systemCopyBuffer == "synthetic-installation-id");
-                Assert.AreEqual("Copied", label.text);
-                game.SetLanguage(GameLanguage.Korean);
-                Assert.AreEqual("복사 완료", label.text);
-                Assert.IsTrue(info.text.Contains("계정 ID·광고 ID와 다릅니다"));
-                popup.Close();
-                popup.Open();
-                Assert.AreEqual("ID 복사", label.text, "재열기는 복사 피드백을 초기화한다");
-            }
-            finally
-            {
-                GUIUtility.systemCopyBuffer = previousClipboard;
-            }
+            string uri = SupportMail.Uri(body);
+            StringAssert.StartsWith($"mailto:{SupportMail.Address}?subject=", uri);
+            Assert.IsFalse(uri.Contains(" ") || uri.Contains("\n"), "주소에 공백·줄바꿈이 그대로 남으면 메일 앱이 본문을 자른다");
+            Assert.AreEqual(body, System.Uri.UnescapeDataString(uri.Substring(uri.IndexOf("&body=") + "&body=".Length)));
         }
 
         [Test(Description = "두 단계 삭제 확인이 동기적으로 이어져도 닉네임 확인을 완료하고, 처리 중 연타를 막으며 완료 뒤 다시 열린다")]
@@ -279,11 +233,13 @@ namespace Game.Tests
             Field<Button>(confirm, "_cancelButton").onClick.Invoke();
         }
 
-        [TestCase(false, false)]
-        [TestCase(false, true)]
-        [TestCase(true, false)]
-        [TestCase(true, true)]
-        public void Menu_DeleteAccount_CancelOrCloseAtEitherStepAllowsRetry(bool secondStep, bool close)
+        [TestCase(false, 0)]
+        [TestCase(false, 1)]
+        [TestCase(false, 2)]
+        [TestCase(true, 0)]
+        [TestCase(true, 1)]
+        [TestCase(true, 2)]
+        public void Menu_DeleteAccount_CancelOrCloseAtEitherStepAllowsRetry(bool secondStep, int dismissal)
         {
             var (menu, confirm, api, nav) = CreateDeleteMenu();
             var delete = Field<Button>(menu, "_deleteAccountButton");
@@ -294,7 +250,20 @@ namespace Game.Tests
                 Field<TMP_InputField>(confirm, "_input").text = "Review_Ninja";
             }
 
-            Field<Button>(confirm, close ? "_closeButton" : "_cancelButton").onClick.Invoke();
+            if (dismissal == 2)
+            {
+                var panel = Field<GameObject>(confirm, "_panel");
+                var background = panel.GetComponent<PointerClickRelay>();
+                var window = Field<Button>(confirm, "_confirmButton").transform.parent as RectTransform;
+                background.OnPointerClick(new PointerEventData(null)
+                {
+                    position = RectTransformUtility.WorldToScreenPoint(null, window.TransformPoint(window.rect.center))
+                });
+                Assert.IsTrue(Field<PopupTransition>(confirm, "_transition").IsShown, "창 안쪽 클릭은 취소로 처리하지 않는다");
+                background.OnPointerClick(
+                    new PointerEventData(null) { position = new Vector2(-10000f, -10000f) });
+            }
+            else { Field<Button>(confirm, dismissal == 1 ? "_closeButton" : "_cancelButton").onClick.Invoke(); }
             Assert.IsFalse(Field<PopupTransition>(confirm, "_transition").IsShown);
             Assert.AreEqual(0, api.Deleted);
             Assert.AreEqual(0, nav.LoadingCalls);

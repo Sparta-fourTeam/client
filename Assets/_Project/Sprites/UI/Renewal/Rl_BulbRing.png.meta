@@ -1,0 +1,613 @@
+fileFormatVersion: 2
+guid: 125ce8578700f4eb18c40ee84951c2ed
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 8776105654681817442
+    second: Rl_BulbRing_0
+  - first:
+      213: -1336952522008768956
+    second: Rl_BulbRing_1
+  - first:
+      213: 3726897574299081026
+    second: Rl_BulbRing_2
+  - first:
+      213: -9170748439688662213
+    second: Rl_BulbRing_3
+  - first:
+      213: 6836690940547546455
+    second: Rl_BulbRing_4
+  - first:
+      213: -5325533707410155653
+    second: Rl_BulbRing_5
+  - first:
+      213: 134355193857579259
+    second: Rl_BulbRing_6
+  - first:
+      213: 7740446787476775496
+    second: Rl_BulbRing_7
+  - first:
+      213: -828451741198210868
+    second: Rl_BulbRing_8
+  - first:
+      213: -4742576781068185899
+    second: Rl_BulbRing_9
+  - first:
+      213: -3372260418703697527
+    second: Rl_BulbRing_10
+  - first:
+      213: -5733692824877856319
+    second: Rl_BulbRing_11
+  - first:
+      213: 8306234775652135092
+    second: Rl_BulbRing_12
+  - first:
+      213: 6316085797055740762
+    second: Rl_BulbRing_13
+  - first:
+      213: -7734803630691501254
+    second: Rl_BulbRing_14
+  - first:
+      213: -5742542428178487235
+    second: Rl_BulbRing_15
+  - first:
+      213: -4958481471488901375
+    second: Rl_BulbRing_16
+  - first:
+      213: -8894610467331234331
+    second: Rl_BulbRing_17
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Rl_BulbRing_0
+      rect:
+        serializedVersion: 2
+        x: 169
+        y: 767
+        width: 82
+        height: 82
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2615b9a589dfac970800000000000000
+      internalID: 8776105654681817442
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Rl_BulbRing_1
+      rect:
+        serializedVersion: 2
+        x: 280
+        y: 787
+        width: 112
+        height: 155
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 44eca14c3c0327de0800000000000000
+      internalID: -1336952522008768956
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Rl_BulbRing_2
+      rect:
+        serializedVersion: 2
+        x: 473
+        y: 810
+        width: 126
+        height: 164
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2499c5e099998b330800000000000000
+      internalID: 3726897574299081026
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Rl_BulbRing_3
+      rect:
+        serializedVersion: 2
+        x: 638
+        y: 862
+        width: 81
+        height: 80
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b33b3eff1e4fab080800000000000000
+      internalID: -9170748439688662213
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Rl_BulbRing_4
+      rect:
+        serializedVersion: 2
+        x: 662
+        y: 662
+        width: 57
+        height: 163
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 75db776203ec0ee50800000000000000
+      internalID: 6836690940547546455
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Rl_BulbRing_5
+      rect:
+        serializedVersion: 2
+        x: 769
+        y: 761
+        width: 129
+        height: 125
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b77d27a1f47e716b0800000000000000
+      internalID: -5325533707410155653
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Rl_BulbRing_6
+      rect:
+        serializedVersion: 2
+        x: 78
+        y: 633
+        width: 83
+        height: 83
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bf81c9346535dd100800000000000000
+      internalID: 134355193857579259
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Rl_BulbRing_7
+      rect:
+        serializedVersion: 2
+        x: 864
+        y: 633
+        width: 83
+        height: 83
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 842ed52b7579b6b60800000000000000
+      internalID: 7740446787476775496
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Rl_BulbRing_8
+      rect:
+        serializedVersion: 2
+        x: 48
+        y: 471
+        width: 235
+        height: 82
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cc8a35cd78fb084f0800000000000000
+      internalID: -828451741198210868
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Rl_BulbRing_9
+      rect:
+        serializedVersion: 2
+        x: 890
+        y: 471
+        width: 85
+        height: 82
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5de4a6c7b8bfe2eb0800000000000000
+      internalID: -4742576781068185899
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Rl_BulbRing_10
+      rect:
+        serializedVersion: 2
+        x: 118
+        y: 452
+        width: 11
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9895e0524035331d0800000000000000
+      internalID: -3372260418703697527
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Rl_BulbRing_11
+      rect:
+        serializedVersion: 2
+        x: 78
+        y: 308
+        width: 83
+        height: 84
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1c903f111c4dd60b0800000000000000
+      internalID: -5733692824877856319
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Rl_BulbRing_12
+      rect:
+        serializedVersion: 2
+        x: 798
+        y: 308
+        width: 149
+        height: 127
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4b0fdb7258ca54370800000000000000
+      internalID: 8306234775652135092
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Rl_BulbRing_13
+      rect:
+        serializedVersion: 2
+        x: 169
+        y: 180
+        width: 81
+        height: 80
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a5bb560819e37a750800000000000000
+      internalID: 6316085797055740762
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Rl_BulbRing_14
+      rect:
+        serializedVersion: 2
+        x: 176
+        y: 73
+        width: 315
+        height: 186
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a3b3b31241578a490800000000000000
+      internalID: -7734803630691501254
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Rl_BulbRing_15
+      rect:
+        serializedVersion: 2
+        x: 471
+        y: 49
+        width: 111
+        height: 115
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d38efcc36146e40b0800000000000000
+      internalID: -5742542428178487235
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Rl_BulbRing_16
+      rect:
+        serializedVersion: 2
+        x: 635
+        y: 87
+        width: 84
+        height: 85
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 10f3c827f5fef2bb0800000000000000
+      internalID: -4958481471488901375
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Rl_BulbRing_17
+      rect:
+        serializedVersion: 2
+        x: 715
+        y: 114
+        width: 203
+        height: 146
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5e52047d7eeff8480800000000000000
+      internalID: -8894610467331234331
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      Rl_BulbRing_0: 8776105654681817442
+      Rl_BulbRing_1: -1336952522008768956
+      Rl_BulbRing_10: -3372260418703697527
+      Rl_BulbRing_11: -5733692824877856319
+      Rl_BulbRing_12: 8306234775652135092
+      Rl_BulbRing_13: 6316085797055740762
+      Rl_BulbRing_14: -7734803630691501254
+      Rl_BulbRing_15: -5742542428178487235
+      Rl_BulbRing_16: -4958481471488901375
+      Rl_BulbRing_17: -8894610467331234331
+      Rl_BulbRing_2: 3726897574299081026
+      Rl_BulbRing_3: -9170748439688662213
+      Rl_BulbRing_4: 6836690940547546455
+      Rl_BulbRing_5: -5325533707410155653
+      Rl_BulbRing_6: 134355193857579259
+      Rl_BulbRing_7: 7740446787476775496
+      Rl_BulbRing_8: -828451741198210868
+      Rl_BulbRing_9: -4742576781068185899
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

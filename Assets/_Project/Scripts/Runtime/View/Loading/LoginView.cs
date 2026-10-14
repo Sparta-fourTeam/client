@@ -11,8 +11,10 @@ namespace Game.View
     /// 방식을 누르면 확인창에서 한 번 더 묻고, 게스트는 데이터가 사라질 수 있다는 경고를 함께 보여준다. 취소하면 방식 선택으로 돌아간다.
     /// 쓸 수 없는 방식의 버튼은 "(준비 중)"을 붙여 막는다. 창이 떠 있는 동안 로그인 중이면 버튼을 숨기고 진행 문구만 보여준다.
     /// 패널과 [다시 시도]는 시작할 때 숨긴다(UiInitialVisibility)</summary>
-    public sealed class LoginView : HudView, ILoginPrompt
+    public sealed class LoginView : HudView, ILoginPrompt, IUiBindable
     {
+        public void BindUi(IUiRegistry registry) => _confirm = registry.Get<ConfirmPopupView>();
+
         private const string SignInMessage = "로그인 방식을 선택해 주세요";
         private const string SigningInMessage = "로그인 중...";
         private const string FailedMessage = "로그인에 실패했습니다.\n잠시 후 다시 시도해 주세요.";
@@ -24,8 +26,8 @@ namespace Game.View
         [SerializeField] private Button _guestButton, _googleButton, _appleButton;
         [SerializeField] private Button _retryButton;
         [SerializeField] private TMP_Text _messageText;
-        [SerializeField] private ConfirmPopupView _confirm;
 
+        private ConfirmPopupView _confirm;
         private readonly Dictionary<Button, string> _labels = new();
         private UniTaskCompletionSource<LoginMethod> _pending;
 

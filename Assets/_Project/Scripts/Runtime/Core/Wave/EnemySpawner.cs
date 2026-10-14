@@ -16,6 +16,7 @@ namespace Game.Core
         private readonly IRandomProvider _randomProvider;
         private readonly ISubscriber<WaveStarted> _waveStartedSubscriber;
         private readonly IPublisher<AllEnemiesCleared> _allEnemiesClearedPublisher;
+        private readonly IPublisher<SpecialEnemyWarning> _warningPublisher;
 
         // 필드에 있는 적
         // 죽은 적은 다음 Tick에 제거, EnemyDied는 EnemyModel이 발행
@@ -57,6 +58,10 @@ namespace Game.Core
 
         private float _nextSpawnInterval;
 
+        // 엘리트·보스는 경고를 먼저 띄우고 이 시간 뒤에 나온다
+        private const float EliteWarningSeconds = 2.2f, BossWarningSeconds = 3f;
+        private bool _specialWarned; // 지금 나올 차례인 엘리트·보스의 경고를 이미 띄웠다
+
         private bool _isFinalWave;
         private bool _finalSpawnDone;
         private bool _allClearPublished;
@@ -69,8 +74,10 @@ namespace Game.Core
             ISubscriber<WaveStarted> waveStartedSubscriber,
             IPublisher<AllEnemiesCleared> allEnemiesClearedPublisher,
             Wall wall,
-            EnemyProjectileSystem projectiles)
+            EnemyProjectileSystem projectiles,
+            IPublisher<SpecialEnemyWarning> warningPublisher = null)
         {
+            _warningPublisher = warningPublisher;
             _enemyViewFactory = enemyViewFactory;
             _enemySpawnConfig = enemySpawnConfig;
             _spawnArea = spawnArea;
@@ -138,7 +145,10 @@ namespace Game.Core
                 return;
             }
 
+            if (TryWarnSpecial()) { return; }
+
             _elapsedTime = 0f;
+            _specialWarned = false;
             Spawn();
 
             // 스폰 간격 랜덤
@@ -159,8 +169,29 @@ namespace Game.Core
             }
         }
 
+        // 다음에 나올 몬스터가 엘리트·보스이면 경고를 띄우고, 경고 시간이 지난 뒤에 나오도록 타이머를 되감는다
+        private bool TryWarnSpecial()
+        {
+            if (_warningPublisher == null || _specialWarned) { return false; }
+
+            int monsterId = _burst[_spawnedCountInOnceSpawn];
+            foreach (var spawn in _waveSpawns)
+            {
+                if (spawn.MonsterId != monsterId || spawn.Type == EnemyType.Normal) { continue; }
+
+                float seconds = spawn.Type == EnemyType.Boss ? BossWarningSeconds : EliteWarningSeconds;
+                _specialWarned = true;
+                _elapsedTime = _nextSpawnInterval - seconds;
+                _warningPublisher.Publish(new SpecialEnemyWarning(spawn.Type, seconds));
+                return true;
+            }
+
+            return false;
+        }
+
         private void OnWaveStarted(WaveStarted message)
         {
+            _specialWarned = false;
             _waveSpawns = message.Spawns;
             _isSpawningAllowed = StartBurst(includeSpecials: true);
             _elapsedTime = 0f;

@@ -25,6 +25,12 @@ namespace Game.Tests
             public void Publish(T message) { }
         }
 
+        private class RecordingPublisher<T> : IPublisher<T>
+        {
+            public readonly List<T> Messages = new();
+            public void Publish(T message) => Messages.Add(message);
+        }
+
         // 어떤 타입으로 Create가 불렸는지 순서대로 기록
         private class TypeRecordingFactory : IEnemyFactory
         {
@@ -111,7 +117,7 @@ namespace Game.Tests
             _createdObjects.Clear();
         }
 
-        private EnemySpawner CreateSpawner()
+        private EnemySpawner CreateSpawner(IPublisher<SpecialEnemyWarning> warning = null)
         {
             var wallGo = new GameObject("Wall");
             _createdObjects.Add(wallGo);
@@ -137,7 +143,7 @@ namespace Game.Tests
             var spawner = new EnemySpawner(
                 _factory, config, spawnArea, _random,
                 _waveStarted, _allCleared,
-                wall, new EnemyProjectileSystem());
+                wall, new EnemyProjectileSystem(), warning);
             spawner.Initialize();
             return spawner;
         }
@@ -214,6 +220,29 @@ namespace Game.Tests
             Assert.AreEqual(6, _factory.Types.Count);
             Assert.AreEqual(EnemyType.Normal, _factory.Types[4]);
             Assert.AreEqual(EnemyType.Normal, _factory.Types[5]);
+        }
+
+        [Test(Description = "엘리트·보스는 경고를 먼저 한 번 알리고 그 뒤에 나온다. 일반 몬스터는 경고 없이 바로 나온다")]
+        public void SpecialEnemy_WarnsOnceBeforeItAppears()
+        {
+            var warnings = new RecordingPublisher<SpecialEnemyWarning>();
+            var spawner = CreateSpawner(warnings);
+            StartWave(true, B());
+
+            spawner.Advance(1f); // 스폰 간격이 지나는 순간 경고만 나가고 보스는 아직 없다
+            Assert.AreEqual(1, warnings.Messages.Count);
+            Assert.AreEqual(EnemyType.Boss, warnings.Messages[0].Type);
+            Assert.Greater(warnings.Messages[0].Seconds, 0f);
+            Assert.AreEqual(0, _factory.Types.Count);
+
+            AdvanceUntilSpawned(spawner, 1);
+            Assert.AreEqual(1, warnings.Messages.Count, "같은 보스에 경고를 다시 보내면 안 된다");
+
+            var normalWarnings = new RecordingPublisher<SpecialEnemyWarning>();
+            var normalSpawner = CreateSpawner(normalWarnings);
+            StartWave(true, N(1));
+            normalSpawner.Advance(1f);
+            Assert.AreEqual(0, normalWarnings.Messages.Count);
         }
 
         [Test]

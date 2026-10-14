@@ -7,11 +7,6 @@ using UnityEngine.UI;
 
 namespace Game.View
 {
-    /// <summary>이 버튼(과 자식 버튼)은 눌러도 크기가 변하지 않는다. 자체 애니메이션이 있는 버튼 등에 붙인다</summary>
-    [DisallowMultipleComponent]
-    public sealed class NoPressFeedback : MonoBehaviour
-    {
-    }
 
     /// <summary>눌린 대상 하나를 살짝 줄였다가 놓으면 되돌린다. 시간은 타임스케일과 상관없이(unscaled) 흐른다.
     /// 놓은 뒤에도 대상이 꺼졌거나 파괴돼도 크기를 원래대로 돌려, 꺼진 팝업의 버튼이 줄어든 채 남지 않게 한다</summary>
@@ -23,6 +18,7 @@ namespace Game.View
         private Transform _target;
         private Vector3 _baseScale;
         private Tween _tween;
+        private GameObject _accent;
 
         public PressScaleAnimator(float pressedScale = 0.95f, float pressSeconds = 0.06f, float releaseSeconds = 0.10f)
         {
@@ -47,11 +43,17 @@ namespace Game.View
 
             _target = target;
             _baseScale = target.localScale;
+            _accent = target.Find("PressAccent")?.gameObject;
+            if (_accent != null)
+            {
+                _accent.SetActive(true);
+            }
             _tween = target.DOScale(_baseScale * _pressedScale, _pressSeconds).SetEase(Ease.OutQuad).SetUpdate(true);
         }
 
         public void Release()
         {
+            HideAccent();
             if (_target == null)
             {
                 return;
@@ -94,8 +96,18 @@ namespace Game.View
 
         private void Clear()
         {
+            HideAccent();
+            _accent = null;
             _tween = null;
             _target = null;
+        }
+
+        private void HideAccent()
+        {
+            if (_accent != null)
+            {
+                _accent.SetActive(false);
+            }
         }
     }
 

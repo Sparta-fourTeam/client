@@ -11,6 +11,7 @@ namespace Game.View
     {
         [SerializeField] private Button _button;
         [SerializeField] private TMP_Text _levelText;
+        [SerializeField] private TMP_Text _lockedLevelText;
         [SerializeField] private GameObject _lock;
 
         private Action _onClick;
@@ -24,6 +25,10 @@ namespace Game.View
         {
             gameObject.SetActive(true);
             _levelText.text = $"Lv.{info.Level}";
+            if (_lockedLevelText != null)
+            {
+                _lockedLevelText.text = _levelText.text;
+            }
             _lock.SetActive(!info.IsUnlocked);
             int unlockLevel = info.UnlockLevel;
             _onClick = info.IsUnlocked ? onClick : () => toast?.Show($"플레이어 레벨 {unlockLevel}이 되면 열려요");

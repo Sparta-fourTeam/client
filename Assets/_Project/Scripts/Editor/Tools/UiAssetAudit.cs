@@ -99,10 +99,21 @@ namespace Game.Editor
 
             foreach (var t in root.GetComponentsInChildren<Transform>(true))
             {
+                if ((t.gameObject.hideFlags & HideFlags.DontSaveInEditor) != 0)
+                {
+                    continue;
+                }
+
                 var location = AnimationUtility.CalculateTransformPath(t, root.transform);
                 var names = new HashSet<string>();
                 foreach (Transform child in t)
                 {
+                    // UI particles create temporary renderers while prefab contents are loaded.
+                    if ((child.gameObject.hideFlags & HideFlags.DontSaveInEditor) != 0)
+                    {
+                        continue;
+                    }
+
                     if (!names.Add(child.name))
                     {
                         Add(issues, path, location, "같은 부모에 이름이 중복됩니다: " + child.name, false);

@@ -6,6 +6,5 @@ namespace Game.Core
     {
         public const string PrivacyPolicy = "https://example.com/privacy";
         public const string TermsOfUse = "https://example.com/terms";
-        public const string Support = "https://example.com/support";
     }
 }

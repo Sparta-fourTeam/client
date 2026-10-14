@@ -81,6 +81,32 @@ namespace Game.Tests
             (T)target.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(target);
 
         [UnityTest]
+        public IEnumerator RewardOddsPopup_BothButtonsCloseThroughPointerInputInLobbyAndStage()
+        {
+            yield return StartFromBoot(UnlockLobbyFeatures);
+            var lobbyUi = Object.FindAnyObjectByType<LobbyLifetimeScope>().Container.Resolve<IUiRegistry>();
+            yield return CloseOddsWithEachButton(lobbyUi.Get<RewardOddsPopupView>());
+
+            yield return ClickGameButton(Field<Button>(lobbyUi.Get<MissionButtonView>(), "_button"));
+            yield return ClickGameButton(Field<Button>(lobbyUi.Get<MissionScreenView>(), "_enterButton"));
+            yield return WaitFor(() => SceneManager.GetActiveScene().name == "Stage");
+            var stageUi = Object.FindAnyObjectByType<StageLifetimeScope>().Container.Resolve<IUiRegistry>();
+            yield return CloseOddsWithEachButton(stageUi.Get<RewardOddsPopupView>());
+        }
+
+        private static IEnumerator CloseOddsWithEachButton(RewardOddsPopupView popup)
+        {
+            var panel = Field<GameObject>(popup, "_panel");
+            foreach (string field in new[] { "_closeButton", "_confirmButton" })
+            {
+                popup.Show("확률 정보", "후보의 확률을 확인합니다", new[] { new RewardOddsRow(null, "후보", "100%") });
+                yield return WaitFor(() => Field<PopupTransition>(popup, "_transition").Progress >= 0.99f);
+                yield return ClickGameButton(Field<Button>(popup, field));
+                yield return WaitFor(() => !panel.activeSelf);
+            }
+        }
+
+        [UnityTest]
         public IEnumerator RewardPopup_LargeClaimsFitAndRepeatedOpenRestoresSmallClaims()
         {
             yield return StartFromBoot();
@@ -505,7 +531,11 @@ namespace Game.Tests
                     if (File.Exists(preview)) { File.Delete(preview); }
                     ScreenCapture.CaptureScreenshot(preview);
                     yield return WaitFor(() => File.Exists(preview));
-                    yield return ClickGameButton(skipButton);
+                    var background = Field<PointerClickRelay>(view, "_background");
+                    yield return ClickGameTarget(background, localPoint: ((RectTransform)background.transform).rect.min + Vector2.one * 48f);
+                    Assert.That(stats.BuildLog.Count - priorCards, Is.EqualTo(1), "dim 한 번은 현재 회차의 카드 한 장만 적용한다");
+                    Assert.That(stats.BuildLog[priorCards], Is.EqualTo(pending.Winner.Option.id), "dim 스킵도 준비된 당첨 결과를 보존한다");
+                    if (count > 1) { yield return ClickGameButton(skipButton); }
                     Assert.That(manager.Roulette.IsComplete, Is.True, "스킵 입력에서 남은 회차를 모두 적용해야 한다");
                     CollectionAssert.AreEqual(wheel, weaponIcons.Select(icon => icon.sprite), "스킵해도 무기 배치를 바꾸지 않는다");
                     Assert.That(stats.BuildLog.Count - priorCards, Is.EqualTo(count));
@@ -526,7 +556,12 @@ namespace Game.Tests
                     count = manager.Roulette.CardCount;
                     wheel = weaponIcons.Select(icon => icon.sprite).ToArray();
                     totalRewards += count;
-                    yield return ClickGameButton(skipButton);
+                    for (int i = 0; i < count; i++)
+                    {
+                        int before = stats.BuildLog.Count;
+                        yield return ClickGameTarget(background, localPoint: ((RectTransform)background.transform).rect.min + Vector2.one * 48f);
+                        Assert.That(stats.BuildLog.Count, Is.EqualTo(before + 1), "연속 dim 입력도 한 번에 한 회차만 지급한다");
+                    }
                     Assert.That(manager.Roulette.IsComplete, Is.True);
                 }
                 yield return WaitFor(() =>
@@ -575,11 +610,8 @@ namespace Game.Tests
                 var missionEnergy = mission.GetComponentInChildren<EnergyView>(true);
                 var lobbyEnergy = Object.FindObjectsByType<EnergyView>(FindObjectsInactive.Include, FindObjectsSortMode.None)
                     .Single(view => view.gameObject.scene == lobby.gameObject.scene && !view.transform.IsChildOf(mission.transform));
-                // 두 화면의 실제 하트 이미지에 터치해 동일한 충전 팝업이 열리는지 확인한다.
-                yield return ClickGameButton(Field<Button>(lobbyEnergy, "_button"), (RectTransform)lobbyEnergy.transform.Find("Icon"));
-                Assert.That(recoveryPanel.activeSelf, Is.True);
-                yield return ClickGameButton(Field<Button>(recovery, "_closeButton"));
-                yield return WaitFor(() => !recoveryPanel.activeSelf);
+                // 홈에서도 재화를 표시하며, 임무의 실제 에너지 아이콘으로 충전 창을 연다.
+                Assert.That(lobbyEnergy.gameObject.activeInHierarchy, Is.True, "홈에서도 에너지 재화를 표시한다");
                 yield return ClickGameButton(Field<Button>(ui.Get<MissionButtonView>(), "_button"));
                 Assert.That(Field<GameObject>(mission, "_panel").activeSelf, Is.True);
                 yield return ClickGameButton(Field<Button>(missionEnergy, "_button"), (RectTransform)missionEnergy.transform.Find("Icon"));
@@ -695,7 +727,9 @@ namespace Game.Tests
             // 기능을 열려고 뒤 스테이지까지 깬 세이브라 가장 높은 스테이지가 보인다. 아래 확인은 첫 스테이지 기준이라 이전 화살표로 돌아간다
             while (Field<int>(mission, "_stageId") > 1)
             {
+                int previousStage = Field<int>(mission, "_stageId");
                 yield return ClickGameButton(Field<Button>(mission, "_prevButton"));
+                yield return WaitFor(() => Field<int>(mission, "_stageId") == previousStage - 1 && !carousel.IsSliding);
             }
 
             yield return ClickGameButton(Field<StageCardView>(mission, "_card").InfoButton);
@@ -962,6 +996,9 @@ namespace Game.Tests
         }
 
         private static IEnumerator ClickGameButton(Button button, RectTransform hitArea = null)
+            => ClickGameTarget(button, hitArea);
+
+        private static IEnumerator ClickGameTarget(Component target, RectTransform hitArea = null, Vector2? localPoint = null)
         {
             // A focused tool/preview can temporarily supply Screen's editor dimensions.
             // Overlay raycasters must read the same Game View size as the canvas.
@@ -971,10 +1008,11 @@ namespace Game.Tests
             gameView?.Focus();
 #endif
             yield return null;
-            yield return WaitFor(() => button != null && button.gameObject.activeInHierarchy && button.IsInteractable());
+            yield return WaitFor(() => target != null && target.gameObject.activeInHierarchy
+                && (target is not Button button || button.IsInteractable()));
             Canvas.ForceUpdateCanvases();
-            var canvas = button.GetComponentInParent<Canvas>();
-            var rect = hitArea != null ? hitArea : (RectTransform)button.transform;
+            var canvas = target.GetComponentInParent<Canvas>();
+            var rect = hitArea != null ? hitArea : (RectTransform)target.transform;
             PointerEventData pointer = null;
             var hits = new List<RaycastResult>();
             bool sampled = false;
@@ -994,12 +1032,12 @@ namespace Game.Tests
 
                 pointer = new PointerEventData(EventSystem.current)
                 {
-                    position = RectTransformUtility.WorldToScreenPoint(canvas.worldCamera, rect.TransformPoint(rect.rect.center)),
+                    position = RectTransformUtility.WorldToScreenPoint(canvas.worldCamera, rect.TransformPoint(localPoint ?? rect.rect.center)),
                     button = PointerEventData.InputButton.Left
                 };
                 hits.Clear();
                 EventSystem.current.RaycastAll(pointer, hits);
-                sampled = hits.Count > 0 && hits[0].gameObject.GetComponentInParent<Button>() == button;
+                sampled = hits.Count > 0 && ExecuteEvents.GetEventHandler<IPointerClickHandler>(hits[0].gameObject) == target.gameObject;
             }
             // Editor update can retain Scene View/preview dimensions even with Game View focused.
             // Sample the real raycast while the Game View canvas is preparing its render.
@@ -1014,13 +1052,13 @@ namespace Game.Tests
                 while (!sampled)
                 {
                     Assert.That(Time.realtimeSinceStartup, Is.LessThan(deadline),
-                        $"{button.name} did not become clickable. Top target={hits.FirstOrDefault().gameObject?.name}, Screen={Screen.width}x{Screen.height}");
+                        $"{target.name} did not become clickable. Top target={hits.FirstOrDefault().gameObject?.name}, Screen={Screen.width}x{Screen.height}");
                     yield return null;
                 }
             }
             finally { Canvas.willRenderCanvases -= SampleGameView; }
-            Assert.That(hits, Is.Not.Empty, $"{button.name} has no pointer target. Pointer={pointer.position}, Screen={Screen.width}x{Screen.height}, Camera={canvas.worldCamera?.pixelRect}, Canvas={canvas.pixelRect}, Rect={rect.rect}, Position={rect.position}, EventSystem={EventSystem.current.name}");
-            Assert.That(hits[0].gameObject.GetComponentInParent<Button>(), Is.SameAs(button), button.name + " is covered by " + hits[0].gameObject.name);
+            Assert.That(hits, Is.Not.Empty, $"{target.name} has no pointer target. Pointer={pointer.position}, Screen={Screen.width}x{Screen.height}, Camera={canvas.worldCamera?.pixelRect}, Canvas={canvas.pixelRect}, Rect={rect.rect}, Position={rect.position}, EventSystem={EventSystem.current.name}");
+            Assert.That(ExecuteEvents.GetEventHandler<IPointerClickHandler>(hits[0].gameObject), Is.SameAs(target.gameObject), target.name + " is covered by " + hits[0].gameObject.name);
             ExecuteEvents.ExecuteHierarchy(hits[0].gameObject, pointer, ExecuteEvents.pointerDownHandler);
             ExecuteEvents.ExecuteHierarchy(hits[0].gameObject, pointer, ExecuteEvents.pointerUpHandler);
             ExecuteEvents.ExecuteHierarchy(hits[0].gameObject, pointer, ExecuteEvents.pointerClickHandler);
