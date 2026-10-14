@@ -1,0 +1,548 @@
+fileFormatVersion: 2
+guid: 7531b3d73f1232840a874f1a32f5c0d7
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 7779177789327263212
+    second: UiClickRipple_0
+  - first:
+      213: 5816448147058386501
+    second: UiClickRipple_1
+  - first:
+      213: -5680658147092165105
+    second: UiClickRipple_2
+  - first:
+      213: -5494061872735822930
+    second: UiClickRipple_3
+  - first:
+      213: 1882870661165326008
+    second: UiClickRipple_4
+  - first:
+      213: 6248022808678069011
+    second: UiClickRipple_5
+  - first:
+      213: -8377285890809086035
+    second: UiClickRipple_6
+  - first:
+      213: 390822720593140775
+    second: UiClickRipple_7
+  - first:
+      213: -5177885450293453488
+    second: UiClickRipple_8
+  - first:
+      213: -1580908775004022605
+    second: UiClickRipple_9
+  - first:
+      213: -1221080738725750129
+    second: UiClickRipple_10
+  - first:
+      213: 4160588978686980169
+    second: UiClickRipple_11
+  - first:
+      213: 8659081797557869870
+    second: UiClickRipple_12
+  - first:
+      213: 3068283142810083911
+    second: UiClickRipple_13
+  - first:
+      213: 4154996131387055653
+    second: UiClickRipple_14
+  - first:
+      213: 4550085757860686261
+    second: UiClickRipple_15
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 256
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: UiClickRipple_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 1237
+        height: 1220
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ce5c579cbf035fb60800000000000000
+      internalID: 7779177789327263212
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UiClickRipple_1
+      rect:
+        serializedVersion: 2
+        x: 822
+        y: 1120
+        width: 49
+        height: 118
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 546e4ebd5cc28b050800000000000000
+      internalID: 5816448147058386501
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UiClickRipple_2
+      rect:
+        serializedVersion: 2
+        x: 1021
+        y: 1110
+        width: 7
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f0e842c338f3a21b0800000000000000
+      internalID: -5680658147092165105
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UiClickRipple_3
+      rect:
+        serializedVersion: 2
+        x: 1093
+        y: 1046
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: eab5095e5db21c3b0800000000000000
+      internalID: -5494061872735822930
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UiClickRipple_4
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 972
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8be93c4f3ec412a10800000000000000
+      internalID: 1882870661165326008
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UiClickRipple_5
+      rect:
+        serializedVersion: 2
+        x: 118
+        y: 978
+        width: 8
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3137bcb14af65b650800000000000000
+      internalID: 6248022808678069011
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UiClickRipple_6
+      rect:
+        serializedVersion: 2
+        x: 1143
+        y: 933
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dafbe68fdd6edbb80800000000000000
+      internalID: -8377285890809086035
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UiClickRipple_7
+      rect:
+        serializedVersion: 2
+        x: 104
+        y: 891
+        width: 8
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 72c1b17913b7c6500800000000000000
+      internalID: 390822720593140775
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UiClickRipple_8
+      rect:
+        serializedVersion: 2
+        x: 88
+        y: 861
+        width: 8
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 05d5897dd947428b0800000000000000
+      internalID: -5177885450293453488
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UiClickRipple_9
+      rect:
+        serializedVersion: 2
+        x: 1147
+        y: 826
+        width: 14
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3b8569b58db7f0ae0800000000000000
+      internalID: -1580908775004022605
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UiClickRipple_10
+      rect:
+        serializedVersion: 2
+        x: 74
+        y: 452
+        width: 9
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f8a1e26a989dd0fe0800000000000000
+      internalID: -1221080738725750129
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UiClickRipple_11
+      rect:
+        serializedVersion: 2
+        x: 1117
+        y: 309
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 940fa03e1a16db930800000000000000
+      internalID: 4160588978686980169
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UiClickRipple_12
+      rect:
+        serializedVersion: 2
+        x: 1155
+        y: 304
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e2ddc70640d3b2870800000000000000
+      internalID: 8659081797557869870
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UiClickRipple_13
+      rect:
+        serializedVersion: 2
+        x: 139
+        y: 176
+        width: 21
+        height: 33
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 742a38d034bb49a20800000000000000
+      internalID: 3068283142810083911
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UiClickRipple_14
+      rect:
+        serializedVersion: 2
+        x: 193
+        y: 134
+        width: 15
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 52e9276a7f289a930800000000000000
+      internalID: 4154996131387055653
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UiClickRipple_15
+      rect:
+        serializedVersion: 2
+        x: 321
+        y: 137
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5b9a9dea3e6252f30800000000000000
+      internalID: 4550085757860686261
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      UiClickRipple_0: 7779177789327263212
+      UiClickRipple_1: 5816448147058386501
+      UiClickRipple_10: -1221080738725750129
+      UiClickRipple_11: 4160588978686980169
+      UiClickRipple_12: 8659081797557869870
+      UiClickRipple_13: 3068283142810083911
+      UiClickRipple_14: 4154996131387055653
+      UiClickRipple_15: 4550085757860686261
+      UiClickRipple_2: -5680658147092165105
+      UiClickRipple_3: -5494061872735822930
+      UiClickRipple_4: 1882870661165326008
+      UiClickRipple_5: 6248022808678069011
+      UiClickRipple_6: -8377285890809086035
+      UiClickRipple_7: 390822720593140775
+      UiClickRipple_8: -5177885450293453488
+      UiClickRipple_9: -1580908775004022605
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
