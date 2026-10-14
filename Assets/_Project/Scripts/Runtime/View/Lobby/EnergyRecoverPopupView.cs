@@ -34,7 +34,8 @@ namespace Game.View
         {
             _panel.SetActive(false);
             _closeButton.onClick.AddListener(() => PopupPanel.Set(_panel, _transition, false));
-            _adButton.onClick.AddListener(() => RecoverAsync(EnergySource.Ad).Forget());
+            // 광고 SDK와 검증된 보상 콜백이 연결될 때까지 버튼을 비활성화하고 보상 진입점을 연결하지 않는다.
+            _adButton.interactable = false;
             _purchaseButton.onClick.AddListener(() => RecoverAsync(EnergySource.Purchase).Forget());
         }
 
@@ -66,7 +67,6 @@ namespace Game.View
         }
         private void SetButtons(bool interactable)
         {
-            _adButton.interactable = interactable;
             _purchaseButton.interactable = interactable;
         }
     }

@@ -53,12 +53,21 @@ namespace Game.View
                 Close();
                 _settings.Open();
             });
-            _privacyButton.onClick.AddListener(() => Application.OpenURL(ExternalLinks.PrivacyPolicy));
-            _termsButton.onClick.AddListener(() => Application.OpenURL(ExternalLinks.TermsOfUse));
+            BindDocument(_privacyButton, ExternalLinks.PrivacyPolicy);
+            BindDocument(_termsButton, ExternalLinks.TermsOfUse);
             _supportButton.onClick.AddListener(() => ContactAsync().Forget(Debug.LogException));
             _logoutButton.onClick.AddListener(() => RunAsync(LogoutAsync));
             _deleteAccountButton.onClick.AddListener(() => RunAsync(DeleteAccountAsync));
             _linkAccountButton.onClick.AddListener(() => RunAsync(LinkAccountAsync));
+        }
+
+        private static void BindDocument(Button button, string url)
+        {
+            bool available = System.Uri.TryCreate(url, System.UriKind.Absolute, out var uri) &&
+                uri.Scheme == System.Uri.UriSchemeHttps && uri.Host != "example.com";
+            button.interactable = available;
+            if (available) { button.onClick.AddListener(() => Application.OpenURL(url)); }
+            else { button.GetComponentInChildren<TMP_Text>(true).text += " (준비 중)"; }
         }
 
         // 문의 내용을 클립보드에 복사한 뒤 메일 작성 화면을 연다. 메일 앱이 없어 열리지 않아도 붙여 넣어 보낼 수 있다

@@ -40,6 +40,7 @@ namespace Game.Tests
         private List<LobbyRequestFailed> _failed;
         private IDisposable _capture;
         private EnergyRecovery _recovery;
+        private ISubscriber<LobbyRequestFailed> _requestFailed;
 
         [SetUp]
         public void SetUp()
@@ -48,6 +49,7 @@ namespace Game.Tests
             builder.AddMessagePipe();
             builder.AddMessageBroker<LobbyRequestFailed>();
             IServiceProvider provider = builder.BuildServiceProvider();
+            _requestFailed = provider.GetRequiredService<ISubscriber<LobbyRequestFailed>>();
 
             _failed = new List<LobbyRequestFailed>();
             _capture = provider.GetRequiredService<ISubscriber<LobbyRequestFailed>>().Subscribe(m => _failed.Add(m));
@@ -81,6 +83,38 @@ namespace Game.Tests
         private bool Recover(EnergySource source)
         {
             return _recovery.Recover(source).GetAwaiter().GetResult();
+        }
+
+        [Test(Description = "광고 미지원 카드의 버튼은 보상을 주지 않고 일반 회복 완료 뒤에도 비활성 상태를 유지한다")]
+        public void Popup_UnsupportedAdCannotGrantRewardOrBecomeEnabledAfterRecovery()
+        {
+            var go = UnityEngine.Object.Instantiate(UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEngine.GameObject>(
+                "Assets/_Project/Prefabs/UI/Lobby/EnergyRecoverPopup.prefab"));
+            var view = go.GetComponent<Game.View.EnergyRecoverPopupView>();
+            try
+            {
+                view.Construct(_recovery, _profile, _requestFailed);
+                view.Initialize();
+                view.Open();
+                var serialized = new UnityEditor.SerializedObject(view);
+                var ad = (UnityEngine.UI.Button)serialized.FindProperty("_adButton").objectReferenceValue;
+                var purchase = (UnityEngine.UI.Button)serialized.FindProperty("_purchaseButton").objectReferenceValue;
+                Assert.IsTrue(ad.gameObject.activeInHierarchy);
+                Assert.IsFalse(ad.interactable);
+                StringAssert.Contains("준비 중", ad.GetComponentInChildren<TMPro.TMP_Text>(true).text);
+                ad.onClick.Invoke();
+                Assert.AreEqual(0, _api.CallCount);
+                _api.Response = Snapshot(7);
+                purchase.onClick.Invoke();
+                Assert.AreEqual(1, _api.CallCount);
+                Assert.AreEqual(EnergySource.Purchase, _api.LastSource);
+                Assert.IsFalse(ad.interactable);
+            }
+            finally
+            {
+                view.Dispose();
+                UnityEngine.Object.DestroyImmediate(go);
+            }
         }
 
         [Test(Description = "광고 회복에 성공하면 서버 스냅샷으로 프로필을 바꾸고 true를 돌려준다")]

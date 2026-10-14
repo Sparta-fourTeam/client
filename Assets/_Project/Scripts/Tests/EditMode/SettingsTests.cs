@@ -184,6 +184,27 @@ namespace Game.Tests
 
         // ---------- 메뉴 팝업 ----------
 
+        [TestCase(false)]
+        [TestCase(true)]
+        public void LoginView_KeepsAppleVisibleAndDisablesItWhenUnavailable(bool available)
+        {
+            var go = Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(
+                "Assets/_Project/Prefabs/UI/Loading/LoginView.prefab"));
+            _spawned.Add(go);
+            var view = go.GetComponent<LoginView>();
+            view.Initialize();
+            var methods = available ? new[] { LoginMethod.Guest, LoginMethod.Apple } : new[] { LoginMethod.Guest };
+            var pending = view.WaitForSignInAsync(methods);
+            Assert.IsTrue(Field<Button>(view, "_appleButton").gameObject.activeSelf);
+            Assert.AreEqual(available, Field<Button>(view, "_appleButton").interactable);
+            string label = Field<Button>(view, "_appleButton").GetComponentInChildren<TMP_Text>(true).text;
+            Assert.AreEqual(!available, label.Contains("준비 중"));
+            Assert.IsTrue(Field<Button>(view, "_guestButton").gameObject.activeSelf);
+            Assert.IsTrue(Field<Button>(view, "_guestButton").interactable);
+            view.Dispose();
+            Assert.Throws<System.OperationCanceledException>(() => pending.GetAwaiter().GetResult());
+        }
+
         [Test(Description = "문의 메일은 한글·공백·줄바꿈이 깨지지 않게 인코딩되어 본문이 그대로 복원되고, 값이 없는 정보 줄은 빠진다")]
         public void SupportMail_EncodesBodyAndOmitsMissingInfo()
         {
@@ -340,6 +361,8 @@ namespace Game.Tests
             menu.Toggle();
             Assert.IsTrue(menu.IsOpen);
             Assert.IsTrue(Field<Button>(menu, "_settingsButton").interactable);
+            Assert.IsFalse(Field<Button>(menu, "_termsButton").interactable);
+            Assert.IsFalse(Field<Button>(menu, "_privacyButton").interactable);
 
             Field<PointerClickRelay>(menu, "_background").OnPointerClick(new PointerEventData(null));
             Assert.IsFalse(menu.IsOpen, "바깥을 누르면 닫힌다");
