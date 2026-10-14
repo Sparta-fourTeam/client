@@ -46,7 +46,8 @@ namespace Game.Tests
             Assert.AreEqual(1, session.CardCount, "강화 카드가 하나면 중복 보상으로 채우지 않는다");
             var round = session.PrepareRound();
             Assert.AreEqual(8, round.Slots.Count);
-            Assert.AreEqual(1, round.Slots.Count(c => c.skill == weapon && c.Option == upgrade.Option));
+            Assert.AreEqual(8, round.Slots.Count(c => c.skill == weapon && c.Option == upgrade.Option),
+                "후보가 하나라도 모든 칸을 채우지만 같은 카드 보상은 한 번만 지급한다");
             Assert.IsTrue(round.Slots.Where(c => c.skill != null).All(c => c.skill == weapon));
             Assert.AreSame(round, session.PrepareRound());
             Assert.IsTrue(session.TryApply(round));
@@ -55,26 +56,37 @@ namespace Game.Tests
             Assert.AreEqual(1, session.CompletedRolls);
         }
 
-        [Test]
-        public void Roulette_KeepsSlotsAndAllowsSameWeapon_WithDifferentCardsOnly()
+        [TestCase(4, 4, 4)]
+        [TestCase(7, 5, 7)]
+        [TestCase(8, 5, 8)]
+        [TestCase(10, 5, 8)]
+        public void Roulette_KeepsFullBoardAndAllowsSameWeapon_WithDistinctRewardsOnly(
+            int candidateCount, int expectedRewards, int expectedDistinctSlots)
         {
             using var weapon = new TestSkill(701);
-            skills.Candidates = Enumerable.Range(0, 4).Select(i => new UpgradeChoice {
+            skills.Candidates = Enumerable.Range(0, candidateCount).Select(i => new UpgradeChoice {
                 skill = weapon, Option = new SkillUpgradeOption { id = "upgrade_" + i } }).ToList();
             skills.Candidates.Add(skills.Candidates[0]);
             var session = new EliteRouletteSession(Deck(), new FixedRandom(), 5, 5);
             Assert.IsTrue(session.Start());
-            Assert.AreEqual(4, session.CardCount, "한 무기라도 서로 다른 강화 카드 네 개를 받을 수 있다");
+            Assert.AreEqual(expectedRewards, session.CardCount);
             var slots = session.Slots;
-            Assert.AreEqual(4, slots.Count(c => c.skill != null));
-            for (int i = 0; i < 4; i++)
+            Assert.AreEqual(8, slots.Count(c => c.skill == weapon), "후보 수와 관계없이 모든 칸을 채운다");
+            Assert.AreEqual(expectedDistinctSlots, slots.Select(c => c.Option.id).Distinct().Count());
+            var selected = new HashSet<string>();
+            for (int i = 0; i < expectedRewards; i++)
             {
                 var round = session.PrepareRound();
                 Assert.AreSame(slots, round.Slots);
                 Assert.AreSame(weapon, round.Winner.skill);
                 Assert.AreEqual(slots[round.WinnerIndex].Option.id, round.Winner.Option.id);
+                Assert.IsTrue(selected.Add(round.Winner.Option.id), "반복 배치된 카드도 한 번만 당첨된다");
                 Assert.IsTrue(session.TryApply(round));
-                Assert.AreEqual(i + 1, Enumerable.Range(0, slots.Count).Count(session.IsSlotSelected));
+                for (int slot = 0; slot < slots.Count; slot++)
+                {
+                    Assert.AreEqual(selected.Contains(slots[slot].Option.id), session.IsSlotSelected(slot),
+                        "당첨된 카드의 모든 반복 칸을 제외하고 같은 무기의 다른 카드는 남긴다");
+                }
                 if (i == 0)
                 {
                     Assert.IsTrue(Enumerable.Range(0, slots.Count).Any(index => slots[index].skill == weapon
@@ -83,8 +95,8 @@ namespace Game.Tests
             }
             Assert.IsNull(session.PrepareRound());
             Assert.IsTrue(session.IsComplete);
-            Assert.AreEqual(4, skills.Applied.Count);
-            Assert.AreEqual(4, skills.Applied.Select(c => c.Option.id).Distinct().Count());
+            Assert.AreEqual(expectedRewards, skills.Applied.Count);
+            Assert.AreEqual(expectedRewards, skills.Applied.Select(c => c.Option.id).Distinct().Count());
             Assert.IsTrue(session.Start());
             Assert.IsFalse(Enumerable.Range(0, session.Slots.Count).Any(session.IsSlotSelected));
         }

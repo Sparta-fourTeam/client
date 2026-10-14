@@ -48,9 +48,9 @@ namespace Game.Core
                 int j = Index(i + 1);
                 (candidates[i], candidates[j]) = (candidates[j], candidates[i]);
             }
-            // 같은 무기의 다른 강화는 별개의 칸이다. 카드가 부족한 칸은 중복 카드로 채우지 않는다.
+            // 같은 무기의 다른 강화는 별개의 카드다. 후보가 부족하면 반복 배치해 여덟 칸을 채운다.
             var slots = new UpgradeChoice[SlotCount];
-            Array.Copy(candidates, slots, Math.Min(candidates.Length, slots.Length));
+            for (int i = 0; i < slots.Length; i++) { slots[i] = candidates[i % candidates.Length]; }
             for (int i = slots.Length - 1; i > 0; i--)
             {
                 int j = Index(i + 1);
