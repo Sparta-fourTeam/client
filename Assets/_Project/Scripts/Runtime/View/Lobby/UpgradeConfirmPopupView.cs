@@ -9,7 +9,7 @@ using VContainer;
 
 namespace Game.View
 {
-    public sealed class UpgradeConfirmPopupView : HudView
+    public sealed class UpgradeConfirmPopupView : HudView, IUiBindable
     {
         [SerializeField] private GameObject _panel;
         [SerializeField] private PopupTransition _transition;
@@ -24,6 +24,8 @@ namespace Game.View
         private UpgradePurchasePlan _plan;
         private string _name;
         private bool _all, _busy, _visible;
+        private ComingSoonToastView _toast;
+        public void BindUi(IUiRegistry registry) => _toast = registry.Get<ComingSoonToastView>();
         public bool IsBusy => _busy;
         public bool IsOpen => _visible;
         public RectTransform ConfirmButton => (RectTransform)_confirmButton.transform;
@@ -57,7 +59,7 @@ namespace Game.View
         private void Present(UpgradePurchasePlan plan, string status = null)
         {
             _plan = plan;
-            _title.text = _all ? "장비 일괄 강화" : "강화 확인";
+            _title.text = _all ? "일괄 레벨업" : "강화 확인";
             _description.text = status ?? (plan.Count > 0
                 ? $"{_name}\nLv.{plan.StartLevel} → Lv.{plan.EndLevel} · {plan.Count}회 강화\n아래 재화를 소모해 강화할까요?"
                 : "지금은 강화할 수 없어요. 재화와 최대 레벨을 확인해 주세요.");
@@ -137,7 +139,12 @@ namespace Game.View
 
                     _description.text = $"{_name} 강화 중 · {completed}/{approved.Count}";
                 }
-                if (this != null) { _visible = false; PopupPanel.Set(_panel, _transition, false); }
+                if (this != null)
+                {
+                    _visible = false;
+                    PopupPanel.Set(_panel, _transition, false);
+                    _toast?.Show($"<color=#FFCF5B>{_name} Lv.{_profile.UpgradeLevel(approved.UpgradeId)} 강화 완료!</color>", 1f);
+                }
             }
             catch (Exception error)
             {
@@ -158,5 +165,6 @@ namespace Game.View
                 }
             }
         }
+
     }
 }
