@@ -33,6 +33,7 @@ namespace Game.Editor
 
         internal static List<string> Samples(string id)
         {
+            if (id is "CardSelect" or "CardSlot") { return new() { "기본", "형태변환" }; }
             if (id == "ConfirmPopup") { return new() { "기본", "안내", "경고", "입력 확인", "입력 완료" }; }
 
             if (id == "MissionRewardInfoPopup") { return new() { "기본", "수령 완료" }; }
@@ -260,6 +261,9 @@ namespace Game.Editor
             // Keep the optional renderer package outside Game.Editor's assembly dependencies.
             private static readonly Type UiParticleType = Type.GetType("Coffee.UIExtensions.UIParticle, Coffee.UIParticle");
             private static readonly Type UiParticleRendererType = Type.GetType("Coffee.UIExtensions.UIParticleRenderer, Coffee.UIParticle");
+            private static readonly Type UiEffectTweenerType = Type.GetType("Coffee.UIEffects.UIEffectTweener, Coffee.UIEffect");
+            private readonly Behaviour[] _uiEffectTweeners;
+            private readonly CardSlotView[] _formCards;
             private bool _disposed;
 
             internal GameObject ReviewRoot => _selected;
@@ -270,6 +274,17 @@ namespace Game.Editor
                 _scene = scene; _container = container; _selected = selected; _camera = camera; _device = device;
                 _clouds = container.GetComponentsInChildren<LobbyCloudDrift>(true);
                 foreach (var cloud in _clouds) { cloud.SampleTime(0); }
+                _uiEffectTweeners = UiEffectTweenerType == null ? Array.Empty<Behaviour>()
+                    : selected.GetComponentsInChildren(UiEffectTweenerType, true).Cast<Behaviour>().ToArray();
+                // 이 미리보기의 효과만 수동 진행한다. 실제 카드 화면은 프리팹의 Unscaled 설정으로 재생한다.
+                var updateMode = UiEffectTweenerType?.GetProperty("updateMode");
+                foreach (var tweener in _uiEffectTweeners)
+                {
+                    updateMode?.SetValue(tweener, Enum.Parse(updateMode.PropertyType, "Manual"));
+                    UiEffectTweenerType.GetMethod("PlayForward", new[] { typeof(bool) })?.Invoke(tweener, new object[] { true });
+                }
+                _formCards = selected.GetComponentsInChildren<CardSlotView>(true);
+                if (_formCards.Any(c => c.HasFormMotion)) { PrepareParticles(.65f, true); }
             }
 
             internal string[] Buttons => _selected.GetComponentsInChildren<Button>(true)
@@ -277,7 +292,10 @@ namespace Game.Editor
                 .Select(b => AnimationUtility.CalculateTransformPath(b.transform, _selected.transform)).ToArray();
             internal bool HasTransition => _selected.GetComponentsInChildren<PopupTransition>(true).Length > 0;
             internal bool HasParticles => _selected.GetComponentsInChildren<ParticleSystem>(true).Length > 0;
-            internal bool HasAmbientMotion => UiTutorialGuidePreviewSample.HasPulse(_container) || _clouds.Any(c => c != null && c.enabled && c.gameObject.activeInHierarchy);
+            internal bool HasAmbientMotion => UiTutorialGuidePreviewSample.HasPulse(_container)
+                || _clouds.Any(c => c != null && c.enabled && c.gameObject.activeInHierarchy)
+                || _uiEffectTweeners.Any(t => t != null && t.isActiveAndEnabled)
+                || _formCards.Any(c => c != null && c.gameObject.activeInHierarchy && c.HasFormMotion);
             internal bool IsAnimating => HasAmbientMotion || _particlesPlaying || _releaseAfter > 0 || _tweens.Any(t => t.IsActive());
 
             private void OwnTweens(Action action)
@@ -426,14 +444,16 @@ namespace Game.Editor
                 Round(0);
             }
 
-            internal void PlayParticles()
+            internal void PlayParticles() => PrepareParticles(0f, false);
+
+            private void PrepareParticles(float prewarmSeconds, bool onlyActive)
             {
-                foreach (var particle in _selected.GetComponentsInChildren<ParticleSystem>(true))
+                foreach (var particle in _selected.GetComponentsInChildren<ParticleSystem>(!onlyActive))
                 {
                     particle.gameObject.SetActive(true);
-                    particle.Simulate(0f, false, true, false);
+                    particle.Simulate(prewarmSeconds, false, true, false);
                 }
-                _particleAge = 0f;
+                _particleAge = prewarmSeconds;
                 if (UiParticleType != null)
                 {
                     foreach (var particle in _selected.GetComponentsInChildren(UiParticleType, true))
@@ -448,10 +468,21 @@ namespace Game.Editor
             internal void Advance(float seconds)
             {
                 _ambientAge += seconds;
+                foreach (var card in _formCards)
+                {
+                    if (card != null && card.gameObject.activeInHierarchy) { card.SampleFormMotion(_ambientAge); }
+                }
                 UiTutorialGuidePreviewSample.Advance(_container, _ambientAge);
                 foreach (var cloud in _clouds)
                 {
                     if (cloud != null && cloud.enabled && cloud.gameObject.activeInHierarchy) { cloud.SampleTime(_ambientAge); }
+                }
+                foreach (var tweener in _uiEffectTweeners)
+                {
+                    if (tweener != null && tweener.isActiveAndEnabled)
+                    {
+                        UiEffectTweenerType.GetMethod("UpdateTime")?.Invoke(tweener, new object[] { seconds });
+                    }
                 }
                 OwnTweens(() =>
                 {
@@ -475,7 +506,7 @@ namespace Game.Editor
                 if (_particlesPlaying)
                 {
                     _particleAge += seconds;
-                    var particles = _selected.GetComponentsInChildren<ParticleSystem>(true);
+                    var particles = _selected.GetComponentsInChildren<ParticleSystem>(false);
                     foreach (var particle in particles)
                     {
                         // Simulate each system once; recursively simulating every parent would double-step children.
@@ -704,7 +735,7 @@ namespace Game.Editor
             }
 
             UiDetailPreviewSample.Apply(root, sample);
-            UiCardSelectPreviewSample.Apply(root);
+            UiCardSelectPreviewSample.Apply(root, sample);
             UiEliteRoulettePreviewSample.Apply(root, sample);
 
             foreach (var behaviour in root.GetComponentsInChildren<MonoBehaviour>(true))

@@ -93,7 +93,9 @@ namespace Game.View
 
             return choice.IsNewWeapon
                 ? _assets.GetCardIcon(choice.newSkillData.id, SkillCardIcon.New)
-                : _assets.GetCardIcon(choice.skill.Data.id, SkillCardIcon.Upgrade);
+                : choice.TargetForm != SkillForm.Default
+                    ? _assets.GetFormIcon(choice.TargetForm, choice.skill.Data.id)
+                    : _assets.GetCardIcon(choice.skill.Data.id, SkillCardIcon.Upgrade);
         }
 
         private Sprite FindFormIcon(FormHint hint) =>
