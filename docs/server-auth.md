@@ -10,7 +10,7 @@
 | 게스트 가입 | `POST /api/auth/guest/signup` → `{ guestId, tokens }` |
 | 게스트 로그인 | `POST /api/auth/guest/login` `{ guestId }` → `{ accessToken, refreshToken }` |
 | 소셜 로그인 | `POST /api/auth/social/login` `{ provider: GOOGLE \| APPLE, idToken }` → `{ accessToken, refreshToken }`. 처음 로그인하면 서버가 가입시킨다 |
-| 토큰 재발급 | `POST /api/auth/refresh` `{ refreshToken }` (클라이언트 미연결) |
+| 토큰 재발급 | `POST /api/auth/refresh` `{ refreshToken }` → `{ accessToken, refreshToken }`. 쓴 리프레시 토큰은 무효가 된다 (아래 "토큰 만료") |
 
 `/api/auth/web/login`은 웹용 로그인으로 보이며 게임은 쓰지 않는다 (서버 이슈 #43에서 웹·게임 토큰을 나눌 예정).
 
@@ -22,9 +22,23 @@
 - **구글**: 구글 로그인으로 받은 ID 토큰을 `social/login`에 보낸다. 외부 계정은 저장한 값이 오래된 토큰이라, 앱을 켤 때마다 구글 로그인을 다시 해서 새 토큰을 받는다. 기기에는 방식만 저장하고(`auth.account_id`는 `social`) ID 토큰은 남기지 않는다. 앱을 켤 때는 계정 선택창 없이 자동으로 로그인한다 (`docs/google-sign-in.md`)
 - 서버 로그인에 성공하면 토큰을 `AuthSession`에 담고(요청마다 `Authorization: Bearer` 헤더), 이어서 기존 로컬 로그인(`LocalAuthApi`)을 한다. 서버 로그인에 실패하면 로그인창의 [다시 시도]를 기다린다
 
+## 토큰 만료
+
+`HttpApiClient`가 처리한다 (`AuthSession`이 토큰을 들고 있다).
+
+1. 로그인한 상태로 보낸 요청이 **401**이면 액세스 토큰 만료로 본다. 서버가 요청을 처리하기 전에 거절한 것이라 다시 보내도 중복되지 않는다.
+2. 리프레시 토큰으로 `POST /api/auth/refresh`를 보내 새 토큰 쌍을 `AuthSession`에 담고, **같은 요청을 한 번만** 다시 보낸다. 다시 보낸 요청이 또 401이면 그대로 던진다.
+3. 재발급은 **한 번에 하나만** 보낸다. 서버는 쓴 리프레시 토큰을 무효로 하고, 이미 쓴 토큰이 또 오면 저장된 토큰까지 지워 다시 로그인하게 만든다 (서버에서 확인함). 요청 여러 개가 동시에 401을 받아도 하나의 재발급을 같이 기다린다.
+4. 리프레시 토큰이 거절되면(만료·이미 사용) 토큰을 비우고 `ApiException`의 코드 **`SESSION_EXPIRED`** 를 던진다. 호출부는 이 코드를 받으면 로그인으로 돌려보낸다. 네트워크 오류나 서버 오류로 재발급에 실패하면 로그인이 풀린 것이 아니므로 토큰을 그대로 두고 그 오류를 던진다.
+5. 로그인·재발급 경로(`api/auth/`)의 401은 자격 증명이 틀린 것이라 재발급하지 않는다. 로그인하지 않은 채 보낸 요청의 401도 마찬가지다.
+
+아직 인증이 필요한 서버 API가 없어서 실제 요청에서는 쓰이지 않는다. `SESSION_EXPIRED`를 받았을 때 로그인으로 돌려보내는 화면 흐름은 인증이 필요한 API를 붙일 때 함께 만든다.
+
 ## 오류 확인
 
 서버가 거절하면 `ApiException`의 `Code`는 `HTTP_상태코드`이고(게스트 재가입 판단이 여기에 기댄다), 서버가 본문에 적은 `message`는 `Detail`에 담겨 로그에 `(설명)`으로 붙는다. 예: `Rejected: HTTP_401 (소셜 로그인 정보가 올바르지 않습니다)`. 화면에 보여 주거나 분기에 쓰지 않는다.
+
+로그인 요청의 시작과 결과는 [Auth] 로그로 남는다 (db logcat -s Unity). 예: [Auth] 서버 로그인 요청: Guest, [Auth] POST guest/signup, [Auth] 서버 로그인 성공: Guest, [Auth] 계정 연동 완료: Google. 토큰은 남기지 않는다.
 
 ## 켜고 끄기
 
@@ -44,7 +58,7 @@
 
 ## 아직 안 한 것
 
-- 액세스 토큰 만료 시 `refresh`로 갱신 (서버에 인증이 필요한 API를 쓰게 될 때)
+- `SESSION_EXPIRED`를 받았을 때 로그인으로 돌려보내는 화면 흐름 (인증이 필요한 API를 붙일 때)
 - 릴리스 빌드에서 서버 인증 켜기 (기기 확인 뒤)
 - 서버 쪽 환경변수 `GOOGLE_CLIENT_IDS`에 웹 클라이언트 ID가 들어가야 구글 로그인이 통과한다 (`docs/google-sign-in.md`)
 - 게스트 → 구글 계정 연동 (서버 이슈 #42)
