@@ -17,14 +17,7 @@ jobs:
           fetch-depth: 0
           lfs: true
 
-      - name: Cache Unity Library
-        uses: actions/cache@v4
-        with:
-          path: Library
-          key: Unity-Android-Dev-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
-          restore-keys: |
-            Unity-Android-Dev-
-
+      # Avoid restoring the Library cache that preceded Unity exit 137.
       - name: Build Dev APK
         uses: game-ci/unity-builder@v4
         env:
