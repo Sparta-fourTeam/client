@@ -10,6 +10,9 @@ namespace Game.Core
         /// <summary>플레이어 닉네임. 계정을 만들 때 정해지고, 계정 삭제를 확인할 때 입력받는다</summary>
         public string nickname;
         public int gold;
+
+        /// <summary>젬. 서버 응답에만 있고 로컬 저장은 0이다. 상단 재화 표시는 아직 이 값을 쓰지 않는다 (DummyGrowthCatalog.Gems)</summary>
+        public int gems;
         public int exp;
         public int energyStored;
         public string energyUpdatedAt;
