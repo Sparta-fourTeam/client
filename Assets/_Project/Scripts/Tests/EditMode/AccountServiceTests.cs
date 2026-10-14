@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Game.Core;
+using Game.Network;
 using NUnit.Framework;
 
 namespace Game.Tests
@@ -93,6 +94,29 @@ namespace Game.Tests
 
             Assert.AreEqual(1, _api.Deleted);
             Assert.IsFalse(_credentials.HasCredential);
+            Assert.AreEqual(1, _nav.LoadingCalls);
+        }
+
+        [TestCase(LoginMethod.Guest, false, 1)]
+        [TestCase(LoginMethod.Google, false, 0)]
+        [TestCase(LoginMethod.Google, true, 1)]
+        public void LeavingAccount_ClearsBearerAndInvalidatesPendingRefresh(LoginMethod method, bool delete, int deleted)
+        {
+            var session = new AuthSession();
+            session.Set("access", "refresh");
+            long pendingGeneration = session.Generation;
+            var credentials = new SessionAuthCredentialStore(_credentials, session);
+            credentials.Save(method, "account");
+            var service = new AccountService(_api, credentials, _nav, new List<ISocialSignIn>());
+
+            (delete ? service.DeleteAccountAsync() : service.LogoutAsync()).GetAwaiter().GetResult();
+
+            Assert.IsFalse(credentials.HasCredential);
+            Assert.IsFalse(session.IsSignedIn);
+            Assert.IsNull(session.RefreshToken);
+            Assert.IsFalse(session.GetHeaders().ContainsKey("Authorization"));
+            Assert.IsFalse(session.TryRefresh(pendingGeneration, "late-access", "late-refresh"));
+            Assert.AreEqual(deleted, _api.Deleted);
             Assert.AreEqual(1, _nav.LoadingCalls);
         }
 
