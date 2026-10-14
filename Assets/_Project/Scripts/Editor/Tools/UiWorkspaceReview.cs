@@ -151,8 +151,8 @@ namespace Game.Editor
             id = id,
             prefab = prefab,
             standalone = standalone,
-            approved = group == "Loading" || Approved.Contains(id),
-            reference = id == "ConfirmPopup" && group != "Loading" ? ""
+            approved = group == "Loading" && id != "ConfirmPopup" || Approved.Contains(id),
+            reference = id == "ConfirmPopup" ? ""
                 : References.TryGetValue(id, out string reference) ? reference : ""
         };
 

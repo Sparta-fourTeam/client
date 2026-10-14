@@ -35,11 +35,21 @@ namespace Game.View
 
         private void OnProfileChanged(PlayerProfile _) => Refresh();
 
+        /// <summary>트랙 안쪽 영역에서 둥근 경험치 캡슐의 너비를 진행률에 맞춘다.</summary>
+        public void SetProgress(float progress)
+        {
+            float ratio = Mathf.Clamp01(progress);
+            var rect = _expFill.rectTransform;
+            rect.anchorMax = new Vector2(ratio, rect.anchorMax.y);
+            _expFill.fillAmount = ratio;
+            _expFill.enabled = ratio > 0f;
+        }
+
         // 만렙에서는 요구 경험치가 0이라 게이지를 가득 채우고 "MAX"를 보여준다
         private void Refresh()
         {
             _levelText.text = $"Lv.{_profile.Level}";
-            _expFill.fillAmount = _profile.LevelProgress;
+            SetProgress(_profile.LevelProgress);
             _expText.text = _profile.IsMaxLevel
                 ? "MAX"
                 : $"{CurrencyFormat.Format(_profile.ExpIntoLevel)} / {CurrencyFormat.Format(_profile.ExpRequiredForNext)}";
