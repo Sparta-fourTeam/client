@@ -222,7 +222,9 @@ namespace Game.View
             var card = _rewardCards[_shownCards];
             // 레벨이 실제로 오르기 전에 표시를 묶어 현재 → 다음 레벨을 올바르게 보존한다.
             card.Bind(_shownCards, round.Winner,
-                _assets.GetCardIcon(round.Winner.skill.Data.id, SkillCardIcon.Upgrade), _cardBackground, null,
+                round.Winner.TargetForm != SkillForm.Default
+                    ? _assets.GetFormIcon(round.Winner.TargetForm, round.Winner.skill.Data.id)
+                    : _assets.GetCardIcon(round.Winner.skill.Data.id, SkillCardIcon.Upgrade), _cardBackground, null,
                 hint => _assets.GetFormIcon(hint.Form, hint.Skill.id));
             if (_manager.ApplyRouletteReward(round))
             {

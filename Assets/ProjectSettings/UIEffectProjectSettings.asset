@@ -37,5 +37,9 @@ ShaderVariantCollection:
   - first: {fileID: 4800000, guid: 96246b1ead49a4c5a996fd477bc5a117, type: 3}
     second:
       variants:
+      - keywords: GRADATION_COLOR4 TARGET_LUMINANCE TRANSITION_SHINY
+        passType: 0
+      - keywords: GRADATION_COLOR4 TRANSITION_SHINY
+        passType: 0
       - keywords: TRANSITION_SHINY
         passType: 0

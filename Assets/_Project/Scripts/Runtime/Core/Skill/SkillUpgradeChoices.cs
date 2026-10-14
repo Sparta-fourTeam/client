@@ -12,6 +12,9 @@ namespace Game.Core
         public string DisplayName;
         public string DisplayDescription;
 
+        /// <summary>이 카드를 고르면 바뀌는 형태. 현재 영구 레벨의 효과를 기준으로 하며 일반 강화는 Default다</summary>
+        public SkillForm TargetForm;
+
         /// <summary>스킬이 아닌 일반 카드(방벽 회복 등)이면 그 정의. 이때 Weapon, Option, NewWeaponData는 비어 있다</summary>
         public GeneralCardDefinition GeneralCard;
 
@@ -67,12 +70,14 @@ namespace Game.Core
                     if (!CanApply(weapon, option)
                         || !SkillUpgradeResolver.TryResolve(option, state.GetPermanentWeaponLevel(weapon.Data.id), out var resolved)) { continue; }
                     if (!string.IsNullOrEmpty(option.sharedId) && !sharedGroups.Add(option.sharedId)) { continue; }
+                    FormHintFinder.TryGetForm(option, state.GetPermanentWeaponLevel(weapon.Data.id), out var form);
                     candidates.Add(new UpgradeChoice
                     {
                         skill = weapon,
                         Option = option,
                         DisplayName = resolved.Name,
-                        DisplayDescription = resolved.Description
+                        DisplayDescription = resolved.Description,
+                        TargetForm = form
                     });
                 }
             }

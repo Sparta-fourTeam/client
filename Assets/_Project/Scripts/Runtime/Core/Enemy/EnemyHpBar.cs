@@ -11,13 +11,21 @@ namespace Game.Core
         private const string FillName = "Fill";
         private const float Margin = 0.15f;
 
+        // 등급별 체력 색. 엘리트는 희귀(보라), 보스는 위험(장미)
+        private static readonly Color EliteColor = new Color32(0xA4, 0x74, 0xFF, 255);
+        private static readonly Color BossColor = new Color32(0xFF, 0x4F, 0x6E, 255);
+
         private EnemyModel _model;
         private GameObject _bar;
         private Transform _fill;
+        private SpriteRenderer _fillRenderer;
         private float _fillFullWidth;
 
         /// <summary>이 등급이 체력바를 보이는가</summary>
         public static bool ShowsFor(EnemyType type) => type == EnemyType.Elite || type == EnemyType.Boss;
+
+        /// <summary>등급에 맞는 막대 색</summary>
+        public static Color FillColorFor(EnemyType type) => type == EnemyType.Boss ? BossColor : EliteColor;
 
         /// <summary>체력 비율을 막대 길이로 바꾼다. 0~1 밖의 값(회복 초과, 사망 직후)도 안전하게 자른다</summary>
         public static float FillWidth(float hpRatio, float fullWidth) => Mathf.Clamp01(hpRatio) * fullWidth;
@@ -45,6 +53,7 @@ namespace Game.Core
             }
 
             _bar.SetActive(true);
+            if (_fillRenderer != null) { _fillRenderer.color = FillColorFor(model.Type); }
             Sync();
         }
 
@@ -68,6 +77,7 @@ namespace Game.Core
             }
 
             _fillFullWidth = _fill.localScale.x;
+            _fillRenderer = _fill.GetComponent<SpriteRenderer>();
 
             // 적 크기와 상관없이 같은 크기로 보이도록 부모 스케일을 상쇄하고, 머리 위에 둔다
             var scale = transform.lossyScale;
