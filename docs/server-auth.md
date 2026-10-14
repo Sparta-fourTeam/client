@@ -19,8 +19,12 @@
 `LoginFlow` → `IAuthApi.Login(방식, 계정ID)`
 
 - **게스트**: 저장된 게스트 ID가 있으면 `guest/login`, 없거나 서버가 모르면(400·401) `guest/signup`으로 새로 가입한다. 서버가 정해 준 게스트 ID는 `LoginResponse.accountId`로 돌아와 기기에 저장된다
-- **구글**: 구글 로그인으로 받은 ID 토큰을 `social/login`에 보낸다. 외부 계정은 저장한 값이 오래된 토큰이라, 앱을 켤 때마다 구글 로그인을 다시 해서 새 토큰을 받는다
+- **구글**: 구글 로그인으로 받은 ID 토큰을 `social/login`에 보낸다. 외부 계정은 저장한 값이 오래된 토큰이라, 앱을 켤 때마다 구글 로그인을 다시 해서 새 토큰을 받는다. 기기에는 방식만 저장하고(`auth.account_id`는 `social`) ID 토큰은 남기지 않는다. 앱을 켤 때는 계정 선택창 없이 자동으로 로그인한다 (`docs/google-sign-in.md`)
 - 서버 로그인에 성공하면 토큰을 `AuthSession`에 담고(요청마다 `Authorization: Bearer` 헤더), 이어서 기존 로컬 로그인(`LocalAuthApi`)을 한다. 서버 로그인에 실패하면 로그인창의 [다시 시도]를 기다린다
+
+## 오류 확인
+
+서버가 거절하면 `ApiException`의 `Code`는 `HTTP_상태코드`이고(게스트 재가입 판단이 여기에 기댄다), 서버가 본문에 적은 `message`는 `Detail`에 담겨 로그에 `(설명)`으로 붙는다. 예: `Rejected: HTTP_401 (소셜 로그인 정보가 올바르지 않습니다)`. 화면에 보여 주거나 분기에 쓰지 않는다.
 
 ## 켜고 끄기
 
