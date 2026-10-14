@@ -20,6 +20,7 @@
       </ui:VisualElement>
       <ui:VisualElement class="section">
         <ui:Label text="프로필 치트 (재생 중 · Local)" class="section-title" />
+        <ui:Button name="allResourcesButton" text="모든 재화 999로 설정" />
         <ui:Label text="세이브를 고친 뒤 즉시 프로필에 반영합니다. 레벨업 팝업은 로비 진입 시 비교하므로 전투 후 로비로 돌아올 때 확인하세요." class="note" />
         <ui:VisualElement class="row">
           <ui:IntegerField name="goldField" value="1000" class="grow" />
