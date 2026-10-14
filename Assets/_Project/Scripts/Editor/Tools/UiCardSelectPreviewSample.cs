@@ -10,7 +10,19 @@ namespace Game.Editor
     {
         internal static void Apply(GameObject root)
         {
-            if (root.GetComponent<CardSelectView>() is not { } view) { return; }
+            var view = root.GetComponent<CardSelectView>();
+            var standalone = root.GetComponent<CardSlotView>();
+            if (view == null && standalone == null) { return; }
+            if (view == null)
+            {
+                // In a screen the parent's layout supplies these bounds; standalone review uses the same card dimensions.
+                var rect = (RectTransform)standalone.transform;
+                rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(.5f, .5f);
+                rect.anchoredPosition = Vector2.zero;
+                rect.sizeDelta = new Vector2(328f, 600f);
+                view = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/UI/Stage/CardSelect.prefab")
+                    .GetComponent<CardSelectView>();
+            }
             var serialized = new SerializedObject(view);
             var assets = (SkillAssetTable)serialized.FindProperty("_assets").objectReferenceValue;
             var slots = serialized.FindProperty("_slots");
@@ -27,9 +39,11 @@ namespace Game.Editor
                 new UpgradeChoice { skill = owned, Option = option, DisplayName = upgrade.Name, DisplayDescription = upgrade.Description },
                 new UpgradeChoice { IsNewWeapon = true, newSkillData = lightning }
             };
-            for (int i = 0; i < slots.arraySize; i++)
+            int count = standalone != null ? 1 : slots.arraySize;
+            for (int i = 0; i < count; i++)
             {
-                if (slots.GetArrayElementAtIndex(i).objectReferenceValue is not CardSlotView slot) { continue; }
+                var slot = standalone != null ? standalone : slots.GetArrayElementAtIndex(i).objectReferenceValue as CardSlotView;
+                if (slot == null) { continue; }
                 slot.gameObject.SetActive(i < choices.Length);
                 if (i >= choices.Length) { continue; }
                 var choice = choices[i];

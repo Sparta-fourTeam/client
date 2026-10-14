@@ -33,7 +33,13 @@ namespace Game.Editor
 
         internal static List<string> Samples(string id)
         {
-            if (id == "SettingsPopup") { return new() { "기본", "표준 프레임" }; }
+            if (id == "ConfirmPopup") { return new() { "기본", "안내", "경고", "입력 확인", "입력 완료" }; }
+
+            if (id == "MissionRewardInfoPopup") { return new() { "기본", "수령 완료" }; }
+
+            if (id == "SubmitRejectedPopup") { return new() { "기본", "제출 거절", "재시도 불가" }; }
+
+            if (id == "SettingsPopup") { return new() { "기본", "표준 프레임", "중간 음량", "음소거" }; }
 
             if (id == "UpgradeConfirmPopup")
             {
@@ -78,6 +84,8 @@ namespace Game.Editor
                 var canvasSize = CalculateCanvasSize(device, viewport);
                 var container = new GameObject("Preview Canvas", typeof(RectTransform), typeof(Canvas));
                 SceneManager.MoveGameObjectToScene(container, scene);
+                container.SetActive(false);
+                var contextSamples = new List<GameObject>();
                 container.GetComponent<Canvas>().renderMode = RenderMode.WorldSpace;
                 ((RectTransform)container.transform).sizeDelta = canvasSize;
                 if (composition != null && composition.name == "StageUi") { AddReviewBackdrop(container.transform); }
@@ -121,7 +129,7 @@ namespace Game.Editor
                         var instance = Instantiate(entry.Prefab, scene, parent);
                         instance.transform.SetSiblingIndex(entry.SiblingIndex);
                         Prepare(instance, isSelected || context, device, safeArea, viewport, canvasSize);
-                        if (context) { ApplySample(instance, "기본"); }
+                        if (context) { contextSamples.Add(instance); }
                         if (isSelected)
                         {
                             selected = instance;
@@ -136,6 +144,8 @@ namespace Game.Editor
                 {
                     header.SetVisible(!IsLobbyTabContext(entryId));
                 }
+                container.SetActive(true);
+                foreach (var context in contextSamples) { ApplySample(context, "기본"); }
                 ApplySample(selected, sample);
                 ApplyNavSample(container, entryId);
                 foreach (var text in container.GetComponentsInChildren<TMP_Text>(true))
@@ -149,9 +159,28 @@ namespace Game.Editor
                 }
 
                 Canvas.ForceUpdateCanvases();
+                UiTutorialGuidePreviewSample.Apply(container);
                 foreach (var text in container.GetComponentsInChildren<TMP_Text>(true))
                 {
                     text.ForceMeshUpdate(true);
+                }
+                foreach (var selectable in container.GetComponentsInChildren<Selectable>(true))
+                {
+                    if (selectable is Toggle toggle && toggle.graphic != null)
+                    {
+                        toggle.graphic.canvasRenderer.SetAlpha(toggle.isOn ? 1f : 0f);
+                    }
+                    if (selectable.transition == Selectable.Transition.ColorTint && selectable.targetGraphic != null)
+                    {
+                        var colors = selectable.colors;
+                        selectable.targetGraphic.canvasRenderer.SetColor(
+                            (selectable.IsInteractable() ? colors.normalColor : colors.disabledColor) * colors.colorMultiplier);
+                    }
+                    else if (selectable.transition == Selectable.Transition.SpriteSwap && !selectable.IsInteractable()
+                        && selectable.targetGraphic is Image image && selectable.spriteState.disabledSprite != null)
+                    {
+                        image.overrideSprite = selectable.spriteState.disabledSprite;
+                    }
                 }
                 var cameraRoot = new GameObject("Preview Camera", typeof(Camera));
                 SceneManager.MoveGameObjectToScene(cameraRoot, scene);
@@ -178,7 +207,7 @@ namespace Game.Editor
         private static bool IsLobbyTabContext(string id) => id is
             "InventoryScreen" or "CharacterScreen" or "SkillScreen" or "ShopScreen" or "MissionScreen"
             or "EquipUpgradePopup" or "UpgradeConfirmPopup" or "SkillUpgradePopup" or "DetailPopup"
-            or "RewardOddsPopup" or "RewardPopup" or "MissionDetailsPopup" or "MissionRewardInfoPopup";
+            or "RewardOddsPopup" or "RewardPopup" or "MissionDetailsPopup" or "MissionRewardInfoPopup" or "EnergyRecoverPopup";
 
         private static string[] ReviewContext(string id) => id switch
         {
@@ -186,7 +215,7 @@ namespace Game.Editor
             "UpgradeConfirmPopup" => new[] { "CharacterScreen", "EquipUpgradePopup" },
             "SkillUpgradePopup" => new[] { "SkillScreen" },
             "DetailPopup" or "RewardOddsPopup" or "RewardPopup" => new[] { "InventoryScreen" },
-            "MissionDetailsPopup" or "MissionRewardInfoPopup" => new[] { "MissionScreen" },
+            "MissionDetailsPopup" or "MissionRewardInfoPopup" or "EnergyRecoverPopup" => new[] { "MissionScreen" },
             "LanguagePopup" => new[] { "SettingsPopup" },
             _ => Array.Empty<string>()
         };
@@ -227,6 +256,7 @@ namespace Game.Editor
             private float _particleAge;
             private bool _particlesPrepared;
             private bool _rewardReady;
+            private bool _dialoguePlaying;
             // Keep the optional renderer package outside Game.Editor's assembly dependencies.
             private static readonly Type UiParticleType = Type.GetType("Coffee.UIExtensions.UIParticle, Coffee.UIParticle");
             private static readonly Type UiParticleRendererType = Type.GetType("Coffee.UIExtensions.UIParticleRenderer, Coffee.UIParticle");
@@ -243,11 +273,11 @@ namespace Game.Editor
             }
 
             internal string[] Buttons => _selected.GetComponentsInChildren<Button>(true)
-                .Where(b => b.gameObject.activeInHierarchy && b.GetComponentInParent<NoPressFeedback>() == null)
+                .Where(b => b.gameObject.activeInHierarchy && b.IsInteractable() && b.GetComponentInParent<NoPressFeedback>() == null)
                 .Select(b => AnimationUtility.CalculateTransformPath(b.transform, _selected.transform)).ToArray();
             internal bool HasTransition => _selected.GetComponentsInChildren<PopupTransition>(true).Length > 0;
             internal bool HasParticles => _selected.GetComponentsInChildren<ParticleSystem>(true).Length > 0;
-            internal bool HasAmbientMotion => _clouds.Any(c => c != null && c.enabled && c.gameObject.activeInHierarchy);
+            internal bool HasAmbientMotion => UiTutorialGuidePreviewSample.HasPulse(_container) || _clouds.Any(c => c != null && c.enabled && c.gameObject.activeInHierarchy);
             internal bool IsAnimating => HasAmbientMotion || _particlesPlaying || _releaseAfter > 0 || _tweens.Any(t => t.IsActive());
 
             private void OwnTweens(Action action)
@@ -291,7 +321,8 @@ namespace Game.Editor
                 || _selected.GetComponentInChildren<RewardPopupView>(true) != null
                 || _selected.GetComponentInChildren<ContentUnlockView>(true) != null
                 || _selected.GetComponentInChildren<LevelUpPopupView>(true) != null
-                || _selected.GetComponentInChildren<EliteRouletteView>(true) != null;
+                || _selected.GetComponentInChildren<EliteRouletteView>(true) != null
+                || _selected.GetComponentInChildren<DialogueView>(true) != null;
 
             // 보상·해금·레벨 업 팝업의 실제 등장 연출을 편집용 예시 데이터로 재생한다 (서버·프로필·재화는 건드리지 않는다)
             internal void PlayScenario()
@@ -300,6 +331,11 @@ namespace Game.Editor
                 var icons = AssetDatabase.LoadAssetAtPath<ItemIconTable>("Assets/_Project/Data/ItemIconTable.asset");
                 OwnTweens(() =>
                 {
+                    if (!_dialoguePlaying && _selected.GetComponentInChildren<DialogueView>(true) is { } dialogue)
+                    {
+                        _dialoguePlaying = true;
+                        UiDialoguePreviewSample.PlayAsync(dialogue).ContinueWith(() => _dialoguePlaying = false).Forget(Debug.LogException);
+                    }
                     // 전투 HUD 등장 연출 (게임에서는 스테이지가 시작될 때 자동으로 재생된다)
                     foreach (var intro in _container.GetComponentsInChildren<HudIntro>(true)) { intro.Play(); }
 
@@ -412,6 +448,7 @@ namespace Game.Editor
             internal void Advance(float seconds)
             {
                 _ambientAge += seconds;
+                UiTutorialGuidePreviewSample.Advance(_container, _ambientAge);
                 foreach (var cloud in _clouds)
                 {
                     if (cloud != null && cloud.enabled && cloud.gameObject.activeInHierarchy) { cloud.SampleTime(_ambientAge); }
@@ -496,6 +533,7 @@ namespace Game.Editor
                 foreach (var tween in _tweens) { if (tween.IsActive()) { tween.Kill(); } }
                 try
                 {
+                    UiTutorialGuidePreviewSample.Dispose(_container);
                     foreach (var view in _container.GetComponentsInChildren<HudView>(true)) { view.Dispose(); }
                 }
                 finally { EditorSceneManager.ClosePreviewScene(_scene); }
@@ -512,10 +550,34 @@ namespace Game.Editor
 
         private static GameObject Instantiate(GameObject prefab, Scene scene, Transform parent)
         {
-            var root = (GameObject)PrefabUtility.InstantiatePrefab(prefab, scene);
-            root.transform.SetParent(parent, false);
+            var root = (GameObject)PrefabUtility.InstantiatePrefab(prefab, parent);
+            // Preview buttons use Workspace press controls, so they never join uGUI's global navigation registry.
+            foreach (var cell in root.GetComponentsInChildren<ItemCellView>(true)) { PrepareSlotButton(cell.gameObject); }
+            foreach (var list in root.GetComponentsInChildren<StageMonsterListView>(true))
+            {
+                var slots = new SerializedObject(list).FindProperty("_slots");
+                for (int i = 0; slots != null && i < slots.arraySize; i++)
+                {
+                    if (slots.GetArrayElementAtIndex(i).FindPropertyRelative("Root").objectReferenceValue is GameObject slot)
+                    { PrepareSlotButton(slot); }
+                }
+            }
+            foreach (var selectable in root.GetComponentsInChildren<Selectable>(true)) { selectable.enabled = false; }
             root.SetActive(true);
             return root;
+        }
+
+        private static void PrepareSlotButton(GameObject slot)
+        {
+            if (slot.TryGetComponent<Button>(out _)) { return; }
+            var button = slot.AddComponent<Button>();
+            button.enabled = false;
+            button.interactable = false;
+            button.transition = Selectable.Transition.None;
+            button.targetGraphic = slot.GetComponent<Graphic>();
+            var navigation = button.navigation;
+            navigation.mode = Navigation.Mode.None;
+            button.navigation = navigation;
         }
 
         private static void Prepare(GameObject root, bool showPanel, Device device, bool safeArea, Rect viewport, Vector2 canvasSize)
@@ -600,21 +662,35 @@ namespace Game.Editor
 
         private static void ApplySample(GameObject root, string sample)
         {
-            if (root.GetComponent<UpgradeConfirmPopupView>() is { } confirmation)
+            UiDialoguePreviewSample.Apply(root);
+            UiUpgradeConfirmPreviewSample.Apply(root);
+            UiSubmitPreviewSample.Apply(root, sample);
+            UiConfirmPreviewSample.Apply(root, sample);
+
+            if (root.GetComponent<MissionRewardInfoPopupView>() is { } rewardInfo)
             {
-                var so = new SerializedObject(confirmation);
-                var data = new GameDataStore();
-                var def = data.Upgrades.GetOrThrow("equipment.hat");
-                ((TMP_Text)so.FindProperty("_title").objectReferenceValue).text = "장비 일괄 강화";
-                ((TMP_Text)so.FindProperty("_description").objectReferenceValue).text = "후드\nLv.0 → Lv.2 · 2회 강화\n아래 재화를 소모해 강화할까요?";
-                var icons = (ItemIconTable)so.FindProperty("_itemIcons").objectReferenceValue;
-                ((ResultRewardListView)so.FindProperty("_rewards").objectReferenceValue).Show(
-                    RewardRows.Build(icons, data, def.CostAt(1) + def.CostAt(2), 0,
-                        new[] { new ItemAmount { itemId = def.MaterialItemId, quantity = def.MaterialAt(1) + def.MaterialAt(2) } }));
+                rewardInfo.Initialize();
+                var infoSample = new SerializedObject(rewardInfo);
+                infoSample.FindProperty("_transition").objectReferenceValue = null;
+                infoSample.ApplyModifiedPropertiesWithoutUndo();
+                rewardInfo.Show(new GameDataStore(), 3, 3, sample == "수령 완료");
+            }
+
+            if (root.GetComponent<MissionPopupView>() is { } mission)
+            {
+                mission.Initialize();
+                var so = new SerializedObject(mission);
+                so.FindProperty("_transition").objectReferenceValue = null;
+                so.ApplyModifiedPropertiesWithoutUndo();
+                mission.ShowDetails(new GameDataStore(), 3);
             }
 
             if (root.GetComponent<RewardOddsPopupView>() is { } odds)
             {
+                odds.Initialize();
+                var oddsSerialized = new SerializedObject(odds);
+                oddsSerialized.FindProperty("_transition").objectReferenceValue = null;
+                oddsSerialized.ApplyModifiedPropertiesWithoutUndo();
                 var data = new GameDataStore();
                 var icons = AssetDatabase.LoadAssetAtPath<ItemIconTable>("Assets/_Project/Data/ItemIconTable.asset");
                 var rows = new List<RewardOddsRow>();
@@ -629,6 +705,7 @@ namespace Game.Editor
 
             UiDetailPreviewSample.Apply(root, sample);
             UiCardSelectPreviewSample.Apply(root);
+            UiEliteRoulettePreviewSample.Apply(root, sample);
 
             foreach (var behaviour in root.GetComponentsInChildren<MonoBehaviour>(true))
             {
@@ -678,6 +755,8 @@ namespace Game.Editor
             UiSkillUpgradePreviewSample.Apply(root, sample);
             UiProfilePreviewSample.Apply(root);
             UiSettingsPreviewSample.Apply(root, sample);
+            UiResultPreviewSample.Apply(root, sample);
+            UiPausePreviewSample.Apply(root);
         }
 
         private static void ApplyCharacterSample(GameObject root)

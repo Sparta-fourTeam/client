@@ -121,6 +121,7 @@ namespace Game.Editor
             EditorApplication.update += UpdateMotion;
             EditorApplication.projectChanged += Refresh;
             EditorApplication.playModeStateChanged += OnPlayModeChanged;
+            AssemblyReloadEvents.beforeAssemblyReload += ClearShot;
         }
 
         private void OnDisable()
@@ -128,6 +129,7 @@ namespace Game.Editor
             EditorApplication.update -= UpdateMotion;
             EditorApplication.projectChanged -= Refresh;
             EditorApplication.playModeStateChanged -= OnPlayModeChanged;
+            AssemblyReloadEvents.beforeAssemblyReload -= ClearShot;
             ClearShot();
         }
 
@@ -186,7 +188,11 @@ namespace Game.Editor
         }
 
         private void Button(string name, Action action) => rootVisualElement.Q<Button>(name).clicked += action;
-        private void OnPlayModeChanged(PlayModeStateChange _) => Refresh();
+        private void OnPlayModeChanged(PlayModeStateChange state)
+        {
+            if (state == PlayModeStateChange.ExitingEditMode) { ClearShot(); }
+            Refresh();
+        }
 
         private void Refresh()
         {

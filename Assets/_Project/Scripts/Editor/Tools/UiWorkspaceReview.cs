@@ -23,9 +23,11 @@ namespace Game.Editor
         [Serializable]
         public sealed class GraphicInfo
         {
-            public string path, type, text, color, sprite, spriteName;
+            public string path, type, text, color, canvasTint, sprite, spriteName;
+            public string font, fontStyle, fontWeight, fontMaterial, ribbon;
             public bool active, raycastTarget, textWithinRect;
-            public Rect screenRect;
+            public bool ribbonTextWithinFace = true;
+            public Rect screenRect, ribbonGlyphRect, ribbonSafeRect;
             public Vector4 margin, border;
             public float fontSize, pixelsPerUnitMultiplier;
         }
@@ -89,10 +91,7 @@ namespace Game.Editor
             ["LevelUpPopup"] = "final2/rr_level_up.png",
             ["LevelUpBurst"] = "final2/rr_level_up.png",
             ["RewardPopup"] = "final2/rr_reward_popup.png",
-            ["MissionRewardInfoPopup"] = "final2/rr_reward_popup.png",
             ["DetailPopup"] = "final/fin_item_detail.png",
-            ["MissionDetailsPopup"] = "final2/rr_mission.png",
-            ["RewardOddsPopup"] = "final/fin_item_detail.png",
             ["SkillUpgradePopup"] = "final/fin_detail_c.png",
             ["EquipUpgradePopup"] = "final/fin_detail_b.png",
             ["UpgradeConfirmPopup"] = "final/fin_detail_a.png",
@@ -111,7 +110,7 @@ namespace Game.Editor
         private static readonly HashSet<string> Approved = new()
         {
             "LobbyBackground", "LobbyTopBar", "LobbyMissionButton", "LobbyBottomNav", "LobbySideMenu", "LobbyEventBanner",
-            "HudCanvas", "SkillHud", "StageControls", "SkillSlot", "SkillRangeIndicator", "HpSoulFx", "StarSparksFx", "ConfirmPopup"
+            "HudCanvas", "SkillHud", "StageControls", "SkillSlot", "SkillRangeIndicator", "HpSoulFx", "StarSparksFx"
         };
 
         public static string ReferenceRoot => EditorPrefs.GetString("ProjectNova.UiReferenceRoot",
@@ -153,7 +152,8 @@ namespace Game.Editor
             prefab = prefab,
             standalone = standalone,
             approved = group == "Loading" || Approved.Contains(id),
-            reference = References.TryGetValue(id, out string reference) ? reference : ""
+            reference = id == "ConfirmPopup" && group != "Loading" ? ""
+                : References.TryGetValue(id, out string reference) ? reference : ""
         };
 
         public static string ExportCatalog(string directory)
@@ -196,6 +196,67 @@ namespace Game.Editor
             return json;
         }
 
+        private static bool IsRibbon(UnityEngine.UI.Image image) => image.sprite != null
+            && (image.sprite.name.IndexOf("Ribbon", StringComparison.OrdinalIgnoreCase) >= 0
+                || image.name.IndexOf("Ribbon", StringComparison.OrdinalIgnoreCase) >= 0);
+
+        private static void CollectRibbon(TMP_Text text, GraphicInfo record, Report report)
+        {
+            if (!record.active || string.IsNullOrWhiteSpace(text.text)) { return; }
+            var image = text.GetComponentsInParent<UnityEngine.UI.Image>(true).FirstOrDefault(IsRibbon);
+            if (image == null && text.transform.parent != null
+                && (text.name.IndexOf("Title", StringComparison.OrdinalIgnoreCase) >= 0
+                    && text.name.IndexOf("Subtitle", StringComparison.OrdinalIgnoreCase) < 0
+                    || text.name is "Heading" or "NameText" or "StageText" or "Label"))
+            {
+                image = text.transform.parent.GetComponentsInChildren<UnityEngine.UI.Image>(true)
+                    .Where(i => i.transform.parent == text.transform.parent && IsRibbon(i))
+                    .OrderBy(i => (i.transform.position - text.transform.position).sqrMagnitude).FirstOrDefault();
+            }
+            if (image == null) { return; }
+            var drawing = image.GetPixelAdjustedRect();
+            if (image.type == UnityEngine.UI.Image.Type.Simple && image.preserveAspect)
+            {
+                float ratio = image.sprite.rect.width / image.sprite.rect.height;
+                if (ratio > drawing.width / drawing.height)
+                {
+                    float height = drawing.width / ratio;
+                    drawing.y += (drawing.height - height) * image.rectTransform.pivot.y; drawing.height = height;
+                }
+                else
+                {
+                    float width = drawing.height * ratio;
+                    drawing.x += (drawing.width - width) * image.rectTransform.pivot.x; drawing.width = width;
+                }
+            }
+            var normalized = new Rect(.15f, .38f, .7f, .39f);
+            if (image.sprite.name.StartsWith("EnergyOffer", StringComparison.Ordinal))
+            { normalized = new Rect(.182f, .437f, .633f, .328f); }
+            else if (image.sprite.name.StartsWith("Ribbon_SmallSpirit", StringComparison.Ordinal))
+            { normalized = new Rect(.25f, .465f, .495f, .218f); }
+            var safe = new Rect(drawing.x + drawing.width * normalized.x, drawing.y + drawing.height * normalized.y,
+                drawing.width * normalized.width, drawing.height * normalized.height);
+            var min = new Vector2(float.PositiveInfinity, float.PositiveInfinity);
+            var max = new Vector2(float.NegativeInfinity, float.NegativeInfinity);
+            int count = 0;
+            foreach (var mesh in text.textInfo.meshInfo)
+            {
+                for (int i = 0; i < mesh.vertexCount; i++)
+                {
+                    var vertex = image.rectTransform.InverseTransformPoint(text.transform.TransformPoint(mesh.vertices[i]));
+                    min = Vector2.Min(min, vertex); max = Vector2.Max(max, vertex); count++;
+                }
+            }
+            record.ribbon = AnimationUtility.CalculateTransformPath(image.transform, text.transform.root);
+            record.ribbonSafeRect = safe;
+            record.ribbonGlyphRect = count == 0 ? Rect.zero : new Rect(min, max - min);
+            record.ribbonTextWithinFace = count > 0 && min.x >= safe.xMin - .5f && max.x <= safe.xMax + .5f
+                && min.y >= safe.yMin - .5f && max.y <= safe.yMax + .5f;
+            if (!record.ribbonTextWithinFace) { report.issues.Add(record.path + ": 글자가 리본 면 밖입니다."); }
+            if ((text.fontStyle & FontStyles.Bold) != 0 || text.fontWeight != FontWeight.Regular)
+            { report.issues.Add(record.path + ": 리본 글자 굵기가 공통 설정과 다릅니다."); }
+        }
+
         private static void Collect(GameObject root, Camera camera, UiPreviewRenderer.Device device, Report report)
         {
             foreach (var graphic in root.GetComponentsInChildren<Graphic>(true))
@@ -206,6 +267,7 @@ namespace Game.Editor
                     type = graphic.GetType().Name,
                     active = graphic.isActiveAndEnabled,
                     color = ColorUtility.ToHtmlStringRGBA(graphic.color),
+                    canvasTint = ColorUtility.ToHtmlStringRGBA(graphic.canvasRenderer.GetColor()),
                     raycastTarget = graphic.raycastTarget,
                     screenRect = ScreenRect(graphic.rectTransform, camera, device),
                     textWithinRect = true
@@ -220,6 +282,9 @@ namespace Game.Editor
                 if (graphic is TMP_Text text)
                 {
                     record.text = text.text; record.fontSize = text.fontSize; record.margin = text.margin;
+                    record.font = text.font == null ? "" : text.font.name;
+                    record.fontStyle = text.fontStyle.ToString(); record.fontWeight = text.fontWeight.ToString();
+                    record.fontMaterial = text.fontSharedMaterial == null ? "" : AssetDatabase.GetAssetPath(text.fontSharedMaterial);
                     text.ForceMeshUpdate(true);
                     foreach (var mesh in text.textInfo.meshInfo)
                     {
@@ -235,6 +300,10 @@ namespace Game.Editor
                         }
                     }
                     if (record.active && !record.textWithinRect) { report.issues.Add(record.path + ": 글자 메시가 영역 밖입니다."); }
+                    if (!report.entry.approved && report.entry.id is not ("RewardPopup" or "LevelUpPopup" or "ContentUnlock" or "LevelUpBurst"))
+                    {
+                        CollectRibbon(text, record, report);
+                    }
                 }
                 report.graphics.Add(record);
             }
