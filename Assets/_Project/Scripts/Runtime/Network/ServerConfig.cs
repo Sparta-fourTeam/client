@@ -15,6 +15,12 @@ namespace Game.Network
         // 개발 중에 켜고 끄는 값. "1"이면 켜고 "0"이면 끈다. 없으면 아래 기본 규칙을 따른다
         private const string OverrideKey = "dev.server_auth";
 
+        // 플레이어 상태를 서버(GET /api/user/me)에서 받을지. 서버 PR #47이 배포되기 전에는 요청이 실패하므로 기본은 끔이고,
+        // 개발 중에 PlayerPrefs의 dev.server_player를 "1"로 두어야 켠다
+        private const string PlayerOverrideKey = "dev.server_player";
+
+        public static bool UseServerPlayer => PlayerPrefs.GetString(PlayerOverrideKey, string.Empty) == "1";
+
         public static bool UseServerAuth
         {
             get
