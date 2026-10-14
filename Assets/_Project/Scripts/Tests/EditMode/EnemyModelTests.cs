@@ -328,6 +328,24 @@ namespace Game.Tests
             }
         }
 
+        [TestCase(false)]
+        [TestCase(true)]
+        public void Pull_DoesNotReduceQueuedKnockback(bool knockbackFirst)
+        {
+            var enemy = CreateEnemy(position: new Vector2(0, 5));
+            if (knockbackFirst) { enemy.ApplyKnockback(Vector2.up, 1f); }
+            enemy.ApplyPull(Vector2.left, .5f);
+            if (!knockbackFirst) { enemy.ApplyKnockback(Vector2.up, 1f); }
+
+            enemy.TickDisplacement(1f / 60f);
+            Assert.Less(enemy.Position.x, 0);
+            Assert.Greater(enemy.Position.x, -.5f);
+            Assert.Greater(enemy.Position.y, 5);
+            Assert.Less(enemy.Position.y, 6);
+            Settle(enemy);
+            AssertPosition(new Vector2(-.5f, 6), enemy);
+        }
+
         [Test(Description = "끌어당기기는 방향 그대로(좌우 포함) 움직인다")]
         public void Pull_MovesAlongDirection()
         {
