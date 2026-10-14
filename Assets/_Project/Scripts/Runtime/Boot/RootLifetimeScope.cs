@@ -19,6 +19,7 @@ namespace Game.Boot
             builder.Register<GameDataStore>(Lifetime.Singleton);
             builder.Register<LocalSaveStore>(Lifetime.Singleton);
             builder.Register<PlayerProfile>(Lifetime.Singleton);
+            builder.RegisterEntryPoint<GameAnalyticsService>().As<IGameplayAnalytics>();
 
             // 서버 통신. 서버 인증을 쓰는 빌드(Android 개발 빌드)에서만 로그인이 서버로 간다
             builder.RegisterInstance(new HttpApiConfig(ServerConfig.BaseUrl));
