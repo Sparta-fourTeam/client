@@ -42,6 +42,9 @@ namespace Game.Core
             _unlockSources = unlockSources;
         }
 
+        /// <summary>로비에 오기 전(전투 전)에 깬 스테이지였는지. CollectAsync가 끝난 뒤에 쓴다</summary>
+        public bool WasStageCleared(int stageId) => _refresher.WasStageCleared(stageId);
+
         public async UniTask<LevelUpNews> CollectAsync()
         {
             await _refresher.WhenLoaded;

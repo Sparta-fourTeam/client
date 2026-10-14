@@ -9,6 +9,20 @@ namespace Game.View
     public sealed class InventorySlotView : MonoBehaviour
     {
         [SerializeField] private ItemCellView _cell;
+        [SerializeField] private GameObject _filledSurface;
+        [SerializeField] private UnityEngine.UI.Image _emptySurface;
+        [SerializeField] private GameObject _quantityBadge;
+        [SerializeField] private UnityEngine.UI.Image _itemRing;
+        [SerializeField] private Sprite _defaultItemRing;
+        [SerializeField] private ItemRingPresentation[] _itemRings;
+
+        [Serializable]
+        private struct ItemRingPresentation
+        {
+            public string ItemId;
+            public Sprite Sprite;
+        }
+
 
         public InventoryItem Item { get; private set; }
 
@@ -22,6 +36,23 @@ namespace Game.View
             Item = item;
             IsFilled = true;
             _cell.Show(icon, CurrencyFormat.Format(item.Quantity), onClick);
+            if (_itemRing != null)
+            {
+                _itemRing.sprite = _defaultItemRing;
+                if (_itemRings != null)
+                {
+                    foreach (var presentation in _itemRings)
+                    {
+                        if (presentation.ItemId == item.ItemId)
+                        {
+                            _itemRing.sprite = presentation.Sprite;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            SetPresentation(true);
         }
 
         public void ShowEmpty()
@@ -29,6 +60,25 @@ namespace Game.View
             Item = default;
             IsFilled = false;
             _cell.ShowEmpty();
+            SetPresentation(false);
+        }
+
+        private void SetPresentation(bool filled)
+        {
+            if (_filledSurface != null)
+            {
+                _filledSurface.SetActive(filled);
+            }
+
+            if (_emptySurface != null)
+            {
+                _emptySurface.enabled = !filled;
+            }
+
+            if (_quantityBadge != null)
+            {
+                _quantityBadge.SetActive(filled);
+            }
         }
     }
 }

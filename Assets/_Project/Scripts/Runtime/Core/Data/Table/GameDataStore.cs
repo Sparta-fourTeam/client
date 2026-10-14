@@ -29,6 +29,9 @@ namespace Game.Core
         /// <summary>튜토리얼의 대사·화면 연결 정보(클라이언트 전용). 서버 테이블이 아니라서 버전·원문 조회 목록에 없다</summary>
         public TutorialPresentationTable TutorialPresentations { get; }
 
+        /// <summary>스테이지 클리어로 열리는 로비 기능 (클라이언트 전용, ClientData/FeatureUnlocks.json)</summary>
+        public FeatureUnlockTable FeatureUnlocks { get; }
+
         /// <summary>도감 등록 보상 골드. 몬스터마다가 아니라 등급별이다</summary>
         public IReadOnlyDictionary<EnemyType, int> CodexRewardGold { get; }
 
@@ -93,6 +96,9 @@ namespace Game.Core
 
             Monsters = new Table<int, MonsterDefinition>(monsters);
             Stages = new Table<int, StageDefinition>(stages);
+            var unlockAsset = Resources.Load<TextAsset>("ClientData/FeatureUnlocks")
+                ?? throw new InvalidOperationException("Resources/ClientData/FeatureUnlocks.json을 찾을 수 없습니다");
+            FeatureUnlocks = new FeatureUnlockTable(JsonConvert.DeserializeObject<List<FeatureUnlock>>(unlockAsset.text), Stages.Contains);
             var upgrades = ParseIndexed<string, UpgradeDefinition>("Upgrades", d => d.UpgradeId);
             Upgrades = new Table<string, UpgradeDefinition>(upgrades);
             var items = ParseIndexed<string, ItemDefinition>("Items", d => d.Id);

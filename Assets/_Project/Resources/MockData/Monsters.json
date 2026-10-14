@@ -111,16 +111,56 @@
     "Grade": "Elite"
   },
   {
-    "Id": 21,
-    "Hp": 120,
-    "Damage": 6,
-    "Speed": 0.1,
+    "Id": 13,
+    "Hp": 420,
+    "Damage": 12,
+    "Speed": 0.115,
     "AttackInterval": 2.8,
     "AttackRange": 0.0,
     "ProjectileSpeed": 0.0,
-    "Resists": {
-      "Lightning": -1
-    },
+    "Passives": [
+      {
+        "Kind": "Immunity",
+        "Statuses": [
+          "Stun"
+        ]
+      },
+      {
+        "Kind": "Modifier",
+        "Target": "KnockbackDistance",
+        "Multiplier": 0.5
+      }
+    ],
+    "Grade": "Elite"
+  },
+  {
+    "Id": 14,
+    "Hp": 360,
+    "Damage": 8,
+    "Speed": 0.138,
+    "AttackInterval": 2.6,
+    "AttackRange": 0.0,
+    "ProjectileSpeed": 0.0,
+    "Passives": [
+      {
+        "Kind": "Spawn",
+        "Trigger": "Interval",
+        "MonsterId": 6,
+        "Count": 2,
+        "Interval": 8,
+        "MaxTotal": 4
+      }
+    ],
+    "Grade": "Elite"
+  },
+  {
+    "Id": 15,
+    "Hp": 600,
+    "Damage": 12,
+    "Speed": 0.115,
+    "AttackInterval": 2.8,
+    "AttackRange": 0.0,
+    "ProjectileSpeed": 0.0,
     "Passives": [
       {
         "Kind": "Shield",
@@ -142,19 +182,19 @@
         "Multiplier": 0.5
       }
     ],
-    "Grade": "Normal"
+    "Grade": "Elite",
+    "Resists": {
+      "Lightning": -1
+    }
   },
   {
-    "Id": 22,
-    "Hp": 64,
-    "Damage": 4,
-    "Speed": 0.2,
+    "Id": 16,
+    "Hp": 320,
+    "Damage": 8,
+    "Speed": 0.23,
     "AttackInterval": 2,
     "AttackRange": 0.0,
     "ProjectileSpeed": 0.0,
-    "Resists": {
-      "Ice": 0.5
-    },
     "Passives": [
       {
         "Kind": "SpeedBoost",
@@ -163,19 +203,19 @@
         "SpeedMultiplier": 2.5
       }
     ],
-    "Grade": "Normal"
+    "Grade": "Elite",
+    "Resists": {
+      "Ice": 0.5
+    }
   },
   {
-    "Id": 23,
-    "Hp": 80,
-    "Damage": 4,
-    "Speed": 0.15,
+    "Id": 17,
+    "Hp": 400,
+    "Damage": 8,
+    "Speed": 0.172,
     "AttackInterval": 2.5,
     "AttackRange": 0.0,
     "ProjectileSpeed": 0.0,
-    "Resists": {
-      "Earth": 1.0
-    },
     "Passives": [
       {
         "Kind": "Shield",
@@ -189,33 +229,32 @@
         "Chance": 0.2
       }
     ],
-    "Grade": "Normal"
+    "Grade": "Elite",
+    "Resists": {
+      "Earth": 1.0
+    }
   },
   {
-    "Id": 24,
-    "Hp": 52,
-    "Damage": 4,
-    "Speed": 0.3,
+    "Id": 18,
+    "Hp": 260,
+    "Damage": 8,
+    "Speed": 0.345,
     "AttackInterval": 2,
     "AttackRange": 0.0,
     "ProjectileSpeed": 0.0,
+    "Grade": "Elite",
     "Resists": {
       "Earth": -1
-    },
-    "Grade": "Normal"
+    }
   },
   {
-    "Id": 25,
-    "Hp": 220,
-    "Damage": 8,
-    "Speed": 0.08,
+    "Id": 19,
+    "Hp": 1100,
+    "Damage": 16,
+    "Speed": 0.092,
     "AttackInterval": 3,
     "AttackRange": 0.0,
     "ProjectileSpeed": 0.0,
-    "BlocksProjectile": true,
-    "Resists": {
-      "Fire": 2.0
-    },
     "Passives": [
       {
         "Kind": "Immunity",
@@ -231,7 +270,134 @@
         "Multiplier": 0.5
       }
     ],
-    "Grade": "Normal"
+    "Grade": "Elite",
+    "BlocksProjectile": true,
+    "Resists": {
+      "Fire": 2.0
+    }
+  },
+  {
+    "Id": 21,
+    "Hp": 120,
+    "Damage": 6,
+    "Speed": 0.1,
+    "AttackInterval": 2.8,
+    "AttackRange": 0.0,
+    "ProjectileSpeed": 0.0,
+    "Passives": [
+      {
+        "Kind": "Shield",
+        "Trigger": "Start",
+        "Hits": 6,
+        "Statuses": [
+          "AllDebuffs"
+        ]
+      },
+      {
+        "Kind": "Immunity",
+        "Statuses": [
+          "Burn"
+        ]
+      },
+      {
+        "Kind": "Modifier",
+        "Target": "KnockbackDistance",
+        "Multiplier": 0.5
+      }
+    ],
+    "Grade": "Normal",
+    "Resists": {
+      "Lightning": -1
+    }
+  },
+  {
+    "Id": 22,
+    "Hp": 64,
+    "Damage": 4,
+    "Speed": 0.2,
+    "AttackInterval": 2,
+    "AttackRange": 0.0,
+    "ProjectileSpeed": 0.0,
+    "Passives": [
+      {
+        "Kind": "SpeedBoost",
+        "Interval": 6,
+        "Duration": 1.5,
+        "SpeedMultiplier": 2.5
+      }
+    ],
+    "Grade": "Normal",
+    "Resists": {
+      "Ice": 0.5
+    }
+  },
+  {
+    "Id": 23,
+    "Hp": 80,
+    "Damage": 4,
+    "Speed": 0.15,
+    "AttackInterval": 2.5,
+    "AttackRange": 0.0,
+    "ProjectileSpeed": 0.0,
+    "Passives": [
+      {
+        "Kind": "Shield",
+        "Trigger": "OnHit",
+        "Chance": 0.3,
+        "Hits": 3,
+        "Duration": 4
+      },
+      {
+        "Kind": "Evade",
+        "Chance": 0.2
+      }
+    ],
+    "Grade": "Normal",
+    "Resists": {
+      "Earth": 1.0
+    }
+  },
+  {
+    "Id": 24,
+    "Hp": 52,
+    "Damage": 4,
+    "Speed": 0.3,
+    "AttackInterval": 2,
+    "AttackRange": 0.0,
+    "ProjectileSpeed": 0.0,
+    "Grade": "Normal",
+    "Resists": {
+      "Earth": -1
+    }
+  },
+  {
+    "Id": 25,
+    "Hp": 220,
+    "Damage": 8,
+    "Speed": 0.08,
+    "AttackInterval": 3,
+    "AttackRange": 0.0,
+    "ProjectileSpeed": 0.0,
+    "Passives": [
+      {
+        "Kind": "Immunity",
+        "Statuses": [
+          "Burn",
+          "Paralysis",
+          "Freeze"
+        ]
+      },
+      {
+        "Kind": "Modifier",
+        "Target": "KnockbackDistance",
+        "Multiplier": 0.5
+      }
+    ],
+    "Grade": "Normal",
+    "BlocksProjectile": true,
+    "Resists": {
+      "Fire": 2.0
+    }
   },
   {
     "Id": 100,
@@ -241,6 +407,6 @@
     "AttackInterval": 2.5,
     "AttackRange": 0.0,
     "ProjectileSpeed": 0.0,
-    "Grade": "Normal"
+    "Grade": "Boss"
   }
 ]

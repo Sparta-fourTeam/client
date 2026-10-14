@@ -142,6 +142,7 @@ namespace Game.Core
                     UpgradeId = upgradable ? data.progressionId : null,
                     Name = data.name,
                     Description = data.desc ?? string.Empty,
+                    Element = data.element,
                     MaxLevel = NoUpgradeMaxLevel,
                     UnlockLevel = data.unlockLevel,
                     Stats = CreateStats(data, null, 0, true),

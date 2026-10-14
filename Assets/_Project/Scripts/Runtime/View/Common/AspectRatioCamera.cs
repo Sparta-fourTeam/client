@@ -14,7 +14,12 @@ namespace Game.View
         [SerializeField, Min(1f)] private float _targetWidth = 9f;
         [SerializeField, Min(1f)] private float _targetHeight = 16f;
 
+        private const string BackgroundName = "Background Camera";
+
+        [SerializeField] private Color _barColor = Color.black;
+
         private Camera _camera;
+        private Camera _background;
         private Vector2Int _appliedScreen;
 
         private float TargetAspect => _targetWidth / _targetHeight;
@@ -27,6 +32,14 @@ namespace Game.View
         private void OnEnable()
         {
             Apply();
+        }
+
+        private void OnDestroy()
+        {
+            if (_background != null)
+            {
+                Destroy(_background.gameObject);
+            }
         }
 
         // 해상도 변경 이벤트가 없어서 크기가 달라졌는지 매 프레임 비교한다 (비교만 하고 같으면 아무것도 안 한다)
@@ -75,6 +88,31 @@ namespace Game.View
 
             _appliedScreen = new Vector2Int(DeviceScreen.width, DeviceScreen.height);
             _camera.rect = CalculateViewport(_appliedScreen.x, _appliedScreen.y, TargetAspect);
+            ShowBars(_camera.rect != new Rect(0f, 0f, 1f, 1f));
+        }
+
+        // 카메라 rect 밖은 아무도 지우지 않아 지난 프레임이 남는다. 띠가 생길 때만 화면 전체를 먼저 칠하는 카메라를 켠다
+        private void ShowBars(bool needed)
+        {
+            if (_background == null)
+            {
+                if (!needed) { return; }
+
+                var go = new GameObject(BackgroundName);
+                go.transform.SetParent(transform, false);
+                _background = go.AddComponent<Camera>();
+                _background.clearFlags = CameraClearFlags.SolidColor;
+                _background.backgroundColor = _barColor;
+                _background.cullingMask = 0;
+                _background.orthographic = true;
+                _background.allowHDR = false;
+                _background.allowMSAA = false;
+                _background.useOcclusionCulling = false;
+                _background.rect = new Rect(0f, 0f, 1f, 1f);
+            }
+
+            _background.depth = _camera.depth - 1f;
+            _background.enabled = needed;
         }
     }
 }

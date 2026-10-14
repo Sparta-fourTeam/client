@@ -25,6 +25,11 @@ namespace Game.View
         [SerializeField] private GameObject _panel;
         [SerializeField] private PopupTransition _transition;
         [SerializeField] private TMP_Text _titleText;
+        [Tooltip("제목 뒤 리본. 클리어와 실패에 따라 스프라이트를 바꾼다 (비우면 그대로)")]
+        [SerializeField] private Image _titleRibbon;
+        [SerializeField] private Sprite _clearRibbon, _failRibbon;
+        [Tooltip("제목 리본 색. 같은 리본 이미지를 클리어(금색)와 실패(장밋빛)에서 색만 바꿔 쓴다")]
+        [SerializeField] private Color _clearRibbonColor = Color.white, _failRibbonColor = new Color(1f, 0.55f, 0.6f, 1f);
         [SerializeField] private TMP_Text _stageText;
         [SerializeField] private TMP_Text _killsText;
         [SerializeField] private TMP_Text _waveText;
@@ -78,6 +83,12 @@ namespace Game.View
         private void OnStageResult(StageResult result)
         {
             _titleText.text = result.Cleared ? "Clear !" : "Fail !";
+            var ribbon = result.Cleared ? _clearRibbon : _failRibbon;
+            if (_titleRibbon != null)
+            {
+                if (ribbon != null) { _titleRibbon.sprite = ribbon; }
+                _titleRibbon.color = result.Cleared ? _clearRibbonColor : _failRibbonColor;
+            }
             _stageText.text = _stageContext.StageId > 0 ? $"Stage {_stageContext.StageId}" : "-";
             _killsText.text = $"처치\n{result.Kills}";
             _waveText.text = result.ReachedWave > 0 ? $"도달 웨이브\n{result.ReachedWave}" : "도달 웨이브\n-";

@@ -43,6 +43,7 @@ namespace Game.Core
         public string UpgradeId;
         public string Name;
         public string Description;
+        public Element Element;
         public int Level;
         public int MaxLevel;
 

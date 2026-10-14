@@ -15,7 +15,7 @@ namespace Game.View
 
         [Header("수령 가능 광채")]
         [Tooltip("상자 뒤의 광채 색상. 알파는 아래 밝기에 곱해집니다.")]
-        [SerializeField] private Color _glowColor = new(1f, 0.94f, 0.12f, 1f);
+        [SerializeField] private Color _glowColor = new Color32(255, 210, 31, 255);
         [Tooltip("광채의 기본 가로·세로 크기")]
         [SerializeField] private Vector2 _glowSize = new(320f, 280f);
         [Tooltip("광채의 고정 밝기 (0~1)")]
@@ -29,15 +29,15 @@ namespace Game.View
         {
             bool available = achieved && !claimed;
             _chest.sprite = claimed ? _openedChest : _closedChest;
-            _chest.color = achieved ? Color.white : new Color(0.48f, 0.48f, 0.52f);
-            _dot.color = achieved ? Color.white : new Color(0.18f, 0.22f, 0.28f);
+            _chest.color = Color.white;
+            _dot.color = Color.white;
             _check.SetActive(claimed);
             _glow.gameObject.SetActive(available);
             ApplyGlowSettings();
             _button.interactable = !busy;
             _stateText.text = claimed ? "수령 완료" : available ? "보상 받기" : "미달성";
-            _stateText.color = claimed ? new Color(0.24f, 0.43f, 0.20f)
-                : available ? new Color(0.58f, 0.36f, 0.06f) : new Color(0.43f, 0.47f, 0.53f);
+            _stateText.color = claimed ? new Color32(23, 180, 136, 255)
+                : available ? new Color32(31, 26, 51, 255) : new Color32(122, 115, 153, 255);
             _chest.rectTransform.localScale = Vector3.one;
         }
 

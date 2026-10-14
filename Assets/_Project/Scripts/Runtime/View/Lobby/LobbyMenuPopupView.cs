@@ -55,10 +55,24 @@ namespace Game.View
             });
             _privacyButton.onClick.AddListener(() => Application.OpenURL(ExternalLinks.PrivacyPolicy));
             _termsButton.onClick.AddListener(() => Application.OpenURL(ExternalLinks.TermsOfUse));
-            _supportButton.onClick.AddListener(() => Application.OpenURL(ExternalLinks.Support));
+            _supportButton.onClick.AddListener(() => ContactAsync().Forget(Debug.LogException));
             _logoutButton.onClick.AddListener(() => RunAsync(LogoutAsync));
             _deleteAccountButton.onClick.AddListener(() => RunAsync(DeleteAccountAsync));
             _linkAccountButton.onClick.AddListener(() => RunAsync(LinkAccountAsync));
+        }
+
+        // 문의 내용을 클립보드에 복사한 뒤 메일 작성 화면을 연다. 메일 앱이 없어 열리지 않아도 붙여 넣어 보낼 수 있다
+        private async UniTask ContactAsync()
+        {
+            string body = SupportMail.Body(_profile.Nickname, _account.IsGuest ? "게스트" : "소셜 계정", _account.GuestId,
+                SupportMail.ReadDiagnosticId(), Application.version, SystemInfo.deviceModel, SystemInfo.operatingSystem);
+            GUIUtility.systemCopyBuffer = body;
+            Application.OpenURL(SupportMail.Uri(body));
+            await _confirm.ShowAsync(new ConfirmRequest
+            {
+                Title = "문의하기",
+                Message = $"메일 작성 화면이 열려요.\n열리지 않으면 문의 양식이 복사되어 있으니\n{SupportMail.Address}로 붙여 넣어 보내 주세요.",
+            });
         }
 
         // 확인창이 떠 있는 동안 같은 흐름을 또 시작하지 않는다

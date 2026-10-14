@@ -94,18 +94,19 @@ namespace Game.Tests
         public void SubmitResult_ClearingLastStage_DoesNotCreateProgressForMissingNextStage()
         {
             SeedEnergy(_data.Energy.Cost * 2);
+            int last = _data.Stages.Values.Max(stage => stage.Id);
             var save = _store.Load();
-            save.stageProgress.Add(new StageProgressRow { stageId = 3, clearRating = 0 });
+            save.stageProgress.Add(new StageProgressRow { stageId = last, clearRating = 0 });
             _store.Flush(save);
-            // 스테이지 3은 랜덤 재료 보상이라 열린 스킬·장비 정보가 연결돼 있어야 입장할 수 있다
+            // 2스테이지부터는 랜덤 재료 보상이라 열린 스킬·장비 정보가 연결돼 있어야 입장할 수 있다
             _api.UnlockedSkillIds = () => Enumerable.Range(1, 99);
             _api.UnlockedEquipmentIds = () => ItemIds.EquipmentMaterials.Select(id => _data.Items.GetOrThrow(id).TargetId);
-            var start = _api.StartBattle(3).GetAwaiter().GetResult();
+            var start = _api.StartBattle(last).GetAwaiter().GetResult();
 
             _api.SubmitResult(new SubmitResultRequest { battleId = start.battleId, cleared = true, completedWaves = 20, reachedWave = 20, wallHpPercent = 100 })
                 .GetAwaiter().GetResult();
 
-            Assert.IsFalse(_store.Load().stageProgress.Exists(p => p.stageId == 4));
+            Assert.IsFalse(_store.Load().stageProgress.Exists(p => p.stageId == last + 1));
         }
 
         [Test(Description = "존재하지 않는 battleId로 결과를 제출하면 INVALID_ID로 거절한다")]

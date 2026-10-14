@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 namespace Game.View
 {
@@ -8,8 +9,32 @@ namespace Game.View
     /// 팝업 바깥을 눌러 닫을 때 쓴다</summary>
     public sealed class PointerClickRelay : MonoBehaviour, IPointerClickHandler
     {
+        [SerializeField] private Button _dismissButton;
+        [SerializeField] private RectTransform[] _excludedAreas;
+
         public event Action Clicked;
 
-        public void OnPointerClick(PointerEventData eventData) => Clicked?.Invoke();
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            if (eventData.button != PointerEventData.InputButton.Left) { return; }
+            if (_excludedAreas != null)
+            {
+                foreach (var area in _excludedAreas)
+                {
+                    if (area != null && area.gameObject.activeInHierarchy
+                        && RectTransformUtility.RectangleContainsScreenPoint(area, eventData.position, eventData.pressEventCamera))
+                    {
+                        return;
+                    }
+                }
+            }
+
+            if (_dismissButton != null && _dismissButton.isActiveAndEnabled && _dismissButton.IsInteractable())
+            {
+                _dismissButton.onClick.Invoke();
+            }
+
+            Clicked?.Invoke();
+        }
     }
 }

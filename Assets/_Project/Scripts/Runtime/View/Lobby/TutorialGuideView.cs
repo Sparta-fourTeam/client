@@ -132,6 +132,13 @@ namespace Game.View
                 return;
             }
 
+            // 스테이지 클리어로 열리는 기능도, 전투 전에 잠겨 있었으면 자물쇠를 다시 걸어 두었다가 해금 연출 뒤에 푼다
+            var featureLocks = _ui.GetAll<FeatureLockView>();
+            foreach (var featureLock in featureLocks)
+            {
+                featureLock.Hold(_arrival.WasStageCleared);
+            }
+
             bool tabLocked = TutorialProgress.IsTabLocked(_data.Tutorials, _data.TutorialPresentations, TutorialFacts.From(_profile), SkillTab);
             // 새 컨텐츠 해금·레벨업 연출이 끝날 때까지는 잠긴 채로 둔다
             nav.SetSkillLocked(tabLocked || tabWasLocked);
@@ -202,6 +209,36 @@ namespace Game.View
             {
                 nav.SetSkillLocked(true);
                 await nav.PlaySkillUnlockAsync();
+                if (this == null)
+                {
+                    return;
+                }
+            }
+
+            // 이번에 깬 스테이지로 열린 기능(캐릭터·인벤토리 탭 등)도 하나씩 해금 연출을 보여 준다
+            foreach (var featureLock in featureLocks)
+            {
+                if (!featureLock.IsUnlockPending)
+                {
+                    featureLock.Release();
+                    continue;
+                }
+
+                try
+                {
+                    await _contentUnlock.ShowAsync(featureLock.ContentName, featureLock.ContentIcon);
+                }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }
+
+                if (this == null)
+                {
+                    return;
+                }
+
+                await featureLock.PlayUnlockAsync();
                 if (this == null)
                 {
                     return;

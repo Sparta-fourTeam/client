@@ -336,7 +336,7 @@ namespace Game.Core
         public void ApplyBurn(float damagePerSecond, float duration, float maxHpRatio = 0, Action<Vector2> onDeath = null)
             => _enemyModel.ApplyBurn(damagePerSecond, duration, maxHpRatio, onDeath);
 
-        // 모델이 저항 등을 반영해 정한 거리만큼 실제로 밀려난다 (위아래로만)
+        // 모델이 저항 등을 반영해 정한 거리만큼 실제로 밀려난다 (항상 위로)
         public void ApplyKnockback(Vector2 direction, float distance)
         {
             transform.position += (Vector3)_enemyModel.ResolveKnockback(direction, distance);

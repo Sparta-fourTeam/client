@@ -9,6 +9,28 @@ namespace Game.Tests
     public sealed class EditorToolsTests
     {
 
+        [TestCase("Common", "CloseButton")]
+        [TestCase("Lobby", "MissionDetailsPopup")]
+        public void WorkspacePreviewDoesNotRegisterButtonsAndDisposesItsScene(string group, string id)
+        {
+            var prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEngine.GameObject>(
+                $"Assets/_Project/Prefabs/UI/{group}/{id}.prefab");
+            Assert.That(prefab, Is.Not.Null);
+            int selectables = UnityEngine.UI.Selectable.allSelectableCount;
+            int previewScenes = UnityEditor.SceneManagement.EditorSceneManager.previewSceneCount;
+            for (int attempt = 0; attempt < 2; attempt++)
+            {
+                using (var preview = UiPreviewRenderer.CreateSession(prefab, null, UiPreviewRenderer.Devices[0], true, "기본", id))
+                {
+                    Assert.That(preview.ReviewRoot.GetComponentsInChildren<UnityEngine.UI.Selectable>(true), Is.Not.Empty);
+                    Assert.That(UnityEngine.UI.Selectable.allSelectableCount, Is.EqualTo(selectables),
+                        "작업실의 시각 미리보기 버튼은 실제 UI의 탐색 목록에 들어가면 안 된다");
+                }
+                Assert.That(UnityEngine.UI.Selectable.allSelectableCount, Is.EqualTo(selectables));
+                Assert.That(UnityEditor.SceneManagement.EditorSceneManager.previewSceneCount, Is.EqualTo(previewScenes));
+            }
+        }
+
         [Test]
         public void SaveBackupPreservesOriginalBytesAndCreatesSeparateCopies()
         {

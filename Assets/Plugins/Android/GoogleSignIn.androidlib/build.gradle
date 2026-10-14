@@ -1,0 +1,24 @@
+apply plugin: 'com.android.library'
+
+// Unity가 만드는 Gradle 프로젝트에 하위 라이브러리로 들어간다. SDK 버전은 Unity 설정을 따르고, 없으면 기본값을 쓴다
+android {
+    namespace 'com.teamdoodle.auth'
+    compileSdkVersion((project.findProperty('unity.compileSdkVersion') ?: '35') as int)
+
+    defaultConfig {
+        minSdkVersion((project.findProperty('unity.minSdkVersion') ?: '26') as int)
+        // 지금은 코드 축소를 쓰지 않지만(AndroidMinifyRelease 0), 켜도 브리지가 지워지지 않게 앱에 규칙을 넘긴다
+        consumerProguardFiles 'proguard-rules.pro'
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+}
+
+dependencies {
+    implementation 'androidx.credentials:credentials:1.3.0'
+    implementation 'androidx.credentials:credentials-play-services-auth:1.3.0'
+    implementation 'com.google.android.libraries.identity.googleid:googleid:1.1.1'
+}

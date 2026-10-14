@@ -81,6 +81,32 @@ namespace Game.Tests
             (T)target.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(target);
 
         [UnityTest]
+        public IEnumerator RewardOddsPopup_BothButtonsCloseThroughPointerInputInLobbyAndStage()
+        {
+            yield return StartFromBoot(UnlockLobbyFeatures);
+            var lobbyUi = Object.FindAnyObjectByType<LobbyLifetimeScope>().Container.Resolve<IUiRegistry>();
+            yield return CloseOddsWithEachButton(lobbyUi.Get<RewardOddsPopupView>());
+
+            yield return ClickGameButton(Field<Button>(lobbyUi.Get<MissionButtonView>(), "_button"));
+            yield return ClickGameButton(Field<Button>(lobbyUi.Get<MissionScreenView>(), "_enterButton"));
+            yield return WaitFor(() => SceneManager.GetActiveScene().name == "Stage");
+            var stageUi = Object.FindAnyObjectByType<StageLifetimeScope>().Container.Resolve<IUiRegistry>();
+            yield return CloseOddsWithEachButton(stageUi.Get<RewardOddsPopupView>());
+        }
+
+        private static IEnumerator CloseOddsWithEachButton(RewardOddsPopupView popup)
+        {
+            var panel = Field<GameObject>(popup, "_panel");
+            foreach (string field in new[] { "_closeButton", "_confirmButton" })
+            {
+                popup.Show("확률 정보", "후보의 확률을 확인합니다", new[] { new RewardOddsRow(null, "후보", "100%") });
+                yield return WaitFor(() => Field<PopupTransition>(popup, "_transition").Progress >= 0.99f);
+                yield return ClickGameButton(Field<Button>(popup, field));
+                yield return WaitFor(() => !panel.activeSelf);
+            }
+        }
+
+        [UnityTest]
         public IEnumerator RewardPopup_LargeClaimsFitAndRepeatedOpenRestoresSmallClaims()
         {
             yield return StartFromBoot();
@@ -141,7 +167,7 @@ namespace Game.Tests
         [UnityTest]
         public IEnumerator UpgradeButtonsRequireConfirmationAndEquipmentBatchSpendsExactTotals()
         {
-            yield return StartFromBoot();
+            yield return StartFromBoot(UnlockLobbyFeatures);
             var lobby = Object.FindAnyObjectByType<LobbyLifetimeScope>();
             var data = lobby.Container.Resolve<GameDataStore>();
             var profile = lobby.Container.Resolve<PlayerProfile>();
@@ -206,7 +232,14 @@ namespace Game.Tests
             yield return StartFromBoot(save => save.tutorials = new List<string>());
             var dialogue = Object.FindAnyObjectByType<DialogueView>();
             yield return WaitFor(() => dialogue.IsOpen);
+            // SKIP은 확인창을 거친다. 취소하면 대화가 그대로 남는다
+            var confirm = Object.FindAnyObjectByType<LobbyLifetimeScope>().Container.Resolve<IUiRegistry>().Get<ConfirmPopupView>();
             yield return ClickGameButton(Field<Button>(dialogue, "_skipButton"));
+            yield return WaitFor(() => confirm.IsOpen);
+            yield return ClickGameButton(Field<Button>(confirm, "_cancelButton"));
+            yield return WaitFor(() => !Field<GameObject>(confirm, "_panel").activeSelf);
+            Assert.That(dialogue.IsOpen, Is.True);
+            yield return SkipDialogue(dialogue, confirm);
             yield return WaitFor(() => SceneManager.GetActiveScene().name == "Stage");
             var root = Object.FindAnyObjectByType<RootLifetimeScope>().Container;
             int tutorialStage = root.Resolve<GameDataStore>().Tutorials.First(t => t.IsBattle).StageId;
@@ -226,6 +259,13 @@ namespace Game.Tests
             yield return WaitFor(() => Field<bool>(ui.Get<TutorialGuideView>(), "_ready"));
             Assert.That(SceneManager.GetActiveScene().name, Is.EqualTo("Lobby"));
             Assert.That(ui.Get<DialogueView>().IsOpen, Is.False);
+            // 스테이지를 깨기 전에는 캐릭터 탭이 자물쇠 판에 덮여 열리지 않고, 판을 누르면 안내가 뜬다
+            var nav = ui.Get<LobbyNavView>();
+            var characterLock = Field<Button>(nav.GetComponentsInChildren<FeatureLockView>(true).Single(l => Field<string>(l, "_feature") == "character"), "_lock");
+            Assert.That(characterLock.gameObject.activeInHierarchy, Is.True);
+            yield return ClickGameButton(characterLock);
+            Assert.That(Field<GameObject>(ui.Get<ComingSoonToastView>(), "_panel").activeSelf, Is.True);
+            Assert.That(Field<GameObject>(ui.Get<CharacterScreenView>(), "_panel").activeSelf, Is.False);
             Assert.That(root.Resolve<PlayerProfile>().IsTutorialDone(root.Resolve<GameDataStore>().Tutorials.First(t => t.IsBattle).Id), Is.False);
         }
 
@@ -253,14 +293,24 @@ namespace Game.Tests
             var profile = lobby.Container.Resolve<PlayerProfile>();
             var ui = lobby.Container.Resolve<IUiRegistry>();
             var levelUp = ui.Get<LevelUpPopupView>();
+            // 같은 레벨에 열린 장비 칸이 있으면 무기 다음에 해금 카드로 나온다
+            var equipments = lobby.Container.Resolve<IGrowthCatalog>().Equips.Where(e => e.UnlockLevel == tutorialLevel).Select(e => e.Name).ToList();
             yield return WaitFor(() => levelUp.IsOpen);
             // 해금 카드와 보상 카드만 센다 (레벨은 큰 숫자로 보여 준다). 풀에 남은 숨은 카드는 제외
             var cards = levelUp.GetComponentsInChildren<LevelUpLineView>().Where(line => line.gameObject.activeSelf)
                 .Select(line => line.GetComponentInChildren<TMP_Text>().text).ToList();
-            Assert.That(cards, Has.Count.EqualTo(3));
+            int firstReward = 1 + equipments.Count;
+            Assert.That(cards, Has.Count.EqualTo(firstReward + 2));
             Assert.That(cards[0], Does.Contain(weapon));
-            Assert.That(cards[1], Does.Contain($"×{upgrade.CostAt(1)}"));
-            Assert.That(cards[2], Does.Contain($"×{upgrade.MaterialAt(1)}"));
+            for (int i = 0; i < equipments.Count; i++)
+            {
+                Assert.That(cards[1 + i], Does.Contain(equipments[i]));
+                var equipmentCard = levelUp.GetComponentsInChildren<LevelUpLineView>().Where(line => line.gameObject.activeSelf).ElementAt(1 + i);
+                Assert.That(Field<UnityEngine.UI.Image>(equipmentCard, "_icon").sprite, Is.Not.Null, "장비 해금 카드도 무기처럼 아이콘을 보여 준다");
+            }
+
+            Assert.That(cards[firstReward], Does.Contain($"×{upgrade.CostAt(1)}"));
+            Assert.That(cards[firstReward + 1], Does.Contain($"×{upgrade.MaterialAt(1)}"));
             Assert.That(profile.Level, Is.EqualTo(tutorialLevel));
 
             var tapArea = Field<Button>(levelUp, "_confirmButton");
@@ -283,7 +333,7 @@ namespace Game.Tests
             // 팝업 뒤 가이드 시작 전에 대사 장면이 먼저 나온다. SKIP으로 건너뛴다
             var dialogue = ui.Get<DialogueView>();
             yield return WaitFor(() => dialogue.IsOpen);
-            yield return ClickGameButton(Field<Button>(dialogue, "_skipButton"));
+            yield return SkipDialogue(dialogue, ui.Get<ConfirmPopupView>());
             yield return WaitFor(() => !dialogue.IsOpen);
             var guide = ui.Get<TutorialGuideView>();
             var nav = ui.Get<LobbyNavView>();
@@ -299,6 +349,97 @@ namespace Game.Tests
             Assert.That(profile.UpgradeLevel(upgradeId), Is.EqualTo(1));
             Assert.That(Field<GameObject>(guide, "_root").activeSelf, Is.False);
             LogAssert.NoUnexpectedReceived();
+        }
+
+        [UnityTest]
+        public IEnumerator StageClearUnlock_ShowsContentUnlockOnLobbyReturnThenOpensTab()
+        {
+            // 캐릭터 탭을 여는 스테이지 바로 앞까지 깬 세이브로 시작한다
+            var root = VContainer.Unity.VContainerSettings.Instance.GetOrCreateRootLifetimeScopeInstance() as RootLifetimeScope;
+            int unlockStage = root.Container.Resolve<GameDataStore>().FeatureUnlocks.RequiredStage("character");
+            void SetCleared(LocalSave save, int stageId, int rating)
+            {
+                var row = save.stageProgress.Find(p => p.stageId == stageId);
+                if (row == null)
+                {
+                    save.stageProgress.Add(row = new StageProgressRow { stageId = stageId });
+                }
+
+                row.clearRating = row.claimedRating = rating;
+            }
+
+            yield return StartFromBoot(save =>
+            {
+                for (int id = 1; id < unlockStage; id++)
+                {
+                    SetCleared(save, id, 1);
+                }
+
+                SetCleared(save, unlockStage, 0);
+            });
+            var characterLock = Object.FindAnyObjectByType<LobbyLifetimeScope>().Container.Resolve<IUiRegistry>()
+                .GetAll<FeatureLockView>().Single(l => Field<string>(l, "_feature") == "character");
+            Assert.That(characterLock.IsLocked, Is.True);
+
+            // 전투에서 그 스테이지를 깬 것처럼 세이브만 바꾸고 로비로 돌아온다. 프로필은 로비가 새로 받을 때 바뀐다
+            var cleared = _store.Load();
+            SetCleared(cleared, unlockStage, 1);
+            _store.Flush(cleared);
+            yield return Object.FindAnyObjectByType<LobbyLifetimeScope>().Container.Resolve<BattleLauncher>().Launch(1).ToCoroutine();
+            yield return WaitFor(() => SceneManager.GetActiveScene().name == "Stage");
+            yield return root.Container.Resolve<ISceneNavigator>().GoToLobby().ToCoroutine();
+            yield return WaitFor(() => SceneManager.GetActiveScene().name == "Lobby");
+
+            var ui = Object.FindAnyObjectByType<LobbyLifetimeScope>().Container.Resolve<IUiRegistry>();
+            var data = root.Container.Resolve<GameDataStore>();
+            var opened = ui.GetAll<FeatureLockView>().Where(l => data.FeatureUnlocks.RequiredStage(Field<string>(l, "_feature")) == unlockStage).ToList();
+            var contentUnlock = ui.Get<ContentUnlockView>();
+            var tap = Field<Button>(contentUnlock, "_tapArea");
+            var shown = new List<string>();
+            // 이번에 열린 기능마다 컨텐츠 해금 화면이 한 번씩 뜬다. 탭으로 넘긴다
+            foreach (var _ in opened)
+            {
+                yield return WaitFor(() => contentUnlock.IsOpen);
+                shown.Add(Field<TMP_Text>(contentUnlock, "_contentName").text);
+                if (contentUnlock.IsPlaying)
+                {
+                    yield return ClickGameButton(tap);
+                }
+
+                yield return ClickGameButton(tap);
+                yield return WaitFor(() => !contentUnlock.IsOpen);
+            }
+
+            Assert.That(shown, Is.EquivalentTo(opened.Select(l => l.ContentName)));
+            yield return WaitFor(() => opened.All(l => !Field<Button>(l, "_lock").gameObject.activeSelf));
+            var nav = ui.Get<LobbyNavView>();
+            yield return ClickGameButton(Field<Button>(nav, "_characterTab"));
+            Assert.That(Field<GameObject>(ui.Get<CharacterScreenView>(), "_panel").activeSelf, Is.True);
+        }
+
+        // 스테이지 클리어로 열리는 로비 기능(FeatureUnlocks)이 모두 열린 세이브로 만든다
+        private static void UnlockLobbyFeatures(LocalSave save)
+        {
+            var data = VContainer.Unity.VContainerSettings.Instance.GetOrCreateRootLifetimeScopeInstance().Container.Resolve<GameDataStore>();
+            foreach (var stage in data.Stages.Values)
+            {
+                var row = save.stageProgress.Find(p => p.stageId == stage.Id);
+                if (row == null)
+                {
+                    row = new StageProgressRow { stageId = stage.Id };
+                    save.stageProgress.Add(row);
+                }
+
+                row.clearRating = row.claimedRating = 1;
+            }
+        }
+
+        // 대화 SKIP → 확인창에서 건너뛰기
+        private IEnumerator SkipDialogue(DialogueView dialogue, ConfirmPopupView confirm)
+        {
+            yield return ClickGameButton(Field<Button>(dialogue, "_skipButton"));
+            yield return WaitFor(() => confirm.IsOpen);
+            yield return ClickGameButton(Field<Button>(confirm, "_confirmButton"));
         }
 
         // button 가운데를 실제로 눌렀을 때 가장 위에 맞는 오브젝트 이름
@@ -347,6 +488,17 @@ namespace Game.Tests
                 var view = ui.Get<EliteRouletteView>();
                 var stats = stage.Container.Resolve<BattleStats>();
                 var data = stage.Container.Resolve<GameDataStore>();
+                var definition = stage.Container.Resolve<StageDefinition>();
+                var skills = stage.Container.Resolve<SkillController>();
+                var assets = Field<SkillAssetTable>(view, "_assets");
+                foreach (var skill in data.LoadSkills().Where(skill => !skill.childOnly && assets.HasPrefab(skill.id)))
+                {
+                    if (skills.Skills.Count >= SkillSlotLimit.Max) { break; }
+                    if (skills.Skills.All(owned => owned.Data.id != skill.id)) { Assert.That(skills.AddWeapon(skill.id), Is.True); }
+                }
+                int eligibleCards = stage.Container.Resolve<CardDeck>().GetWeaponUpgradeCandidates().Count;
+                Assert.That(eligibleCards, Is.GreaterThanOrEqualTo(definition.EliteRouletteMaxCards),
+                    "실제 보유 무기의 서로 다른 강화 카드로 여러 회차를 검증한다");
                 var elite = data.Monsters.Values.First(monster => monster.GetEnemyType() == EnemyType.Elite);
                 // 실제 factory/model의 사망을 쓴다. 웨이브 밖에서 생성하므로 게이지 집계 대상에서 제외한다.
                 var enemy = stage.Container.Resolve<IEnemyFactory>().Create(elite.Id, new Vector2(99, 99), isSummoned: true);
@@ -358,8 +510,9 @@ namespace Game.Tests
                 var panel = Field<GameObject>(view, "_panel");
                 Assert.That(panel.activeSelf, Is.True);
                 int count = manager.Roulette.CardCount;
-                var definition = stage.Container.Resolve<StageDefinition>();
-                Assert.That(count, Is.InRange(definition.EliteRouletteMinCards, definition.EliteRouletteMaxCards));
+                Assert.That(count, Is.EqualTo(definition.EliteRouletteMaxCards));
+                var weaponIcons = Field<UnityEngine.UI.Image[]>(view, "_weaponIcons");
+                var wheel = weaponIcons.Select(icon => icon.sprite).ToArray();
                 var spinner = Field<RectTransform>(view, "_spinner");
                 float initial = spinner.localEulerAngles.z;
                 yield return WaitFor(() => Mathf.Abs(Mathf.DeltaAngle(initial, spinner.localEulerAngles.z)) > 5f);
@@ -378,8 +531,13 @@ namespace Game.Tests
                     if (File.Exists(preview)) { File.Delete(preview); }
                     ScreenCapture.CaptureScreenshot(preview);
                     yield return WaitFor(() => File.Exists(preview));
-                    yield return ClickGameButton(skipButton);
+                    var background = Field<PointerClickRelay>(view, "_background");
+                    yield return ClickGameTarget(background, localPoint: ((RectTransform)background.transform).rect.min + Vector2.one * 48f);
+                    Assert.That(stats.BuildLog.Count - priorCards, Is.EqualTo(1), "dim 한 번은 현재 회차의 카드 한 장만 적용한다");
+                    Assert.That(stats.BuildLog[priorCards], Is.EqualTo(pending.Winner.Option.id), "dim 스킵도 준비된 당첨 결과를 보존한다");
+                    if (count > 1) { yield return ClickGameButton(skipButton); }
                     Assert.That(manager.Roulette.IsComplete, Is.True, "스킵 입력에서 남은 회차를 모두 적용해야 한다");
+                    CollectionAssert.AreEqual(wheel, weaponIcons.Select(icon => icon.sprite), "스킵해도 무기 배치를 바꾸지 않는다");
                     Assert.That(stats.BuildLog.Count - priorCards, Is.EqualTo(count));
                     Assert.That(stats.BuildLog[priorCards], Is.EqualTo(pending.Winner.Option.id), "진행 중인 당첨 무기를 다시 뽑지 않는다");
                     Assert.That(cards.Count(card => card.gameObject.activeSelf), Is.EqualTo(count));
@@ -396,12 +554,21 @@ namespace Game.Tests
                     Assert.That(Time.timeScale, Is.Zero, "대기 중인 다음 룰렛까지 전투는 정지 상태를 유지한다");
                     Assert.That(stats.BuildLog.Count - priorCards, Is.EqualTo(count));
                     count = manager.Roulette.CardCount;
+                    wheel = weaponIcons.Select(icon => icon.sprite).ToArray();
                     totalRewards += count;
-                    yield return ClickGameButton(skipButton);
+                    for (int i = 0; i < count; i++)
+                    {
+                        int before = stats.BuildLog.Count;
+                        yield return ClickGameTarget(background, localPoint: ((RectTransform)background.transform).rect.min + Vector2.one * 48f);
+                        Assert.That(stats.BuildLog.Count, Is.EqualTo(before + 1), "연속 dim 입력도 한 번에 한 회차만 지급한다");
+                    }
                     Assert.That(manager.Roulette.IsComplete, Is.True);
                 }
-                yield return WaitFor(() => manager.Roulette.IsComplete
-                    && Field<TMP_Text>(view, "_heading").text == "강화 완료");
+                yield return WaitFor(() =>
+                {
+                    CollectionAssert.AreEqual(wheel, weaponIcons.Select(icon => icon.sprite), "회차마다 무기 위치를 리셋하지 않는다");
+                    return manager.Roulette.IsComplete && Field<TMP_Text>(view, "_heading").text == "강화 완료";
+                });
                 var confirmButton = Field<Button>(view, "_skipButton");
                 yield return WaitFor(() => confirmButton.interactable
                     && confirmButton.GetComponentInChildren<TMP_Text>(true).text == "확인");
@@ -413,6 +580,8 @@ namespace Game.Tests
                 Assert.That(manager.State, Is.EqualTo(StageState.EliteRoulette));
                 Assert.That(Time.timeScale, Is.Zero);
                 Assert.That(cards.Count(card => card.gameObject.activeSelf), Is.EqualTo(count));
+                int selectedSlots = weaponIcons.Count(icon => icon.enabled && icon.color.a < 1f);
+                Assert.That(selectedSlots, Is.EqualTo(count), "당첨된 강화 카드의 칸만 흐리게 표시한다");
                 yield return ClickGameButton(confirmButton);
                 yield return WaitFor(() => manager.State == StageState.Playing);
                 Assert.That(panel.activeSelf, Is.False);
@@ -441,11 +610,8 @@ namespace Game.Tests
                 var missionEnergy = mission.GetComponentInChildren<EnergyView>(true);
                 var lobbyEnergy = Object.FindObjectsByType<EnergyView>(FindObjectsInactive.Include, FindObjectsSortMode.None)
                     .Single(view => view.gameObject.scene == lobby.gameObject.scene && !view.transform.IsChildOf(mission.transform));
-                // 두 화면의 실제 하트 이미지에 터치해 동일한 충전 팝업이 열리는지 확인한다.
-                yield return ClickGameButton(Field<Button>(lobbyEnergy, "_button"), (RectTransform)lobbyEnergy.transform.Find("Icon"));
-                Assert.That(recoveryPanel.activeSelf, Is.True);
-                yield return ClickGameButton(Field<Button>(recovery, "_closeButton"));
-                yield return WaitFor(() => !recoveryPanel.activeSelf);
+                // 홈에서도 재화를 표시하며, 임무의 실제 에너지 아이콘으로 충전 창을 연다.
+                Assert.That(lobbyEnergy.gameObject.activeInHierarchy, Is.True, "홈에서도 에너지 재화를 표시한다");
                 yield return ClickGameButton(Field<Button>(ui.Get<MissionButtonView>(), "_button"));
                 Assert.That(Field<GameObject>(mission, "_panel").activeSelf, Is.True);
                 yield return ClickGameButton(Field<Button>(missionEnergy, "_button"), (RectTransform)missionEnergy.transform.Find("Icon"));
@@ -504,7 +670,7 @@ namespace Game.Tests
         [UnityTest]
         public IEnumerator GameButtonsNavigatePickCardsAndShowDefeat()
         {
-            yield return StartFromBoot();
+            yield return StartFromBoot(UnlockLobbyFeatures);
             var lobby = Object.FindAnyObjectByType<LobbyLifetimeScope>();
             var ui = lobby.Container.Resolve<IUiRegistry>();
             var nav = ui.Get<LobbyNavView>();
@@ -549,7 +715,24 @@ namespace Game.Tests
             yield return ClickGameButton(Field<Button>(ui.Get<MissionButtonView>(), "_button"));
             var mission = ui.Get<MissionScreenView>();
             Assert.That(Field<GameObject>(mission, "_panel").activeSelf, Is.True);
-            yield return ClickGameButton(Field<Button>(mission, "_infoButton"));
+            // 카드를 오른쪽으로 끌었다 놓으면 옆 카드가 가운데로 와서 이전 관문으로 넘어간다
+            int shownStage = Field<int>(mission, "_stageId");
+            Assert.That(shownStage, Is.GreaterThan(1));
+            var carousel = Field<StageCarouselView>(mission, "_carousel");
+            var swipe = new PointerEventData(EventSystem.current) { delta = new Vector2(Screen.width * 0.5f, 0f) };
+            ExecuteEvents.Execute(carousel.gameObject, swipe, ExecuteEvents.beginDragHandler);
+            ExecuteEvents.Execute(carousel.gameObject, swipe, ExecuteEvents.dragHandler);
+            ExecuteEvents.Execute(carousel.gameObject, swipe, ExecuteEvents.endDragHandler);
+            yield return WaitFor(() => Field<int>(mission, "_stageId") == shownStage - 1 && !carousel.IsSliding);
+            // 기능을 열려고 뒤 스테이지까지 깬 세이브라 가장 높은 스테이지가 보인다. 아래 확인은 첫 스테이지 기준이라 이전 화살표로 돌아간다
+            while (Field<int>(mission, "_stageId") > 1)
+            {
+                int previousStage = Field<int>(mission, "_stageId");
+                yield return ClickGameButton(Field<Button>(mission, "_prevButton"));
+                yield return WaitFor(() => Field<int>(mission, "_stageId") == previousStage - 1 && !carousel.IsSliding);
+            }
+
+            yield return ClickGameButton(Field<StageCardView>(mission, "_card").InfoButton);
             var details = Field<MissionPopupView>(mission, "_detailsPopup");
             Assert.That(Field<GameObject>(details, "_panel").activeSelf, Is.True);
             // 몬스터·보상 칸을 실제로 눌러(레이캐스트) 공용 상세 창이 열리는지 본다
@@ -813,6 +996,9 @@ namespace Game.Tests
         }
 
         private static IEnumerator ClickGameButton(Button button, RectTransform hitArea = null)
+            => ClickGameTarget(button, hitArea);
+
+        private static IEnumerator ClickGameTarget(Component target, RectTransform hitArea = null, Vector2? localPoint = null)
         {
             // A focused tool/preview can temporarily supply Screen's editor dimensions.
             // Overlay raycasters must read the same Game View size as the canvas.
@@ -822,10 +1008,11 @@ namespace Game.Tests
             gameView?.Focus();
 #endif
             yield return null;
-            yield return WaitFor(() => button != null && button.gameObject.activeInHierarchy && button.IsInteractable());
+            yield return WaitFor(() => target != null && target.gameObject.activeInHierarchy
+                && (target is not Button button || button.IsInteractable()));
             Canvas.ForceUpdateCanvases();
-            var canvas = button.GetComponentInParent<Canvas>();
-            var rect = hitArea != null ? hitArea : (RectTransform)button.transform;
+            var canvas = target.GetComponentInParent<Canvas>();
+            var rect = hitArea != null ? hitArea : (RectTransform)target.transform;
             PointerEventData pointer = null;
             var hits = new List<RaycastResult>();
             bool sampled = false;
@@ -845,12 +1032,12 @@ namespace Game.Tests
 
                 pointer = new PointerEventData(EventSystem.current)
                 {
-                    position = RectTransformUtility.WorldToScreenPoint(canvas.worldCamera, rect.TransformPoint(rect.rect.center)),
+                    position = RectTransformUtility.WorldToScreenPoint(canvas.worldCamera, rect.TransformPoint(localPoint ?? rect.rect.center)),
                     button = PointerEventData.InputButton.Left
                 };
                 hits.Clear();
                 EventSystem.current.RaycastAll(pointer, hits);
-                sampled = hits.Count > 0 && hits[0].gameObject.GetComponentInParent<Button>() == button;
+                sampled = hits.Count > 0 && ExecuteEvents.GetEventHandler<IPointerClickHandler>(hits[0].gameObject) == target.gameObject;
             }
             // Editor update can retain Scene View/preview dimensions even with Game View focused.
             // Sample the real raycast while the Game View canvas is preparing its render.
@@ -865,13 +1052,13 @@ namespace Game.Tests
                 while (!sampled)
                 {
                     Assert.That(Time.realtimeSinceStartup, Is.LessThan(deadline),
-                        $"{button.name} did not become clickable. Top target={hits.FirstOrDefault().gameObject?.name}, Screen={Screen.width}x{Screen.height}");
+                        $"{target.name} did not become clickable. Top target={hits.FirstOrDefault().gameObject?.name}, Screen={Screen.width}x{Screen.height}");
                     yield return null;
                 }
             }
             finally { Canvas.willRenderCanvases -= SampleGameView; }
-            Assert.That(hits, Is.Not.Empty, $"{button.name} has no pointer target. Pointer={pointer.position}, Screen={Screen.width}x{Screen.height}, Camera={canvas.worldCamera?.pixelRect}, Canvas={canvas.pixelRect}, Rect={rect.rect}, Position={rect.position}, EventSystem={EventSystem.current.name}");
-            Assert.That(hits[0].gameObject.GetComponentInParent<Button>(), Is.SameAs(button), button.name + " is covered by " + hits[0].gameObject.name);
+            Assert.That(hits, Is.Not.Empty, $"{target.name} has no pointer target. Pointer={pointer.position}, Screen={Screen.width}x{Screen.height}, Camera={canvas.worldCamera?.pixelRect}, Canvas={canvas.pixelRect}, Rect={rect.rect}, Position={rect.position}, EventSystem={EventSystem.current.name}");
+            Assert.That(ExecuteEvents.GetEventHandler<IPointerClickHandler>(hits[0].gameObject), Is.SameAs(target.gameObject), target.name + " is covered by " + hits[0].gameObject.name);
             ExecuteEvents.ExecuteHierarchy(hits[0].gameObject, pointer, ExecuteEvents.pointerDownHandler);
             ExecuteEvents.ExecuteHierarchy(hits[0].gameObject, pointer, ExecuteEvents.pointerUpHandler);
             ExecuteEvents.ExecuteHierarchy(hits[0].gameObject, pointer, ExecuteEvents.pointerClickHandler);

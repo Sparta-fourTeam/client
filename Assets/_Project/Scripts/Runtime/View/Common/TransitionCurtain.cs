@@ -12,6 +12,9 @@ namespace Game.View
 
         private CanvasGroup _group;
 
+        /// <summary>화면을 가린 정도 (0 = 열림/꺼짐, 1 = 완전히 가림). 전환이 끝난 뒤 시작할 연출이 기다릴 때 쓴다</summary>
+        public float Coverage => _group != null && gameObject.activeInHierarchy ? _group.alpha : 0f;
+
         private void Awake()
         {
             _group = GetComponent<CanvasGroup>();

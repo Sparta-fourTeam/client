@@ -18,18 +18,31 @@
         <ui:Label name="assetPath" class="asset-path" />
         <ui:VisualElement class="row">
           <ui:Button name="editButton" text="프리팹 편집" class="primary" />
-          <ui:Button name="locateButton" text="Project에서 찾기" />
+          <ui:Button name="locateButton" text="프로젝트에서 찾기" />
         </ui:VisualElement>
         <ui:VisualElement class="row">
           <ui:DropdownField name="deviceField" label="화면" class="device" />
-          <ui:Toggle name="safeAreaToggle" label="Safe Area" value="true" />
+          <ui:Toggle name="safeAreaToggle" label="안전 영역" value="true" />
         </ui:VisualElement>
         <ui:VisualElement class="row">
           <ui:DropdownField name="sampleField" label="상태" class="sample grow" />
           <ui:Button name="previewButton" text="미리보기 갱신" />
           <ui:Button name="saveButton" text="PNG 저장" />
+          <ui:Button name="reviewButton" text="시안 검토 자료" />
         </ui:VisualElement>
-        <ui:Label text="편집 미리보기 · 수치와 아이콘은 프리팹 기본값 · 실제 터치는 Game / Device Simulator에서 확인" class="note" />
+        <ui:Label text="편집 미리보기 · 수치와 아이콘은 편집용 예시 · 실제 터치는 게임 뷰·디바이스 시뮬레이터에서 확인" class="note" />
+        <ui:VisualElement class="row">
+          <ui:Button name="showMotionButton" text="열기 연출" />
+          <ui:Button name="hideMotionButton" text="닫기 연출" />
+          <ui:Button name="scenarioMotionButton" text="등장 연출" />
+          <ui:Button name="particleMotionButton" text="파티클 재생" />
+          <ui:Button name="resetMotionButton" text="연출 초기화" />
+        </ui:VisualElement>
+        <ui:VisualElement class="row">
+          <ui:DropdownField name="motionButtonField" label="버튼" class="sample grow" />
+          <ui:Button name="pressMotionButton" text="눌림 연출" />
+        </ui:VisualElement>
+        <ui:Label text="편집 연출 미리보기 · 선택 화면의 팝업 전환 / 버튼 눌림 / 파티클만 재생 · 데이터 연동과 실제 런타임 동작은 플레이 모드에서 확인" class="note" />
         <ui:Image name="previewImage" class="preview" />
         <ui:Label name="statusLabel" class="status" />
         <ui:Foldout name="auditFoldout" text="UI 문제 검사" value="false" class="audit">

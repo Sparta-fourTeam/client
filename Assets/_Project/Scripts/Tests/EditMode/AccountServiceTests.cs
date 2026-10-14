@@ -106,7 +106,7 @@ namespace Game.Tests
             Assert.AreEqual(LinkResult.Linked, result);
             Assert.AreEqual(LoginMethod.Google, _api.Linked);
             Assert.AreEqual(LoginMethod.Google, _credentials.Method);
-            Assert.AreEqual("google-token", _credentials.AccountId);
+            Assert.AreEqual(AuthCredentials.SocialAccountId, _credentials.AccountId, "ID 토큰은 기기에 저장하지 않는다");
         }
 
         [Test(Description = "이미 연동된 계정은 외부 로그인을 다시 띄우지 않고, 쓸 수 있는 외부 계정이 없으면 준비 중으로 끝난다")]

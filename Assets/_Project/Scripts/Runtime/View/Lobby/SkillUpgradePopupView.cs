@@ -9,14 +9,16 @@ namespace Game.View
 {
     /// <summary>스킬 강화 팝업. IGrowthCatalog의 스킬 정보로 능력치·레벨별 보상·비용을 채우고, 레벨업 버튼으로 IUpgradeApi를 부른다.
     /// 코인이나 마법북이 모자라면 비용이 빨갛게 보이고 버튼이 눌리지 않으며, 최대 레벨이면 비용 대신 "최대 레벨"을 보여준다.
-    /// 강화 데이터가 없는 스킬은 레벨업 버튼이 눌리지 않는다</summary>
+    /// 강화 데이터가 없는 스킬은 레벨업 버튼이 눌리지 않는다. 잠긴 스킬은 정보만 보여 주고 비용·버튼 대신 "레벨 N에 해금"을 띄운다</summary>
     public sealed class SkillUpgradePopupView : HudView, IUiBindable
     {
         [SerializeField] private GameObject _panel;
         [SerializeField] private PopupTransition _transition;
         [SerializeField] private Button _closeButton;
         [SerializeField] private Button _upgradeButton;
+        [SerializeField] private TMP_Text _upgradeLabel;
         [SerializeField] private GameObject _maxLevel;
+        [SerializeField] private TMP_Text _maxLevelLabel;                // MaxLevel/Label. 잠긴 스킬이면 해금 레벨을 대신 쓴다
         [SerializeField] private TMP_Text _nameText, _levelText, _descText, _coinText, _bookText;
         [SerializeField] private StatCellView[] _statCells;             // Stats/StatCell1~4
         [SerializeField] private LevelRewardRowView _rewardRowPrefab;   // 보상 행이 모자랄 때 복제할 원본 (LevelRewardRow1)
@@ -96,13 +98,17 @@ namespace Game.View
 
             // 최대 레벨에는 다음 비용이 없으므로 비용 칸과 강화 버튼을 숨기고 "최대 레벨"을 띄운다.
             // 강화 데이터가 없는 스킬은 비용이 없으므로 비용 칸만 숨기고, 강화 버튼은 눌리지 않게 둔다
+            // 잠긴 스킬은 같은 자리에 해금 레벨을 띄운다
             bool upgradable = info.UpgradeId != null;
-            _cost.SetActive(!isMax && upgradable);
-            _maxLevel.SetActive(isMax);
-            _upgradeButton.gameObject.SetActive(!isMax);
-            if (isMax || !upgradable)
+            bool locked = !info.IsUnlocked;
+            _cost.SetActive(!isMax && !locked && upgradable);
+            _maxLevel.SetActive(isMax || locked);
+            _maxLevelLabel.text = locked ? $"레벨 {info.UnlockLevel}에 해금" : "최대 레벨";
+            _upgradeButton.gameObject.SetActive(!isMax && !locked);
+            if (isMax || locked || !upgradable)
             {
                 _upgradeButton.interactable = false;
+                RefreshUpgradeLabel();
                 return;
             }
 
@@ -111,6 +117,17 @@ namespace Game.View
             _bookText.text = CostFormat.HaveNeed(material, info.MaterialCost);
             _coinText.text = CostFormat.HaveNeed(coin, info.CoinCost);
             _upgradeButton.interactable = LobbyAvailability.CanUpgrade(_profile, info);
+            RefreshUpgradeLabel();
+        }
+
+        private void RefreshUpgradeLabel()
+        {
+            if (_upgradeLabel != null)
+            {
+                _upgradeLabel.color = _upgradeButton.interactable
+                    ? new Color(1f, 0.965f, 0.878f, 1f)
+                    : new Color(0.769f, 0.745f, 0.890f, 1f);
+            }
         }
 
         private static void SetIcon(Image image, Sprite sprite)

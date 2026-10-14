@@ -91,7 +91,10 @@ namespace Game.View
 
         public void Close() => PopupPanel.Set(_panel, _transition, false);
 
-        private void RefreshLanguage() => _languageLabel.text = LanguagePopupView.NativeName(_game.Language);
+        private void RefreshLanguage()
+        {
+            _languageLabel.text = LanguagePopupView.NativeName(_game.Language);
+        }
 
         private void OnSlider(int index, float value)
         {
