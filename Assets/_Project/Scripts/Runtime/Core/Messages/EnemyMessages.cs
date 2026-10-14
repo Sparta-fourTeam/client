@@ -38,4 +38,17 @@ namespace Game.Core.Messages
             Damage = damage;
         }
     }
+
+    /// <summary>엘리트·보스가 나오기 직전에 알리는 경고. 몬스터는 Seconds 뒤에 나타난다</summary>
+    public readonly struct SpecialEnemyWarning
+    {
+        public EnemyType Type { get; }
+        public float Seconds { get; }
+
+        public SpecialEnemyWarning(EnemyType type, float seconds)
+        {
+            Type = type;
+            Seconds = seconds;
+        }
+    }
 }

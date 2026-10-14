@@ -19,6 +19,7 @@
 | `SpawnCountdown` | Buffered | WaveManager |
 | `EnemyDied` | 사건 | EnemyModel |
 | `EnemyHpChanged` | 사건 | EnemyModel |
+| `SpecialEnemyWarning` | 사건 | EnemySpawner |
 | `WaveGaugeChanged` | Buffered | WaveProgress |
 | `WaveGaugeFilled` | 사건 | WaveProgress |
 | `WaveGaugeChanged` | Buffered | WaveProgress |
@@ -46,6 +47,8 @@
 `EnemyDied.IsSummoned`가 true이면 주기 소환으로 생긴 적이다(분열체는 false). 소환체는 게이지 총량에 포함되지 않으므로 `WaveProgress`는 세지 않고, `BattleStats`의 처치 수에는 센다.
 
 `EnemyDied.Type`은 사망한 모델의 등급이다. `StageManager`는 Elite 사망을 한 번씩 룰렛 보상에 넣는다. 룰렛과 웨이브 카드 보상이 겹치면 대기열로 차례로 처리하고 모두 끝난 뒤 전투를 재개한다.
+
+`SpecialEnemyWarning`은 엘리트·보스가 나오기 `Seconds` 전에 발행한다. `EnemySpawner`가 그만큼 스폰을 늦추므로 경고 UI는 이 시간만큼 재생하면 된다. 발행자를 넘기지 않으면(테스트) 경고 없이 바로 나온다.
 
 `EnemyHpChanged.Damage`는 저항·취약·남은 HP를 반영한 실제 차감량의 `DamageInfo`다. 피해 출처와 `IsImpact`를 보존하므로 직접 타격과 지속·부가 피해의 반응을 구분할 수 있다. 회복과 기존 3인자 생성자는 기본 `DamageInfo`를 사용한다. 발행 순서는 HP 변경 → 사망이며 피해·상태·보상 시점은 바뀌지 않는다.
 
