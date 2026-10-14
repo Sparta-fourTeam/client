@@ -12,6 +12,7 @@ namespace Game.Network
     public sealed class LocalSaveStore
     {
         private readonly string _filePath;
+        private readonly GameDataStore _data;
         private readonly int _startEnergy;
         private readonly List<string> _legacyTutorials;
 
@@ -39,6 +40,7 @@ namespace Game.Network
             }
 
             _filePath = filePath;
+            _data = data;
             _startEnergy = data?.Energy.Start ?? 0;
             _legacyTutorials = data?.Tutorials.Select(t => t.Id).ToList() ?? new List<string>();
             if (!string.IsNullOrEmpty(legacyFilePath)
@@ -84,6 +86,8 @@ namespace Game.Network
             // 튜토리얼이 생기기 전 저장 파일은 이미 플레이한 계정이므로 튜토리얼을 마친 것으로 본다
             save.nickname = string.IsNullOrEmpty(save.nickname) ? NewNickname() : save.nickname;
             save.tutorials ??= save.exp > 0 ? new List<string>(_legacyTutorials) : new List<string>();
+            // 퀘스트 주기가 지났으면 어느 API가 읽어도 이미 초기화된 상태를 본다
+            if (_data != null) { LocalQuests.Roll(save, _data, DateTime.Now); }
             return save;
         }
 

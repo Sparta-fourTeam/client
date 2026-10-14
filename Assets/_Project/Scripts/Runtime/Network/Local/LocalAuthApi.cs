@@ -28,6 +28,7 @@ namespace Game.Network
                 save.wallet.energyUpdatedAt = DateTime.UtcNow.ToString("O");
             }
 
+            LocalQuests.MarkLogin(save, _data, DateTime.Now);
             _store.Flush(save);
             // TODO(server): 토큰 하드코딩 — 실제 로그인 응답의 accessToken으로 교체
             return UniTask.FromResult(new LoginResponse { accessToken = "local-dev-token" });

@@ -9,7 +9,7 @@ namespace Game.Core
     /// <summary>Resources/MockData의 테이블 JSON을 읽어 도메인 모델 테이블로 만든다</summary>
     public sealed class GameDataStore
     {
-        private static readonly string[] TableNames = { "Monsters", "Stages", "Upgrades", "Energy", "Combat", "GeneralCards", "Skills", "Items", "StageRewards", "PlayerLevels", "CodexRewards", "Tutorials" };
+        private static readonly string[] TableNames = { "Monsters", "Stages", "Upgrades", "Energy", "Combat", "GeneralCards", "Skills", "Items", "StageRewards", "PlayerLevels", "CodexRewards", "Tutorials", "Quests" };
         private readonly Dictionary<string, string> _rawJson;
         private readonly DisplayTexts _texts;
         private readonly Dictionary<string, int> _skillUnlockLevels;
@@ -35,6 +35,9 @@ namespace Game.Core
 
         /// <summary>도감 등록 보상 골드. 몬스터마다가 아니라 등급별이다</summary>
         public IReadOnlyDictionary<EnemyType, int> CodexRewardGold { get; }
+
+        /// <summary>일일·주간 퀘스트 보드. 표의 순서가 화면의 탭 순서다</summary>
+        public IReadOnlyList<QuestBoardDefinition> QuestBoards { get; }
 
         /// <summary>스킬이 아닌 카드(방벽 회복 등). 스킬 카드는 Skills의 upgrades에 있다</summary>
         public IReadOnlyList<GeneralCardDefinition> GeneralCards { get; }
@@ -156,6 +159,11 @@ namespace Game.Core
                 if (!codexRewards.ContainsKey(grade)) { throw new InvalidOperationException($"CodexRewards {grade}: 등급별 보상이 없습니다"); }
             }
             CodexRewardGold = codexRewards.ToDictionary(pair => pair.Key, pair => pair.Value.Gold);
+
+            var questBoards = JsonConvert.DeserializeObject<List<QuestBoardDefinition>>(_rawJson["Quests"]);
+            var questIds = new HashSet<string>();
+            foreach (var board in questBoards) { board.Validate(questIds); }
+            QuestBoards = questBoards;
 
             var generalCards = ParseIndexed<string, GeneralCardDefinition>("GeneralCards", d => d.Id).Values.ToList();
             _texts.ApplyTo(generalCards);
