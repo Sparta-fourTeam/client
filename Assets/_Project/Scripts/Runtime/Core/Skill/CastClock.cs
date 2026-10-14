@@ -6,6 +6,8 @@ namespace Game.Core
     public sealed class CastClock
     {
         public float RemainingCooldown { get; set; }
+        /// <summary>지금 시전이 한 주기의 몇 번째 시전인지 (0부터). fire 안에서 읽는다</summary>
+        public int CastIndex { get; private set; }
         private int remainingCasts;
         private float repeatTimer;
 
@@ -29,6 +31,7 @@ namespace Game.Core
                 {
                     remainingCasts--;
                     repeatTimer += Math.Max(0.001f, interval);
+                    CastIndex++;
                     fire();
                 }
                 return;
@@ -39,6 +42,7 @@ namespace Game.Core
             }
 
             RemainingCooldown = 0;
+            CastIndex = 0;
             if (!fire())
             {
                 return;

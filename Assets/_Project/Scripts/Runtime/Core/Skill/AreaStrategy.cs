@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Pool;
 
@@ -7,6 +8,7 @@ namespace Game.Core
     public sealed class AreaStrategy : IAttackStrategy
     {
         private readonly SkillObjectPool<AreaZone> ownedPool;
+        private readonly HashSet<IEnemyTarget> burstTargets = new();
 
         public ObjectPool<AreaZone> Pool { get; }
 
@@ -26,13 +28,25 @@ namespace Game.Core
             var targets = environment.FindTargets(config.Attack.Range);
             if (targets.Count == 0) { return false; }
             var hitReactions = ReactionCompiler.ForProjectile(stats, null, environment.Targets);
+            // 연발의 각 시전은 이번 주기에 아직 노리지 않은 적을 먼저 노린다. 모두 노렸으면 처음부터 다시 돈다
+            if (environment.CastIndex == 0) { burstTargets.Clear(); }
             for (int i = 0; i < stats.Cast.ProjectileCount; i++)
             {
-                var target = targets[i % targets.Count];
+                var target = NextTarget(targets, environment.CastIndex * stats.Cast.ProjectileCount + i);
+                burstTargets.Add(target);
                 Pool.Get().Init(Pool, environment.Targets, target.Position, AreaSettings.From(stats.Area), hitReactions, config.Reactions);
             }
 
             return true;
+        }
+
+        private IEnemyTarget NextTarget(IReadOnlyList<IEnemyTarget> targets, int fallbackIndex)
+        {
+            foreach (var target in targets)
+            {
+                if (!target.IsDead && !burstTargets.Contains(target)) { return target; }
+            }
+            return targets[fallbackIndex % targets.Count];
         }
     }
 }
