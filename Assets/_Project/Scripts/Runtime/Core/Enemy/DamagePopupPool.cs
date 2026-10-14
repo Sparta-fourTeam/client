@@ -26,8 +26,8 @@ namespace Game.Core
         public int ActiveCount => _active.Count;
         public int FreeCount => _free.Count;
 
-        /// <summary>amount만큼의 피해를 position에 띄운다. scene은 풀을 둘 씬(보통 피해를 받은 적이 있는 씬)이다</summary>
-        public static void Show(int amount, Vector3 position, Scene scene)
+        /// <summary>amount만큼의 피해를 position에 띄운다. scene은 풀을 둘 씬(보통 피해를 받은 적이 있는 씬)이다. kind에 따라 모양이 다르다</summary>
+        public static void Show(int amount, Vector3 position, Scene scene, DamagePopupKind kind = DamagePopupKind.Normal, Vector3? hitPoint = null)
         {
             if (amount <= 0 || !Enabled)
             {
@@ -37,7 +37,7 @@ namespace Game.Core
             var pool = Get(scene);
             if (pool != null)
             {
-                pool.Spawn(amount, position);
+                pool.Spawn(amount, position, kind, hitPoint);
             }
         }
 
@@ -82,7 +82,7 @@ namespace Game.Core
             return s_instance;
         }
 
-        public void Spawn(int amount, Vector3 position)
+        public void Spawn(int amount, Vector3 position, DamagePopupKind kind = DamagePopupKind.Normal, Vector3? hitPoint = null)
         {
             DamagePopup popup;
             if (_active.Count >= MaxActive)
@@ -100,7 +100,7 @@ namespace Game.Core
                 popup = Instantiate(_prefab, transform);
             }
 
-            popup.Show(amount, position, Release);
+            popup.Show(amount, position, kind, Release, hitPoint);
             _active.Add(popup);
         }
 

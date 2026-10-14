@@ -9,7 +9,7 @@ namespace Game.Core
     /// <summary>Resources/MockData의 테이블 JSON을 읽어 도메인 모델 테이블로 만든다</summary>
     public sealed class GameDataStore
     {
-        private static readonly string[] TableNames = { "Monsters", "Stages", "Upgrades", "Energy", "GeneralCards", "Skills", "Items", "StageRewards", "PlayerLevels", "CodexRewards", "Tutorials" };
+        private static readonly string[] TableNames = { "Monsters", "Stages", "Upgrades", "Energy", "Combat", "GeneralCards", "Skills", "Items", "StageRewards", "PlayerLevels", "CodexRewards", "Tutorials" };
         private readonly Dictionary<string, string> _rawJson;
         private readonly DisplayTexts _texts;
         private readonly Dictionary<string, int> _skillUnlockLevels;
@@ -21,6 +21,7 @@ namespace Game.Core
         public Table<string, ItemDefinition> Items { get; }
         public Table<int, StageRewardBalance> StageRewards { get; }
         public EnergyConfig Energy { get; }
+        public CombatConfig Combat { get; }
         public PlayerLevelTable PlayerLevels { get; }
 
         /// <summary>튜토리얼 정의. 표의 순서가 진행 우선순위다 (TutorialProgress)</summary>
@@ -131,6 +132,7 @@ namespace Game.Core
             Items.GetOrThrow(ItemIds.GemChest);
             StageRewards = new Table<int, StageRewardBalance>(rewards);
             Energy = JsonConvert.DeserializeObject<EnergyConfig>(_rawJson["Energy"]);
+            Combat = JsonConvert.DeserializeObject<CombatConfig>(_rawJson["Combat"]);
             PlayerLevels = JsonConvert.DeserializeObject<PlayerLevelConfig>(_rawJson["PlayerLevels"]).ToTable();
             var tutorials = JsonConvert.DeserializeObject<List<TutorialDefinition>>(_rawJson["Tutorials"]);
             var tutorialIds = new HashSet<string>();

@@ -31,6 +31,21 @@ namespace Game.View
         [Tooltip("카드 아래 형태 변환 아이콘 칸. 관련 변환이 칸보다 많으면 앞에서부터 칸 수만큼만 보인다")]
         [SerializeField] private FormHintIconView[] _formHints;
 
+        [Header("형태변환 카드")]
+        [SerializeField] private Color _formMedalColor = new Color32(255, 207, 91, 255);
+        [Tooltip("아이콘의 UIEffect와 UIEffectTweener. 패키지 참조를 추가하지 않고 형태변환 카드에서만 켠다")]
+        [SerializeField] private Behaviour[] _formIconEffects;
+        [SerializeField] private GameObject _formIconFx;
+        [SerializeField] private RectTransform _formOrbit;
+        [SerializeField] private UnityEngine.UI.Image _formGlow;
+
+        private bool _formMotion, _iconPoseCached;
+        private double _formAge;
+        private Vector2 _iconHome;
+        private Quaternion _iconRotation;
+
+        public bool HasFormMotion => _formMotion;
+
 
         private const float EntranceSeconds = 0.15f;
         private const float EntranceStartScaleY = 0.15f;
@@ -54,6 +69,29 @@ namespace Game.View
             // 세로로 펼칠 때 위쪽 가장자리가 고정되도록 피벗을 위로 둔다. 레이아웃 그룹은 피벗을 감안해 배치한다
             _rect = (RectTransform)transform;
             _rect.pivot = new Vector2(_rect.pivot.x, 1f);
+        }
+
+        private void Update()
+        {
+            if (!_formMotion) { return; }
+            _formAge += Time.unscaledDeltaTime;
+            SampleFormMotion(_formAge);
+        }
+
+        /// <summary>아이콘 안의 부유·후광·궤도를 같은 시간으로 표시한다. UI 작업실도 이 표시 함수를 쓴다</summary>
+        public void SampleFormMotion(double seconds)
+        {
+            if (!_formMotion) { return; }
+            float phase = (float)(seconds % 8d) * Mathf.PI * 2f / 4f;
+            _iconImage.rectTransform.anchoredPosition = _iconHome + new Vector2(0f, Mathf.Sin(phase) * 4f);
+            _iconImage.rectTransform.localRotation = _iconRotation * Quaternion.Euler(0f, 0f, Mathf.Sin(phase * .5f) * 2f);
+            if (_formOrbit != null) { _formOrbit.localRotation = Quaternion.Euler(0f, 0f, (float)(seconds % 24d) * -15f); }
+            if (_formGlow != null)
+            {
+                var color = _formGlow.color;
+                color.a = .38f + Mathf.Sin(phase) * .12f;
+                _formGlow.color = color;
+            }
         }
 
         /// <summary>카드가 폭은 그대로 두고 위쪽 가장자리에서 아래로 펼쳐지며 살짝 내려앉는다. delay를 카드마다 다르게 주면 차례로 나온다.
@@ -172,6 +210,7 @@ namespace Game.View
             EnsureGroup();
             _rect = (RectTransform)transform;
             _group.blocksRaycasts = false;
+            _formMotion = false;
         }
 
         private void OnDisable()
@@ -186,6 +225,8 @@ namespace Game.View
         public void Bind(int index, UpgradeChoice choice, Sprite icon, Sprite background, Action<int> onPick,
             Func<FormHint, Sprite> formIcon = null)
         {
+            Stop();
+            RestoreTint();
             _index = index;
             _onPick = onPick;
             _background.sprite = background;
@@ -223,9 +264,37 @@ namespace Game.View
         // 메달 테두리는 무기 속성 색, 새 무기는 NEW 태그, 강화 카드는 단계 리본을 쓴다
         private void ApplyStyle(UpgradeChoice choice)
         {
-            if (_iconFrame != null) { _iconFrame.color = MedalColor(choice); }
+            bool transforms = !choice.IsGeneral && !choice.IsNewWeapon && choice.TargetForm != SkillForm.Default;
+            if (!_iconPoseCached)
+            {
+                _iconHome = _iconImage.rectTransform.anchoredPosition;
+                _iconRotation = _iconImage.rectTransform.localRotation;
+                _iconPoseCached = true;
+            }
+            _iconImage.rectTransform.anchoredPosition = _iconHome;
+            _iconImage.rectTransform.localRotation = _iconRotation;
+            _formMotion = transforms;
+            _formAge = 0d;
+            if (_formIconFx != null) { _formIconFx.SetActive(transforms); }
+            if (transforms && _formGlow != null)
+            {
+                _formGlow.color = choice.TargetForm switch
+                {
+                    SkillForm.FlameArrow or SkillForm.Enbakutsu or SkillForm.FireLog => new Color(1f, .4f, .14f, .38f),
+                    SkillForm.TriangleIce => new Color(.18f, .78f, 1f, .38f),
+                    SkillForm.LargeLog => new Color(.35f, .8f, .48f, .38f),
+                    _ => new Color(.2f, .62f, 1f, .38f)
+                };
+            }
+            SampleFormMotion(0d);
+            if (_iconFrame != null) { _iconFrame.color = transforms ? _formMedalColor : MedalColor(choice); }
             if (_newBadge != null) { _newBadge.SetActive(choice.IsNewWeapon); }
             if (_levelPlate != null) { _levelPlate.SetActive(!choice.IsNewWeapon && !string.IsNullOrEmpty(_levelText.text)); }
+            if (_formIconEffects == null) { return; }
+            foreach (var effect in _formIconEffects)
+            {
+                if (effect != null) { effect.enabled = transforms && _iconImage.sprite != null; }
+            }
         }
 
         private Color MedalColor(UpgradeChoice choice)

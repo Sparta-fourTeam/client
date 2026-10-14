@@ -8,7 +8,7 @@ namespace Game.Editor
 {
     internal static class UiCardSelectPreviewSample
     {
-        internal static void Apply(GameObject root)
+        internal static void Apply(GameObject root, string sample = "기본")
         {
             var view = root.GetComponent<CardSelectView>();
             var standalone = root.GetComponent<CardSlotView>();
@@ -39,6 +39,20 @@ namespace Game.Editor
                 new UpgradeChoice { skill = owned, Option = option, DisplayName = upgrade.Name, DisplayDescription = upgrade.Description },
                 new UpgradeChoice { IsNewWeapon = true, newSkillData = lightning }
             };
+            if (sample == "형태변환")
+            {
+                var transform = arrow.upgrades.Single(o => o.id == "arrow_thunder");
+                SkillUpgradeResolver.TryResolve(transform, 0, out var resolved);
+                FormHintFinder.TryGetForm(transform, 0, out var form);
+                choices[standalone != null ? 0 : 2] = new UpgradeChoice
+                {
+                    skill = owned,
+                    Option = transform,
+                    TargetForm = form,
+                    DisplayName = resolved.Name,
+                    DisplayDescription = resolved.Description
+                };
+            }
             int count = standalone != null ? 1 : slots.arraySize;
             for (int i = 0; i < count; i++)
             {
@@ -50,7 +64,9 @@ namespace Game.Editor
                 var data = choice.IsNewWeapon ? choice.newSkillData : choice.skill.Data;
                 var kind = choice.IsNewWeapon ? SkillCardIcon.New : SkillCardIcon.Upgrade;
                 var background = (Sprite)serialized.FindProperty(choice.IsNewWeapon ? "_newWeaponBg" : "_upgradeBg").objectReferenceValue;
-                slot.Bind(i, choice, assets.GetCardIcon(data.id, kind), background, null,
+                var icon = choice.TargetForm != SkillForm.Default
+                    ? assets.GetFormIcon(choice.TargetForm, data.id) : assets.GetCardIcon(data.id, kind);
+                slot.Bind(i, choice, icon, background, null,
                     hint => assets.GetFormIcon(hint.Form, hint.Skill.id));
             }
         }

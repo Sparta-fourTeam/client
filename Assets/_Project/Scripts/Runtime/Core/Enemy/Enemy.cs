@@ -207,7 +207,10 @@ namespace Game.Core
 
             // 실제로 깎인 체력(남은 체력을 넘는 과잉 피해는 빠진 값)을 머리 위에 띄운다
             float jitter = UnityEngine.Random.Range(-DamagePopupJitter, DamagePopupJitter);
-            DamagePopupPool.Show(damage, new Vector3(Position.x + jitter, VisualBounds.TopY(transform), transform.position.z), gameObject.scene);
+            float top = VisualBounds.TopY(transform);
+            var center = new Vector3(Position.x, (top + VisualBounds.BottomY(transform, transform.position.y)) * 0.5f, transform.position.z);
+            DamagePopupPool.Show(damage, new Vector3(Position.x + jitter, top, transform.position.z), gameObject.scene,
+                DamagePopupKinds.Of(message.Damage), center);
 
             if (impact && _hasHit && message.Current > 0)
             {

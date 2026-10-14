@@ -5,23 +5,23 @@ using VContainer;
 
 namespace Game.View
 {
-    /// <summary>지금 플레이 중인 스테이지 번호를 "Stage N"으로 보여준다</summary>
+    /// <summary>지금 플레이 중인 스테이지 번호를 "Stage N"으로 보여준다. Stage 씬을 바로 열어 로비에서 정한 스테이지가 없으면
+    /// 스코프가 고른 첫 스테이지(StageDefinition)의 번호를 보여준다</summary>
     public sealed class StageLabelHudView : HudView
     {
         [SerializeField] private TMP_Text _label;
 
-        private StageContext _stageContext;
+        private StageDefinition _stage;
 
         [Inject]
-        public void Construct(StageContext stageContext)
+        public void Construct(StageDefinition stage)
         {
-            _stageContext = stageContext;
+            _stage = stage;
         }
 
         private void Start()
         {
-            // StageId가 0이면 로비를 거치지 않고 Stage 씬을 직접 연 경우라 표시하지 않는다
-            _label.text = _stageContext != null && _stageContext.StageId > 0 ? $"Stage {_stageContext.StageId}" : string.Empty;
+            _label.text = _stage != null ? $"Stage {_stage.Id}" : string.Empty;
         }
     }
 }
