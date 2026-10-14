@@ -3,11 +3,13 @@ package com.teamdoodle.auth;
 import android.app.Activity;
 import android.os.CancellationSignal;
 import android.os.Handler;
+import android.util.Log;
 import android.os.Looper;
 
 import androidx.credentials.Credential;
 import androidx.credentials.CredentialManager;
 import androidx.credentials.CredentialManagerCallback;
+import androidx.credentials.CredentialOption;
 import androidx.credentials.CustomCredential;
 import androidx.credentials.GetCredentialRequest;
 import androidx.credentials.GetCredentialResponse;
@@ -15,6 +17,7 @@ import androidx.credentials.exceptions.GetCredentialCancellationException;
 import androidx.credentials.exceptions.GetCredentialException;
 import androidx.credentials.exceptions.NoCredentialException;
 
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption;
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption;
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
 
@@ -40,11 +43,26 @@ public final class GoogleSignInBridge {
     private GoogleSignInBridge() {
     }
 
+    private static final String TAG = "GoogleSignIn";
+
+    /** 계정 선택창을 보여 주는 로그인 (버튼을 눌렀을 때) */
+    public static void signIn(Activity activity, String serverClientId, Callback callback) {
+        signIn(activity, serverClientId, false, callback);
+    }
+
     /**
      * @param serverClientId Google Cloud의 "웹 애플리케이션" OAuth 클라이언트 ID. ID 토큰의 aud가 이 값이 되고, 서버가 이 값으로 검증한다
+     * @param silent 앱을 켤 때의 자동 로그인. 이전에 이 앱에 로그인한 계정이 있으면 선택창 없이 그 계정으로 로그인한다.
+     *     그런 계정이 없으면(NO_CREDENTIAL) 계정 선택창을 보여 주는 로그인으로 넘어간다
      */
-    public static void signIn(Activity activity, String serverClientId, Callback callback) {
-        GetSignInWithGoogleOption option = new GetSignInWithGoogleOption.Builder(serverClientId).build();
+    public static void signIn(Activity activity, String serverClientId, boolean silent, Callback callback) {
+        CredentialOption option = silent
+                ? new GetGoogleIdOption.Builder()
+                        .setServerClientId(serverClientId)
+                        .setFilterByAuthorizedAccounts(true)
+                        .setAutoSelectEnabled(true)
+                        .build()
+                : new GetSignInWithGoogleOption.Builder(serverClientId).build();
         GetCredentialRequest request = new GetCredentialRequest.Builder()
                 .addCredentialOption(option)
                 .build();
@@ -65,16 +83,27 @@ public final class GoogleSignInBridge {
                             try {
                                 callback.onSuccess(GoogleIdTokenCredential.createFrom(credential.getData()).getIdToken());
                             } catch (Exception e) {
+                                Log.w(TAG, "ID 토큰을 읽지 못했다: " + e.getMessage());
                                 callback.onError("UNEXPECTED_CREDENTIAL", e.getMessage());
                             }
                             return;
                         }
 
+                        Log.w(TAG, "예상하지 못한 자격 증명 종류: " + credential.getType());
                         callback.onError("UNEXPECTED_CREDENTIAL", credential.getType());
                     }
 
                     @Override
                     public void onError(GetCredentialException e) {
+                        // 자동 로그인에 쓸 계정이 없으면 계정 선택창으로 넘어간다
+                        if (silent && e instanceof NoCredentialException) {
+                            Log.i(TAG, "자동 로그인할 계정이 없어 계정 선택창으로 넘어간다");
+                            signIn(activity, serverClientId, false, callback);
+                            return;
+                        }
+
+                        // 취소와 설정 오류(패키지명·SHA-1 불일치 등)가 같은 취소로 올 수 있어 원인을 남긴다
+                        Log.w(TAG, "로그인 실패 silent=" + silent + " type=" + e.getType() + " message=" + e.getMessage());
                         if (e instanceof GetCredentialCancellationException) {
                             callback.onCancel();
                         } else if (e instanceof NoCredentialException) {
@@ -84,5 +113,4 @@ public final class GoogleSignInBridge {
                         }
                     }
                 });
-    }
-}
+    }}

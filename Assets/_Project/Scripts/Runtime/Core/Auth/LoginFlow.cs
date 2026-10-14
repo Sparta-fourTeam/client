@@ -40,6 +40,8 @@ namespace Game.Core
             // 실행할 때마다 외부 계정으로 다시 로그인해 새 토큰을 받는다
             string accountId = method == LoginMethod.Guest ? _credentials.AccountId : null;
             LoginResponse response;
+            // 저장된 방식으로 바로 들어가는 동안은 계정 선택 없이 로그인을 시도하고, 로그인창에서 사용자가 고른 뒤에는 선택창을 보여 준다
+            bool silent = method != null;
 
             while (true)
             {
@@ -47,12 +49,13 @@ namespace Game.Core
                 {
                     method = await _prompt.WaitForSignInAsync(AvailableMethods());
                     accountId = null;
+                    silent = false;
                     prompted = true;
                 }
 
                 if (method != LoginMethod.Guest && accountId == null)
                 {
-                    accountId = await SocialSignInAsync(method.Value);
+                    accountId = await SocialSignInAsync(method.Value, silent);
                     if (accountId == null)
                     {
                         method = null; // 취소·실패: 로그인창으로 돌아간다
@@ -109,7 +112,7 @@ namespace Game.Core
             return null;
         }
 
-        private async UniTask<string> SocialSignInAsync(LoginMethod method)
+        private async UniTask<string> SocialSignInAsync(LoginMethod method, bool silent)
         {
             var social = Find(method);
             if (social == null)
@@ -119,7 +122,7 @@ namespace Game.Core
 
             try
             {
-                return await social.SignInAsync();
+                return silent ? await social.SignInSilentAsync() : await social.SignInAsync();
             }
             catch (OperationCanceledException)
             {

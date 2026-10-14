@@ -21,7 +21,12 @@ namespace Game.Network
 
         public bool IsAvailable => Application.platform == RuntimePlatform.Android && !string.IsNullOrEmpty(WebClientId);
 
-        public async UniTask<string> SignInAsync()
+        public UniTask<string> SignInAsync() => RunAsync(silent: false);
+
+        /// <summary>앱을 켤 때 쓴다. 이전에 로그인한 계정이 있으면 선택창 없이 그 계정으로 로그인하고, 없으면 선택창을 보여 준다</summary>
+        public UniTask<string> SignInSilentAsync() => RunAsync(silent: true);
+
+        private async UniTask<string> RunAsync(bool silent)
         {
             if (!IsAvailable)
             {
@@ -34,7 +39,7 @@ namespace Game.Network
             using (var activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity"))
             using (var bridge = new AndroidJavaClass(BridgeClass))
             {
-                bridge.CallStatic("signIn", activity, WebClientId, callback);
+                bridge.CallStatic("signIn", activity, WebClientId, silent, callback);
             }
 
             try

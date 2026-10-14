@@ -78,11 +78,18 @@ namespace Game.Tests
             public bool IsAvailable { get; }
             public string AccountId;    // null이면 사용자가 취소한 것으로 본다
             public int Calls;
+            public int SilentCalls; // SignInSilentAsync로 들어온 횟수. Calls에도 함께 센다
 
             public UniTask<string> SignInAsync()
             {
                 Calls++;
                 return UniTask.FromResult(AccountId);
+            }
+
+            public UniTask<string> SignInSilentAsync()
+            {
+                SilentCalls++;
+                return SignInAsync();
             }
         }
 
@@ -237,6 +244,29 @@ namespace Game.Tests
             Assert.AreEqual(1, google.Calls);
             Assert.AreEqual(LoginMethod.Google, _auth.LastMethod);
             Assert.AreEqual("fresh-token", _auth.LastAccountId);
+        }
+
+        [Test(Description = "저장된 방식으로 바로 들어가는 구글 로그인은 계정 선택 없이 시도한다")]
+        public void SavedGoogle_SignsInSilently()
+        {
+            _credentials.Save(LoginMethod.Google, "stale-token");
+            var google = new FakeSocial(LoginMethod.Google, available: true, "fresh-token");
+
+            Flow(google).RunAsync().GetAwaiter().GetResult();
+
+            Assert.AreEqual(1, google.SilentCalls, "앱을 켤 때마다 계정 선택창이 뜨지 않게 한다");
+        }
+
+        [Test(Description = "로그인창에서 사용자가 고른 구글 로그인은 계정 선택창을 보여 준다")]
+        public void PromptedGoogle_IsNotSilent()
+        {
+            var google = new FakeSocial(LoginMethod.Google, available: true, "google-account");
+            _prompt.Choices.Enqueue(LoginMethod.Google);
+
+            Flow(google).RunAsync().GetAwaiter().GetResult();
+
+            Assert.AreEqual(1, google.Calls);
+            Assert.AreEqual(0, google.SilentCalls);
         }
 
         [Test(Description = "저장된 게스트 ID는 그대로 서버에 보내고, 서버가 새 게스트 ID를 정해 주면 그 값으로 바꿔 저장한다")]
