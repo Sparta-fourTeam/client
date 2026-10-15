@@ -13,6 +13,9 @@ namespace Game.Network
         public const string Timeout = "TIMEOUT";
         public const string InvalidResponse = "INVALID_RESPONSE";
 
+        /// <summary>재발급이 거절되거나 결과가 불명확해 토큰을 재사용할 수 없으므로 다시 로그인해야 한다. 호출부는 이 코드를 받으면 로그인으로 돌려보낸다</summary>
+        public const string SessionExpired = "SESSION_EXPIRED";
+
         private const int MaxDetailLength = 200;
 
         /// <summary>성공(2xx)이면 null, 아니면 던질 예외를 돌려준다.

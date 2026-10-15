@@ -17,6 +17,13 @@ namespace Game.Network
         public string guestId;
     }
 
+    /// <summary>POST /api/auth/refresh 요청. 쓴 리프레시 토큰은 서버가 무효로 한다</summary>
+    [Serializable]
+    public class RefreshRequest
+    {
+        public string refreshToken;
+    }
+
     /// <summary>로그인·재발급 응답의 토큰 한 쌍</summary>
     [Serializable]
     public class AuthTokens
