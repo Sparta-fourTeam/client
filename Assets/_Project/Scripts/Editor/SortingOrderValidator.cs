@@ -16,6 +16,7 @@ namespace Game.Editor
         {
             "Assets/_Project/Prefabs/Skills/FrostPrison.prefab",
             "Assets/_Project/Resources/VFX/ElectricField.prefab",
+            "Assets/_Project/Prefabs/Skills/Log.prefab",
             "Assets/_Project/Prefabs/Skills/BurningRootWave.prefab",
             "Assets/_Project/Prefabs/Skills/LargeRootWave.prefab",
             "Assets/_Project/Prefabs/Stage/Fx_GroundSlam.prefab",
@@ -94,8 +95,15 @@ namespace Game.Editor
             }
         }
 
+        // 루트에 SortingGroup이 있으면 바깥과는 그 순서로만 비교되므로 안쪽 파츠 순서는 보지 않는다
         private static IEnumerable<int> Orders(GameObject prefab)
         {
+            if (prefab.TryGetComponent<SortingGroup>(out var rootGroup))
+            {
+                yield return rootGroup.sortingOrder;
+                yield break;
+            }
+
             foreach (var r in prefab.GetComponentsInChildren<Renderer>(true))
             {
                 yield return r.sortingOrder;
