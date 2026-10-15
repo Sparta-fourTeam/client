@@ -1,14 +1,21 @@
 name: Deploy Google Play Internal
 
 on:
+  push:
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, closed]
   workflow_dispatch:
     inputs:
       release_version:
-        description: '표시 버전 (예: 1.0.3, v 없이 입력; versionCode 자동 생성)'
+        description: '고정 원본 code2 복구 전용 표시 버전'
+        default: '1.0.2'
         type: string
         required: true
       publish_to_internal:
-        description: '검증된 AAB를 내부 테스트에 게시 (별도 승인 후 선택)'
+        description: '고정 원본 code2 복구 게시 승인 (새 출시는 태그/PR 경로 사용)'
         type: boolean
         required: true
         default: false
@@ -32,14 +39,85 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  tag_request:
+    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Validate new protected dev tag and prepare read-only PR handoff
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 .github/scripts/android-tag-release.py request
+      - name: Preserve original tag request
+        uses: actions/upload-artifact@v4
+        with:
+          name: tag-release-request
+          path: build/tag-release-request.json
+          if-no-files-found: error
+          retention-days: 90
+
+  release_pr_guard:
+    if: >-
+      ${{ github.event_name == 'pull_request' && github.event.action != 'closed' &&
+          startsWith(github.event.pull_request.head.ref, 'release/v') &&
+          github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Validate fixed release PR source without repository writes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 .github/scripts/android-tag-release.py pr
+
+  resolve:
+    if: >-
+      ${{ github.event_name == 'pull_request' && github.event.action == 'closed' &&
+          github.event.pull_request.merged &&
+          startsWith(github.event.pull_request.head.ref, 'release/v') &&
+          github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      tag: ${{ steps.release.outputs.tag }}
+      version_name: ${{ steps.release.outputs.version_name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify protected PR merge, original tag request and exact integrated tree
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 .github/scripts/android-tag-release.py merged
+
+  manual_scope:
+    if: ${{ github.event_name == 'workflow_dispatch' && !inputs.recover_original_code2 }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo 'New releases require a protected dev version tag and its release PR. Manual dispatch is code2 recovery only.'
+          exit 1
+
   build:
-    if: ${{ !inputs.recover_original_code2 }}
+    needs: resolve
     runs-on: ubuntu-latest
     timeout-minutes: 60
     outputs:
       version_code: ${{ steps.version.outputs.code }}
     steps:
-      - name: Checkout dispatched commit
+      - name: Checkout exact protected main merge
         uses: actions/checkout@v4
         with:
           ref: ${{ github.sha }}
@@ -50,7 +128,7 @@ jobs:
       - name: Validate release profile
         id: profile
         env:
-          RELEASE_VERSION: ${{ inputs.release_version }}
+          RELEASE_VERSION: ${{ needs.resolve.outputs.version_name }}
         run: |
           python3 - <<'PY'
           import hashlib, json, os, pathlib, re
@@ -86,9 +164,9 @@ jobs:
       - name: Allocate automatic Android release number
         id: version
         env:
-          RELEASE_VERSION: ${{ inputs.release_version }}
+          RELEASE_VERSION: ${{ needs.resolve.outputs.version_name }}
           GH_TOKEN: ${{ github.token }}
-        run: python3 .github/scripts/android-release-version.py --version "$RELEASE_VERSION" --automatic
+        run: python3 .github/scripts/android-release-version.py --automatic
 
       - name: Record candidate version code
         env:
@@ -98,6 +176,7 @@ jobs:
           import json, os, pathlib
           path = pathlib.Path('build/release-inputs.json')
           data = json.loads(path.read_text())
+          data.update(json.loads(pathlib.Path('build/tag-release.json').read_text()))
           data['version_code'] = int(os.environ['ANDROID_VERSION_CODE'])
           data['actions_run_id'] = int(os.environ['GITHUB_RUN_ID'])
           data['actions_run_number'] = int(os.environ['GITHUB_RUN_NUMBER'])
@@ -198,12 +277,12 @@ jobs:
             build/Android/*.aab
             build/release-inputs.json
             build/artifact-manifest.json
+            build/tag-release.json
           if-no-files-found: error
           retention-days: 3
 
   publish:
-    if: ${{ inputs.publish_to_internal && !inputs.recover_original_code2 }}
-    needs: build
+    needs: [resolve, build]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -214,12 +293,12 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Revalidate this dispatch and its original code
+      - name: Revalidate the protected release merge and its original code
         env:
-          RELEASE_VERSION: ${{ inputs.release_version }}
+          RELEASE_VERSION: ${{ needs.resolve.outputs.version_name }}
           ANDROID_VERSION_CODE: ${{ needs.build.outputs.version_code }}
           GH_TOKEN: ${{ github.token }}
-        run: python3 .github/scripts/android-release-version.py --version "$RELEASE_VERSION" --automatic --expected-code "$ANDROID_VERSION_CODE"
+        run: python3 .github/scripts/android-release-version.py --automatic --expected-code "$ANDROID_VERSION_CODE"
 
       - name: Check existing Play upload credential
         env:
@@ -239,12 +318,15 @@ jobs:
       - name: Recheck artifact identity
         id: artifact
         env:
-          RELEASE_VERSION: ${{ inputs.release_version }}
+          RELEASE_VERSION: ${{ needs.resolve.outputs.version_name }}
           ANDROID_VERSION_CODE: ${{ needs.build.outputs.version_code }}
         run: |
           python3 - <<'PY'
           import hashlib, json, os, pathlib
           evidence = json.loads(pathlib.Path('verified/artifact-manifest.json').read_text())
+          release = json.loads(pathlib.Path('build/tag-release.json').read_text())
+          if any(evidence.get(key) != value for key, value in release.items()):
+              raise SystemExit('Artifact tag/PR/merge provenance mismatch')
           files = list(pathlib.Path('verified/Android').glob('*.aab'))
           if len(files) != 1 or evidence['source_commit'] != os.environ['GITHUB_SHA']:
               raise SystemExit('Artifact source mismatch')
@@ -262,7 +344,7 @@ jobs:
               output.write('release_name=' + release_name + '\n')
           PY
 
-      - name: Publish explicitly approved internal test release
+      - name: Publish the tag-requested and PR-approved internal test release
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
@@ -273,7 +355,7 @@ jobs:
           releaseName: ${{ steps.artifact.outputs.release_name }}
 
   recover_code2:
-    if: ${{ inputs.recover_original_code2 && github.repository == 'Sparta-fourTeam/client' && github.ref == 'refs/heads/main' }}
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.recover_original_code2 && github.repository == 'Sparta-fourTeam/client' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:

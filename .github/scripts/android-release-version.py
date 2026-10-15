@@ -1,5 +1,6 @@
 """Allocate Actions AAB codes or validate a historical APK against the release ledger."""
 import argparse
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -15,8 +16,15 @@ REPOSITORY = 'Sparta-fourTeam/client'
 MAX_VERSION_CODE = 2100000000
 
 
-def automatic_release_number(policy, requested_version, main_policy, run, pages, env, expected_code=None):
-    """Allocate only on a new, authenticated dispatch of the pinned workflow."""
+def automatic_release_number(policy, requested_version, main_policy, run, pages, env, expected_code=None, event=None):
+    """Allocate only for the first closed/merged release PR run of the pinned workflow."""
+    pr = (event or {}).get('pull_request', {})
+    tag = pr.get('head', {}).get('ref', '').removeprefix('release/')
+    if ((event or {}).get('action') != 'closed' or not pr.get('merged') or
+            env.get('GITHUB_EVENT_NAME') != 'pull_request' or env.get('GITHUB_REF') != 'refs/heads/main' or
+            pr.get('base', {}).get('ref') != 'main' or not pr.get('head', {}).get('ref', '').startswith('release/v') or
+            tag != 'v' + requested_version or pr.get('merge_commit_sha') != env.get('GITHUB_SHA')):
+        raise ValueError('Only the exact tagged release PR merge may allocate a Play code')
     if main_policy is None:
         raise ValueError('Current main release ledger is required')
     if not re.fullmatch(r'[0-9]+(?:\.[0-9]+){1,2}', requested_version):
@@ -24,13 +32,13 @@ def automatic_release_number(policy, requested_version, main_policy, run, pages,
     if (env.get('GITHUB_REPOSITORY') != REPOSITORY or
             run.get('repository', {}).get('full_name') != REPOSITORY or
             run.get('workflow_id') != AUTOMATIC_WORKFLOW_ID or
-            run.get('event') != 'workflow_dispatch' or
+            run.get('event') != 'pull_request' or
             run.get('id') != int(env['GITHUB_RUN_ID']) or
             run.get('run_number') != int(env['GITHUB_RUN_NUMBER']) or
-            run.get('head_sha') != env['GITHUB_SHA']):
+            run.get('head_sha') not in {env['GITHUB_SHA'], pr['head']['sha']}):
         raise ValueError('Release counter identity mismatch; workflow migration requires review')
     if run.get('run_attempt') != 1 or env.get('GITHUB_RUN_ATTEMPT') != '1':
-        raise ValueError('Re-run would reuse a versionCode; use Run workflow for a new dispatch')
+        raise ValueError('Re-run would reuse a versionCode; use a new version tag and release PR')
     number = run['run_number']
     if type(number) is not int or number <= 0:
         raise ValueError('Invalid workflow run number')
@@ -43,7 +51,7 @@ def automatic_release_number(policy, requested_version, main_policy, run, pages,
     # Concurrency groups are not FIFO. A smaller queued run must not publish
     # after a larger run, even if the newer run failed or only built an AAB.
     if max(row['run_number'] for row in runs) != number:
-        raise ValueError('A newer dispatch exists; use the newest Run workflow instead')
+        raise ValueError('A newer release workflow run exists; use a new version tag and release PR')
     code = AUTOMATIC_CODE_BASE + number
     if code > MAX_VERSION_CODE:
         raise ValueError('Automatic versionCode exceeds the Google Play limit')
@@ -114,14 +122,16 @@ def release_number(policy, requested_version, main_policy=None, apk_build=False)
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--version', required=True)
+    parser.add_argument('--version', help='Historical APK version; automatic Play builds read the tag')
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument('--apk-build', action='store_true', help='Allow an exact recorded code/version for an APK rebuild')
-    mode.add_argument('--automatic', action='store_true', help='Use the pinned Actions dispatch counter for a Play AAB')
+    mode.add_argument('--automatic', action='store_true', help='Read the release tag and use the pinned Actions counter for a merged Play AAB')
     parser.add_argument('--expected-code', type=int, help='Verify the AAB code before publishing; never allocate a second code')
     args = parser.parse_args()
     if args.expected_code is not None and not args.automatic:
         parser.error('--expected-code requires --automatic')
+    if not args.automatic and args.version is None:
+        parser.error('--version is required for a historical APK')
     policy = json.loads(Path('.github/android-release.json').read_text())
     # Checkout fetch-depth: 0 supplies origin/main. This also catches a stale branch
     # after a newer main commit records a confirmed Play upload.
@@ -130,14 +140,23 @@ def main():
                              text=True, capture_output=True)
     main_policy = json.loads(current.stdout) if current.returncode == 0 else None
     if args.automatic:
+        spec = importlib.util.spec_from_file_location('tag_release', Path(__file__).with_name('android-tag-release.py'))
+        tag_release = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(tag_release)
+        event = json.loads(Path(os.environ['GITHUB_EVENT_PATH']).read_text())
+        release = tag_release.validate_pr(event, os.environ)
+        Path('build').mkdir(exist_ok=True)
+        Path('build/tag-release.json').write_text(json.dumps(release, indent=2) + '\n')
+        if args.version is not None and args.version != release['version_name']:
+            raise ValueError('Manual version differs from release tag')
         run = github_json(f'repos/{REPOSITORY}/actions/runs/{int(os.environ["GITHUB_RUN_ID"])}')
         pages = github_json(f'repos/{REPOSITORY}/actions/workflows/{AUTOMATIC_WORKFLOW_ID}/runs?per_page=100', paginate=True)
-        version, code = automatic_release_number(policy, args.version, main_policy, run, pages, os.environ, args.expected_code)
+        version, code = automatic_release_number(policy, release['version_name'], main_policy, run, pages, os.environ, args.expected_code, event)
     else:
         version, code = release_number(policy, args.version.removeprefix('v'), main_policy, args.apk_build)
     tag = subprocess.run(['git', 'rev-parse', '--verify', '--quiet', 'refs/tags/v' + version + '^{tree}'],
                          text=True, capture_output=True)
-    if tag.returncode == 0:
+    if tag.returncode == 0 and not args.automatic:
         tree = subprocess.check_output(['git', 'rev-parse', 'HEAD^{tree}'], text=True).strip()
         if tag.stdout.strip() != tree:
             raise ValueError('Existing version tag belongs to a different source tree')
@@ -148,7 +167,8 @@ def main():
         with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
             summary.write(f'### Android release candidate\n\nVersion: `{version}`  \n'
                           f'versionCode: `{code}` = {AUTOMATIC_CODE_BASE} + run {run["run_number"]}  \n'
-                          f'Source: `{os.environ["GITHUB_SHA"]}`\n\n'
+                          f'Tag: `{release["tag"]}` / source: `{release["tag_source_sha"]}`  \n'
+                          f'Merged build source: `{os.environ["GITHUB_SHA"]}` / PR #{release["pr_number"]}\n\n'
                           'This is a build candidate; it is not proof of a Play upload.\n')
 
 

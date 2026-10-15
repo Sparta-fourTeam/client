@@ -150,15 +150,20 @@ class ReleaseNumberTests(unittest.TestCase):
 class AutomaticReleaseNumberTests(unittest.TestCase):
     def setUp(self):
         self.env = dict(GITHUB_REPOSITORY='Sparta-fourTeam/client', GITHUB_RUN_ID='42',
-                        GITHUB_RUN_NUMBER='7', GITHUB_RUN_ATTEMPT='1', GITHUB_SHA='fixture-sha')
+                        GITHUB_RUN_NUMBER='7', GITHUB_RUN_ATTEMPT='1', GITHUB_SHA='fixture-sha',
+                        GITHUB_EVENT_NAME='pull_request', GITHUB_REF='refs/heads/main')
         self.run = dict(id=42, workflow_id=378016847, run_number=7, run_attempt=1,
-                        event='workflow_dispatch', head_sha='fixture-sha',
+                        event='pull_request', head_sha='fixture-sha',
                         repository={'full_name': 'Sparta-fourTeam/client'})
         self.pages = [{'workflow_runs': [self.run]}]
+        self.event = {'action': 'closed', 'pull_request': {'merged': True, 'merge_commit_sha': 'fixture-sha',
+                      'head': {'ref': 'release/v1.0.3', 'sha': 'tag-source'}, 'base': {'ref': 'main'}}}
 
     def allocate(self, ledger=None, main=None, version='1.0.3', expected_code=None):
+        event = json.loads(json.dumps(self.event))
+        event['pull_request']['head']['ref'] = 'release/v' + version
         return module.automatic_release_number(ledger or policy(), version, main or policy(),
-                                               self.run, self.pages, self.env, expected_code)
+                                               self.run, self.pages, self.env, expected_code, event)
 
     def test_input_version_replaces_stale_candidate_and_exceeds_all_old_codes(self):
         ledger = policy(2, '1.0.2', [{'versionName': '1.0.1', 'versionCode': 1}])
@@ -182,7 +187,7 @@ class AutomaticReleaseNumberTests(unittest.TestCase):
 
     def test_newer_dispatch_on_another_page_rejects_old_queued_run(self):
         self.pages.append({'workflow_runs': [dict(self.run, id=43, run_number=8, conclusion='failure')]})
-        with self.assertRaisesRegex(ValueError, 'newer dispatch'):
+        with self.assertRaisesRegex(ValueError, 'newer release'):
             self.allocate()
         self.pages = [{'workflow_runs': []}]
         with self.assertRaisesRegex(ValueError, 'missing'):
@@ -201,7 +206,7 @@ class AutomaticReleaseNumberTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.allocate(main=policy(released=[{'versionName': '1.0.3', 'versionCode': 2}]))
         with self.assertRaisesRegex(ValueError, 'main release ledger'):
-            module.automatic_release_number(policy(), '1.0.3', None, self.run, self.pages, self.env)
+            module.automatic_release_number(policy(), '1.0.3', None, self.run, self.pages, self.env, event=self.event)
 
     def test_play_boundaries_and_artifact_code_binding(self):
         self.assertEqual(self.allocate(expected_code=300000007), ('1.0.3', 300000007))
@@ -221,51 +226,21 @@ class AutomaticReleaseNumberTests(unittest.TestCase):
             with self.subTest(version=version), self.assertRaises(ValueError):
                 self.allocate(version=version)
 
-    def test_automatic_cli_uses_github_metadata_and_preserves_ledger(self):
-        with tempfile.TemporaryDirectory() as folder:
-            root = Path(folder)
-            def git(*args):
-                return subprocess.check_output(['git', '-C', folder, *args], text=True).strip()
-            git('init', '-q')
-            git('config', 'user.name', 'Release policy test')
-            git('config', 'user.email', 'release-policy-test@example.invalid')
-            (root / '.github').mkdir()
-            config = root / '.github/android-release.json'
-            config.write_text(json.dumps(policy()))
-            git('add', '.')
-            git('commit', '-qm', 'fixture')
-            git('update-ref', 'refs/remotes/origin/main', 'HEAD')
-            self.env['GITHUB_SHA'] = self.run['head_sha'] = git('rev-parse', 'HEAD')
-            (root / 'run.json').write_text(json.dumps(self.run))
-            (root / 'pages.json').write_text(json.dumps(self.pages))
-            # A fake gh serves recorded API-shaped fixtures; never contacts GitHub or Play.
-            fake_gh = root / 'gh'
-            fake_gh.write_text('#!/bin/sh\ncase "$2" in\n'
-                               '  */actions/runs/42) cat run.json ;;\n'
-                               '  */actions/workflows/378016847/runs?per_page=100) cat pages.json ;;\n'
-                               '  *) exit 1 ;;\nesac\n')
-            fake_gh.chmod(0o755)
-            output = root / 'output.txt'
-            summary = root / 'summary.md'
-            env = dict(os.environ, **self.env, GITHUB_OUTPUT=str(output), GITHUB_STEP_SUMMARY=str(summary))
-            env['PATH'] = folder + os.pathsep + env['PATH']
-            command = ['python3', str(SCRIPT), '--version', '1.0.3', '--automatic']
-            before = config.read_bytes()
-            for extra in [[], ['--expected-code', '300000007']]:
-                result = subprocess.run(command + extra, cwd=root, env=env, capture_output=True, text=True)
-                self.assertEqual(result.returncode, 0, result.stderr)
-            self.assertEqual(output.read_text(), 'version_name=1.0.3\ncode=300000007\n' * 2)
-            self.assertIn('300000000 + run 7', summary.read_text())
-            self.assertEqual(config.read_bytes(), before)
-            previous = output.read_bytes()
-            env['GITHUB_RUN_ATTEMPT'] = '2'
-            result = subprocess.run(command, cwd=root, env=env, capture_output=True, text=True)
-            self.assertNotEqual(result.returncode, 0)
-            self.assertEqual(output.read_bytes(), previous)
+    def test_manual_dispatch_cannot_allocate_an_automatic_code(self):
+        with patch.dict(self.run, event='workflow_dispatch'):
+            with self.assertRaises(ValueError):
+                self.allocate()
+        with patch.dict(self.event, action='opened'):
+            with self.assertRaises(ValueError):
+                self.allocate()
+        self.event['pull_request']['merged'] = False
+        with self.assertRaises(ValueError):
+            self.allocate()
 
 
 class PlayReleaseNameTests(unittest.TestCase):
-    def run_artifact_preflight(self, version='1.0.2', code=2, requested_version=None, expected_code=None):
+    def run_artifact_preflight(self, version='1.0.2', code=2, requested_version=None, expected_code=None,
+                               expected_pr=123):
         # Execute the workflow's real pre-upload check without Play access or an AAB upload.
         workflow = SCRIPT.parent.parent / 'workflows/deploy-google-play.yml'
         step = workflow.read_text().split('      - name: Recheck artifact identity\n', 1)[1]
@@ -276,11 +251,14 @@ class PlayReleaseNameTests(unittest.TestCase):
             bundle = root / 'verified/Android/test.aab'
             bundle.parent.mkdir(parents=True)
             bundle.write_bytes(b'local preflight fixture')
-            evidence = {'source_commit': 'fixture-sha', 'signature_verified': True,
+            evidence = {'source_commit': 'fixture-sha', 'pr_number': 123, 'signature_verified': True,
                         'artifact_sha256': hashlib.sha256(bundle.read_bytes()).hexdigest(),
                         'actual': {'package': 'com.teamdoodle.doodledefense',
                                    'version_name': version, 'version_code': code}}
             (root / 'verified/artifact-manifest.json').write_text(json.dumps(evidence))
+            (root / 'build').mkdir()
+            (root / 'build/tag-release.json').write_text(json.dumps({'source_commit': 'fixture-sha',
+                                                                    'pr_number': expected_pr}))
             output = root / 'output.txt'
             env = dict(os.environ, GITHUB_SHA='fixture-sha', GITHUB_OUTPUT=str(output),
                        RELEASE_VERSION=version if requested_version is None else requested_version,
@@ -311,6 +289,12 @@ class PlayReleaseNameTests(unittest.TestCase):
                 self.assertNotEqual(result.returncode, 0)
                 self.assertIn('Artifact version mismatch', result.stderr)
                 self.assertEqual(output, '')
+
+    def test_artifact_from_another_release_pr_cannot_publish(self):
+        result, output = self.run_artifact_preflight(expected_pr=456)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('Artifact tag/PR/merge provenance mismatch', result.stderr)
+        self.assertEqual(output, '')
 
 
 if __name__ == '__main__':
