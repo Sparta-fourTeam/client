@@ -4,6 +4,7 @@ using Game.Core.Combat;
 using Game.Core.Defense;
 using Game.Core.Messages;
 using MessagePipe;
+using Unity.Profiling;
 using UnityEngine;
 
 namespace Game.Core
@@ -12,6 +13,9 @@ namespace Game.Core
     // 위치가 필요한 계산은 호출하는 쪽이 position을 넘긴다
     public class EnemyModel
     {
+        private static readonly ProfilerMarker TakeDamageMarker = new("Enemy.TakeDamage");
+        private static readonly ProfilerMarker PublishHpChangedMarker = new("Enemy.PublishHpChanged");
+        private static readonly ProfilerMarker PublishDiedMarker = new("Enemy.PublishDied");
         private readonly float _speed; // 적 이동 속도
         private readonly EnemyType _type; // 적 타입
         private readonly EnemyAttackStats _attack; // 공격 값
@@ -234,6 +238,7 @@ namespace Game.Core
         // 피해 파이프라인: 속성·시전 형태 저항(DamageProfile) → 취약 배율 → HP 차감
         public void TakeDamage(DamageInfo info)
         {
+            using var damageScope = TakeDamageMarker.Auto();
             if (IsDead || info.Amount <= 0)
             {
                 return;
@@ -264,12 +269,18 @@ namespace Game.Core
             Hp = Math.Max(0, Hp - appliedDamage);
             // 실제로 깎인 체력만 스킬 몫으로 알린다 (남은 체력보다 큰 과잉 피해는 뺀다)
             Game.Core.Combat.DamageAttribution.Report(hpBefore - Hp);
-            _hpChangedPublisher.Publish(new EnemyHpChanged(Id, Hp, MaxHp, info.WithAmount(hpBefore - Hp)));
+            using (PublishHpChangedMarker.Auto())
+            {
+                _hpChangedPublisher.Publish(new EnemyHpChanged(Id, Hp, MaxHp, info.WithAmount(hpBefore - Hp)));
+            }
 
             if (Hp == 0)
             {
                 var deathExplosion = _status.ClearOnDeath();
-                _diedPublisher.Publish(new EnemyDied(Id, _isSummoned, _type));
+                using (PublishDiedMarker.Auto())
+                {
+                    _diedPublisher.Publish(new EnemyDied(Id, _isSummoned, _type));
+                }
                 if (deathExplosion != null)
                 {
                     DeathExplosionRequested?.Invoke(deathExplosion);
