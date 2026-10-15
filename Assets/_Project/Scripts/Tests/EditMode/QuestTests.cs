@@ -112,6 +112,19 @@ namespace Game.Tests
             Assert.AreEqual("ALREADY_CLAIMED", again.Code);
         }
 
+        [Test(Description = "잼이 들어 있는 상자는 열 때 잼도 함께 준다")]
+        public void ClaimChest_PaysGems()
+        {
+            var weekly = _data.QuestBoards.First(board => board.Period == QuestPeriod.Weekly);
+            var chest = weekly.Chests.First(c => c.Gems > 0);
+            foreach (var quest in weekly.Quests) { Complete(quest); _quests.ClaimQuest(quest.Id).GetAwaiter().GetResult(); }
+            int gemsBefore = _store.Load().wallet.gems;
+
+            var snapshot = _quests.ClaimQuestChest(chest.Id).GetAwaiter().GetResult();
+
+            Assert.AreEqual(gemsBefore + chest.Gems, snapshot.gems);
+        }
+
         [Test(Description = "일일 주기가 바뀌면 일일 진행과 연 상자만 비워지고 주간 진행은 남는다")]
         public void Rollover_ResetsOnlyTheExpiredBoard()
         {

@@ -33,7 +33,20 @@ namespace Game.View
             _description.text = claimed ? $"제 {stageId} 관문 · 이미 수령한 보상이에요." : $"제 {stageId} 관문 · {condition}";
             var items = stage.RatingItemRewards != null && stage.RatingItemRewards.Count >= rating
                 ? stage.RatingItemRewards[rating - 1] : null;
-            _rewards.Show(RewardRows.Build(_itemIcons, data, stage.RatingRewards[rating - 1], 0, items ?? new List<ItemAmount>()));
+            Open(RewardRows.Build(_itemIcons, data, stage.RatingRewards[rating - 1], 0, items ?? new List<ItemAmount>()));
+        }
+
+        /// <summary>관문이 아닌 상자(퀘스트 보물상자 등)의 조건과 보상을 보여준다</summary>
+        public void Show(string title, string description, IReadOnlyList<ResultRewardItem> rewards)
+        {
+            _title.text = title;
+            _description.text = description;
+            Open(rewards);
+        }
+
+        private void Open(IReadOnlyList<ResultRewardItem> rewards)
+        {
+            _rewards.Show(rewards);
             PopupPanel.Set(_panel, _transition, true);
             PopupPanel.FitContent(_scroll, 560f, 1040f);
             _scroll.verticalNormalizedPosition = 1f;

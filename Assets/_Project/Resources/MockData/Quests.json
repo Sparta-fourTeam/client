@@ -22,11 +22,11 @@
       { "Id": "weekly.kill", "Kind": "KillMonsters", "Target": 1000, "Points": 40 }
     ],
     "Chests": [
-      { "Id": "weekly.chest.20", "Points": 20, "Gold": 1000, "Energy": 10 },
-      { "Id": "weekly.chest.40", "Points": 40, "Gold": 2000, "Energy": 15 },
-      { "Id": "weekly.chest.60", "Points": 60, "Gold": 3000, "Energy": 20 },
-      { "Id": "weekly.chest.80", "Points": 80, "Gold": 4500, "Energy": 25 },
-      { "Id": "weekly.chest.100", "Points": 100, "Gold": 7000, "Energy": 40 }
+      { "Id": "weekly.chest.20", "Points": 20, "Gold": 1000, "Energy": 10, "Gems": 100 },
+      { "Id": "weekly.chest.40", "Points": 40, "Gold": 2000, "Energy": 15, "Gems": 100 },
+      { "Id": "weekly.chest.60", "Points": 60, "Gold": 3000, "Energy": 20, "Gems": 200 },
+      { "Id": "weekly.chest.80", "Points": 80, "Gold": 4500, "Energy": 25, "Gems": 300 },
+      { "Id": "weekly.chest.100", "Points": 100, "Gold": 7000, "Energy": 40, "Gems": 500 }
     ]
   }
 ]
