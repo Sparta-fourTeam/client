@@ -146,7 +146,8 @@ namespace Game.Core
         {
             slot.Id = null;
             slot.Target = 0f;
-            slot.Rate = RateOf(Mathf.Max(slot.Peak, 0.0001f), fadeSeconds);
+            // 페이드 인이 끝나기 전에 바뀌어도 fadeSeconds 안에 줄어들도록 현재 볼륨에서 비율을 잡는다
+            slot.Rate = RateOf(Mathf.Max(slot.Source.volume, 0.0001f), fadeSeconds);
             if (fadeSeconds <= 0f)
             {
                 slot.Source.volume = 0f;
