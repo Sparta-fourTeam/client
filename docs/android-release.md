@@ -61,6 +61,12 @@ PR 생성 후 검토 대기, 병합 요청 직전/응답, 검증 완료 상태�
 
 **Actions → Deploy Google Play Internal → Run workflow**는 고정 원본 code2 복구 전용이다. main에서 `release_version=1.0.2`, `recover_original_code2=true`, `publish_to_internal=true`, `acknowledge_edit_invalidation=true`를 명시해야 한다. 원본 artifact/hash·게시 범위·edit 무효화·재실행 검증을 유지하며 태그 경로와 분리한다.
 
-main의 **Release APK**는 기존 수동 `workflow_dispatch`와 `--apk-build` 검증을 유지하며 `v*` push를 구독하지 않는다. Dev APK도 기존 정책을 유지한다. 과거 APK 재빌드를 Play 재업로드 승인으로 취급하지 않는다.
+main의 **Release APK**는 기존 수동 `workflow_dispatch`와 `--apk-build` 검증을 유지하며 `v*` push를 구독하지 않는다. Actions 웹 UI의 branch 선택으로 실행하지 않고, workflow와 장부가 이미 포함된 기존 후보 태그를 CLI의 `--ref`로 지정한다. branch/fork 요청은 성공처럼 건너뛰지 않고 실패한다. APK 경로는 기존 장부 후보와 일치해야 하며 자동 AAB 코드 배정 경로와 구분한다.
+
+```sh
+gh workflow run release-apk.yml --repo Sparta-fourTeam/client --ref <장부와-일치하는-기존-버전-태그>
+```
+
+이 명령은 실제 APK 빌드와 GitHub Release 게시를 시작하므로 그 작업을 의도할 때만 실행한다. Dev APK는 기존 정책을 유지한다. 과거 APK 재빌드를 Play 재업로드 승인으로 취급하지 않는다. code2 복구를 main 이외의 ref에서 요청하면 복구 범위 검증이 실행되어 artifact 다운로드·Play 접근 전에 명확히 실패한다.
 
 근거: [GitHub token/event 제한](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow), [PR 생성/병합 API](https://docs.github.com/en/rest/pulls/pulls), [Codex 리뷰](https://learn.chatgpt.com/docs/third-party/github), [Android 버전 규칙](https://developer.android.com/studio/publish/versioning).

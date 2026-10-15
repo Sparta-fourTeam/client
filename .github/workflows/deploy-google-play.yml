@@ -374,7 +374,7 @@ jobs:
           releaseName: ${{ steps.artifact.outputs.release_name }}
 
   recover_code2:
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.recover_original_code2 && github.repository == 'Sparta-fourTeam/client' && github.ref == 'refs/heads/main' }}
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.recover_original_code2 }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
