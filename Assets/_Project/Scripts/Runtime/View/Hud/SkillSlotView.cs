@@ -24,15 +24,18 @@ namespace Game.View
         [SerializeField] private Color _emptyTint = new Color(0.74f, 0.72f, 0.82f, 1f);
 
         [Header("연출 (비워 두면 그 연출만 빠진다)")]
-        [Tooltip("형태가 바뀌는 순간 아이콘 위에서 터지는 파티클 (UIParticle 프리팹). 슬롯 안에 한 번 만들어 재사용한다")]
-        [SerializeField] private GameObject _transformFxPrefab;
+        [Tooltip("형태가 바뀌는 순간 아이콘 뒤에서 번쩍이는 빛 (흰색 소프트 원)")]
+        [SerializeField] private Sprite _formFlashSprite;
+        [Tooltip("형태가 바뀌는 순간 슬롯 둘레로 퍼지는 링 (흰색 얇은 원)")]
+        [SerializeField] private Sprite _formRingSprite;
 
         private const float LevelPunchScale = 0.28f;
         private const float LevelPunchSeconds = 0.3f;
         private const float FormShrinkSeconds = 0.12f;
         private const float FormPopSeconds = 0.22f;
         private const float FormSettleSeconds = 0.14f;
-        private const float FormFxEmitSeconds = 0.12f;
+        private const float FormFlashSeconds = 0.3f;
+        private const float FormRingSeconds = 0.4f;
 
         private ISkillStatus _status;
         private bool _holding;
@@ -42,8 +45,9 @@ namespace Game.View
         private Tween _levelTween;
         private Tween _badgeTween;
         private Sequence _formSequence;
-        private Tween _fxStop;
-        private ParticleSystem[] _transformFx;
+        private Image _formFlash;
+        private Image _formRing;
+        private Sequence _fxSequence;
 
         /// <summary>스킬이 든 칸을 누르기 시작했다 (사정거리 표시용)</summary>
         public event Action<ISkillStatus> HoldStarted;
@@ -155,25 +159,47 @@ namespace Game.View
             });
         }
 
-        // 반복 재생 + 짧은 방출 후 중단 (UIParticle에서 확실히 그려지는 방식)
+        // 슬롯 둘레로 링이 퍼지고 아이콘 뒤에서 빛이 번쩍인다. 이미지는 한 번 만들어 재사용한다
         private void PlayTransformFx()
         {
-            if (_transformFxPrefab == null) { return; }
-            if (_transformFx == null)
+            _fxSequence?.Kill();
+            _fxSequence = DOTween.Sequence().SetUpdate(true).SetLink(gameObject);
+            _formFlash = AddFlash(_formFlash, _formFlashSprite, FormFlashSeconds, 0.55f, 1.35f, 0.85f);
+            _formRing = AddFlash(_formRing, _formRingSprite, FormRingSeconds, 0.6f, 1.5f, 0.9f);
+            _fxSequence.OnKill(() =>
             {
-                var fx = Instantiate(_transformFxPrefab, _icon.transform.parent);
-                fx.transform.SetSiblingIndex(_icon.transform.GetSiblingIndex() + 1);
-                var fxRect = fx.transform as RectTransform;
-                if (fxRect != null) { fxRect.anchoredPosition = _icon.rectTransform.anchoredPosition; }
-                _transformFx = fx.GetComponentsInChildren<ParticleSystem>(true);
+                if (_formFlash != null) { _formFlash.enabled = false; }
+                if (_formRing != null) { _formRing.enabled = false; }
+            });
+        }
+
+        // 크기 from -> to로 커지며 투명해지는 한 번짜리 이미지. 반환값은 재사용할 이미지다
+        private Image AddFlash(Image image, Sprite sprite, float seconds, float from, float to, float alpha)
+        {
+            if (sprite == null) { return image; }
+            if (image == null)
+            {
+                var go = new GameObject(sprite.name, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+                go.transform.SetParent(_icon.transform.parent, false);
+                go.transform.SetSiblingIndex(_icon.transform.GetSiblingIndex() + 1);
+                var rect = (RectTransform)go.transform;
+                rect.anchorMin = _icon.rectTransform.anchorMin;
+                rect.anchorMax = _icon.rectTransform.anchorMax;
+                rect.pivot = _icon.rectTransform.pivot;
+                rect.anchoredPosition = _icon.rectTransform.anchoredPosition;
+                rect.sizeDelta = _icon.rectTransform.sizeDelta;
+                image = go.GetComponent<Image>();
+                image.sprite = sprite;
+                image.raycastTarget = false;
             }
 
-            foreach (var fx in _transformFx) { fx.Play(true); }
-            _fxStop?.Kill();
-            _fxStop = DOVirtual.DelayedCall(FormFxEmitSeconds, () =>
-            {
-                foreach (var fx in _transformFx) { fx.Stop(true, ParticleSystemStopBehavior.StopEmitting); }
-            }, true).SetLink(gameObject);
+            var target = image.rectTransform;
+            image.enabled = true;
+            image.color = new Color(1f, 1f, 1f, alpha);
+            target.localScale = Vector3.one * from;
+            _fxSequence.Join(target.DOScale(to, seconds).SetEase(Ease.OutQuad));
+            _fxSequence.Join(DOTween.To(() => image.color.a, a => image.color = new Color(1f, 1f, 1f, a), 0f, seconds).SetEase(Ease.InQuad));
+            return image;
         }
 
         private void KillTweens()
@@ -181,7 +207,7 @@ namespace Game.View
             _levelTween?.Kill(true);
             _badgeTween?.Kill(true);
             _formSequence?.Kill(true);
-            _fxStop?.Kill();
+            _fxSequence?.Kill();
         }
 
         private void SetBackground(Color color)
