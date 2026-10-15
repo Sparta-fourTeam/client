@@ -35,6 +35,7 @@ namespace Game.Core
         private int _active;
         private bool _fading;
         private bool _missingLibraryWarned;
+        private readonly HashSet<string> _unknownWarned = new HashSet<string>();
 
         public void Start()
         {
@@ -214,10 +215,15 @@ namespace Game.Core
 
             if (_library.TryGet(id, out entry))
             {
-                return true;
+                // 클립을 아직 넣지 않은 자리 ID는 조용히 건너뛴다
+                return entry.clips != null && entry.clips.Length > 0;
             }
 
-            Debug.LogWarning($"[AudioService] 등록되지 않았거나 클립이 없는 소리 ID '{id}'");
+            if (_unknownWarned.Add(id ?? string.Empty))
+            {
+                Debug.LogWarning($"[AudioService] AudioLibrary에 등록되지 않은 소리 ID '{id}'");
+            }
+
             return false;
         }
 
