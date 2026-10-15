@@ -120,6 +120,17 @@ namespace Game.View
                 .SetLink(gameObject);
         }
 
+        private void OnDisable()
+        {
+            StopAnimations();
+            _hasFullState = false;
+            _pinnedAwake = false;
+            _activity = 0f;
+            _thin = 0f;
+            ApplyStarShape();
+            if (_waveValueText != null) { _waveValueText.rectTransform.localScale = Vector3.one; }
+        }
+
         // 막대 발광은 가득 찼을 때만 켜져 은은하게 숨 쉰다. 채움 양은 PlaceStar에서 따라간다
         private void StartGlowBreathing()
         {
@@ -253,6 +264,7 @@ namespace Game.View
         {
             float target = full ? 1f : 0f;
             if (!AtTargetOrMoving(_flare, target, _flareTween)) { return false; }
+            if (_gaugeGlow != null && !AtTargetOrMoving(_glowOn, target, _glowFadeTween)) { return false; }
             if (_lightningBolts == null || _lightningBolts.Length == 0) { return true; }
             if (!AtTargetOrMoving(_boltMaster, target, _boltMasterTween)) { return false; }
             if (!full)
@@ -435,19 +447,31 @@ namespace Game.View
         protected override void DisposeView()
         {
             _viewDisposed = true;
-            _fillTween?.Kill();
-            _punchTween?.Kill();
-            _twinkleTween?.Kill();
-            _glowTween?.Kill();
-            _glowFadeTween?.Kill();
-            _thinTween?.Kill();
-            _flareTween?.Kill();
-            _boltMasterTween?.Kill();
-            _wakeTween?.Kill();
-            _calmTween?.Kill();
-            _sparkStopTween?.Kill();
-            if (_boltTweens != null) { foreach (var t in _boltTweens) { t?.Kill(); } }
+            StopAnimations();
             base.DisposeView();
+        }
+
+        private void StopAnimations()
+        {
+            KillTween(ref _fillTween);
+            KillTween(ref _punchTween);
+            KillTween(ref _twinkleTween);
+            KillTween(ref _glowTween);
+            KillTween(ref _glowFadeTween);
+            KillTween(ref _thinTween);
+            KillTween(ref _flareTween);
+            KillTween(ref _boltMasterTween);
+            KillTween(ref _wakeTween);
+            KillTween(ref _calmTween);
+            KillTween(ref _sparkStopTween);
+            KillBoltLoops();
+            if (_resetSparks != null) { _resetSparks.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear); }
+        }
+
+        private static void KillTween(ref Tween tween)
+        {
+            tween?.Kill();
+            tween = null;
         }
     }
 }
