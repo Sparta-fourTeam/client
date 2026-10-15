@@ -216,9 +216,10 @@ namespace Game.Core
                 PermanentSkillEffect.ValidateEquipment(upgrade);
             }
 
-            // TODO(server): 빌드에 포함된 테이블 버전 메타데이터로 교체. Combat 2는 BaseTimeScale을 추가한 개정이다.
+            // TODO(server): 빌드에 포함된 테이블 버전 메타데이터로 교체. Combat 2는 BaseTimeScale을, Quests 2는 상자 보상 Gems를 추가한 개정이다.
             Revisions = TableNames.ToDictionary(n => n, _ => 1);
             Revisions["Combat"] = 2;
+            Revisions["Quests"] = 2;
         }
 
         public string RawJson(string name) => _rawJson[name];
