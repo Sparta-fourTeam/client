@@ -1,8 +1,11 @@
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using Cysharp.Threading.Tasks;
 using Game.Core;
 using Game.Network;
 using NUnit.Framework;
+using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace Game.Tests
 {
@@ -14,8 +17,15 @@ namespace Game.Tests
         {
             public int Deleted;
             public LoginMethod? Linked;
+            public System.Exception LinkError;
             public UniTask DeleteAccount() { Deleted++; return UniTask.CompletedTask; }
-            public UniTask LinkAccount(LoginMethod method, string accountId) { Linked = method; return UniTask.CompletedTask; }
+
+            public UniTask LinkAccount(LoginMethod method, string accountId)
+            {
+                if (LinkError != null) { throw LinkError; }
+                Linked = method;
+                return UniTask.CompletedTask;
+            }
         }
 
         private sealed class MemoryCredentials : IAuthCredentialStore
@@ -133,6 +143,39 @@ namespace Game.Tests
             _credentials.Save(LoginMethod.Guest, "g");
             Assert.AreEqual(LinkResult.Unavailable, Create(new FakeSocial(false, null)).LinkAsync().GetAwaiter().GetResult());
             Assert.IsNull(_api.Linked);
+        }
+
+        [Test(Description = "서버가 연동을 거절하면(409) 로그인 정보를 바꾸지 않고 게스트 그대로 둔다")]
+        public void Link_ServerConflict_KeepsGuest()
+        {
+            _credentials.Save(LoginMethod.Guest, "g");
+            _api.LinkError = new ApiException(ApiErrorKind.Rejected, "HTTP_409");
+            LogAssert.Expect(LogType.Exception, new Regex("HTTP_409"));
+
+            var result = Create(new FakeSocial(true, "google-token")).LinkAsync().GetAwaiter().GetResult();
+
+            Assert.AreEqual(LinkResult.Conflict, result);
+            Assert.AreEqual(LoginMethod.Guest, _credentials.Method);
+            Assert.AreEqual("g", _credentials.AccountId);
+        }
+
+        [TestCase(ApiErrorKind.Rejected, "HTTP_401")]
+        [TestCase(ApiErrorKind.Transient, "HTTP_503")]
+        [TestCase(ApiErrorKind.Network, "NETWORK_ERROR")]
+        [Test(Description = "서버 오류·로그인 만료·네트워크 문제로 연동하지 못하면 실패로 끝나고 게스트 그대로 두며, 다시 시도할 수 있다")]
+        public void Link_OtherServerFailure_KeepsGuestAndCanRetry(ApiErrorKind kind, string code)
+        {
+            _credentials.Save(LoginMethod.Guest, "g");
+            _api.LinkError = new ApiException(kind, code);
+            LogAssert.Expect(LogType.Exception, new Regex(code));
+            var service = Create(new FakeSocial(true, "google-token"));
+
+            Assert.AreEqual(LinkResult.Failed, service.LinkAsync().GetAwaiter().GetResult());
+            Assert.AreEqual(LoginMethod.Guest, _credentials.Method);
+
+            _api.LinkError = null;
+            Assert.AreEqual(LinkResult.Linked, service.LinkAsync().GetAwaiter().GetResult());
+            Assert.AreEqual(LoginMethod.Google, _credentials.Method);
         }
     }
 }

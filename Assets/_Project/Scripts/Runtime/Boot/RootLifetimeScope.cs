@@ -46,7 +46,11 @@ namespace Game.Boot
             builder.Register<ISocialSignIn, PlaceholderAppleSignIn>(Lifetime.Singleton);
             // TODO(server): 호출부 없음 — 예: BootFlow에서 GetVersions() 비교 후 GetTable()로 갱신
             builder.Register<IDataApi, LocalDataApi>(Lifetime.Singleton);
-            builder.Register<IAccountApi, LocalAccountApi>(Lifetime.Singleton);
+            // 계정 연동은 서버 인증을 쓰는 빌드에서만 서버로 보낸다 (서버 로그인으로 받은 토큰이 있어야 하기 때문)
+            builder.Register<LocalAccountApi>(Lifetime.Singleton);
+            builder.Register<ServerBackedAccountApi>(Lifetime.Singleton);
+            builder.Register<IAccountApi>(c => ServerConfig.UseServerAuth ? c.Resolve<ServerBackedAccountApi>() : c.Resolve<LocalAccountApi>(),
+                Lifetime.Singleton);
             builder.Register<AccountService>(Lifetime.Singleton);
             builder.Register<IPlayerApi, LocalPlayerApi>(Lifetime.Singleton);
             builder.Register<IBattleApi, LocalBattleApi>(Lifetime.Singleton).AsSelf().As<ISubmitFaultSwitch>();

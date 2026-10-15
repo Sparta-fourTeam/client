@@ -155,6 +155,8 @@ namespace Game.View
                 case LinkResult.Linked: notice = "계정이 연동되었습니다."; break;
                 case LinkResult.AlreadyLinked: notice = "이미 연동된 계정입니다."; break;
                 case LinkResult.Unavailable: notice = "연동할 수 있는 계정이 아직 없습니다. 준비 중입니다."; break;
+                case LinkResult.Conflict: notice = "이미 연동된 계정이거나, 다른 계정에 연동된 구글 계정입니다."; break;
+                case LinkResult.Failed: notice = "계정을 연동하지 못했습니다. 잠시 후 다시 시도해 주세요."; break;
             }
 
             RefreshAccountButtons();
