@@ -1,0 +1,36 @@
+# 고정 부하 전투 벤치마크
+
+`Tools → Project Nova → Combat Benchmark → Create Scene`으로 개발용 씬을 만든다. `Run in Editor`는 동작 확인용이다. 성능 비교는 같은 기기의 같은 개발 빌드 설정으로 진행한다. 이 도구는 `Game.Sandbox`에 있으며 에디터와 개발 빌드에만 포함된다.
+
+## 부하와 범위
+
+Inspector에서 적 수, 발사 수, 발사 간격(프레임), 워밍업·측정 프레임, 반복 횟수와 난수 시드를 고정한다. 기본 120마리·48발은 합성 스트레스 설정이며 게임 데이터가 보장하는 최대 적 수나 최대 강화 스킬 구성을 뜻하지 않는다.
+
+- Projectiles: 실제 Projectile과 Enemy를 이용한 반복 관통 공격. 높은 HP로 처치를 막아 피해·HP 알림·숫자 표시를 지속 측정한다.
+- Hitscan: 실제 HitscanEffect 프리팹의 지연·범위 판정으로 군집 전체를 공격한다.
+- Area: 실제 FrostPrison의 원형 AreaZone 4개를 15프레임마다 생성한다. 반경 1.2, 지속 1초, 0.2초 간격 펄스로 영역 피해를 측정한다.
+- Beam: 실제 SunBeam의 선형 AreaZone 4개를 같은 간격으로 생성한다. 길이 8, 폭 0.6, 지속 1초, 0.2초 간격 펄스와 추적을 측정한다.
+- Chain: 실제 LightningChain 4개를 같은 간격으로 생성한다. 12회 반사, 0.03초 간격으로 연쇄 판정과 피해를 측정한다.
+- SimultaneousDeaths: 같은 프레임에 전체 적을 처치하고 사망 연출 종료까지 관찰한다. 워밍업의 사망 효과가 남지 않도록 적을 다시 준비한다. 이 유형만 측정 직전 표시 풀도 초기화하므로 첫 피격·최초 효과 생성 비용을 포함한다.
+
+Enemy.Bind, MessagePipe, HitFlash, 데미지 숫자와 사망 연출은 실제 구현을 사용한다. StageManager·보상·저장·풀 스킬 빌드는 넣지 않으므로 전체 스테이지 성능으로 일반화하지 않는다. 적 프리팹과 스킬 프리팹도 전후에 같아야 한다. CastType의 5가지 실행 유형을 모두 다루되, 모든 개별 스킬·카드 조합을 전수 검사하는 도구는 아니다.
+
+## 동일 조건
+
+시뮬레이션 delta는 1/60으로 고정하고 공격은 프레임 번호로 예약한다. 실제 성능은 Stopwatch의 프레임 간 실제 경과 시간으로 기록한다. 60 FPS 대기 시간도 포함된다. 프레임 수와 요청·피격·처치 횟수가 같은지 확인한 뒤 비교한다. 백그라운드 전환이나 포커스 상실은 유효한 측정으로 취급하지 않는다.
+
+최초 적 생성과 워밍업은 반복 측정에서 제외한다. 이 결과로 최초 로딩 성능 개선을 주장하지 않는다. 호출 스택·Deep Profile·Profiler Screenshots를 끄고, 같은 해상도·기기·전원 조건으로 실행한다. 발열과 실행 순서도 기록하고 여러 반복의 결과를 함께 본다.
+
+## iOS 빌드와 결과
+
+`Build iOS Development`는 일반 게임과 다른 `com.teamdoodle.combatbenchmark` 앱을 생성한다. 자동 Profiler 연결은 끈다. 환경 변수 `NOVA_BENCHMARK_LABEL`, `NOVA_BENCHMARK_BUILD`, `NOVA_BENCHMARK_TEAM`으로 결과 라벨·빌드 폴더·개발 팀을 지정할 수 있다. 벤치마크 자체 LifetimeScope를 사용하며, 전역 RootLifetimeScope 자동 생성용 VContainerSettings 프리로드를 측정 앱에서 제외한다. 빌드 이후 원래 프리로드·앱 ID와 서명 설정을 복원한다.
+
+앱 Documents/CombatBenchmarks 아래 실행별 폴더에 다음이 저장된다.
+
+- summary.json: 기기·해상도·설정, 완료 여부, 시행별 프레임 시간 분위수·처리 횟수·할당량.
+- frames.csv: 측정 프레임별 실제 경과 시간, 전체 스레드 할당량, 사용 가능한 경우 GC 회수 시간. 지원되지 않는 카운터는 -1과 availability 플래그로 구분한다.
+- PNG: 수치 측정과 분리한 증거 재현 구간의 화면. 준비·공격 직후·진행 중 화면을 저장한다.
+
+두 실행 폴더를 Mac으로 회수한 뒤 `python3 tools/compare_combat_benchmark.py BEFORE AFTER --output OUTPUT`으로 비교한다. 설정·프레임 수·공격 요청·HP 알림·사망 횟수가 다르면 비교를 거절한다. 결과는 JSON과 Markdown으로 생성한다. CPU 구간의 자세한 원인은 별도의 Profiler 캡처로 분석하며, 프레임 시간과 마커의 포함 시간을 합산하지 않는다.
+
+최적화 전 소스는 별도 작업폴더에서 빌드한다. 측정 도구와 마커는 공유하고 피해 표시 최적화가 들어간 소스만 다르게 유지한다. 소스 ZIP과 SHA-256 목록, 빌드 로그는 BenchmarkArtifacts에 보관한다. 추가 최적화는 원본 전후 데이터를 보존한 뒤 별도 버전으로 측정한다.
