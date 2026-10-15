@@ -9,12 +9,15 @@ from statistics import mean
 
 KEYS = ('unity', 'device', 'os', 'gpu', 'graphicsApi', 'resolution', 'enemyCount',
         'projectilesPerVolley', 'volleyEveryFrames', 'warmupFrames', 'measurementFrames',
-        'repetitions', 'seed', 'enemyPrefab', 'projectilePrefab', 'hitscanPrefab', 'areaPrefab', 'beamPrefab', 'chainPrefab', 'workloads', 'scope', 'timing')
+        'repetitions', 'seed', 'enemyPrefab', 'projectilePrefab', 'hitscanPrefab', 'areaPrefab', 'beamPrefab', 'chainPrefab', 'workloads', 'scope', 'timing', 'showPopups', 'warmPopups')
 
 
 def read(folder):
     folder = Path(folder)
     report = json.loads((folder / 'summary.json').read_text())
+    # Older exports always enabled popups and cleared the pool before each trial.
+    report.setdefault('showPopups', True)
+    report.setdefault('warmPopups', False)
     if not report['complete'] or report['interrupted']:
         raise ValueError(f'Incomplete or interrupted run: {folder}')
     with (folder / 'frames.csv').open() as source:
@@ -22,6 +25,12 @@ def read(folder):
     expected = report['measurementFrames'] * report['repetitions'] * len(report['workloads'])
     if len(frames) != expected:
         raise ValueError(f'Unexpected frame count: {len(frames)} != {expected}')
+    frame_keys = [(f['workload'], int(f['repetition']), int(f['frame'])) for f in frames]
+    expected_keys = {(w, r, f) for w in report['workloads']
+                     for r in range(1, report['repetitions'] + 1)
+                     for f in range(report['measurementFrames'])}
+    if len(set(frame_keys)) != len(frame_keys) or set(frame_keys) != expected_keys:
+        raise ValueError('Missing, duplicate, or out-of-range measured frames')
     expected_trials = {(w, r) for w in report['workloads'] for r in range(1, report['repetitions'] + 1)}
     actual_trials = {(t['workload'], t['repetition']) for t in report['trials']}
     if actual_trials != expected_trials or len(report['trials']) != len(expected_trials):
@@ -63,7 +72,7 @@ def compare(before, after):
                           'allocatedBytesPerHpEvent': byte_count / events if report['allocationAvailable'] and events else None,
                           'gcCollections': sum(t['collections'] for t in counts)}
         row['changePercent'] = {key: (row['after'][key] / row['before'][key] - 1) * 100
-                                for key in ('meanMs', 'p95Ms', 'p99Ms', 'meanAllocatedBytes', 'allocatedBytesPerHpEvent')
+                                for key in ('meanMs', 'p95Ms', 'p99Ms', 'maxMs', 'meanAllocatedBytes', 'allocatedBytesPerHpEvent')
                                 if row['before'][key] not in (None, 0) and row['after'][key] is not None}
         result['workloads'].append(row)
     return result
@@ -77,16 +86,20 @@ def main():
     output = Path(args.output); output.mkdir(parents=True, exist_ok=True)
     (output / 'comparison.json').write_text(json.dumps(result, ensure_ascii=False, indent=2))
     lines = ['# 전후 성능 비교', '', '동일 기기·설정·작업 횟수를 확인한 결과입니다. 음수 변화율은 감소입니다.', '',
-             '| 부하 | P95 ms 전 → 후 | P99 ms 전 → 후 | 프레임당 할당 B 전 → 후 |', '|---|---:|---:|---:|']
+             '| 부하 | P95 ms 전 → 후 | P99 ms 전 → 후 | 최대 ms 전 → 후 | 프레임당 할당 B 전 → 후 |', '|---|---:|---:|---:|---:|']
     for row in result['workloads']:
         b, a = row['before'], row['after']
         alloc = lambda x: '측정 불가' if x is None else f'{x:.1f}'
-        lines.append(f"| {row['workload']} | {b['p95Ms']:.2f} → {a['p95Ms']:.2f} | {b['p99Ms']:.2f} → {a['p99Ms']:.2f} | {alloc(b['meanAllocatedBytes'])} → {alloc(a['meanAllocatedBytes'])} |")
+        lines.append(f"| {row['workload']} | {b['p95Ms']:.2f} → {a['p95Ms']:.2f} | {b['p99Ms']:.2f} → {a['p99Ms']:.2f} | {b['maxMs']:.2f} → {a['maxMs']:.2f} | {alloc(b['meanAllocatedBytes'])} → {alloc(a['meanAllocatedBytes'])} |")
     contexts = result['measurementContext']
-    if contexts['before'] and contexts['after']:
-        states = lambda side: ' → '.join(contexts[side].get('thermalObserved', []))
-        lines += ['', f"발열 관측: 전 {states('before')}, 후 {states('after')}.",
-                  '녹화 OFF. 실행 순서는 최적화 후 → 최적화 전입니다. 두 실행 모두 Nominal로 시작했으나 이후 발열 상태가 달라 프레임 시간 개선율에는 발열 영향이 포함됩니다.']
+    for side, label in [('before', '전'), ('after', '후')]:
+        context = contexts[side]
+        if context:
+            states = ' → '.join(context.get('thermalObserved', [])) or '기록 없음'
+            recording = context.get('recording', '기록 없음')
+            order = context.get('runOrder', '기록 없음')
+            lines.append(f"{label}: 발열 {states}; 녹화 {recording}; 실행 순서 {order}.")
+    lines += ['', '발열·녹화·실행 순서와 계측 설정 차이는 별도로 확인해야 하며, 프레임 시간의 변화율만으로 원인을 단정하지 않는다.']
     lines += ['', '프레임 시간에는 목표 FPS 대기가 포함됩니다. 할당은 모든 스레드의 프레임 할당입니다.',
               '이 부하는 HP 표시·사망 경로를 포함하지만 StageManager·보상·저장·전체 최대 강화 빌드를 포함하지 않습니다.']
     (output / 'comparison.md').write_text('\n'.join(lines) + '\n')

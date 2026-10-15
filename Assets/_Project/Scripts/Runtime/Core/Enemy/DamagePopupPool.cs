@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Unity.Profiling;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -11,6 +12,9 @@ namespace Game.Core
     /// 숫자 모양은 Resources/UI/DamagePopup 프리팹이 정한다</summary>
     public sealed class DamagePopupPool : MonoBehaviour
     {
+        private static readonly ProfilerMarker LoadMarker = new("DamagePopupPool.Load");
+        private static readonly ProfilerMarker CreateMarker = new("DamagePopupPool.Create");
+        private static readonly ProfilerMarker ShowMarker = new("DamagePopupPool.Show");
         public const int MaxActive = 40;
         private const string PrefabPath = "UI/DamagePopup";
 
@@ -61,7 +65,8 @@ namespace Game.Core
                 return s_instance;
             }
 
-            var prefab = Resources.Load<DamagePopup>(PrefabPath);
+            DamagePopup prefab;
+            using (LoadMarker.Auto()) { prefab = Resources.Load<DamagePopup>(PrefabPath); }
             if (prefab == null)
             {
                 if (!s_warned)
@@ -99,11 +104,11 @@ namespace Game.Core
             }
             else
             {
-                popup = Instantiate(_prefab, transform);
+                using (CreateMarker.Auto()) { popup = Instantiate(_prefab, transform); }
             }
 
             _releaseCallback ??= Release;
-            popup.Show(amount, position, kind, _releaseCallback, hitPoint);
+            using (ShowMarker.Auto()) { popup.Show(amount, position, kind, _releaseCallback, hitPoint); }
             _active.Add(popup);
         }
 

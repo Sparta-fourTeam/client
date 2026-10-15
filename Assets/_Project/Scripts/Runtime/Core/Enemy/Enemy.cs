@@ -16,6 +16,9 @@ namespace Game.Core
     {
         private static readonly ProfilerMarker HpPresentationMarker = new("Enemy.HpPresentation");
         private static readonly ProfilerMarker DamagePopupMarker = new("Enemy.DamagePopup");
+        private static readonly ProfilerMarker DeathEffectLoadMarker = new("Enemy.DeathEffect.Load");
+        private static readonly ProfilerMarker DeathEffectCreateMarker = new("Enemy.DeathEffect.Create");
+        private static readonly ProfilerMarker DeathEffectSetupMarker = new("Enemy.DeathEffect.Setup");
         private static readonly ProfilerMarker DeathPresentationMarker = new("Enemy.DeathPresentation");
 
         private static readonly int MovingHash = Animator.StringToHash("Moving");
@@ -261,7 +264,10 @@ namespace Game.Core
             _deathPlayed = true;
             _hitFlash?.Restore();
             GetComponent<EnemyStatusEffects>()?.Clear();
-            if (s_deathEffect == null) { s_deathEffect = Resources.Load<GameObject>("VFX/EnemyDeath"); }
+            using (DeathEffectLoadMarker.Auto())
+            {
+                if (s_deathEffect == null) { s_deathEffect = Resources.Load<GameObject>("VFX/EnemyDeath"); }
+            }
             if (s_deathEffect != null)
             {
                 var body = _animator != null ? _animator.transform : transform;
@@ -273,7 +279,12 @@ namespace Game.Core
                     bounds = renderers[0].bounds;
                     foreach (var renderer in renderers) { bounds.Encapsulate(renderer.bounds); }
                 }
-                var effect = Instantiate(s_deathEffect, bounds.center, Quaternion.identity);
+                GameObject effect;
+                using (DeathEffectCreateMarker.Auto())
+                {
+                    effect = Instantiate(s_deathEffect, bounds.center, Quaternion.identity);
+                }
+                using var setupScope = DeathEffectSetupMarker.Auto();
                 UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(effect, gameObject.scene);
                 effect.transform.localScale = Vector3.one * Mathf.Clamp(Mathf.Max(bounds.size.x, bounds.size.y), .4f, 2f);
                 // 새 분열체와 다른 적을 가리지 않도록 죽은 적의 바로 뒤에 그린다.

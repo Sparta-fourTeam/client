@@ -38,6 +38,16 @@ namespace Game.Sandbox
         [SerializeField] private int seed = 20261015;
         [SerializeField] private bool screenshots = true;
 
+        private static readonly string[] TimingMarkers =
+        {
+            "Enemy.DeathPresentation", "Enemy.DeathEffect.Load", "Enemy.DeathEffect.Create", "Enemy.DeathEffect.Setup",
+            "Enemy.DamagePopup", "DamagePopupPool.Load", "DamagePopupPool.Create", "DamagePopupPool.Show",
+            "DamagePopup.SetText", "TMP Layout Text", "TMP.SetArraySizes", "HitscanEffect.QueryTargets", "HitscanEffect.ResolveHits"
+        };
+        private ProfilerRecorder[] timingRecorders;
+        private long[][] timingSamples;
+        private Workload[] workloads;
+        [SerializeField] private bool showPopups = true, warmPopups, deathsOnly;
         private IPublisher<EnemyHpChanged> hpPublisher;
         private IPublisher<EnemyDied> diedPublisher;
         private ISubscriber<EnemyHpChanged> hpSubscriber;
@@ -92,7 +102,8 @@ namespace Game.Sandbox
             public bool complete, interrupted, allocationAvailable, gcTimeAvailable;
             public int enemyCount, projectilesPerVolley, volleyEveryFrames, warmupFrames, measurementFrames, repetitions, seed;
             public string enemyPrefab, projectilePrefab, hitscanPrefab, areaPrefab, beamPrefab, chainPrefab;
-            public string[] workloads;
+            public string[] workloads, timingMarkers;
+            public bool showPopups, warmPopups;
             public Trial[] trials;
         }
 
@@ -113,6 +124,14 @@ namespace Game.Sandbox
             if (enemyPrefab == null || projectilePrefab == null || hitscanPrefab == null || areaPrefab == null || beamPrefab == null || chainPrefab == null || enemyCount < 1 ||
                 measurementFrames < 1 || warmupFrames < 1 || repetitions < 1 || volleyEveryFrames < 1 || projectilesPerVolley < 1)
             { status = "Invalid benchmark configuration"; Debug.LogError(status); yield break; }
+            var args = Environment.GetCommandLineArgs();
+            showPopups &= Array.IndexOf(args, "-novaNoPopups") < 0;
+            warmPopups |= Array.IndexOf(args, "-novaWarmPopups") >= 0;
+            workloads = deathsOnly || Array.IndexOf(args, "-novaDeathsOnly") >= 0
+                ? new[] { Workload.SimultaneousDeaths } : (Workload[])Enum.GetValues(typeof(Workload));
+            if (Array.IndexOf(args, "-novaQuickBenchmark") >= 0)
+            { warmupFrames = 60; measurementFrames = 120; screenshots = false; }
+            runLabel += showPopups ? warmPopups ? "-warm-popups" : "-cold-popups" : "-no-popups";
             initialized = true;
             previousFps = Application.targetFrameRate; previousVsync = QualitySettings.vSyncCount;
             previousCaptureDelta = Time.captureDeltaTime; previousRandom = Random.state;
@@ -120,10 +139,18 @@ namespace Game.Sandbox
             Application.targetFrameRate = 60; QualitySettings.vSyncCount = 0;
             // 시뮬레이션 부하는 고정한다. 실제 시간은 deltaTime 대신 Stopwatch로 측정한다.
             Time.captureDeltaTime = 1f / 60f;
-            DamagePopupPool.Enabled = EnemyStatusEffects.Enabled = true;
+            DamagePopupPool.Enabled = showPopups; EnemyStatusEffects.Enabled = true;
             output = Path.Combine(Application.persistentDataPath, "CombatBenchmarks", runLabel + "_" + DateTime.UtcNow.ToString("yyyyMMdd_HHmmss"));
             Directory.CreateDirectory(output);
-            frames.Capacity = measurementFrames * repetitions * Enum.GetValues(typeof(Workload)).Length;
+            frames.Capacity = measurementFrames * repetitions * workloads.Length;
+            timingRecorders = new ProfilerRecorder[TimingMarkers.Length];
+            timingSamples = new long[TimingMarkers.Length][];
+            for (int i = 0; i < TimingMarkers.Length; i++)
+            {
+                timingRecorders[i] = ProfilerRecorder.StartNew(ProfilerCategory.Scripts, TimingMarkers[i], 1,
+                    ProfilerRecorderOptions.Default | ProfilerRecorderOptions.CollectOnlyOnCurrentThread);
+                timingSamples[i] = new long[frames.Capacity];
+            }
             enemies = new Enemy[enemyCount];
             compareTargets = CompareTargets;
             hpSubscription = hpSubscriber.Subscribe(message => { if (measuring) { hpEvents++; } });
@@ -131,7 +158,7 @@ namespace Game.Sandbox
             gcAllocation = ProfilerRecorder.StartNew(ProfilerCategory.Memory, "GC Allocated In Frame", 1);
             gcTime = ProfilerRecorder.StartNew(ProfilerCategory.Memory, "GC.Collect", 1);
             running = true;
-            foreach (Workload workload in Enum.GetValues(typeof(Workload)))
+            foreach (Workload workload in workloads)
             {
                 for (int repeat = 0; repeat < repetitions; repeat++)
                 {
@@ -156,6 +183,8 @@ namespace Game.Sandbox
                         previousTimestamp = Stopwatch.GetTimestamp();
                         Drive(workload, f);
                         yield return null;
+                        for (int m = 0; m < timingRecorders.Length; m++)
+                        { timingSamples[m][frames.Count] = timingRecorders[m].Valid ? timingRecorders[m].LastValue : -1; }
                         frames.Add(new Frame
                         {
                             workload = workloadName,
@@ -237,6 +266,22 @@ namespace Game.Sandbox
                 TargetProvider = this,
                 HitReactions = damageReactions
             };
+            if (showPopups && warmPopups)
+            {
+                for (int i = 0; i < DamagePopupPool.MaxActive; i++)
+                { DamagePopupPool.Show(int.MaxValue, PositionAt(i), gameObject.scene); }
+                // 실제 TMP 메시 생성과 트윈 반환을 기다린다. 느린 기기에서도 고정 대기로 준비 완료를 추정하지 않는다.
+                var popups = FindAnyObjectByType<DamagePopupPool>();
+                float deadline = Time.realtimeSinceStartup + 5f;
+                while (popups != null && popups.ActiveCount > 0 && Time.realtimeSinceStartup < deadline)
+                { yield return null; }
+                if (popups == null || popups.ActiveCount != 0 || popups.FreeCount != DamagePopupPool.MaxActive)
+                {
+                    interrupted = true;
+                    Debug.LogError("[CombatBenchmark] Popup warmup did not finish; run is invalid.");
+                    yield break;
+                }
+            }
             yield return null;
         }
 
@@ -381,13 +426,23 @@ namespace Game.Sandbox
                 areaPrefab = areaPrefab.name,
                 beamPrefab = beamPrefab.name,
                 chainPrefab = chainPrefab.name,
-                workloads = Enum.GetNames(typeof(Workload)),
+                workloads = Array.ConvertAll(workloads, value => value.ToString()),
+                timingMarkers = TimingMarkers,
+                showPopups = showPopups,
+                warmPopups = warmPopups,
                 trials = trials.ToArray()
             };
             File.WriteAllText(Path.Combine(output, "summary.json"), JsonUtility.ToJson(report, true));
-            var csv = new StringBuilder("workload,repetition,frame,wall_ms,gc_allocated_bytes,gc_collect_ns\n");
-            foreach (var f in frames)
-            { csv.Append(f.workload).Append(',').Append(f.repetition).Append(',').Append(f.frame).Append(',').Append(f.wallMs.ToString("F5", CultureInfo.InvariantCulture)).Append(',').Append(f.allocatedBytes).Append(',').Append(f.gcNanoseconds).Append('\n'); }
+            var csv = new StringBuilder("workload,repetition,frame,wall_ms,gc_allocated_bytes,gc_collect_ns");
+            foreach (var marker in TimingMarkers) { csv.Append(',').Append(marker).Append("_ns"); }
+            csv.Append('\n');
+            for (int i = 0; i < frames.Count; i++)
+            {
+                var f = frames[i];
+                csv.Append(f.workload).Append(',').Append(f.repetition).Append(',').Append(f.frame).Append(',').Append(f.wallMs.ToString("F5", CultureInfo.InvariantCulture)).Append(',').Append(f.allocatedBytes).Append(',').Append(f.gcNanoseconds);
+                for (int m = 0; m < TimingMarkers.Length; m++) { csv.Append(',').Append(timingSamples[m][i]); }
+                csv.Append('\n');
+            }
             File.WriteAllText(Path.Combine(output, "frames.csv"), csv.ToString());
         }
         private void OnApplicationPause(bool paused) { if (paused && running) { interrupted = true; } }
@@ -403,7 +458,9 @@ namespace Game.Sandbox
         protected override void OnDestroy()
         {
             RestoreSettings(); hpSubscription?.Dispose(); deathSubscription?.Dispose();
-            gcAllocation.Dispose(); gcTime.Dispose(); base.OnDestroy();
+            gcAllocation.Dispose(); gcTime.Dispose();
+            if (timingRecorders != null) { for (int i = 0; i < timingRecorders.Length; i++) { timingRecorders[i].Dispose(); } }
+            base.OnDestroy();
         }
         private void OnGUI()
         {

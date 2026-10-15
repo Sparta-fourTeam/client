@@ -247,10 +247,7 @@ namespace Game.Tests
                 if (count <= 8) { Assert.That(slots.localScale, Is.EqualTo(Vector3.one)); }
                 if (count == 9 || count == 40 || count == 3)
                 {
-                    string capture = Path.GetFullPath(Path.Combine(Application.dataPath, $"../Temp/reward-popup-{count}.png"));
-                    if (File.Exists(capture)) { File.Delete(capture); }
-                    ScreenCapture.CaptureScreenshot(capture);
-                    yield return WaitFor(() => File.Exists(capture));
+                    yield return CaptureUiScreenshot($"reward-popup-{count}.png");
                 }
                 yield return ClickGameButton(tap);
                 yield return WaitFor(() => !panel.activeSelf);
@@ -686,10 +683,7 @@ namespace Game.Tests
                     // 두 번째 엘리트 보상은 첫 번째 스킵으로 함께 소비되면 안 된다.
                     var queuedEnemy = stage.Container.Resolve<IEnemyFactory>().Create(elite.Id, new Vector2(99, 99), isSummoned: true);
                     queuedEnemy.TakeDamage(queuedEnemy.Model.Hp);
-                    string preview = Path.GetFullPath(Path.Combine(Application.dataPath, "../Temp/elite-roulette-skip-button.png"));
-                    if (File.Exists(preview)) { File.Delete(preview); }
-                    ScreenCapture.CaptureScreenshot(preview);
-                    yield return WaitFor(() => File.Exists(preview));
+                    yield return CaptureUiScreenshot("elite-roulette-skip-button.png");
                     var background = Field<PointerClickRelay>(view, "_background");
                     yield return ClickGameTarget(background, localPoint: ((RectTransform)background.transform).rect.min + Vector2.one * 48f);
                     Assert.That(stats.BuildLog.Count - priorCards, Is.EqualTo(1), "dim 한 번은 현재 회차의 카드 한 장만 적용한다");
@@ -731,10 +725,7 @@ namespace Game.Tests
                 var confirmButton = Field<Button>(view, "_skipButton");
                 yield return WaitFor(() => confirmButton.interactable
                     && confirmButton.GetComponentInChildren<TMP_Text>(true).text == "확인");
-                string screenshot = Path.GetFullPath(Path.Combine(Application.dataPath, "../Temp/elite-roulette-live.png"));
-                if (File.Exists(screenshot)) { File.Delete(screenshot); }
-                ScreenCapture.CaptureScreenshot(screenshot);
-                yield return WaitFor(() => File.Exists(screenshot));
+                yield return CaptureUiScreenshot("elite-roulette-live.png");
                 Assert.That(panel.activeSelf, Is.True, "스킵 여부와 관계없이 전체 카드 결과를 확인할 때까지 유지한다");
                 Assert.That(manager.State, Is.EqualTo(StageState.EliteRoulette));
                 Assert.That(Time.timeScale, Is.Zero);
@@ -803,6 +794,59 @@ namespace Game.Tests
             Assert.That(profile.IsLoaded, Is.False, "Root가 사용하는 실제 프로필 캐시도 삭제한다");
             Assert.That(profile.Nickname, Is.Empty);
             Assert.That(profile.Snapshot().tutorials, Is.Null.Or.Empty);
+        }
+
+        [UnityTest]
+        public IEnumerator DailyShop_InactiveDestructionAndReactivationRefreshLatestProfile()
+        {
+            yield return StartFromBoot(UnlockLobbyFeatures);
+            var lobby = Object.FindAnyObjectByType<LobbyLifetimeScope>();
+            var profile = lobby.Container.Resolve<PlayerProfile>();
+            var shop = lobby.Container.Resolve<IUiRegistry>().Get<ShopScreenView>();
+            var daily = shop.GetComponentInChildren<DailyShopView>(true);
+            var player = lobby.Container.Resolve<IPlayerApi>();
+
+            Assert.That(daily, Is.Not.Null);
+            Assert.That(daily.isActiveAndEnabled, Is.False);
+            // Never activate this injected clone: Unity will not call Awake/OnDestroy on it.
+            var inactiveRoot = new GameObject("InactiveDailyShopTest");
+            inactiveRoot.SetActive(false);
+            try
+            {
+                var clone = Object.Instantiate(daily.gameObject, inactiveRoot.transform).GetComponent<DailyShopView>();
+                clone.Construct(profile, lobby.Container.Resolve<GameDataStore>(), lobby.Container.Resolve<IShopApi>(), player);
+                Object.Destroy(inactiveRoot);
+                yield return null;
+                Assert.That(clone == null, Is.True);
+                profile.Apply(new LocalPlayerApi(_store).GetMe().GetAwaiter().GetResult());
+            }
+            finally { if (inactiveRoot != null) { Object.Destroy(inactiveRoot); } }
+
+            var item = Field<DailyShopItemView[]>(daily, "_items")[0];
+            for (int pass = 0; pass < 3; pass++)
+            {
+                var snapshot = new LocalPlayerApi(_store).GetMe().GetAwaiter().GetResult();
+                snapshot.shop = new ShopState { purchased = pass % 2 == 0 ? new List<int> { 0 } : new List<int>() };
+                profile.Apply(snapshot);
+                shop.SetVisible(true);
+                shop.SelectTab(ShopTab.Daily);
+                yield return null;
+                Assert.That(daily.isActiveAndEnabled, Is.True);
+                Assert.That(Field<GameObject>(item, "_soldOut").activeSelf, Is.EqualTo(pass % 2 == 0));
+                Assert.That(Field<Button>(item, "_buy").interactable, Is.EqualTo(pass % 2 != 0));
+                // An active view must also react to profile updates without being reopened.
+                snapshot.shop = new ShopState { purchased = pass % 2 != 0 ? new List<int> { 0 } : new List<int>() };
+                profile.Apply(snapshot);
+                yield return null;
+                Assert.That(Field<GameObject>(item, "_soldOut").activeSelf, Is.EqualTo(pass % 2 != 0));
+                Assert.That(Field<Button>(item, "_buy").interactable, Is.EqualTo(pass % 2 == 0));
+                shop.SetVisible(false);
+                yield return null;
+            }
+
+            Object.Destroy(daily.gameObject);
+            yield return null;
+            profile.Apply(new LocalPlayerApi(_store).GetMe().GetAwaiter().GetResult());
         }
 
         [UnityTest]
@@ -1318,12 +1362,24 @@ namespace Game.Tests
             }
         }
 
-        private static IEnumerator WaitFor(Func<bool> condition, string step = null)
+        private static IEnumerator CaptureUiScreenshot(string fileName)
+        {
+            // 캡처는 시각 확인용 증거다. Game View가 없는 batch 실행에서도 UI 동작 검증은 끝까지 수행한다.
+            if (Application.isBatchMode) { yield break; }
+            string path = Path.GetFullPath(Path.Combine(Application.dataPath, "../Temp", fileName));
+            if (File.Exists(path)) { File.Delete(path); }
+            ScreenCapture.CaptureScreenshot(path);
+            yield return WaitFor(() => File.Exists(path), $"스크린샷 저장: {fileName}");
+        }
+
+        private static IEnumerator WaitFor(Func<bool> condition, string step = null,
+            [System.Runtime.CompilerServices.CallerMemberName] string caller = null,
+            [System.Runtime.CompilerServices.CallerLineNumber] int line = 0)
         {
             float deadline = Time.realtimeSinceStartup + 20f;
             while (!condition())
             {
-                Assert.That(Time.realtimeSinceStartup, Is.LessThan(deadline), $"UI flow did not complete in 20 seconds. Step={step}, Scene={SceneManager.GetActiveScene().name}, Playing={Application.isPlaying}");
+                Assert.That(Time.realtimeSinceStartup, Is.LessThan(deadline), $"UI flow did not complete in 20 seconds. Step={step ?? caller}, Line={line}, Scene={SceneManager.GetActiveScene().name}, Playing={Application.isPlaying}");
                 yield return null;
             }
         }

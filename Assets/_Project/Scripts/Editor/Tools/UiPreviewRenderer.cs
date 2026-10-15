@@ -341,7 +341,8 @@ namespace Game.Editor
                 || _selected.GetComponentInChildren<ContentUnlockView>(true) != null
                 || _selected.GetComponentInChildren<LevelUpPopupView>(true) != null
                 || _selected.GetComponentInChildren<EliteRouletteView>(true) != null
-                || _selected.GetComponentInChildren<DialogueView>(true) != null;
+                || _selected.GetComponentInChildren<DialogueView>(true) != null
+                || UiSkillSlotPreviewSample.Has(_selected);
 
             // 보상·해금·레벨 업 팝업의 실제 등장 연출을 편집용 예시 데이터로 재생한다 (서버·프로필·재화는 건드리지 않는다)
             internal void PlayScenario()
@@ -355,6 +356,11 @@ namespace Game.Editor
                         _dialoguePlaying = true;
                         UiDialoguePreviewSample.PlayAsync(dialogue).ContinueWith(() => _dialoguePlaying = false).Forget(Debug.LogException);
                     }
+                    if (UiSkillSlotPreviewSample.Has(_selected))
+                    {
+                        UiSkillSlotPreviewSample.Play(_selected);
+                    }
+
                     // 전투 HUD 등장 연출 (게임에서는 스테이지가 시작될 때 자동으로 재생된다)
                     foreach (var intro in _container.GetComponentsInChildren<HudIntro>(true)) { intro.Play(); }
 

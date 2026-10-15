@@ -31,12 +31,16 @@ namespace Game.View
         private const float AwakeHoldSeconds = 1.2f, CalmSeconds = 1.3f, WakeSeconds = 0.12f;
         // 게이지가 0으로 돌아가 별이 사라질 때 불꽃이 튀는 시간. 이 시간 동안만 방출하고 멈춘다
         private const float SparkBurstSeconds = 0.15f;
+        // 채워진 막대 위로 번지는 발광이 숨 쉬듯 밝아졌다 어두워지는 범위와 한 번 오가는 시간
+        private const float GlowMinAlpha = 0.35f, GlowMaxAlpha = 0.85f, GlowBreatheSeconds = 1.1f, GlowFadeSeconds = 0.25f;
 
         // 스테이지와 보상 규칙이 공유하는 총 웨이브 수를 함께 표시한다.
         [SerializeField] private TMP_Text _waveValueText;
         [SerializeField] private Image _gaugeFill;
         [Tooltip("게이지가 찬 끝을 따라다니는 별. 비우면 표시하지 않는다")]
         [SerializeField] private RectTransform _gaugeStar;
+        [Tooltip("채워진 막대를 감싸 번지는 소프트 글로우. 채움 이미지의 자식으로 두고 앵커를 (0, 0.5)로 맞춘다. 코드가 오른쪽 앵커를 채움 양에 맞춘다. 비우면 쓰지 않는다")]
+        [SerializeField] private Image _gaugeGlow;
         [Tooltip("가득 찼을 때 별에서 가로로 번지는 빛줄기. 별의 자식으로 두면 따라다닌다. 비우면 쓰지 않는다")]
         [SerializeField] private Image _gaugeFlare;
         [Tooltip("가득 차 카드를 고르는 동안 막대 위를 깜빡이는 번개 이미지들. 막대 폭에 늘어나게 앵커를 맞춰 둔다. 비우면 쓰지 않는다")]
@@ -60,6 +64,9 @@ namespace Game.View
         private float _fillTarget;
         private Tween _punchTween;
         private Tween _twinkleTween;
+        private Tween _glowTween, _glowFadeTween;
+        private float _glowOn;      // 0~1: 가득 찼을 때만 켜진다
+        private float _glowBreath;   // 0~1: 발광이 숨 쉬는 위상
         private Tween _thinTween, _flareTween, _boltMasterTween, _wakeTween, _calmTween, _sparkStopTween;
         private CanvasGroup _starGroup;
         private bool _pinnedAwake;   // 가득 차 카드를 고르는 동안은 별이 깨어 있다
@@ -103,6 +110,7 @@ namespace Game.View
             _hasWaveText = false;
             _hasFullState = false;
             if (!_deferRender && _waveValueText != null && _gaugeFill != null) { RenderGauge(); }
+            StartGlowBreathing();
             if (_gaugeStar == null || _twinkleTween != null) { return; }
             _twinkleTween = DOTween.To(() => _twinkle, v => { _twinkle = v; ApplyStarShape(); }, TwinkleMax, TwinkleSeconds)
                 .From(TwinkleMin)
@@ -110,6 +118,37 @@ namespace Game.View
                 .SetLoops(-1, LoopType.Yoyo)
                 .SetUpdate(true)
                 .SetLink(gameObject);
+        }
+
+        private void OnDisable()
+        {
+            StopAnimations();
+            _hasFullState = false;
+            _pinnedAwake = false;
+            _activity = 0f;
+            _thin = 0f;
+            ApplyStarShape();
+            if (_waveValueText != null) { _waveValueText.rectTransform.localScale = Vector3.one; }
+        }
+
+        // 막대 발광은 가득 찼을 때만 켜져 은은하게 숨 쉰다. 채움 양은 PlaceStar에서 따라간다
+        private void StartGlowBreathing()
+        {
+            if (_gaugeGlow == null || _glowTween != null) { return; }
+            ApplyGlow();
+            _glowTween = DOTween.To(() => _glowBreath, v => { _glowBreath = v; ApplyGlow(); }, 1f, GlowBreatheSeconds)
+                .From(0f)
+                .SetEase(Ease.InOutSine)
+                .SetLoops(-1, LoopType.Yoyo)
+                .SetUpdate(true)
+                .SetLink(gameObject);
+        }
+
+        private void ApplyGlow()
+        {
+            var c = _gaugeGlow.color;
+            c.a = Mathf.Lerp(GlowMinAlpha, GlowMaxAlpha, _glowBreath) * _glowOn;
+            _gaugeGlow.color = c;
         }
 
         private void OnGaugeChanged(WaveGaugeChanged message)
@@ -215,6 +254,7 @@ namespace Game.View
             _hasFullState = true;
             TweenTo(ref _flareTween, () => _flare, v => { _flare = v; ApplyStarShape(); }, full ? 1f : 0f, StarShapeSeconds);
             SetBolts(full);
+            if (_gaugeGlow != null) { TweenTo(ref _glowFadeTween, () => _glowOn, v => { _glowOn = v; ApplyGlow(); PlaceStar(); }, full ? 1f : 0f, GlowFadeSeconds); }
 
             if (_pinnedAwake == full) { return; }
             _pinnedAwake = full;
@@ -225,6 +265,7 @@ namespace Game.View
         {
             float target = full ? 1f : 0f;
             if (!AtTargetOrMoving(_flare, target, _flareTween)) { return false; }
+            if (_gaugeGlow != null && !AtTargetOrMoving(_glowOn, target, _glowFadeTween)) { return false; }
             if (_lightningBolts == null || _lightningBolts.Length == 0) { return true; }
             if (!AtTargetOrMoving(_boltMaster, target, _boltMasterTween)) { return false; }
             if (!full)
@@ -377,6 +418,13 @@ namespace Game.View
         // 별을 게이지가 찬 끝에 둔다. 채움 이미지의 로컬 좌표로 끝을 구해 앵커 설정과 상관없이 맞는다
         private void PlaceStar()
         {
+            if (_gaugeGlow != null)
+            {
+                // 글로우는 채움 이미지의 자식이라 앵커 폭이 곧 채워진 구간이다. 비어 있으면 숨긴다
+                float fill = _gaugeFill.fillAmount;
+                _gaugeGlow.enabled = fill > 0.001f && _glowOn > 0.001f;
+                _gaugeGlow.rectTransform.anchorMax = new Vector2(fill, 0.5f);
+            }
             if (_gaugeStar == null) { return; }
             var rect = ((RectTransform)_gaugeFill.transform).rect;
             var local = new Vector3(rect.xMin + rect.width * _gaugeFill.fillAmount, rect.center.y, 0f);
@@ -400,17 +448,31 @@ namespace Game.View
         protected override void DisposeView()
         {
             _viewDisposed = true;
-            _fillTween?.Kill();
-            _punchTween?.Kill();
-            _twinkleTween?.Kill();
-            _thinTween?.Kill();
-            _flareTween?.Kill();
-            _boltMasterTween?.Kill();
-            _wakeTween?.Kill();
-            _calmTween?.Kill();
-            _sparkStopTween?.Kill();
-            if (_boltTweens != null) { foreach (var t in _boltTweens) { t?.Kill(); } }
+            StopAnimations();
             base.DisposeView();
+        }
+
+        private void StopAnimations()
+        {
+            KillTween(ref _fillTween);
+            KillTween(ref _punchTween);
+            KillTween(ref _twinkleTween);
+            KillTween(ref _glowTween);
+            KillTween(ref _glowFadeTween);
+            KillTween(ref _thinTween);
+            KillTween(ref _flareTween);
+            KillTween(ref _boltMasterTween);
+            KillTween(ref _wakeTween);
+            KillTween(ref _calmTween);
+            KillTween(ref _sparkStopTween);
+            KillBoltLoops();
+            if (_resetSparks != null) { _resetSparks.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear); }
+        }
+
+        private static void KillTween(ref Tween tween)
+        {
+            tween?.Kill();
+            tween = null;
         }
     }
 }

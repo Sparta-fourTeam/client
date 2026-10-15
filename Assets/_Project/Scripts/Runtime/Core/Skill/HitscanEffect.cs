@@ -1,3 +1,4 @@
+using System;
 using Unity.Profiling;
 using UnityEngine;
 using UnityEngine.Pool;
@@ -17,6 +18,7 @@ namespace Game.Core
         private static readonly ProfilerMarker ExpiredReactionsMarker = new("HitscanEffect.ExpiredReactions");
         private static readonly ProfilerMarker ReleaseMarker = new("HitscanEffect.Release");
 
+        private static readonly Comparison<Collider2D> CompareDepth = (a, b) => a.transform.position.z.CompareTo(b.transform.position.z);
         private IObjectPool<HitscanEffect> pool;
         [SerializeField] private LayerMask targetMask;
         private float damage;
@@ -114,15 +116,22 @@ namespace Game.Core
                 }
                 return;
             }
-            Collider2D[] hits;
+            // Lease per hit: nested reaction strikes must not overwrite an outer strike's results.
+            // Lists grow for dense waves instead of silently truncating a fixed-size collider buffer.
+            using var hitsLease = ListPool<Collider2D>.Get(out var hits);
+            using var damagedLease = HashSetPool<Enemy>.Get(out var damaged);
             using (QueryTargetsMarker.Auto())
             {
-                hits = Physics2D.OverlapCircleAll(transform.position, activeRadius, targetMask);
+                var filter = new ContactFilter2D();
+                filter.SetLayerMask(targetMask);
+                filter.useTriggers = Physics2D.queriesHitTriggers;
+                Physics2D.OverlapCircle(transform.position, activeRadius, filter, hits);
+                // OverlapCircleAll returned ascending Z order; keep reaction order unchanged.
+                hits.Sort(CompareDepth);
             }
 
             using (ResolveHitsMarker.Auto())
             {
-                var damaged = new System.Collections.Generic.HashSet<Enemy>();
                 foreach (Collider2D hit in hits)
                 {
                     if (hit.TryGetComponent(out Enemy enemy) && !enemy.IsDead && damaged.Add(enemy))

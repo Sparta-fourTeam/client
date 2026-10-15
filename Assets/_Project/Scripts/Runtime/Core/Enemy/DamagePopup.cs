@@ -1,6 +1,7 @@
 using System;
 using DG.Tweening;
 using TMPro;
+using Unity.Profiling;
 using UnityEngine;
 
 namespace Game.Core
@@ -35,6 +36,7 @@ namespace Game.Core
         [Tooltip("치명타일 때만 글자 뒤에서 번지는 빛. 비우면 쓰지 않는다")]
         [SerializeField] private SpriteRenderer _glow;
 
+        private static readonly ProfilerMarker SetTextMarker = new("DamagePopup.SetText");
         private Color _baseColor;
         private Vector3 _burstBaseScale = Vector3.one, _glowBaseScale = Vector3.one;
         private float _glowBaseAlpha = 1f;
@@ -144,7 +146,7 @@ namespace Game.Core
                 var material = critical ? _criticalMaterial : status ? _statusMaterial : _normalMaterial;
                 if (material != null) { _text.fontSharedMaterial = material; }
 
-                _text.SetText(critical ? "{0}!" : "{0}", amount);
+                using (SetTextMarker.Auto()) { _text.SetText(critical ? "{0}!" : "{0}", amount); }
                 var color = _baseColor;
                 color.a = status ? _baseColor.a * StatusStartAlpha : _baseColor.a;
                 _text.color = color;
