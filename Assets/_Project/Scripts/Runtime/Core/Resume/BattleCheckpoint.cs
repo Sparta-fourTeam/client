@@ -20,7 +20,12 @@ namespace Game.Core
     public interface IBattleCheckpointStore
     {
         BattleCheckpoint Load();
+        /// <summary>독립 스냅샷을 저장하고 완료까지 기다린다.</summary>
         void Save(BattleCheckpoint checkpoint);
+        /// <summary>호출자가 더 이상 변경하지 않을 독립 스냅샷을 넘긴다. 최신 대기 한 건만 유지한다.</summary>
+        void QueueSave(BattleCheckpoint checkpoint);
+        /// <summary>접수한 최신 저장의 완료를 기다린다. 종료·백그라운드 전환에 사용한다.</summary>
+        void Flush();
         void Clear();
     }
 

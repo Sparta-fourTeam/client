@@ -3,6 +3,7 @@ using Cysharp.Threading.Tasks;
 using Game.Core;
 using Game.Core.Defense;
 using Game.Core.Stage;
+using Unity.Profiling;
 using UnityEngine;
 using VContainer;
 
@@ -11,6 +12,8 @@ namespace Game.Boot
     /// <summary>모든 Update가 끝난 상태를 저장하고, 씬의 정상 Start가 끝난 뒤 한 번만 복원한다.</summary>
     public sealed class BattleCheckpointDriver : MonoBehaviour
     {
+        private static readonly ProfilerMarker SaveMarker = new("BattleCheckpoint.Save");
+        private static readonly ProfilerMarker CaptureMarker = new("BattleCheckpoint.Capture");
         private StageManager _stage;
         private StageContext _context;
         private IBattleCheckpointStore _store;
@@ -55,7 +58,7 @@ namespace Game.Boot
                     _stage.RestoreRuntime(checkpoint.Stage, _skills, _data);
                 }
                 _ready = true; _untilSave = 1f;
-                SaveNow();
+                QueueCheckpoint();
             }
             catch (OperationCanceledException) { }
             catch (Exception error)
@@ -70,11 +73,12 @@ namespace Game.Boot
             if (!_ready) { return; }
             _untilSave -= Time.unscaledDeltaTime;
             if (_untilSave > 0) { return; }
-            _untilSave = 1f; SaveNow();
+            _untilSave = 1f; QueueCheckpoint();
         }
         public BattleCheckpoint Capture()
         {
             if (!_ready || string.IsNullOrEmpty(_context.BattleId) || _stage.State is StageState.Starting or StageState.Finished) { return null; }
+            using var captureSample = CaptureMarker.Auto();
             var state = _stage.CaptureRuntime(_skills);
             _wall.CaptureRuntime(state); _waves.CaptureRuntime(state); _progress.CaptureRuntime(state); _encountered.CaptureRuntime(state);
             return new BattleCheckpoint
@@ -87,11 +91,17 @@ namespace Game.Boot
                 RandomState = JsonUtility.ToJson(UnityEngine.Random.state)
             };
         }
-        public void SaveNow()
+        private void QueueCheckpoint()
         {
-            try { var checkpoint = Capture(); if (checkpoint != null) { _store.Save(checkpoint); } }
+            using var saveSample = SaveMarker.Auto();
+            try { var checkpoint = Capture(); if (checkpoint != null) { _store.QueueSave(checkpoint); } }
             catch (Exception error) when (error is System.IO.IOException or InvalidOperationException)
             { Debug.LogWarning($"[BattleCheckpoint] 전투 저장 실패: {error.Message}"); }
+        }
+        public void SaveNow()
+        {
+            QueueCheckpoint();
+            _store.Flush();
         }
         private void OnApplicationPause(bool paused) { if (paused) { SaveNow(); } }
         private void OnApplicationFocus(bool focused) { if (!focused) { SaveNow(); } }

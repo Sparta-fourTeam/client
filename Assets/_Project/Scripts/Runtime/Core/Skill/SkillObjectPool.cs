@@ -12,7 +12,13 @@ namespace Game.Core
         private readonly Dictionary<T, ParticleSystem[]> particles = new();
         private readonly Dictionary<T, TrailRenderer[]> trails = new();
         public ObjectPool<T> Pool { get; }
-        internal IEnumerable<T> Active => System.Linq.Enumerable.Where(instances, item => item != null && item.gameObject.activeSelf);
+        internal void CaptureActive<TState>(List<TState> result, Func<T, TState> capture)
+        {
+            int capacity = result.Count + Pool.CountActive;
+            if (result.Capacity < capacity) { result.Capacity = capacity; }
+            foreach (var item in instances)
+            { if (item != null && item.gameObject.activeSelf) { result.Add(capture(item)); } }
+        }
         public SkillObjectPool(Func<T> create, int capacity, int maxSize)
         {
             Pool = new ObjectPool<T>(() =>

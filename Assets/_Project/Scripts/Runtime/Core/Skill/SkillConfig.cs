@@ -30,6 +30,8 @@ namespace Game.Core
         public IReadOnlyDictionary<int, IReadOnlyList<EffectDef>> Overlays { get; }
         internal readonly ReactionBinding[] Bindings;
         internal readonly IReadOnlyList<EffectDef> SnapshotEffects;
+        // 설정은 불변이다. 저장용 복사본도 읽기 전용으로 공유하고 강화 시 새 설정에서 다시 만든다.
+        internal SkillConfigState CheckpointCache;
 
         internal SkillConfig(SkillStats stats, AttackDefinition attack, IEnumerable<ReactionBinding> bindings,
             IChildSkillCaster childCaster = null, IReadOnlyDictionary<int, ChildLink> children = null,

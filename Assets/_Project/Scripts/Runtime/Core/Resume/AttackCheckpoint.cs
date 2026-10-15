@@ -17,6 +17,8 @@ namespace Game.Core
 
     internal static class SavedAttack
     {
+        // 캡처는 메인 스레드에서 순차 실행된다. 임시 컴포넌트 참조는 작업 뒤 비운다.
+        private static readonly List<Animator> AnimatorScratch = new();
         internal static int Id(IEnemyTarget target) => target is Enemy enemy ? enemy.Id : 0;
         internal static AttackRuntimeState Capture(string kind, Transform transform, DamageSource source, AttackReactions reactions)
         {
@@ -30,15 +32,20 @@ namespace Game.Core
                 Position = transform.position,
                 Scale = transform.localScale
             };
-            var animators = transform.GetComponentsInChildren<Animator>(true);
-            for (int i = 0; i < animators.Length; i++)
+            try
             {
-                for (int layer = 0; layer < animators[i].layerCount; layer++)
+                transform.GetComponentsInChildren(true, AnimatorScratch);
+                for (int i = 0; i < AnimatorScratch.Count; i++)
                 {
-                    var state = animators[i].GetCurrentAnimatorStateInfo(layer);
-                    s.Animators.Add(new AnimatorRuntimeState { Index = i, Layer = layer, Hash = state.fullPathHash, Time = state.normalizedTime, Speed = animators[i].speed });
+                    var animator = AnimatorScratch[i];
+                    for (int layer = 0; layer < animator.layerCount; layer++)
+                    {
+                        var state = animator.GetCurrentAnimatorStateInfo(layer);
+                        s.Animators.Add(new AnimatorRuntimeState { Index = i, Layer = layer, Hash = state.fullPathHash, Time = state.normalizedTime, Speed = animator.speed });
+                    }
                 }
             }
+            finally { AnimatorScratch.Clear(); }
             return s;
         }
         internal static DamageSource Source(AttackRuntimeState s) => new(s.SkillId, s.Element, s.SourceCastType);
@@ -65,7 +72,7 @@ namespace Game.Core
             var s = SavedAttack.Capture("projectile", transform, sourceSkill, reactions);
             s.Direction = direction; s.Speed = speed; s.Lifetime = lifetime; s.Elapsed = elapsed; s.Radius = hitRadius;
             s.IgnoreId = SavedAttack.Id(ignoredTarget); s.RemainingHits = hitLedger.SavedRemaining;
-            s.Visited = hitLedger.SavedTargets.OfType<IEnemyTarget>().Select(SavedAttack.Id).Where(id => id != 0).ToList();
+            hitLedger.CaptureTargets(s.Visited);
             if (reservation != null)
             {
                 s.TargetId = SavedAttack.Id(reservation.Target); s.ReservationDamage = reservation.Damage;
@@ -89,7 +96,11 @@ namespace Game.Core
     public sealed partial class ProjectileHitLedger
     {
         internal int SavedRemaining => remainingHits;
-        internal IEnumerable<object> SavedTargets => hitTargets;
+        internal void CaptureTargets(List<int> result)
+        {
+            foreach (var target in hitTargets)
+            { if (target is Enemy enemy) { result.Add(enemy.Id); } }
+        }
         internal void Restore(int remaining, IEnumerable<IEnemyTarget> targets)
         { remainingHits = remaining; hitTargets.Clear(); foreach (var target in targets) { hitTargets.Add(target); } }
     }

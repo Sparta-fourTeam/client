@@ -19,12 +19,13 @@ namespace Game.Core
                 Speed = _speed,
                 PendingElites = _pendingElites,
                 PendingCards = _pendingCardSelections,
-                RewardedElites = _rewardedElites.ToList(),
-                Choices = _choices.Select(skills.SaveChoice).ToList(),
                 PendingRequest = _pendingRequest,
                 ResultKills = _resultKills,
                 ResultTime = _resultPlayTime
             };
+            s.RewardedElites.AddRange(_rewardedElites);
+            s.Choices.Capacity = _choices.Count;
+            foreach (var choice in _choices) { s.Choices.Add(skills.SaveChoice(choice)); }
             _stats.Capture(s); _clock.Capture(s); _deck.Capture(s); _rewards?.Capture(s); _roulette?.Capture(s, skills);
             return s;
         }
@@ -52,7 +53,8 @@ namespace Game.Core
         internal void Capture(StageRuntimeState s)
         {
             s.Kills = Kills; s.ReachedWave = ReachedWave; s.PlayTime = PlayTime; s.Ended = IsEnded;
-            s.DeadEnemyIds = _deadEnemies.ToList(); s.SkillDamage = new Dictionary<int, long>(_skillDamage); s.BuildLog = BuildLog.ToList();
+            s.DeadEnemyIds.AddRange(_deadEnemies); s.BuildLog.AddRange(BuildLog);
+            foreach (var pair in _skillDamage) { s.SkillDamage.Add(pair.Key, pair.Value); }
         }
         internal void Restore(StageRuntimeState s)
         {
@@ -64,7 +66,8 @@ namespace Game.Core
     }
     public sealed partial class CardDeck
     {
-        internal void Capture(StageRuntimeState s) => s.GeneralPicks = new Dictionary<string, int>(_picks);
+        internal void Capture(StageRuntimeState s)
+        { foreach (var pair in _picks) { s.GeneralPicks.Add(pair.Key, pair.Value); } }
         internal void Restore(StageRuntimeState s)
         { _picks.Clear(); foreach (var pair in s.GeneralPicks) { _picks[pair.Key] = pair.Value; } }
     }
@@ -76,13 +79,16 @@ namespace Game.Core
     }
     public sealed partial class EncounteredMonsters
     {
-        public void CaptureRuntime(StageRuntimeState s) => s.Encountered = _ids.ToList();
+        public void CaptureRuntime(StageRuntimeState s) { s.Encountered.Clear(); s.Encountered.AddRange(_ids); }
         public void RestoreRuntime(StageRuntimeState s) { _ids.Clear(); _ids.AddRange(s.Encountered); }
     }
     public sealed partial class WaveProgress
     {
         public void CaptureRuntime(StageRuntimeState s)
-        { s.GaugeKills = _kills; s.Waves = _waves.Select(w => new WaveRuntimeState { Index = w.WaveIndex, Count = w.EnemyCount, Final = w.IsFinalWave }).ToList(); }
+        {
+            s.GaugeKills = _kills; s.Waves.Clear(); s.Waves.Capacity = _waves.Count;
+            foreach (var wave in _waves) { s.Waves.Add(new WaveRuntimeState { Index = wave.WaveIndex, Count = wave.EnemyCount, Final = wave.IsFinalWave }); }
+        }
         public void RestoreRuntime(StageRuntimeState s)
         {
             _kills = s.GaugeKills; _waves.Clear();
@@ -94,9 +100,10 @@ namespace Game.Core
     {
         internal void Capture(StageRuntimeState s, SkillController skills)
         {
-            s.RouletteSlots = Slots.Select(skills.SaveChoice).ToList(); s.RouletteCards = CardCount; s.RouletteCompleted = CompletedRolls;
+            s.RouletteCards = CardCount; s.RouletteCompleted = CompletedRolls;
+            foreach (var slot in Slots) { s.RouletteSlots.Add(skills.SaveChoice(slot)); }
             s.RouletteWinner = PendingRound?.WinnerIndex ?? -1;
-            s.RouletteSelected = _selectedCards.Select(p => new SavedChoice { SkillId = p.WeaponId ?? 0, CardId = p.CardId }).ToList();
+            foreach (var selected in _selectedCards) { s.RouletteSelected.Add(new SavedChoice { SkillId = selected.WeaponId ?? 0, CardId = selected.CardId }); }
         }
         internal void Restore(StageRuntimeState s, SkillController skills, GameDataStore data)
         {
@@ -112,7 +119,7 @@ namespace Game.Core
         public SpawnRuntimeState CaptureRuntime()
         {
             var factory = _enemyViewFactory as EnemyFactory;
-            return new SpawnRuntimeState
+            var state = new SpawnRuntimeState
             {
                 WaveIndex = _checkpointWaveIndex,
                 Spawned = _spawnedCountInOnceSpawn,
@@ -127,11 +134,15 @@ namespace Game.Core
                 Final = _isFinalWave,
                 FinalDone = _finalSpawnDone,
                 AllClear = _allClearPublished,
-                Burst = _burst.ToList(),
-                Enemies = _activeEnemies.Where(e => !e.IsDead).Select(e => e.CaptureEnemy()).ToList(),
-                Pending = _pendingSpawns.Select(p => new PendingSpawnState { MonsterId = p.MonsterId, Position = p.Position, Summoned = p.IsSummon }).ToList(),
-                Projectiles = _projectiles.Capture()
             };
+            state.Burst.AddRange(_burst);
+            state.Enemies.Capacity = _activeEnemies.Count;
+            foreach (var enemy in _activeEnemies) { if (!enemy.IsDead) { state.Enemies.Add(enemy.CaptureEnemy()); } }
+            state.Pending.Capacity = _pendingSpawns.Count;
+            foreach (var pending in _pendingSpawns)
+            { state.Pending.Add(new PendingSpawnState { MonsterId = pending.MonsterId, Position = pending.Position, Summoned = pending.IsSummon }); }
+            _projectiles.Capture(state.Projectiles);
+            return state;
         }
         public void RestoreRuntime(SpawnRuntimeState s, StageDefinition stage)
         {
@@ -152,7 +163,11 @@ namespace Game.Core
     }
     public partial class EnemyProjectileSystem
     {
-        internal List<EnemyProjectileState> Capture() => _projectiles.Where(p => !p.IsDone).Select(p => p.Capture()).ToList();
+        internal void Capture(List<EnemyProjectileState> result)
+        {
+            result.Clear(); result.Capacity = _projectiles.Count;
+            foreach (var projectile in _projectiles) { if (!projectile.IsDone) { result.Add(projectile.Capture()); } }
+        }
         internal void Restore(List<EnemyProjectileState> states, EnemyFactory factory)
         {
             _projectiles.Clear();

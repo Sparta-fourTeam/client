@@ -1,24 +1,31 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Game.Core
 {
     public partial class EnemyModel
     {
         internal int MonsterId { get; set; }
-        internal EnemyRuntimeState CaptureEnemy() => new()
+        internal EnemyRuntimeState CaptureEnemy()
         {
-            Id = Id,
-            MonsterId = MonsterId,
-            Hp = Hp,
-            Summoned = _isSummoned,
-            AttackTimer = _attackTimer,
-            BurstTimer = _burstTimer,
-            BurstRemaining = _burstRemaining,
-            Status = _status.Capture(_passives),
-            Passives = (_passives ?? Array.Empty<IPassive>()).Select(CapturePassive).ToList()
-        };
+            var state = new EnemyRuntimeState
+            {
+                Id = Id,
+                MonsterId = MonsterId,
+                Hp = Hp,
+                Summoned = _isSummoned,
+                AttackTimer = _attackTimer,
+                BurstTimer = _burstTimer,
+                BurstRemaining = _burstRemaining,
+                Status = _status.Capture(_passives)
+            };
+            if (_passives != null)
+            {
+                state.Passives.Capacity = _passives.Count;
+                for (int i = 0; i < _passives.Count; i++) { state.Passives.Add(CapturePassive(_passives[i])); }
+            }
+            return state;
+        }
         internal void RestoreEnemy(EnemyRuntimeState state, IEnemyTargetProvider targets)
         {
             Hp = state.Hp; _attackTimer = state.AttackTimer; _burstTimer = state.BurstTimer; _burstRemaining = state.BurstRemaining;
@@ -96,26 +103,36 @@ namespace Game.Core
             for (int i = 0; i < (passives?.Count ?? 0); i++) { if (ReferenceEquals(source, passives[i])) { return i; } }
             throw new InvalidOperationException("저장할 수 없는 상태이상 출처입니다.");
         }
-        internal EnemyStatusState Capture(IReadOnlyList<IPassive> passives) => new()
+        internal EnemyStatusState Capture(IReadOnlyList<IPassive> passives)
         {
-            Freeze = FreezeRemaining,
-            Paralysis = ParalysisRemaining,
-            Stun = StunRemaining,
-            Slow = SlowRemaining,
-            SlowRatio = slowRatio,
-            Vulnerability = VulnerabilityRemaining,
-            VulnerabilityRatio = VulnerabilityRatio,
-            FreezeDotRatio = freezeDotRatio,
-            FreezeDotElapsed = freezeDotElapsed,
-            Burn = BurnRemaining,
-            BurnDamage = burnDamage,
-            BurnElapsed = burnElapsed,
-            BurnHpRatio = burnMaxHpRatio,
-            BurnExplosion = (burnOnDeath?.Target as SavedBurnExplosion)?.Capture(),
-            Frostbite = frostbite.Select(s => new FrostbiteState { Damage = s.Damage, Remaining = s.Remaining, Elapsed = s.Elapsed }).ToList(),
-            Immunities = _grants.Select(s => new TimedStatusState { Passive = PassiveIndex(s.Source, passives), Flags = s.Flags, Remaining = s.Remaining }).ToList(),
-            Boosts = _boosts.Select(s => new TimedStatusState { Passive = PassiveIndex(s.Source, passives), Multiplier = s.Multiplier, Remaining = s.Remaining }).ToList()
-        };
+            var state = new EnemyStatusState
+            {
+                Freeze = FreezeRemaining,
+                Paralysis = ParalysisRemaining,
+                Stun = StunRemaining,
+                Slow = SlowRemaining,
+                SlowRatio = slowRatio,
+                Vulnerability = VulnerabilityRemaining,
+                VulnerabilityRatio = VulnerabilityRatio,
+                FreezeDotRatio = freezeDotRatio,
+                FreezeDotElapsed = freezeDotElapsed,
+                Burn = BurnRemaining,
+                BurnDamage = burnDamage,
+                BurnElapsed = burnElapsed,
+                BurnHpRatio = burnMaxHpRatio,
+                BurnExplosion = (burnOnDeath?.Target as SavedBurnExplosion)?.Capture(),
+            };
+            state.Frostbite.Capacity = frostbite.Count;
+            foreach (var stack in frostbite)
+            { state.Frostbite.Add(new FrostbiteState { Damage = stack.Damage, Remaining = stack.Remaining, Elapsed = stack.Elapsed }); }
+            state.Immunities.Capacity = _grants.Count;
+            foreach (var grant in _grants)
+            { state.Immunities.Add(new TimedStatusState { Passive = PassiveIndex(grant.Source, passives), Flags = grant.Flags, Remaining = grant.Remaining }); }
+            state.Boosts.Capacity = _boosts.Count;
+            foreach (var boost in _boosts)
+            { state.Boosts.Add(new TimedStatusState { Passive = PassiveIndex(boost.Source, passives), Multiplier = boost.Multiplier, Remaining = boost.Remaining }); }
+            return state;
+        }
         internal void Restore(EnemyStatusState s, IReadOnlyList<IPassive> passives, IEnemyTargetProvider targets)
         {
             FreezeRemaining = s.Freeze; ParalysisRemaining = s.Paralysis; StunRemaining = s.Stun;

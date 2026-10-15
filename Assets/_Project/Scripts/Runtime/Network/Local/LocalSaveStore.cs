@@ -81,6 +81,8 @@ namespace Game.Network
             {
 #if UNITY_ANDROID && !UNITY_EDITOR
                 return Path.Combine(AndroidCheckpointFolder.Value, "battle.json");
+#elif UNITY_IOS && !UNITY_EDITOR
+                return Path.Combine(Path.GetDirectoryName(_filePath), "BattleCheckpoint", "battle.json");
 #else
                 return _filePath + ".battle";
 #endif
@@ -97,6 +99,9 @@ namespace Game.Network
         });
 #endif
 
+#if UNITY_IOS && !UNITY_EDITOR
+        internal string LegacyBattleCheckpointPath => _filePath + ".battle";
+#endif
         public bool Exists() => File.Exists(_filePath);
 
         /// <summary>파일이 없으면 기본값의 LocalSave를 반환한다</summary>

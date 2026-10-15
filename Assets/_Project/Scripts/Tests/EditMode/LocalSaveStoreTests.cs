@@ -1,10 +1,13 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Game.Core;
 using Game.Network;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace Game.Tests
 {
@@ -12,6 +15,7 @@ namespace Game.Tests
     {
         private string _filePath;
         private string _folder;
+        private readonly List<LocalBattleCheckpointStore> _checkpointStores = new();
 
         [SetUp]
         public void CreateTempFilePath()
@@ -23,6 +27,8 @@ namespace Game.Tests
         [TearDown]
         public void DeleteSaveFile()
         {
+            foreach (var checkpoints in _checkpointStores) { checkpoints.Dispose(); }
+            _checkpointStores.Clear();
             if (File.Exists(_filePath))
             {
                 File.Delete(_filePath);
@@ -164,7 +170,9 @@ namespace Game.Tests
             local.battles.Add(new BattleRow { battleKey = state.BattleId, stageId = state.StageId, status = "Issued" });
             save.Flush(local);
             var credentials = new CheckpointCredentials();
-            return (save, new LocalBattleCheckpointStore(save, credentials, new PlayerProfile(data), data), credentials, state);
+            var checkpoints = new LocalBattleCheckpointStore(save, credentials, new PlayerProfile(data), data);
+            _checkpointStores.Add(checkpoints);
+            return (save, checkpoints, credentials, state);
         }
 
         [Test(Description = "파일 교체 중 중단·손상에도 이전 완성본으로 돌아가며 좌표와 전투 상태를 보존한다")]
@@ -202,6 +210,92 @@ namespace Game.Tests
             }
             Assert.That(checkpoints.Load(), Is.Null);
             Assert.That(File.Exists(save.BattleCheckpointPath), Is.False);
+        }
+
+        private static BattleCheckpoint CheckpointAt(BattleCheckpoint template, float clock) => new()
+        {
+            BattleId = template.BattleId,
+            StageId = template.StageId,
+            RandomState = template.RandomState,
+            Stage = new StageRuntimeState
+            {
+                State = StageState.Paused,
+                BeforePause = StageState.Playing,
+                Speed = 2,
+                Clock = clock,
+                WallHp = 30,
+                WallMaxHp = 50
+            },
+            Spawns = template.Spawns
+        };
+
+        [Test(Description = "저장 요청이 몰려도 마지막 독립 스냅샷이 남고 종료 시 대기 중인 저장까지 완료한다")]
+        public void BattleCheckpoint_QueuedWrites_DisposeDrainsLatestAndRejectsFurtherWrites()
+        {
+            var (_, checkpoints, _, template) = CheckpointSetup();
+            for (int i = 0; i < 100; i++) { checkpoints.QueueSave(CheckpointAt(template, i)); }
+            checkpoints.Dispose();
+            Assert.That(checkpoints.Load().Stage.Clock, Is.EqualTo(99));
+            checkpoints.QueueSave(CheckpointAt(template, 1000));
+            Assert.That(checkpoints.Load().Stage.Clock, Is.EqualTo(99));
+        }
+
+        [Test(Description = "저장 중 삭제하면 이전 요청이 파일을 되살리지 않으며 이후 새 전투 저장은 정상 동작한다")]
+        public void BattleCheckpoint_ClearWhileQueued_OldRequestsCannotResurrectFiles()
+        {
+            var (save, checkpoints, _, template) = CheckpointSetup();
+            for (int i = 0; i < 20; i++)
+            {
+                checkpoints.QueueSave(CheckpointAt(template, i));
+                checkpoints.Clear();
+                checkpoints.Flush();
+                foreach (string suffix in new[] { "", ".bak", ".tmp" })
+                { Assert.That(File.Exists(save.BattleCheckpointPath + suffix), Is.False, "삭제 전 작업이 파일을 다시 만들면 안 된다"); }
+            }
+            checkpoints.QueueSave(CheckpointAt(template, 42));
+            checkpoints.Flush();
+            Assert.That(checkpoints.Load().Stage.Clock, Is.EqualTo(42));
+        }
+
+        [Test(Description = "백그라운드 파일 쓰기가 실패해도 기존 완성본을 보존하고 다음 저장을 계속 처리한다")]
+        public void BattleCheckpoint_BackgroundWriteFailure_PreservesPreviousAndAllowsRetry()
+        {
+            var (save, checkpoints, _, template) = CheckpointSetup();
+            checkpoints.Save(CheckpointAt(template, 10));
+            string blocked = save.BattleCheckpointPath + ".tmp";
+            Directory.CreateDirectory(blocked);
+            try
+            {
+                LogAssert.Expect(LogType.Warning, new Regex(@"\[BattleCheckpoint\] 전투 저장 실패:.*"));
+                checkpoints.QueueSave(CheckpointAt(template, 20));
+                checkpoints.Flush();
+            }
+            finally { Directory.Delete(blocked); }
+            Assert.That(checkpoints.Load().Stage.Clock, Is.EqualTo(10));
+            checkpoints.QueueSave(CheckpointAt(template, 30));
+            checkpoints.Flush();
+            Assert.That(checkpoints.Load().Stage.Clock, Is.EqualTo(30));
+        }
+
+        [Test(Description = "직렬화 버퍼를 재사용해도 긴 한글/이스케이프 문자열의 잔여 바이트가 다음 저장에 섞이지 않고 스탯을 보존한다")]
+        public void BattleCheckpoint_ReusedJsonBuffer_LongThenShort_RoundTripsExactPayload()
+        {
+            var (_, checkpoints, _, state) = CheckpointSetup();
+            var values = new[] { 0f, -0.25f, 1.234567f, float.Epsilon, float.MaxValue };
+            state.Skills.Add(new SkillRuntimeState { Config = new SkillConfigState { Stats = values } });
+            string text = new string('끽', 10000) + "\"\\\n😀";
+            state.Stage.BuildLog.Add(text);
+            checkpoints.Save(state);
+            Assert.That(checkpoints.Load().Stage.BuildLog.Single(), Is.EqualTo(text));
+            Assert.That(checkpoints.Load().Skills.Single().Config.Stats, Is.EqualTo(values));
+            state.Stage.BuildLog.Clear();
+            state.Stage.Clock = 27.5f;
+            values[2] = 99.75f;
+            checkpoints.Save(state);
+            var restored = checkpoints.Load();
+            Assert.That(restored.Stage.Clock, Is.EqualTo(27.5f));
+            Assert.That(restored.Stage.BuildLog, Is.Empty);
+            Assert.That(restored.Skills.Single().Config.Stats, Is.EqualTo(values));
         }
 
     }

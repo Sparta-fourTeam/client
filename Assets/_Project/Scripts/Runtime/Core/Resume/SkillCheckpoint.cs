@@ -7,7 +7,12 @@ namespace Game.Core
 {
     internal static class SavedSkillConfig
     {
-        internal static SkillConfigState Capture(SkillConfig config) => config == null ? null : new SkillConfigState
+        internal static SkillConfigState Capture(SkillConfig config)
+        {
+            if (config == null) { return null; }
+            return config.CheckpointCache ??= Create(config);
+        }
+        private static SkillConfigState Create(SkillConfig config) => new()
         {
             Stats = config.Stats.CopyValues(),
             Type = config.Attack.Type,
@@ -111,9 +116,9 @@ namespace Game.Core
     {
         public List<SkillRuntimeState> CaptureRuntime()
         {
-            var result = new List<SkillRuntimeState>();
-            foreach (var skill in skills.Cast<SkillCaster>()) { result.Add(CaptureCaster(skill, false)); }
-            foreach (var skill in childCaster.SavedChildren) { result.Add(CaptureCaster(skill, true)); }
+            var result = new List<SkillRuntimeState>(skills.Count + childCaster.SavedCount);
+            foreach (var skill in skills) { result.Add(CaptureCaster((SkillCaster)skill, false)); }
+            foreach (var skill in childCaster.SavedChildren) { if (skill != null) { result.Add(CaptureCaster(skill, true)); } }
             return result;
         }
         private static SkillRuntimeState CaptureCaster(SkillCaster skill, bool child)
@@ -189,7 +194,8 @@ namespace Game.Core
 
     public sealed partial class ChildSkillCaster
     {
-        internal IEnumerable<SkillCaster> SavedChildren => children.Values.Where(c => c != null);
+        internal Dictionary<int, SkillCaster>.ValueCollection SavedChildren => children.Values;
+        internal int SavedCount => children.Count;
         internal void ClearSavedChildren() => Dispose();
         internal SkillCaster RestoreChild(int id)
         {
@@ -202,7 +208,8 @@ namespace Game.Core
         internal void CaptureRuntime(SkillRuntimeState state)
         {
             reserveClock.Capture(state);
-            state.Attacks.AddRange(ownedPool.Active.Concat(formPools.Values.SelectMany(p => p.Active)).Select(p => p.CaptureAttack()));
+            ownedPool.CaptureActive(state.Attacks, p => p.CaptureAttack());
+            foreach (var pool in formPools.Values) { pool.CaptureActive(state.Attacks, p => p.CaptureAttack()); }
         }
         private UnityEngine.Pool.ObjectPool<Projectile> RestorePool(SkillForm form)
         {
@@ -228,7 +235,10 @@ namespace Game.Core
     public sealed partial class AreaStrategy
     {
         internal void CaptureRuntime(SkillRuntimeState state)
-        { state.BurstTargets = burstTargets.Select(SavedAttack.Id).ToList(); state.Attacks.AddRange(ownedPool.Active.Select(p => p.CaptureAttack())); }
+        {
+            foreach (var target in burstTargets) { state.BurstTargets.Add(SavedAttack.Id(target)); }
+            ownedPool.CaptureActive(state.Attacks, p => p.CaptureAttack());
+        }
         internal void RestoreRuntime(SkillRuntimeState state, AttackRestoreContext context)
         {
             burstTargets.Clear(); foreach (var id in state.BurstTargets) { var enemy = context.Enemy(id); if (enemy != null) { burstTargets.Add(enemy); } }
@@ -237,13 +247,13 @@ namespace Game.Core
     }
     public sealed partial class BeamStrategy
     {
-        internal void CaptureRuntime(SkillRuntimeState state) => state.Attacks.AddRange(ownedPool.Active.Select(p => p.CaptureAttack()));
+        internal void CaptureRuntime(SkillRuntimeState state) => ownedPool.CaptureActive(state.Attacks, p => p.CaptureAttack());
         internal void RestoreRuntime(SkillRuntimeState state, AttackRestoreContext context)
         { foreach (var attack in state.Attacks) { Pool.Get().RestoreAttack(attack, Pool, context); } }
     }
     public sealed partial class ChainStrategy
     {
-        internal void CaptureRuntime(SkillRuntimeState state) => state.Attacks.AddRange(ownedPool.Active.Select(p => p.CaptureAttack()));
+        internal void CaptureRuntime(SkillRuntimeState state) => ownedPool.CaptureActive(state.Attacks, p => p.CaptureAttack());
         internal void RestoreRuntime(SkillRuntimeState state, AttackRestoreContext context)
         { foreach (var attack in state.Attacks) { Pool.Get().RestoreAttack(attack, Pool, context); } }
     }
@@ -251,8 +261,9 @@ namespace Game.Core
     {
         internal void CaptureRuntime(SkillRuntimeState state)
         {
-            state.Attacks.AddRange(ownedPool.Active.Concat(formPools.Values.SelectMany(p => p.Active)).Select(p => p.CaptureAttack()));
-            state.Attacks.AddRange(ownedFieldPool.Active.Select(p => p.CaptureAttack()));
+            ownedPool.CaptureActive(state.Attacks, p => p.CaptureAttack());
+            foreach (var pool in formPools.Values) { pool.CaptureActive(state.Attacks, p => p.CaptureAttack()); }
+            ownedFieldPool.CaptureActive(state.Attacks, p => p.CaptureAttack());
         }
         private UnityEngine.Pool.ObjectPool<HitscanEffect> RestorePool(SkillForm form)
         {
