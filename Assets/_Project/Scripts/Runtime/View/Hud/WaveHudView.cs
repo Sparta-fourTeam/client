@@ -32,7 +32,7 @@ namespace Game.View
         // 게이지가 0으로 돌아가 별이 사라질 때 불꽃이 튀는 시간. 이 시간 동안만 방출하고 멈춘다
         private const float SparkBurstSeconds = 0.15f;
         // 채워진 막대 위로 번지는 발광이 숨 쉬듯 밝아졌다 어두워지는 범위와 한 번 오가는 시간
-        private const float GlowMinAlpha = 0.35f, GlowMaxAlpha = 0.85f, GlowBreatheSeconds = 1.1f;
+        private const float GlowMinAlpha = 0.35f, GlowMaxAlpha = 0.85f, GlowBreatheSeconds = 1.1f, GlowFadeSeconds = 0.25f;
 
         // 스테이지와 보상 규칙이 공유하는 총 웨이브 수를 함께 표시한다.
         [SerializeField] private TMP_Text _waveValueText;
@@ -64,7 +64,8 @@ namespace Game.View
         private float _fillTarget;
         private Tween _punchTween;
         private Tween _twinkleTween;
-        private Tween _glowTween;
+        private Tween _glowTween, _glowFadeTween;
+        private float _glowOn;      // 0~1: 가득 찼을 때만 켜진다
         private float _glowBreath;   // 0~1: 발광이 숨 쉬는 위상
         private Tween _thinTween, _flareTween, _boltMasterTween, _wakeTween, _calmTween, _sparkStopTween;
         private CanvasGroup _starGroup;
@@ -119,7 +120,7 @@ namespace Game.View
                 .SetLink(gameObject);
         }
 
-        // 막대 발광은 상시 은은하게 숨 쉰다. 채움 양은 PlaceStar에서 따라간다
+        // 막대 발광은 가득 찼을 때만 켜져 은은하게 숨 쉰다. 채움 양은 PlaceStar에서 따라간다
         private void StartGlowBreathing()
         {
             if (_gaugeGlow == null || _glowTween != null) { return; }
@@ -134,7 +135,7 @@ namespace Game.View
         private void ApplyGlow()
         {
             var c = _gaugeGlow.color;
-            c.a = Mathf.Lerp(GlowMinAlpha, GlowMaxAlpha, _glowBreath);
+            c.a = Mathf.Lerp(GlowMinAlpha, GlowMaxAlpha, _glowBreath) * _glowOn;
             _gaugeGlow.color = c;
         }
 
@@ -241,6 +242,7 @@ namespace Game.View
             _hasFullState = true;
             TweenTo(ref _flareTween, () => _flare, v => { _flare = v; ApplyStarShape(); }, full ? 1f : 0f, StarShapeSeconds);
             SetBolts(full);
+            if (_gaugeGlow != null) { TweenTo(ref _glowFadeTween, () => _glowOn, v => { _glowOn = v; ApplyGlow(); PlaceStar(); }, full ? 1f : 0f, GlowFadeSeconds); }
 
             if (_pinnedAwake == full) { return; }
             _pinnedAwake = full;
@@ -407,7 +409,7 @@ namespace Game.View
             {
                 // 글로우는 채움 이미지의 자식이라 앵커 폭이 곧 채워진 구간이다. 비어 있으면 숨긴다
                 float fill = _gaugeFill.fillAmount;
-                _gaugeGlow.enabled = fill > 0.001f;
+                _gaugeGlow.enabled = fill > 0.001f && _glowOn > 0.001f;
                 _gaugeGlow.rectTransform.anchorMax = new Vector2(fill, 0.5f);
             }
             if (_gaugeStar == null) { return; }
@@ -437,6 +439,7 @@ namespace Game.View
             _punchTween?.Kill();
             _twinkleTween?.Kill();
             _glowTween?.Kill();
+            _glowFadeTween?.Kill();
             _thinTween?.Kill();
             _flareTween?.Kill();
             _boltMasterTween?.Kill();
