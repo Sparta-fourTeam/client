@@ -22,7 +22,7 @@ namespace Game.Boot
             builder.Register<PlayerProfile>(Lifetime.Singleton);
             builder.RegisterEntryPoint<GameAnalyticsService>().As<IGameplayAnalytics>();
 
-            // 서버 통신. 서버 인증을 쓰는 빌드(Android 개발 빌드)에서만 로그인이 서버로 간다
+            // Android 개발·릴리스 빌드는 기본으로 서버 인증을 쓰고, 에디터는 로컬 인증을 쓴다
             builder.RegisterInstance(new HttpApiConfig(ServerConfig.BaseUrl));
             builder.Register<IHttpTransport, UnityWebRequestTransport>(Lifetime.Singleton);
             builder.Register<AuthSession>(Lifetime.Singleton).AsSelf().As<IAuthHeaderProvider>().As<IAuthTokenStore>();
