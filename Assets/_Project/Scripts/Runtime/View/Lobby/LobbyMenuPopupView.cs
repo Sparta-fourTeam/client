@@ -125,7 +125,7 @@ namespace Game.View
             };
             if (await _confirm.ShowAsync(request))
             {
-                await _account.LogoutAsync();
+                await ExecuteAccountExitAsync(_account.LogoutAsync, "로그아웃");
             }
         }
 
@@ -154,34 +154,48 @@ namespace Game.View
             };
             if (await _confirm.ShowAsync(second))
             {
-                var label = _deleteAccountButton.GetComponentInChildren<TMP_Text>(true);
-                string original = label != null ? label.text : null;
-                if (label != null) { label.text = "삭제 중…"; }
-                string failure = null;
-                try
-                {
-                    await _account.DeleteAccountAsync();
-                }
-                catch (System.OperationCanceledException) { throw; }
-                catch (ApiException error)
-                {
-                    failure = error.Code == "HTTP_401" || error.Code == "SESSION_EXPIRED"
-                        ? "계정 삭제가 완료되지 않았습니다. 다시 로그인한 뒤 시도해 주세요."
-                        : "계정 삭제 완료를 확인하지 못했습니다. 연결 상태를 확인하고 다시 시도해 주세요. 문제가 계속되면 문의해 주세요.";
-                }
-                catch (System.Exception)
-                {
-                    failure = "계정 삭제를 완료하지 못했습니다. 앱을 다시 실행한 뒤 확인해 주세요. 문제가 계속되면 문의해 주세요.";
-                }
-                finally
-                {
-                    if (label != null) { label.text = original; }
-                }
+                await ExecuteAccountExitAsync(_account.DeleteAccountAsync, "계정 삭제",
+                    _deleteAccountButton.GetComponentInChildren<TMP_Text>(true));
+            }
+        }
 
-                if (failure != null)
+        private async UniTask ExecuteAccountExitAsync(System.Func<UniTask> exit, string operation, TMP_Text progressLabel = null)
+        {
+            string original = progressLabel != null ? progressLabel.text : null;
+            if (progressLabel != null) { progressLabel.text = "삭제 중…"; }
+            string failure = null;
+            bool reauthenticate = false;
+            try
+            {
+                await exit();
+            }
+            catch (System.OperationCanceledException) { throw; }
+            catch (ApiException error)
+            {
+                reauthenticate = error.Code == "HTTP_401" || error.Code == "SESSION_EXPIRED";
+                failure = reauthenticate
+                    ? $"{operation} 완료를 확인하지 못했습니다. 로그인 정보를 다시 확인한 뒤 시도해 주세요."
+                    : $"{operation} 완료를 확인하지 못했습니다. 연결 상태를 확인하고 다시 시도해 주세요. 문제가 계속되면 문의해 주세요.";
+            }
+            catch (System.Exception)
+            {
+                failure = "계정 작업을 완료하지 못했습니다. 앱을 다시 실행한 뒤 확인해 주세요. 문제가 계속되면 문의해 주세요.";
+            }
+            finally
+            {
+                if (progressLabel != null) { progressLabel.text = original; }
+            }
+
+            if (failure != null)
+            {
+                await _confirm.ShowAsync(new ConfirmRequest
                 {
-                    await _confirm.ShowAsync(new ConfirmRequest { Title = "계정 삭제 확인 필요", Message = failure });
-                }
+                    Title = $"{operation} 확인 필요",
+                    Message = failure,
+                    ConfirmLabel = reauthenticate ? "다시 로그인" : "확인",
+                });
+                // 로그인 방식과 게스트 ID를 지우면 새 게스트가 생길 수 있다. 기존 계정으로 다시 인증한다.
+                if (reauthenticate) { await _account.ReauthenticateAsync(); }
             }
         }
 

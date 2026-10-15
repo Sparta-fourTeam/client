@@ -271,10 +271,11 @@ namespace Game.Tests
             Field<Button>(confirm, "_cancelButton").onClick.Invoke();
         }
 
-        [TestCase("HTTP_500")]
-        [TestCase("HTTP_401")]
-        [TestCase("NETWORK_ERROR")]
-        public void Menu_DeleteFailure_ShowsNoticeWithoutNavigationAndAllowsRetry(string code)
+        [TestCase("HTTP_500", false)]
+        [TestCase("HTTP_401", true)]
+        [TestCase("SESSION_EXPIRED", true)]
+        [TestCase("NETWORK_ERROR", false)]
+        public void Menu_DeleteFailure_ShowsNoticeAndRecoversOrAllowsRetry(string code, bool reauthenticate)
         {
             var (menu, confirm, api, nav) = CreateDeleteMenu();
             var delete = Field<Button>(menu, "_deleteAccountButton");
@@ -290,11 +291,33 @@ namespace Game.Tests
             Assert.IsFalse(delete.interactable);
             StringAssert.DoesNotContain("삭제 중", delete.GetComponentInChildren<TMP_Text>(true).text);
             accept.onClick.Invoke();
+            Assert.AreEqual(reauthenticate ? 1 : 0, nav.LoadingCalls);
+            Assert.AreEqual(1, api.Deleted);
             Assert.IsTrue(delete.interactable);
+            if (reauthenticate) { return; }
             delete.onClick.Invoke();
             Assert.IsTrue(confirm.IsOpen);
             Assert.AreEqual(1, api.Deleted);
             Field<Button>(confirm, "_cancelButton").onClick.Invoke();
+        }
+
+        [TestCase("HTTP_500", false)]
+        [TestCase("SESSION_EXPIRED", true)]
+        public void Menu_GuestLogoutFailure_ShowsNoticeAndCanReauthenticate(string code, bool reauthenticate)
+        {
+            var (menu, confirm, api, nav) = CreateDeleteMenu();
+            var accept = Field<Button>(confirm, "_confirmButton");
+            Field<Button>(menu, "_logoutButton").onClick.Invoke();
+            accept.onClick.Invoke();
+            Assert.AreEqual(1, api.Deleted);
+            api.Completion.TrySetException(new ApiException(ApiErrorKind.Rejected, code));
+            Assert.IsTrue(confirm.IsOpen);
+            Assert.AreEqual("로그아웃 확인 필요", Field<TMP_Text>(confirm, "_title").text);
+            Assert.AreEqual(0, nav.LoadingCalls);
+            accept.onClick.Invoke();
+            Assert.AreEqual(reauthenticate ? 1 : 0, nav.LoadingCalls);
+            Assert.AreEqual(1, api.Deleted, "재인증할 때 서버 삭제를 다시 요청하지 않는다");
+            Assert.IsTrue(Field<Button>(menu, "_logoutButton").interactable);
         }
 
         [TestCase(false, 0)]
