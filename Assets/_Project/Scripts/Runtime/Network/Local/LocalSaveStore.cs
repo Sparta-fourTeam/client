@@ -16,6 +16,22 @@ namespace Game.Network
         private readonly int _startEnergy;
         private readonly List<string> _legacyTutorials;
 
+        // 파일 삭제 권한과 별개로 남겨 앱 재시작 뒤에도 이전 계정의 진행을 읽지 않게 한다.
+        private string DeletePendingKey => $"local_save.delete_pending.{UnityEngine.Hash128.Compute(Path.GetFullPath(_filePath))}";
+
+        private void ResumePendingDeletion()
+        {
+            if (UnityEngine.PlayerPrefs.GetInt(DeletePendingKey, 0) == 1) { CompleteDeletion(); }
+        }
+
+        private void CompleteDeletion()
+        {
+            try { File.Delete(_filePath); }
+            catch (DirectoryNotFoundException) { } // 저장 폴더 자체가 없으면 지울 파일도 없다.
+            UnityEngine.PlayerPrefs.DeleteKey(DeletePendingKey);
+            UnityEngine.PlayerPrefs.Save();
+        }
+
         /// <summary>에디터는 프로젝트별 경로, 플레이어 빌드는 persistentDataPath/save.json을 사용한다. 새 세이브는 시작 에너지를 가지고 시작한다</summary>
         [Inject]
         public LocalSaveStore(GameDataStore data)
@@ -75,11 +91,16 @@ namespace Game.Network
             new JsonSerializerSettings { ObjectCreationHandling = ObjectCreationHandling.Replace };
 
         /// <summary>저장 파일이 이미 있는지(기존 계정인지) 확인한다</summary>
-        public bool Exists() => File.Exists(_filePath);
+        public bool Exists()
+        {
+            ResumePendingDeletion();
+            return File.Exists(_filePath);
+        }
 
         /// <summary>파일이 없으면 기본값의 LocalSave를 반환한다</summary>
         public LocalSave Load()
         {
+            ResumePendingDeletion();
             var save = File.Exists(_filePath)
                 ? JsonConvert.DeserializeObject<LocalSave>(File.ReadAllText(_filePath), ReplaceCollections)
                 : NewSave();
@@ -102,15 +123,19 @@ namespace Game.Network
             return save;
         }
 
-        /// <summary>저장 파일을 지운다. 파일이 없으면 아무것도 하지 않는다</summary>
+        /// <summary>삭제를 먼저 기록하고 파일을 지운다. 실패하면 다음 읽기·쓰기 전에 다시 정리하며,
+        /// 정리가 끝날 때까지 이전 진행을 읽거나 저장하지 않는다.</summary>
         public void Delete()
         {
-            if (File.Exists(_filePath)) { File.Delete(_filePath); }
+            UnityEngine.PlayerPrefs.SetInt(DeletePendingKey, 1);
+            UnityEngine.PlayerPrefs.Save();
+            CompleteDeletion();
         }
 
         /// <summary>이전 저장 내용을 덮어쓴다</summary>
         public void Flush(LocalSave save)
         {
+            ResumePendingDeletion();
             EnsureDirectory();
             File.WriteAllText(_filePath, JsonConvert.SerializeObject(save));
         }

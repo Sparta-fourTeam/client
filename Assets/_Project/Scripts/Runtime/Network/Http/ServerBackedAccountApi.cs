@@ -1,3 +1,5 @@
+using System;
+using System.IO;
 using Cysharp.Threading.Tasks;
 using Game.Core;
 
@@ -23,7 +25,11 @@ namespace Game.Network
         public async UniTask DeleteAccount()
         {
             await _client.Delete("api/auth/me");
-            await _local.DeleteAccount();
+            // 서버 삭제는 확정됐다. 로컬 삭제 실패는 저장소의 재시도 기록으로 복구하고,
+            // AccountService의 인증·프로필 초기화와 로그인 전환은 계속 마친다.
+            try { await _local.DeleteAccount(); }
+            catch (IOException) { }
+            catch (UnauthorizedAccessException) { }
         }
 
         public async UniTask LinkAccount(LoginMethod method, string accountId)

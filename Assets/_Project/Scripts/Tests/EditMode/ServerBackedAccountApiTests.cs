@@ -13,6 +13,7 @@ namespace Game.Tests
     public sealed class ServerBackedAccountApiTests
     {
         private string _filePath;
+        private string _directory;
         private LocalSaveStore _store;
         private FakeHttpTransport _transport;
         private ServerBackedAccountApi _api;
@@ -64,7 +65,9 @@ namespace Game.Tests
         [SetUp]
         public void SetUp()
         {
-            _filePath = Path.Combine(Path.GetTempPath(), $"account-link-test-{Guid.NewGuid()}.json");
+            _directory = Path.Combine(Path.GetTempPath(), $"account-test-{Guid.NewGuid()}");
+            Directory.CreateDirectory(_directory);
+            _filePath = Path.Combine(_directory, "save.json");
             _store = new LocalSaveStore(_filePath);
             _transport = new FakeHttpTransport { Response = new HttpResponseData(204, string.Empty) };
             _session = new AuthSession();
@@ -76,7 +79,9 @@ namespace Game.Tests
         [TearDown]
         public void TearDown()
         {
-            if (File.Exists(_filePath)) { File.Delete(_filePath); }
+            File.SetAttributes(_directory, FileAttributes.Normal);
+            _store.Delete();
+            Directory.Delete(_directory, true);
         }
 
         [Test(Description = "구글 ID 토큰을 게스트 토큰과 함께 POST /api/auth/social/link로 보내고, 204면 성공한다")]
@@ -188,6 +193,40 @@ namespace Game.Tests
             Assert.AreEqual(0, profile.Exp);
             Assert.IsFalse(profile.IsStageCleared(9));
             Assert.AreEqual(1, nav.LoadingCalls);
+        }
+
+        [Test]
+        public void Delete_Confirmed204ButDiskCleanupFails_FinalizesSessionAndRetriesBeforeLoadingOldSave()
+        {
+            if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows))
+            {
+                Assert.Ignore("이 회귀는 Unix 디렉터리 쓰기 권한으로 실제 삭제 실패를 재현한다");
+            }
+
+            var (service, credentials, nav, profile) = DeletionFlow();
+            var attributes = File.GetAttributes(_directory);
+            File.SetAttributes(_directory, attributes | FileAttributes.ReadOnly);
+            try
+            {
+                service.DeleteAccountAsync().GetAwaiter().GetResult();
+                Assert.IsTrue(File.Exists(_filePath), "권한 오류로 실제 파일은 아직 남아 있다");
+                Assert.IsFalse(credentials.HasCredential);
+                Assert.IsFalse(_session.IsSignedIn);
+                Assert.IsFalse(profile.IsLoaded);
+                Assert.AreEqual(0, profile.Exp);
+                Assert.AreEqual(1, nav.LoadingCalls);
+
+                var restarted = new LocalSaveStore(_filePath);
+                var error = Assert.Catch(() => restarted.Load());
+                Assert.IsTrue(error is IOException || error is UnauthorizedAccessException,
+                    "정리가 끝나기 전에는 이전 진행을 읽지 않는다");
+                File.SetAttributes(_directory, attributes);
+                Assert.IsFalse(restarted.Exists(), "새 인스턴스에서도 미완료 정리를 재시도해 기존 파일을 지운다");
+                Assert.AreEqual(0, restarted.Load().exp);
+                Assert.AreEqual(0, restarted.Load().wallet.gold);
+                Assert.AreEqual(1, _transport.Requests.Count, "서버 삭제를 다시 요청하지 않고 로컬만 복구한다");
+            }
+            finally { File.SetAttributes(_directory, attributes); }
         }
 
         [TestCase(401)]
