@@ -114,7 +114,8 @@ namespace Game.View
             };
             if (await _confirm.ShowAsync(request))
             {
-                await _account.LogoutAsync();
+                if (_account.IsGuest) { await DeleteAccountAsync(); }
+                else { await _account.LogoutAsync(); }
             }
         }
 
@@ -135,7 +136,7 @@ namespace Game.View
             var second = new ConfirmRequest
             {
                 Title = "계정 삭제",
-                Message = "계정 삭제는 되돌릴 수 없으며 그 결과에 대한 책임은 본인에게 있습니다.",
+                Message = $"삭제하려면 아래 닉네임을 입력해 주세요.\n\n<noparse>{_profile.Nickname}</noparse>",
                 ConfirmLabel = "계정 삭제",
                 CancelLabel = "취소",
                 InputPlaceholder = "닉네임을 입력하세요",
