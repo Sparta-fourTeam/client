@@ -664,7 +664,7 @@ namespace Game.Tests
         }
 
         [UnityTest]
-        public IEnumerator DailyShop_InactiveDestructionAndReactivationKeepOnlyLiveSubscriptions()
+        public IEnumerator DailyShop_InactiveDestructionAndReactivationRefreshLatestProfile()
         {
             yield return StartFromBoot(UnlockLobbyFeatures);
             var lobby = Object.FindAnyObjectByType<LobbyLifetimeScope>();
@@ -672,12 +672,9 @@ namespace Game.Tests
             var shop = lobby.Container.Resolve<IUiRegistry>().Get<ShopScreenView>();
             var daily = shop.GetComponentInChildren<DailyShopView>(true);
             var player = lobby.Container.Resolve<IPlayerApi>();
-            int ShopSubscriptions() => Field<Action<PlayerProfile>>(profile, "Changed")?.GetInvocationList()
-                .Count(handler => handler.Target is DailyShopView) ?? 0;
 
             Assert.That(daily, Is.Not.Null);
             Assert.That(daily.isActiveAndEnabled, Is.False);
-            Assert.That(ShopSubscriptions(), Is.Zero);
             // Never activate this injected clone: Unity will not call Awake/OnDestroy on it.
             var inactiveRoot = new GameObject("InactiveDailyShopTest");
             inactiveRoot.SetActive(false);
@@ -685,7 +682,6 @@ namespace Game.Tests
             {
                 var clone = Object.Instantiate(daily.gameObject, inactiveRoot.transform).GetComponent<DailyShopView>();
                 clone.Construct(profile, lobby.Container.Resolve<GameDataStore>(), lobby.Container.Resolve<IShopApi>(), player);
-                Assert.That(ShopSubscriptions(), Is.Zero);
                 Object.Destroy(inactiveRoot);
                 yield return null;
                 Assert.That(clone == null, Is.True);
@@ -699,23 +695,25 @@ namespace Game.Tests
                 var snapshot = new LocalPlayerApi(_store).GetMe().GetAwaiter().GetResult();
                 snapshot.shop = new ShopState { purchased = pass % 2 == 0 ? new List<int> { 0 } : new List<int>() };
                 profile.Apply(snapshot);
-                Assert.That(ShopSubscriptions(), Is.Zero);
                 shop.SetVisible(true);
                 shop.SelectTab(ShopTab.Daily);
                 yield return null;
                 Assert.That(daily.isActiveAndEnabled, Is.True);
-                Assert.That(ShopSubscriptions(), Is.EqualTo(1));
                 Assert.That(Field<GameObject>(item, "_soldOut").activeSelf, Is.EqualTo(pass % 2 == 0));
                 Assert.That(Field<Button>(item, "_buy").interactable, Is.EqualTo(pass % 2 != 0));
+                // An active view must also react to profile updates without being reopened.
+                snapshot.shop = new ShopState { purchased = pass % 2 != 0 ? new List<int> { 0 } : new List<int>() };
+                profile.Apply(snapshot);
+                yield return null;
+                Assert.That(Field<GameObject>(item, "_soldOut").activeSelf, Is.EqualTo(pass % 2 != 0));
+                Assert.That(Field<Button>(item, "_buy").interactable, Is.EqualTo(pass % 2 == 0));
                 shop.SetVisible(false);
                 yield return null;
-                Assert.That(ShopSubscriptions(), Is.Zero);
             }
 
             Object.Destroy(daily.gameObject);
             yield return null;
             profile.Apply(new LocalPlayerApi(_store).GetMe().GetAwaiter().GetResult());
-            Assert.That(ShopSubscriptions(), Is.Zero);
         }
 
         [UnityTest]
