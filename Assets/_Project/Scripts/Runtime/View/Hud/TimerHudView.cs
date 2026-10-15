@@ -10,14 +10,18 @@ namespace Game.View
     public sealed class TimerHudView : HudView
     {
         [SerializeField] private TMP_Text _timeText;
+        [SerializeField] private TMP_Text _spawnText;
+        private EnemySpawner _spawner;
+        private int _shownCountdown = -1;
 
         private StageClock _clock;
         private int _shownSeconds = -1;
 
         [Inject]
-        public void Construct(StageClock clock)
+        public void Construct(StageClock clock, EnemySpawner spawner = null)
         {
             _clock = clock;
+            _spawner = spawner;
         }
 
         private void Update()
@@ -25,6 +29,18 @@ namespace Game.View
             if (_clock == null)
             {
                 return;
+            }
+
+            if (_spawnText != null)
+            {
+                float remaining = _spawner?.NextSpawnSeconds ?? 0f;
+                int countdown = remaining > 0f && remaining <= 5f ? Mathf.CeilToInt(remaining) : 0;
+                if (countdown != _shownCountdown)
+                {
+                    _shownCountdown = countdown;
+                    _spawnText.text = countdown > 0 ? $"다음 소환 {countdown}" : string.Empty;
+                    _spawnText.gameObject.SetActive(countdown > 0);
+                }
             }
 
             // 초가 바뀔 때만 문자열을 만든다

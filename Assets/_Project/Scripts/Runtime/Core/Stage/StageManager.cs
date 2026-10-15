@@ -88,7 +88,7 @@ namespace Game.Core
             _roulette = roulette;
             _analytics = analytics;
             _baseTimeScale = combat?.BaseTimeScale ?? 1f;
-            _speed = _baseTimeScale;
+            _speed = (PlayerPrefs.GetFloat("stage_speed", 1f) >= 2f ? 2f : 1f) * _baseTimeScale;
         }
 
         public void Start()
@@ -142,6 +142,7 @@ namespace Game.Core
             float multiplier = speed >= 2f ? 2f : 1f;
             _speed = multiplier * _baseTimeScale;
             PlayerPrefs.SetFloat("stage_speed", multiplier);
+            PlayerPrefs.Save();
             if (State == StageState.Playing)
             {
                 Time.timeScale = _speed;

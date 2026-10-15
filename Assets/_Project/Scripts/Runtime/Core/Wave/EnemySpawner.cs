@@ -57,6 +57,28 @@ namespace Game.Core
         private bool _isWaitingForNextSpawn; // 다음 스폰 기다리는 상태
 
         private float _nextSpawnInterval;
+        private bool _isRepeatBurst;
+
+        /// <summary>첫 소환 이후 반복 소환의 첫 적이 나올 때까지 남은 시간. 반복 소환이 없으면 0.</summary>
+        public float NextSpawnSeconds
+        {
+            get
+            {
+                if (!_isSpawningAllowed || _isFinalWave) { return 0f; }
+                bool hasNormals = false;
+                foreach (var spawn in _waveSpawns)
+                {
+                    if (spawn.Type == EnemyType.Normal && spawn.Count > 0) { hasNormals = true; break; }
+                }
+                if (!hasNormals) { return 0f; }
+                if (_isWaitingForNextSpawn)
+                {
+                    return Mathf.Max(0f, _enemySpawnConfig.SpawnCooldown - _elapsedTime) + _nextSpawnInterval;
+                }
+                return _isRepeatBurst && _spawnedCountInOnceSpawn == 0
+                    ? Mathf.Max(0f, _nextSpawnInterval - _elapsedTime) : 0f;
+            }
+        }
 
         // 엘리트·보스는 경고를 먼저 띄우고 이 시간 뒤에 나온다
         private const float EliteWarningSeconds = 2.2f, BossWarningSeconds = 3f;
@@ -222,6 +244,7 @@ namespace Game.Core
         /// <summary>웨이브 구성으로 새 버스트를 만든다. 낼 몬스터가 없으면 false</summary>
         private bool StartBurst(bool includeSpecials)
         {
+            _isRepeatBurst = !includeSpecials;
             _burst.Clear();
             foreach (var spawn in _waveSpawns)
             {
