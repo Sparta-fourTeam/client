@@ -1,46 +1,42 @@
 using UnityEngine;
+using UnityEngine.Pool;
 
 namespace Game.Core
 {
-    /// <summary>적의 스프라이트(자식 조각 포함)가 차지하는 영역을 읽는 도구. 머리 위에 붙는 표시(체력바, 데미지 숫자)가 같이 쓴다</summary>
+    /// <summary>적의 스프라이트 영역을 현재 위치에서 읽는다. 임시 렌더러 목록은 재사용한다.</summary>
     public static class VisualBounds
     {
-        /// <summary>root 아래 모든 SpriteRenderer 중 가장 높은 곳의 y. 스프라이트가 없으면 root의 y.
-        /// ignore 아래의 렌더러(체력바처럼 이 계산에서 빼야 하는 표시)는 건너뛴다</summary>
+        /// <summary>root 아래 SpriteRenderer의 상단을 읽는다. ignore 아래의 렌더러는 제외한다.</summary>
         public static float TopY(Transform root, Transform ignore = null)
         {
-            float top = root.position.y;
-            foreach (var renderer in root.GetComponentsInChildren<SpriteRenderer>())
-            {
-                if (ignore != null && renderer.transform.IsChildOf(ignore))
-                {
-                    continue;
-                }
-
-                top = Mathf.Max(top, renderer.bounds.max.y);
-            }
-
+            GetVerticalExtents(root, root.position.y, out float top, out _, ignore);
             return top;
         }
 
-        /// <summary>root 아래 모든 SpriteRenderer 중 가장 낮은 곳의 y(발끝). 스프라이트가 없으면 fallback.
-        /// ignore 아래의 렌더러(발밑 그림자처럼 몸이 아닌 것)는 건너뛴다</summary>
+        /// <summary>sprite가 있는 렌더러의 하단을 읽는다. 대상이 없으면 fallback이며 ignore 아래는 제외한다.</summary>
         public static float BottomY(Transform root, float fallback, Transform ignore = null)
         {
-            bool found = false;
-            float bottom = 0f;
-            foreach (var renderer in root.GetComponentsInChildren<SpriteRenderer>())
+            GetVerticalExtents(root, fallback, out _, out float bottom, ignore);
+            return bottom;
+        }
+
+        /// <summary>상단은 root 높이 이상, 하단은 sprite를 가진 렌더러의 최하단이다. 하단 대상이 없으면 fallback을 쓴다.</summary>
+        public static void GetVerticalExtents(Transform root, float fallback, out float top, out float bottom, Transform ignore = null)
+        {
+            using var lease = ListPool<SpriteRenderer>.Get(out var renderers);
+            root.GetComponentsInChildren(false, renderers);
+            top = root.position.y;
+            bottom = fallback;
+            bool foundBottom = false;
+            foreach (var renderer in renderers)
             {
-                if (renderer.sprite == null || (ignore != null && renderer.transform.IsChildOf(ignore)))
-                {
-                    continue;
-                }
-
-                bottom = found ? Mathf.Min(bottom, renderer.bounds.min.y) : renderer.bounds.min.y;
-                found = true;
+                if (ignore != null && renderer.transform.IsChildOf(ignore)) { continue; }
+                var bounds = renderer.bounds;
+                top = Mathf.Max(top, bounds.max.y);
+                if (renderer.sprite == null) { continue; }
+                bottom = foundBottom ? Mathf.Min(bottom, bounds.min.y) : bounds.min.y;
+                foundBottom = true;
             }
-
-            return found ? bottom : fallback;
         }
     }
 }

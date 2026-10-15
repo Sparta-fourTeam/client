@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using Unity.Profiling;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -10,6 +12,9 @@ namespace Game.Core
     /// 숫자 모양은 Resources/UI/DamagePopup 프리팹이 정한다</summary>
     public sealed class DamagePopupPool : MonoBehaviour
     {
+        private static readonly ProfilerMarker LoadMarker = new("DamagePopupPool.Load");
+        private static readonly ProfilerMarker CreateMarker = new("DamagePopupPool.Create");
+        private static readonly ProfilerMarker ShowMarker = new("DamagePopupPool.Show");
         public const int MaxActive = 40;
         private const string PrefabPath = "UI/DamagePopup";
 
@@ -19,8 +24,9 @@ namespace Game.Core
         /// <summary>false면 데미지 숫자를 띄우지 않는다 (설정의 데미지 표시)</summary>
         public static bool Enabled { get; set; } = true;
 
-        private readonly List<DamagePopup> _active = new(); // 오래된 순서
-        private readonly Stack<DamagePopup> _free = new();
+        private readonly List<DamagePopup> _active = new(MaxActive); // 오래된 순서
+        private readonly Stack<DamagePopup> _free = new(MaxActive);
+        private Action<DamagePopup> _releaseCallback;
         private DamagePopup _prefab;
 
         public int ActiveCount => _active.Count;
@@ -59,7 +65,8 @@ namespace Game.Core
                 return s_instance;
             }
 
-            var prefab = Resources.Load<DamagePopup>(PrefabPath);
+            DamagePopup prefab;
+            using (LoadMarker.Auto()) { prefab = Resources.Load<DamagePopup>(PrefabPath); }
             if (prefab == null)
             {
                 if (!s_warned)
@@ -97,10 +104,11 @@ namespace Game.Core
             }
             else
             {
-                popup = Instantiate(_prefab, transform);
+                using (CreateMarker.Auto()) { popup = Instantiate(_prefab, transform); }
             }
 
-            popup.Show(amount, position, kind, Release, hitPoint);
+            _releaseCallback ??= Release;
+            using (ShowMarker.Auto()) { popup.Show(amount, position, kind, _releaseCallback, hitPoint); }
             _active.Add(popup);
         }
 

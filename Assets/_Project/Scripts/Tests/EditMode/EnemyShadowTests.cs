@@ -75,6 +75,10 @@ namespace Game.Tests
             var body = renderers[0].bounds;
             foreach (var r in renderers) { body.Encapsulate(r.bounds); }
 
+            VisualBounds.GetVerticalExtents(Body, 0f, out float top, out float bottom);
+            Assert.AreEqual(Mathf.Max(Body.position.y, body.max.y), top, 0.001f);
+            Assert.AreEqual(body.min.y, bottom, 0.001f);
+
             Assert.AreEqual(feet, shadow.Shadow.position.y, 0.001f);
             Assert.AreEqual(body.center.x, shadow.Shadow.position.x, 0.001f);
             Assert.Less(shadow.Shadow.GetComponent<SpriteRenderer>().bounds.size.x, body.size.x);
