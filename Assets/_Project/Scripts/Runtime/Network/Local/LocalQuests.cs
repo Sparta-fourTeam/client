@@ -91,12 +91,13 @@ namespace Game.Network
             if (QuestRules.Points(board, save.quests.rows) < chest.Points) { throw new ApiException(ApiErrorKind.Rejected, "NOT_REACHED"); }
 
             var (current, _) = EnergyRule.At(save.wallet.energyStored, EnergyRule.ParseUpdatedAt(save.wallet.energyUpdatedAt), utcNow, data.Energy);
-            int gold, energy;
-            try { gold = checked(save.wallet.gold + chest.Gold); energy = checked(current + chest.Energy); }
+            int gold, energy, gems;
+            try { gold = checked(save.wallet.gold + chest.Gold); energy = checked(current + chest.Energy); gems = checked(save.wallet.gems + chest.Gems); }
             catch (OverflowException) { throw new ApiException(ApiErrorKind.Rejected, "REWARD_QUANTITY_OVERFLOW"); }
 
             save.quests.chests.Add(chestId);
             save.wallet.gold = gold;
+            save.wallet.gems = gems;
             save.wallet.energyStored = energy;
             save.wallet.energyUpdatedAt = utcNow.ToString("O");
         }

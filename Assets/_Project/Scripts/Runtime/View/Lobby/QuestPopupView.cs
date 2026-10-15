@@ -18,6 +18,12 @@ namespace Game.View
         public const string PointsId = "quest.points";
         /// <summary>에너지 보상 칸의 ItemId. 아이템이 아니라서 Items 표에는 없다</summary>
         public const string EnergyId = "currency.energy";
+        /// <summary>잼 보상 칸의 ItemId. 아이템이 아니라서 Items 표에는 없다</summary>
+        public const string GemId = "currency.gem";
+
+        [Header("탭")]
+        [Tooltip("탭 순서대로, 받을 수 있는 것이 있을 때 켜는 빨간 점. 보드 수보다 길어도 된다(남는 탭은 건드리지 않는다)")]
+        [SerializeField] private GameObject[] _tabBadges;
 
         [Header("퀘스트 목록")]
         [SerializeField] private QuestRowView _rowPrefab;
@@ -36,6 +42,7 @@ namespace Game.View
         [Header("보상 표시")]
         [SerializeField] private ItemIconTable _itemIcons;
         [SerializeField] private Sprite _energyIcon;
+        [SerializeField] private Sprite _gemIcon;
         [Tooltip("비워 두면 점수 보상 칸의 아이콘이 비어 보인다")]
         [SerializeField] private Sprite _pointsIcon;
 
@@ -44,12 +51,17 @@ namespace Game.View
         private GameDataStore _data;
         private IQuestApi _api;
         private RewardPopupView _rewardPopup;
+        private MissionRewardInfoPopupView _chestInfoPopup;
         private bool _busy;
 
         private QuestBoardDefinition CurrentBoard =>
             _data != null && SelectedTab < _data.QuestBoards.Count ? _data.QuestBoards[SelectedTab] : null;
 
-        public void BindUi(IUiRegistry registry) => _rewardPopup = registry.Get<RewardPopupView>();
+        public void BindUi(IUiRegistry registry)
+        {
+            _rewardPopup = registry.Get<RewardPopupView>();
+            _chestInfoPopup = registry.Get<MissionRewardInfoPopupView>();
+        }
 
         [Inject]
         public void Construct(PlayerProfile profile, GameDataStore data, IQuestApi api)
@@ -64,9 +76,10 @@ namespace Game.View
         {
             base.InitializeView();
             _claimAllButton.onClick.AddListener(() => ClaimAllAsync().Forget(Debug.LogException));
-            foreach (var node in _chestNodes)
+            for (int i = 0; i < _chestNodes.Length; i++)
             {
-                node.Button.onClick.AddListener(() => ClaimChestAsync().Forget(Debug.LogException));
+                int index = i;
+                _chestNodes[i].Button.onClick.AddListener(() => OnChestClicked(index));
             }
         }
 
@@ -84,6 +97,7 @@ namespace Game.View
 
         private void Refresh()
         {
+            ShowTabBadges();
             var board = CurrentBoard;
             bool hasBoard = board != null;
             _gauge.SetActive(hasBoard);
@@ -97,6 +111,16 @@ namespace Game.View
 
             ShowRows(board);
             ShowGauge(board);
+        }
+
+        // 탭마다 그 보드에 받을 수 있는 것이 있으면 빨간 점을 켠다 (탭 순서가 보드 순서다)
+        private void ShowTabBadges()
+        {
+            for (int i = 0; i < _tabBadges.Length; i++)
+            {
+                bool hasBoard = _data != null && i < _data.QuestBoards.Count;
+                _tabBadges[i].SetActive(hasBoard && QuestRules.HasClaimable(_profile, new[] { _data.QuestBoards[i] }));
+            }
         }
 
         private void ShowRows(QuestBoardDefinition board)
@@ -212,23 +236,51 @@ namespace Game.View
             }
         }
 
+        // 열 수 있는 상자를 누르면 열 수 있는 상자를 한 번에 열고, 아직 못 열거나 이미 연 상자를 누르면 안에 든 보상을 보여준다
+        private void OnChestClicked(int index)
+        {
+            var board = CurrentBoard;
+            if (_busy || board == null || index >= board.Chests.Count) { return; }
+
+            if (QuestRules.IsChestOpenable(_profile, board, board.Chests[index]))
+            {
+                ClaimChestAsync().Forget(Debug.LogException);
+                return;
+            }
+
+            var chest = board.Chests[index];
+            string name = board.Period == QuestPeriod.Daily ? "일일" : "주간";
+            string description = _profile.IsQuestChestClaimed(chest.Id)
+                ? $"{name} 퀘스트 · 이미 수령한 보상이에요."
+                : $"{name} 퀘스트 · 점수 {chest.Points}점을 모으면 받을 수 있어요.";
+            _chestInfoPopup?.Show($"보물상자 {chest.Points}점", description, ChestRewards(chest.Gold, chest.Energy, chest.Gems));
+        }
+
+        private List<ResultRewardItem> ChestRewards(int gold, int energy, int gems)
+        {
+            var rewards = new List<ResultRewardItem>();
+            if (gold > 0) { rewards.Add(new ResultRewardItem(_itemIcons != null ? _itemIcons.Coin : null, gold, RewardRows.CoinId)); }
+            if (energy > 0) { rewards.Add(new ResultRewardItem(_energyIcon, energy, EnergyId)); }
+            if (gems > 0) { rewards.Add(new ResultRewardItem(_gemIcon, gems, GemId)); }
+            return rewards;
+        }
+
         private async UniTask ClaimChestAsync()
         {
             var board = CurrentBoard;
             if (_busy || board == null) { return; }
 
             // 어느 상자를 눌러도 지금 열 수 있는 상자를 한 번에 열고, 보상은 합쳐서 한 번만 보여준다
-            int gold = 0, energy = 0;
+            int gold = 0, energy = 0, gems = 0;
             foreach (var chest in board.Chests.Where(c => QuestRules.IsChestOpenable(_profile, board, c)).ToList())
             {
                 if (!await RunAsync(() => _api.ClaimQuestChest(chest.Id))) { break; }
                 gold += chest.Gold;
                 energy += chest.Energy;
+                gems += chest.Gems;
             }
 
-            var rewards = new List<ResultRewardItem>();
-            if (gold > 0) { rewards.Add(new ResultRewardItem(_itemIcons != null ? _itemIcons.Coin : null, gold, RewardRows.CoinId)); }
-            if (energy > 0) { rewards.Add(new ResultRewardItem(_energyIcon, energy, EnergyId)); }
+            var rewards = ChestRewards(gold, energy, gems);
             if (rewards.Count > 0) { _rewardPopup.Show(rewards, "보물상자 보상을 받았어요.", "보물상자 보상"); }
         }
 
