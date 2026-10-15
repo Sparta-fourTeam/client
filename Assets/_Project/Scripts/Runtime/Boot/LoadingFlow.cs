@@ -19,10 +19,12 @@ namespace Game.Boot
         private readonly PlayerProfile _profile;
         private readonly BattleLauncher _launcher;
         private readonly GameDataStore _data;
+        private readonly IBattleCheckpointStore _checkpoints;
 
         public LoadingFlow(LoginFlow login, TapToStartView tapToStart, ISceneNavigator nav, PlayerProfile profile, BattleLauncher launcher,
-            GameDataStore data)
+            GameDataStore data, IBattleCheckpointStore checkpoints = null)
         {
+            _checkpoints = checkpoints;
             _data = data;
             _login = login;
             _tapToStart = tapToStart;
@@ -55,7 +57,7 @@ namespace Game.Boot
             // 전투 발급이 거절되면(에너지 부족 등) 로비로 간다. 로비에서 다시 1스테이지로 보낸다
             // 도입 대사가 있는 전투 튜토리얼은 로비에서 대사를 본 뒤 전투로 간다 (TutorialGuideView)
             var battle = TutorialProgress.ActiveBattle(_data.Tutorials, TutorialFacts.From(_profile));
-            if (battle != null && _data.TutorialPresentations.For(battle.Id).Dialogue.Count == 0 && await _launcher.Launch(battle.StageId))
+            if (_checkpoints?.Load() == null && battle != null && _data.TutorialPresentations.For(battle.Id).Dialogue.Count == 0 && await _launcher.Launch(battle.StageId))
             {
                 return;
             }

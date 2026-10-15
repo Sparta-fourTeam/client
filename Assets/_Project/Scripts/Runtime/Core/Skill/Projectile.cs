@@ -6,7 +6,7 @@ using Time = UnityEngine.Time;
 
 namespace Game.Core
 {
-    public class Projectile : MonoBehaviour
+    public partial class Projectile : MonoBehaviour
     {
         private static readonly ProfilerMarker TickMarker = new("Projectile.Tick");
         private static readonly ProfilerMarker TickReactionsMarker = new("Projectile.TickReactions");
@@ -103,7 +103,7 @@ namespace Game.Core
 
         private void Update()
         {
-            Tick(Time.deltaTime);
+            if (Time.timeScale > 0f && Time.deltaTime > 0f) { Tick(Time.deltaTime); }
         }
 
         internal void Tick(float deltaTime)

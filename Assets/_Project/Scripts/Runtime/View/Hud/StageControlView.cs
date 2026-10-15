@@ -33,7 +33,8 @@ namespace Game.View
         protected override void InitializeView()
         {
             // 첫 StageStateChanged가 오기 전까지는 누를 수 없게 시작한다
-            buttonImage.sprite = _buttonimages[0];
+            _speedIndex = PlayerPrefs.GetFloat("stage_speed", 1f) >= 2f ? 1 : 0;
+            buttonImage.sprite = _buttonimages[_speedIndex];
             _speedButton.interactable = false;
             _pauseButton.interactable = false;
             _speedButton.onClick.AddListener(OnSpeedClicked);

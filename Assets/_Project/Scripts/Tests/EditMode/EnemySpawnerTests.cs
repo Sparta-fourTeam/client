@@ -284,6 +284,7 @@ namespace Game.Tests
             spawner.Advance(1f); // 1번째
             spawner.Advance(1f); // 2번째 → 대기 상태
             Assert.AreEqual(2, factory.CreateCallCount);
+            Assert.AreEqual(4f, spawner.NextSpawnSeconds);
 
             spawner.Advance(2.9f); // 쿨다운 전
             Assert.AreEqual(2, factory.CreateCallCount);
@@ -293,6 +294,7 @@ namespace Game.Tests
 
             spawner.Advance(1f); // 다음 버스트 1번째
             Assert.AreEqual(3, factory.CreateCallCount);
+            Assert.AreEqual(0f, spawner.NextSpawnSeconds);
         }
 
         // ───────── GetNearest ─────────

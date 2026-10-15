@@ -24,7 +24,7 @@ namespace Game.Core
         public static ChainSettings From(ChainStats chain) => new ChainSettings(chain.Bounces, chain.HopInterval, chain.PathWidth);
     }
 
-    public sealed class ChainBolt : MonoBehaviour
+    public sealed partial class ChainBolt : MonoBehaviour
     {
         [SerializeField] private LineRenderer line;
         [SerializeField] private LineRenderer afterglowPrefab;
@@ -72,7 +72,7 @@ namespace Game.Core
             this.reactions.Raise(AttackEvent.Start, new AttackContext(origin, first != null ? (Vector3)(first.Position - origin).normalized : Vector3.up));
         }
 
-        private void Update() => Tick(Time.deltaTime);
+        private void Update() { if (Time.timeScale > 0f && Time.deltaTime > 0f) { Tick(Time.deltaTime); } }
 
         internal void Tick(float deltaTime)
         {

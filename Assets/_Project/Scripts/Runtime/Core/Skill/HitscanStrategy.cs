@@ -5,7 +5,7 @@ using UnityEngine.Pool;
 namespace Game.Core
 {
     /// <summary>대상 위치에 즉시 타격 이펙트를 낸다. 전기 구체와 전자기장 풀도 이 전략이 가진다.</summary>
-    public sealed class HitscanStrategy : IAttackStrategy
+    public sealed partial class HitscanStrategy : IAttackStrategy
     {
         private readonly SkillObjectPool<HitscanEffect> ownedPool;
         private readonly Dictionary<SkillForm, GameObject> formPrefabs = new();

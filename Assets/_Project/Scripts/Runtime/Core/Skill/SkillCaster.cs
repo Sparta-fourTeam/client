@@ -3,7 +3,7 @@ using UnityEngine;
 namespace Game.Core
 {
     /// <summary>쿨타임과 시전 수를 관리하고 실제 공격은 <see cref="IAttackStrategy"/>에 맡기는 공통 시전기.</summary>
-    public sealed class SkillCaster : SkillBase
+    public sealed partial class SkillCaster : SkillBase
     {
         private readonly AttackEnvironment environment;
 

@@ -71,6 +71,7 @@ namespace Game.View
 
         /// <summary>튜토리얼이 강조하는 스킬 탭 버튼</summary>
         public RectTransform SkillTab => (RectTransform)_skillTab.transform;
+        public RectTransform CharacterTab => (RectTransform)_characterTab.transform;
 
         /// <summary>스킬 탭을 잠그거나 연다 (연출 없이)</summary>
         public void SetSkillLocked(bool locked)

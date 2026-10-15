@@ -6,7 +6,7 @@ namespace Game.Core
     /// 주기적 가속: interval초마다 duration초 동안 이속이 multiplier배가 된다(독살무사의 "일시적으로 이동 속도 대폭 상승").
     /// 기절·빙결·마비 중에는 시간이 흐르지 않는다.
     /// </summary>
-    public sealed class SpeedBoostPassive : IPassive
+    public sealed partial class SpeedBoostPassive : IPassive
     {
         private readonly float _interval;
         private readonly float _duration;

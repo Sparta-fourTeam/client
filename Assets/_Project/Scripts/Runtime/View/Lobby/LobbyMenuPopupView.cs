@@ -125,7 +125,8 @@ namespace Game.View
             };
             if (await _confirm.ShowAsync(request))
             {
-                await ExecuteAccountExitAsync(_account.LogoutAsync, "로그아웃");
+                if (_account.IsGuest) { await DeleteAccountAsync(); }
+                else { await ExecuteAccountExitAsync(_account.LogoutAsync, "로그아웃"); }
             }
         }
 
@@ -146,7 +147,7 @@ namespace Game.View
             var second = new ConfirmRequest
             {
                 Title = "계정 삭제",
-                Message = "복구 유예 없이 모든 진행 데이터가 삭제됩니다. 확인을 위해 닉네임을 입력하세요.",
+                Message = $"복구 유예 없이 모든 진행 데이터가 삭제됩니다.\n삭제하려면 아래 닉네임을 입력해 주세요.\n\n<noparse>{_profile.Nickname}</noparse>",
                 ConfirmLabel = "계정 삭제",
                 CancelLabel = "취소",
                 InputPlaceholder = "닉네임을 입력하세요",

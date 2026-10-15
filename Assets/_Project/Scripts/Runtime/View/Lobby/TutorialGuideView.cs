@@ -63,6 +63,7 @@ namespace Game.View
         private GameDataStore _data;
         private BattleLauncher _launcher;
         private StageContext _stageContext;
+        private IBattleCheckpointStore _checkpoints;
         private bool _ready;
         private bool _completing;
         private CanvasGroup _rootGroup;
@@ -76,8 +77,9 @@ namespace Game.View
 
         [Inject]
         public void Construct(LobbyArrival arrival, PlayerProfile profile, GameDataStore data, BattleLauncher launcher,
-            StageContext stageContext)
+            StageContext stageContext, IBattleCheckpointStore checkpoints = null)
         {
+            _checkpoints = checkpoints;
             _stageContext = stageContext;
             _arrival = arrival;
             _profile = profile;
@@ -130,6 +132,42 @@ namespace Game.View
             if (this == null)
             {
                 return;
+            }
+
+            if (!string.IsNullOrEmpty(_stageContext.ResumeError))
+            {
+                string message = _stageContext.ResumeError;
+                _stageContext.ResumeError = null;
+                await _ui.Get<ConfirmPopupView>().ShowAsync(new ConfirmRequest { Title = "이어하기", Message = message });
+                if (this == null) { return; }
+            }
+            // 앱을 다시 켠 첫 로비에서만 묻는다. 같은 실행 안의 정상 로비 복귀에는 끼어들지 않는다.
+            var checkpoint = _stageContext.BattleId == null ? _checkpoints?.Load() : null;
+            if (checkpoint?.Stage.State == StageState.Submitting)
+            {
+                // 이미 끝난 전투의 결과는 새 발급 전에 같은 요청으로 재전송한다.
+                await _launcher.Resume(checkpoint);
+                return;
+            }
+            if (checkpoint != null)
+            {
+                int seconds = Mathf.FloorToInt(checkpoint.Stage.Clock);
+                bool resume;
+                try
+                {
+                    resume = await _ui.Get<ConfirmPopupView>().ShowAsync(new ConfirmRequest
+                    {
+                        Title = "이어하기",
+                        Message = $"진행 중인 전투가 있습니다. 이어하시겠습니까?\n제 {checkpoint.StageId} 관문 · {checkpoint.Stage.ReachedWave} 웨이브 · {seconds / 60:00}:{seconds % 60:00}",
+                        Warning = "포기하면 이 전투의 진행 기록이 사라집니다.",
+                        ConfirmLabel = "이어하기",
+                        CancelLabel = "포기"
+                    });
+                }
+                catch (OperationCanceledException) { return; }
+                if (this == null) { return; }
+                if (resume) { await _launcher.Resume(checkpoint); return; }
+                _checkpoints.Clear();
             }
 
             // 스테이지 클리어로 열리는 기능도, 전투 전에 잠겨 있었으면 자물쇠를 다시 걸어 두었다가 해금 연출 뒤에 푼다
@@ -245,7 +283,7 @@ namespace Game.View
                 }
             }
 
-            // 레벨업 직후 처음 시작되는 가이드에 대사 장면이 있으면 재생한다
+            // 레벨업이나 첫 강화 보상 지급으로 시작되는 가이드의 도입 대사를 재생한다
             var starting = TutorialProgress.ActiveGuide(_data.Tutorials, TutorialFacts.From(_profile));
             if (!news.IsEmpty && starting != null && _data.TutorialPresentations.For(starting.Id).Dialogue.Count > 0)
             {
@@ -298,10 +336,19 @@ namespace Game.View
         {
             _completing = true;
             Point(null, null);
-            await _arrival.CompleteAsync(tutorialId);
+            var response = await _arrival.CompleteAsync(tutorialId);
             if (this == null)
             {
                 return;
+            }
+
+            // 먼저 진행하던 가이드를 끝내 새 가이드로 넘어가는 경우에도 도입 대사를 보여 준다.
+            var next = TutorialProgress.ActiveGuide(_data.Tutorials, TutorialFacts.From(_profile));
+            if (response != null && next != null && _data.TutorialPresentations.For(next.Id).Dialogue.Count > 0)
+            {
+                try { await _dialogue.PlayAsync(_data.TutorialPresentations.For(next.Id).Dialogue); }
+                catch (OperationCanceledException) { return; }
+                if (this == null) { return; }
             }
 
             _completing = false;

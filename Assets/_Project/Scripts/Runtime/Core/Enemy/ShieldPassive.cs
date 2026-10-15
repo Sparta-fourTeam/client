@@ -19,7 +19,7 @@ namespace Game.Core
     /// duration이 0보다 크면 그 시간이 지나도 사라지고, immunities는 켜져 있는 동안 걸리지 않는 상태이상이다.
     /// 한 번만 켜진다(누리카베의 방어막은 처음부터, 카라카사의 임시 방어막은 피격 때 확률로).
     /// </summary>
-    public sealed class ShieldPassive : IPassive
+    public sealed partial class ShieldPassive : IPassive
     {
         private readonly ShieldTrigger _trigger;
         private readonly int _hits;

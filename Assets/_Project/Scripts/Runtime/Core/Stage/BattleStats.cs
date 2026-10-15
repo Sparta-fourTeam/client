@@ -7,7 +7,7 @@ using VContainer.Unity;
 
 namespace Game.Core
 {
-    public sealed class BattleStats : IInitializable, ITickable, IDisposable
+    public sealed partial class BattleStats : IInitializable, ITickable, IDisposable
     {
         private readonly ISubscriber<EnemyDied> _enemyDiedSubscriber;
         private readonly ISubscriber<WaveGaugeChanged> _waveGaugeChangedSubscriber; // todo 웨이브 게이지 채워질때마다 판단하디말고 다 채워졌을때

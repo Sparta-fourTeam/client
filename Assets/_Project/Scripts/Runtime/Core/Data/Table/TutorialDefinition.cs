@@ -6,12 +6,14 @@ namespace Game.Core
     /// <summary>튜토리얼 한 단계 (Tutorials.json 한 행). 표의 순서가 진행 우선순위다.
     /// Kind battle: 시작 조건을 채웠고 완료 조건(Complete)을 못 채웠으면 로비 대신 StageId 전투로 보내고, 그 전투는 에너지를 쓰지 않는다.
     /// Kind guide: 로비에서 가이드 단계를 하나씩 강조해 완료 조건까지 이끈다. 단계 템플릿·대사·탭 잠금은 클라이언트 전용 TutorialPresentation이 같은 Id로 갖는다.
+    /// Kind milestone: 화면 안내나 자동 전투 없이 완료 조건을 채우면 보상을 지급하고 다음 단계를 연다.
     /// 시작 조건은 앞 튜토리얼(After) 완료와 플레이어 레벨(MinLevel)이다. 완료 조건을 채우면 서버에 완료로 저장하며 Rewards를 받는다</summary>
     [Serializable]
     public sealed class TutorialDefinition
     {
         public const string Battle = "battle";
         public const string Guide = "guide";
+        public const string Milestone = "milestone";
 
         public string Id;
         public string Kind;
@@ -27,9 +29,9 @@ namespace Game.Core
         public void Validate(GameDataStore data, ICollection<string> earlierIds)
         {
             string name = $"Tutorials {Id}";
-            if (string.IsNullOrWhiteSpace(Id) || (Kind != Battle && Kind != Guide) || Complete == null)
+            if (string.IsNullOrWhiteSpace(Id) || (Kind != Battle && Kind != Guide && Kind != Milestone) || Complete == null)
             {
-                throw new InvalidOperationException($"{name}: Id, Kind(battle/guide), Complete가 필요합니다");
+                throw new InvalidOperationException($"{name}: Id, Kind(battle/guide/milestone), Complete가 필요합니다");
             }
 
             if (!string.IsNullOrEmpty(After) && !earlierIds.Contains(After))

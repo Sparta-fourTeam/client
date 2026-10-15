@@ -311,10 +311,16 @@ namespace Game.Tests
             var accept = Field<Button>(confirm, "_confirmButton");
             Field<Button>(menu, "_logoutButton").onClick.Invoke();
             accept.onClick.Invoke();
+            Assert.AreEqual(0, api.Deleted, "게스트 로그아웃 확인 뒤에는 삭제 확인을 먼저 거친다");
+            accept.onClick.Invoke();
+            Assert.AreEqual(0, api.Deleted, "닉네임 확인을 마치기 전에는 삭제하지 않는다");
+            StringAssert.Contains("Review_Ninja", Field<TMP_Text>(confirm, "_message").text);
+            Field<TMP_InputField>(confirm, "_input").text = "Review_Ninja";
+            accept.onClick.Invoke();
             Assert.AreEqual(1, api.Deleted);
             api.Completion.TrySetException(new ApiException(ApiErrorKind.Rejected, code));
             Assert.IsTrue(confirm.IsOpen);
-            Assert.AreEqual("로그아웃 확인 필요", Field<TMP_Text>(confirm, "_title").text);
+            Assert.AreEqual("계정 삭제 확인 필요", Field<TMP_Text>(confirm, "_title").text);
             Assert.AreEqual(0, nav.LoadingCalls);
             Field<Button>(confirm, confirmLogin ? "_confirmButton" : "_closeButton").onClick.Invoke();
             Assert.AreEqual(reauthenticate && confirmLogin ? 1 : 0, nav.LoadingCalls);

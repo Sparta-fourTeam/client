@@ -82,6 +82,7 @@ namespace Game.Core
     public sealed class AttackReactions
     {
         private readonly ReactionBinding[] bindings;
+        internal SkillConfig SnapshotConfig { get; set; }
         public static readonly AttackReactions Empty = new AttackReactions(Array.Empty<ReactionBinding>());
         public AttackReactions(IEnumerable<ReactionBinding> bindings) => this.bindings = new List<ReactionBinding>(bindings).ToArray();
 
@@ -92,7 +93,7 @@ namespace Game.Core
             if (bindings.Length == 0) { return other; }
             var combined = new List<ReactionBinding>(bindings);
             combined.AddRange(other.bindings);
-            return new AttackReactions(combined);
+            return new AttackReactions(combined) { SnapshotConfig = other.SnapshotConfig ?? SnapshotConfig };
         }
 
         public void Raise(AttackEvent trigger, AttackContext context)

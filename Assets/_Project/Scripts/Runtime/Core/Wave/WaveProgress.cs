@@ -6,7 +6,7 @@ using VContainer.Unity;
 
 namespace Game.Core
 {
-    public sealed class WaveProgress : IInitializable, IDisposable
+    public sealed partial class WaveProgress : IInitializable, IDisposable
     {
         private readonly ISubscriber<WaveStarted> _waveStartedSubscriber;
         private readonly ISubscriber<EnemyDied> _enemyDiedSubscriber;

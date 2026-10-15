@@ -8,7 +8,7 @@ namespace Game.Core
 {
     /// <summary>카드 3장을 뽑고 적용하는 한 판 단위 서비스. 스킬 카드는 IUpgradeChoiceSource(WeaponController)가,
     /// 일반 카드(방벽 회복 등)는 GeneralCards 테이블이 후보를 내고, 여기서 하나로 합친다</summary>
-    public sealed class CardDeck
+    public sealed partial class CardDeck
     {
         /// <summary>한 번 뽑을 때 Forced 일반 카드가 차지할 수 있는 최대 칸 수. 스킬 카드가 완전히 밀려나지 않게 한다</summary>
         public const int MaxForcedPerDraw = 1;

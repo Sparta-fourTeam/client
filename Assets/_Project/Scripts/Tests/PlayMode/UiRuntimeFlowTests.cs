@@ -72,6 +72,8 @@ namespace Game.Tests
         private bool _hadSpeedPreference;
         private float _speedPreference;
         private bool _restoreSpeedPreference;
+        private bool _hadMissionSelection;
+        private int _missionSelection;
         private IAuthCredentialStore _credentials;
         private bool _hadCredential;
         private LoginMethod _credentialMethod;
@@ -79,6 +81,109 @@ namespace Game.Tests
         private static readonly FieldInfo StorePath = typeof(LocalSaveStore).GetField("_filePath", BindingFlags.Instance | BindingFlags.NonPublic);
         private static T Field<T>(object target, string name) =>
             (T)target.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(target);
+
+        [UnityTest]
+        public IEnumerator BattleCheckpoint_LobbyPromptRestoresBattleAndCardSelectionWithoutChargingAgain()
+        {
+            yield return StartFromBoot(UnlockLobbyFeatures);
+            var root = Object.FindAnyObjectByType<RootLifetimeScope>();
+            var checkpoints = root.Container.Resolve<IBattleCheckpointStore>();
+            var context = root.Container.Resolve<StageContext>();
+            var nav = root.Container.Resolve<ISceneNavigator>();
+            yield return Object.FindAnyObjectByType<LobbyLifetimeScope>().Container.Resolve<BattleLauncher>().Launch(1).ToCoroutine();
+            yield return WaitFor(() => Object.FindAnyObjectByType<BattleCheckpointDriver>()?.Capture() != null);
+            yield return WaitFor(() => Object.FindObjectsByType<Enemy>().Any(e => !e.IsDead));
+            var stage = Object.FindAnyObjectByType<StageLifetimeScope>();
+            var manager = stage.Container.Resolve<StageManager>();
+            manager.Pause();
+            var enemy = Object.FindObjectsByType<Enemy>().First(e => !e.IsDead);
+            var skills = stage.Container.Resolve<SkillController>();
+            foreach (var definition in stage.Container.Resolve<ISkillDataProvider>().LoadAll()
+                .Where(d => !d.childOnly).GroupBy(d => d.castType).Select(g => g.First()))
+            {
+                if (!Field<List<SkillBase>>(skills, "skills").Any(w => w.Data.id == definition.id))
+                { Assert.That(skills.AddWeapon(definition.id), Is.True); }
+            }
+            foreach (var skill in Field<List<SkillBase>>(skills, "skills").Cast<SkillCaster>())
+            { skill.FireAt(enemy.Position); }
+            enemy.ApplyFreeze(7.5f);
+            enemy.ApplySlow(0.3f, 4.25f);
+            var driver = Object.FindAnyObjectByType<BattleCheckpointDriver>();
+            driver.SaveNow();
+            var saved = checkpoints.Load();
+            Assert.That(saved, Is.Not.Null);
+            Assert.That(saved.Skills, Is.Not.Empty);
+            Assert.That(saved.Skills.Sum(s => s.Attacks.Count), Is.GreaterThan(0), "진행 중인 공격도 복원 대상으로 검증한다");
+            int energy = _store.Load().wallet.energyStored;
+            int issued = _store.Load().battles.Count;
+            string battleId = context.BattleId;
+
+            // 새 프로세스에서는 Root의 전투 문맥이 비어 있다. 실제 로비·확인 버튼·Stage 로딩 경로를 거친다.
+            context.SetBattle(null);
+            yield return nav.GoToLobby().ToCoroutine();
+            var lobbyUi = Object.FindAnyObjectByType<LobbyLifetimeScope>().Container.Resolve<IUiRegistry>();
+            var confirm = lobbyUi.Get<ConfirmPopupView>();
+            yield return WaitFor(() => confirm.IsOpen);
+            yield return ClickGameButton(Field<Button>(confirm, "_confirmButton"));
+            yield return WaitFor(() => Object.FindAnyObjectByType<BattleCheckpointDriver>()?.Capture() != null);
+            stage = Object.FindAnyObjectByType<StageLifetimeScope>();
+            manager = stage.Container.Resolve<StageManager>();
+            var restored = Object.FindAnyObjectByType<BattleCheckpointDriver>().Capture();
+            Assert.That(context.BattleId, Is.EqualTo(battleId));
+            Assert.That(_store.Load().wallet.energyStored, Is.EqualTo(energy));
+            Assert.That(_store.Load().battles.Count, Is.EqualTo(issued));
+            Assert.That(manager.State, Is.EqualTo(StageState.Paused));
+            Assert.That(Time.timeScale, Is.Zero);
+            Assert.That(restored.Stage.Clock, Is.EqualTo(saved.Stage.Clock));
+            Assert.That(restored.Stage.WallHp, Is.EqualTo(saved.Stage.WallHp));
+            Assert.That(restored.Spawns.Enemies.Select(e => e.Id).ToArray(), Is.EqualTo(saved.Spawns.Enemies.Select(e => e.Id).ToArray()), $"dead={string.Join(",", restored.Stage.DeadEnemyIds)} effects={string.Join(",", restored.Skills.Select(w => w.SkillId + ":" + w.Attacks.Count))}");
+            for (int i = 0; i < saved.Spawns.Enemies.Count; i++)
+            {
+                Assert.That(restored.Spawns.Enemies[i].Position, Is.EqualTo(saved.Spawns.Enemies[i].Position));
+                Assert.That(restored.Spawns.Enemies[i].Hp, Is.EqualTo(saved.Spawns.Enemies[i].Hp));
+                Assert.That(restored.Spawns.Enemies[i].Status.Freeze, Is.EqualTo(saved.Spawns.Enemies[i].Status.Freeze));
+                Assert.That(restored.Spawns.Enemies[i].Status.Slow, Is.EqualTo(saved.Spawns.Enemies[i].Status.Slow));
+            }
+            Assert.That(restored.Skills.Select(s => s.Cooldown), Is.EqualTo(saved.Skills.Select(s => s.Cooldown)));
+            Assert.That(restored.Skills.Select(s => s.Attacks.Count), Is.EqualTo(saved.Skills.Select(s => s.Attacks.Count)));
+            manager.Resume();
+            yield return CompleteEnemiesUntil(stage, () => manager.State == StageState.CardSelect);
+            driver = Object.FindAnyObjectByType<BattleCheckpointDriver>();
+            driver.SaveNow();
+            var selected = checkpoints.Load();
+            Assert.That(selected.Stage.Choices, Is.Not.Empty);
+            context.SetBattle(null);
+            yield return nav.GoToLobby().ToCoroutine();
+            confirm = Object.FindAnyObjectByType<LobbyLifetimeScope>().Container.Resolve<IUiRegistry>().Get<ConfirmPopupView>();
+            yield return WaitFor(() => confirm.IsOpen);
+            yield return ClickGameButton(Field<Button>(confirm, "_confirmButton"));
+            yield return WaitFor(() => Object.FindAnyObjectByType<BattleCheckpointDriver>()?.Capture() != null);
+            stage = Object.FindAnyObjectByType<StageLifetimeScope>();
+            manager = stage.Container.Resolve<StageManager>();
+            Assert.That(manager.State, Is.EqualTo(StageState.CardSelect));
+            restored = Object.FindAnyObjectByType<BattleCheckpointDriver>().Capture();
+            Assert.That(restored.Stage.Choices.Select(c => (c.SkillId, c.CardId, c.NewWeapon, c.General)),
+                Is.EqualTo(selected.Stage.Choices.Select(c => (c.SkillId, c.CardId, c.NewWeapon, c.General))));
+            var slots = Field<CardSlotView[]>(stage.Container.Resolve<IUiRegistry>().Get<CardSelectView>(), "_slots");
+            yield return ClickGameButton(Field<Button>(slots.First(slot => slot.gameObject.activeSelf), "_button"));
+            yield return WaitFor(() => manager.State == StageState.Playing);
+            var fault = root.Container.Resolve<ISubmitFaultSwitch>();
+            fault.FailNextSubmits = StageManager.AutoRetryCount + 1;
+            manager.RetryDelay = TimeSpan.Zero;
+            stage.Container.Resolve<Wall>().TakeDamage(int.MaxValue);
+            yield return WaitFor(() => Field<GameObject>(stage.Container.Resolve<IUiRegistry>().Get<SubmitResultPopupView>(), "_panel").activeSelf);
+            Object.FindAnyObjectByType<BattleCheckpointDriver>().SaveNow();
+            Assert.That(checkpoints.Load().Stage.State, Is.EqualTo(StageState.Submitting));
+            context.SetBattle(null);
+            fault.FailNextSubmits = 0;
+            yield return nav.GoToLobby().ToCoroutine();
+            yield return WaitFor(() => Object.FindAnyObjectByType<StageLifetimeScope>() != null
+                && Object.FindAnyObjectByType<StageLifetimeScope>().Container.Resolve<StageManager>().State == StageState.Finished);
+            Assert.That(context.BattleId, Is.EqualTo(battleId));
+            Assert.That(checkpoints.Load(), Is.Null, "결과 반영 뒤에는 전투를 다시 복원하면 안 된다");
+            Assert.That(_store.Load().battles.Count, Is.EqualTo(issued));
+            LogAssert.NoUnexpectedReceived();
+        }
 
         [UnityTest]
         public IEnumerator RewardOddsPopup_BothButtonsCloseThroughPointerInputInLobbyAndStage()
@@ -140,13 +245,6 @@ namespace Game.Tests
                     }
                 }
                 if (count <= 8) { Assert.That(slots.localScale, Is.EqualTo(Vector3.one)); }
-                if (count == 9 || count == 40 || count == 3)
-                {
-                    string capture = Path.GetFullPath(Path.Combine(Application.dataPath, $"../Temp/reward-popup-{count}.png"));
-                    if (File.Exists(capture)) { File.Delete(capture); }
-                    ScreenCapture.CaptureScreenshot(capture);
-                    yield return WaitFor(() => File.Exists(capture));
-                }
                 yield return ClickGameButton(tap);
                 yield return WaitFor(() => !panel.activeSelf);
             }
@@ -367,11 +465,13 @@ namespace Game.Tests
         }
 
         [UnityTest]
-        public IEnumerator StageClearUnlock_ShowsContentUnlockOnLobbyReturnThenOpensTab()
+        public IEnumerator StageClearUnlock_ShowsEquipmentDialogueAndGuidesFirstUpgrade()
         {
             // 캐릭터 탭을 여는 스테이지 바로 앞까지 깬 세이브로 시작한다
             var root = VContainer.Unity.VContainerSettings.Instance.GetOrCreateRootLifetimeScopeInstance() as RootLifetimeScope;
             int unlockStage = root.Container.Resolve<GameDataStore>().FeatureUnlocks.RequiredStage("character");
+            var gate = root.Container.Resolve<GameDataStore>().Tutorials.Single(t => t.Kind == TutorialDefinition.Milestone);
+            var equipmentGuide = root.Container.Resolve<GameDataStore>().Tutorials.Single(t => t.IsGuide && t.After == gate.Id);
             void SetCleared(LocalSave save, int stageId, int rating)
             {
                 var row = save.stageProgress.Find(p => p.stageId == stageId);
@@ -385,6 +485,10 @@ namespace Game.Tests
 
             yield return StartFromBoot(save =>
             {
+                save.tutorials.Remove(gate.Id);
+                save.tutorials.Remove(equipmentGuide.Id);
+                save.wallet.gold = 0;
+                save.items.Clear();
                 for (int id = 1; id < unlockStage; id++)
                 {
                     SetCleared(save, id, 1);
@@ -408,6 +512,16 @@ namespace Game.Tests
             var ui = Object.FindAnyObjectByType<LobbyLifetimeScope>().Container.Resolve<IUiRegistry>();
             var data = root.Container.Resolve<GameDataStore>();
             var opened = ui.GetAll<FeatureLockView>().Where(l => data.FeatureUnlocks.RequiredStage(Field<string>(l, "_feature")) == unlockStage).ToList();
+            // 해금 안내 전에 첫 강화 재료와 비용을 받고, 보상 안내를 닫는다.
+            var profile = root.Container.Resolve<PlayerProfile>();
+            var upgrade = data.Upgrades.GetOrThrow(equipmentGuide.Complete.UpgradeId);
+            var levelUp = ui.Get<LevelUpPopupView>();
+            yield return WaitFor(() => levelUp.IsOpen);
+            Assert.That(profile.Gold, Is.EqualTo(upgrade.CostAt(equipmentGuide.Complete.Level)));
+            Assert.That(profile.ItemQuantity(upgrade.MaterialItemId), Is.EqualTo(upgrade.MaterialAt(equipmentGuide.Complete.Level)));
+            var rewardTap = Field<Button>(levelUp, "_confirmButton");
+            if (levelUp.IsPlaying) { yield return ClickGameButton(rewardTap); }
+            yield return ClickGameButton(rewardTap);
             var contentUnlock = ui.Get<ContentUnlockView>();
             var tap = Field<Button>(contentUnlock, "_tapArea");
             var shown = new List<string>();
@@ -427,9 +541,30 @@ namespace Game.Tests
 
             Assert.That(shown, Is.EquivalentTo(opened.Select(l => l.ContentName)));
             yield return WaitFor(() => opened.All(l => !Field<Button>(l, "_lock").gameObject.activeSelf));
+            var dialogue = ui.Get<DialogueView>();
+            yield return WaitFor(() => dialogue.IsOpen);
+            yield return SkipDialogue(dialogue, ui.Get<ConfirmPopupView>());
+            yield return WaitFor(() => !dialogue.IsOpen);
+            var guide = ui.Get<TutorialGuideView>();
+            yield return WaitFor(() => Field<GameObject>(guide, "_root").activeSelf);
             var nav = ui.Get<LobbyNavView>();
+            Assert.That(TopHit(Field<Button>(nav, "_shopTab")), Is.EqualTo("Blocker"));
             yield return ClickGameButton(Field<Button>(nav, "_characterTab"));
-            Assert.That(Field<GameObject>(ui.Get<CharacterScreenView>(), "_panel").activeSelf, Is.True);
+            var screen = ui.Get<CharacterScreenView>();
+            Assert.That(screen.IsVisible, Is.True);
+            var slot = screen.SlotOf(equipmentGuide.Complete.UpgradeId).GetComponent<EquipSlotView>();
+            yield return ClickGameButton(Field<Button>(slot, "_button"));
+            var popup = ui.Get<EquipUpgradePopupView>();
+            Assert.That(popup.OpenUpgradeId, Is.EqualTo(equipmentGuide.Complete.UpgradeId));
+            yield return ClickGameButton(Field<Button>(popup, "_upgradeButton"));
+            var confirm = ui.Get<UpgradeConfirmPopupView>();
+            yield return ClickGameButton(Field<Button>(confirm, "_confirmButton"));
+            yield return WaitFor(() => profile.IsTutorialDone(equipmentGuide.Id));
+            Assert.That(profile.UpgradeLevel(equipmentGuide.Complete.UpgradeId), Is.EqualTo(equipmentGuide.Complete.Level));
+            Assert.That(profile.Gold, Is.Zero);
+            Assert.That(profile.ItemQuantity(upgrade.MaterialItemId), Is.Zero);
+            Assert.That(_store.Load().tutorials, Does.Contain(equipmentGuide.Id));
+            Assert.That(Field<GameObject>(guide, "_root").activeSelf, Is.False);
         }
 
         // 스테이지 클리어로 열리는 로비 기능(FeatureUnlocks)이 모두 열린 세이브로 만든다
@@ -544,10 +679,6 @@ namespace Game.Tests
                     // 두 번째 엘리트 보상은 첫 번째 스킵으로 함께 소비되면 안 된다.
                     var queuedEnemy = stage.Container.Resolve<IEnemyFactory>().Create(elite.Id, new Vector2(99, 99), isSummoned: true);
                     queuedEnemy.TakeDamage(queuedEnemy.Model.Hp);
-                    string preview = Path.GetFullPath(Path.Combine(Application.dataPath, "../Temp/elite-roulette-skip-button.png"));
-                    if (File.Exists(preview)) { File.Delete(preview); }
-                    ScreenCapture.CaptureScreenshot(preview);
-                    yield return WaitFor(() => File.Exists(preview));
                     var background = Field<PointerClickRelay>(view, "_background");
                     yield return ClickGameTarget(background, localPoint: ((RectTransform)background.transform).rect.min + Vector2.one * 48f);
                     Assert.That(stats.BuildLog.Count - priorCards, Is.EqualTo(1), "dim 한 번은 현재 회차의 카드 한 장만 적용한다");
@@ -589,10 +720,6 @@ namespace Game.Tests
                 var confirmButton = Field<Button>(view, "_skipButton");
                 yield return WaitFor(() => confirmButton.interactable
                     && confirmButton.GetComponentInChildren<TMP_Text>(true).text == "확인");
-                string screenshot = Path.GetFullPath(Path.Combine(Application.dataPath, "../Temp/elite-roulette-live.png"));
-                if (File.Exists(screenshot)) { File.Delete(screenshot); }
-                ScreenCapture.CaptureScreenshot(screenshot);
-                yield return WaitFor(() => File.Exists(screenshot));
                 Assert.That(panel.activeSelf, Is.True, "스킵 여부와 관계없이 전체 카드 결과를 확인할 때까지 유지한다");
                 Assert.That(manager.State, Is.EqualTo(StageState.EliteRoulette));
                 Assert.That(Time.timeScale, Is.Zero);
@@ -839,9 +966,14 @@ namespace Game.Tests
             var mission = ui.Get<MissionScreenView>();
             Assert.That(Field<GameObject>(mission, "_panel").activeSelf, Is.True);
             // 카드를 오른쪽으로 끌었다 놓으면 옆 카드가 가운데로 와서 이전 관문으로 넘어간다
+            var carousel = Field<StageCarouselView>(mission, "_carousel");
+            if (Field<int>(mission, "_stageId") == 1)
+            {
+                yield return ClickGameButton(Field<Button>(mission, "_nextButton"));
+                yield return WaitFor(() => Field<int>(mission, "_stageId") > 1 && !carousel.IsSliding);
+            }
             int shownStage = Field<int>(mission, "_stageId");
             Assert.That(shownStage, Is.GreaterThan(1));
-            var carousel = Field<StageCarouselView>(mission, "_carousel");
             var swipe = new PointerEventData(EventSystem.current) { delta = new Vector2(Screen.width * 0.5f, 0f) };
             ExecuteEvents.Execute(carousel.gameObject, swipe, ExecuteEvents.beginDragHandler);
             ExecuteEvents.Execute(carousel.gameObject, swipe, ExecuteEvents.dragHandler);
@@ -1007,6 +1139,10 @@ namespace Game.Tests
             _hadSpeedPreference = PlayerPrefs.HasKey("stage_speed");
             _speedPreference = PlayerPrefs.GetFloat("stage_speed");
             _restoreSpeedPreference = true;
+            PlayerPrefs.DeleteKey("stage_speed");
+            _hadMissionSelection = PlayerPrefs.HasKey("mission_selected_stage");
+            _missionSelection = PlayerPrefs.GetInt("mission_selected_stage");
+            PlayerPrefs.DeleteKey("mission_selected_stage");
             var root = VContainer.Unity.VContainerSettings.Instance.GetOrCreateRootLifetimeScopeInstance() as RootLifetimeScope;
             Assert.That(root, Is.Not.Null);
             _store = root.Container.Resolve<LocalSaveStore>();
@@ -1067,6 +1203,8 @@ namespace Game.Tests
                 if (_hadSpeedPreference) { PlayerPrefs.SetFloat("stage_speed", _speedPreference); }
                 else { PlayerPrefs.DeleteKey("stage_speed"); }
                 _restoreSpeedPreference = false;
+                if (_hadMissionSelection) { PlayerPrefs.SetInt("mission_selected_stage", _missionSelection); }
+                else { PlayerPrefs.DeleteKey("mission_selected_stage"); }
             }
             if (_credentials != null)
             {
@@ -1075,6 +1213,11 @@ namespace Game.Tests
                 _credentials = null;
             }
             if (_savePath != null && File.Exists(_savePath)) { File.Delete(_savePath); }
+            if (_savePath != null)
+            {
+                foreach (string suffix in new[] { ".battle", ".battle.bak", ".battle.tmp" })
+                { if (File.Exists(_savePath + suffix)) { File.Delete(_savePath + suffix); } }
+            }
             _store = null;
             _originalSavePath = null;
             _savePath = null;
@@ -1213,12 +1356,14 @@ namespace Game.Tests
             }
         }
 
-        private static IEnumerator WaitFor(Func<bool> condition, string step = null)
+        private static IEnumerator WaitFor(Func<bool> condition, string step = null,
+            [System.Runtime.CompilerServices.CallerMemberName] string caller = null,
+            [System.Runtime.CompilerServices.CallerLineNumber] int line = 0)
         {
             float deadline = Time.realtimeSinceStartup + 20f;
             while (!condition())
             {
-                Assert.That(Time.realtimeSinceStartup, Is.LessThan(deadline), $"UI flow did not complete in 20 seconds. Step={step}, Scene={SceneManager.GetActiveScene().name}, Playing={Application.isPlaying}");
+                Assert.That(Time.realtimeSinceStartup, Is.LessThan(deadline), $"UI flow did not complete in 20 seconds. Step={step ?? caller}, Line={line}, Scene={SceneManager.GetActiveScene().name}, Playing={Application.isPlaying}");
                 yield return null;
             }
         }

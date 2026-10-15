@@ -10,16 +10,27 @@ namespace Game.Core
     public sealed class BattleLauncher
     {
         private readonly IBattleApi _battleApi;
+        private readonly IBattleCheckpointStore _checkpoints;
         private readonly StageContext _stageContext;
         private readonly ISceneNavigator _nav;
         private readonly IPublisher<StartFailed> _startFailed;
 
-        public BattleLauncher(IBattleApi battleApi, StageContext stageContext, ISceneNavigator nav, IPublisher<StartFailed> startFailed)
+        public BattleLauncher(IBattleApi battleApi, StageContext stageContext, ISceneNavigator nav, IPublisher<StartFailed> startFailed, IBattleCheckpointStore checkpoints = null)
         {
+            _checkpoints = checkpoints;
             _battleApi = battleApi;
             _stageContext = stageContext;
             _nav = nav;
             _startFailed = startFailed;
+        }
+
+        /// <summary>기기에 저장된 같은 전투를 재개한다. 새 전투 발급이나 에너지 차감은 하지 않는다.</summary>
+        public UniTask Resume(BattleCheckpoint checkpoint)
+        {
+            if (checkpoint == null) { throw new System.ArgumentNullException(nameof(checkpoint)); }
+            _stageContext.SetBattle(checkpoint.BattleId);
+            _stageContext.Checkpoint = checkpoint;
+            return _nav.GoToStage(checkpoint.StageId);
         }
 
         /// <summary>발급에 성공해 Stage로 넘어갔으면 true, 거절돼 그대로 남았으면 false</summary>
@@ -36,6 +47,7 @@ namespace Game.Core
                 return false;
             }
 
+            _checkpoints?.Clear();
             _stageContext.SetBattle(response.battleId);
             await _nav.GoToStage(stageId);
             return true;

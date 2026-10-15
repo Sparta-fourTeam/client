@@ -11,7 +11,7 @@ namespace Game.Core
 {
     // 적 한 마리의 규칙(HP, 속도, 공격, 상태이상, 패시브). 위치를 모른다: 위치와 이동은 Enemy(Transform)가 맡고,
     // 위치가 필요한 계산은 호출하는 쪽이 position을 넘긴다
-    public class EnemyModel
+    public partial class EnemyModel
     {
         private static readonly ProfilerMarker TakeDamageMarker = new("Enemy.TakeDamage");
         private static readonly ProfilerMarker PublishHpChangedMarker = new("Enemy.PublishHpChanged");
@@ -227,7 +227,7 @@ namespace Game.Core
             }
             else
             {
-                var projectile = projectiles.Fire(position, _attack.Damage, _attack.ProjectileSpeed);
+                var projectile = projectiles.Fire(position, _attack.Damage, _attack.ProjectileSpeed, MonsterId);
                 ProjectileFired?.Invoke(projectile);
             }
         }

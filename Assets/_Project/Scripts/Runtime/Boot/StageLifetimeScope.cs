@@ -48,13 +48,14 @@ namespace Game.Boot
             // BattleStats는 WaveProgress보다 먼저 EnemyDied를 구독해야 스테이지를 끝내는 마지막 처치까지 센다 (순서 변경 금지)
             builder.RegisterEntryPoint<BattleStats>().AsSelf();
             builder.Register<EncounteredMonsters>(Lifetime.Scoped);
-            builder.RegisterEntryPoint<WaveProgress>();
+            builder.RegisterEntryPoint<WaveProgress>().AsSelf();
             builder.Register<IRandomProvider, UnityRandomProvider>(Lifetime.Scoped);
             builder.RegisterComponentInHierarchy<EnemyFactory>().AsImplementedInterfaces();
             builder.RegisterComponentInHierarchy<SpawnArea>();
             builder.Register<EnemyProjectileSystem>(Lifetime.Scoped);
             builder.RegisterEntryPoint<EnemySpawner>(Lifetime.Scoped).AsSelf().As<IEnemyTargetProvider>();
-            builder.RegisterEntryPoint<WaveManager>();
+            builder.RegisterEntryPoint<WaveManager>().AsSelf();
+            builder.RegisterBuildCallback(resolver => resolver.Inject(gameObject.AddComponent<BattleCheckpointDriver>()));
         }
 
         protected override void OnDestroy()

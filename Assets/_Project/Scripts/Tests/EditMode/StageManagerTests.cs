@@ -289,6 +289,19 @@ namespace Game.Tests
         }
 
         [Test]
+        public void NewBattle_RestoresSavedMultiplierWithConfiguredTempo()
+        {
+            _manager.SetSpeed(2f);
+            _manager.Dispose();
+            _manager = _createManager(new CombatConfig { BaseTimeScale = 0.75f });
+            _manager.Start();
+            Assert.AreEqual(1.5f, Time.timeScale);
+            _manager.Pause();
+            _manager.Resume();
+            Assert.AreEqual(1.5f, Time.timeScale);
+        }
+
+        [Test]
         public void ConfiguredTempo_AppliesUiMultiplierAndSurvivesPauseAndRewards()
         {
             _manager.Dispose();

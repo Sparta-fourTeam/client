@@ -7,7 +7,7 @@ namespace Game.Core
     /// 지정한 몬스터를 count마리 만들어 달라고 요청한다.
     /// OnDeath는 죽을 때 한 번(슬라임의 [불안정]), Interval은 interval초마다 총 maxTotal마리까지(츠치구모의 [무리 군주]).
     /// </summary>
-    public sealed class SpawnPassive : IPassive
+    public sealed partial class SpawnPassive : IPassive
     {
         // 만들어진 몬스터가 한 점에 겹치지 않도록 가로로 벌리는 간격
         private const float Spread = 0.4f;

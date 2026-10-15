@@ -56,6 +56,7 @@ namespace Game.Tests
             bool previousTriggers = Physics2D.queriesHitTriggers;
             var go = new GameObject("DenseHitscanTest");
             var enemies = new List<Enemy>();
+            Enemy trigger = null;
             var origin = new Vector3(1000, 1000, 0);
             var hp = new Publisher<EnemyHpChanged>();
             var died = new Publisher<EnemyDied>();
@@ -73,7 +74,7 @@ namespace Game.Tests
                     enemy.gameObject.AddComponent<BoxCollider2D>();
                     enemies.Add(enemy);
                 }
-                var trigger = TestEnemy.Create(new EnemyModel(131, 0, EnemyType.Normal, 100,
+                trigger = TestEnemy.Create(new EnemyModel(131, 0, EnemyType.Normal, 100,
                     new EnemyAttackStats(AttackType.Melee, 0, 1, 0), hp, died), origin);
                 trigger.gameObject.layer = 31;
                 trigger.gameObject.AddComponent<CircleCollider2D>().isTrigger = true;
@@ -100,6 +101,11 @@ namespace Game.Tests
             finally
             {
                 Physics2D.queriesHitTriggers = previousTriggers;
+                foreach (var enemy in enemies)
+                {
+                    if (enemy != null) { Object.DestroyImmediate(enemy.gameObject); }
+                }
+                if (trigger != null) { Object.DestroyImmediate(trigger.gameObject); }
                 Object.DestroyImmediate(go);
             }
         }

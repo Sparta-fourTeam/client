@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Game.Core
 {
-    public sealed class ProjectileHitLedger
+    public sealed partial class ProjectileHitLedger
     {
         private readonly HashSet<object> hitTargets = new();
         private int remainingHits;

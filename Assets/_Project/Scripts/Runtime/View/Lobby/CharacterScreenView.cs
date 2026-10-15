@@ -58,6 +58,18 @@ namespace Game.View
             _panel.SetActive(false);
         }
 
+        public bool IsVisible => _panel.activeSelf;
+
+        public RectTransform SlotOf(string upgradeId)
+        {
+            var equips = _catalog.Equips;
+            for (int i = 0; i < equips.Count && i < _equipSlots.Length; i++)
+            {
+                if (equips[i].UpgradeId == upgradeId) { return (RectTransform)_equipSlots[i].transform; }
+            }
+            return null;
+        }
+
         public void SetVisible(bool visible)
         {
             _panel.SetActive(visible);

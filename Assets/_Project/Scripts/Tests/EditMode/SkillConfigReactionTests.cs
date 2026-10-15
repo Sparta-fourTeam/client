@@ -27,6 +27,24 @@ namespace Game.Tests
         private static void Tick(Projectile projectile, float deltaTime) =>
             typeof(Projectile).GetMethod("Tick", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(projectile, new object[] { deltaTime });
 
+        [Test(Description = "저장용 설정을 재사용해도 강화 전 스냅샷과 진행 중 공격의 설정이 바뀌지 않는다")]
+        public void CheckpointConfig_AfterUpgrade_PreservesPreviouslyCapturedValues()
+        {
+            var helper = typeof(SkillConfig).Assembly.GetType("Game.Core.SavedSkillConfig");
+            var capture = helper.GetMethod("Capture", BindingFlags.Static | BindingFlags.NonPublic);
+            var restore = helper.GetMethod("Restore", BindingFlags.Static | BindingFlags.NonPublic);
+            var original = Config();
+            var before = (SkillConfigState)capture.Invoke(null, new object[] { original });
+            var builder = new SkillConfigBuilder(original);
+            Assert.That(builder.TryApply(new IUpgradeEffect[] { new StatUpgradeEffect("damage", 60) }), Is.True);
+            var upgraded = builder.Build();
+            var after = (SkillConfigState)capture.Invoke(null, new object[] { upgraded });
+            var beforeAgain = (SkillConfigState)capture.Invoke(null, new object[] { original });
+            Assert.That(((SkillConfig)restore.Invoke(null, new object[] { before, null })).Stats.Cast.Damage, Is.EqualTo(100));
+            Assert.That(((SkillConfig)restore.Invoke(null, new object[] { beforeAgain, null })).Stats.Cast.Damage, Is.EqualTo(100));
+            Assert.That(((SkillConfig)restore.Invoke(null, new object[] { after, null })).Stats.Cast.Damage, Is.EqualTo(160));
+        }
+
         [Test]
         public void Builder_AttachesHitReactionWithoutTriggeringItOnStart()
         {

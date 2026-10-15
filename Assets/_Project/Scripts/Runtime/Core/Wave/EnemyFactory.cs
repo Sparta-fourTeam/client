@@ -5,7 +5,7 @@ using VContainer;
 
 namespace Game.Core
 {
-    public class EnemyFactory : MonoBehaviour, IEnemyFactory
+    public partial class EnemyFactory : MonoBehaviour, IEnemyFactory
     {
         // 몬스터 Id로 프리팹을 찾는 표. 항목별 설정은 이 표에 있고 팩토리에는 표 하나만 연결한다
         [SerializeField]
@@ -62,6 +62,7 @@ namespace Game.Core
                 PassiveBuilder.BuildPassives(monster, _random), isSummoned, PassiveBuilder.BuildImmunities(monster),
                 DamageProfile.From(monster), PassiveBuilder.BuildModifiers(monster));
 
+            model.MonsterId = monsterId;
             view.Bind(model, assets.projectilePrefab, _hpChangedSubscriber, _diedSubscriber);
 
             return view;

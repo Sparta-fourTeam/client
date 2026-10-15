@@ -72,7 +72,7 @@ namespace Game.Core
 
     /// <summary>지정한 자리에 일정 시간 머물며 주기마다 범위 안의 적에게 적중 반응을 거는 영역(또는 광선).
     /// 시작(Start)·틱(Tick)·적중(Hit)·처치(Kill)·소멸(Expired)을 반응으로 알리므로 자식 스킬 시전을 그대로 붙일 수 있다.</summary>
-    public sealed class AreaZone : MonoBehaviour
+    public sealed partial class AreaZone : MonoBehaviour
     {
         [SerializeField] private Transform visual;
 
@@ -146,7 +146,7 @@ namespace Game.Core
 
         private Vector3 Direction => IsLine ? (Vector3)beamDirection : Vector3.up;
 
-        private void Update() => Tick(Time.deltaTime);
+        private void Update() { if (Time.timeScale > 0f && Time.deltaTime > 0f) { Tick(Time.deltaTime); } }
 
         internal void Tick(float deltaTime)
         {

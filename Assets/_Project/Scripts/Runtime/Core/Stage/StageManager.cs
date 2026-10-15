@@ -9,7 +9,7 @@ using VContainer.Unity;
 namespace Game.Core
 {
     /// <summary>스테이지 상태 머신. 전투 발급부터 결과 제출까지 스테이지 한 판의 생애주기를 관리한다</summary>
-    public sealed class StageManager : IStartable, IDisposable
+    public sealed partial class StageManager : IStartable, IDisposable
     {
         private readonly IBufferedPublisher<StageStateChanged> _stateChanged;
         private readonly ISubscriber<StageEnded> _stageEnded;
@@ -69,8 +69,9 @@ namespace Game.Core
             IPublisher<SubmitRejected> submitRejected,
             IPublisher<SubmitFailed> submitFailed, StageRewardTracker rewards = null, EncounteredMonsters encountered = null,
             ISubscriber<EnemyDied> enemyDied = null, EliteRouletteSession roulette = null,
-            IGameplayAnalytics analytics = null, CombatConfig combat = null)
+            IGameplayAnalytics analytics = null, CombatConfig combat = null, IBattleCheckpointStore checkpoints = null)
         {
+            _checkpoints = checkpoints;
             _stateChanged = stateChanged;
             _stageEnded = stageEnded;
             _result = result;
@@ -88,7 +89,7 @@ namespace Game.Core
             _roulette = roulette;
             _analytics = analytics;
             _baseTimeScale = combat?.BaseTimeScale ?? 1f;
-            _speed = _baseTimeScale;
+            _speed = (PlayerPrefs.GetFloat("stage_speed", 1f) >= 2f ? 2f : 1f) * _baseTimeScale;
         }
 
         public void Start()
@@ -101,6 +102,12 @@ namespace Game.Core
 
             // 전투는 Lobby의 BattleLauncher가 이미 발급받아 StageContext에 채워뒀다 — 여기선 꺼내 쓰기만 한다
             _battleId = _stageContext.BattleId;
+            if (_stageContext.Checkpoint != null)
+            {
+                Time.timeScale = 0f;
+                ChangeState(StageState.Starting);
+                return;
+            }
             Time.timeScale = _speed;
             ChangeState(StageState.Playing);
             _analytics?.BattleStarted(_stageContext.StageId);
@@ -142,6 +149,7 @@ namespace Game.Core
             float multiplier = speed >= 2f ? 2f : 1f;
             _speed = multiplier * _baseTimeScale;
             PlayerPrefs.SetFloat("stage_speed", multiplier);
+            PlayerPrefs.Save();
             if (State == StageState.Playing)
             {
                 Time.timeScale = _speed;
@@ -322,6 +330,7 @@ namespace Game.Core
                         // 여기서 로비로 이동하지 않는다: 이동하면 Stage 씬이 사라져 거절 안내가 보이지 않는다.
                         // 안내를 보여주고 로비로 보내는 것은 SubmitRejected를 구독하는 뷰의 몫이다 (docs/flows.md: 거절 안내 후 Lobby)
                         _pendingRequest = null;
+                        _checkpoints?.Clear();
                         _submitRejected.Publish(new SubmitRejected(e.Code));
                         return;
                     }
@@ -352,6 +361,7 @@ namespace Game.Core
                 }
 
                 _pendingRequest = null;
+                _checkpoints?.Clear();
                 _result.Publish(new StageResult(request.cleared, _resultKills, request.reachedWave, _resultPlayTime,
                     response.rewardGold, response.rewardItems, response.rewardExp, response.clearRating,
                     _stats.SkillDamageRanking()));

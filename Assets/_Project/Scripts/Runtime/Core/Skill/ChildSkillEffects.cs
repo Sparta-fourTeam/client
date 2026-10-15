@@ -243,7 +243,7 @@ namespace Game.Core
 
     /// <summary>자식 스킬을 이벤트가 난 위치에서 시전한다. 자식은 처음 필요할 때 한 번 만들어 재사용하며,
     /// 쿨타임과 무관하게 시전 요청마다 공격을 낸다. 자식 시전의 순환은 카탈로그 검증이 막는다.</summary>
-    public sealed class ChildSkillCaster : IChildSkillCaster, IDisposable
+    public sealed partial class ChildSkillCaster : IChildSkillCaster, IDisposable
     {
         private readonly Func<int, SkillCaster> create;
         private readonly Func<int, IReadOnlyList<EffectDef>> mirrored;

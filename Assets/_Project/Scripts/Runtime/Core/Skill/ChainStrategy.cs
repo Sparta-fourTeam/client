@@ -5,7 +5,7 @@ namespace Game.Core
 {
     /// <summary>가장 가까운 적을 맞히고 가까운 다른 적으로 연쇄적으로 튕기며 공격한다 (연쇄 번개 등).
     /// 시전 수(projectileCount)만큼 서로 다른 첫 대상을 노려 연쇄를 시작한다.</summary>
-    public sealed class ChainStrategy : IAttackStrategy
+    public sealed partial class ChainStrategy : IAttackStrategy
     {
         private readonly SkillObjectPool<ChainBolt> ownedPool;
 

@@ -40,6 +40,8 @@ namespace Game.View
         private int _energy;
         private bool _launching;
         private bool _claiming;
+        private bool _hasSelection;
+        private const string SelectedStageKey = "mission_selected_stage";
 
         [Inject]
         public void Construct(PlayerProfile profile, GameDataStore data, BattleLauncher launcher,
@@ -81,17 +83,31 @@ namespace Game.View
         public void Open()
         {
             if (_claiming || _launching) { return; }
-            _stageId = _profile.HighestUnlockedStage;
-            Refresh();
-            // 설정에서 켜 두면 화면을 띄우지 않고 최고 스테이지에 바로 들어간다. 에너지가 모자라면 화면에서 보충을 안내한다
-            if (_settings != null && _settings.AutoEnterHighestStage && _profile.IsStageUnlocked(_stageId)
-                && _energy >= _profile.EnergyConfig.Cost)
+            int selected = _hasSelection ? _stageId : PlayerPrefs.GetInt(SelectedStageKey, 0);
+            if (_settings != null && _settings.AutoEnterHighestStage)
             {
-                OnEnterClicked();
-                return;
+                selected = _profile.HighestUnlockedStage;
             }
-
+            else if (!IsReachable(selected))
+            {
+                // 처음 열면 마지막 클리어 관문을 보여 준다. 이후에는 보고 있던 관문을 유지한다.
+                selected = 1;
+                foreach (var stage in _data.Stages.Values)
+                {
+                    if (_profile.IsStageCleared(stage.Id)) { selected = System.Math.Max(selected, stage.Id); }
+                }
+            }
+            _stageId = IsReachable(selected) ? selected : _profile.HighestUnlockedStage;
+            RememberSelection();
+            Refresh();
             _panel.SetActive(true);
+        }
+
+        private void RememberSelection()
+        {
+            _hasSelection = true;
+            PlayerPrefs.SetInt(SelectedStageKey, _stageId);
+            PlayerPrefs.Save();
         }
 
         private void Move(int delta)
@@ -100,6 +116,7 @@ namespace Game.View
             if (IsReachable(_stageId + delta))
             {
                 _stageId += delta;
+                RememberSelection();
                 Refresh();
             }
         }
@@ -197,7 +214,7 @@ namespace Game.View
         {
             if (this == null) { return; }
             _launching = false;
-            _panel.SetActive(true);   // 자동 입장이 실패해도 사용자가 볼 수 있게 화면을 연다
+            _panel.SetActive(true);
             Refresh();
             _card.Status = "관문에 입장하지 못했어요. 다시 시도하세요.";
             Debug.LogException(error);

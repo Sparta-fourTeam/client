@@ -18,6 +18,8 @@ namespace Game.Tests
         private PlayerProfile _profile;
         private GameDataStore _data;
         private DeferredStageApi _api;
+        private bool _hadSelection;
+        private int _savedSelection;
 
         private sealed class DeferredStageApi : IStageApi
         {
@@ -72,6 +74,9 @@ namespace Game.Tests
         [SetUp]
         public void SetUp()
         {
+            _hadSelection = PlayerPrefs.HasKey("mission_selected_stage");
+            _savedSelection = PlayerPrefs.GetInt("mission_selected_stage");
+            PlayerPrefs.DeleteKey("mission_selected_stage");
             _data = new GameDataStore();
             _profile = new PlayerProfile(_data);
             _profile.Apply(Snapshot(3, 1));
@@ -98,6 +103,8 @@ namespace Game.Tests
         [TearDown]
         public void TearDown()
         {
+            if (_hadSelection) { PlayerPrefs.SetInt("mission_selected_stage", _savedSelection); }
+            else { PlayerPrefs.DeleteKey("mission_selected_stage"); }
             foreach (var root in new[] { _root, _rewardRoot })
             {
                 if (root == null) { continue; }
@@ -181,6 +188,35 @@ namespace Game.Tests
             Assert.IsTrue(Get<UnityEngine.UI.Button>(_screen, "_enterButton").interactable);
         }
 
+        [Test]
+        public void ReopeningMission_PreservesViewedStage_AndHighestSettingOnlyFocuses()
+        {
+            var snapshot = Snapshot(3, 3);
+            snapshot.stageProgress.Add(new StageProgressRow { stageId = 2 });
+            _profile.Apply(snapshot);
+            var settings = new GameSettings(new PlayerPrefsSettingsStore());
+            bool previous = settings.AutoEnterHighestStage;
+            var battleApi = new DeferredBattleApi();
+            Set(_screen, "_launcher", new BattleLauncher(battleApi, new StageContext(), new FailingNavigator(), null));
+            Set(_screen, "_energy", 100);
+            Set(_screen, "_settings", settings);
+            try
+            {
+                settings.SetAutoEnterHighestStage(false);
+                _screen.Open();
+                Assert.AreEqual(1, Get<int>(_screen, "_stageId"));
+                typeof(MissionScreenView).GetMethod("Move", Private).Invoke(_screen, new object[] { 1 });
+                _screen.Open();
+                Assert.AreEqual(2, Get<int>(_screen, "_stageId"));
+                settings.SetAutoEnterHighestStage(true);
+                _screen.Open();
+                Assert.AreEqual(2, Get<int>(_screen, "_stageId"));
+                Assert.AreEqual(0, battleApi.Calls, "최고 스테이지 설정은 입장 요청을 보내면 안 된다");
+                Assert.IsTrue(Get<GameObject>(_screen, "_panel").activeSelf);
+            }
+            finally { settings.SetAutoEnterHighestStage(previous); }
+        }
+
         // 지금 도전 중인 관문 뒤의 잠긴 관문은 넘겨 볼 수 없다 (화살표 숨김, 넘기기 무시)
         [Test]
         public void LockedStagesAfterCurrentAreNotReachable()
@@ -188,7 +224,12 @@ namespace Game.Tests
             var snapshot = Snapshot(3, 3);
             snapshot.stageProgress.Add(new StageProgressRow { stageId = 2 });
             _profile.Apply(snapshot);
-            _screen.Open();
+            var settings = new GameSettings(new PlayerPrefsSettingsStore());
+            bool previous = settings.AutoEnterHighestStage;
+            settings.SetAutoEnterHighestStage(true);
+            Set(_screen, "_settings", settings);
+            try { _screen.Open(); }
+            finally { settings.SetAutoEnterHighestStage(previous); }
             Assert.AreEqual(2, _profile.HighestUnlockedStage);
             Assert.IsTrue(_data.Stages.Contains(3));
             Assert.AreEqual(2, Get<int>(_screen, "_stageId"));

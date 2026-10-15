@@ -2,7 +2,7 @@ using System;
 
 namespace Game.Core
 {
-    public sealed class ReactiveCastClock
+    public sealed partial class ReactiveCastClock
     {
         private double cooldown, repeat;
         private int pending;

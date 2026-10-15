@@ -9,7 +9,7 @@ namespace Game.Core
     /// 이속 배율, 걸리지 않는 상태이상이다(나무 정령의 "30% 이하에서 5초간 50% 회복", 카와타로의 "10% 미만에서 6초간 무적").
     /// 기절·빙결·마비 중에는 시간이 흐르지 않는다.
     /// </summary>
-    public sealed class LowHpPassive : IPassive
+    public sealed partial class LowHpPassive : IPassive
     {
         private readonly float _hpRatio;
         private readonly float _duration;

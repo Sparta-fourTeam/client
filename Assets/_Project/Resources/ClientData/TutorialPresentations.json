@@ -1,4 +1,112 @@
 [
-  {"Id": "intro_battle", "Dialogue": [{"Speaker": "닌자", "Side": "right", "Text": "스승님… 오늘은 무슨 일이세요?"}, {"Speaker": "냥 스승", "Side": "left", "Text": "마을 근처에 요괴가 다가오고 있다. 오늘이 네 첫 실전이다!"}, {"Speaker": "냥 스승", "Side": "left", "Text": "직접 나서서 쓰러뜨려 보거라."}]},
-  {"Id": "log_upgrade", "Script": "skillUpgrade", "UnlocksTab": "skill", "Lines": ["받은 마법북으로 화살을 강화해 볼까요?\n아래 스킬 탭을 눌러 보세요!", "화살을 눌러 보세요!", "방금 받은 마법북으로 강화할 수 있어요.\n강화 버튼을 눌러요!", "확인을 누르면 강화돼요!"], "Dialogue": [{"Speaker": "냥 스승", "Side": "left", "Text": "첫 전투를 해냈구나! 제법인데?"}, {"Speaker": "닌자", "Side": "right", "Text": "헤헤, 스승님 덕분이에요!"}, {"Speaker": "냥 스승", "Side": "left", "Text": "그 마법북으로 화살을 강화해 보거라."}]}
+  {
+    "Id": "intro_battle",
+    "Dialogue": [
+      {
+        "Speaker": "끄적이",
+        "Side": "right",
+        "Text": "으음...? 여긴 어디지?"
+      },
+      {
+        "Speaker": "???",
+        "Side": "left",
+        "Text": "오호! 드디어 눈을 떴구나!"
+      },
+      {
+        "Speaker": "끄적이",
+        "Side": "right",
+        "Text": "으악! 누구세요?! ...그보다 전 누구죠?"
+      },
+      {
+        "Speaker": "슥삭 선생",
+        "Side": "left",
+        "Text": "허허! 넌 방금 태어난 낙서란다!"
+      },
+      {
+        "Speaker": "끄적이",
+        "Side": "right",
+        "Text": "네?! 제가 낙서라고요?!"
+      },
+      {
+        "Speaker": "슥삭 선생",
+        "Side": "left",
+        "Text": "설명은 나중에! 지금 이곳으로 녀석들이 몰려오고 있거든!"
+      },
+      {
+        "Speaker": "끄적이",
+        "Side": "right",
+        "Text": "네에?! 벌써요?!"
+      },
+      {
+        "Speaker": "슥삭 선생",
+        "Side": "left",
+        "Text": "자, 우선 저 벽부터 지켜 보거라!"
+      }
+    ]
+  },
+  {
+    "Id": "log_upgrade",
+    "Script": "skillUpgrade",
+    "UnlocksTab": "skill",
+    "Lines": [
+      "얻은 재료로 스킬을 강화해 볼까요?\n아래 스킬 탭을 눌러 보세요!",
+      "화살을 눌러 보세요!",
+      "얻은 재료로 강화할 수 있어요.\n강화 버튼을 눌러요!",
+      "확인을 누르면 강화돼요!"
+    ],
+    "Dialogue": [
+      {
+        "Speaker": "슥삭 선생",
+        "Side": "left",
+        "Text": "오호! 방금 그려진 녀석치고 제법이구나!"
+      },
+      {
+        "Speaker": "끄적이",
+        "Side": "right",
+        "Text": "후아...! 태어나자마자 이런 일을 겪을 줄이야!"
+      },
+      {
+        "Speaker": "슥삭 선생",
+        "Side": "left",
+        "Text": "허허! 이 세계에서 살아남으려면 더 강해져야 한단다."
+      },
+      {
+        "Speaker": "끄적이",
+        "Side": "right",
+        "Text": "더 강해질 수 있다고요?"
+      },
+      {
+        "Speaker": "슥삭 선생",
+        "Side": "left",
+        "Text": "물론이지! 얻은 재료로 네 힘을 강화해 보거라!"
+      }
+    ]
+  },
+  {
+    "Id": "equipment_upgrade",
+    "Script": "equipmentUpgrade",
+    "Lines": [
+      "이번엔 장비를 손봐 볼까요?\n아래 캐릭터 탭을 눌러 보세요!",
+      "후드를 눌러 보세요!",
+      "받은 재료로 후드를 강화할 수 있어요.\n강화 버튼을 눌러요!",
+      "확인을 누르면 장비가 강화돼요!"
+    ],
+    "Dialogue": [
+      {
+        "Speaker": "슥삭 선생",
+        "Side": "left",
+        "Text": "오호! 두 번째 관문도 무사히 지켜 냈구나!"
+      },
+      {
+        "Speaker": "끄적이",
+        "Side": "right",
+        "Text": "후아...! 점점 만만치 않은데요?"
+      },
+      {
+        "Speaker": "슥삭 선생",
+        "Side": "left",
+        "Text": "이번엔 장비를 손봐 주마. 캐릭터 화면을 열어 보거라!"
+      }
+    ]
+  }
 ]

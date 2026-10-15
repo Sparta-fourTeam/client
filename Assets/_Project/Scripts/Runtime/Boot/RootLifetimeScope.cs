@@ -18,6 +18,7 @@ namespace Game.Boot
 
             builder.Register<GameDataStore>(Lifetime.Singleton);
             builder.Register<LocalSaveStore>(Lifetime.Singleton);
+            builder.Register<IBattleCheckpointStore, LocalBattleCheckpointStore>(Lifetime.Singleton);
             builder.Register<PlayerProfile>(Lifetime.Singleton);
             builder.RegisterEntryPoint<GameAnalyticsService>().As<IGameplayAnalytics>();
 

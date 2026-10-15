@@ -91,6 +91,33 @@ namespace Game.Network
             new JsonSerializerSettings { ObjectCreationHandling = ObjectCreationHandling.Replace };
 
         /// <summary>저장 파일이 이미 있는지(기존 계정인지) 확인한다</summary>
+        public string BattleCheckpointPath
+        {
+            get
+            {
+#if UNITY_ANDROID && !UNITY_EDITOR
+                return Path.Combine(AndroidCheckpointFolder.Value, "battle.json");
+#elif UNITY_IOS && !UNITY_EDITOR
+                return Path.Combine(Path.GetDirectoryName(_filePath), "BattleCheckpoint", "battle.json");
+#else
+                return _filePath + ".battle";
+#endif
+            }
+        }
+#if UNITY_ANDROID && !UNITY_EDITOR
+        // 자동 백업으로 재설치한 앱에 전투가 돌아오지 않게 Android의 백업 제외 폴더를 쓴다.
+        private static readonly Lazy<string> AndroidCheckpointFolder = new(() =>
+        {
+            using var player = new UnityEngine.AndroidJavaClass("com.unity3d.player.UnityPlayer");
+            using var activity = player.GetStatic<UnityEngine.AndroidJavaObject>("currentActivity");
+            using var folder = activity.Call<UnityEngine.AndroidJavaObject>("getNoBackupFilesDir");
+            return folder.Call<string>("getAbsolutePath");
+        });
+#endif
+
+#if UNITY_IOS && !UNITY_EDITOR
+        internal string LegacyBattleCheckpointPath => _filePath + ".battle";
+#endif
         public bool Exists()
         {
             ResumePendingDeletion();
