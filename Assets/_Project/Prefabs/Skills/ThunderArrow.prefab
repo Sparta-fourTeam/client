@@ -5011,6 +5011,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8508631207756983782}
   - component: {fileID: 7504417314812013104}
+  - component: {fileID: 5952124832345415930}
   m_Layer: 0
   m_Name: ThunderArrow
   m_TagString: Untagged
@@ -5053,6 +5054,19 @@ MonoBehaviour:
   impactPrefab: {fileID: 843842019836836357, guid: cbf799b7f58d844e0aaa4252a8fc6d7a, type: 3}
   formSprites: []
   baseVisual: {fileID: 3584354711629446927}
+--- !u!210 &5952124832345415930
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8378211432792846082}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 1
+  m_SortAtRoot: 0
+  m_Sort3DAs2D: 0
 --- !u!1 &9029222355794855957
 GameObject:
   m_ObjectHideFlags: 0

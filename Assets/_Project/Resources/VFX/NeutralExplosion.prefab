@@ -4669,6 +4669,7 @@ GameObject:
   - component: {fileID: 1640918626114052180}
   - component: {fileID: 2504236875715738585}
   - component: {fileID: 1851246298305407697}
+  - component: {fileID: 7416138326991841991}
   m_Layer: 0
   m_Name: NeutralExplosion
   m_TagString: Untagged
@@ -6989,3 +6990,16 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
+--- !u!210 &7416138326991841991
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7900772880117483835}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 15
+  m_SortAtRoot: 0
+  m_Sort3DAs2D: 0

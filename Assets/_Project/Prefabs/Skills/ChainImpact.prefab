@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 3249218960325009482}
   - component: {fileID: 1798790537753058086}
   - component: {fileID: 2722252440175343209}
+  - component: {fileID: 2005645960261222270}
   m_Layer: 0
   m_Name: ChainImpact
   m_TagString: Untagged
@@ -2300,6 +2301,19 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
+--- !u!210 &2005645960261222270
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7197747302225808960}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 15
+  m_SortAtRoot: 0
+  m_Sort3DAs2D: 0
 --- !u!1 &7539354711311406041
 GameObject:
   m_ObjectHideFlags: 0

@@ -2340,6 +2340,7 @@ GameObject:
   - component: {fileID: 3071395131226290846}
   - component: {fileID: 3351453901449296960}
   - component: {fileID: 6412192690325778764}
+  - component: {fileID: 8002424871382040716}
   m_Layer: 0
   m_Name: LightningExplosion
   m_TagString: Untagged
@@ -4660,6 +4661,19 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
+--- !u!210 &8002424871382040716
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3682132409928971234}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 16
+  m_SortAtRoot: 0
+  m_Sort3DAs2D: 0
 --- !u!1 &7678563507289314494
 GameObject:
   m_ObjectHideFlags: 0

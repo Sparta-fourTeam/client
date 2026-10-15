@@ -2331,6 +2331,7 @@ GameObject:
   - component: {fileID: 8308205305837392735}
   - component: {fileID: 803885212095546485}
   - component: {fileID: 5591828795257730734}
+  - component: {fileID: 4213015622518050688}
   m_Layer: 0
   m_Name: FlameArrowImpact
   m_TagString: Untagged
@@ -4650,3 +4651,16 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
+--- !u!210 &4213015622518050688
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7580318749281349352}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 13
+  m_SortAtRoot: 0
+  m_Sort3DAs2D: 0

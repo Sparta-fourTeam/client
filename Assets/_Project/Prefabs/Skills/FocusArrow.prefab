@@ -424,6 +424,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1362271815370515374}
   - component: {fileID: 3245321923028777048}
+  - component: {fileID: 4344896117532936000}
   m_Layer: 0
   m_Name: FocusArrow
   m_TagString: Untagged
@@ -463,3 +464,16 @@ MonoBehaviour:
   impactPrefab: {fileID: 4054791758048953818, guid: 53582d07897ce470dada1ce38906a820, type: 3}
   formSprites: []
   baseVisual: {fileID: 713243873786231615}
+--- !u!210 &4344896117532936000
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5228935304015980034}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 16
+  m_SortAtRoot: 0
+  m_Sort3DAs2D: 0

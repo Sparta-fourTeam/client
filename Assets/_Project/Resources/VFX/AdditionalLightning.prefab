@@ -4651,6 +4651,7 @@ GameObject:
   - component: {fileID: 1922502280130249723}
   - component: {fileID: 8381484306540113370}
   - component: {fileID: 3989297300409212105}
+  - component: {fileID: 4383735366088259161}
   m_Layer: 0
   m_Name: AdditionalLightning
   m_TagString: Untagged
@@ -6940,3 +6941,16 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
+--- !u!210 &4383735366088259161
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8550568925740920140}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 30
+  m_SortAtRoot: 0
+  m_Sort3DAs2D: 0

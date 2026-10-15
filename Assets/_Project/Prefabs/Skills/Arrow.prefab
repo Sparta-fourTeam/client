@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1362271815370515374}
   - component: {fileID: 3245321923028777048}
+  - component: {fileID: 3730163098081781647}
   m_Layer: 0
   m_Name: Arrow
   m_TagString: Untagged
@@ -59,6 +60,19 @@ MonoBehaviour:
     impactPrefab: {fileID: 7580318749281349352, guid: ff008c3ab66aa47e3abb0f01d021b1f2, type: 3}
     hideBaseSprite: 0
   baseVisual: {fileID: 5468272385519379284}
+--- !u!210 &3730163098081781647
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5228935304015980034}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_SortAtRoot: 0
+  m_Sort3DAs2D: 0
 --- !u!1 &5468272385519379284
 GameObject:
   m_ObjectHideFlags: 0

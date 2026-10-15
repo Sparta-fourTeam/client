@@ -2335,6 +2335,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2575298966686481800}
   - component: {fileID: 2229895605287977436}
+  - component: {fileID: 1488953742676419614}
   m_Layer: 0
   m_Name: PhoenixFireball
   m_TagString: Untagged
@@ -2373,6 +2374,19 @@ MonoBehaviour:
   impactPrefab: {fileID: 4551597682568628500, guid: 7a024c4101b0f442a9ce69704986a96e, type: 3}
   formSprites: []
   baseVisual: {fileID: 5077728972581042595}
+--- !u!210 &1488953742676419614
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 428698991527858693}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 1
+  m_SortAtRoot: 0
+  m_Sort3DAs2D: 0
 --- !u!1 &3393059826638966351
 GameObject:
   m_ObjectHideFlags: 0

@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 9216164204571612212}
   - component: {fileID: 464407076045177293}
   - component: {fileID: 2510601663103900275}
+  - component: {fileID: 5147997136409288092}
   m_Layer: 0
   m_Name: ChainExplosion
   m_TagString: Untagged
@@ -2331,6 +2332,19 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
+--- !u!210 &5147997136409288092
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 276980619436752419}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 16
+  m_SortAtRoot: 0
+  m_Sort3DAs2D: 0
 --- !u!1 &2436589907063429415
 GameObject:
   m_ObjectHideFlags: 0

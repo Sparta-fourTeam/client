@@ -9306,6 +9306,7 @@ GameObject:
   - component: {fileID: 3124166927553839154}
   - component: {fileID: 4306965852589740645}
   - component: {fileID: 723556000058617532}
+  - component: {fileID: 7948972295982474419}
   m_Layer: 0
   m_Name: FireballShard
   m_TagString: Untagged
@@ -11631,8 +11632,22 @@ MonoBehaviour:
   - form: 1
     sprite: {fileID: 0}
     visualRoot: {fileID: 2038436806498508824}
+    impactPrefab: {fileID: 0}
     hideBaseSprite: 1
   baseVisual: {fileID: 1049483058184329416}
+--- !u!210 &7948972295982474419
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7451147369274982716}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 15
+  m_SortAtRoot: 0
+  m_Sort3DAs2D: 0
 --- !u!1 &8356721074555208087
 GameObject:
   m_ObjectHideFlags: 0
