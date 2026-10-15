@@ -18,7 +18,7 @@
 | 순서 | 대상 | 정하는 곳 |
 | --- | --- | --- |
 | -500 | 배경 | Stage 씬 |
-| -450 ~ -410 | **바닥 구간**: 몬스터 뒤에 깔리는 연출. `FrostPrison`(-440, -436), `ElectricField`(-430, -429), `BurningRootWave`·`LargeRootWave`(-446, -444), `Fx_GroundSlam`·`Fx_SonicWave`(-420) | 각 프리팹 |
+| -450 ~ -410 | **바닥 구간**: 몬스터 뒤에 깔리는 연출. `FrostPrison`(-440, -436), `ElectricField`(-430, -429), `Log`(그룹 -444), `BurningRootWave`·`LargeRootWave`(-446, -444), `Fx_GroundSlam`·`Fx_SonicWave`(-420) | 각 프리팹 |
 | **-402 ~ -10** | **몬스터 몸** (비주얼 `SortingGroup`) | `EnemyDepthSorter` (아래 "몬스터 깊이 정렬") |
 | 몸 + 1 | 몬스터 상태이상 이펙트 (`Resources/VFX/EnemyStatuses`) | `EnemyStatusEffects` |
 | 몸 - 1 | 몬스터 사망 이펙트 (`Resources/VFX/EnemyDeath`) | `Enemy` 사망 처리. 죽는 순간의 몸 순서로 정한다 |
