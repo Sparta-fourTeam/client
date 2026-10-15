@@ -43,6 +43,7 @@ namespace Game.Tests
         [Test]
         public void RatingReward_PaysOnlyUnclaimedTiersAndReturnsOwnedBooksWithGold()
         {
+            Stage.RatingRewards = new[] { 13, 29, 47 };
             Stage.RatingItemRewards = new()
             {
                 new() { Book(ItemIds.ArrowBook, 2) },
@@ -52,7 +53,7 @@ namespace Game.Tests
             SetRating(2);
             var api = new LocalStageApi(_store, _data);
             var snapshot = api.ClaimRatingReward(1).GetAwaiter().GetResult();
-            Assert.AreEqual(70, snapshot.gold);
+            Assert.AreEqual(42, snapshot.gold);
             Assert.AreEqual(5, snapshot.items.Find(item => item.itemId == ItemIds.ArrowBook).quantity);
             Assert.AreEqual(1, snapshot.items.Find(item => item.itemId == ItemIds.WeaponBook).quantity);
             var before = File.ReadAllText(_path);
@@ -62,7 +63,7 @@ namespace Game.Tests
 
             SetRating(3);
             snapshot = new LocalStageApi(new LocalSaveStore(_path), _data).ClaimRatingReward(1).GetAwaiter().GetResult();
-            Assert.AreEqual(170, snapshot.gold);
+            Assert.AreEqual(89, snapshot.gold);
             Assert.AreEqual(9, snapshot.items.Find(item => item.itemId == ItemIds.ArrowBook).quantity);
             Assert.AreEqual(3, snapshot.stageProgress[0].claimedRating);
         }
