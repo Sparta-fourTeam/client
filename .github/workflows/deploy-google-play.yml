@@ -4,9 +4,6 @@ on:
   push:
     tags:
       - 'v*'
-  pull_request:
-    branches: [main]
-    types: [opened, synchronize, reopened, closed]
   workflow_dispatch:
     inputs:
       release_version:
@@ -49,10 +46,12 @@ jobs:
           ref: ${{ github.sha }}
           fetch-depth: 0
           persist-credentials: false
-      - name: Validate new protected dev tag and prepare read-only PR handoff
+      - name: Validate new protected dev tag before repository writes
         env:
           GH_TOKEN: ${{ github.token }}
         run: python3 .github/scripts/android-tag-release.py request
+      - name: Run offline release control regressions
+        run: PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s .github/scripts -p 'test_*.py' -v
       - name: Preserve original tag request
         uses: actions/upload-artifact@v4
         with:
@@ -61,46 +60,44 @@ jobs:
           if-no-files-found: error
           retention-days: 90
 
-  release_pr_guard:
-    if: >-
-      ${{ github.event_name == 'pull_request' && github.event.action != 'closed' &&
-          startsWith(github.event.pull_request.head.ref, 'release/v') &&
-          github.event.pull_request.head.repo.full_name == github.repository }}
+  integrate:
+    needs: tag_request
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.base.sha }}
-          fetch-depth: 0
-          persist-credentials: false
-      - name: Validate fixed release PR source without repository writes
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: python3 .github/scripts/android-tag-release.py pr
-
-  resolve:
-    if: >-
-      ${{ github.event_name == 'pull_request' && github.event.action == 'closed' &&
-          github.event.pull_request.merged &&
-          startsWith(github.event.pull_request.head.ref, 'release/v') &&
-          github.event.pull_request.head.repo.full_name == github.repository }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: read
     outputs:
-      tag: ${{ steps.release.outputs.tag }}
+      merged_sha: ${{ steps.release.outputs.merged_sha }}
       version_name: ${{ steps.release.outputs.version_name }}
+      pr_number: ${{ steps.release.outputs.pr_number }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout trusted current main release infrastructure
+        uses: actions/checkout@v4
         with:
-          ref: ${{ github.sha }}
+          ref: refs/heads/main
           fetch-depth: 0
           persist-credentials: false
-      - name: Verify protected PR merge, original tag request and exact integrated tree
+      - uses: actions/download-artifact@v4
+        with:
+          name: tag-release-request
+          path: release-request
+      - name: Create fixed PR, await latest-SHA Codex review and protected merge
         id: release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python3 .github/scripts/android-tag-release.py merged
+        run: python3 .github/scripts/android-release-integration.py integrate --request release-request/tag-release-request.json
+      - name: Preserve exact merge and review receipt
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-integration
+          path: |
+            build/tag-release.json
+            build/release-integration-attempt.json
+          if-no-files-found: ignore
+          retention-days: 90
 
   manual_scope:
     if: ${{ github.event_name == 'workflow_dispatch' && !inputs.recover_original_code2 }}
@@ -111,7 +108,13 @@ jobs:
           exit 1
 
   build:
-    needs: resolve
+    needs: integrate
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
+    env:
+      BUILD_SHA: ${{ needs.integrate.outputs.merged_sha }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
     outputs:
@@ -120,15 +123,20 @@ jobs:
       - name: Checkout exact protected main merge
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ needs.integrate.outputs.merged_sha }}
           fetch-depth: 0
           lfs: true
           persist-credentials: false
 
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-integration
+          path: release-context
+
       - name: Validate release profile
         id: profile
         env:
-          RELEASE_VERSION: ${{ needs.resolve.outputs.version_name }}
+          RELEASE_VERSION: ${{ needs.integrate.outputs.version_name }}
         run: |
           python3 - <<'PY'
           import hashlib, json, os, pathlib, re
@@ -153,7 +161,7 @@ jobs:
               raise SystemExit('Non-development AAB required')
           pathlib.Path('build').mkdir(exist_ok=True)
           pathlib.Path('build/release-inputs.json').write_text(json.dumps({
-              'source_commit': os.environ['GITHUB_SHA'], 'package': package,
+              'source_commit': os.environ['BUILD_SHA'], 'package': package,
               'version_name': version, 'release_tag': release_tag, 'target_api': target,
               'profile_sha256': hashlib.sha256(profile.read_bytes()).hexdigest()
           }, indent=2) + '\n')
@@ -164,9 +172,9 @@ jobs:
       - name: Allocate automatic Android release number
         id: version
         env:
-          RELEASE_VERSION: ${{ needs.resolve.outputs.version_name }}
+          RELEASE_VERSION: ${{ needs.integrate.outputs.version_name }}
           GH_TOKEN: ${{ github.token }}
-        run: python3 .github/scripts/android-release-version.py --automatic
+        run: python3 .github/scripts/android-release-version.py --automatic --release-request release-context/tag-release.json
 
       - name: Record candidate version code
         env:
@@ -272,7 +280,7 @@ jobs:
       - name: Save verified AAB and non-sensitive evidence
         uses: actions/upload-artifact@v4
         with:
-          name: Release-AAB-${{ steps.version.outputs.code }}-${{ github.sha }}
+          name: Release-AAB-${{ steps.version.outputs.code }}-${{ needs.integrate.outputs.merged_sha }}
           path: |
             build/Android/*.aab
             build/release-inputs.json
@@ -282,23 +290,34 @@ jobs:
           retention-days: 3
 
   publish:
-    needs: [resolve, build]
+    needs: [integrate, build]
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
+    env:
+      BUILD_SHA: ${{ needs.integrate.outputs.merged_sha }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - name: Checkout source and current release ledger
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ needs.integrate.outputs.merged_sha }}
           fetch-depth: 0
           persist-credentials: false
 
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-integration
+          path: release-context
+
       - name: Revalidate the protected release merge and its original code
         env:
-          RELEASE_VERSION: ${{ needs.resolve.outputs.version_name }}
+          RELEASE_VERSION: ${{ needs.integrate.outputs.version_name }}
           ANDROID_VERSION_CODE: ${{ needs.build.outputs.version_code }}
           GH_TOKEN: ${{ github.token }}
-        run: python3 .github/scripts/android-release-version.py --automatic --expected-code "$ANDROID_VERSION_CODE"
+        run: python3 .github/scripts/android-release-version.py --automatic --release-request release-context/tag-release.json --expected-code "$ANDROID_VERSION_CODE"
 
       - name: Check existing Play upload credential
         env:
@@ -312,13 +331,13 @@ jobs:
       - name: Download this run's verified AAB
         uses: actions/download-artifact@v4
         with:
-          name: Release-AAB-${{ needs.build.outputs.version_code }}-${{ github.sha }}
+          name: Release-AAB-${{ needs.build.outputs.version_code }}-${{ needs.integrate.outputs.merged_sha }}
           path: verified
 
       - name: Recheck artifact identity
         id: artifact
         env:
-          RELEASE_VERSION: ${{ needs.resolve.outputs.version_name }}
+          RELEASE_VERSION: ${{ needs.integrate.outputs.version_name }}
           ANDROID_VERSION_CODE: ${{ needs.build.outputs.version_code }}
         run: |
           python3 - <<'PY'
@@ -328,7 +347,7 @@ jobs:
           if any(evidence.get(key) != value for key, value in release.items()):
               raise SystemExit('Artifact tag/PR/merge provenance mismatch')
           files = list(pathlib.Path('verified/Android').glob('*.aab'))
-          if len(files) != 1 or evidence['source_commit'] != os.environ['GITHUB_SHA']:
+          if len(files) != 1 or evidence['source_commit'] != os.environ['BUILD_SHA']:
               raise SystemExit('Artifact source mismatch')
           if evidence['actual']['package'] != 'com.teamdoodle.doodledefense' or not evidence['signature_verified']:
               raise SystemExit('Artifact package/signature mismatch')

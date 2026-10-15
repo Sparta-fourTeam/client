@@ -191,12 +191,8 @@ def main():
         out.write(f'### Tag release {request["tag"]}\n\nTag source: `{request["tag_source_sha"]}`  \n'
                   f'Main base: `{request["main_base_sha"]}`  \nTag request run: `{request["tag_run_id"]}`\n\n')
         if args.mode == 'request':
-            out.write('The read-only workflow cannot create/merge a PR. A maintainer must create the fixed release branch and PR:\n\n'
-                      f'```sh\ngit branch release/{request["tag"]} {request["tag_source_sha"]}\n'
-                      f'git push origin release/{request["tag"]}\n'
-                      f'gh pr create --repo {REPOSITORY} --base main --head release/{request["tag"]}\n```\n\n'
-                      'Wait for this tag preflight to succeed, then satisfy the main rules and use Create a merge commit. '
-                      'Merging this PR is the final approval to automatically build and publish internal.\n')
+            out.write('Read-only preflight passed. The dedicated integration job will create the fixed release PR, '
+                      'request latest-SHA Codex review and use GitHub protected merge before building.\n')
         elif args.mode == 'merged':
             out.write(f'Merged/build source: `{request["merge_commit_sha"]}`  \nPR: #{request["pr_number"]}  \n'
                       f'Integrated tree: `{request["integrated_tree"]}`\n')

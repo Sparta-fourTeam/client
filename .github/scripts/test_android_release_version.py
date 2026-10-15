@@ -150,20 +150,22 @@ class ReleaseNumberTests(unittest.TestCase):
 class AutomaticReleaseNumberTests(unittest.TestCase):
     def setUp(self):
         self.env = dict(GITHUB_REPOSITORY='Sparta-fourTeam/client', GITHUB_RUN_ID='42',
-                        GITHUB_RUN_NUMBER='7', GITHUB_RUN_ATTEMPT='1', GITHUB_SHA='fixture-sha',
-                        GITHUB_EVENT_NAME='pull_request', GITHUB_REF='refs/heads/main')
+                        GITHUB_RUN_NUMBER='7', GITHUB_RUN_ATTEMPT='1', GITHUB_SHA='tag-source', BUILD_SHA='fixture-sha',
+                        GITHUB_EVENT_NAME='push', GITHUB_REF='refs/tags/v1.0.3')
         self.run = dict(id=42, workflow_id=378016847, run_number=7, run_attempt=1,
-                        event='pull_request', head_sha='fixture-sha',
+                        event='push', head_sha='tag-source',
                         repository={'full_name': 'Sparta-fourTeam/client'})
         self.pages = [{'workflow_runs': [self.run]}]
-        self.event = {'action': 'closed', 'pull_request': {'merged': True, 'merge_commit_sha': 'fixture-sha',
-                      'head': {'ref': 'release/v1.0.3', 'sha': 'tag-source'}, 'base': {'ref': 'main'}}}
+        self.event = {'created': True, 'forced': False, 'deleted': False}
+        self.release = {'tag': 'v1.0.3', 'tag_source_sha': 'tag-source', 'merge_commit_sha': 'fixture-sha', 'tag_run_id': 42}
+
 
     def allocate(self, ledger=None, main=None, version='1.0.3', expected_code=None):
         event = json.loads(json.dumps(self.event))
-        event['pull_request']['head']['ref'] = 'release/v' + version
+        release = dict(self.release, tag='v' + version)
+        env = dict(self.env, GITHUB_REF='refs/tags/v' + version)
         return module.automatic_release_number(ledger or policy(), version, main or policy(),
-                                               self.run, self.pages, self.env, expected_code, event)
+                                               self.run, self.pages, env, expected_code, event, release)
 
     def test_input_version_replaces_stale_candidate_and_exceeds_all_old_codes(self):
         ledger = policy(2, '1.0.2', [{'versionName': '1.0.1', 'versionCode': 1}])
@@ -177,7 +179,7 @@ class AutomaticReleaseNumberTests(unittest.TestCase):
     def test_rerun_and_new_workflow_counter_fail_closed(self):
         for overrides in [{'run_attempt': 2}, {'workflow_id': 999},
                           {'repository': {'full_name': 'fork/client'}},
-                          {'event': 'push'}, {'head_sha': 'other-source'}, {'run_number': 1}]:
+                          {'event': 'pull_request'}, {'head_sha': 'other-source'}, {'run_number': 1}]:
             with self.subTest(overrides=overrides), patch.dict(self.run, overrides):
                 with self.assertRaises(ValueError):
                     self.allocate()
@@ -206,7 +208,7 @@ class AutomaticReleaseNumberTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.allocate(main=policy(released=[{'versionName': '1.0.3', 'versionCode': 2}]))
         with self.assertRaisesRegex(ValueError, 'main release ledger'):
-            module.automatic_release_number(policy(), '1.0.3', None, self.run, self.pages, self.env, event=self.event)
+            module.automatic_release_number(policy(), '1.0.3', None, self.run, self.pages, self.env, event=self.event, release=self.release)
 
     def test_play_boundaries_and_artifact_code_binding(self):
         self.assertEqual(self.allocate(expected_code=300000007), ('1.0.3', 300000007))
@@ -230,10 +232,10 @@ class AutomaticReleaseNumberTests(unittest.TestCase):
         with patch.dict(self.run, event='workflow_dispatch'):
             with self.assertRaises(ValueError):
                 self.allocate()
-        with patch.dict(self.event, action='opened'):
+        with patch.dict(self.event, created=False):
             with self.assertRaises(ValueError):
                 self.allocate()
-        self.event['pull_request']['merged'] = False
+        self.release['merge_commit_sha'] = 'different-merge'
         with self.assertRaises(ValueError):
             self.allocate()
 
@@ -260,7 +262,7 @@ class PlayReleaseNameTests(unittest.TestCase):
             (root / 'build/tag-release.json').write_text(json.dumps({'source_commit': 'fixture-sha',
                                                                     'pr_number': expected_pr}))
             output = root / 'output.txt'
-            env = dict(os.environ, GITHUB_SHA='fixture-sha', GITHUB_OUTPUT=str(output),
+            env = dict(os.environ, GITHUB_SHA='tag-source', BUILD_SHA='fixture-sha', GITHUB_OUTPUT=str(output),
                        RELEASE_VERSION=version if requested_version is None else requested_version,
                        ANDROID_VERSION_CODE=str(code if expected_code is None else expected_code))
             result = subprocess.run(['python3', '-c', script], cwd=root, env=env, capture_output=True, text=True)

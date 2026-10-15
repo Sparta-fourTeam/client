@@ -245,7 +245,7 @@ sys.stdout.buffer.write((root/name).read_bytes())
         result = subprocess.run([sys.executable, str(SCRIPT), 'request'],
                                 env=dict(env, **self.tag_env), text=True, capture_output=True)
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertIn('git branch release/v1.0.3 ' + self.source, summary.read_text())
+        self.assertIn('dedicated integration job', summary.read_text())
         self.assertEqual(json.loads((self.root / 'build/tag-release-request.json').read_text()), self.request)
         opened = dict(self.pr_event, action='opened')
         event_path.write_text(json.dumps(opened))
@@ -256,21 +256,7 @@ sys.stdout.buffer.write((root/name).read_bytes())
         result = subprocess.run([sys.executable, str(SCRIPT), 'merged'], env=env, text=True, capture_output=True)
         self.assertEqual(result.returncode, 0, result.stderr)
         output.unlink()
-        command = [sys.executable, str(VERSION_SCRIPT), '--automatic']
-        before = self.policy.read_bytes()
-        for extra in [[], ['--expected-code', '300000007']]:
-            result = subprocess.run(command + extra, env=env, text=True, capture_output=True)
-            self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(output.read_text(), 'version_name=1.0.3\ncode=300000007\n' * 2)
-        self.assertEqual(self.policy.read_bytes(), before)
-        provenance = json.loads((self.root / 'build/tag-release.json').read_text())
-        self.assertEqual(provenance['source_commit'], self.merged)
-        self.assertEqual(provenance['tag_source_sha'], self.source)
-        for extra, overrides in [(['--version', '1.0.4'], {}), ([], {'GITHUB_RUN_ATTEMPT': '2'})]:
-            previous = output.read_bytes()
-            result = subprocess.run(command + extra, env=dict(env, **overrides), text=True, capture_output=True)
-            self.assertNotEqual(result.returncode, 0)
-            self.assertEqual(output.read_bytes(), previous)
+
 
 
 if __name__ == '__main__':
