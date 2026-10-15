@@ -34,7 +34,7 @@ namespace Game.Core
 
         private void OnProfileChanged(PlayerProfile profile)
         {
-            _walletChangedPublisher.Publish(new WalletChanged(profile.Gold));
+            _walletChangedPublisher.Publish(new WalletChanged(profile.Gold, profile.Gems));
             _progressChangedPublisher.Publish(new ProgressChanged(profile.HighestUnlockedStage));
         }
     }

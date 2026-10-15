@@ -11,6 +11,13 @@ namespace Game.View
     {
         private const float CountSeconds = 0.5f;
 
+        private enum Currency
+        {
+            Gold,
+            Gem
+        }
+
+        [SerializeField] private Currency _currency;
         [SerializeField] private TMP_Text _value;
 
         private Tween _countTween;
@@ -31,7 +38,7 @@ namespace Game.View
                 return;
             }
 
-            int target = message.Gold;
+            int target = _currency == Currency.Gem ? message.Gems : message.Gold;
             _countTween?.Kill();
             if (!_hasValue || !isActiveAndEnabled || target == _shown)
             {

@@ -1,0 +1,33 @@
+{
+  "AdRerollsPerDay": 2,
+  "GoldRerollsPerDay": 3,
+  "GoldRerollCost": 1000,
+  "Slots": 9,
+  "Discounts": [0, 10, 15, 25, 30],
+  "GemGoldRate": 10,
+  "GoldPacks": [
+    { "Gold": 1000, "DiscountPercent": 0 },
+    { "Gold": 2000, "DiscountPercent": 2 },
+    { "Gold": 3000, "DiscountPercent": 4 },
+    { "Gold": 5000, "DiscountPercent": 6 },
+    { "Gold": 8000, "DiscountPercent": 8 },
+    { "Gold": 12000, "DiscountPercent": 10 },
+    { "Gold": 20000, "DiscountPercent": 12 },
+    { "Gold": 35000, "DiscountPercent": 14 },
+    { "Gold": 60000, "DiscountPercent": 16 }
+  ],
+  "Offers": [
+    { "Reward": "currency.coin", "Count": 500, "Price": 50 },
+    { "Reward": "currency.coin", "Count": 1000, "Price": 100 },
+    { "Reward": "currency.coin", "Count": 5000, "Price": 450 },
+    { "Reward": "currency.coin", "Count": 6000, "Price": 540 },
+    { "Reward": "currency.energy", "Count": 10, "Price": 40 },
+    { "Reward": "currency.energy", "Count": 20, "Price": 70 },
+    { "Reward": "book.arrow", "Count": 5, "Price": 200 },
+    { "Reward": "book.fireball", "Count": 5, "Price": 220 },
+    { "Reward": "book.lightning", "Count": 5, "Price": 220 },
+    { "Reward": "book.hat", "Count": 3, "Price": 130 },
+    { "Reward": "book.weapon", "Count": 3, "Price": 130 },
+    { "Reward": "book.ring", "Count": 3, "Price": 130 }
+  ]
+}

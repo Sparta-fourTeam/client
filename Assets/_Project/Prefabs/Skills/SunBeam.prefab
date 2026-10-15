@@ -127,6 +127,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2668572724464940979}
   - component: {fileID: 5407846523673368122}
+  - component: {fileID: 1504822574489378426}
   m_Layer: 0
   m_Name: SunBeam
   m_TagString: Untagged
@@ -163,6 +164,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Game.Core::Game.Core.AreaZone
   visual: {fileID: 351550324858499976}
+--- !u!210 &1504822574489378426
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2980857046471916804}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 12
+  m_SortAtRoot: 0
+  m_Sort3DAs2D: 0
 --- !u!1 &5841128521976617925
 GameObject:
   m_ObjectHideFlags: 0

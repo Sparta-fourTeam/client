@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4360375446972478452}
   - component: {fileID: 8684981817994995322}
+  - component: {fileID: 2057362711025656958}
   m_Layer: 0
   m_Name: LightningOrb
   m_TagString: Untagged
@@ -49,6 +50,19 @@ MonoBehaviour:
   impactPrefab: {fileID: 7909620184887445411, guid: 1b98f7a842e384536a7556e880798641, type: 3}
   formSprites: []
   baseVisual: {fileID: 8645867562586581149}
+--- !u!210 &2057362711025656958
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 898466977149368188}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 12
+  m_SortAtRoot: 0
+  m_Sort3DAs2D: 0
 --- !u!1 &1027036888593507834
 GameObject:
   m_ObjectHideFlags: 0

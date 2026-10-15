@@ -24,5 +24,7 @@ namespace Game.Network
         public List<string> tutorials;
         /// <summary>일일·주간 퀘스트 진행과 연 상자. 주기가 바뀌면 LocalSaveStore가 불러올 때 비운다</summary>
         public QuestSave quests = new();
+        /// <summary>일일상점을 다시 뽑은 횟수. 날이 바뀌면 LocalSaveStore가 불러올 때 비운다</summary>
+        public ShopSave shop = new();
     }
 }

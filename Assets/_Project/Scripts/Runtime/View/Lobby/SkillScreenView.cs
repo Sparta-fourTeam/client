@@ -84,7 +84,7 @@ namespace Game.View
         private void Refresh()
         {
             _goldText.text = CurrencyFormat.Format(_profile.Gold);
-            _gemText.text = CurrencyFormat.Format(_catalog.Gems);
+            _gemText.text = CurrencyFormat.Format(_profile.Gems);
             _ticketText.text = CurrencyFormat.Format(_catalog.Tickets);
 
             var skills = _catalog.Skills;

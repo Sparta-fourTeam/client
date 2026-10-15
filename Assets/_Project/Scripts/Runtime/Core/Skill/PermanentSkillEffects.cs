@@ -29,7 +29,7 @@ namespace Game.Core
 
     /// <summary>스킬 강화 행의 Effects를 카드와 같은 효과(<see cref="EffectRegistry"/>의 키)로 바꿔 스킬의 기본 설정에 적용한다.
     /// 전투(SkillController)와 로비 화면(스킬 강화 팝업)이 같은 계산을 쓰므로 화면 수치와 전투 수치가 같다.
-    /// TODO(data): #142 수치가 확정되면 Upgrades.json의 스킬 행 Effects만 바꾼다 (지금은 레벨당 damage +8% 임시값)</summary>
+    /// 효과량과 레벨별 배분은 Upgrades.json의 스킬 행 Effects에서 정한다.</summary>
     public static class PermanentSkillEffect
     {
         /// <summary>장비 강화 행의 UpgradeId 접두사 (예: equipment.hat)</summary>

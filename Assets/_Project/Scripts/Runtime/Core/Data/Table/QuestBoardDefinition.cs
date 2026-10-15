@@ -41,7 +41,7 @@ namespace Game.Core
         }
     }
 
-    /// <summary>보물상자. 게이지가 Points에 닿으면 열 수 있고, 골드와 에너지를 준다</summary>
+    /// <summary>보물상자. 게이지가 Points에 닿으면 열 수 있고, 골드·에너지·잼을 준다</summary>
     [Serializable]
     public class QuestChestDefinition
     {
@@ -49,6 +49,8 @@ namespace Game.Core
         public int Points;
         public int Gold;
         public int Energy;
+        /// <summary>잼. 없으면 0이다</summary>
+        public int Gems;
     }
 
     /// <summary>일일·주간 퀘스트 보드. Id가 곧 주기(QuestPeriod 이름)다</summary>
@@ -93,7 +95,7 @@ namespace Game.Core
                     throw new InvalidOperationException($"Quests {Id}: 상자 Id가 비었거나 중복됩니다: {chest.Id}");
                 }
 
-                if (chest.Points <= previous || chest.Gold < 0 || chest.Energy < 0 || chest.Gold + chest.Energy <= 0)
+                if (chest.Points <= previous || chest.Gold < 0 || chest.Energy < 0 || chest.Gems < 0 || chest.Gold + chest.Energy + chest.Gems <= 0)
                 {
                     throw new InvalidOperationException($"Quests {chest.Id}: Points는 앞 상자보다 커야 하고 보상은 1 이상이어야 합니다");
                 }

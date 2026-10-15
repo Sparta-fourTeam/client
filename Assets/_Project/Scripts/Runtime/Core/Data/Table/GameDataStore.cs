@@ -9,7 +9,7 @@ namespace Game.Core
     /// <summary>Resources/MockData의 테이블 JSON을 읽어 도메인 모델 테이블로 만든다</summary>
     public sealed class GameDataStore
     {
-        private static readonly string[] TableNames = { "Monsters", "Stages", "Upgrades", "Energy", "Combat", "GeneralCards", "Skills", "Items", "StageRewards", "PlayerLevels", "CodexRewards", "Tutorials", "Quests" };
+        private static readonly string[] TableNames = { "Monsters", "Stages", "Upgrades", "Energy", "Combat", "GeneralCards", "Skills", "Items", "StageRewards", "PlayerLevels", "CodexRewards", "Tutorials", "Quests", "Shop" };
         private readonly Dictionary<string, string> _rawJson;
         private readonly DisplayTexts _texts;
         private readonly Dictionary<string, int> _skillUnlockLevels;
@@ -21,6 +21,7 @@ namespace Game.Core
         public Table<string, ItemDefinition> Items { get; }
         public Table<int, StageRewardBalance> StageRewards { get; }
         public EnergyConfig Energy { get; }
+        public ShopConfig Shop { get; }
         public CombatConfig Combat { get; }
         public PlayerLevelTable PlayerLevels { get; }
 
@@ -135,6 +136,7 @@ namespace Game.Core
             Items.GetOrThrow(ItemIds.GemChest);
             StageRewards = new Table<int, StageRewardBalance>(rewards);
             Energy = JsonConvert.DeserializeObject<EnergyConfig>(_rawJson["Energy"]);
+            Shop = JsonConvert.DeserializeObject<ShopConfig>(_rawJson["Shop"]);
             Combat = JsonConvert.DeserializeObject<CombatConfig>(_rawJson["Combat"]);
             Combat.Validate();
             PlayerLevels = JsonConvert.DeserializeObject<PlayerLevelConfig>(_rawJson["PlayerLevels"]).ToTable();
@@ -165,6 +167,35 @@ namespace Game.Core
             foreach (var board in questBoards) { board.Validate(questIds); }
             QuestBoards = questBoards;
 
+            foreach (var offer in Shop.Offers)
+            {
+                bool known = offer.Reward == ShopRules.CoinReward || offer.Reward == ShopRules.EnergyReward || Items.Contains(offer.Reward);
+                if (!known || offer.Count <= 0 || offer.Price < 0)
+                {
+                    throw new InvalidOperationException($"Shop {offer.Reward}: 보상은 코인·에너지·Items의 아이템이어야 하고 수량은 1 이상, 가격은 0 이상이어야 합니다");
+                }
+            }
+
+            if (Shop.GemGoldRate <= 0 || Shop.GoldPacks.Count == 0)
+            {
+                throw new InvalidOperationException("Shop: 잼 기준 비율(GemGoldRate)과 코인 묶음(GoldPacks)이 필요합니다");
+            }
+
+            for (int i = 0; i < Shop.GoldPacks.Count; i++)
+            {
+                var pack = Shop.GoldPacks[i];
+                bool ordered = i == 0 || (pack.Gold > Shop.GoldPacks[i - 1].Gold && pack.DiscountPercent >= Shop.GoldPacks[i - 1].DiscountPercent);
+                if (pack.Gold <= 0 || pack.DiscountPercent < 0 || pack.DiscountPercent > 99 || !ordered)
+                {
+                    throw new InvalidOperationException($"Shop GoldPacks[{i}]: 코인은 1 이상, 할인율은 0~99이고, 더 큰 묶음일수록 코인은 늘고 할인율은 같거나 높아야 합니다");
+                }
+            }
+
+            if (Shop.Slots <= 0 || Shop.Offers.Count < Shop.Slots || Shop.Discounts.Count == 0 || Shop.Discounts.Exists(d => d < 0 || d > 99))
+            {
+                throw new InvalidOperationException("Shop: 칸 수는 1 이상, 물품은 칸 수 이상, 할인율은 0~99 사이로 하나 이상 있어야 합니다");
+            }
+
             var generalCards = ParseIndexed<string, GeneralCardDefinition>("GeneralCards", d => d.Id).Values.ToList();
             _texts.ApplyTo(generalCards);
             foreach (var card in generalCards)
@@ -185,10 +216,11 @@ namespace Game.Core
                 PermanentSkillEffect.ValidateEquipment(upgrade);
             }
 
-            // TODO(server): 빌드에 포함된 테이블 버전 메타데이터로 교체. Combat 2는 BaseTimeScale을 추가한 개정이다.
+            // TODO(server): 빌드에 포함된 테이블 버전 메타데이터로 교체. Combat 2는 BaseTimeScale을, Quests 2는 상자 보상 Gems를 추가한 개정이다.
             Revisions = TableNames.ToDictionary(n => n, _ => 1);
             Revisions["Combat"] = 2;
             Revisions["Tutorials"] = 2; // 스테이지 클리어 보상 단계(milestone) 추가
+            Revisions["Quests"] = 2;
         }
 
         public string RawJson(string name) => _rawJson[name];

@@ -753,6 +753,59 @@ namespace Game.Tests
         }
 
         [UnityTest]
+        public IEnumerator ReauthenticationReturnsThroughLoadingWithSameGuestAndProgress()
+        {
+            Assert.That(ServerConfig.UseServerAuth, Is.False, "이 회귀는 실제 서버 인증을 호출하지 않는다");
+            yield return StartFromBoot(save => save.wallet.gold = 321);
+            var root = Object.FindAnyObjectByType<RootLifetimeScope>();
+            var previousLobby = Object.FindAnyObjectByType<LobbyLifetimeScope>();
+            var navigator = root.Container.Resolve<ISceneNavigator>();
+            string guestId = _credentials.AccountId;
+            var pending = root.Container.Resolve<AccountService>().ReauthenticateAsync();
+            yield return WaitFor(() => previousLobby == null && SceneManager.GetActiveScene().name == "Loading"
+                && Object.FindAnyObjectByType<TapToStartView>() != null
+                && Field<GameObject>(Object.FindAnyObjectByType<TapToStartView>(), "_panel").activeSelf);
+            yield return ClickGameButton(Field<Button>(Object.FindAnyObjectByType<TapToStartView>(), "_tapArea"));
+            yield return WaitFor(() => SceneManager.GetActiveScene().name == "Lobby"
+                && navigator.Current == SceneId.Lobby && Object.FindAnyObjectByType<LobbyLifetimeScope>() != null);
+            pending.GetAwaiter().GetResult();
+            Assert.That(_credentials.Method, Is.EqualTo(LoginMethod.Guest));
+            Assert.That(_credentials.AccountId, Is.EqualTo(guestId));
+            Assert.That(root.Container.Resolve<PlayerProfile>().Gold, Is.EqualTo(321));
+            Assert.That(_store.Load().wallet.gold, Is.EqualTo(321));
+        }
+
+        [UnityTest]
+        public IEnumerator MenuDeletionClearsRootProfileAndReturnsToLoginSelection()
+        {
+            Assert.That(ServerConfig.UseServerAuth, Is.False, "이 삭제 회귀는 로컬 백엔드에서만 실행한다");
+            yield return StartFromBoot();
+            var root = Object.FindAnyObjectByType<RootLifetimeScope>();
+            Assert.That(root.Container.Resolve<IAccountApi>(), Is.TypeOf<LocalAccountApi>(),
+                "실제 서버 계정에 삭제 요청을 보내지 않는다");
+            var profile = root.Container.Resolve<PlayerProfile>();
+            var ui = Object.FindAnyObjectByType<LobbyLifetimeScope>().Container.Resolve<IUiRegistry>();
+            var menu = ui.Get<LobbyMenuPopupView>();
+            var confirm = ui.Get<ConfirmPopupView>();
+            string nickname = profile.Nickname;
+            Assert.That(profile.IsLoaded, Is.True);
+            Assert.That(_store.Exists(), Is.True);
+            menu.Open();
+            yield return ClickGameButton(Field<Button>(menu, "_deleteAccountButton"));
+            yield return WaitFor(() => confirm.IsOpen);
+            yield return ClickGameButton(Field<Button>(confirm, "_confirmButton"));
+            Field<TMP_InputField>(confirm, "_input").text = nickname;
+            yield return ClickGameButton(Field<Button>(confirm, "_confirmButton"));
+            yield return WaitFor(() => SceneManager.GetActiveScene().name == "Loading" && LoginPanelShown());
+            Assert.That(_credentials.HasCredential, Is.False);
+            Assert.That(_store.Exists(), Is.False);
+            Assert.That(root.Container.Resolve<AuthSession>().IsSignedIn, Is.False);
+            Assert.That(profile.IsLoaded, Is.False, "Root가 사용하는 실제 프로필 캐시도 삭제한다");
+            Assert.That(profile.Nickname, Is.Empty);
+            Assert.That(profile.Snapshot().tutorials, Is.Null.Or.Empty);
+        }
+
+        [UnityTest]
         public IEnumerator BootLobbyStageRoundTripKeepsViewsAndSubscriptionsAlive()
         {
             yield return StartFromBoot();

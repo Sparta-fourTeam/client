@@ -25,8 +25,8 @@ namespace Game.Boot
             // 서버 통신. 서버 인증을 쓰는 빌드(Android 개발 빌드)에서만 로그인이 서버로 간다
             builder.RegisterInstance(new HttpApiConfig(ServerConfig.BaseUrl));
             builder.Register<IHttpTransport, UnityWebRequestTransport>(Lifetime.Singleton);
-            builder.Register<AuthSession>(Lifetime.Singleton).AsSelf().As<IAuthHeaderProvider>();
-            builder.Register(c => new HttpApiClient(c.Resolve<HttpApiConfig>(), c.Resolve<IHttpTransport>(), c.Resolve<IAuthHeaderProvider>()),
+            builder.Register<AuthSession>(Lifetime.Singleton).AsSelf().As<IAuthHeaderProvider>().As<IAuthTokenStore>();
+            builder.Register(c => new HttpApiClient(c.Resolve<HttpApiConfig>(), c.Resolve<IHttpTransport>(), c.Resolve<IAuthHeaderProvider>(), tokens: c.Resolve<IAuthTokenStore>()),
                 Lifetime.Singleton);
             // 서버에는 아직 인증 외의 API가 없어서 나머지 API는 Local* 구현을 그대로 쓴다. 서버 인증이면 서버 로그인 뒤에 로컬 로그인을 이어서 한다
             builder.Register<LocalAuthApi>(Lifetime.Singleton);
@@ -47,9 +47,17 @@ namespace Game.Boot
             builder.Register<ISocialSignIn, PlaceholderAppleSignIn>(Lifetime.Singleton);
             // TODO(server): 호출부 없음 — 예: BootFlow에서 GetVersions() 비교 후 GetTable()로 갱신
             builder.Register<IDataApi, LocalDataApi>(Lifetime.Singleton);
-            builder.Register<IAccountApi, LocalAccountApi>(Lifetime.Singleton);
+            // 계정 연동은 서버 인증을 쓰는 빌드에서만 서버로 보낸다 (서버 로그인으로 받은 토큰이 있어야 하기 때문)
+            builder.Register<LocalAccountApi>(Lifetime.Singleton);
+            builder.Register<ServerBackedAccountApi>(Lifetime.Singleton);
+            builder.Register<IAccountApi>(c => ServerConfig.UseServerAuth ? c.Resolve<ServerBackedAccountApi>() : c.Resolve<LocalAccountApi>(),
+                Lifetime.Singleton);
             builder.Register<AccountService>(Lifetime.Singleton);
-            builder.Register<IPlayerApi, LocalPlayerApi>(Lifetime.Singleton);
+            // 플레이어 상태는 기본이 로컬이고, 서버(GET /api/user/me)는 dev.server_player가 켜진 개발 중에만 쓴다
+            builder.Register<LocalPlayerApi>(Lifetime.Singleton);
+            builder.Register<HttpPlayerApi>(Lifetime.Singleton);
+            builder.Register<IPlayerApi>(c => ServerConfig.UseServerPlayer ? c.Resolve<HttpPlayerApi>() : c.Resolve<LocalPlayerApi>(),
+                Lifetime.Singleton);
             builder.Register<IBattleApi, LocalBattleApi>(Lifetime.Singleton).AsSelf().As<ISubmitFaultSwitch>();
             builder.Register<IUpgradeApi, LocalUpgradeApi>(Lifetime.Singleton);
             // TODO(server): Recover(Ad) 항상 거절 중 — 예: 광고 SDK 콜백에서 Recover(EnergySource.Ad, adTxId) 호출
@@ -57,6 +65,7 @@ namespace Game.Boot
             builder.Register<IStageApi, LocalStageApi>(Lifetime.Singleton);
             builder.Register<ICodexApi, LocalCodexApi>(Lifetime.Singleton);
             builder.Register<IQuestApi, LocalQuestApi>(Lifetime.Singleton);
+            builder.Register<IShopApi, LocalShopApi>(Lifetime.Singleton);
             builder.Register<ITutorialApi, LocalTutorialApi>(Lifetime.Singleton);
 
             // 음악·효과음·음성 볼륨은 기기 설정이라 기기에 저장하고, 시작할 때와 바뀔 때 오디오 믹서에 적용한다

@@ -2340,6 +2340,7 @@ GameObject:
   - component: {fileID: 6186621695680059216}
   - component: {fileID: 1824601786955449791}
   - component: {fileID: 8578301120732508237}
+  - component: {fileID: 3518586658445305845}
   m_Layer: 0
   m_Name: FireballImpact
   m_TagString: Untagged
@@ -4677,3 +4678,16 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
+--- !u!210 &3518586658445305845
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4551597682568628500}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 15
+  m_SortAtRoot: 0
+  m_Sort3DAs2D: 0

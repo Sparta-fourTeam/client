@@ -18,26 +18,31 @@
 | 순서 | 대상 | 정하는 곳 |
 | --- | --- | --- |
 | -500 | 배경 | Stage 씬 |
+| -450 ~ -410 | **바닥 구간**: 몬스터 뒤에 깔리는 연출. `FrostPrison`(-440, -436), `ElectricField`(-430, -429), `Log`(그룹 -444), `BurningRootWave`·`LargeRootWave`(-446, -444), `Fx_GroundSlam`·`Fx_SonicWave`(-420) | 각 프리팹 |
 | **-402 ~ -10** | **몬스터 몸** (비주얼 `SortingGroup`) | `EnemyDepthSorter` (아래 "몬스터 깊이 정렬") |
 | 몸 + 1 | 몬스터 상태이상 이펙트 (`Resources/VFX/EnemyStatuses`) | `EnemyStatusEffects` |
 | 몸 - 1 | 몬스터 사망 이펙트 (`Resources/VFX/EnemyDeath`) | `Enemy` 사망 처리. 죽는 순간의 몸 순서로 정한다 |
-| -8 ~ -4 | 바닥 장판: `FrostPrison`(-8, -4), `ElectricField`(-5, -4) | 각 프리팹 |
-| -1 | 투사체 꼬리 등 (`Arrow`, `Fireball`, `ThunderArrow` 등의 일부 파츠) | 각 프리팹 |
-| 0 | 벽, 스테이지 오브젝트, 대부분의 스킬 기본 파츠 | 각 프리팹 |
-| 0 ~ 30 | 스킬·폭발 이펙트 (`Resources/VFX/*Explosion`, `Prefabs/Skills/*`) | 각 프리팹 |
-| 20 | 보스 공격 연출 (`Fx_GroundSlam`, `Fx_SonicWave`) | 각 프리팹 |
+| -5 | 벽 (`Wall`). 몬스터 앞, 스킬 뒤 | 프리팹 |
+| 0 ~ 30 | 스킬·폭발 이펙트 (`Resources/VFX/*Explosion`, `Prefabs/Skills/*`). 프리팹마다 루트 `SortingGroup` 하나로 묶고, 순서는 안쪽 파츠의 가장 큰 값이다. 안쪽 파츠 순서(-1~16)는 그룹 안에서만 비교한다 | 각 프리팹 |
+| 35 | 적 투사체 (`Slime_Projectile`). 스킬·폭발(0 ~ 30)과 동률 없이 그 위, 플레이어(40) 아래 | 프리팹 |
 | 40 | 플레이어 (`Player_Animated`) | 프리팹 |
-| 100 ~ 101 | 적 HP 바 (`Resources/UI/EnemyHpBar`), 스킬 범위 표시 (`SkillRangeIndicator`) | 각 프리팹 |
-| 200 | 데미지 숫자 (`Resources/UI/DamagePopup`) | 프리팹 |
+| 90 | 스킬 범위 표시 (`SkillRangeIndicator`) | 프리팹 |
+| 100 ~ 103 | 적 HP 바 (`Resources/UI/EnemyHpBar`) | 프리팹 |
+| 198 ~ 201 | 데미지 숫자 (`Resources/UI/DamagePopup`) | 프리팹 |
+| 300 | 화면 전환 막 (`TransitionCurtain`) | 프리팹 |
+
+`UiClickFeedback`(32000)은 Screen Space Overlay 캔버스라 월드 순서와 따로 맨 위에 그려진다.
 
 몬스터 프리팹 안의 파츠(6~40)와 그림자(`EnemyShadow`, -1000)는 몬스터 비주얼 `SortingGroup` **안**의 순서다. 그룹 안에서만 비교되므로 위 표와 섞이지 않는다.
 
 ### 새 오브젝트의 순서를 정할 때
 
 - **몬스터보다 앞**에 보여야 하면 -9 이상을 쓴다. 투사체·스킬 이펙트는 보통 0 이상이다.
-- **몬스터보다 뒤, 배경보다 앞**에 보여야 하면 -499 ~ -403을 쓴다. 지금 이 범위를 쓰는 오브젝트는 없다.
+- **몬스터보다 뒤, 배경보다 앞**(바닥 장판, 바닥에서 솟는 연출, 나무뿌리)에 보여야 하면 바닥 구간 -450 ~ -410을 쓴다. 사망 이펙트가 -403까지 내려가므로 -409 ~ -403은 비워 둔다.
 - -402 ~ -10은 몬스터와 몬스터 이펙트 전용이다. 다른 오브젝트가 쓰면 몬스터 몇 마리와만 앞뒤가 뒤섞인다.
-- 여러 파츠로 된 이펙트는 `SortingGroup`으로 묶으면 바깥과 한 번만 비교된다.
+- 구간 값은 `SortingBands`(Core/Combat)가 원본이다. **Tools → Project Nova → Validate Sorting Orders**가 바닥 연출 프리팹이 바닥 구간 안에 있는지, 다른 프리팹이 몬스터 구간을 침범하지 않는지 검사한다. 새 바닥 연출은 검증 메뉴의 `GroundPrefabs` 목록에도 추가한다.
+- 여러 파츠로 된 이펙트는 루트에 `SortingGroup`을 두어 바깥과 한 번만 비교되게 한다. 그룹이 없으면 두 이펙트의 파츠가 서로 섞인다. 검증 메뉴가 `Prefabs/Skills`와 `Resources/VFX`의 루트 `SortingGroup`을 확인한다.
+- 같은 순서끼리는 앞뒤가 보장되지 않는다. 겹칠 수 있는 서로 다른 종류는 다른 값을 쓴다.
 
 ## 몬스터 깊이 정렬
 

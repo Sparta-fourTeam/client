@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4411677479700748573}
   - component: {fileID: 2441441804296678754}
+  - component: {fileID: 259879937183033873}
   m_Layer: 0
   m_Name: ChainAfterglow
   m_TagString: Untagged
@@ -142,3 +143,16 @@ LineRenderer:
   m_UseWorldSpace: 1
   m_Loop: 0
   m_ApplyActiveColorSpace: 1
+--- !u!210 &259879937183033873
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8821803368656918387}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 13
+  m_SortAtRoot: 0
+  m_Sort3DAs2D: 0

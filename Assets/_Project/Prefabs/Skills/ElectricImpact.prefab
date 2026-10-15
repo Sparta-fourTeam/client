@@ -4687,6 +4687,7 @@ GameObject:
   - component: {fileID: 3150271573970545594}
   - component: {fileID: 713512271604121057}
   - component: {fileID: 1770374970622988724}
+  - component: {fileID: 3617170998976955435}
   m_Layer: 0
   m_Name: ElectricImpact
   m_TagString: Untagged
@@ -6976,3 +6977,16 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
+--- !u!210 &3617170998976955435
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7909620184887445411}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 12
+  m_SortAtRoot: 0
+  m_Sort3DAs2D: 0

@@ -63,7 +63,7 @@ namespace Game.Network
             return ToResponse(tokens, null);
         }
 
-        private static string ProviderOf(LoginMethod method) => method switch
+        internal static string ProviderOf(LoginMethod method) => method switch
         {
             LoginMethod.Google => "GOOGLE",
             LoginMethod.Apple => "APPLE",

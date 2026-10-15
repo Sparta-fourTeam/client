@@ -87,8 +87,8 @@ MonoBehaviour:
     SiblingIndex: 5
   - Id: MissionRewardInfoPopup
     Prefab: {fileID: 9063590483577428516, guid: f68a817ca6e5d4a2cbefc8c75014b3b1, type: 3}
-    ParentPath: NavUI/Popups
-    SiblingIndex: 6
+    ParentPath: NavUI/Overlays
+    SiblingIndex: 2
   - Id: LobbyMenuPopup
     Prefab: {fileID: 2487572882896264764, guid: 14a1d7a2f31e5c74eb410bd74bb5abe7, type: 3}
     ParentPath: NavUI/Popups

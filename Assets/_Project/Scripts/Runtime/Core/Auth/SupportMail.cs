@@ -21,7 +21,7 @@ namespace Game.Core
             text.AppendLine("---------- 아래는 문의 확인에 필요한 정보예요. 지우지 말아 주세요 ----------");
             Line(text, "닉네임", nickname);
             Line(text, "로그인 방식", loginMethod);
-            Line(text, "게스트 ID", guestId);
+            // guestId는 서버 로그인 자격 증명이므로 문의 본문·클립보드에 포함하지 않는다.
             Line(text, "Unity 진단 ID", diagnosticId);
             Line(text, "앱 버전", appVersion);
             Line(text, "기기", device);
