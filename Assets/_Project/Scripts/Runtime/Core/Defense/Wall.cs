@@ -7,7 +7,7 @@ using VContainer;
 
 namespace Game.Core.Defense
 {
-    public sealed class Wall : MonoBehaviour, IDamageable
+    public sealed partial class Wall : MonoBehaviour, IDamageable
     {
         private IBufferedPublisher<WallHpChanged> _hpChangedPublisher;
         private IPublisher<WallDestroyed> _destroyedPublisher;

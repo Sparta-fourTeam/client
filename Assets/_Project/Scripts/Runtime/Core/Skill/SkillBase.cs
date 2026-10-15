@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Game.Core
 {
-    public abstract class SkillBase : ISkillStatus, System.IDisposable
+    public abstract partial class SkillBase : ISkillStatus, System.IDisposable
     {
         private bool disposed;
         protected SkillData data;

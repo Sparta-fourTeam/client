@@ -1,8 +1,10 @@
 using System;
 using System.IO;
+using System.Linq;
 using Game.Core;
 using Game.Network;
 using NUnit.Framework;
+using UnityEngine;
 
 namespace Game.Tests
 {
@@ -25,6 +27,8 @@ namespace Game.Tests
             {
                 File.Delete(_filePath);
             }
+            foreach (string suffix in new[] { ".battle", ".battle.bak", ".battle.tmp" })
+            { if (File.Exists(_filePath + suffix)) { File.Delete(_filePath + suffix); } }
             if (Directory.Exists(_folder)) { Directory.Delete(_folder, true); }
         }
 
@@ -125,6 +129,79 @@ namespace Game.Tests
             Assert.That(reset.Exists(), Is.False);
             Assert.That(reset.Load().exp, Is.Zero);
             Assert.That(File.Exists(_filePath), Is.True);
+        }
+
+        private sealed class CheckpointCredentials : IAuthCredentialStore
+        {
+            public LoginMethod Method { get; private set; }
+            public string AccountId { get; private set; } = "checkpoint-owner";
+            public bool HasCredential => AccountId != null;
+            public void Save(LoginMethod method, string accountId) { Method = method; AccountId = accountId; }
+            public void Clear() => AccountId = null;
+        }
+
+        private (LocalSaveStore Save, LocalBattleCheckpointStore Checkpoints, CheckpointCredentials Credentials, BattleCheckpoint State) CheckpointSetup()
+        {
+            var save = new LocalSaveStore(_filePath);
+            var data = new GameDataStore();
+            var state = new BattleCheckpoint
+            {
+                BattleId = "checkpoint-battle",
+                StageId = data.FirstStageId,
+                RandomState = JsonUtility.ToJson(UnityEngine.Random.state),
+                Stage = new StageRuntimeState { State = StageState.Paused, BeforePause = StageState.Playing, Speed = 2, WallHp = 30, WallMaxHp = 50 },
+                Spawns = new SpawnRuntimeState()
+            };
+            state.Spawns.Enemies.Add(new EnemyRuntimeState
+            {
+                Id = 1,
+                MonsterId = data.Monsters.Values.First().Id,
+                Hp = 10,
+                Position = new Vector2(1.25f, -2.5f),
+                Status = new EnemyStatusState { Freeze = 3.25f }
+            });
+            var local = save.Load();
+            local.battles.Add(new BattleRow { battleKey = state.BattleId, stageId = state.StageId, status = "Issued" });
+            save.Flush(local);
+            var credentials = new CheckpointCredentials();
+            return (save, new LocalBattleCheckpointStore(save, credentials, new PlayerProfile(data), data), credentials, state);
+        }
+
+        [Test(Description = "파일 교체 중 중단·손상에도 이전 완성본으로 돌아가며 좌표와 전투 상태를 보존한다")]
+        public void BattleCheckpoint_RoundTripAndCorruptMain_RecoversPreviousCompletedWrite()
+        {
+            var (save, checkpoints, _, state) = CheckpointSetup();
+            state.Stage.Clock = 12.5f;
+            checkpoints.Save(state);
+            state.Stage.Clock = 25.75f;
+            checkpoints.Save(state);
+            var latest = checkpoints.Load();
+            Assert.That(latest.Stage.Clock, Is.EqualTo(25.75f));
+            Assert.That(latest.Spawns.Enemies.Single().Position, Is.EqualTo(new Vector2(1.25f, -2.5f)));
+            Assert.That(latest.Spawns.Enemies.Single().Status.Freeze, Is.EqualTo(3.25f));
+            File.WriteAllText(save.BattleCheckpointPath, "null");
+            File.WriteAllText(save.BattleCheckpointPath + ".tmp", "unfinished");
+            Assert.That(checkpoints.Load().Stage.Clock, Is.EqualTo(12.5f));
+            checkpoints.Clear();
+            Assert.That(checkpoints.Load(), Is.Null);
+            Assert.That(File.Exists(save.BattleCheckpointPath + ".bak"), Is.False);
+            Assert.That(File.Exists(save.BattleCheckpointPath + ".tmp"), Is.False);
+        }
+
+        [TestCase(true)]
+        [TestCase(false)]
+        [Description("다른 계정과 이미 종료된 전투의 저장 파일로는 전투를 재개하지 않는다")]
+        public void BattleCheckpoint_ChangedOwnerOrFinishedBattle_IsDiscarded(bool changedOwner)
+        {
+            var (save, checkpoints, credentials, state) = CheckpointSetup();
+            checkpoints.Save(state);
+            if (changedOwner) { credentials.Save(LoginMethod.Guest, "other-account"); }
+            else
+            {
+                var local = save.Load(); local.battles.Single().status = "Cleared"; save.Flush(local);
+            }
+            Assert.That(checkpoints.Load(), Is.Null);
+            Assert.That(File.Exists(save.BattleCheckpointPath), Is.False);
         }
 
     }

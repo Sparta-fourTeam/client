@@ -83,6 +83,109 @@ namespace Game.Tests
             (T)target.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(target);
 
         [UnityTest]
+        public IEnumerator BattleCheckpoint_LobbyPromptRestoresBattleAndCardSelectionWithoutChargingAgain()
+        {
+            yield return StartFromBoot(UnlockLobbyFeatures);
+            var root = Object.FindAnyObjectByType<RootLifetimeScope>();
+            var checkpoints = root.Container.Resolve<IBattleCheckpointStore>();
+            var context = root.Container.Resolve<StageContext>();
+            var nav = root.Container.Resolve<ISceneNavigator>();
+            yield return Object.FindAnyObjectByType<LobbyLifetimeScope>().Container.Resolve<BattleLauncher>().Launch(1).ToCoroutine();
+            yield return WaitFor(() => Object.FindAnyObjectByType<BattleCheckpointDriver>()?.Capture() != null);
+            yield return WaitFor(() => Object.FindObjectsByType<Enemy>().Any(e => !e.IsDead));
+            var stage = Object.FindAnyObjectByType<StageLifetimeScope>();
+            var manager = stage.Container.Resolve<StageManager>();
+            manager.Pause();
+            var enemy = Object.FindObjectsByType<Enemy>().First(e => !e.IsDead);
+            var skills = stage.Container.Resolve<SkillController>();
+            foreach (var definition in stage.Container.Resolve<ISkillDataProvider>().LoadAll()
+                .Where(d => !d.childOnly).GroupBy(d => d.castType).Select(g => g.First()))
+            {
+                if (!Field<List<SkillBase>>(skills, "skills").Any(w => w.Data.id == definition.id))
+                { Assert.That(skills.AddWeapon(definition.id), Is.True); }
+            }
+            foreach (var skill in Field<List<SkillBase>>(skills, "skills").Cast<SkillCaster>())
+            { skill.FireAt(enemy.Position); }
+            enemy.ApplyFreeze(7.5f);
+            enemy.ApplySlow(0.3f, 4.25f);
+            var driver = Object.FindAnyObjectByType<BattleCheckpointDriver>();
+            driver.SaveNow();
+            var saved = checkpoints.Load();
+            Assert.That(saved, Is.Not.Null);
+            Assert.That(saved.Skills, Is.Not.Empty);
+            Assert.That(saved.Skills.Sum(s => s.Attacks.Count), Is.GreaterThan(0), "진행 중인 공격도 복원 대상으로 검증한다");
+            int energy = _store.Load().wallet.energyStored;
+            int issued = _store.Load().battles.Count;
+            string battleId = context.BattleId;
+
+            // 새 프로세스에서는 Root의 전투 문맥이 비어 있다. 실제 로비·확인 버튼·Stage 로딩 경로를 거친다.
+            context.SetBattle(null);
+            yield return nav.GoToLobby().ToCoroutine();
+            var lobbyUi = Object.FindAnyObjectByType<LobbyLifetimeScope>().Container.Resolve<IUiRegistry>();
+            var confirm = lobbyUi.Get<ConfirmPopupView>();
+            yield return WaitFor(() => confirm.IsOpen);
+            yield return ClickGameButton(Field<Button>(confirm, "_confirmButton"));
+            yield return WaitFor(() => Object.FindAnyObjectByType<BattleCheckpointDriver>()?.Capture() != null);
+            stage = Object.FindAnyObjectByType<StageLifetimeScope>();
+            manager = stage.Container.Resolve<StageManager>();
+            var restored = Object.FindAnyObjectByType<BattleCheckpointDriver>().Capture();
+            Assert.That(context.BattleId, Is.EqualTo(battleId));
+            Assert.That(_store.Load().wallet.energyStored, Is.EqualTo(energy));
+            Assert.That(_store.Load().battles.Count, Is.EqualTo(issued));
+            Assert.That(manager.State, Is.EqualTo(StageState.Paused));
+            Assert.That(Time.timeScale, Is.Zero);
+            Assert.That(restored.Stage.Clock, Is.EqualTo(saved.Stage.Clock));
+            Assert.That(restored.Stage.WallHp, Is.EqualTo(saved.Stage.WallHp));
+            Assert.That(restored.Spawns.Enemies.Select(e => e.Id).ToArray(), Is.EqualTo(saved.Spawns.Enemies.Select(e => e.Id).ToArray()), $"dead={string.Join(",", restored.Stage.DeadEnemyIds)} effects={string.Join(",", restored.Skills.Select(w => w.SkillId + ":" + w.Attacks.Count))}");
+            for (int i = 0; i < saved.Spawns.Enemies.Count; i++)
+            {
+                Assert.That(restored.Spawns.Enemies[i].Position, Is.EqualTo(saved.Spawns.Enemies[i].Position));
+                Assert.That(restored.Spawns.Enemies[i].Hp, Is.EqualTo(saved.Spawns.Enemies[i].Hp));
+                Assert.That(restored.Spawns.Enemies[i].Status.Freeze, Is.EqualTo(saved.Spawns.Enemies[i].Status.Freeze));
+                Assert.That(restored.Spawns.Enemies[i].Status.Slow, Is.EqualTo(saved.Spawns.Enemies[i].Status.Slow));
+            }
+            Assert.That(restored.Skills.Select(s => s.Cooldown), Is.EqualTo(saved.Skills.Select(s => s.Cooldown)));
+            Assert.That(restored.Skills.Select(s => s.Attacks.Count), Is.EqualTo(saved.Skills.Select(s => s.Attacks.Count)));
+            manager.Resume();
+            yield return CompleteEnemiesUntil(stage, () => manager.State == StageState.CardSelect);
+            driver = Object.FindAnyObjectByType<BattleCheckpointDriver>();
+            driver.SaveNow();
+            var selected = checkpoints.Load();
+            Assert.That(selected.Stage.Choices, Is.Not.Empty);
+            context.SetBattle(null);
+            yield return nav.GoToLobby().ToCoroutine();
+            confirm = Object.FindAnyObjectByType<LobbyLifetimeScope>().Container.Resolve<IUiRegistry>().Get<ConfirmPopupView>();
+            yield return WaitFor(() => confirm.IsOpen);
+            yield return ClickGameButton(Field<Button>(confirm, "_confirmButton"));
+            yield return WaitFor(() => Object.FindAnyObjectByType<BattleCheckpointDriver>()?.Capture() != null);
+            stage = Object.FindAnyObjectByType<StageLifetimeScope>();
+            manager = stage.Container.Resolve<StageManager>();
+            Assert.That(manager.State, Is.EqualTo(StageState.CardSelect));
+            restored = Object.FindAnyObjectByType<BattleCheckpointDriver>().Capture();
+            Assert.That(restored.Stage.Choices.Select(c => (c.SkillId, c.CardId, c.NewWeapon, c.General)),
+                Is.EqualTo(selected.Stage.Choices.Select(c => (c.SkillId, c.CardId, c.NewWeapon, c.General))));
+            var slots = Field<CardSlotView[]>(stage.Container.Resolve<IUiRegistry>().Get<CardSelectView>(), "_slots");
+            yield return ClickGameButton(Field<Button>(slots.First(slot => slot.gameObject.activeSelf), "_button"));
+            yield return WaitFor(() => manager.State == StageState.Playing);
+            var fault = root.Container.Resolve<ISubmitFaultSwitch>();
+            fault.FailNextSubmits = StageManager.AutoRetryCount + 1;
+            manager.RetryDelay = TimeSpan.Zero;
+            stage.Container.Resolve<Wall>().TakeDamage(int.MaxValue);
+            yield return WaitFor(() => Field<GameObject>(stage.Container.Resolve<IUiRegistry>().Get<SubmitResultPopupView>(), "_panel").activeSelf);
+            Object.FindAnyObjectByType<BattleCheckpointDriver>().SaveNow();
+            Assert.That(checkpoints.Load().Stage.State, Is.EqualTo(StageState.Submitting));
+            context.SetBattle(null);
+            fault.FailNextSubmits = 0;
+            yield return nav.GoToLobby().ToCoroutine();
+            yield return WaitFor(() => Object.FindAnyObjectByType<StageLifetimeScope>() != null
+                && Object.FindAnyObjectByType<StageLifetimeScope>().Container.Resolve<StageManager>().State == StageState.Finished);
+            Assert.That(context.BattleId, Is.EqualTo(battleId));
+            Assert.That(checkpoints.Load(), Is.Null, "결과 반영 뒤에는 전투를 다시 복원하면 안 된다");
+            Assert.That(_store.Load().battles.Count, Is.EqualTo(issued));
+            LogAssert.NoUnexpectedReceived();
+        }
+
+        [UnityTest]
         public IEnumerator RewardOddsPopup_BothButtonsCloseThroughPointerInputInLobbyAndStage()
         {
             yield return StartFromBoot(UnlockLobbyFeatures);
@@ -1019,6 +1122,11 @@ namespace Game.Tests
                 _credentials = null;
             }
             if (_savePath != null && File.Exists(_savePath)) { File.Delete(_savePath); }
+            if (_savePath != null)
+            {
+                foreach (string suffix in new[] { ".battle", ".battle.bak", ".battle.tmp" })
+                { if (File.Exists(_savePath + suffix)) { File.Delete(_savePath + suffix); } }
+            }
             _store = null;
             _originalSavePath = null;
             _savePath = null;

@@ -6,7 +6,7 @@ using VContainer.Unity;
 
 namespace Game.Core.Stage
 {
-    public sealed class WaveManager : IInitializable, IDisposable
+    public sealed partial class WaveManager : IInitializable, IDisposable
     {
         private readonly IPublisher<WaveStarted> _waveStartedPublisher;
         private readonly ISubscriber<WaveCompleted> _waveCompletedSubscriber;

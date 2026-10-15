@@ -3,7 +3,7 @@ using System.Collections.Generic;
 namespace Game.Core
 {
     /// <summary>Battle progression only. Values are committed after every participant is prepared.</summary>
-    internal sealed class SkillUpgradeState
+    internal sealed partial class SkillUpgradeState
     {
         private readonly SkillData data;
         private readonly Dictionary<string, int> acquiredCounts = new();

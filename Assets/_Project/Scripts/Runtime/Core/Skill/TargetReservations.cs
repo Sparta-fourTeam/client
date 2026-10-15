@@ -4,12 +4,13 @@ namespace Game.Core
 {
     /// <summary>날아가는 중인 공격이 곧 줄 피해를 적마다 기억해, 이미 죽을 만큼 맞을 예정인 적을 다른 스킬이 조준하지 않게 한다.
     /// 예약은 도착 예정 시간이 지나면 사라지므로 빗나가도 오래 남지 않는다.</summary>
-    public sealed class TargetReservations
+    public sealed partial class TargetReservations
     {
         /// <summary>공격 한 발의 예약. 반복 해제하거나 만료 뒤 해제해도 다른 공격의 예약은 건드리지 않는다.</summary>
-        public sealed class Reservation : System.IDisposable
+        public sealed partial class Reservation : System.IDisposable
         {
             public readonly float Damage;
+            internal float Remaining => owner == null ? 0f : System.Math.Max(0f, ExpiresAt - owner.now);
             public readonly float ExpiresAt;
             public IEnemyTarget Target { get; }
             private TargetReservations owner;

@@ -4,14 +4,14 @@ using UnityEngine;
 
 namespace Game.Core
 {
-    public class EnemyProjectileSystem
+    public partial class EnemyProjectileSystem
     {
         private readonly List<EnemyProjectileModel> _projectiles = new();
         public int ActiveCount => _projectiles.Count;
 
-        public EnemyProjectileModel Fire(Vector2 from, int damage, float speed)
+        public EnemyProjectileModel Fire(Vector2 from, int damage, float speed, int monsterId = 0)
         {
-            var projectile = new EnemyProjectileModel(from, speed, damage);
+            var projectile = new EnemyProjectileModel(from, speed, damage) { MonsterId = monsterId };
             _projectiles.Add(projectile);
             return projectile;
         }

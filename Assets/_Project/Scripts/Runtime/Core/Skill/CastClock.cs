@@ -3,7 +3,7 @@ using System;
 namespace Game.Core
 {
     /// <summary>즉발 스킬의 시전·연발 타이밍. 시작 시 쿨타임을 걸고 연발 중 새 주기는 시작하지 않는다.</summary>
-    public sealed class CastClock
+    public sealed partial class CastClock
     {
         public float RemainingCooldown { get; set; }
         /// <summary>지금 시전이 한 주기의 몇 번째 시전인지 (0부터). fire 안에서 읽는다</summary>

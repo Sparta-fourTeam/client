@@ -21,12 +21,14 @@ namespace Game.Core
     public sealed class AccountService
     {
         private readonly IAccountApi _api;
+        private readonly IBattleCheckpointStore _checkpoints;
         private readonly IAuthCredentialStore _credentials;
         private readonly ISceneNavigator _nav;
         private readonly IReadOnlyList<ISocialSignIn> _social;
 
-        public AccountService(IAccountApi api, IAuthCredentialStore credentials, ISceneNavigator nav, IReadOnlyList<ISocialSignIn> social)
+        public AccountService(IAccountApi api, IAuthCredentialStore credentials, ISceneNavigator nav, IReadOnlyList<ISocialSignIn> social, IBattleCheckpointStore checkpoints = null)
         {
+            _checkpoints = checkpoints;
             _api = api;
             _credentials = credentials;
             _nav = nav;
@@ -100,6 +102,7 @@ namespace Game.Core
 
         private UniTask ReturnToLoginAsync()
         {
+            _checkpoints?.Clear();
             _credentials.Clear();
             return _nav.GoToLoading();
         }

@@ -4,6 +4,8 @@ namespace Game.Core
     public sealed class StageContext
     {
         public int StageId { get; private set; }
+        public BattleCheckpoint Checkpoint { get; set; }
+        public string ResumeError { get; set; }
 
         public string BattleId { get; private set; }
 
@@ -11,6 +13,7 @@ namespace Game.Core
 
         public void SetBattle(string battleId)
         {
+            Checkpoint = null;
             BattleId = battleId;
         }
     }

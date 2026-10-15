@@ -8,7 +8,7 @@ namespace Game.Core
     /// 같은 공격에서 따라오는 폭발 같은 부가 피해와 상태이상도 잠깐(0.1초) 막는다(카라카사의 "피해·디버프 면역", 카와사부로의 회피).
     /// 상태이상 지속 피해는 피하지 않는다.
     /// </summary>
-    public sealed class EvadePassive : IPassive
+    public sealed partial class EvadePassive : IPassive
     {
         // 피한 공격에 딸린 부가 피해와 상태이상이 같은 프레임에 이어서 오므로 이 시간 동안 같이 막는다
         public const float AfterEvadeWindow = 0.1f;

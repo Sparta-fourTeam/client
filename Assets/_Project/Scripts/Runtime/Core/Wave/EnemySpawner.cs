@@ -8,7 +8,7 @@ using VContainer.Unity;
 
 namespace Game.Core
 {
-    public class EnemySpawner : IInitializable, IDisposable, ITickable, IEnemyTargetProvider
+    public partial class EnemySpawner : IInitializable, IDisposable, ITickable, IEnemyTargetProvider
     {
         private readonly IEnemyFactory _enemyViewFactory;
         private readonly EnemySpawnConfig _enemySpawnConfig;
@@ -125,7 +125,7 @@ namespace Game.Core
 
         public void Tick()
         {
-            Advance(Time.deltaTime);
+            if (Time.timeScale > 0f && Time.deltaTime > 0f) { Advance(Time.deltaTime); }
         }
 
         // 스폰 로직
@@ -213,6 +213,7 @@ namespace Game.Core
 
         private void OnWaveStarted(WaveStarted message)
         {
+            _checkpointWaveIndex = message.WaveIndex - 1;
             _specialWarned = false;
             _waveSpawns = message.Spawns;
             _isSpawningAllowed = StartBurst(includeSpecials: true);

@@ -9,7 +9,7 @@ namespace Game.Core
     /// <summary>Playing 상태일 때만 흐르는 플레이 시간. 결과 화면의 플레이 시간으로 쓰인다.
     /// StageManager를 직접 참조하면 순환 의존(StageManager -> StageClock -> StageManager)이 생기므로
     /// StageStateChanged 메시지로만 상태를 안다</summary>
-    public sealed class StageClock : IStartable, ITickable, IDisposable
+    public sealed partial class StageClock : IStartable, ITickable, IDisposable
     {
         private readonly ISubscriber<StageStateChanged> _stateChanged;
         private IDisposable _subscription;

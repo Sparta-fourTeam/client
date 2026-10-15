@@ -5,7 +5,7 @@ using System.Linq;
 namespace Game.Core
 {
     /// <summary>한 엘리트의 룰렛 보상. 강화 카드 배치는 고정하고, 이미 당첨된 카드는 다시 뽑지 않는다</summary>
-    public sealed class EliteRouletteSession
+    public sealed partial class EliteRouletteSession
     {
         public const int SlotCount = 8;
         public const int MaxCards = 5;

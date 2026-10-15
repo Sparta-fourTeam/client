@@ -7,7 +7,7 @@ using VContainer.Unity;
 namespace Game.Core
 {
     /// <summary>웨이브 완료 시점의 확보 보상. 영구 인벤토리는 변경하지 않는다.</summary>
-    public sealed class StageRewardTracker : IInitializable, IDisposable
+    public sealed partial class StageRewardTracker : IInitializable, IDisposable
     {
         private readonly ISubscriber<WaveCompleted> _completed;
         private readonly ISubscriber<StageEnded> _ended;

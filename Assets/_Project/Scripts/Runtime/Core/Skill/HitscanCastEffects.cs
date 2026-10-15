@@ -50,7 +50,7 @@ namespace Game.Core
         }
 
         // 맞은 적마다 마비(Hit), 목표 지점에 한 번 폭발(Impact), 처치마다 처치 번개(Kill). 번개 구체 같은 자식 시전은 강화 카드의 반응이 맡는다.
-        private AttackReactions CompileReactions()
+        internal AttackReactions CompileReactions()
         {
             var builder = new HitReactionBuilder().Paralysis(stats.Status.ParalysisDuration, stats.Status.ParalysisChance);
             builder.Explosion(AttackEvent.Impact, targets, stats.Explosion.Radius, stats.Explosion.Damage, "StormExplosion");

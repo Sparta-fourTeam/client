@@ -5,7 +5,7 @@ using UnityEngine.Pool;
 
 namespace Game.Core
 {
-    public sealed class ElectromagneticField : MonoBehaviour
+    public sealed partial class ElectromagneticField : MonoBehaviour
     {
         private IObjectPool<ElectromagneticField> pool;
         private IEnemyTargetProvider provider;
@@ -48,7 +48,7 @@ namespace Game.Core
             }
         }
 
-        private void Update() => Tick(Time.deltaTime);
+        private void Update() { if (Time.timeScale > 0f && Time.deltaTime > 0f) { Tick(Time.deltaTime); } }
 
         internal void Tick(float deltaTime)
         {

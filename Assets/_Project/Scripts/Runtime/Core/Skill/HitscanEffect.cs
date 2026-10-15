@@ -3,7 +3,7 @@ using UnityEngine.Pool;
 
 namespace Game.Core
 {
-    public class HitscanEffect : MonoBehaviour
+    public partial class HitscanEffect : MonoBehaviour
     {
         private IObjectPool<HitscanEffect> pool;
         [SerializeField] private LayerMask targetMask;
@@ -47,7 +47,7 @@ namespace Game.Core
         private void Update()
         {
             using var scope = Game.Core.Combat.DamageAttribution.Begin(sourceSkill);
-            if (pool == null || released)
+            if (Time.timeScale <= 0f || Time.deltaTime <= 0f || pool == null || released)
             {
                 return;
             }

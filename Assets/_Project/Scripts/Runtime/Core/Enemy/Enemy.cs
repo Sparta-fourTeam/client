@@ -9,7 +9,7 @@ namespace Game.Core
 {
     // 적 한 마리. 위치와 이동(Transform)을 갖고, 규칙은 EnemyModel에 맡긴다.
     // 스킬이 겨누는 대상(IEnemyTarget)이고, 상태이상·밀치기 대상 인터페이스를 모델에 위임해서 구현한다
-    public class Enemy : MonoBehaviour, IEnemyTarget, IFreezableTarget, IKnockbackTarget, IPullTarget, IFrostbiteTarget,
+    public partial class Enemy : MonoBehaviour, IEnemyTarget, IFreezableTarget, IKnockbackTarget, IPullTarget, IFrostbiteTarget,
         IParalyzableTarget, IFreezeMaxHpDotTarget, IBurnableTarget, IAreaSlowTarget, IStunnableTarget, ISlowableTarget, IVulnerableTarget
     {
         private static readonly int MovingHash = Animator.StringToHash("Moving");

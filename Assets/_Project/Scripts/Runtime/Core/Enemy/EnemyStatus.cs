@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Game.Core
 {
     // 적 한 마리의 상태이상 전부. 점화·동상의 틱 피해는 dealDamage로 되돌려 보낸다
-    public sealed class EnemyStatus
+    public sealed partial class EnemyStatus
     {
         private readonly int _maxHp;
         private readonly StatusImmunity _immunities;

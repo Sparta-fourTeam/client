@@ -6,7 +6,7 @@ using UnityEngine.Pool;
 namespace Game.Core
 {
     /// <summary>투사체를 발사한다. 예비 시전(성벽 앞 적 감지)도 이 전략이 가진다.</summary>
-    public sealed class ProjectileStrategy : IAttackStrategy
+    public sealed partial class ProjectileStrategy : IAttackStrategy
     {
         private readonly SkillObjectPool<Projectile> ownedPool;
         private readonly Dictionary<SkillForm, GameObject> formPrefabs = new();

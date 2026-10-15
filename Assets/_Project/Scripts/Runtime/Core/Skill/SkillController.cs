@@ -6,7 +6,7 @@ using VContainer;
 
 namespace Game.Core
 {
-    public class SkillController : MonoBehaviour, IUpgradeState, IUpgradeChoiceSource
+    public partial class SkillController : MonoBehaviour, IUpgradeState, IUpgradeChoiceSource
     {
         [SerializeField] private SkillAssetTable assets;
         private Dictionary<int, SkillData> dataTable;
@@ -212,6 +212,7 @@ namespace Game.Core
 
         private void Update()
         {
+            if (Time.timeScale <= 0f || Time.deltaTime <= 0f) { return; }
             reservations.Advance(Time.deltaTime);
             foreach (var weapon in skills)
             {

@@ -29,11 +29,13 @@ namespace Game.Core
         /// 자식에게서 시전되는 손자에게도 같은 표가 전달된다.</summary>
         public IReadOnlyDictionary<int, IReadOnlyList<EffectDef>> Overlays { get; }
         internal readonly ReactionBinding[] Bindings;
+        internal readonly IReadOnlyList<EffectDef> SnapshotEffects;
 
         internal SkillConfig(SkillStats stats, AttackDefinition attack, IEnumerable<ReactionBinding> bindings,
             IChildSkillCaster childCaster = null, IReadOnlyDictionary<int, ChildLink> children = null,
-            IReadOnlyDictionary<int, IReadOnlyList<EffectDef>> overlays = null)
+            IReadOnlyDictionary<int, IReadOnlyList<EffectDef>> overlays = null, IReadOnlyList<EffectDef> snapshotEffects = null)
         {
+            SnapshotEffects = snapshotEffects ?? Array.Empty<EffectDef>();
             Stats = stats;
             Attack = attack;
             ChildCaster = childCaster;
@@ -45,7 +47,7 @@ namespace Game.Core
             {
                 if (binding.TryResolve(this, out var bound)) { resolved.Add(bound); }
             }
-            Reactions = new AttackReactions(resolved);
+            Reactions = new AttackReactions(resolved) { SnapshotConfig = this };
         }
 
         /// <summary>피해(직접·폭발)에 배율을 곱한 설정. 자식 스킬을 소형으로 시전할 때 쓴다</summary>
@@ -57,11 +59,11 @@ namespace Game.Core
             return WithStats(new SkillStats(builder));
         }
 
-        public SkillConfig WithChildCaster(IChildSkillCaster childCaster) => new SkillConfig(Stats, Attack, Bindings, childCaster, Children, Overlays);
+        public SkillConfig WithChildCaster(IChildSkillCaster childCaster) => new SkillConfig(Stats, Attack, Bindings, childCaster, Children, Overlays, SnapshotEffects);
 
-        internal SkillConfig WithOverlays(IReadOnlyDictionary<int, IReadOnlyList<EffectDef>> overlays) => new SkillConfig(Stats, Attack, Bindings, ChildCaster, Children, overlays);
+        internal SkillConfig WithOverlays(IReadOnlyDictionary<int, IReadOnlyList<EffectDef>> overlays) => new SkillConfig(Stats, Attack, Bindings, ChildCaster, Children, overlays, SnapshotEffects);
 
-        internal SkillConfig WithStats(SkillStats stats) => new SkillConfig(stats, Attack, Bindings, ChildCaster, Children, Overlays);
+        internal SkillConfig WithStats(SkillStats stats) => new SkillConfig(stats, Attack, Bindings, ChildCaster, Children, Overlays, SnapshotEffects);
 
         public static SkillConfig FromDefinition(SkillData data) => new SkillConfig(
             SkillStats.FromDefinition(data.baseStats), new AttackDefinition(data.castType, data.projectilePath, data.baseStats.cast.range),
@@ -75,11 +77,13 @@ namespace Game.Core
         private readonly AttackDefinition attack;
         internal IChildSkillCaster ChildCaster { get; }
         private List<ReactionBinding> bindings;
+        private readonly List<EffectDef> snapshotEffects;
         private Dictionary<int, ChildLink> children;
         private Dictionary<int, IReadOnlyList<EffectDef>> overlays;
 
         public SkillConfigBuilder(SkillConfig config)
         {
+            snapshotEffects = new List<EffectDef>(config.SnapshotEffects);
             Values = new SkillStatsBuilder(config.Stats);
             attack = config.Attack;
             ChildCaster = config.ChildCaster;
@@ -114,13 +118,17 @@ namespace Game.Core
         public bool TryApplyCatalog(IEnumerable<EffectDef> effects)
         {
             if (effects == null) { return false; }
+            var savedEffects = new List<EffectDef>();
             var compiled = new List<IUpgradeEffect>();
             foreach (var effect in effects)
             {
                 if (!SkillStatEffects.TryCompile(effect, out var upgrade)) { return false; }
                 compiled.Add(upgrade);
+                savedEffects.Add(effect);
             }
-            return TryApply(compiled);
+            if (!TryApply(compiled)) { return false; }
+            snapshotEffects.AddRange(savedEffects);
+            return true;
         }
 
         public bool TryApply(IEnumerable<IUpgradeEffect> effects)
@@ -138,7 +146,7 @@ namespace Game.Core
             return true;
         }
 
-        public SkillConfig Build() => new SkillConfig(new SkillStats(Values), attack, bindings, ChildCaster, children, overlays);
+        public SkillConfig Build() => new SkillConfig(new SkillStats(Values), attack, bindings, ChildCaster, children, overlays, snapshotEffects.ToArray());
     }
 
     public interface IUpgradeEffect
