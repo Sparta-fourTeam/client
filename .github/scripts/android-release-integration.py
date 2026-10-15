@@ -1,5 +1,6 @@
 """Integrate one immutable tag through a reviewed PR; never bypass GitHub rules."""
 import argparse
+from datetime import datetime
 import importlib.util
 import json
 import os
@@ -81,7 +82,9 @@ def create_pr(request):
                     f'Tag object: `{request["tag_object_sha"]}`\nSource: `{request["tag_source_sha"]}`\n'
                     f'Main base: `{request["main_base_sha"]}`\nRequest run: {request["tag_run_id"]}\n\n'
                     'Automatic merge requires latest-source Codex review, no unresolved review threads '
-                    'and all GitHub protected-merge requirements. No self-approval or bypass.', 'draft': False})
+                    'and all GitHub protected-merge requirements. GitHub may require a human to select '
+                    'Approve workflows to run in this PR merge box before its CI starts. '
+                    'No self-approval or bypass.', 'draft': False})
     assert_pr(pr, request)
     api('POST', f'issues/{pr["number"]}/comments', {'body': '@codex review\n\n'
         f'Review this exact release source SHA: `{request["tag_source_sha"]}`. '
@@ -124,7 +127,64 @@ def reviews(number):
     return [r for page in pages for r in page]
 
 
-def review_gate(request, rows, state):
+def pull_request_runs(number, source):
+    pages = tag.api(f'actions/runs?head_sha={source}&event=pull_request&per_page=100', paginate=True)
+    return [run for page in pages for run in page['workflow_runs']
+            if run.get('head_sha') == source and
+            (not run.get('pull_requests') or any(pr['number'] == number for pr in run['pull_requests']))]
+
+
+def release_checks_ready(runs):
+    controls = [run for run in runs if run.get('path') == '.github/workflows/android-release-checks.yml']
+    if not controls:
+        return False
+    latest = max(controls, key=lambda run: run['id'])
+    return latest['status'] == 'completed' and latest['conclusion'] == 'success'
+
+
+def note_workflow_approval(request, number, env):
+    record_attempt(request, number, 'awaiting_workflow_approval')
+    message = (f'Release PR #{number}: GitHub requires a human to select '
+               'Approve workflows to run in the PR merge box. No automatic approval or bypass is used.')
+    print(message, flush=True)
+    if env.get('GITHUB_STEP_SUMMARY'):
+        with open(env['GITHUB_STEP_SUMMARY'], 'a') as out:
+            out.write(f'### Workflow execution approval required\n\n{message}\n\n'
+                      f'https://github.com/{REPOSITORY}/pull/{number}\n')
+
+
+def codex_completed_summary(number, source):
+    # No-findings reviews may only publish this bot-owned summary, not a REST
+    # pull-request review. An emoji or a shortened SHA alone is insufficient.
+    pages = tag.api(f'issues/{number}/comments?per_page=100', paginate=True)
+    summaries = [row for page in pages for row in page
+                 if row['user'].get('id') == CODEX_ID and row['user'].get('type') == 'Bot' and
+                 row['user'].get('login') == CODEX_LOGIN and
+                 row.get('body', '').startswith('<!-- codex-pull-request-review-summary -->')]
+    if not summaries:
+        return None
+    row = max(summaries, key=lambda r: (r.get('updated_at', ''), r['id']))
+    body = row['body']
+    # The service removes this machine-readable state when rendering its final
+    # table. Never fall back to an older completed table during a new review.
+    if 'codex-review-state:v1' in body:
+        return None
+    matches = re.findall(r'^\| 📝 \*\*Code Review\*\* \| ✅ \*\*Completed\*\* '
+                         r'<relative-time datetime="([^"]+)">[^<]*</relative-time> '
+                         r'\| `([0-9a-f]{7,40})` \|[^\n]*$', body, re.MULTILINE)
+    if len(matches) != 1:
+        return None
+    submitted, short = matches[0]
+    datetime.fromisoformat(submitted.replace('Z', '+00:00'))
+    # GitHub must resolve the bot's abbreviation unambiguously to the exact
+    # immutable source. A missing/ambiguous/different commit stops the release.
+    if api('GET', 'commits/' + short)['sha'] != source:
+        return None
+    return dict(id=row['id'], user=row['user'], commit_id=source, state='COMMENTED',
+                submitted_at=submitted, body='', kind='summary')
+
+
+def review_gate(request, rows, state, summary=None):
     if (state['headRefOid'] != request['tag_source_sha'] or state['baseRefName'] != 'main' or
             state['headRefName'] != 'release/' + request['tag']):
         raise ValueError('PR head moved after review request')
@@ -144,6 +204,20 @@ def review_gate(request, rows, state):
     if blocking:
         return None
     review = latest.get(CODEX_ID)
+    if summary is not None:
+        if (summary['commit_id'] != request['tag_source_sha'] or summary['user'].get('id') != CODEX_ID or
+                summary['user'].get('type') != 'Bot' or summary['user'].get('login') != CODEX_LOGIN):
+            return None
+        if review:
+            if review['commit_id'] == request['tag_source_sha'] and (
+                    review['state'] not in ('APPROVED', 'COMMENTED') or
+                    re.search(r'\[P[0-3]\]', review.get('body') or '', re.IGNORECASE)):
+                return None
+            if (not review.get('submitted_at') or
+                    datetime.fromisoformat(review['submitted_at'].replace('Z', '+00:00')) >
+                    datetime.fromisoformat(summary['submitted_at'].replace('Z', '+00:00'))):
+                return None
+        return summary
     if (not review or review['user'].get('type') != 'Bot' or review['user'].get('login') != CODEX_LOGIN or
             review['commit_id'] != request['tag_source_sha'] or
             review['state'] not in ('APPROVED', 'COMMENTED') or not review.get('submitted_at')):
@@ -153,6 +227,14 @@ def review_gate(request, rows, state):
     if re.search(r'\[P[0-3]\]', review.get('body') or '', re.IGNORECASE):
         return None
     return review
+
+
+def completed_codex_review(number, request, state, rows):
+    completed = review_gate(request, rows, state)
+    if completed is not None:
+        return completed
+    summary = codex_completed_summary(number, request['tag_source_sha'])
+    return review_gate(request, rows, state, summary) if summary else None
 
 
 def verify_remote_merge(request):
@@ -165,11 +247,12 @@ def verify_remote_merge(request):
     if ([p['sha'] for p in commit['parents']] != [request['main_base_sha'], request['tag_source_sha']] or
             commit['tree']['sha'] != request['integrated_tree']):
         raise ValueError('Merged parents/tree differ from exact release integration')
+    if not release_checks_ready(pull_request_runs(pr['number'], request['tag_source_sha'])):
+        raise ValueError('Release control CI must pass on the exact source SHA')
     rows = reviews(pr['number'])
-    if not any(r['id'] == request['codex_review_id'] and r['user']['id'] == CODEX_ID and
-               r['commit_id'] == request['tag_source_sha'] for r in rows):
-        raise ValueError('Original Codex review evidence is missing')
-    if not review_gate(request, rows, review_state(pr['number'])):
+    completed = completed_codex_review(pr['number'], request, review_state(pr['number']), rows)
+    if (not completed or completed['id'] != request['codex_review_id'] or
+            completed.get('kind', 'review') != request.get('codex_review_kind', 'review')):
         raise ValueError('Latest-SHA Codex review or unresolved-review gate no longer passes')
 
 
@@ -196,6 +279,7 @@ def integrate(request, env, event, timeout=1200, interval=20, clock=time.monoton
     number = create_pr(request)
     record_attempt(request, number, 'awaiting_review')
     deadline = clock() + timeout
+    approval_noted = False
     while True:
         check_request(request, env, event)
         if current_main() != request['main_base_sha']:
@@ -207,7 +291,14 @@ def integrate(request, env, event, timeout=1200, interval=20, clock=time.monoton
         state = review_state(number)
         if state['baseRefOid'] != request['main_base_sha'] or state['mergeable'] == 'CONFLICTING':
             raise ValueError('PR base changed or conflicts; no automatic resolution')
-        completed = review_gate(request, reviews(number), state)
+        runs = pull_request_runs(number, request['tag_source_sha'])
+        approval_pending = any(run.get('status') in ('waiting', 'action_required') or
+                               run.get('conclusion') == 'action_required' for run in runs)
+        if approval_pending and not approval_noted:
+            note_workflow_approval(request, number, env)
+            approval_noted = True
+        completed = None if approval_pending or not release_checks_ready(runs) else completed_codex_review(
+            number, request, state, reviews(number))
         if completed and state['mergeable'] == 'MERGEABLE' and state['mergeStateStatus'] in ('CLEAN', 'UNSTABLE'):
             # GitHub remains authoritative for required CI/reviews and all rules.
             # UNSTABLE may include this still-running, non-required tag workflow.
@@ -221,12 +312,14 @@ def integrate(request, env, event, timeout=1200, interval=20, clock=time.monoton
             if not response.get('merged') or not re.fullmatch(r'[0-9a-f]{40}', response.get('sha', '')):
                 raise ValueError('Merge not confirmed; stop without retry or deployment')
             result = dict(request, pr_number=number, source_commit=response['sha'], merge_commit_sha=response['sha'],
-                          integrated_tree=tree, codex_review_id=completed['id'], codex_commit_sha=completed['commit_id'])
+                          integrated_tree=tree, codex_review_id=completed['id'], codex_commit_sha=completed['commit_id'],
+                          codex_review_kind=completed.get('kind', 'review'))
             verify_remote_merge(result)
             record_attempt(request, number, 'verified', merged_sha=response['sha'], codex_review_id=completed['id'])
             return result
         if clock() >= deadline:
-            raise ValueError('Timed out waiting for latest-SHA Codex review, resolved threads, or required GitHub checks')
+            raise ValueError('Timed out waiting for latest-SHA Codex review, resolved threads, or GitHub checks; '
+                             'GITHUB_TOKEN-created PRs may need a human to select Approve workflows to run')
         sleep(interval)
 
 
@@ -257,7 +350,8 @@ def main():
     with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as out:
         out.write(f'### Integrated release {result["tag"]}\n\nTag source: `{result["tag_source_sha"]}`  \n'
                   f'Merged build SHA: `{result["merge_commit_sha"]}`  \nPR: #{result["pr_number"]}  \n'
-                  f'Codex review: {result["codex_review_id"]} on `{result["codex_commit_sha"]}`\n')
+                  f'Codex completion ({result.get("codex_review_kind", "review")}): '
+                  f'{result["codex_review_id"]} on `{result["codex_commit_sha"]}`\n')
 
 
 if __name__ == '__main__':

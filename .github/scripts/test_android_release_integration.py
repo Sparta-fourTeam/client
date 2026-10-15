@@ -24,6 +24,8 @@ class IntegrationTests(unittest.TestCase):
         f = self.fx
         self.env = dict(f.tag_env, GITHUB_RUN_NUMBER='6')
         self.calls, self.merged, self.created = [], False, False
+        self.check_runs = [dict(id=81, head_sha=f.source, status='completed', conclusion='success',
+                               path='.github/workflows/android-release-checks.yml', pull_requests=[{'number':123}])]
         self.rows = [dict(id=11, user=dict(id=module.CODEX_ID, login=module.CODEX_LOGIN, type='Bot'),
                           commit_id=f.source, state='COMMENTED', submitted_at='2026-10-15T00:00:00Z', body='Review complete')]
         self.state = dict(headRefOid=f.source, baseRefOid=f.base, headRefName='release/v1.0.3', baseRefName='main',
@@ -40,6 +42,10 @@ class IntegrationTests(unittest.TestCase):
         self.addCleanup(self.tag_patch.stop)
 
     def tag_api(self, endpoint, paginate=False, binary=False):
+        if endpoint == 'issues/123/comments?per_page=100':
+            return [getattr(self, 'summary_comments', [])]
+        if endpoint.startswith('actions/runs?head_sha='):
+            return [{'workflow_runs':getattr(self, 'approval_runs', self.check_runs)}]
         if '/runs?per_page=' in endpoint:
             return [{'workflow_runs':[self.fx.tag_run]}]
         if endpoint.startswith('pulls/123/reviews'):
@@ -78,6 +84,8 @@ class IntegrationTests(unittest.TestCase):
         if endpoint == 'git/commits/' + f.merged:
             return {'parents':[{'sha':f.base},{'sha':f.source}],
                     'tree':{'sha':f.git('rev-parse',f.merged+'^{tree}')}}
+        if endpoint == 'commits/' + f.source[:7]:
+            return {'sha':f.source}
         raise AssertionError((method,endpoint,payload))
 
     def integrate(self, **kwargs):
@@ -124,6 +132,27 @@ class IntegrationTests(unittest.TestCase):
             self.integrate()
         self.assertFalse(self.merge_calls())
 
+    def test_pending_workflow_execution_approval_never_merges_even_without_required_ci(self):
+        self.approval_runs = [dict(self.check_runs[0], status='waiting', conclusion=None,
+                                  pull_requests=[])]
+        with self.assertRaisesRegex(ValueError, 'Approve workflows to run'):
+            self.integrate()
+        self.assertFalse(self.merge_calls())
+        attempt = json.loads(Path('build/release-integration-attempt.json').read_text())
+        self.assertEqual(attempt['phase'], 'awaiting_workflow_approval')
+        self.assertFalse(any('/approve' in c[1] for c in self.calls))
+        self.approval_runs[0].update(status='completed', conclusion='success')
+        self.assertEqual(self.integrate()['merge_commit_sha'], self.fx.merged)
+
+    def test_missing_running_failed_or_stale_release_ci_never_merges(self):
+        for runs in [[], [dict(self.check_runs[0], status='in_progress', conclusion=None)],
+                     [dict(self.check_runs[0], conclusion='failure')],
+                     [dict(self.check_runs[0], head_sha=self.fx.base)]]:
+            self.approval_runs = runs
+            with self.assertRaisesRegex(ValueError, 'Timed out'):
+                self.integrate()
+            self.assertFalse(self.merge_calls())
+
     def test_mutated_pr_head_or_main_base_never_merges(self):
         with patch.dict(self.state,headRefOid=self.fx.base):
             with self.assertRaisesRegex(ValueError,'head moved'):
@@ -134,6 +163,54 @@ class IntegrationTests(unittest.TestCase):
         with patch.dict(self.pr['head'],sha=self.fx.base):
             with self.assertRaisesRegex(ValueError,'mismatch'):
                 self.integrate()
+        self.assertFalse(self.merge_calls())
+
+    def summary_comment(self, **changes):
+        body = ('<!-- codex-pull-request-review-summary -->\n'
+                '| 📝 **Code Review** | ✅ **Completed** '
+                '<relative-time datetime="2026-10-15T00:02:00Z">done</relative-time> '
+                f'| `{self.fx.source[:7]}` | PR opened |')
+        return dict(id=22, user=dict(id=module.CODEX_ID, login=module.CODEX_LOGIN, type='Bot'),
+                    body=body, updated_at='2026-10-15T00:02:01Z', **changes)
+
+    def test_no_findings_bot_summary_resolves_exact_full_sha_without_formal_review(self):
+        self.rows = []
+        self.summary_comments = [self.summary_comment()]
+        receipt = self.integrate()
+        self.assertEqual(receipt['codex_review_kind'], 'summary')
+        self.assertEqual(receipt['codex_review_id'], 22)
+        self.assertEqual(receipt['codex_commit_sha'], self.fx.source)
+
+    def test_summary_cannot_replace_actor_identity_exact_source_or_completed_state(self):
+        self.rows = []
+        original = self.summary_comment()
+        invalid = [dict(original, user=dict(id=123, login=module.CODEX_LOGIN, type='Bot')),
+                   dict(original, body=original['body'].replace('Completed', 'Running')),
+                   dict(original, body=original['body'] + '\n<!-- codex-review-state:v1 running -->')]
+        for row in invalid:
+            self.summary_comments = [row]
+            with self.assertRaisesRegex(ValueError, 'Timed out'):
+                self.integrate()
+            self.assertFalse(self.merge_calls())
+        self.summary_comments = [original]
+        saved = self.api
+        def different(method, endpoint, payload=None, missing_ok=False):
+            if endpoint.startswith('commits/'):
+                return {'sha':self.fx.base}
+            return saved(method, endpoint, payload, missing_ok)
+        with patch.object(module, 'api', different), self.assertRaisesRegex(ValueError, 'Timed out'):
+            self.integrate()
+        self.assertFalse(self.merge_calls())
+
+    def test_completed_summary_never_clears_unresolved_threads_or_change_requests(self):
+        self.summary_comments = [self.summary_comment()]
+        self.rows = []
+        with patch.dict(self.state, threads=[{'isResolved':False}]), self.assertRaisesRegex(ValueError, 'Timed out'):
+            self.integrate()
+        self.rows = [dict(id=90, user={'id':456}, commit_id=self.fx.source, state='CHANGES_REQUESTED',
+                          submitted_at='2026-10-15T00:01:00Z')]
+        with self.assertRaisesRegex(ValueError, 'Timed out'):
+            self.integrate()
         self.assertFalse(self.merge_calls())
 
     def test_denied_or_uncertain_merge_is_not_retried_and_has_no_receipt(self):
@@ -216,6 +293,7 @@ class IntegrationTests(unittest.TestCase):
             'git/ref/tags/v1.0.3': {'ref':'refs/tags/v1.0.3','object':{'sha':f.obj}},
             f'actions/workflows/{module.tag.WORKFLOW_ID}/runs?per_page=100': [{'workflow_runs':[f.tag_run]}],
             'actions/runs/41': f.tag_run,
+            f'actions/runs?head_sha={f.source}&event=pull_request&per_page=100': [{'workflow_runs':self.check_runs}],
             'pulls/123': pr, 'pulls/123/reviews?per_page=100':[self.rows],
             'git/ref/heads/main': {'object':{'sha':f.merged}},
             'git/commits/'+f.merged: {'parents':[{'sha':f.base},{'sha':f.source}],
