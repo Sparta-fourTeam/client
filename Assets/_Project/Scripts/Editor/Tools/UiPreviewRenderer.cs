@@ -257,6 +257,8 @@ namespace Game.Editor
             private bool _particlesPlaying;
             private float _particleAge;
             private bool _particlesPrepared;
+            private bool _slotFxWatch;
+            private readonly HashSet<int> _refreshedParticles = new();
             private bool _rewardReady;
             private bool _dialoguePlaying;
             // Keep the optional renderer package outside Game.Editor's assembly dependencies.
@@ -341,7 +343,8 @@ namespace Game.Editor
                 || _selected.GetComponentInChildren<ContentUnlockView>(true) != null
                 || _selected.GetComponentInChildren<LevelUpPopupView>(true) != null
                 || _selected.GetComponentInChildren<EliteRouletteView>(true) != null
-                || _selected.GetComponentInChildren<DialogueView>(true) != null;
+                || _selected.GetComponentInChildren<DialogueView>(true) != null
+                || UiSkillSlotPreviewSample.Has(_selected);
 
             // 보상·해금·레벨 업 팝업의 실제 등장 연출을 편집용 예시 데이터로 재생한다 (서버·프로필·재화는 건드리지 않는다)
             internal void PlayScenario()
@@ -355,6 +358,14 @@ namespace Game.Editor
                         _dialoguePlaying = true;
                         UiDialoguePreviewSample.PlayAsync(dialogue).ContinueWith(() => _dialoguePlaying = false).Forget(Debug.LogException);
                     }
+                    if (UiSkillSlotPreviewSample.Has(_selected))
+                    {
+                        // 형태 변환 파티클은 연출 중간에 슬롯 안에 만들어지므로, 만들어진 뒤에도 같이 진행하도록 지켜본다
+                        UiSkillSlotPreviewSample.Play(_selected);
+                        _particlesPrepared = true;
+                        _slotFxWatch = true;
+                    }
+
                     // 전투 HUD 등장 연출 (게임에서는 스테이지가 시작될 때 자동으로 재생된다)
                     foreach (var intro in _container.GetComponentsInChildren<HudIntro>(true)) { intro.Play(); }
 
@@ -504,7 +515,8 @@ namespace Game.Editor
                     }
                 });
                 _tweens.RemoveAll(t => !t.IsActive());
-                if (_particlesPlaying)
+                if (_slotFxWatch) { RefreshNewUiParticles(); }
+                if (_particlesPlaying || _slotFxWatch)
                 {
                     _particleAge += seconds;
                     var particles = _selected.GetComponentsInChildren<ParticleSystem>(false);
@@ -517,6 +529,20 @@ namespace Game.Editor
                     // Wait past the emission window and for every actually emitted particle to expire.
                     _particlesPlaying = particles.Any(p => p.main.loop
                         || _particleAge < p.main.startDelay.constantMax + p.main.duration || p.particleCount > 0);
+                    if (_slotFxWatch) { _slotFxWatch = _tweens.Any(t => t.IsActive()) || _particlesPlaying; }
+                }
+            }
+
+            // 연출 도중에 새로 만들어진 UIParticle은 한 번 갱신해야 메시가 그려진다
+            private void RefreshNewUiParticles()
+            {
+                if (UiParticleType == null) { return; }
+                foreach (var particle in _selected.GetComponentsInChildren(UiParticleType, false))
+                {
+                    if (_refreshedParticles.Add(particle.GetHashCode()))
+                    {
+                        UiParticleType.GetMethod("RefreshParticles", Type.EmptyTypes)?.Invoke(particle, null);
+                    }
                 }
             }
 
