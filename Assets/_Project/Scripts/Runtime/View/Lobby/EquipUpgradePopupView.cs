@@ -62,6 +62,9 @@ namespace Game.View
             _upgradeAllButton.onClick.AddListener(() => RequestUpgrade(true));
         }
 
+        public string OpenUpgradeId => _panel.activeSelf ? _catalog.Equips[_slot].UpgradeId : null;
+        public RectTransform UpgradeButton => (RectTransform)_upgradeButton.transform;
+
         public void Open(int slot)
         {
             _slot = slot;

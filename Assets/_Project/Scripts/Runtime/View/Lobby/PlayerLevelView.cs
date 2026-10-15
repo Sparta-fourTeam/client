@@ -11,6 +11,7 @@ namespace Game.View
     public sealed class PlayerLevelView : HudView
     {
         [SerializeField] private TMP_Text _levelText, _expText;
+        [SerializeField] private TMP_Text _nicknameText;
         [SerializeField] private Image _expFill;
 
         private PlayerProfile _profile;
@@ -49,6 +50,7 @@ namespace Game.View
         private void Refresh()
         {
             _levelText.text = $"Lv.{_profile.Level}";
+            if (_nicknameText != null) { _nicknameText.text = _profile.Nickname; }
             SetProgress(_profile.LevelProgress);
             _expText.text = _profile.IsMaxLevel
                 ? "MAX"

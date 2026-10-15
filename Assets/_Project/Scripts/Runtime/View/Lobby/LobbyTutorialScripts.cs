@@ -26,13 +26,30 @@ namespace Game.View
     {
         /// <summary>스킬 탭 → 스킬 칸 → 강화 버튼 → 강화 확인. 대상 스킬은 완료 조건의 UpgradeId다</summary>
         public const string SkillUpgrade = "skillUpgrade";
+        public const string EquipmentUpgrade = "equipmentUpgrade";
 
         /// <summary>템플릿이 없으면 null</summary>
         public static IReadOnlyList<TutorialStep> Create(TutorialDefinition tutorial, TutorialPresentation presentation, IUiRegistry ui) => presentation.Script switch
         {
             SkillUpgrade => SkillUpgradeSteps(ui, tutorial.Complete.UpgradeId),
+            EquipmentUpgrade => EquipmentUpgradeSteps(ui, tutorial.Complete.UpgradeId),
             _ => null,
         };
+
+        private static IReadOnlyList<TutorialStep> EquipmentUpgradeSteps(IUiRegistry ui, string upgradeId)
+        {
+            var nav = ui.Get<LobbyNavView>();
+            var screen = ui.Get<CharacterScreenView>();
+            var popup = ui.Get<EquipUpgradePopupView>();
+            var confirm = ui.Get<UpgradeConfirmPopupView>();
+            return new[]
+            {
+                new TutorialStep(() => nav.CharacterTab, () => true),
+                new TutorialStep(() => screen.SlotOf(upgradeId), () => screen.IsVisible),
+                new TutorialStep(() => popup.UpgradeButton, () => popup.OpenUpgradeId == upgradeId),
+                new TutorialStep(() => confirm.ConfirmButton, () => confirm.IsOpen),
+            };
+        }
 
         private static IReadOnlyList<TutorialStep> SkillUpgradeSteps(IUiRegistry ui, string upgradeId)
         {

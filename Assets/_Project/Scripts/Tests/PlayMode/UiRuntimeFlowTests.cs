@@ -72,6 +72,8 @@ namespace Game.Tests
         private bool _hadSpeedPreference;
         private float _speedPreference;
         private bool _restoreSpeedPreference;
+        private bool _hadMissionSelection;
+        private int _missionSelection;
         private IAuthCredentialStore _credentials;
         private bool _hadCredential;
         private LoginMethod _credentialMethod;
@@ -367,11 +369,13 @@ namespace Game.Tests
         }
 
         [UnityTest]
-        public IEnumerator StageClearUnlock_ShowsContentUnlockOnLobbyReturnThenOpensTab()
+        public IEnumerator StageClearUnlock_ShowsEquipmentDialogueAndGuidesFirstUpgrade()
         {
             // 캐릭터 탭을 여는 스테이지 바로 앞까지 깬 세이브로 시작한다
             var root = VContainer.Unity.VContainerSettings.Instance.GetOrCreateRootLifetimeScopeInstance() as RootLifetimeScope;
             int unlockStage = root.Container.Resolve<GameDataStore>().FeatureUnlocks.RequiredStage("character");
+            var gate = root.Container.Resolve<GameDataStore>().Tutorials.Single(t => t.Kind == TutorialDefinition.Milestone);
+            var equipmentGuide = root.Container.Resolve<GameDataStore>().Tutorials.Single(t => t.IsGuide && t.After == gate.Id);
             void SetCleared(LocalSave save, int stageId, int rating)
             {
                 var row = save.stageProgress.Find(p => p.stageId == stageId);
@@ -385,6 +389,10 @@ namespace Game.Tests
 
             yield return StartFromBoot(save =>
             {
+                save.tutorials.Remove(gate.Id);
+                save.tutorials.Remove(equipmentGuide.Id);
+                save.wallet.gold = 0;
+                save.items.Clear();
                 for (int id = 1; id < unlockStage; id++)
                 {
                     SetCleared(save, id, 1);
@@ -408,6 +416,16 @@ namespace Game.Tests
             var ui = Object.FindAnyObjectByType<LobbyLifetimeScope>().Container.Resolve<IUiRegistry>();
             var data = root.Container.Resolve<GameDataStore>();
             var opened = ui.GetAll<FeatureLockView>().Where(l => data.FeatureUnlocks.RequiredStage(Field<string>(l, "_feature")) == unlockStage).ToList();
+            // 해금 안내 전에 첫 강화 재료와 비용을 받고, 보상 안내를 닫는다.
+            var profile = root.Container.Resolve<PlayerProfile>();
+            var upgrade = data.Upgrades.GetOrThrow(equipmentGuide.Complete.UpgradeId);
+            var levelUp = ui.Get<LevelUpPopupView>();
+            yield return WaitFor(() => levelUp.IsOpen);
+            Assert.That(profile.Gold, Is.EqualTo(upgrade.CostAt(equipmentGuide.Complete.Level)));
+            Assert.That(profile.ItemQuantity(upgrade.MaterialItemId), Is.EqualTo(upgrade.MaterialAt(equipmentGuide.Complete.Level)));
+            var rewardTap = Field<Button>(levelUp, "_confirmButton");
+            if (levelUp.IsPlaying) { yield return ClickGameButton(rewardTap); }
+            yield return ClickGameButton(rewardTap);
             var contentUnlock = ui.Get<ContentUnlockView>();
             var tap = Field<Button>(contentUnlock, "_tapArea");
             var shown = new List<string>();
@@ -427,9 +445,30 @@ namespace Game.Tests
 
             Assert.That(shown, Is.EquivalentTo(opened.Select(l => l.ContentName)));
             yield return WaitFor(() => opened.All(l => !Field<Button>(l, "_lock").gameObject.activeSelf));
+            var dialogue = ui.Get<DialogueView>();
+            yield return WaitFor(() => dialogue.IsOpen);
+            yield return SkipDialogue(dialogue, ui.Get<ConfirmPopupView>());
+            yield return WaitFor(() => !dialogue.IsOpen);
+            var guide = ui.Get<TutorialGuideView>();
+            yield return WaitFor(() => Field<GameObject>(guide, "_root").activeSelf);
             var nav = ui.Get<LobbyNavView>();
+            Assert.That(TopHit(Field<Button>(nav, "_shopTab")), Is.EqualTo("Blocker"));
             yield return ClickGameButton(Field<Button>(nav, "_characterTab"));
-            Assert.That(Field<GameObject>(ui.Get<CharacterScreenView>(), "_panel").activeSelf, Is.True);
+            var screen = ui.Get<CharacterScreenView>();
+            Assert.That(screen.IsVisible, Is.True);
+            var slot = screen.SlotOf(equipmentGuide.Complete.UpgradeId).GetComponent<EquipSlotView>();
+            yield return ClickGameButton(Field<Button>(slot, "_button"));
+            var popup = ui.Get<EquipUpgradePopupView>();
+            Assert.That(popup.OpenUpgradeId, Is.EqualTo(equipmentGuide.Complete.UpgradeId));
+            yield return ClickGameButton(Field<Button>(popup, "_upgradeButton"));
+            var confirm = ui.Get<UpgradeConfirmPopupView>();
+            yield return ClickGameButton(Field<Button>(confirm, "_confirmButton"));
+            yield return WaitFor(() => profile.IsTutorialDone(equipmentGuide.Id));
+            Assert.That(profile.UpgradeLevel(equipmentGuide.Complete.UpgradeId), Is.EqualTo(equipmentGuide.Complete.Level));
+            Assert.That(profile.Gold, Is.Zero);
+            Assert.That(profile.ItemQuantity(upgrade.MaterialItemId), Is.Zero);
+            Assert.That(_store.Load().tutorials, Does.Contain(equipmentGuide.Id));
+            Assert.That(Field<GameObject>(guide, "_root").activeSelf, Is.False);
         }
 
         // 스테이지 클리어로 열리는 로비 기능(FeatureUnlocks)이 모두 열린 세이브로 만든다
@@ -733,9 +772,14 @@ namespace Game.Tests
             var mission = ui.Get<MissionScreenView>();
             Assert.That(Field<GameObject>(mission, "_panel").activeSelf, Is.True);
             // 카드를 오른쪽으로 끌었다 놓으면 옆 카드가 가운데로 와서 이전 관문으로 넘어간다
+            var carousel = Field<StageCarouselView>(mission, "_carousel");
+            if (Field<int>(mission, "_stageId") == 1)
+            {
+                yield return ClickGameButton(Field<Button>(mission, "_nextButton"));
+                yield return WaitFor(() => Field<int>(mission, "_stageId") > 1 && !carousel.IsSliding);
+            }
             int shownStage = Field<int>(mission, "_stageId");
             Assert.That(shownStage, Is.GreaterThan(1));
-            var carousel = Field<StageCarouselView>(mission, "_carousel");
             var swipe = new PointerEventData(EventSystem.current) { delta = new Vector2(Screen.width * 0.5f, 0f) };
             ExecuteEvents.Execute(carousel.gameObject, swipe, ExecuteEvents.beginDragHandler);
             ExecuteEvents.Execute(carousel.gameObject, swipe, ExecuteEvents.dragHandler);
@@ -901,6 +945,10 @@ namespace Game.Tests
             _hadSpeedPreference = PlayerPrefs.HasKey("stage_speed");
             _speedPreference = PlayerPrefs.GetFloat("stage_speed");
             _restoreSpeedPreference = true;
+            PlayerPrefs.DeleteKey("stage_speed");
+            _hadMissionSelection = PlayerPrefs.HasKey("mission_selected_stage");
+            _missionSelection = PlayerPrefs.GetInt("mission_selected_stage");
+            PlayerPrefs.DeleteKey("mission_selected_stage");
             var root = VContainer.Unity.VContainerSettings.Instance.GetOrCreateRootLifetimeScopeInstance() as RootLifetimeScope;
             Assert.That(root, Is.Not.Null);
             _store = root.Container.Resolve<LocalSaveStore>();
@@ -961,6 +1009,8 @@ namespace Game.Tests
                 if (_hadSpeedPreference) { PlayerPrefs.SetFloat("stage_speed", _speedPreference); }
                 else { PlayerPrefs.DeleteKey("stage_speed"); }
                 _restoreSpeedPreference = false;
+                if (_hadMissionSelection) { PlayerPrefs.SetInt("mission_selected_stage", _missionSelection); }
+                else { PlayerPrefs.DeleteKey("mission_selected_stage"); }
             }
             if (_credentials != null)
             {

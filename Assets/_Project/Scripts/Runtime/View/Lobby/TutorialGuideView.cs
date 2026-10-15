@@ -245,7 +245,7 @@ namespace Game.View
                 }
             }
 
-            // 레벨업 직후 처음 시작되는 가이드에 대사 장면이 있으면 재생한다
+            // 레벨업이나 첫 강화 보상 지급으로 시작되는 가이드의 도입 대사를 재생한다
             var starting = TutorialProgress.ActiveGuide(_data.Tutorials, TutorialFacts.From(_profile));
             if (!news.IsEmpty && starting != null && _data.TutorialPresentations.For(starting.Id).Dialogue.Count > 0)
             {
@@ -298,10 +298,19 @@ namespace Game.View
         {
             _completing = true;
             Point(null, null);
-            await _arrival.CompleteAsync(tutorialId);
+            var response = await _arrival.CompleteAsync(tutorialId);
             if (this == null)
             {
                 return;
+            }
+
+            // 먼저 진행하던 가이드를 끝내 새 가이드로 넘어가는 경우에도 도입 대사를 보여 준다.
+            var next = TutorialProgress.ActiveGuide(_data.Tutorials, TutorialFacts.From(_profile));
+            if (response != null && next != null && _data.TutorialPresentations.For(next.Id).Dialogue.Count > 0)
+            {
+                try { await _dialogue.PlayAsync(_data.TutorialPresentations.For(next.Id).Dialogue); }
+                catch (OperationCanceledException) { return; }
+                if (this == null) { return; }
             }
 
             _completing = false;

@@ -6,7 +6,7 @@ using VContainer;
 
 namespace Game.View
 {
-    /// <summary>설정 팝업. 음악·효과음 볼륨을 슬라이더(0~100%)로 조절하고, 데미지 표시·디버프 이펙트·프레임레이트·최고 스테이지 자동 입장·언어를 고른다.
+    /// <summary>설정 팝업. 음악·효과음 볼륨을 슬라이더(0~100%)로 조절하고, 데미지 표시·디버프 이펙트·프레임레이트·최고 스테이지 자동 선택·언어를 고른다.
     /// 값은 바로 적용·저장된다(SoundSettings, GameSettings)</summary>
     public sealed class SettingsPopupView : HudView, IUiBindable
     {

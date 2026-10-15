@@ -708,11 +708,14 @@ MonoBehaviour:
   _autoOffColor: {r: 0.3529412, g: 0.3764706, b: 0.5647059, a: 1}
   _autoDelay: 1.2
   _portraits:
-  - Speaker: "\uB0E5 \uC2A4\uC2B9"
-    Sprite: {fileID: 0}
-    Tint: {r: 0.85, g: 0.45, b: 0.4, a: 1}
-  - Speaker: "\uB2CC\uC790"
+  - Speaker: "슥삭 선생"
     Sprite: {fileID: 1519895044, guid: 78bfb232b5dba6643a4b7f03acdd551b, type: 3}
+    Tint: {r: 1, g: 1, b: 1, a: 1}
+  - Speaker: "???"
+    Sprite: {fileID: 1519895044, guid: 78bfb232b5dba6643a4b7f03acdd551b, type: 3}
+    Tint: {r: 1, g: 1, b: 1, a: 1}
+  - Speaker: "끄적이"
+    Sprite: {fileID: 21300000, guid: 01ef79792a4d907459c6721fa726dec4, type: 3}
     Tint: {r: 1, g: 1, b: 1, a: 1}
   _charsPerSecond: 32
   _slideDistance: 360

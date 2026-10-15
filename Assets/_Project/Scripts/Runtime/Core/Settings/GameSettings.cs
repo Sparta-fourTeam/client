@@ -39,7 +39,7 @@ namespace Game.Core
         }
     }
 
-    /// <summary>볼륨을 뺀 기기 설정: 데미지 표시, 디버프 이펙트, 프레임레이트, 최고 스테이지 자동 입장, 언어.
+    /// <summary>볼륨을 뺀 기기 설정: 데미지 표시, 디버프 이펙트, 프레임레이트, 최고 스테이지 자동 선택, 언어.
     /// 바꾸면 저장하고 Changed로 알린다. 저장된 값이 없으면 기본값이다</summary>
     public sealed class GameSettings
     {

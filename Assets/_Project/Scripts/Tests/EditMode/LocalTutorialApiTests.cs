@@ -93,6 +93,53 @@ namespace Game.Tests
             Assert.AreEqual(7 + expected, second.snapshot.gold);
         }
 
+        [Test]
+        public void EquipmentIntro_RequiresStageClear_GrantsUpgradeOnce_AndPersistsGuideCompletion()
+        {
+            var milestone = _data.Tutorials.Single(t => t.Kind == TutorialDefinition.Milestone);
+            var guide = _data.Tutorials.Single(t => t.IsGuide && t.After == milestone.Id);
+            var upgrade = _data.Upgrades.GetOrThrow(guide.Complete.UpgradeId);
+            var save = _store.Load();
+            save.tutorials.Add(milestone.After);
+            save.tutorials.Add("log_upgrade");
+            save.wallet.gold = 0;
+            _store.Flush(save);
+
+            var denied = Assert.Throws<ApiException>(() => _api.Complete(milestone.Id).GetAwaiter().GetResult());
+            Assert.That(denied.Code, Is.EqualTo("NOT_READY"));
+            Assert.That(_store.Load().wallet.gold, Is.Zero);
+            Assert.That(_store.Load().items, Is.Empty);
+
+            save.stageProgress.Add(new StageProgressRow { stageId = milestone.Complete.StageId, clearRating = 1 });
+            _store.Flush(save);
+            var granted = _api.Complete(milestone.Id).GetAwaiter().GetResult();
+            var duplicate = _api.Complete(milestone.Id).GetAwaiter().GetResult();
+            Assert.That(granted.rewardGold, Is.EqualTo(upgrade.CostAt(guide.Complete.Level)));
+            Assert.That(granted.rewardItems.Single().itemId, Is.EqualTo(upgrade.MaterialItemId));
+            Assert.That(granted.rewardItems.Single().quantity, Is.EqualTo(upgrade.MaterialAt(guide.Complete.Level)));
+            Assert.That(duplicate.rewardGold, Is.Zero);
+            Assert.That(duplicate.rewardItems, Is.Empty);
+
+            Assert.That(TutorialProgress.ActiveGuide(_data.Tutorials, TutorialFacts.From(Profile(granted.snapshot))).Id,
+                Is.EqualTo(guide.Id));
+            var purchased = new LocalUpgradeApi(_store, _data).Purchase(upgrade.UpgradeId, "equipment-tutorial")
+                .GetAwaiter().GetResult();
+            Assert.That(purchased.gold, Is.Zero);
+            Assert.That(purchased.items.Find(item => item.itemId == upgrade.MaterialItemId)?.quantity ?? 0, Is.Zero);
+            Assert.That(purchased.upgrades.Single(row => row.upgradeId == upgrade.UpgradeId).level, Is.EqualTo(guide.Complete.Level));
+            _api.Complete(guide.Id).GetAwaiter().GetResult();
+            var reloaded = new LocalSaveStore(_filePath, _data).Load();
+            Assert.That(reloaded.tutorials, Does.Contain(guide.Id));
+            Assert.That(reloaded.tutorials.Count(id => id == milestone.Id), Is.EqualTo(1));
+        }
+
+        private PlayerProfile Profile(PlayerSnapshot snapshot)
+        {
+            var profile = new PlayerProfile(_data);
+            profile.Apply(snapshot);
+            return profile;
+        }
+
         [Test(Description = "튜토리얼이 생기기 전 저장 파일은 플레이 기록이 있으면 튜토리얼을 마친 것으로 읽는다")]
         public void Load_SaveWithoutTutorials_TreatsPlayedAccountAsDone()
         {
