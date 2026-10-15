@@ -37,7 +37,7 @@ namespace Game.Network
     /// 멱등성 규칙을 아는 호출부가 ApiErrorKind를 보고 정한다.
     /// 단 하나의 예외가 액세스 토큰 만료다. 인증된 요청이 401이면 서버가 요청을 처리하기 전에 거절한 것이라 다시 보내도 중복되지 않으므로,
     /// 리프레시 토큰으로 토큰을 새로 받아 같은 요청을 한 번만 다시 보낸다 (아래 RefreshAsync).
-    /// 로그인·재발급 경로는 이 처리를 하지 않는다. Bearer 인증 계정 연동은 재발급 대상이다</summary>
+    /// 로그인·재발급 경로는 이 처리를 하지 않는다. Bearer 인증 계정 연동·삭제는 재발급 대상이다</summary>
     public sealed class HttpApiClient
     {
         private const string AuthPathPrefix = "api/auth/";
@@ -93,7 +93,14 @@ namespace Game.Network
             await Execute(HttpVerb.Post, path, JsonConvert.SerializeObject(request), cancellationToken);
         }
 
-        private async UniTask<string> Execute(HttpVerb verb, string path, string jsonBody, CancellationToken cancellationToken)
+        /// <summary>계정 삭제 계약은 204다. 다른 2xx도 완료로 간주하지 않는다.</summary>
+        public async UniTask Delete(string path, CancellationToken cancellationToken = default)
+        {
+            await Execute(HttpVerb.Delete, path, null, cancellationToken, expectedStatusCode: 204);
+        }
+
+        private async UniTask<string> Execute(HttpVerb verb, string path, string jsonBody, CancellationToken cancellationToken,
+            int? expectedStatusCode = null)
         {
             long generation = _tokens?.Generation ?? 0;
             string sentAccessToken = _tokens?.AccessToken;
@@ -102,6 +109,7 @@ namespace Game.Network
             var error = HttpErrorMapper.Map(response, _errorCodeReader);
             if (error == null)
             {
+                ValidateStatus(response, expectedStatusCode);
                 return response.Body;
             }
 
@@ -123,7 +131,16 @@ namespace Game.Network
                 throw error;
             }
 
+            ValidateStatus(response, expectedStatusCode);
             return response.Body;
+        }
+
+        private static void ValidateStatus(HttpResponseData response, int? expectedStatusCode)
+        {
+            if (expectedStatusCode.HasValue && response.StatusCode != expectedStatusCode.Value)
+            {
+                throw new ApiException(ApiErrorKind.Rejected, HttpErrorMapper.InvalidResponse);
+            }
         }
 
         private UniTask<HttpResponseData> Send(HttpVerb verb, string path, string jsonBody, CancellationToken cancellationToken)
@@ -138,7 +155,8 @@ namespace Game.Network
             && response.StatusCode == 401
             && !string.IsNullOrEmpty(sentAccessToken)
             && (!path.TrimStart('/').StartsWith(AuthPathPrefix, StringComparison.Ordinal)
-                || path.TrimStart('/') == "api/auth/social/link");
+                || path.TrimStart('/') == "api/auth/social/link"
+                || path.TrimStart('/') == "api/auth/me");
 
         /// <summary>새 토큰을 받았거나 다른 요청이 이미 받아 둔 상태면 true. 리프레시 토큰이 거절돼 로그인이 필요하면 false(토큰을 비운다).
         /// 전송 실패는 토큰이 이미 소비됐을 수 있으므로 세션을 끝내고 같은 refresh 토큰을 재사용하지 않는다</summary>

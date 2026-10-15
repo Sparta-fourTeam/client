@@ -7,7 +7,25 @@ namespace Game.Core
     public sealed class PlayerProfile
     {
         private readonly GameDataStore _data;
-        private PlayerSnapshot _snapshot = new PlayerSnapshot { stageProgress = new(), upgrades = new(), items = new(), codex = new(), quests = new(), questChests = new() };
+        private PlayerSnapshot _snapshot = EmptySnapshot();
+
+        private static PlayerSnapshot EmptySnapshot() => new()
+        {
+            stageProgress = new(),
+            upgrades = new(),
+            items = new(),
+            codex = new(),
+            quests = new(),
+            questChests = new()
+        };
+
+        /// <summary>삭제된 계정의 진행 캐시를 지운다. 다음 로그인에서 새 스냅샷을 받아야 한다.</summary>
+        public void Clear()
+        {
+            _snapshot = EmptySnapshot();
+            IsLoaded = false;
+            Changed?.Invoke(this);
+        }
 
         public event Action<PlayerProfile> Changed;
 

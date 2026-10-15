@@ -611,6 +611,33 @@ namespace Game.Tests
         }
 
         [UnityTest]
+        public IEnumerator MenuDeletionClearsRootProfileAndReturnsToLoginSelection()
+        {
+            yield return StartFromBoot();
+            var root = Object.FindAnyObjectByType<RootLifetimeScope>();
+            var profile = root.Container.Resolve<PlayerProfile>();
+            var ui = Object.FindAnyObjectByType<LobbyLifetimeScope>().Container.Resolve<IUiRegistry>();
+            var menu = ui.Get<LobbyMenuPopupView>();
+            var confirm = ui.Get<ConfirmPopupView>();
+            string nickname = profile.Nickname;
+            Assert.That(profile.IsLoaded, Is.True);
+            Assert.That(_store.Exists(), Is.True);
+            menu.Open();
+            yield return ClickGameButton(Field<Button>(menu, "_deleteAccountButton"));
+            yield return WaitFor(() => confirm.IsOpen);
+            yield return ClickGameButton(Field<Button>(confirm, "_confirmButton"));
+            Field<TMP_InputField>(confirm, "_input").text = nickname;
+            yield return ClickGameButton(Field<Button>(confirm, "_confirmButton"));
+            yield return WaitFor(() => SceneManager.GetActiveScene().name == "Loading" && LoginPanelShown());
+            Assert.That(_credentials.HasCredential, Is.False);
+            Assert.That(_store.Exists(), Is.False);
+            Assert.That(root.Container.Resolve<AuthSession>().IsSignedIn, Is.False);
+            Assert.That(profile.IsLoaded, Is.False, "Root가 사용하는 실제 프로필 캐시도 삭제한다");
+            Assert.That(profile.Nickname, Is.Empty);
+            Assert.That(profile.Snapshot().tutorials, Is.Null.Or.Empty);
+        }
+
+        [UnityTest]
         public IEnumerator BootLobbyStageRoundTripKeepsViewsAndSubscriptionsAlive()
         {
             yield return StartFromBoot();

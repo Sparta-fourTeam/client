@@ -218,11 +218,12 @@ namespace Game.Tests
         [Test(Description = "문의 메일은 한글·공백·줄바꿈이 깨지지 않게 인코딩되어 본문이 그대로 복원되고, 값이 없는 정보 줄은 빠진다")]
         public void SupportMail_EncodesBodyAndOmitsMissingInfo()
         {
-            string body = SupportMail.Body("닉 네임", "게스트", null, " ", "1.2.3", "Pixel 8", "Android 15");
+            string body = SupportMail.Body("닉 네임", "게스트", "guest-login-secret", " ", "1.2.3", "Pixel 8", "Android 15");
 
             StringAssert.Contains("닉네임: 닉 네임", body);
             StringAssert.Contains("앱 버전: 1.2.3", body);
             StringAssert.DoesNotContain("게스트 ID", body);
+            StringAssert.DoesNotContain("guest-login-secret", body);
             StringAssert.DoesNotContain("Unity 진단 ID", body);
 
             string uri = SupportMail.Uri(body);
@@ -252,6 +253,12 @@ namespace Game.Tests
             accept.onClick.Invoke();
             Assert.AreEqual(1, api.Deleted, "두 번째 완료소스가 살아 있어야 삭제 흐름이 이어진다");
             Assert.AreEqual(0, nav.LoadingCalls);
+            Assert.IsFalse(delete.interactable);
+            Assert.IsFalse(Field<Button>(menu, "_logoutButton").interactable);
+            StringAssert.Contains("삭제 중", delete.GetComponentInChildren<TMP_Text>(true).text);
+            menu.Close();
+            Assert.IsTrue(menu.IsOpen, "삭제 처리 중에는 로비로 돌아가 진행을 바꾸지 않는다");
+            Assert.IsFalse(Field<Button>(menu, "_settingsButton").interactable);
             accept.onClick.Invoke();
             delete.onClick.Invoke();
             Assert.IsFalse(Field<PopupTransition>(confirm, "_transition").IsShown, "계정 API 완료 전에는 연타로 새 흐름을 시작하지 않는다");
@@ -261,6 +268,32 @@ namespace Game.Tests
             Assert.AreEqual(1, nav.LoadingCalls);
             delete.onClick.Invoke();
             Assert.IsTrue(confirm.IsOpen, "완료 후 메뉴 busy가 풀린다");
+            Field<Button>(confirm, "_cancelButton").onClick.Invoke();
+        }
+
+        [TestCase("HTTP_500")]
+        [TestCase("HTTP_401")]
+        [TestCase("NETWORK_ERROR")]
+        public void Menu_DeleteFailure_ShowsNoticeWithoutNavigationAndAllowsRetry(string code)
+        {
+            var (menu, confirm, api, nav) = CreateDeleteMenu();
+            var delete = Field<Button>(menu, "_deleteAccountButton");
+            var accept = Field<Button>(confirm, "_confirmButton");
+            delete.onClick.Invoke();
+            accept.onClick.Invoke();
+            Field<TMP_InputField>(confirm, "_input").text = "Review_Ninja";
+            accept.onClick.Invoke();
+            api.Completion.TrySetException(new ApiException(ApiErrorKind.Rejected, code));
+            Assert.AreEqual(0, nav.LoadingCalls);
+            Assert.IsTrue(confirm.IsOpen);
+            Assert.AreEqual("계정 삭제 확인 필요", Field<TMP_Text>(confirm, "_title").text);
+            Assert.IsFalse(delete.interactable);
+            StringAssert.DoesNotContain("삭제 중", delete.GetComponentInChildren<TMP_Text>(true).text);
+            accept.onClick.Invoke();
+            Assert.IsTrue(delete.interactable);
+            delete.onClick.Invoke();
+            Assert.IsTrue(confirm.IsOpen);
+            Assert.AreEqual(1, api.Deleted);
             Field<Button>(confirm, "_cancelButton").onClick.Invoke();
         }
 

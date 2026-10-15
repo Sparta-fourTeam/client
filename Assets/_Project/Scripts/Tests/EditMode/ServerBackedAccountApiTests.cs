@@ -1,18 +1,65 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using Game.Core;
 using Game.Network;
 using NUnit.Framework;
 
 namespace Game.Tests
 {
-    /// <summary>게스트 계정에 구글 계정을 붙이는 서버 API (POST /api/auth/social/link)</summary>
+    /// <summary>서버 계정 연동·삭제와 삭제 후 로컬 정리의 계약.</summary>
     public sealed class ServerBackedAccountApiTests
     {
         private string _filePath;
         private LocalSaveStore _store;
         private FakeHttpTransport _transport;
         private ServerBackedAccountApi _api;
+        private AuthSession _session;
+        private HttpApiClient _client;
+
+        private sealed class Credentials : IAuthCredentialStore
+        {
+            public LoginMethod Method { get; private set; }
+            public string AccountId { get; private set; }
+            public bool HasCredential => AccountId != null;
+            public void Save(LoginMethod method, string accountId) { Method = method; AccountId = accountId; }
+            public void Clear() => AccountId = null;
+        }
+
+        private sealed class Navigator : ISceneNavigator
+        {
+            public int LoadingCalls;
+            public SceneId Current => default;
+            public UniTask GoToLoading() { LoadingCalls++; return UniTask.CompletedTask; }
+            public UniTask GoToLobby() => UniTask.CompletedTask;
+            public UniTask GoToStage(int stageId) => UniTask.CompletedTask;
+            public UniTask RestartStage() => UniTask.CompletedTask;
+        }
+
+        private sealed class PendingTransport : IHttpTransport
+        {
+            public readonly UniTaskCompletionSource<HttpResponseData> Completion = new();
+            public UniTask<HttpResponseData> Send(HttpRequestData request, float timeoutSeconds, CancellationToken cancellationToken) => Completion.Task;
+        }
+
+        private sealed class Google : ISocialSignIn
+        {
+            public LoginMethod Method => LoginMethod.Google;
+            public bool IsAvailable => true;
+            public UniTask<string> SignInAsync() => UniTask.FromResult("same-google-id-token");
+        }
+
+        private sealed class Prompt : ILoginPrompt
+        {
+            public int Choices;
+            public UniTask<LoginMethod> WaitForSignInAsync(IReadOnlyCollection<LoginMethod> available)
+            { Choices++; return UniTask.FromResult(LoginMethod.Google); }
+            public UniTask WaitForRetryAsync() => throw new InvalidOperationException("unexpected login failure");
+            public void ShowSigningIn() { }
+            public void Hide() { }
+        }
 
         [SetUp]
         public void SetUp()
@@ -20,10 +67,10 @@ namespace Game.Tests
             _filePath = Path.Combine(Path.GetTempPath(), $"account-link-test-{Guid.NewGuid()}.json");
             _store = new LocalSaveStore(_filePath);
             _transport = new FakeHttpTransport { Response = new HttpResponseData(204, string.Empty) };
-            var session = new AuthSession();
-            session.Set("guest-access", "guest-refresh");
-            var client = new HttpApiClient(new HttpApiConfig("https://example.test", 7f), _transport, session);
-            _api = new ServerBackedAccountApi(client, new LocalAccountApi(_store));
+            _session = new AuthSession();
+            _session.Set("guest-access", "guest-refresh");
+            _client = new HttpApiClient(new HttpApiConfig("https://example.test", 7f), _transport, _session, tokens: _session);
+            _api = new ServerBackedAccountApi(_client, new LocalAccountApi(_store));
         }
 
         [TearDown]
@@ -54,8 +101,10 @@ namespace Game.Tests
 
             var ex = Assert.Throws<ApiException>(() => _api.LinkAccount(LoginMethod.Google, "t").GetAwaiter().GetResult());
 
-            Assert.AreEqual($"HTTP_{status}", ex.Code);
+            Assert.AreEqual(status == 401 ? HttpErrorMapper.SessionExpired : $"HTTP_{status}", ex.Code);
             Assert.AreEqual(ApiErrorKind.Rejected, ex.Kind);
+            Assert.AreEqual(status == 401 ? 2 : 1, _transport.Requests.Count);
+            if (status == 401) { Assert.IsFalse(_session.IsSignedIn); }
         }
 
         [TestCase(true)]
@@ -100,17 +149,145 @@ namespace Game.Tests
             Assert.AreEqual(0, _transport.Requests.Count);
         }
 
-        [Test(Description = "계정 삭제는 서버 API가 없어 로컬 저장을 지운다")]
-        public void Delete_UsesLocalStore()
+        private (AccountService service, Credentials credentials, Navigator nav, PlayerProfile profile) DeletionFlow(
+            LoginMethod method = LoginMethod.Google, IAccountApi api = null)
         {
-            _store.Load();
-            _store.Flush(_store.Load());
-            Assert.IsTrue(_store.Exists());
+            var save = _store.Load();
+            save.nickname = "old-player";
+            save.exp = 900;
+            save.wallet.gold = 321;
+            save.stageProgress.Add(new StageProgressRow { stageId = 9, clearRating = 3 });
+            save.tutorials = new List<string> { "old-tutorial" };
+            _store.Flush(save);
+            var profile = new PlayerProfile(new GameDataStore());
+            profile.Apply(new LocalPlayerApi(_store).GetMe().GetAwaiter().GetResult());
+            var credentials = new Credentials();
+            credentials.Save(method, method == LoginMethod.Guest ? "guest-secret" : AuthCredentials.SocialAccountId);
+            var nav = new Navigator();
+            return (new AccountService(api ?? _api, new SessionAuthCredentialStore(credentials, _session), nav, null, profile),
+                credentials, nav, profile);
+        }
 
-            _api.DeleteAccount().GetAwaiter().GetResult();
+        [TestCase(LoginMethod.Google)]
+        [TestCase(LoginMethod.Guest)]
+        public void Delete_Confirmed204_ClearsSaveSessionProfileAndReturnsToLogin(LoginMethod method)
+        {
+            var (service, credentials, nav, profile) = DeletionFlow(method);
+            service.DeleteAccountAsync().GetAwaiter().GetResult();
 
+            var request = _transport.Requests[0];
+            Assert.AreEqual(HttpVerb.Delete, request.Verb);
+            Assert.AreEqual("https://example.test/api/auth/me", request.Url);
+            Assert.AreEqual("Bearer guest-access", request.Headers["Authorization"]);
+            Assert.IsNull(request.Body);
             Assert.IsFalse(_store.Exists());
-            Assert.AreEqual(0, _transport.Requests.Count);
+            Assert.IsFalse(credentials.HasCredential);
+            Assert.IsFalse(_session.IsSignedIn);
+            Assert.IsNull(_session.RefreshToken);
+            Assert.IsFalse(profile.IsLoaded);
+            Assert.AreEqual(0, profile.Exp);
+            Assert.IsFalse(profile.IsStageCleared(9));
+            Assert.AreEqual(1, nav.LoadingCalls);
+        }
+
+        [TestCase(401)]
+        [TestCase(403)]
+        [TestCase(404)]
+        [TestCase(500)]
+        [TestCase(503)]
+        [TestCase(200)]
+        [TestCase(202)]
+        [TestCase(0, HttpFailure.Network)]
+        [TestCase(0, HttpFailure.Timeout)]
+        public void Delete_NotConfirmed_PreservesProgressCredentialsAndScreen(int status, HttpFailure failure = HttpFailure.None)
+        {
+            var (service, credentials, nav, profile) = DeletionFlow();
+            _transport.Response = new HttpResponseData(status, "{}", failure);
+            string original = File.ReadAllText(_filePath);
+
+            Assert.Throws<ApiException>(() => service.DeleteAccountAsync().GetAwaiter().GetResult());
+
+            Assert.AreEqual(original, File.ReadAllText(_filePath));
+            Assert.IsTrue(credentials.HasCredential);
+            Assert.IsTrue(profile.IsLoaded);
+            Assert.AreEqual(900, profile.Exp);
+            Assert.AreEqual(0, nav.LoadingCalls);
+            if (status != 401) { Assert.AreEqual("guest-access", _session.AccessToken); }
+            Assert.AreEqual(status == 401 ? 2 : 1, _transport.Requests.Count, "서버/통신 오류에 삭제를 자동 재전송하지 않는다");
+        }
+
+        [Test]
+        public void Delete_WithoutToken_Server500StillPreservesLocalAccount()
+        {
+            var (service, credentials, nav, profile) = DeletionFlow();
+            _session.Clear();
+            _transport.Response = new HttpResponseData(500, "{}");
+            Assert.Throws<ApiException>(() => service.DeleteAccountAsync().GetAwaiter().GetResult());
+            Assert.IsTrue(_store.Exists());
+            Assert.IsTrue(credentials.HasCredential);
+            Assert.AreEqual(900, profile.Exp);
+            Assert.AreEqual(0, nav.LoadingCalls);
+            Assert.AreEqual(1, _transport.Requests.Count);
+            Assert.IsFalse(_transport.Requests[0].Headers.ContainsKey("Authorization"));
+        }
+
+        [Test]
+        public void Delete_WaitsForServerBeforeClearingAnything()
+        {
+            var transport = new PendingTransport();
+            var client = new HttpApiClient(new HttpApiConfig("https://example.test"), transport, _session);
+            var (service, credentials, nav, profile) = DeletionFlow(api: new ServerBackedAccountApi(client, new LocalAccountApi(_store)));
+            var pending = service.DeleteAccountAsync();
+            Assert.AreEqual(UniTaskStatus.Pending, pending.Status);
+            Assert.IsTrue(_store.Exists());
+            Assert.IsTrue(credentials.HasCredential);
+            Assert.IsTrue(_session.IsSignedIn);
+            Assert.AreEqual(900, profile.Exp);
+            Assert.AreEqual(0, nav.LoadingCalls);
+            transport.Completion.TrySetResult(new HttpResponseData(204, null));
+            pending.GetAwaiter().GetResult();
+            Assert.IsFalse(_store.Exists());
+            Assert.AreEqual(1, nav.LoadingCalls);
+        }
+
+        [Test]
+        public void Delete_ExpiredAccess_RefreshesOnceAndDeletesWithNewToken()
+        {
+            var (service, _, nav, _) = DeletionFlow();
+            _transport.Queued.Enqueue(new HttpResponseData(401, "{}"));
+            _transport.Queued.Enqueue(new HttpResponseData(200, "{\"accessToken\":\"fresh-access\",\"refreshToken\":\"fresh-refresh\"}"));
+            _transport.Queued.Enqueue(new HttpResponseData(204, null));
+            service.DeleteAccountAsync().GetAwaiter().GetResult();
+            Assert.AreEqual(3, _transport.Requests.Count);
+            StringAssert.EndsWith("/api/auth/refresh", _transport.Requests[1].Url);
+            Assert.AreEqual("Bearer fresh-access", _transport.Requests[2].Headers["Authorization"]);
+            Assert.AreEqual(HttpVerb.Delete, _transport.Requests[2].Verb);
+            Assert.AreEqual(1, nav.LoadingCalls);
+            Assert.IsFalse(_session.IsSignedIn);
+        }
+
+        [Test]
+        public void Delete_ThenSameGoogleLogin_StartsWithFreshLocalProgressAndPrompts()
+        {
+            var (service, credentials, _, profile) = DeletionFlow();
+            service.DeleteAccountAsync().GetAwaiter().GetResult();
+            var data = new GameDataStore();
+            var auth = new ServerBackedAuthApi(_client, _session, new LocalAuthApi(_store, data));
+            _transport.Response = new HttpResponseData(200, "{\"accessToken\":\"new-user-access\",\"refreshToken\":\"new-user-refresh\"}");
+            var prompt = new Prompt();
+            var login = new LoginFlow(auth, new LocalPlayerApi(_store), profile,
+                new SessionAuthCredentialStore(credentials, _session), prompt, new[] { new Google() });
+            Assert.IsTrue(login.RunAsync().GetAwaiter().GetResult());
+            Assert.AreEqual(1, prompt.Choices, "삭제 뒤에는 저장된 인증으로 자동 로그인하지 않는다");
+            Assert.AreEqual("new-user-access", _session.AccessToken);
+            Assert.AreEqual(0, profile.Exp);
+            Assert.AreEqual(0, profile.Gold);
+            Assert.IsFalse(profile.IsStageUnlocked(9));
+            Assert.IsFalse(profile.IsTutorialDone("old-tutorial"));
+            Assert.IsTrue(profile.IsStageUnlocked(1));
+            StringAssert.Contains("same-google-id-token", _transport.Requests[1].Body);
+            Assert.IsFalse(_transport.Requests[1].Headers.ContainsKey("Authorization"));
+            Assert.AreEqual(AuthCredentials.SocialAccountId, credentials.AccountId);
         }
     }
 }
