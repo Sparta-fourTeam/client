@@ -58,6 +58,41 @@ namespace Game.Tests
             Assert.AreEqual(ApiErrorKind.Rejected, ex.Kind);
         }
 
+        [TestCase(true)]
+        [TestCase(false)]
+        public void Link_ExpiredAccess_RefreshesOnceBeforeRetry(bool refreshSucceeds)
+        {
+            var session = new AuthSession();
+            session.Set("old-access", "old-refresh");
+            var client = new HttpApiClient(new HttpApiConfig("https://example.test"), _transport, tokens: session);
+            var api = new ServerBackedAccountApi(client, new LocalAccountApi(_store));
+            _transport.Queued.Enqueue(new HttpResponseData(401, "{}"));
+            _transport.Queued.Enqueue(refreshSucceeds
+                ? new HttpResponseData(200, "{\"accessToken\":\"new-access\",\"refreshToken\":\"new-refresh\"}")
+                : new HttpResponseData(401, "{}"));
+            _transport.Queued.Enqueue(new HttpResponseData(204, null));
+
+            if (refreshSucceeds)
+            {
+                api.LinkAccount(LoginMethod.Google, "google-id-token").GetAwaiter().GetResult();
+                Assert.AreEqual(3, _transport.Requests.Count);
+                Assert.AreEqual("Bearer new-access", _transport.Requests[2].Headers["Authorization"]);
+                Assert.AreEqual(_transport.Requests[0].Body, _transport.Requests[2].Body);
+                Assert.AreEqual(HttpVerb.Post, _transport.Requests[2].Verb);
+                Assert.AreEqual("new-refresh", session.RefreshToken);
+            }
+            else
+            {
+                var error = Assert.Throws<ApiException>(() => api.LinkAccount(LoginMethod.Google, "google-id-token").GetAwaiter().GetResult());
+                Assert.AreEqual(HttpErrorMapper.SessionExpired, error.Code);
+                Assert.AreEqual(2, _transport.Requests.Count);
+                Assert.IsFalse(session.IsSignedIn);
+            }
+
+            Assert.AreEqual("https://example.test/api/auth/refresh", _transport.Requests[1].Url);
+            Assert.IsFalse(_transport.Requests[1].Headers.ContainsKey("Authorization"));
+        }
+
         [Test(Description = "게스트는 연동할 외부 계정이 아니므로 서버에 보내지 않는다")]
         public void Link_Guest_IsRejectedBeforeSending()
         {
