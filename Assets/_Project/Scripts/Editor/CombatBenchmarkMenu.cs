@@ -9,16 +9,90 @@ using UnityEngine;
 namespace Game.Editor
 {
     /// <summary>고정 부하 측정 씬 생성과 전용 iOS 개발 빌드. 일반 게임 세이브와 별도 앱 ID를 사용한다.</summary>
+    [InitializeOnLoad]
     public static class CombatBenchmarkMenu
     {
         public const string ScenePath = "Assets/_Project/Scenes/Sandbox/CombatBenchmark.unity";
         private const string RootMenu = "Tools/Project Nova/Combat Benchmark/";
 
+        private const string EditorRunStateKey = "ProjectNova.CombatBenchmark.EditorRunState";
+
+        [Serializable]
+        private sealed class EditorRunState
+        {
+            public string startSceneGuid;
+            public string[] preloadedAssets;
+        }
+
+        static CombatBenchmarkMenu()
+        {
+            EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+            EditorApplication.quitting += RestoreEditorSettings;
+            EditorApplication.update += RestoreIfIdle;
+        }
+
+        private static void RestoreIfIdle()
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode || EditorApplication.isCompiling || EditorApplication.isUpdating) { return; }
+            EditorApplication.update -= RestoreIfIdle;
+            RestoreEditorSettings();
+        }
+
+        private static void OnPlayModeStateChanged(PlayModeStateChange state)
+        {
+            if (state != PlayModeStateChange.EnteredEditMode) { return; }
+            // Unity can reload PlayerSettings while finishing the Play transition. Restore after it settles.
+            EditorApplication.update -= RestoreIfIdle;
+            EditorApplication.update += RestoreIfIdle;
+        }
+
+        private static void SaveEditorSettings()
+        {
+            var state = new EditorRunState
+            {
+                startSceneGuid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(EditorSceneManager.playModeStartScene)),
+                preloadedAssets = PlayerSettings.GetPreloadedAssets().Select(asset => asset == null
+                    ? "" : GlobalObjectId.GetGlobalObjectIdSlow(asset).ToString()).ToArray()
+            };
+            SessionState.SetString(EditorRunStateKey, JsonUtility.ToJson(state));
+        }
+
+        private static void RestoreEditorSettings()
+        {
+            string json = SessionState.GetString(EditorRunStateKey, "");
+            if (string.IsNullOrEmpty(json)) { return; }
+            var state = JsonUtility.FromJson<EditorRunState>(json);
+            EditorSceneManager.playModeStartScene = AssetDatabase.LoadAssetAtPath<SceneAsset>(AssetDatabase.GUIDToAssetPath(state.startSceneGuid));
+            PlayerSettings.SetPreloadedAssets(state.preloadedAssets.Select(id => GlobalObjectId.TryParse(id, out var globalId)
+                ? GlobalObjectId.GlobalObjectIdentifierToObjectSlow(globalId) : null).ToArray());
+            AssetDatabase.SaveAssets();
+            SessionState.EraseString(EditorRunStateKey);
+        }
+
+        private static bool CanReplaceScene()
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode) { throw new InvalidOperationException("Stop Play Mode first"); }
+            return Application.isBatchMode || EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo();
+        }
+
+        // Both run and build use the saved configuration; only Create Scene explicitly regenerates it.
+        private static bool OpenBenchmarkScene()
+        {
+            if (!CanReplaceScene()) { return false; }
+            if (!File.Exists(ScenePath)) { CreateSceneContents(); }
+            else { EditorSceneManager.OpenScene(ScenePath); }
+            return true;
+        }
+
         [MenuItem(RootMenu + "Create Scene")]
         public static void CreateScene()
         {
-            if (EditorApplication.isPlayingOrWillChangePlaymode) { throw new InvalidOperationException("Stop Play Mode first"); }
-            if (!Application.isBatchMode && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) { return; }
+            if (!CanReplaceScene()) { return; }
+            CreateSceneContents();
+        }
+
+        private static void CreateSceneContents()
+        {
             var scene = EditorSceneManager.OpenScene("Assets/_Project/Scenes/Sandbox/SkillSandbox.unity");
             foreach (var root in scene.GetRootGameObjects())
             {
@@ -53,20 +127,19 @@ namespace Game.Editor
         [MenuItem(RootMenu + "Run in Editor")]
         public static void RunInEditor()
         {
-            if (!File.Exists(ScenePath)) { CreateScene(); }
-            EditorSceneManager.OpenScene(ScenePath);
-            var previous = EditorSceneManager.playModeStartScene;
-            var previousPreloads = PlayerSettings.GetPreloadedAssets();
-            PlayerSettings.SetPreloadedAssets(previousPreloads.Where(asset => asset == null || asset.GetType().FullName != "VContainer.Unity.VContainerSettings").ToArray());
-            EditorSceneManager.playModeStartScene = AssetDatabase.LoadAssetAtPath<SceneAsset>(ScenePath);
-            EditorApplication.playModeStateChanged += Restore;
-            EditorApplication.EnterPlaymode();
-            void Restore(PlayModeStateChange state)
+            if (!OpenBenchmarkScene()) { return; }
+            RestoreEditorSettings();
+            SaveEditorSettings();
+            try
             {
-                if (state != PlayModeStateChange.EnteredEditMode) { return; }
-                EditorSceneManager.playModeStartScene = previous;
-                PlayerSettings.SetPreloadedAssets(previousPreloads);
-                EditorApplication.playModeStateChanged -= Restore;
+                PlayerSettings.SetPreloadedAssets(PlayerSettings.GetPreloadedAssets().Where(asset => asset == null || asset.GetType().FullName != "VContainer.Unity.VContainerSettings").ToArray());
+                EditorSceneManager.playModeStartScene = AssetDatabase.LoadAssetAtPath<SceneAsset>(ScenePath);
+                EditorApplication.EnterPlaymode();
+            }
+            catch
+            {
+                RestoreEditorSettings();
+                throw;
             }
         }
 
@@ -75,8 +148,8 @@ namespace Game.Editor
         {
             string label = Environment.GetEnvironmentVariable("NOVA_BENCHMARK_LABEL") ?? "after";
             string output = Environment.GetEnvironmentVariable("NOVA_BENCHMARK_BUILD") ?? Path.GetFullPath("Builds/CombatBenchmark-" + label);
-            CreateScene();
-            var scene = EditorSceneManager.OpenScene(ScenePath);
+            if (!OpenBenchmarkScene()) { return; }
+            var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
             var runnerType = Type.GetType("Game.Sandbox.CombatBenchmark, Game.Sandbox", true);
             var runner = UnityEngine.Object.FindAnyObjectByType(runnerType);
             var serialized = new SerializedObject(runner);
