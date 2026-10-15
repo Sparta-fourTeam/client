@@ -188,14 +188,14 @@ namespace Game.View
 
             if (failure != null)
             {
-                await _confirm.ShowAsync(new ConfirmRequest
+                bool confirmed = await _confirm.ShowAsync(new ConfirmRequest
                 {
                     Title = $"{operation} 확인 필요",
                     Message = failure,
                     ConfirmLabel = reauthenticate ? "다시 로그인" : "확인",
                 });
                 // 로그인 방식과 게스트 ID를 지우면 새 게스트가 생길 수 있다. 기존 계정으로 다시 인증한다.
-                if (reauthenticate) { await _account.ReauthenticateAsync(); }
+                if (reauthenticate && confirmed) { await _account.ReauthenticateAsync(); }
             }
         }
 
