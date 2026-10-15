@@ -54,9 +54,12 @@ namespace Game.View
             _data = data;
             _api = api;
             _player = player;
-            _profile.Changed += OnProfileChanged;
             _dayKey = ShopRules.DayKey(DateTime.Now);
-            if (isActiveAndEnabled) { Refresh(); }
+            if (isActiveAndEnabled)
+            {
+                _profile.Changed += OnProfileChanged;
+                Refresh();
+            }
         }
 
         private void Awake()
@@ -69,13 +72,16 @@ namespace Game.View
         {
             // 주입 전에 켜지면 Construct가 이어서 그린다
             if (_profile == null) { return; }
+            // 구독은 켜져 있는 동안만 둔다. 비활성인 채 씬이 내려가면 OnDestroy가 불리지 않아 파괴된 뷰에 구독이 남는다
+            _profile.Changed -= OnProfileChanged;
+            _profile.Changed += OnProfileChanged;
             _dayKey = ShopRules.DayKey(DateTime.Now);
             _shownMinute = -1;
             Refresh();
             UpdateTimer();
         }
 
-        private void OnDestroy()
+        private void OnDisable()
         {
             if (_profile != null) { _profile.Changed -= OnProfileChanged; }
         }
