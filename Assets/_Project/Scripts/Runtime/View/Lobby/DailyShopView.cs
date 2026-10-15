@@ -116,7 +116,39 @@ namespace Game.View
 
         private async UniTask RerollAsync(ShopRerollKind kind)
         {
-            await RunAsync(() => _api.Reroll(kind, Guid.NewGuid().ToString("N")));
+            if (_busy) { return; }
+
+            var config = _data.Shop;
+            var state = _profile.Shop;
+            bool ad = kind == ShopRerollKind.Ad;
+            int left = ad ? ShopRules.AdLeft(config, state) : ShopRules.GoldLeft(config, state);
+            int max = ad ? config.AdRerollsPerDay : config.GoldRerollsPerDay;
+            string question = ad
+                ? "광고를 보고 상점을 초기화할까요?"
+                : $"{config.GoldRerollCost:N0} 골드를 사용해 상점을 초기화할까요?";
+
+            // 골드가 모자라도 누를 수 있다. 서버가 거절하면 그때 모자라다고 알려 준다
+            _busy = true;
+            Refresh();
+            bool confirmed = _confirm == null || await _confirm.ShowAsync(new ConfirmRequest
+            {
+                Title = "일일상점 초기화",
+                Message = $"{question}\n남은 횟수 {left}/{max}\n초기화하면 품절된 상품도 새로 채워져요.",
+                ConfirmLabel = ad ? "광고 보기" : "초기화",
+                CancelLabel = "취소",
+            });
+            _busy = false;
+            if (!confirmed)
+            {
+                if (this != null) { Refresh(); }
+                return;
+            }
+
+            string error = await RunAsync(() => _api.Reroll(kind, Guid.NewGuid().ToString("N")));
+            if (error == "INSUFFICIENT_GOLD" && _confirm != null)
+            {
+                await _confirm.ShowAsync(new ConfirmRequest { Title = "일일상점 초기화", Message = "골드가 부족해요." });
+            }
         }
 
         private async UniTask BuyAsync(int slot)
@@ -219,7 +251,7 @@ namespace Game.View
             _goldCount.text = $"{goldLeft}/{config.GoldRerollsPerDay}";
             _goldCost.text = config.GoldRerollCost.ToString("N0");
             _adReroll.interactable = !_busy && adLeft > 0;
-            _goldReroll.interactable = !_busy && goldLeft > 0 && _profile.Gold >= config.GoldRerollCost;
+            _goldReroll.interactable = !_busy && goldLeft > 0;
         }
 
         private void UpdateTimer()
