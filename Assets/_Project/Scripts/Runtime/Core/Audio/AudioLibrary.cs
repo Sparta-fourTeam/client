@@ -28,14 +28,6 @@ namespace Game.Core
 
         private Dictionary<string, AudioEntry> _byId;
 
-        /// <summary>코드로 라이브러리를 만든다. 에셋 없이 소리를 검증하거나 임시로 쓸 때 쓴다</summary>
-        public static AudioLibrary FromEntries(IEnumerable<AudioEntry> entries)
-        {
-            var library = CreateInstance<AudioLibrary>();
-            library.entries = new List<AudioEntry>(entries);
-            return library;
-        }
-
         public bool TryGet(string id, out AudioEntry entry)
         {
             _byId ??= BuildIndex();
