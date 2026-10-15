@@ -11,7 +11,7 @@ git push origin refs/tags/v1.0.3
 
 태그 push는 **고정 출시 PR 생성 → 최신 source SHA Codex 검토 → GitHub 보호 조건에 따른 merge commit 병합 → 실제 merge SHA 빌드·검증 → internal 게시**를 승인하는 신호다. **Actions → Deploy Google Play Internal**에서 실행 상태와 Summary를 확인한다. 새 dev 커밋이 들어와도 태그의 소스는 바뀌지 않는다. 일반 기능 PR이나 태그 없는 main 변경은 이 흐름을 실행하지 않는다.
 
-사람이 출시 PR을 생성·병합하는 단계는 없다. 단, 필요한 설정이 꺼졌거나 검토/필수 검사/충돌이 해결되지 않으면 자동으로 중단한다. 출시 의사가 없으면 태그를 push하지 않는다. 현재 main의 승인 수 0을 기준으로 동작하며, 별도의 사람 승인 1명 규칙을 추가하지 않는다. 향후 GitHub 보호 조건이 강화되면 그 조건을 충족할 때까지 대기하거나 실패한다.
+출시 PR 생성·병합은 자동화한다. **GitHub가 PR workflow 실행 승인을 요구하면 저장소 write 권한을 가진 사람이 PR 병합 영역의 `Approve workflows to run`을 눌러야 한다.** 이 경우 태그만으로 무인 완료되지 않는다. 새 token이나 `actions: write`로 승인 단계를 우회하지 않는다. 또한  필요한 설정이 꺼졌거나 검토/필수 검사/충돌이 해결되지 않으면 자동으로 중단한다. 출시 의사가 없으면 태그를 push하지 않는다. 현재 main의 승인 수 0을 기준으로 동작하며, 별도의 사람 승인 1명 규칙을 추가하지 않는다. 향후 GitHub 보호 조건이 강화되면 그 조건을 충족할 때까지 대기하거나 실패한다.
 
 ## 권한과 실행 구조
 
@@ -19,14 +19,14 @@ git push origin refs/tags/v1.0.3
 
 저장소 **Settings → Actions → General → Workflow permissions → Allow GitHub Actions to create and approve pull requests**가 켜져 있어야 한다. GitHub UI는 생성과 승인을 묶어 허용하므로 이 설정은 저장소 전체에서 PR 쓰기 권한을 가진 workflow에 영향을 준다. 출시 코드는 승인 API를 호출하지 않는다. 기본 token 권한은 read로 유지한다. 조직 정책이 repo 설정을 막으면 우회하지 않고 중단한다. repository auto-merge 기능은 필요 없다.
 
-`GITHUB_TOKEN`으로 병합한 closed/push 이벤트는 후속 workflow를 시작하지 않을 수 있다. 따라서 **사용자가 시작한 같은 태그 workflow 실행**에서 병합 결과 SHA를 받고 이어서 빌드/게시한다. immutable `GITHUB_SHA`는 원래 태그 source로 유지하며 실제 checkout·AAB 증거·게시 검증에는 별도 `BUILD_SHA`를 사용한다. PR opened/closed workflow가 후속 실행된다고 가정하지 않는다.
+`GITHUB_TOKEN`으로 병합한 closed/push 이벤트는 후속 workflow를 시작하지 않을 수 있다. 따라서 **사용자가 시작한 같은 태그 workflow 실행**에서 병합 결과 SHA를 받고 이어서 빌드/게시한다. immutable `GITHUB_SHA`는 원래 태그 source로 유지하며 실제 checkout·AAB 증거·게시 검증에는 별도 `BUILD_SHA`를 사용한다. closed/push 후속 실행에 의존하지 않는다. `GITHUB_TOKEN`이 만든 PR의 opened/synchronize/reopened Actions 실행은 GitHub 정책에 따라 승인 대기 상태가 될 수 있다. 대기를 감지하면 PR 링크와 실행 승인 메뉴를 Summary에 기록하고, 승인된 CI와 리뷰가 완료되기 전에는 병합하지 않는다. 20분 안에 완료되지 않으면 배포 없이 중단한다. [GitHub 공식 이벤트 동작](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow#triggering-a-workflow-from-a-workflow)을 참고한다.
 
 ## 검토·필수 검사 gate
 
 PR head는 태그 commit과 같고 base는 요청 당시 main이어야 한다. `@codex review`를 요청한 뒤 최대 20분 동안 다음을 확인한다.
 
 - 실제 Codex GitHub 봇 계정 ID `199175422`/`chatgpt-codex-connector[bot]`가 최신 head SHA를 검토했는가. 이전 SHA의 리뷰나 이름만 비슷한 계정, PENDING/DISMISSED/CHANGES_REQUESTED 상태는 통과하지 않는다.
-- Codex 리뷰가 submitted 상태의 COMMENTED 또는 APPROVED로 완료됐는가. **COMMENTED는 검토 완료이고 GitHub 승인 대체가 아니다.** 댓글/이모지/리뷰 요청만으로 통과시키지 않는다. 최상위 리뷰 본문에 `[P0]`~`[P3]` 지적이 있으면 새 검토가 필요하다.
+- Codex 리뷰가 submitted 상태의 COMMENTED 또는 APPROVED로 완료됐는가. 지적 없는 리뷰가 정식 review 대신 완료 Summary만 남기는 경우에는 고정 봇 ID/login/type, 최종 Completed 표, 그 표의 commit 약어를 GitHub가 해석한 정확한 전체 source SHA를 검증한다. 진행 중 상태나 일반 댓글·이모지·리뷰 요청만으로 통과시키지 않는다. **검토 완료는 GitHub 승인 대체가 아니다.** 최상위 리뷰 본문에 `[P0]`~`[P3]` 지적이 있으면 새 검토가 필요하다.
 - 모든 페이지의 review thread에 미해결 항목이 없는가. 다른 리뷰어의 최신 CHANGES_REQUESTED나 GitHub REVIEW_REQUIRED도 차단한다. 자동으로 댓글을 해결하거나 리뷰를 지우지 않는다.
 - GitHub mergeability가 확인되고 필수 조건이 병합을 허용하는가. BLOCKED/불명확 상태는 대기한다. 필수가 아닌 현재 태그 실행 자체가 진행 중이라 UNSTABLE일 수 있지만, 마지막 일반 PR merge API가 **실제 required CI/review/ruleset 조건을 강제**한다. API가 거절하거나 결과가 불명확하면 단 한 번의 요청 뒤 중단한다. --admin이나 우회를 사용하지 않는다.
 
