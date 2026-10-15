@@ -46,7 +46,7 @@ namespace Game.Core
             strike.transform.localScale = stats.Cast.Form == SkillForm.JudgementThunder ? scale * 1.5f : scale;
             strike.Init(strikes, new Vector3(target.Position.x, target.Position.y, 0), stats.Cast.Damage,
                 reactions: CompileReactions().Then(reactions), sourceTarget: target, impactRadius: stats.Cast.ImpactRadius *
-                    (stats.Cast.Form == SkillForm.JudgementThunder ? 1.5f : 1f));
+                    (stats.Cast.Form == SkillForm.JudgementThunder ? 1.5f : 1f), checkpointConfig: reactions.SnapshotConfig);
         }
 
         // 맞은 적마다 마비(Hit), 목표 지점에 한 번 폭발(Impact), 처치마다 처치 번개(Kill). 번개 구체 같은 자식 시전은 강화 카드의 반응이 맡는다.

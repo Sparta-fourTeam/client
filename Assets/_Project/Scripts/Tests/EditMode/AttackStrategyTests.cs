@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Game.Core;
 using NUnit.Framework;
 using UnityEngine;
@@ -118,6 +119,85 @@ namespace Game.Tests
                 if (count > 0) { results.Add(Target); }
                 return results.Count;
             }
+        }
+
+        [TestCase(SkillForm.Default)]
+        [TestCase(SkillForm.JudgementThunder)]
+        public void Hitscan_CheckpointBeforeHit_PreservesPrimaryDamageStatusAndForm(SkillForm form)
+        {
+            const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+            var basic = new GameObject("CheckpointHitscanBase");
+            var transformed = new GameObject("CheckpointHitscanForm");
+            var origin = new Vector2(1000, 1000);
+            var model = new EnemyModel(1, 0, EnemyType.Normal, 100,
+                new EnemyAttackStats(AttackType.Melee, 0, 1, 0),
+                new SilentPublisher<Game.Core.Messages.EnemyHpChanged>(), new SilentPublisher<Game.Core.Messages.EnemyDied>());
+            var enemy = TestEnemy.Create(model, origin);
+            enemy.gameObject.layer = 31;
+            enemy.gameObject.AddComponent<CircleCollider2D>();
+            foreach (var prefab in new[] { basic, transformed })
+            {
+                var effect = prefab.AddComponent<HitscanEffect>();
+                typeof(HitscanEffect).GetField("targetMask", flags).SetValue(effect, (LayerMask)(1 << 31));
+            }
+            var entries = new[] { new SkillFormPrefabEntry { form = SkillForm.JudgementThunder, prefab = transformed } };
+            var provider = new CheckpointTargetProvider(enemy);
+            var definition = new SkillData
+            {
+                castType = CastType.Instant,
+                baseStats = new SkillBaseStats
+                { cast = { baseDamage = 17, range = 5, projectileCount = 1 }, status = { paralysisDuration = 2 } }
+            };
+            var config = SkillConfig.FromDefinition(definition);
+            if (form != SkillForm.Default)
+            {
+                var builder = new SkillConfigBuilder(config);
+                Assert.That(builder.TryApply(new IUpgradeEffect[] { new TransformUpgradeEffect(form) }), Is.True);
+                config = builder.Build();
+            }
+            var original = new HitscanStrategy(basic, entries);
+            var restored = new HitscanStrategy(basic, entries);
+            try
+            {
+                original.Fire(config, new AttackEnvironment(basic.transform, provider, (_, _) => new[] { enemy }, origin));
+                var state = new SkillRuntimeState();
+                typeof(HitscanStrategy).GetMethod("CaptureRuntime", flags).Invoke(original, new object[] { state });
+                original.Dispose();
+                var contextType = typeof(SkillConfig).Assembly.GetType("Game.Core.AttackRestoreContext");
+                var context = Activator.CreateInstance(contextType, true);
+                contextType.GetField("Targets", flags).SetValue(context, provider);
+                contextType.GetField("Enemy", flags).SetValue(context, new Func<int, IEnemyTarget>(id => id == enemy.Id ? enemy : null));
+                typeof(HitscanStrategy).GetMethod("RestoreRuntime", flags).Invoke(restored, new[] { state, context });
+                var strike = UnityEngine.Object.FindObjectsByType<HitscanEffect>(FindObjectsSortMode.None)
+                    .Single(e => e.name.EndsWith("(Clone)"));
+                Physics2D.SyncTransforms();
+                typeof(HitscanEffect).GetMethod("Hit", flags).Invoke(strike, null);
+                typeof(HitscanEffect).GetMethod("Hit", flags).Invoke(strike, null);
+                Assert.That(model.Hp, Is.EqualTo(83), "적중 전 저장한 기본 타격은 복원 후 정확히 한 번 피해를 준다");
+                Assert.That(model.ParalysisRemaining, Is.EqualTo(2), "카드 반응이 없어도 기본 마비를 복원한다");
+                Assert.That(strike.name, Is.EqualTo((form == SkillForm.Default ? basic.name : transformed.name) + "(Clone)"));
+            }
+            finally
+            {
+                restored.Dispose();
+                original.Dispose();
+                UnityEngine.Object.DestroyImmediate(enemy.gameObject);
+                UnityEngine.Object.DestroyImmediate(basic);
+                UnityEngine.Object.DestroyImmediate(transformed);
+            }
+        }
+
+        private sealed class SilentPublisher<T> : MessagePipe.IPublisher<T>
+        {
+            public void Publish(T message) { }
+        }
+
+        private sealed class CheckpointTargetProvider : IEnemyTargetProvider
+        {
+            private readonly IEnemyTarget target;
+            internal CheckpointTargetProvider(IEnemyTarget target) => this.target = target;
+            public int GetNearest(Vector2 from, int count, List<IEnemyTarget> results)
+            { results.Clear(); if (count > 0) { results.Add(target); } return results.Count; }
         }
 
         [Test]

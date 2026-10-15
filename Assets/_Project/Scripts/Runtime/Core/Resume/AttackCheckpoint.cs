@@ -159,13 +159,15 @@ namespace Game.Core
         internal AttackRuntimeState CaptureAttack()
         {
             var s = SavedAttack.Capture("hitscan", transform, sourceSkill, reactions);
+            s.Config = SavedSkillConfig.Capture(checkpointConfig);
             s.Damage = damage; s.Radius = activeRadius; s.TargetId = SavedAttack.Id(directTarget); s.IgnoreId = SavedAttack.Id(sourceTarget);
-            s.Elapsed = elapsed; s.HitDone = hitDone; s.Secondary = directTarget != null || reactions.SnapshotConfig == null;
+            s.Elapsed = elapsed; s.HitDone = hitDone; s.Secondary = directTarget != null;
             return s;
         }
-        internal void RestoreAttack(AttackRuntimeState s, IObjectPool<HitscanEffect> owner, AttackReactions restoredReactions, AttackRestoreContext context)
+        internal void RestoreAttack(AttackRuntimeState s, IObjectPool<HitscanEffect> owner, AttackReactions restoredReactions, AttackRestoreContext context, SkillConfig restoredConfig)
         {
             pool = owner; sourceSkill = SavedAttack.Source(s); reactions = restoredReactions;
+            checkpointConfig = restoredConfig;
             damage = s.Damage; activeRadius = s.Radius; directTarget = context.Enemy(s.TargetId); sourceTarget = context.Enemy(s.IgnoreId);
             elapsed = s.Elapsed; hitDone = s.HitDone; released = false;
             // 죽은 적에게 가던 보조 타격이 광역 타격으로 바뀌지 않게 한다.

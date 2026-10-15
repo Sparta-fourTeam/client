@@ -27,6 +27,7 @@ namespace Game.Core
         // 이 타격이 겨냥한 적. Impact 반응이 "방금 맞은 적"으로 쓴다
         private IEnemyTarget sourceTarget;
         private AttackReactions reactions;
+        private SkillConfig checkpointConfig;
         [SerializeField] private float radius;
 
         // 애니메이션 이벤트(Hit, Release) 대신 시간으로 진행하는 이펙트(파티클 프리팹)용. 0보다 작으면 쓰지 않는다 (기존 프리팹은 그대로)
@@ -42,7 +43,8 @@ namespace Game.Core
 
         private Game.Core.Combat.DamageSource sourceSkill;   // 이 타격을 만든 스킬 (피해 집계와 속성 전달용)
 
-        public void Init(IObjectPool<HitscanEffect> pool, Vector3 position, float damage, IEnemyTarget directTarget = null, AttackReactions reactions = null, IEnemyTarget sourceTarget = null, float impactRadius = -1f)
+        /// <summary>타격을 초기화한다. 기본 타격은 반응 유무와 별개로 발사 시 설정을 보존한다.</summary>
+        public void Init(IObjectPool<HitscanEffect> pool, Vector3 position, float damage, IEnemyTarget directTarget = null, AttackReactions reactions = null, IEnemyTarget sourceTarget = null, float impactRadius = -1f, SkillConfig checkpointConfig = null)
         {
             sourceSkill = Game.Core.Combat.DamageAttribution.CurrentSource;
             this.pool = pool;
@@ -52,6 +54,7 @@ namespace Game.Core
             this.directTarget = directTarget;
             this.sourceTarget = sourceTarget;
             this.reactions = reactions ?? AttackReactions.Empty;
+            this.checkpointConfig = checkpointConfig;
             elapsed = 0f;
             hitDone = false;
             released = false;

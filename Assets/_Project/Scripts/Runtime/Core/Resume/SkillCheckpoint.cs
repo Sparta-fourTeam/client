@@ -289,7 +289,7 @@ namespace Game.Core
                         config.Reactions, Pool, originalScale);
                     reactions = compiled.CompileReactions().Then(config.Reactions);
                 }
-                pool.Get().RestoreAttack(attack, pool, reactions, context);
+                pool.Get().RestoreAttack(attack, pool, reactions, context, config);
             }
         }
     }
