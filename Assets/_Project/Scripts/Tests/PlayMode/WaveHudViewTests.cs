@@ -141,12 +141,12 @@ namespace Game.Tests
             yield return Until(() => glow.enabled && glow.color.a > 0.3f);
             // Repeated buffered state notifications must not restart the longer glow fade.
             float deadline = Time.realtimeSinceStartup + 3f;
-            while (Field<float>("_glowOn") < 0.999f && Time.realtimeSinceStartup < deadline)
+            while (glow.color.a < 0.8f && Time.realtimeSinceStartup < deadline)
             {
                 State(StageState.CardSelect);
                 yield return null;
             }
-            Assert.That(Field<float>("_glowOn"), Is.EqualTo(1f).Within(0.001f));
+            Assert.That(glow.color.a, Is.GreaterThanOrEqualTo(0.8f));
             Assert.That(glow.rectTransform.anchorMax.x, Is.EqualTo(_fill.fillAmount).Within(0.001f));
             State(StageState.Playing);
             yield return Fill(0f);
@@ -165,7 +165,7 @@ namespace Game.Tests
             Gauge(2, 4, 4);
             Gauge(3, 0, 6);
             State(StageState.CardSelect);
-            yield return Until(() => Field<float>("_glowOn") >= 0.999f);
+            yield return Until(() => glow.enabled && glow.color.a > 0.3f);
             _view.gameObject.SetActive(false);
             var disabledColor = glow.color;
             for (int frame = 0; frame < 12; frame++)
@@ -184,11 +184,15 @@ namespace Game.Tests
             Assert.That(glow.enabled, Is.False);
             State(StageState.CardSelect);
             yield return Until(() => glow.enabled);
-            object breathing = Field<object>("_glowTween");
-            UnityEngine.Object.Destroy(_view.gameObject);
+            // Leave the images alive so a leaked callback remains externally observable.
+            UnityEngine.Object.Destroy(_view);
             yield return null;
-            Assert.That((bool)breathing.GetType().GetProperty("active").GetValue(breathing), Is.False,
-                "삭제한 HUD의 반복 글로우 트윈이 남으면 안 된다");
+            var destroyedColor = glow.color;
+            for (int frame = 0; frame < 12; frame++)
+            {
+                yield return null;
+                Assert.That(glow.color, Is.EqualTo(destroyedColor), "삭제한 HUD의 글로우 콜백이 남으면 안 된다");
+            }
         }
 #endif
 
