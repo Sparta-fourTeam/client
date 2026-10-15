@@ -19,9 +19,11 @@ namespace Game.Core
         private readonly ISubscriber<WallHpChanged> _wallHp;
         private readonly ISubscriber<WallDestroyed> _wallDestroyed;
         private readonly ISubscriber<StageEnded> _stageEnded;
+        private readonly IBufferedSubscriber<StageStateChanged> _stageState;
 
         private IDisposable _subscriptions;
         private int _lastWallHp = -1;
+        private StageState _state = StageState.Starting;
 
         public BattleSoundPlayer(
             IAudioService audio,
@@ -30,7 +32,8 @@ namespace Game.Core
             ISubscriber<SpecialEnemyWarning> warning,
             ISubscriber<WallHpChanged> wallHp,
             ISubscriber<WallDestroyed> wallDestroyed,
-            ISubscriber<StageEnded> stageEnded)
+            ISubscriber<StageEnded> stageEnded,
+            IBufferedSubscriber<StageStateChanged> stageState)
         {
             _audio = audio;
             _enemyDied = enemyDied;
@@ -39,6 +42,7 @@ namespace Game.Core
             _wallHp = wallHp;
             _wallDestroyed = wallDestroyed;
             _stageEnded = stageEnded;
+            _stageState = stageState;
         }
 
         public void Initialize()
@@ -50,6 +54,7 @@ namespace Game.Core
             _wallHp.Subscribe(OnWallHpChanged).AddTo(bag);
             _wallDestroyed.Subscribe(_ => _audio.PlaySfx(SoundIds.WallDestroyed)).AddTo(bag);
             _stageEnded.Subscribe(OnStageEnded).AddTo(bag);
+            _stageState.Subscribe(OnStageState).AddTo(bag);
             _subscriptions = bag.Build();
 
             _audio.PlayBgm(SoundIds.BattleBgm, BgmFadeIn);
@@ -62,15 +67,26 @@ namespace Game.Core
             _ => SoundIds.EnemyDie,
         };
 
-        // 방벽 체력은 Buffered라 구독 직후 현재 값이 먼저 온다. 그 값은 기준으로만 삼고 줄어들 때만 소리를 낸다
+        // 방벽 체력은 Buffered라 구독 직후 현재 값이 먼저 온다. 체크포인트 복원도 같은 메시지로 낮은 값을 발행하므로,
+        // 복원이 끝나 Playing이 된 뒤에 줄어든 경우만 피격으로 본다
         private void OnWallHpChanged(WallHpChanged e)
         {
-            if (_lastWallHp >= 0 && e.Current < _lastWallHp && e.Current > 0)
+            if (_state == StageState.Playing && _lastWallHp >= 0 && e.Current < _lastWallHp && e.Current > 0)
             {
                 _audio.PlaySfx(SoundIds.WallHit);
             }
 
             _lastWallHp = e.Current;
+        }
+
+        // 포기는 StageEnded 없이 결과 제출로 바로 가므로, 제출 단계에 들어가면 배경음을 멈춘다
+        private void OnStageState(StageStateChanged e)
+        {
+            _state = e.State;
+            if (e.State is StageState.Submitting or StageState.Finished)
+            {
+                _audio.StopBgm(BgmFadeOut);
+            }
         }
 
         private void OnStageEnded(StageEnded e)
