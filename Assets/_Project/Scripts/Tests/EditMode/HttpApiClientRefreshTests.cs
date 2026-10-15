@@ -99,16 +99,21 @@ namespace Game.Tests
             Assert.IsNull(_session.RefreshToken);
         }
 
-        [Test(Description = "재발급이 네트워크 오류로 실패하면 그 오류를 던지고, 로그인이 풀린 것이 아니므로 토큰은 그대로 둔다")]
-        public void RefreshNetworkFailure_KeepsTokens()
+        [TestCase(0, HttpFailure.Network)]
+        [TestCase(0, HttpFailure.Timeout)]
+        [TestCase(500, HttpFailure.None)]
+        public void FailedRefresh_DoesNotReusePossiblyConsumedToken(int status, HttpFailure failure)
         {
-            ExpireOldToken(_ => UniTask.FromResult(HttpResponseData.Failed(HttpFailure.Network)));
+            // 서버가 토큰을 회전시킨 뒤 응답이 유실되거나 오류로 돌아온 경우를 재현한다.
+            ExpireOldToken(_ => UniTask.FromResult(new HttpResponseData(status, null, failure)));
 
             var ex = Assert.Throws<ApiException>(() => Run(_client.Get<Ping>("api/ping")));
 
-            Assert.AreEqual(ApiErrorKind.Network, ex.Kind);
-            Assert.AreEqual("old-access", _session.AccessToken);
-            Assert.AreEqual("old-refresh", _session.RefreshToken);
+            Assert.AreEqual(HttpErrorMapper.SessionExpired, ex.Code);
+            Assert.IsFalse(_session.IsSignedIn);
+            Assert.IsNull(_session.RefreshToken);
+            Assert.Throws<ApiException>(() => Run(_client.Get<Ping>("api/after-failure")));
+            Assert.AreEqual(1, _transport.Count("api/auth/refresh"), "소비 여부를 모르는 refresh 토큰을 다시 보내지 않는다");
         }
 
         [Test(Description = "새 토큰으로 다시 보냈는데도 401이면 더 반복하지 않고 그대로 던진다")]
@@ -226,11 +231,12 @@ namespace Game.Tests
             Assert.AreEqual(1, _transport.Count("api/auth/refresh"));
         }
 
-        [TestCase(false, 200, NewTokens)]
-        [TestCase(true, 200, NewTokens)]
-        [TestCase(true, 401, "")]
-        [TestCase(true, 200, "{}")]
-        public void PendingRefresh_AfterLogoutCannotRestoreOrOverwriteSession(bool signInAgain, int status, string body)
+        [TestCase(false, 200, NewTokens, HttpFailure.None)]
+        [TestCase(true, 200, NewTokens, HttpFailure.None)]
+        [TestCase(true, 401, "", HttpFailure.None)]
+        [TestCase(true, 200, "{}", HttpFailure.None)]
+        [TestCase(true, 0, "", HttpFailure.Network)]
+        public void PendingRefresh_AfterLogoutCannotRestoreOrOverwriteSession(bool signInAgain, int status, string body, HttpFailure failure)
         {
             var gate = new UniTaskCompletionSource<HttpResponseData>();
             ExpireOldToken(_ => gate.Task);
@@ -244,7 +250,7 @@ namespace Game.Tests
             }
             finally
             {
-                gate.TrySetResult(new HttpResponseData(status, body));
+                gate.TrySetResult(new HttpResponseData(status, body, failure));
             }
 
             var ex = Assert.Throws<ApiException>(() => Run(pending));

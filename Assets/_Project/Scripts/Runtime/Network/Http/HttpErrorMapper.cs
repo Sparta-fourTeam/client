@@ -13,7 +13,7 @@ namespace Game.Network
         public const string Timeout = "TIMEOUT";
         public const string InvalidResponse = "INVALID_RESPONSE";
 
-        /// <summary>액세스 토큰이 만료됐는데 리프레시 토큰도 거절돼 다시 로그인해야 한다. 호출부는 이 코드를 받으면 로그인으로 돌려보낸다</summary>
+        /// <summary>재발급이 거절되거나 결과가 불명확해 토큰을 재사용할 수 없으므로 다시 로그인해야 한다. 호출부는 이 코드를 받으면 로그인으로 돌려보낸다</summary>
         public const string SessionExpired = "SESSION_EXPIRED";
 
         private const int MaxDetailLength = 200;

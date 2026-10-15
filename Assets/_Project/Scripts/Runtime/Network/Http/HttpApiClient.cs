@@ -140,7 +140,7 @@ namespace Game.Network
             && !path.TrimStart('/').StartsWith(AuthPathPrefix, StringComparison.Ordinal);
 
         /// <summary>새 토큰을 받았거나 다른 요청이 이미 받아 둔 상태면 true. 리프레시 토큰이 거절돼 로그인이 필요하면 false(토큰을 비운다).
-        /// 네트워크 오류나 서버 오류처럼 로그인이 풀린 것이 아닌 실패는 예외로 던지고 토큰은 그대로 둔다</summary>
+        /// 전송 실패는 토큰이 이미 소비됐을 수 있으므로 세션을 끝내고 같은 refresh 토큰을 재사용하지 않는다</summary>
         private async UniTask<bool> RefreshAsync(long generation, string sentAccessToken, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -208,14 +208,10 @@ namespace Game.Network
             ApiException error = HttpErrorMapper.Map(response, _errorCodeReader);
             if (error != null)
             {
-                // 서버가 리프레시 토큰을 거절하면(만료·이미 사용) 로그인이 필요하다. 그 밖의 실패는 잠시 뒤 다시 시도할 수 있다
-                if (error.Kind == ApiErrorKind.Rejected)
-                {
-                    _tokens.TryClear(generation);
-                    return false;
-                }
-
-                throw error;
+                // 재발급 거절뿐 아니라 응답 유실·시간 초과·서버 오류도 토큰이 소비됐을 수 있다.
+                // 서버의 재발급은 멱등하지 않으므로 같은 토큰을 다시 보내지 않고 로그인부터 시작한다.
+                _tokens.TryClear(generation);
+                return false;
             }
 
             AuthTokens tokens = null;
