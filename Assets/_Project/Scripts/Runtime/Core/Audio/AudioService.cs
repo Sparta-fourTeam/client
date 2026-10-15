@@ -4,7 +4,6 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Audio;
-using VContainer;
 using VContainer.Unity;
 
 namespace Game.Core
@@ -38,24 +37,9 @@ namespace Game.Core
         private bool _missingLibraryWarned;
         private readonly HashSet<string> _unknownWarned = new HashSet<string>();
 
-        /// <summary>기본 생성자. 라이브러리는 Start에서 Resources에서 불러온다</summary>
-        [Inject]
-        public AudioService()
-        {
-        }
-
-        /// <summary>라이브러리를 직접 준다. Resources 에셋 없이 쓰거나 검증할 때 쓴다</summary>
-        public AudioService(AudioLibrary library)
-        {
-            _library = library;
-        }
-
         public void Start()
         {
-            if (_library == null)
-            {
-                _library = Resources.Load<AudioLibrary>(AudioLibrary.ResourcePath);
-            }
+            _library = Resources.Load<AudioLibrary>(AudioLibrary.ResourcePath);
 
             var mixer = Resources.Load<AudioMixer>(SoundVolumeApplier.MixerPath);
 
@@ -143,10 +127,10 @@ namespace Game.Core
                 return;
             }
 
-            // 크로스페이드 도중에는 두 슬롯이 모두 들리므로 재생 중인 슬롯을 모두 줄인다
+            // 크로스페이드 도중에는 두 슬롯이 모두 들리므로 소리가 나는 슬롯을 모두 줄인다
             foreach (var slot in _bgm)
             {
-                if (slot.Source.isPlaying)
+                if (slot.Target > 0f || slot.Source.volume > 0f)
                 {
                     FadeOut(slot, fadeSeconds);
                 }
