@@ -1366,7 +1366,8 @@ namespace Game.Tests
         {
             // 캡처는 시각 확인용 증거다. Game View가 없는 batch 실행에서도 UI 동작 검증은 끝까지 수행한다.
             if (Application.isBatchMode) { yield break; }
-            string path = Path.GetFullPath(Path.Combine(Application.dataPath, "../Temp", fileName));
+            string path = Path.GetFullPath(Path.Combine(Application.dataPath, "../BenchmarkArtifacts/ui-runtime", fileName));
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
             if (File.Exists(path)) { File.Delete(path); }
             ScreenCapture.CaptureScreenshot(path);
             yield return WaitFor(() => File.Exists(path), $"스크린샷 저장: {fileName}");
