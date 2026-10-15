@@ -4,6 +4,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Audio;
+using VContainer;
 using VContainer.Unity;
 
 namespace Game.Core
@@ -36,9 +37,25 @@ namespace Game.Core
         private bool _fading;
         private bool _missingLibraryWarned;
 
+        /// <summary>기본 생성자. 라이브러리는 Start에서 Resources에서 불러온다</summary>
+        [Inject]
+        public AudioService()
+        {
+        }
+
+        /// <summary>라이브러리를 직접 준다. Resources 에셋 없이 쓰거나 검증할 때 쓴다</summary>
+        public AudioService(AudioLibrary library)
+        {
+            _library = library;
+        }
+
         public void Start()
         {
-            _library = Resources.Load<AudioLibrary>(AudioLibrary.ResourcePath);
+            if (_library == null)
+            {
+                _library = Resources.Load<AudioLibrary>(AudioLibrary.ResourcePath);
+            }
+
             var mixer = Resources.Load<AudioMixer>(SoundVolumeApplier.MixerPath);
 
             _root = new GameObject("AudioService");
@@ -125,7 +142,15 @@ namespace Game.Core
                 return;
             }
 
-            FadeOut(_bgm[_active], fadeSeconds);
+            // 크로스페이드 도중에는 두 슬롯이 모두 들리므로 재생 중인 슬롯을 모두 줄인다
+            foreach (var slot in _bgm)
+            {
+                if (slot.Source.isPlaying)
+                {
+                    FadeOut(slot, fadeSeconds);
+                }
+            }
+
             StartFading();
         }
 
@@ -140,7 +165,8 @@ namespace Game.Core
         }
 
         private static float RateOf(float peak, float fadeSeconds) =>
-            fadeSeconds <= 0f ? float.PositiveInfinity : peak / fadeSeconds;
+            // 즉시 전환은 무한대 대신 아주 큰 값을 쓴다. 무한대에 deltaTime 0을 곱하면 NaN이 되어 볼륨이 깨진다
+            fadeSeconds <= 0f ? float.MaxValue : peak / fadeSeconds;
 
         private static void FadeOut(BgmSlot slot, float fadeSeconds)
         {
