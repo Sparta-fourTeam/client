@@ -1,3 +1,4 @@
+using DG.Tweening;
 using Game.Core;
 using Game.View;
 using UnityEditor;
@@ -10,6 +11,8 @@ namespace Game.Editor
     {
         private const int SampleSkillId = 2;
         private const SkillForm SampleForm = SkillForm.FlameArrow;
+        // 전투 HUD 등장 연출(슬롯이 미끄러져 들어오는 시간)이 끝난 뒤에 보이도록 늦춘다
+        private const float UpgradeDelaySeconds = 1.3f;
 
         private sealed class Status : ISkillStatus
         {
@@ -21,7 +24,7 @@ namespace Game.Editor
 
         public static bool Has(GameObject root) => root.GetComponentInChildren<SkillSlotView>(true) != null;
 
-        /// <summary>첫 슬롯을 레벨 1로 채운 뒤, 강화와 형태 변환을 한꺼번에 일으킨다. 숫자 펀치와 아이콘 변환이 같이 보인다.</summary>
+        /// <summary>첫 슬롯을 레벨 1로 채우고, 잠시 뒤 강화와 형태 변환을 한꺼번에 일으킨다. 숫자 펀치와 아이콘 변환이 같이 보인다.</summary>
         public static void Play(GameObject root)
         {
             var slot = root.GetComponentInChildren<SkillSlotView>(true);
@@ -31,10 +34,13 @@ namespace Game.Editor
 
             var status = new Status { Level = 1, Form = SkillForm.Default };
             slot.Bind(status, Icon(SkillForm.Default));
-            status.Level = 2;
-            slot.Bind(status, Icon(SkillForm.Default));
-            status.Form = SampleForm;
-            slot.Bind(status, Icon(SampleForm));
+            DOVirtual.DelayedCall(UpgradeDelaySeconds, () =>
+            {
+                status.Level = 2;
+                slot.Bind(status, Icon(SkillForm.Default));
+                status.Form = SampleForm;
+                slot.Bind(status, Icon(SampleForm));
+            }, true).SetLink(slot.gameObject);
         }
     }
 }
