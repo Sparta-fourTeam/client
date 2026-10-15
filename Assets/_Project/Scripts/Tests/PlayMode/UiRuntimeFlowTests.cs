@@ -1010,6 +1010,7 @@ namespace Game.Tests
             Assert.That(info.IsShown, Is.False);
             yield return ClickGameButton(Field<Button>(details, "_closeButton"));
             yield return WaitFor(() => !Field<GameObject>(details, "_panel").activeSelf);
+            PlayerPrefs.SetFloat("stage_speed", 2f);
             yield return ClickGameButton(Field<Button>(mission, "_enterButton"));
             yield return WaitFor(() => SceneManager.GetActiveScene().name == "Stage");
             yield return null;
@@ -1018,6 +1019,13 @@ namespace Game.Tests
             var manager = stage.Container.Resolve<StageManager>();
             var stats = stage.Container.Resolve<BattleStats>();
             var controls = stageUi.Get<StageControlView>();
+            var baseTimeScale = stage.Container.Resolve<GameDataStore>().Combat.BaseTimeScale;
+            Assert.That(manager.SpeedMultiplier, Is.EqualTo(2));
+            Assert.That(Time.timeScale, Is.EqualTo(baseTimeScale * 2f));
+            Assert.That(Field<UnityEngine.UI.Image>(controls, "buttonImage").sprite,
+                Is.EqualTo(Field<Sprite[]>(controls, "_buttonimages")[1]));
+            yield return ClickGameButton(Field<Button>(controls, "_speedButton"));
+            Assert.That(Time.timeScale, Is.EqualTo(baseTimeScale));
             yield return ClickGameButton(Field<Button>(controls, "_speedButton"));
             Assert.That(Time.timeScale, Is.EqualTo(stage.Container.Resolve<GameDataStore>().Combat.BaseTimeScale * 2f));
             yield return ClickGameButton(Field<Button>(controls, "_pauseButton"));

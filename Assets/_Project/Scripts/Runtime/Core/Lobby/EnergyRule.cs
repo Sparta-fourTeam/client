@@ -26,5 +26,13 @@ namespace Game.Core
             float nextIn = current >= c.Max ? 0 : (float)(c.RegenSeconds - elapsed % c.RegenSeconds);
             return (current, nextIn);
         }
+
+        /// <summary>자연 회복분을 저장할 때 주기 안의 잔여 시간을 보존한다. 상한에 도달한 동안은 회복 시간을 쌓지 않는다</summary>
+        public static DateTime SettledUpdatedAt(int current, DateTime updatedAt, DateTime now, EnergyConfig c)
+        {
+            if (current >= c.Max || updatedAt > now) { return now; }
+            double elapsed = (now - updatedAt).TotalSeconds;
+            return updatedAt.AddSeconds(Math.Floor(elapsed / c.RegenSeconds) * c.RegenSeconds);
+        }
     }
 }

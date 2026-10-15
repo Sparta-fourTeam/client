@@ -59,6 +59,18 @@ namespace Game.Tests
             });
         }
 
+        [TestCase(0, 299, 0)]
+        [TestCase(0, 300, 300)]
+        [TestCase(0, 599, 300)]
+        [TestCase(10, 599, 599)]
+        [TestCase(0, -1, -1)]
+        public void SettlingRegenPreservesRemainderAndResetsAtCap(int current, int elapsed, int expectedTimestamp)
+        {
+            var config = new EnergyConfig { Max = 10, RegenSeconds = 300 };
+            Assert.That(EnergyRule.SettledUpdatedAt(current, T0, T0.AddSeconds(elapsed), config),
+                Is.EqualTo(T0.AddSeconds(expectedTimestamp)));
+        }
+
         [Test(Description = "첫 발행 후 회복 직전에는 무신호, 주기 경계에서 증가한 값을 한 번 발행한다")]
         public void TickPublishesRecoveryBoundariesCapAndChangedProfileWithoutDuplicates()
         {

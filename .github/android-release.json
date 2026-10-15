@@ -1,0 +1,24 @@
+{
+  "versionName": "1.0.2",
+  "versionCode": 2,
+  "playUploads": [
+    {
+      "versionName": "1.0.1",
+      "versionCode": 1,
+      "state": "internal-test-available",
+      "confirmedAtUtc": "2026-10-13T02:43:02Z",
+      "sourceCommit": "61f98f4b45ea1a6d8f1e471de40c78a5949b4a2d",
+      "actionsRun": 38333907262,
+      "aabSha256": "235b4e10436b6e025d4f7d9c0b46897e9ec2860162b5eb37eed586795fd37370",
+      "internalReleaseConfirmedAtUtc": "2026-10-13T02:59Z",
+      "testerCount": 8
+    }
+  ],
+  "legacyDraftUploads": [
+    {
+      "versionName": "1.0",
+      "versionCode": 214011987,
+      "excludedFromCurrentDraft": true
+    }
+  ]
+}

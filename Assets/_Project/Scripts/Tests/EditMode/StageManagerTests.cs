@@ -295,9 +295,11 @@ namespace Game.Tests
             _manager.Dispose();
             _manager = _createManager(new CombatConfig { BaseTimeScale = 0.75f });
             _manager.Start();
+            Assert.AreEqual(2f, _manager.SpeedMultiplier);
             Assert.AreEqual(1.5f, Time.timeScale);
             _manager.Pause();
             _manager.Resume();
+            Assert.AreEqual(2f, _manager.SpeedMultiplier);
             Assert.AreEqual(1.5f, Time.timeScale);
         }
 
@@ -307,25 +309,48 @@ namespace Game.Tests
             _manager.Dispose();
             _manager = _createManager(new CombatConfig { BaseTimeScale = 0.75f });
             _manager.Start();
+            Assert.AreEqual(1f, _manager.SpeedMultiplier);
             Assert.AreEqual(0.75f, Time.timeScale);
             _manager.SetSpeed(2f);
+            Assert.AreEqual(2f, _manager.SpeedMultiplier);
             Assert.AreEqual(1.5f, Time.timeScale);
             Assert.AreEqual(2f, PlayerPrefs.GetFloat("stage_speed"));
             _manager.Pause();
             _manager.SetSpeed(1f);
             Assert.AreEqual(0f, Time.timeScale);
             _manager.Resume();
+            Assert.AreEqual(1f, _manager.SpeedMultiplier);
             Assert.AreEqual(0.75f, Time.timeScale);
             FillGauge(false);
             Assert.AreEqual(0f, Time.timeScale);
             _manager.PickCard(0);
+            Assert.AreEqual(1f, _manager.SpeedMultiplier);
             Assert.AreEqual(0.75f, Time.timeScale);
             _enemyDied.Publish(new EnemyDied(1001, type: EnemyType.Elite));
             Assert.AreEqual(0f, Time.timeScale);
             CompleteRoulette();
+            Assert.AreEqual(1f, _manager.SpeedMultiplier);
             Assert.AreEqual(0.75f, Time.timeScale);
             _manager.Dispose();
             Assert.AreEqual(1f, Time.timeScale);
+        }
+
+        [TestCase(2f, 2f)]
+        [TestCase(5f, 2f)]
+        [TestCase(-1f, 1f)]
+        [TestCase(float.NaN, 1f)]
+        public void NewBattleRestoresSavedSpeedAndPauseResumePreservesIt(float saved, float expected)
+        {
+            _manager.Dispose();
+            PlayerPrefs.SetFloat("stage_speed", saved);
+            _manager = _createManager(null);
+            _manager.Start();
+            Assert.That(_manager.Speed, Is.EqualTo(expected));
+            Assert.That(Time.timeScale, Is.EqualTo(expected));
+            _manager.Pause();
+            Assert.That(Time.timeScale, Is.Zero);
+            _manager.Resume();
+            Assert.That(Time.timeScale, Is.EqualTo(expected));
         }
 
         [Test(Description = "Playing에서 Pause하면 시간이 멈추고 Paused가 된다")]

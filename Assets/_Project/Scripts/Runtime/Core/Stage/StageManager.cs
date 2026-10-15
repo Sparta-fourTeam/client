@@ -48,6 +48,9 @@ namespace Game.Core
         private List<UpgradeChoice> _choices = new();
 
         public StageState State { get; private set; } = StageState.Starting;
+        public float Speed => _speed;
+        /// <summary>기본 전투 시간 배율과 독립적인 UI 선택 배속(1배 또는 2배).</summary>
+        public float SpeedMultiplier => _speed / _baseTimeScale;
 
         /// <summary>자동 재시도 사이의 간격. 테스트에서 0으로 줄인다</summary>
         public TimeSpan RetryDelay { get; set; } = TimeSpan.FromSeconds(1);
