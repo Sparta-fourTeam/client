@@ -54,5 +54,18 @@ namespace Game.Network
             _store.Flush(save);
             return UniTask.FromResult(LocalPlayerApi.ToSnapshot(save));
         }
+
+        public UniTask<PlayerSnapshot> BuyGemPack(int index, string idempotencyKey)
+        {
+            var save = _store.Load();
+            if (save.ledger.Exists(l => l.idempotencyKey == idempotencyKey))
+            {
+                return UniTask.FromResult(LocalPlayerApi.ToSnapshot(save));
+            }
+
+            LocalShop.BuyGemPack(save, _data, index, idempotencyKey);
+            _store.Flush(save);
+            return UniTask.FromResult(LocalPlayerApi.ToSnapshot(save));
+        }
     }
 }

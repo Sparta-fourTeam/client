@@ -17,5 +17,10 @@ namespace Game.Core
         /// <summary>코인 상점의 코인 묶음(ShopConfig.GoldPacks의 순서 번호)을 잼으로 사서 코인을 받고 반영된 스냅샷을 받는다. idempotencyKey로 중복 요청을 막는다.
         /// 거절 코드: INVALID_PACK, INSUFFICIENT_GEMS</summary>
         UniTask<PlayerSnapshot> BuyGoldPack(int index, string idempotencyKey);
+
+        // TODO(server): 실제 결제는 스토어 영수증 검증을 거쳐야 한다. Local은 결제 없이 바로 잼을 준다
+        /// <summary>잼 상점의 잼 묶음(ShopConfig.GemPacks의 순서 번호)을 사서 잼을 받고 반영된 스냅샷을 받는다. idempotencyKey로 중복 요청을 막는다.
+        /// 거절 코드: INVALID_PACK, REWARD_QUANTITY_OVERFLOW</summary>
+        UniTask<PlayerSnapshot> BuyGemPack(int index, string idempotencyKey);
     }
 }

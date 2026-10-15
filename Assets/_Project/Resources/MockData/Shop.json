@@ -16,6 +16,14 @@
     { "Gold": 35000, "DiscountPercent": 14 },
     { "Gold": 60000, "DiscountPercent": 16 }
   ],
+  "GemPacks": [
+    { "Gems": 120, "BonusPercent": 0, "PriceKrw": 1200 },
+    { "Gems": 360, "BonusPercent": 10, "PriceKrw": 3300 },
+    { "Gems": 760, "BonusPercent": 15, "PriceKrw": 6600 },
+    { "Gems": 1320, "BonusPercent": 20, "PriceKrw": 11000 },
+    { "Gems": 4200, "BonusPercent": 30, "PriceKrw": 33000 },
+    { "Gems": 7200, "BonusPercent": 40, "PriceKrw": 55000 }
+  ],
   "Offers": [
     { "Reward": "currency.coin", "Count": 500, "Price": 50 },
     { "Reward": "currency.coin", "Count": 1000, "Price": 100 },

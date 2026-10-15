@@ -191,6 +191,22 @@ namespace Game.Core
                 }
             }
 
+            if (Shop.GemPacks.Count == 0)
+            {
+                throw new InvalidOperationException("Shop: 잼 묶음(GemPacks)이 필요합니다");
+            }
+
+            for (int i = 0; i < Shop.GemPacks.Count; i++)
+            {
+                var pack = Shop.GemPacks[i];
+                var previous = i == 0 ? null : Shop.GemPacks[i - 1];
+                bool ordered = previous == null || (pack.Gems > previous.Gems && pack.PriceKrw > previous.PriceKrw && pack.BonusPercent >= previous.BonusPercent);
+                if (pack.Gems <= 0 || pack.PriceKrw <= 0 || pack.BonusPercent < 0 || pack.BonusPercent > 99 || !ordered)
+                {
+                    throw new InvalidOperationException($"Shop GemPacks[{i}]: 잼·가격은 1 이상, 보너스는 0~99이고, 더 큰 묶음일수록 잼·가격은 늘고 보너스는 같거나 높아야 합니다");
+                }
+            }
+
             if (Shop.Slots <= 0 || Shop.Offers.Count < Shop.Slots || Shop.Discounts.Count == 0 || Shop.Discounts.Exists(d => d < 0 || d > 99))
             {
                 throw new InvalidOperationException("Shop: 칸 수는 1 이상, 물품은 칸 수 이상, 할인율은 0~99 사이로 하나 이상 있어야 합니다");
@@ -221,6 +237,7 @@ namespace Game.Core
             Revisions["Combat"] = 2;
             Revisions["Tutorials"] = 2; // 스테이지 클리어 보상 단계(milestone) 추가
             Revisions["Quests"] = 2;
+            Revisions["Shop"] = 2; // 잼 묶음(GemPacks) 추가
         }
 
         public string RawJson(string name) => _rawJson[name];
