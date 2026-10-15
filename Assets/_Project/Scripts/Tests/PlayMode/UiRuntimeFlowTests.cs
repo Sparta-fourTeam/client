@@ -611,6 +611,29 @@ namespace Game.Tests
         }
 
         [UnityTest]
+        public IEnumerator ReauthenticationReturnsThroughLoadingWithSameGuestAndProgress()
+        {
+            Assert.That(ServerConfig.UseServerAuth, Is.False, "이 회귀는 실제 서버 인증을 호출하지 않는다");
+            yield return StartFromBoot(save => save.wallet.gold = 321);
+            var root = Object.FindAnyObjectByType<RootLifetimeScope>();
+            var previousLobby = Object.FindAnyObjectByType<LobbyLifetimeScope>();
+            var navigator = root.Container.Resolve<ISceneNavigator>();
+            string guestId = _credentials.AccountId;
+            var pending = root.Container.Resolve<AccountService>().ReauthenticateAsync();
+            yield return WaitFor(() => previousLobby == null && SceneManager.GetActiveScene().name == "Loading"
+                && Object.FindAnyObjectByType<TapToStartView>() != null
+                && Field<GameObject>(Object.FindAnyObjectByType<TapToStartView>(), "_panel").activeSelf);
+            yield return ClickGameButton(Field<Button>(Object.FindAnyObjectByType<TapToStartView>(), "_tapArea"));
+            yield return WaitFor(() => SceneManager.GetActiveScene().name == "Lobby"
+                && navigator.Current == SceneId.Lobby && Object.FindAnyObjectByType<LobbyLifetimeScope>() != null);
+            pending.GetAwaiter().GetResult();
+            Assert.That(_credentials.Method, Is.EqualTo(LoginMethod.Guest));
+            Assert.That(_credentials.AccountId, Is.EqualTo(guestId));
+            Assert.That(root.Container.Resolve<PlayerProfile>().Gold, Is.EqualTo(321));
+            Assert.That(_store.Load().wallet.gold, Is.EqualTo(321));
+        }
+
+        [UnityTest]
         public IEnumerator MenuDeletionClearsRootProfileAndReturnsToLoginSelection()
         {
             Assert.That(ServerConfig.UseServerAuth, Is.False, "이 삭제 회귀는 로컬 백엔드에서만 실행한다");
