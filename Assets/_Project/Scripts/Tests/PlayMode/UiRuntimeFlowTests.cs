@@ -245,10 +245,6 @@ namespace Game.Tests
                     }
                 }
                 if (count <= 8) { Assert.That(slots.localScale, Is.EqualTo(Vector3.one)); }
-                if (count == 9 || count == 40 || count == 3)
-                {
-                    yield return CaptureUiScreenshot($"reward-popup-{count}.png");
-                }
                 yield return ClickGameButton(tap);
                 yield return WaitFor(() => !panel.activeSelf);
             }
@@ -683,7 +679,6 @@ namespace Game.Tests
                     // 두 번째 엘리트 보상은 첫 번째 스킵으로 함께 소비되면 안 된다.
                     var queuedEnemy = stage.Container.Resolve<IEnemyFactory>().Create(elite.Id, new Vector2(99, 99), isSummoned: true);
                     queuedEnemy.TakeDamage(queuedEnemy.Model.Hp);
-                    yield return CaptureUiScreenshot("elite-roulette-skip-button.png");
                     var background = Field<PointerClickRelay>(view, "_background");
                     yield return ClickGameTarget(background, localPoint: ((RectTransform)background.transform).rect.min + Vector2.one * 48f);
                     Assert.That(stats.BuildLog.Count - priorCards, Is.EqualTo(1), "dim 한 번은 현재 회차의 카드 한 장만 적용한다");
@@ -725,7 +720,6 @@ namespace Game.Tests
                 var confirmButton = Field<Button>(view, "_skipButton");
                 yield return WaitFor(() => confirmButton.interactable
                     && confirmButton.GetComponentInChildren<TMP_Text>(true).text == "확인");
-                yield return CaptureUiScreenshot("elite-roulette-live.png");
                 Assert.That(panel.activeSelf, Is.True, "스킵 여부와 관계없이 전체 카드 결과를 확인할 때까지 유지한다");
                 Assert.That(manager.State, Is.EqualTo(StageState.EliteRoulette));
                 Assert.That(Time.timeScale, Is.Zero);
@@ -1360,17 +1354,6 @@ namespace Game.Tests
             {
                 enemy.TakeDamage(1000000);
             }
-        }
-
-        private static IEnumerator CaptureUiScreenshot(string fileName)
-        {
-            // 캡처는 시각 확인용 증거다. Game View가 없는 batch 실행에서도 UI 동작 검증은 끝까지 수행한다.
-            if (Application.isBatchMode) { yield break; }
-            string path = Path.GetFullPath(Path.Combine(Application.dataPath, "../BenchmarkArtifacts/ui-runtime", fileName));
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
-            if (File.Exists(path)) { File.Delete(path); }
-            ScreenCapture.CaptureScreenshot(path);
-            yield return WaitFor(() => File.Exists(path), $"스크린샷 저장: {fileName}");
         }
 
         private static IEnumerator WaitFor(Func<bool> condition, string step = null,
