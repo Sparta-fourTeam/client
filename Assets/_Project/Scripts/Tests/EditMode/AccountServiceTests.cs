@@ -177,5 +177,43 @@ namespace Game.Tests
             Assert.AreEqual(LinkResult.Linked, service.LinkAsync().GetAwaiter().GetResult());
             Assert.AreEqual(LoginMethod.Google, _credentials.Method);
         }
+
+        [TestCase(204, LinkResult.Linked, LoginMethod.Google)]
+        [TestCase(409, LinkResult.Conflict, LoginMethod.Guest)]
+        public void Link_LostResponse_OnlyConfirmedRetryChangesCredentials(int retryStatus, LinkResult expected, LoginMethod expectedMethod)
+        {
+            string path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"link-retry-{System.Guid.NewGuid()}.json");
+            try
+            {
+                var store = new LocalSaveStore(path);
+                var save = store.Load();
+                save.wallet.gold = 321;
+                store.Flush(save);
+                _credentials.Save(LoginMethod.Guest, "original-guest");
+                var transport = new FakeHttpTransport();
+                transport.Queued.Enqueue(HttpResponseData.Failed(HttpFailure.Timeout));
+                transport.Queued.Enqueue(new HttpResponseData(retryStatus, null));
+                var client = new HttpApiClient(new HttpApiConfig("https://example.test"), transport, tokens: _session);
+                var api = new ServerBackedAccountApi(client, new LocalAccountApi(store));
+                var service = new AccountService(api, new SessionAuthCredentialStore(_credentials, _session),
+                    _nav, new[] { new FakeSocial(true, "google-id-token") });
+                LogAssert.Expect(LogType.Exception, new Regex(HttpErrorMapper.Timeout));
+
+                Assert.AreEqual(LinkResult.Failed, service.LinkAsync().GetAwaiter().GetResult());
+                Assert.AreEqual(1, transport.Requests.Count, "응답 유실 직후 자동 재전송하지 않는다");
+                Assert.AreEqual("original-guest", _credentials.AccountId);
+                if (retryStatus == 409) { LogAssert.Expect(LogType.Exception, new Regex("HTTP_409")); }
+
+                Assert.AreEqual(expected, service.LinkAsync().GetAwaiter().GetResult());
+                Assert.AreEqual(expectedMethod, _credentials.Method);
+                Assert.AreEqual(retryStatus == 204 ? AuthCredentials.SocialAccountId : "original-guest", _credentials.AccountId);
+                Assert.AreEqual(2, transport.Requests.Count);
+                Assert.AreEqual(transport.Requests[0].Body, transport.Requests[1].Body);
+                Assert.AreEqual("Bearer access", transport.Requests[1].Headers["Authorization"]);
+                Assert.AreEqual(321, store.Load().wallet.gold, "연동 재시도가 기존 진행을 초기화하면 안 된다");
+                Assert.AreEqual(0, _nav.LoadingCalls);
+            }
+            finally { System.IO.File.Delete(path); }
+        }
     }
 }
