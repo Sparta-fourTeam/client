@@ -55,7 +55,7 @@ namespace Game.View
             });
             BindDocument(_privacyButton, ExternalLinks.PrivacyPolicy);
             BindDocument(_termsButton, ExternalLinks.TermsOfUse);
-            _supportButton.onClick.AddListener(() => ContactAsync().Forget(Debug.LogException));
+            _supportButton.onClick.AddListener(() => RunAsync(ContactAsync));
             _logoutButton.onClick.AddListener(() => RunAsync(LogoutAsync));
             _deleteAccountButton.onClick.AddListener(() => RunAsync(DeleteAccountAsync));
             _linkAccountButton.onClick.AddListener(() => RunAsync(LinkAccountAsync));
@@ -73,7 +73,7 @@ namespace Game.View
         // 문의 내용을 클립보드에 복사한 뒤 메일 작성 화면을 연다. 메일 앱이 없어 열리지 않아도 붙여 넣어 보낼 수 있다
         private async UniTask ContactAsync()
         {
-            string body = SupportMail.Body(_profile.Nickname, _account.IsGuest ? "게스트" : "소셜 계정", _account.GuestId,
+            string body = SupportMail.Body(_profile.Nickname, _account.IsGuest ? "게스트" : "소셜 계정", null,
                 SupportMail.ReadDiagnosticId(), Application.version, SystemInfo.deviceModel, SystemInfo.operatingSystem);
             GUIUtility.systemCopyBuffer = body;
             Application.OpenURL(SupportMail.Uri(body));
@@ -92,14 +92,25 @@ namespace Game.View
                 return;
             }
 
-            _busy = true;
+            SetBusy(true);
             Run(flow).Forget(Debug.LogException);
         }
 
         private async UniTask Run(System.Func<UniTask> flow)
         {
             try { await flow(); }
-            finally { _busy = false; }
+            finally { SetBusy(false); }
+        }
+
+        private void SetBusy(bool busy)
+        {
+            _busy = busy;
+            if (_deleteAccountButton != null) { _deleteAccountButton.interactable = !busy; }
+            if (_logoutButton != null) { _logoutButton.interactable = !busy; }
+            if (_linkAccountButton != null) { _linkAccountButton.interactable = !busy; }
+            if (_settingsButton != null) { _settingsButton.interactable = !busy; }
+            if (_supportButton != null) { _supportButton.interactable = !busy; }
+            if (_closeButton != null) { _closeButton.interactable = !busy; }
         }
 
         private async UniTask LogoutAsync()
@@ -123,7 +134,7 @@ namespace Game.View
             var first = new ConfirmRequest
             {
                 Title = "계정을 삭제하시겠습니까?",
-                Warning = "계정 삭제는 되돌릴 수 없으며, 그 결과에 대한 책임은 본인에게 있습니다.",
+                Warning = "계정과 진행 데이터가 즉시 삭제되며 복구할 수 없습니다. 같은 Google 계정으로 다시 가입해도 처음부터 시작합니다.",
                 ConfirmLabel = "계정 삭제",
                 CancelLabel = "취소",
             };
@@ -135,7 +146,7 @@ namespace Game.View
             var second = new ConfirmRequest
             {
                 Title = "계정 삭제",
-                Message = "계정 삭제는 되돌릴 수 없으며 그 결과에 대한 책임은 본인에게 있습니다.",
+                Message = "복구 유예 없이 모든 진행 데이터가 삭제됩니다. 확인을 위해 닉네임을 입력하세요.",
                 ConfirmLabel = "계정 삭제",
                 CancelLabel = "취소",
                 InputPlaceholder = "닉네임을 입력하세요",
@@ -143,7 +154,34 @@ namespace Game.View
             };
             if (await _confirm.ShowAsync(second))
             {
-                await _account.DeleteAccountAsync();
+                var label = _deleteAccountButton.GetComponentInChildren<TMP_Text>(true);
+                string original = label != null ? label.text : null;
+                if (label != null) { label.text = "삭제 중…"; }
+                string failure = null;
+                try
+                {
+                    await _account.DeleteAccountAsync();
+                }
+                catch (System.OperationCanceledException) { throw; }
+                catch (ApiException error)
+                {
+                    failure = error.Code == "HTTP_401" || error.Code == "SESSION_EXPIRED"
+                        ? "계정 삭제가 완료되지 않았습니다. 다시 로그인한 뒤 시도해 주세요."
+                        : "계정 삭제 완료를 확인하지 못했습니다. 연결 상태를 확인하고 다시 시도해 주세요. 문제가 계속되면 문의해 주세요.";
+                }
+                catch (System.Exception)
+                {
+                    failure = "계정 삭제를 완료하지 못했습니다. 앱을 다시 실행한 뒤 확인해 주세요. 문제가 계속되면 문의해 주세요.";
+                }
+                finally
+                {
+                    if (label != null) { label.text = original; }
+                }
+
+                if (failure != null)
+                {
+                    await _confirm.ShowAsync(new ConfirmRequest { Title = "계정 삭제 확인 필요", Message = failure });
+                }
             }
         }
 
@@ -186,7 +224,11 @@ namespace Game.View
             PopupPanel.Set(_panel, _transition, true);
         }
 
-        public void Close() => PopupPanel.Set(_panel, _transition, false);
+        public void Close()
+        {
+            // 삭제 응답을 기다리는 동안 로비로 돌아가 새 진행을 쓰지 않게 한다.
+            if (!_busy) { PopupPanel.Set(_panel, _transition, false); }
+        }
 
         public void Toggle()
         {

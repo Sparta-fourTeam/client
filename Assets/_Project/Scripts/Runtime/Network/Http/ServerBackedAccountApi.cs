@@ -3,7 +3,7 @@ using Game.Core;
 
 namespace Game.Network
 {
-    /// <summary>계정 연동은 서버로 보내고, 계정 삭제는 서버에 API가 아직 없어 로컬이 맡는다.
+    /// <summary>계정 연동·삭제를 서버로 보낸다. 삭제는 서버의 204 확인 뒤에만 로컬 저장을 지운다.
     /// 연동은 지금 로그인한 게스트 계정(액세스 토큰)에 외부 계정을 붙이는 것이라, 같은 유저가 외부 계정 유저로 바뀌고 데이터는 그대로 이어진다.
     /// 서버는 성공하면 204, 로그인하지 않았으면 401, 이미 연동된 계정이거나 그 외부 계정이 다른 유저에 연동돼 있으면 409를 준다
     /// (409 두 가지는 본문에 오류 코드가 없어 클라이언트가 구분하지 않는다)</summary>
@@ -20,7 +20,11 @@ namespace Game.Network
             _local = local;
         }
 
-        public UniTask DeleteAccount() => _local.DeleteAccount();
+        public async UniTask DeleteAccount()
+        {
+            await _client.Delete("api/auth/me");
+            await _local.DeleteAccount();
+        }
 
         public async UniTask LinkAccount(LoginMethod method, string accountId)
         {

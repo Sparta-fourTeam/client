@@ -22,7 +22,7 @@ namespace Game.Core
         ReauthenticationRequired,
     }
 
-    /// <summary>로그아웃·계정 삭제·계정 연동. 게스트 계정은 기기에만 있으므로 로그아웃하면 데이터도 함께 지운다.
+    /// <summary>로그아웃·계정 삭제·계정 연동. 게스트는 로그아웃하면 계정 데이터도 함께 지운다.
     /// 로그아웃과 삭제는 저장된 로그인 정보를 지우고 Loading 씬으로 돌아가 로그인창부터 다시 시작한다</summary>
     public sealed class AccountService
     {
@@ -30,13 +30,15 @@ namespace Game.Core
         private readonly IAuthCredentialStore _credentials;
         private readonly ISceneNavigator _nav;
         private readonly IReadOnlyList<ISocialSignIn> _social;
+        private readonly PlayerProfile _profile;
 
-        public AccountService(IAccountApi api, IAuthCredentialStore credentials, ISceneNavigator nav, IReadOnlyList<ISocialSignIn> social)
+        public AccountService(IAccountApi api, IAuthCredentialStore credentials, ISceneNavigator nav, IReadOnlyList<ISocialSignIn> social, PlayerProfile profile = null)
         {
             _api = api;
             _credentials = credentials;
             _nav = nav;
             _social = social ?? Array.Empty<ISocialSignIn>();
+            _profile = profile;
         }
 
         public bool IsGuest => !_credentials.HasCredential || _credentials.Method == LoginMethod.Guest;
@@ -110,21 +112,22 @@ namespace Game.Core
                 await _api.DeleteAccount();
             }
 
-            await ReturnToLoginAsync();
+            await ReturnToLoginAsync(clearProfile: IsGuest);
         }
 
         public async UniTask DeleteAccountAsync()
         {
             await _api.DeleteAccount();
-            await ReturnToLoginAsync();
+            await ReturnToLoginAsync(clearProfile: true);
         }
 
         /// <summary>계정과 진행을 지우지 않고 기존 로그인 방식·게스트 ID로 인증 절차를 다시 밟는다.</summary>
         public UniTask ReauthenticateAsync() => _nav.GoToLoading();
 
-        private UniTask ReturnToLoginAsync()
+        private UniTask ReturnToLoginAsync(bool clearProfile = false)
         {
             _credentials.Clear();
+            if (clearProfile) { _profile?.Clear(); }
             return _nav.GoToLoading();
         }
     }
