@@ -11,7 +11,23 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  manual_scope:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Require an existing version tag selected through the CLI
+        env:
+          RELEASE_REF: ${{ github.ref }}
+          RELEASE_REPOSITORY: ${{ github.repository }}
+        run: |
+          if [[ "$RELEASE_REPOSITORY" != 'Sparta-fourTeam/client' || "$RELEASE_REF" != refs/tags/v* ]]; then
+            echo 'Release APK requires an existing ledger-matching tag. Use gh workflow run release-apk.yml --ref <existing-version-tag> --repo Sparta-fourTeam/client.'
+            exit 1
+          fi
+
   release:
+    needs: manual_scope
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
 
