@@ -165,7 +165,7 @@ namespace Game.Tests
             Gauge(2, 4, 4);
             Gauge(3, 0, 6);
             State(StageState.CardSelect);
-            yield return Until(() => glow.enabled && glow.color.a > 0.3f);
+            yield return Until(() => glow.enabled && glow.color.a >= 0.8f);
             _view.gameObject.SetActive(false);
             var disabledColor = glow.color;
             for (int frame = 0; frame < 12; frame++)
@@ -175,6 +175,8 @@ namespace Game.Tests
             }
             _view.gameObject.SetActive(true);
             yield return Until(() => glow.enabled && glow.color != disabledColor);
+            yield return Until(() => glow.color.a < 0.4f);
+            yield return Until(() => glow.color.a >= 0.8f);
             // A state change delivered while disabled must be shown when the HUD returns.
             _view.gameObject.SetActive(false);
             State(StageState.Playing);

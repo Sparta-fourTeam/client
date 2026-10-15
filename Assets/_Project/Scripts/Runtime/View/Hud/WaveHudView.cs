@@ -137,6 +137,7 @@ namespace Game.View
             if (_gaugeGlow == null || _glowTween != null) { return; }
             ApplyGlow();
             _glowTween = DOTween.To(() => _glowBreath, v => { _glowBreath = v; ApplyGlow(); }, 1f, GlowBreatheSeconds)
+                .From(0f)
                 .SetEase(Ease.InOutSine)
                 .SetLoops(-1, LoopType.Yoyo)
                 .SetUpdate(true)
