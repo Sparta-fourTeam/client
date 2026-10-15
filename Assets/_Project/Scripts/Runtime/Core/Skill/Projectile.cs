@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.Profiling;
 using UnityEngine;
 using UnityEngine.Pool;
 using Time = UnityEngine.Time;
@@ -7,6 +8,20 @@ namespace Game.Core
 {
     public partial class Projectile : MonoBehaviour
     {
+        private static readonly ProfilerMarker TickMarker = new("Projectile.Tick");
+        private static readonly ProfilerMarker TickReactionsMarker = new("Projectile.TickReactions");
+        private static readonly ProfilerMarker QueryTargetsMarker = new("Projectile.QueryTargets");
+        private static readonly ProfilerMarker SortTargetsMarker = new("Projectile.SortTargets");
+        private static readonly ProfilerMarker ResolveHitsMarker = new("Projectile.ResolveHits");
+        private static readonly ProfilerMarker SpawnImpactMarker = new("Projectile.SpawnImpact");
+        private static readonly ProfilerMarker RecordHitMarker = new("Projectile.RecordHit");
+        private static readonly ProfilerMarker ApplyHitMarker = new("Projectile.ApplyHit");
+        private static readonly ProfilerMarker HitReactionsMarker = new("Projectile.HitReactions");
+        private static readonly ProfilerMarker KillReactionsMarker = new("Projectile.KillReactions");
+        private static readonly ProfilerMarker ExpiredReactionsMarker = new("Projectile.ExpiredReactions");
+        private static readonly ProfilerMarker ClearReservationMarker = new("Projectile.ClearReservation");
+        private static readonly ProfilerMarker ReleaseMarker = new("Projectile.Release");
+
         /// <summary>적에게 맞았을 때 맞은 자리에 생성하는 임팩트(선택). 임팩트 프리팹이 스스로 사라지게 만든다 (파티클 Stop Action을 Destroy로)</summary>
         [SerializeField] private GameObject impactPrefab;
         [SerializeField] private ProjectileVisual.FormSprite[] formSprites;
@@ -93,6 +108,7 @@ namespace Game.Core
 
         internal void Tick(float deltaTime)
         {
+            using var tickScope = TickMarker.Auto();
             using var scope = Game.Core.Combat.DamageAttribution.Begin(sourceSkill);
             if (released) { return; }
             Vector2 start = transform.position;
@@ -102,22 +118,38 @@ namespace Game.Core
             float activeDelta = Mathf.Min(deltaTime, Mathf.Max(0, lifetime));
             lifetime -= deltaTime;
             elapsed += activeDelta;
-            reactions.Raise(AttackEvent.Tick, new AttackContext(end, direction, deltaTime: activeDelta, elapsed: elapsed));
+            using (TickReactionsMarker.Auto())
+            {
+                reactions.Raise(AttackEvent.Tick, new AttackContext(end, direction, deltaTime: activeDelta, elapsed: elapsed));
+            }
             if (lifetime <= 0)
             {
                 released = true;
                 ClearReservation();
-                reactions.Raise(AttackEvent.Expired, new AttackContext(end, direction, elapsed: elapsed));
-                pool.Release(this);
+                using (ExpiredReactionsMarker.Auto())
+                {
+                    reactions.Raise(AttackEvent.Expired, new AttackContext(end, direction, elapsed: elapsed));
+                }
+                using (ReleaseMarker.Auto())
+                {
+                    pool.Release(this);
+                }
                 return;
             }
 
             // 전체 이동 구간을 검사하므로 끝점에서 가까운 4체로 제한하지 않는다.
-            targetProvider.GetNearest(start, int.MaxValue, hitBuffer);
+            using (QueryTargetsMarker.Auto())
+            {
+                targetProvider.GetNearest(start, int.MaxValue, hitBuffer);
+            }
             hitSegmentStart = start;
             hitSegmentEnd = end;
-            hitBuffer.Sort(compareHits);
+            using (SortTargetsMarker.Auto())
+            {
+                hitBuffer.Sort(compareHits);
+            }
 
+            using var resolveHitsScope = ResolveHitsMarker.Auto();
             float hitRadiusSqr = hitRadius * hitRadius;
             foreach (var candidate in hitBuffer)
             {
@@ -130,15 +162,30 @@ namespace Game.Core
 
                 if (candidate.IsDead) { continue; }
                 if (ReferenceEquals(candidate, ignoredTarget)) { continue; }
-                if (!hitLedger.TryHit(candidate)) { continue; }
+                using (RecordHitMarker.Auto())
+                {
+                    if (!hitLedger.TryHit(candidate)) { continue; }
+                }
                 // 적중했거나 더 진행할 수 없는 공격은 피해/자식 시전 콜백 전에 자기 예약을 해제한다.
                 if (ReferenceEquals(candidate, reservation?.Target) || hitLedger.Exhausted || candidate.BlocksPierce)
                 { ClearReservation(); }
-                hitReactions.Raise(AttackEvent.Hit, new AttackContext(hitPosition, direction, candidate, randomValue));
+                using (ApplyHitMarker.Auto())
+                {
+                    hitReactions.Raise(AttackEvent.Hit, new AttackContext(hitPosition, direction, candidate, randomValue));
+                }
                 SpawnImpact(hitPosition);
                 var context = new AttackContext(hitPosition, direction, candidate);
-                reactions.Raise(AttackEvent.Hit, context);
-                if (candidate.IsDead) { reactions.Raise(AttackEvent.Kill, context); }
+                using (HitReactionsMarker.Auto())
+                {
+                    reactions.Raise(AttackEvent.Hit, context);
+                }
+                if (candidate.IsDead)
+                {
+                    using (KillReactionsMarker.Auto())
+                    {
+                        reactions.Raise(AttackEvent.Kill, context);
+                    }
+                }
                 if (candidate.BlocksPierce) { hitLedger.Exhaust(); }
                 if (hitLedger.Exhausted)
                 {
@@ -150,6 +197,7 @@ namespace Game.Core
 
         private void Release()
         {
+            using var releaseScope = ReleaseMarker.Auto();
             released = true;
             ClearReservation();
             pool.Release(this);
@@ -157,6 +205,7 @@ namespace Game.Core
 
         private void ClearReservation()
         {
+            using var reservationScope = ClearReservationMarker.Auto();
             reservation?.Dispose();
             reservation = null;
         }
@@ -176,6 +225,7 @@ namespace Game.Core
         {
             var prefab = activeImpact != null ? activeImpact : impactPrefab;
             if (prefab == null) { return; }
+            using var impactScope = SpawnImpactMarker.Auto();
             var impact = Instantiate(prefab, position, transform.rotation);
             UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(impact, gameObject.scene);
             impact.transform.localScale *= Mathf.Clamp(Mathf.Abs(transform.lossyScale.x), .5f, 1.6f);

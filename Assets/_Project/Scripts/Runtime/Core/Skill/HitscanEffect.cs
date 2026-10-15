@@ -1,3 +1,4 @@
+using Unity.Profiling;
 using UnityEngine;
 using UnityEngine.Pool;
 
@@ -5,6 +6,17 @@ namespace Game.Core
 {
     public partial class HitscanEffect : MonoBehaviour
     {
+        private static readonly ProfilerMarker TickReactionsMarker = new("HitscanEffect.TickReactions");
+        private static readonly ProfilerMarker HitMarker = new("HitscanEffect.Hit");
+        private static readonly ProfilerMarker QueryTargetsMarker = new("HitscanEffect.QueryTargets");
+        private static readonly ProfilerMarker ResolveHitsMarker = new("HitscanEffect.ResolveHits");
+        private static readonly ProfilerMarker ApplyDamageMarker = new("HitscanEffect.ApplyDamage");
+        private static readonly ProfilerMarker HitReactionsMarker = new("HitscanEffect.HitReactions");
+        private static readonly ProfilerMarker KillReactionsMarker = new("HitscanEffect.KillReactions");
+        private static readonly ProfilerMarker ImpactReactionsMarker = new("HitscanEffect.ImpactReactions");
+        private static readonly ProfilerMarker ExpiredReactionsMarker = new("HitscanEffect.ExpiredReactions");
+        private static readonly ProfilerMarker ReleaseMarker = new("HitscanEffect.Release");
+
         private IObjectPool<HitscanEffect> pool;
         [SerializeField] private LayerMask targetMask;
         private float damage;
@@ -53,7 +65,10 @@ namespace Game.Core
             }
 
             elapsed += Time.deltaTime;
-            reactions.Raise(AttackEvent.Tick, new AttackContext(transform.position, Vector3.zero, deltaTime: Time.deltaTime, elapsed: elapsed));
+            using (TickReactionsMarker.Auto())
+            {
+                reactions.Raise(AttackEvent.Tick, new AttackContext(transform.position, Vector3.zero, deltaTime: Time.deltaTime, elapsed: elapsed));
+            }
 
             if (hitDelay >= 0f && !hitDone && elapsed >= hitDelay)
             {
@@ -68,6 +83,7 @@ namespace Game.Core
 
         private void Hit()
         {
+            using var hitScope = HitMarker.Auto();
             if (!gameObject.activeSelf || hitDone || released)
             {
                 return;
@@ -79,39 +95,77 @@ namespace Game.Core
             {
                 if (!directTarget.IsDead)
                 {
-                    directTarget.TakeDamage(Game.Core.Combat.DamageInfo.FromCurrent(Mathf.Max(1, (int)damage), isImpact: true));
+                    using (ApplyDamageMarker.Auto())
+                    {
+                        directTarget.TakeDamage(Game.Core.Combat.DamageInfo.FromCurrent(Mathf.Max(1, (int)damage), isImpact: true));
+                    }
                     var context = new AttackContext(transform.position, Vector3.zero, directTarget);
-                    reactions.Raise(AttackEvent.Hit, context);
-                    if (directTarget.IsDead) { reactions.Raise(AttackEvent.Kill, context); }
+                    using (HitReactionsMarker.Auto())
+                    {
+                        reactions.Raise(AttackEvent.Hit, context);
+                    }
+                    if (directTarget.IsDead)
+                    {
+                        using (KillReactionsMarker.Auto())
+                        {
+                            reactions.Raise(AttackEvent.Kill, context);
+                        }
+                    }
                 }
                 return;
             }
-            Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, activeRadius, targetMask);
-
-            var damaged = new System.Collections.Generic.HashSet<Enemy>();
-            foreach (Collider2D hit in hits)
+            Collider2D[] hits;
+            using (QueryTargetsMarker.Auto())
             {
-                if (hit.TryGetComponent(out Enemy enemy) && !enemy.IsDead && damaged.Add(enemy))
+                hits = Physics2D.OverlapCircleAll(transform.position, activeRadius, targetMask);
+            }
+
+            using (ResolveHitsMarker.Auto())
+            {
+                var damaged = new System.Collections.Generic.HashSet<Enemy>();
+                foreach (Collider2D hit in hits)
                 {
-                    Vector2 position = enemy.transform.position;
-                    enemy.TakeDamage(Game.Core.Combat.DamageInfo.FromCurrent((int)damage, isImpact: true));
-                    var context = new AttackContext(position, Vector3.zero, enemy);
-                    reactions.Raise(AttackEvent.Hit, context);
-                    if (enemy.IsDead) { reactions.Raise(AttackEvent.Kill, context); }
+                    if (hit.TryGetComponent(out Enemy enemy) && !enemy.IsDead && damaged.Add(enemy))
+                    {
+                        Vector2 position = enemy.transform.position;
+                        using (ApplyDamageMarker.Auto())
+                        {
+                            enemy.TakeDamage(Game.Core.Combat.DamageInfo.FromCurrent((int)damage, isImpact: true));
+                        }
+                        var context = new AttackContext(position, Vector3.zero, enemy);
+                        using (HitReactionsMarker.Auto())
+                        {
+                            reactions.Raise(AttackEvent.Hit, context);
+                        }
+                        if (enemy.IsDead)
+                        {
+                            using (KillReactionsMarker.Auto())
+                            {
+                                reactions.Raise(AttackEvent.Kill, context);
+                            }
+                        }
+                    }
                 }
             }
-            reactions.Raise(AttackEvent.Impact, new AttackContext(transform.position, Vector3.zero, sourceTarget));
+            using (ImpactReactionsMarker.Auto())
+            {
+                reactions.Raise(AttackEvent.Impact, new AttackContext(transform.position, Vector3.zero, sourceTarget));
+            }
         }
 
         private void Release()
         {
+            using var releaseScope = ReleaseMarker.Auto();
             if (released)
             {
                 return;
             }
 
             released = true;
-            reactions.Raise(AttackEvent.Expired, new AttackContext(transform.position, Vector3.zero));
+            using (ExpiredReactionsMarker.Auto())
+            {
+                reactions.Raise(AttackEvent.Expired, new AttackContext(transform.position, Vector3.zero));
+            }
             pool.Release(this);
         }
     }

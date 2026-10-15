@@ -3,7 +3,9 @@ using Game.Core.Combat;
 using Game.Core.Defense;
 using Game.Core.Messages;
 using MessagePipe;
+using Unity.Profiling;
 using UnityEngine;
+using UnityEngine.Pool;
 
 namespace Game.Core
 {
@@ -12,6 +14,10 @@ namespace Game.Core
     public partial class Enemy : MonoBehaviour, IEnemyTarget, IFreezableTarget, IKnockbackTarget, IPullTarget, IFrostbiteTarget,
         IParalyzableTarget, IFreezeMaxHpDotTarget, IBurnableTarget, IAreaSlowTarget, IStunnableTarget, ISlowableTarget, IVulnerableTarget
     {
+        private static readonly ProfilerMarker HpPresentationMarker = new("Enemy.HpPresentation");
+        private static readonly ProfilerMarker DamagePopupMarker = new("Enemy.DamagePopup");
+        private static readonly ProfilerMarker DeathPresentationMarker = new("Enemy.DeathPresentation");
+
         private static readonly int MovingHash = Animator.StringToHash("Moving");
         private static readonly int HitHash = Animator.StringToHash("Hit");
         private static readonly int DieHash = Animator.StringToHash("Die");
@@ -215,6 +221,7 @@ namespace Game.Core
                 return;
             }
 
+            using var hpScope = HpPresentationMarker.Auto();
             // 체력이 늘었다면(회복) 피격 연출은 없다
             int damage = _lastHp - message.Current;
             _lastHp = message.Current;
@@ -229,10 +236,13 @@ namespace Game.Core
 
             // 실제로 깎인 체력(남은 체력을 넘는 과잉 피해는 빠진 값)을 머리 위에 띄운다
             float jitter = UnityEngine.Random.Range(-DamagePopupJitter, DamagePopupJitter);
-            float top = VisualBounds.TopY(transform);
-            var center = new Vector3(Position.x, (top + VisualBounds.BottomY(transform, transform.position.y)) * 0.5f, transform.position.z);
-            DamagePopupPool.Show(damage, new Vector3(Position.x + jitter, top, transform.position.z), gameObject.scene,
-                DamagePopupKinds.Of(message.Damage), center);
+            VisualBounds.GetVerticalExtents(transform, transform.position.y, out float top, out float bottom);
+            var center = new Vector3(Position.x, (top + bottom) * 0.5f, transform.position.z);
+            using (DamagePopupMarker.Auto())
+            {
+                DamagePopupPool.Show(damage, new Vector3(Position.x + jitter, top, transform.position.z), gameObject.scene,
+                    DamagePopupKinds.Of(message.Damage), center);
+            }
 
             if (impact && _hasHit && message.Current > 0)
             {
@@ -247,6 +257,7 @@ namespace Game.Core
                 return;
             }
 
+            using var deathScope = DeathPresentationMarker.Auto();
             _deathPlayed = true;
             _hitFlash?.Restore();
             GetComponent<EnemyStatusEffects>()?.Clear();
@@ -255,8 +266,9 @@ namespace Game.Core
             {
                 var body = _animator != null ? _animator.transform : transform;
                 var bounds = new Bounds(Position, Vector3.one * .6f);
-                var renderers = body.GetComponentsInChildren<SpriteRenderer>();
-                if (renderers.Length > 0)
+                using var rendererLease = ListPool<SpriteRenderer>.Get(out var renderers);
+                body.GetComponentsInChildren(false, renderers);
+                if (renderers.Count > 0)
                 {
                     bounds = renderers[0].bounds;
                     foreach (var renderer in renderers) { bounds.Encapsulate(renderer.bounds); }

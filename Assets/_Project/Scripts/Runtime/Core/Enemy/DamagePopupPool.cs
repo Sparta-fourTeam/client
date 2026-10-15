@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -19,8 +20,9 @@ namespace Game.Core
         /// <summary>false면 데미지 숫자를 띄우지 않는다 (설정의 데미지 표시)</summary>
         public static bool Enabled { get; set; } = true;
 
-        private readonly List<DamagePopup> _active = new(); // 오래된 순서
-        private readonly Stack<DamagePopup> _free = new();
+        private readonly List<DamagePopup> _active = new(MaxActive); // 오래된 순서
+        private readonly Stack<DamagePopup> _free = new(MaxActive);
+        private Action<DamagePopup> _releaseCallback;
         private DamagePopup _prefab;
 
         public int ActiveCount => _active.Count;
@@ -100,7 +102,8 @@ namespace Game.Core
                 popup = Instantiate(_prefab, transform);
             }
 
-            popup.Show(amount, position, kind, Release, hitPoint);
+            _releaseCallback ??= Release;
+            popup.Show(amount, position, kind, _releaseCallback, hitPoint);
             _active.Add(popup);
         }
 
