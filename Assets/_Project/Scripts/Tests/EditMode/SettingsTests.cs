@@ -34,19 +34,29 @@ namespace Game.Tests
 
         private sealed class GuestCredentials : IAuthCredentialStore
         {
+            public int Cleared;
             public bool HasCredential => true;
             public LoginMethod Method => LoginMethod.Guest;
             public string AccountId => "guest";
             public void Save(LoginMethod method, string accountId) { }
-            public void Clear() { }
+            public void Clear() { Cleared++; }
         }
 
         private sealed class MemoryAccountApi : IAccountApi
         {
             public int Deleted;
+            public System.Exception LinkError;
             public readonly UniTaskCompletionSource Completion = new();
             public UniTask DeleteAccount() { Deleted++; return Completion.Task; }
-            public UniTask LinkAccount(LoginMethod method, string accountId) => UniTask.CompletedTask;
+            public UniTask LinkAccount(LoginMethod method, string accountId) => LinkError != null
+                ? UniTask.FromException(LinkError) : UniTask.CompletedTask;
+        }
+
+        private sealed class AvailableSocial : ISocialSignIn
+        {
+            public LoginMethod Method => LoginMethod.Google;
+            public bool IsAvailable => true;
+            public UniTask<string> SignInAsync() => UniTask.FromResult("google-id-token");
         }
 
         private sealed class MemoryNavigator : ISceneNavigator
@@ -208,11 +218,12 @@ namespace Game.Tests
         [Test(Description = "문의 메일은 한글·공백·줄바꿈이 깨지지 않게 인코딩되어 본문이 그대로 복원되고, 값이 없는 정보 줄은 빠진다")]
         public void SupportMail_EncodesBodyAndOmitsMissingInfo()
         {
-            string body = SupportMail.Body("닉 네임", "게스트", null, " ", "1.2.3", "Pixel 8", "Android 15");
+            string body = SupportMail.Body("닉 네임", "게스트", "guest-login-secret", " ", "1.2.3", "Pixel 8", "Android 15");
 
             StringAssert.Contains("닉네임: 닉 네임", body);
             StringAssert.Contains("앱 버전: 1.2.3", body);
             StringAssert.DoesNotContain("게스트 ID", body);
+            StringAssert.DoesNotContain("guest-login-secret", body);
             StringAssert.DoesNotContain("Unity 진단 ID", body);
 
             string uri = SupportMail.Uri(body);
@@ -242,6 +253,12 @@ namespace Game.Tests
             accept.onClick.Invoke();
             Assert.AreEqual(1, api.Deleted, "두 번째 완료소스가 살아 있어야 삭제 흐름이 이어진다");
             Assert.AreEqual(0, nav.LoadingCalls);
+            Assert.IsFalse(delete.interactable);
+            Assert.IsFalse(Field<Button>(menu, "_logoutButton").interactable);
+            StringAssert.Contains("삭제 중", delete.GetComponentInChildren<TMP_Text>(true).text);
+            menu.Close();
+            Assert.IsTrue(menu.IsOpen, "삭제 처리 중에는 로비로 돌아가 진행을 바꾸지 않는다");
+            Assert.IsFalse(Field<Button>(menu, "_settingsButton").interactable);
             accept.onClick.Invoke();
             delete.onClick.Invoke();
             Assert.IsFalse(Field<PopupTransition>(confirm, "_transition").IsShown, "계정 API 완료 전에는 연타로 새 흐름을 시작하지 않는다");
@@ -252,6 +269,57 @@ namespace Game.Tests
             delete.onClick.Invoke();
             Assert.IsTrue(confirm.IsOpen, "완료 후 메뉴 busy가 풀린다");
             Field<Button>(confirm, "_cancelButton").onClick.Invoke();
+        }
+
+        [TestCase("HTTP_500", false, true)]
+        [TestCase("HTTP_401", true, true)]
+        [TestCase("SESSION_EXPIRED", true, true)]
+        [TestCase("SESSION_EXPIRED", true, false)]
+        [TestCase("NETWORK_ERROR", false, true)]
+        public void Menu_DeleteFailure_ShowsNoticeAndRecoversOrAllowsRetry(string code, bool reauthenticate, bool confirmLogin)
+        {
+            var (menu, confirm, api, nav) = CreateDeleteMenu();
+            var delete = Field<Button>(menu, "_deleteAccountButton");
+            var accept = Field<Button>(confirm, "_confirmButton");
+            delete.onClick.Invoke();
+            accept.onClick.Invoke();
+            Field<TMP_InputField>(confirm, "_input").text = "Review_Ninja";
+            accept.onClick.Invoke();
+            api.Completion.TrySetException(new ApiException(ApiErrorKind.Rejected, code));
+            Assert.AreEqual(0, nav.LoadingCalls);
+            Assert.IsTrue(confirm.IsOpen);
+            Assert.AreEqual("계정 삭제 확인 필요", Field<TMP_Text>(confirm, "_title").text);
+            Assert.IsFalse(delete.interactable);
+            StringAssert.DoesNotContain("삭제 중", delete.GetComponentInChildren<TMP_Text>(true).text);
+            Field<Button>(confirm, confirmLogin ? "_confirmButton" : "_closeButton").onClick.Invoke();
+            Assert.AreEqual(reauthenticate && confirmLogin ? 1 : 0, nav.LoadingCalls);
+            Assert.AreEqual(1, api.Deleted);
+            Assert.IsTrue(delete.interactable);
+            if (reauthenticate) { return; }
+            delete.onClick.Invoke();
+            Assert.IsTrue(confirm.IsOpen);
+            Assert.AreEqual(1, api.Deleted);
+            Field<Button>(confirm, "_cancelButton").onClick.Invoke();
+        }
+
+        [TestCase("HTTP_500", false, true)]
+        [TestCase("SESSION_EXPIRED", true, true)]
+        [TestCase("SESSION_EXPIRED", true, false)]
+        public void Menu_GuestLogoutFailure_ShowsNoticeAndCanReauthenticate(string code, bool reauthenticate, bool confirmLogin)
+        {
+            var (menu, confirm, api, nav) = CreateDeleteMenu();
+            var accept = Field<Button>(confirm, "_confirmButton");
+            Field<Button>(menu, "_logoutButton").onClick.Invoke();
+            accept.onClick.Invoke();
+            Assert.AreEqual(1, api.Deleted);
+            api.Completion.TrySetException(new ApiException(ApiErrorKind.Rejected, code));
+            Assert.IsTrue(confirm.IsOpen);
+            Assert.AreEqual("로그아웃 확인 필요", Field<TMP_Text>(confirm, "_title").text);
+            Assert.AreEqual(0, nav.LoadingCalls);
+            Field<Button>(confirm, confirmLogin ? "_confirmButton" : "_closeButton").onClick.Invoke();
+            Assert.AreEqual(reauthenticate && confirmLogin ? 1 : 0, nav.LoadingCalls);
+            Assert.AreEqual(1, api.Deleted, "재인증할 때 서버 삭제를 다시 요청하지 않는다");
+            Assert.IsTrue(Field<Button>(menu, "_logoutButton").interactable);
         }
 
         [TestCase(false, 0)]
@@ -292,6 +360,27 @@ namespace Game.Tests
             Assert.IsTrue(confirm.IsOpen);
             Assert.IsFalse(Field<TMP_InputField>(confirm, "_input").gameObject.activeSelf, "재시도는 첫 확인부터 시작한다");
             Field<Button>(confirm, "_cancelButton").onClick.Invoke();
+        }
+
+        [TestCase(true)]
+        [TestCase(false)]
+        public void Menu_LinkSessionExpired_OffersLoginAndPreservesGuest(bool confirmLogin)
+        {
+            var (menu, confirm, api, nav) = CreateDeleteMenu();
+            var credentials = new GuestCredentials();
+            menu.Construct(new AccountService(api, credentials, nav, new[] { new AvailableSocial() }), new PlayerProfile(null));
+            api.LinkError = new ApiException(ApiErrorKind.Rejected, "SESSION_EXPIRED");
+            UnityEngine.TestTools.LogAssert.Expect(LogType.Exception, new System.Text.RegularExpressions.Regex("SESSION_EXPIRED"));
+
+            Field<Button>(menu, "_linkAccountButton").onClick.Invoke();
+            Assert.IsTrue(confirm.IsOpen);
+            StringAssert.Contains("로그인", Field<TMP_Text>(confirm, "_message").text);
+            Assert.AreEqual(0, nav.LoadingCalls);
+            Field<Button>(confirm, confirmLogin ? "_confirmButton" : "_closeButton").onClick.Invoke();
+            Assert.AreEqual(confirmLogin ? 1 : 0, nav.LoadingCalls);
+            Assert.AreEqual("guest", credentials.AccountId);
+            Assert.AreEqual(0, credentials.Cleared);
+            Assert.AreEqual(0, api.Deleted);
         }
 
         private (LobbyMenuPopupView, ConfirmPopupView, MemoryAccountApi, MemoryNavigator) CreateDeleteMenu()

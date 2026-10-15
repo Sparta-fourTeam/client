@@ -7,7 +7,26 @@ namespace Game.Core
     public sealed class PlayerProfile
     {
         private readonly GameDataStore _data;
-        private PlayerSnapshot _snapshot = new PlayerSnapshot { stageProgress = new(), upgrades = new(), items = new(), codex = new(), quests = new(), questChests = new(), shop = new() };
+        private PlayerSnapshot _snapshot = EmptySnapshot();
+
+        private static PlayerSnapshot EmptySnapshot() => new()
+        {
+            stageProgress = new(),
+            upgrades = new(),
+            items = new(),
+            codex = new(),
+            quests = new(),
+            questChests = new(),
+            shop = new()
+        };
+
+        /// <summary>삭제된 계정의 진행 캐시를 지운다. 다음 로그인에서 새 스냅샷을 받아야 한다.</summary>
+        public void Clear()
+        {
+            _snapshot = EmptySnapshot();
+            IsLoaded = false;
+            Changed?.Invoke(this);
+        }
 
         public event Action<PlayerProfile> Changed;
 
@@ -18,6 +37,7 @@ namespace Game.Core
 
         public string Nickname => _snapshot.nickname ?? string.Empty;
         public int Gold => _snapshot.gold;
+        public int Gems => _snapshot.gems;
         public int Exp => _snapshot.exp;
         public int Level => _data.PlayerLevels.At(_snapshot.exp).level;
         /// <summary>현재 레벨 안에서 쌓은 경험치</summary>
@@ -36,7 +56,6 @@ namespace Game.Core
         /// <summary>보드 게이지의 현재 점수(받은 퀘스트의 점수 합)</summary>
         public int QuestPoints(QuestBoardDefinition board) => QuestRules.Points(board, _snapshot.quests);
 
-        public int Gems => _snapshot.gems;
         public ShopState Shop => _snapshot.shop;
         public bool IsShopSlotSold(int slot) => _snapshot.shop.purchased.Contains(slot);
 

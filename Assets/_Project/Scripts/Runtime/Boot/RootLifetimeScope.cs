@@ -46,9 +46,17 @@ namespace Game.Boot
             builder.Register<ISocialSignIn, PlaceholderAppleSignIn>(Lifetime.Singleton);
             // TODO(server): 호출부 없음 — 예: BootFlow에서 GetVersions() 비교 후 GetTable()로 갱신
             builder.Register<IDataApi, LocalDataApi>(Lifetime.Singleton);
-            builder.Register<IAccountApi, LocalAccountApi>(Lifetime.Singleton);
+            // 계정 연동은 서버 인증을 쓰는 빌드에서만 서버로 보낸다 (서버 로그인으로 받은 토큰이 있어야 하기 때문)
+            builder.Register<LocalAccountApi>(Lifetime.Singleton);
+            builder.Register<ServerBackedAccountApi>(Lifetime.Singleton);
+            builder.Register<IAccountApi>(c => ServerConfig.UseServerAuth ? c.Resolve<ServerBackedAccountApi>() : c.Resolve<LocalAccountApi>(),
+                Lifetime.Singleton);
             builder.Register<AccountService>(Lifetime.Singleton);
-            builder.Register<IPlayerApi, LocalPlayerApi>(Lifetime.Singleton);
+            // 플레이어 상태는 기본이 로컬이고, 서버(GET /api/user/me)는 dev.server_player가 켜진 개발 중에만 쓴다
+            builder.Register<LocalPlayerApi>(Lifetime.Singleton);
+            builder.Register<HttpPlayerApi>(Lifetime.Singleton);
+            builder.Register<IPlayerApi>(c => ServerConfig.UseServerPlayer ? c.Resolve<HttpPlayerApi>() : c.Resolve<LocalPlayerApi>(),
+                Lifetime.Singleton);
             builder.Register<IBattleApi, LocalBattleApi>(Lifetime.Singleton).AsSelf().As<ISubmitFaultSwitch>();
             builder.Register<IUpgradeApi, LocalUpgradeApi>(Lifetime.Singleton);
             // TODO(server): Recover(Ad) 항상 거절 중 — 예: 광고 SDK 콜백에서 Recover(EnergySource.Ad, adTxId) 호출

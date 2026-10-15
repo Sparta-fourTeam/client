@@ -1,8 +1,11 @@
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using Cysharp.Threading.Tasks;
 using Game.Core;
 using Game.Network;
 using NUnit.Framework;
+using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace Game.Tests
 {
@@ -14,8 +17,15 @@ namespace Game.Tests
         {
             public int Deleted;
             public LoginMethod? Linked;
+            public System.Exception LinkError;
             public UniTask DeleteAccount() { Deleted++; return UniTask.CompletedTask; }
-            public UniTask LinkAccount(LoginMethod method, string accountId) { Linked = method; return UniTask.CompletedTask; }
+
+            public UniTask LinkAccount(LoginMethod method, string accountId)
+            {
+                if (LinkError != null) { throw LinkError; }
+                Linked = method;
+                return UniTask.CompletedTask;
+            }
         }
 
         private sealed class MemoryCredentials : IAuthCredentialStore
@@ -79,6 +89,24 @@ namespace Game.Tests
             Assert.IsFalse(_session.GetHeaders().ContainsKey("Authorization"), "로그아웃/삭제 후 서버 인증 헤더가 남으면 안 된다");
         }
 
+        [Test]
+        public void Reauthenticate_KeepsGuestIdentityAndProgressInsteadOfDeletingOrSigningUp()
+        {
+            _credentials.Save(LoginMethod.Guest, "existing-guest");
+            _session.Clear();
+            var profile = new PlayerProfile(null);
+            profile.Apply(new PlayerSnapshot { gold = 321, exp = 900 });
+            var service = new AccountService(_api, new SessionAuthCredentialStore(_credentials, _session), _nav, null, profile);
+            service.ReauthenticateAsync().GetAwaiter().GetResult();
+            Assert.AreEqual(LoginMethod.Guest, _credentials.Method);
+            Assert.AreEqual("existing-guest", _credentials.AccountId);
+            Assert.IsTrue(profile.IsLoaded);
+            Assert.AreEqual(321, profile.Gold);
+            Assert.AreEqual(900, profile.Exp);
+            Assert.AreEqual(0, _api.Deleted);
+            Assert.AreEqual(1, _nav.LoadingCalls);
+        }
+
         [Test(Description = "연동한 계정이 로그아웃하면 데이터는 남기고 로그인 정보만 비운다")]
         public void Logout_Linked_KeepsData()
         {
@@ -133,6 +161,92 @@ namespace Game.Tests
             _credentials.Save(LoginMethod.Guest, "g");
             Assert.AreEqual(LinkResult.Unavailable, Create(new FakeSocial(false, null)).LinkAsync().GetAwaiter().GetResult());
             Assert.IsNull(_api.Linked);
+        }
+
+        [Test(Description = "서버가 연동을 거절하면(409) 로그인 정보를 바꾸지 않고 게스트 그대로 둔다")]
+        public void Link_ServerConflict_KeepsGuest()
+        {
+            _credentials.Save(LoginMethod.Guest, "g");
+            _api.LinkError = new ApiException(ApiErrorKind.Rejected, "HTTP_409");
+            LogAssert.Expect(LogType.Exception, new Regex("HTTP_409"));
+
+            var result = Create(new FakeSocial(true, "google-token")).LinkAsync().GetAwaiter().GetResult();
+
+            Assert.AreEqual(LinkResult.Conflict, result);
+            Assert.AreEqual(LoginMethod.Guest, _credentials.Method);
+            Assert.AreEqual("g", _credentials.AccountId);
+        }
+
+        [TestCase(ApiErrorKind.Transient, "HTTP_503")]
+        [TestCase(ApiErrorKind.Network, "NETWORK_ERROR")]
+        [Test(Description = "서버 오류·로그인 만료·네트워크 문제로 연동하지 못하면 실패로 끝나고 게스트 그대로 두며, 다시 시도할 수 있다")]
+        public void Link_OtherServerFailure_KeepsGuestAndCanRetry(ApiErrorKind kind, string code)
+        {
+            _credentials.Save(LoginMethod.Guest, "g");
+            _api.LinkError = new ApiException(kind, code);
+            LogAssert.Expect(LogType.Exception, new Regex(code));
+            var service = Create(new FakeSocial(true, "google-token"));
+
+            Assert.AreEqual(LinkResult.Failed, service.LinkAsync().GetAwaiter().GetResult());
+            Assert.AreEqual(LoginMethod.Guest, _credentials.Method);
+
+            _api.LinkError = null;
+            Assert.AreEqual(LinkResult.Linked, service.LinkAsync().GetAwaiter().GetResult());
+            Assert.AreEqual(LoginMethod.Google, _credentials.Method);
+        }
+
+        [TestCase("SESSION_EXPIRED")]
+        [TestCase("HTTP_401")]
+        public void Link_ExpiredSession_RequiresLoginWithoutReplacingGuest(string code)
+        {
+            _credentials.Save(LoginMethod.Guest, "original-guest");
+            _session.Clear();
+            _api.LinkError = new ApiException(ApiErrorKind.Rejected, code);
+            LogAssert.Expect(LogType.Exception, new Regex(code));
+            var result = Create(new FakeSocial(true, "google-token")).LinkAsync().GetAwaiter().GetResult();
+
+            Assert.AreEqual(LinkResult.ReauthenticationRequired, result);
+            Assert.AreEqual(LoginMethod.Guest, _credentials.Method);
+            Assert.AreEqual("original-guest", _credentials.AccountId);
+            Assert.AreEqual(0, _api.Deleted);
+        }
+
+        [TestCase(204, LinkResult.Linked, LoginMethod.Google)]
+        [TestCase(409, LinkResult.Conflict, LoginMethod.Guest)]
+        public void Link_LostResponse_OnlyConfirmedRetryChangesCredentials(int retryStatus, LinkResult expected, LoginMethod expectedMethod)
+        {
+            string path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"link-retry-{System.Guid.NewGuid()}.json");
+            try
+            {
+                var store = new LocalSaveStore(path);
+                var save = store.Load();
+                save.wallet.gold = 321;
+                store.Flush(save);
+                _credentials.Save(LoginMethod.Guest, "original-guest");
+                var transport = new FakeHttpTransport();
+                transport.Queued.Enqueue(HttpResponseData.Failed(HttpFailure.Timeout));
+                transport.Queued.Enqueue(new HttpResponseData(retryStatus, null));
+                var client = new HttpApiClient(new HttpApiConfig("https://example.test"), transport, tokens: _session);
+                var api = new ServerBackedAccountApi(client, new LocalAccountApi(store));
+                var service = new AccountService(api, new SessionAuthCredentialStore(_credentials, _session),
+                    _nav, new[] { new FakeSocial(true, "google-id-token") });
+                LogAssert.Expect(LogType.Exception, new Regex(HttpErrorMapper.Timeout));
+
+                Assert.AreEqual(LinkResult.Failed, service.LinkAsync().GetAwaiter().GetResult());
+                Assert.AreEqual(1, transport.Requests.Count, "응답 유실 직후 자동 재전송하지 않는다");
+                Assert.AreEqual("original-guest", _credentials.AccountId);
+                if (retryStatus == 409) { LogAssert.Expect(LogType.Exception, new Regex("HTTP_409")); }
+
+                Assert.AreEqual(expected, service.LinkAsync().GetAwaiter().GetResult());
+                Assert.AreEqual(expectedMethod, _credentials.Method);
+                Assert.AreEqual(retryStatus == 204 ? AuthCredentials.SocialAccountId : "original-guest", _credentials.AccountId);
+                Assert.AreEqual(2, transport.Requests.Count);
+                Assert.AreEqual(transport.Requests[0].Body, transport.Requests[1].Body);
+                Assert.AreEqual("Bearer access", transport.Requests[1].Headers["Authorization"]);
+                Assert.AreEqual(321, store.Load().wallet.gold, "연동 재시도가 기존 진행을 초기화하면 안 된다");
+                Assert.AreEqual(0, _nav.LoadingCalls);
+            }
+            finally { System.IO.File.Delete(path); }
         }
     }
 }

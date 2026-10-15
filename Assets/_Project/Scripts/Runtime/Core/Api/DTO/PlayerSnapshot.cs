@@ -10,7 +10,7 @@ namespace Game.Core
         /// <summary>플레이어 닉네임. 계정을 만들 때 정해지고, 계정 삭제를 확인할 때 입력받는다</summary>
         public string nickname;
         public int gold;
-        /// <summary>잼. 일일상점에서 물품을 살 때 쓴다</summary>
+        /// <summary>잼. 일일상점·코인 상점에서 물품을 살 때 쓰고, 상단 재화 표시도 이 값을 쓴다</summary>
         public int gems;
         public int exp;
         public int energyStored;
