@@ -32,6 +32,8 @@ PR head는 태그 commit과 같고 base는 요청 당시 main이어야 한다. `
 
 기존 Codex GitHub 연동이 repo를 검토할 수 있어야 한다. 서비스 설정·봇 PR 지원·실제 리뷰 응답은 오프라인 테스트로 확인할 수 없다. 응답이 없거나 검토가 끝나지 않으면 timeout으로 중단하며 검토가 없다는 사실을 통과로 취급하지 않는다. 별도 OpenAI API key를 새로 만들지 않는다.
 
+PR의 `Android Release Checks / Android release controls`는 네트워크·Play·Unity 빌드 없이 배포 제어 회귀 검사를 실행한다. 실제 required check와 병합 보호는 GitHub 설정을 따른다.
+
 ## 첫 사용 전 조건
 
 1. 이 배포 코드와 main release profile/CiBuild/검증을 main 및 태그 source의 dev에 검토·동기화한다. 기존 dev에는 예전 `Release APK`의 `v*` 자동 트리거와 오래된 Play 설정이 있으므로 **동기화 전에는 출시 태그를 push하지 않는다.** 태그 source의 `.github/`, `docs/android-release.md`, `Assets/Settings/Build Profiles/Android_Release.asset`, `Assets/_Project/Scripts/Editor/CiBuild.cs`가 현재 main과 다르면 거절한다. 충돌은 dev에서 먼저 검토·해결하며 Unity YAML은 Unity에서 저장한다.
