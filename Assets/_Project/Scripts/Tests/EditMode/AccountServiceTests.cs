@@ -89,6 +89,24 @@ namespace Game.Tests
             Assert.IsFalse(_session.GetHeaders().ContainsKey("Authorization"), "로그아웃/삭제 후 서버 인증 헤더가 남으면 안 된다");
         }
 
+        [Test]
+        public void Reauthenticate_KeepsGuestIdentityAndProgressInsteadOfDeletingOrSigningUp()
+        {
+            _credentials.Save(LoginMethod.Guest, "existing-guest");
+            _session.Clear();
+            var profile = new PlayerProfile(null);
+            profile.Apply(new PlayerSnapshot { gold = 321, exp = 900 });
+            var service = new AccountService(_api, new SessionAuthCredentialStore(_credentials, _session), _nav, null, profile);
+            service.ReauthenticateAsync().GetAwaiter().GetResult();
+            Assert.AreEqual(LoginMethod.Guest, _credentials.Method);
+            Assert.AreEqual("existing-guest", _credentials.AccountId);
+            Assert.IsTrue(profile.IsLoaded);
+            Assert.AreEqual(321, profile.Gold);
+            Assert.AreEqual(900, profile.Exp);
+            Assert.AreEqual(0, _api.Deleted);
+            Assert.AreEqual(1, _nav.LoadingCalls);
+        }
+
         [Test(Description = "연동한 계정이 로그아웃하면 데이터는 남기고 로그인 정보만 비운다")]
         public void Logout_Linked_KeepsData()
         {
