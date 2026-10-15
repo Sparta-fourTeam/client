@@ -135,7 +135,8 @@ def pull_request_runs(number, source):
 
 
 def release_checks_ready(runs):
-    controls = [run for run in runs if run.get('path') == '.github/workflows/android-release-checks.yml']
+    controls = [run for run in runs if run.get('path', '').split('@', 1)[0] ==
+                '.github/workflows/android-release-checks.yml']
     if not controls:
         return False
     latest = max(controls, key=lambda run: run['id'])
