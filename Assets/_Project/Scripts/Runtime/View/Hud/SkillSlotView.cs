@@ -69,20 +69,28 @@ namespace Game.View
         {
             // 같은 칸에 같은 스킬이 그대로 있을 때만 "올랐다/바뀌었다"로 본다. 새 스킬을 얻거나 칸이 바뀐 경우는 연출이 없다
             bool sameSkill = _status != null && _boundId == status.Id;
-            bool levelUp = sameSkill && status.Level > _boundLevel;
-            bool formChanged = sameSkill && status.Form != _boundForm && icon != null && _icon.enabled;
+            bool levelUp = isActiveAndEnabled && sameSkill && status.Level > _boundLevel;
+            bool formChanged = isActiveAndEnabled && sameSkill && status.Form != _boundForm && icon != null && _icon.enabled;
             _boundId = status.Id;
             _boundLevel = status.Level;
             _boundForm = status.Form;
 
-            // 진행 중인 변환 연출은 끝 상태로 마무리한다 (스프라이트 교체 콜백도 불린다)
-            _formSequence?.Complete(true);
+            // 비활성 슬롯과 새 스킬은 즉시 반영한다. 같은 상태의 반복 갱신은 진행 중인 연출을 유지한다
+            if (!sameSkill || !isActiveAndEnabled)
+            {
+                KillTweens();
+            }
+            else if (formChanged || icon == null)
+            {
+                _formSequence?.Kill();
+                _fxSequence?.Kill();
+            }
             _status = status;
             if (formChanged)
             {
                 PlayTransform(icon);
             }
-            else
+            else if (_formSequence == null || !_formSequence.IsActive())
             {
                 _icon.sprite = icon;
                 _icon.enabled = icon != null;
@@ -133,7 +141,7 @@ namespace Game.View
                 .SetUpdate(true).SetLink(target.gameObject);
         }
 
-        // 아이콘이 쪼그라들며 사라지는 순간 새 아이콘으로 바뀌고, 커졌다 자리잡는다. 바뀌는 순간 파티클이 터진다
+        // 아이콘이 쪼그라들며 사라지는 순간 새 아이콘으로 바뀌고, 커졌다 자리잡는다
         private void PlayTransform(Sprite next)
         {
             var rect = _icon.rectTransform;
@@ -153,9 +161,13 @@ namespace Game.View
             _formSequence.Append(rect.DOScale(1f, FormSettleSeconds).SetEase(Ease.OutQuad));
             _formSequence.OnKill(() =>
             {
-                // 중간에 끊겨도 아이콘이 쪼그라든 채 남지 않게 한다
-                rect.localScale = Vector3.one;
-                rect.localRotation = Quaternion.identity;
+                // 취소 시 빛을 새로 만들지 않고 최신 아이콘과 기본 크기를 남긴다. 파괴 중에는 접근하지 않는다
+                if (_icon != null) { _icon.sprite = next; }
+                if (rect != null)
+                {
+                    rect.localScale = Vector3.one;
+                    rect.localRotation = Quaternion.identity;
+                }
             });
         }
 
@@ -206,8 +218,12 @@ namespace Game.View
         {
             _levelTween?.Kill(true);
             _badgeTween?.Kill(true);
-            _formSequence?.Kill(true);
+            _formSequence?.Kill();
             _fxSequence?.Kill();
+            _levelTween = null;
+            _badgeTween = null;
+            _formSequence = null;
+            _fxSequence = null;
         }
 
         private void SetBackground(Color color)
