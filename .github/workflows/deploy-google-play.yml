@@ -4,10 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       release_version:
-        description: '표시 버전 (후보 설정과 일치해야 함, 다음 후보 1.0.2)'
+        description: '표시 버전 (예: 1.0.3, v 없이 입력; versionCode 자동 생성)'
         type: string
         required: true
-        default: '1.0.2'
       publish_to_internal:
         description: '검증된 AAB를 내부 테스트에 게시 (별도 승인 후 선택)'
         type: boolean
@@ -84,11 +83,12 @@ jobs:
               output.write('version_name=' + version + '\n')
           PY
 
-      - name: Validate shared Android release number
+      - name: Allocate automatic Android release number
         id: version
         env:
           RELEASE_VERSION: ${{ inputs.release_version }}
-        run: python3 .github/scripts/android-release-version.py --version "$RELEASE_VERSION"
+          GH_TOKEN: ${{ github.token }}
+        run: python3 .github/scripts/android-release-version.py --version "$RELEASE_VERSION" --automatic
 
       - name: Record candidate version code
         env:
@@ -99,6 +99,10 @@ jobs:
           path = pathlib.Path('build/release-inputs.json')
           data = json.loads(path.read_text())
           data['version_code'] = int(os.environ['ANDROID_VERSION_CODE'])
+          data['actions_run_id'] = int(os.environ['GITHUB_RUN_ID'])
+          data['actions_run_number'] = int(os.environ['GITHUB_RUN_NUMBER'])
+          data['actions_run_attempt'] = int(os.environ['GITHUB_RUN_ATTEMPT'])
+          data['version_code_scheme'] = '300000000 + run_number; workflow_id=378016847'
           path.write_text(json.dumps(data, indent=2) + '\n')
           PY
 
@@ -210,10 +214,12 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Reject a candidate already recorded as uploaded
+      - name: Revalidate this dispatch and its original code
         env:
           RELEASE_VERSION: ${{ inputs.release_version }}
-        run: python3 .github/scripts/android-release-version.py --version "$RELEASE_VERSION"
+          ANDROID_VERSION_CODE: ${{ needs.build.outputs.version_code }}
+          GH_TOKEN: ${{ github.token }}
+        run: python3 .github/scripts/android-release-version.py --version "$RELEASE_VERSION" --automatic --expected-code "$ANDROID_VERSION_CODE"
 
       - name: Check existing Play upload credential
         env:

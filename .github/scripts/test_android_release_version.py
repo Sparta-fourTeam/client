@@ -7,6 +7,7 @@ import subprocess
 import tempfile
 import textwrap
 import unittest
+from unittest.mock import patch
 
 SCRIPT = Path(__file__).with_name('android-release-version.py').resolve()
 spec = importlib.util.spec_from_file_location('release_version', SCRIPT)
@@ -77,6 +78,16 @@ class ReleaseNumberTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             module.release_number(local_contiguous, '1.0.4', main_gap)
 
+    def test_automatic_upload_receipts_keep_historical_apk_rebuilds_valid(self):
+        ledger = policy(300000009, '1.0.3', [
+            {'versionName': '1.0.1', 'versionCode': 1},
+            {'versionName': '1.0.2', 'versionCode': 300000007},
+            {'versionName': '1.0.3', 'versionCode': 300000009}])
+        self.assertEqual(module.release_number(ledger, '1.0.3', ledger, apk_build=True), ('1.0.3', 300000009))
+        self.assertEqual(module.release_number(policy(), '1.0.1', ledger, apk_build=True), ('1.0.1', 1))
+        with self.assertRaises(ValueError):
+            module.release_number(ledger, '1.0.3', ledger)
+
     def test_cli_ignores_old_high_code_build_tag_and_checks_new_tag_tree(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
@@ -134,6 +145,123 @@ class ReleaseNumberTests(unittest.TestCase):
             play = subprocess.run(command, cwd=root, env=env, capture_output=True)
             self.assertNotEqual(play.returncode, 0)
             self.assertEqual(output.read_bytes(), before)
+
+
+class AutomaticReleaseNumberTests(unittest.TestCase):
+    def setUp(self):
+        self.env = dict(GITHUB_REPOSITORY='Sparta-fourTeam/client', GITHUB_RUN_ID='42',
+                        GITHUB_RUN_NUMBER='7', GITHUB_RUN_ATTEMPT='1', GITHUB_SHA='fixture-sha')
+        self.run = dict(id=42, workflow_id=378016847, run_number=7, run_attempt=1,
+                        event='workflow_dispatch', head_sha='fixture-sha',
+                        repository={'full_name': 'Sparta-fourTeam/client'})
+        self.pages = [{'workflow_runs': [self.run]}]
+
+    def allocate(self, ledger=None, main=None, version='1.0.3', expected_code=None):
+        return module.automatic_release_number(ledger or policy(), version, main or policy(),
+                                               self.run, self.pages, self.env, expected_code)
+
+    def test_input_version_replaces_stale_candidate_and_exceeds_all_old_codes(self):
+        ledger = policy(2, '1.0.2', [{'versionName': '1.0.1', 'versionCode': 1}])
+        before = json.dumps(ledger)
+        self.assertEqual(self.allocate(ledger), ('1.0.3', 300000007))
+        self.assertEqual(json.dumps(ledger), before)  # Allocation is not an upload receipt.
+        self.run['run_number'] = 8
+        self.env['GITHUB_RUN_NUMBER'] = '8'
+        self.assertEqual(self.allocate(ledger), ('1.0.3', 300000008))
+
+    def test_rerun_and_new_workflow_counter_fail_closed(self):
+        for overrides in [{'run_attempt': 2}, {'workflow_id': 999},
+                          {'repository': {'full_name': 'fork/client'}},
+                          {'event': 'push'}, {'head_sha': 'other-source'}, {'run_number': 1}]:
+            with self.subTest(overrides=overrides), patch.dict(self.run, overrides):
+                with self.assertRaises(ValueError):
+                    self.allocate()
+        with patch.dict(self.env, GITHUB_RUN_ATTEMPT='2'):
+            with self.assertRaisesRegex(ValueError, 'Re-run'):
+                self.allocate()
+
+    def test_newer_dispatch_on_another_page_rejects_old_queued_run(self):
+        self.pages.append({'workflow_runs': [dict(self.run, id=43, run_number=8, conclusion='failure')]})
+        with self.assertRaisesRegex(ValueError, 'newer dispatch'):
+            self.allocate()
+        self.pages = [{'workflow_runs': []}]
+        with self.assertRaisesRegex(ValueError, 'missing'):
+            self.allocate()
+
+    def test_used_code_floor_and_name_checked_in_both_ledgers(self):
+        for key in ['versionCode', 'playUploads', 'legacyDraftUploads']:
+            used = policy()
+            if key == 'versionCode':
+                used[key] = 300000007
+            else:
+                used[key] = [{'versionName': '0.9', 'versionCode': 300000008}]
+            for kwargs in [{'ledger': used}, {'main': used}]:
+                with self.subTest(key=key, kwargs=kwargs), self.assertRaises(ValueError):
+                    self.allocate(**kwargs)
+        with self.assertRaises(ValueError):
+            self.allocate(main=policy(released=[{'versionName': '1.0.3', 'versionCode': 2}]))
+        with self.assertRaisesRegex(ValueError, 'main release ledger'):
+            module.automatic_release_number(policy(), '1.0.3', None, self.run, self.pages, self.env)
+
+    def test_play_boundaries_and_artifact_code_binding(self):
+        self.assertEqual(self.allocate(expected_code=300000007), ('1.0.3', 300000007))
+        with self.assertRaisesRegex(ValueError, 'artifact code'):
+            self.allocate(expected_code=300000008)
+        self.run['run_number'] = 1800000000
+        self.env['GITHUB_RUN_NUMBER'] = '1800000000'
+        self.assertEqual(self.allocate(), ('1.0.3', 2100000000))
+        self.run['run_number'] += 1
+        self.env['GITHUB_RUN_NUMBER'] = '1800000001'
+        with self.assertRaisesRegex(ValueError, 'Google Play limit'):
+            self.allocate()
+        self.run['run_number'] = 7
+        self.env['GITHUB_RUN_NUMBER'] = '7'
+        self.assertEqual(len(f'{self.allocate(version="1" * 37 + ".0")[0]}(300000007)'), 50)
+        for version in ['v1.0.3', '1.0.3\ncode=1', '1', '1' * 38 + '.0']:
+            with self.subTest(version=version), self.assertRaises(ValueError):
+                self.allocate(version=version)
+
+    def test_automatic_cli_uses_github_metadata_and_preserves_ledger(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            def git(*args):
+                return subprocess.check_output(['git', '-C', folder, *args], text=True).strip()
+            git('init', '-q')
+            git('config', 'user.name', 'Release policy test')
+            git('config', 'user.email', 'release-policy-test@example.invalid')
+            (root / '.github').mkdir()
+            config = root / '.github/android-release.json'
+            config.write_text(json.dumps(policy()))
+            git('add', '.')
+            git('commit', '-qm', 'fixture')
+            git('update-ref', 'refs/remotes/origin/main', 'HEAD')
+            self.env['GITHUB_SHA'] = self.run['head_sha'] = git('rev-parse', 'HEAD')
+            (root / 'run.json').write_text(json.dumps(self.run))
+            (root / 'pages.json').write_text(json.dumps(self.pages))
+            # A fake gh serves recorded API-shaped fixtures; never contacts GitHub or Play.
+            fake_gh = root / 'gh'
+            fake_gh.write_text('#!/bin/sh\ncase "$2" in\n'
+                               '  */actions/runs/42) cat run.json ;;\n'
+                               '  */actions/workflows/378016847/runs?per_page=100) cat pages.json ;;\n'
+                               '  *) exit 1 ;;\nesac\n')
+            fake_gh.chmod(0o755)
+            output = root / 'output.txt'
+            summary = root / 'summary.md'
+            env = dict(os.environ, **self.env, GITHUB_OUTPUT=str(output), GITHUB_STEP_SUMMARY=str(summary))
+            env['PATH'] = folder + os.pathsep + env['PATH']
+            command = ['python3', str(SCRIPT), '--version', '1.0.3', '--automatic']
+            before = config.read_bytes()
+            for extra in [[], ['--expected-code', '300000007']]:
+                result = subprocess.run(command + extra, cwd=root, env=env, capture_output=True, text=True)
+                self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(output.read_text(), 'version_name=1.0.3\ncode=300000007\n' * 2)
+            self.assertIn('300000000 + run 7', summary.read_text())
+            self.assertEqual(config.read_bytes(), before)
+            previous = output.read_bytes()
+            env['GITHUB_RUN_ATTEMPT'] = '2'
+            result = subprocess.run(command, cwd=root, env=env, capture_output=True, text=True)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertEqual(output.read_bytes(), previous)
 
 
 class PlayReleaseNameTests(unittest.TestCase):
