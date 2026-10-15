@@ -118,6 +118,13 @@ namespace Game.View
         /// <summary>캐릭터 화면을 연다 (인벤토리의 "강화하러 가기" 등)</summary>
         public void OpenCharacter() => Select(Tab.Character);
 
+        /// <summary>상점 화면의 해당 탭을 연다 (재화 칸의 + 버튼 등)</summary>
+        public void OpenShop(ShopTab tab)
+        {
+            Select(Tab.Shop);
+            _shopScreen.SelectTab(tab);
+        }
+
         // 화면은 한 번에 하나만 연다
         private void Select(Tab tab)
         {
