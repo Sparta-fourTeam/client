@@ -18,6 +18,8 @@ namespace Game.Core
         Conflict,
         /// <summary>서버 오류·네트워크 문제 등으로 연동하지 못했다. 로그인 정보는 바꾸지 않았으니 다시 시도할 수 있다</summary>
         Failed,
+        /// <summary>서버 인증이 만료됐다. 기존 계정 정보를 유지한 채 다시 로그인해야 한다</summary>
+        ReauthenticationRequired,
     }
 
     /// <summary>로그아웃·계정 삭제·계정 연동. 게스트 계정은 기기에만 있으므로 로그아웃하면 데이터도 함께 지운다.
@@ -89,6 +91,7 @@ namespace Game.Core
                 catch (ApiException ex)
                 {
                     Debug.LogException(ex);
+                    if (ex.Code == "SESSION_EXPIRED" || ex.Code == "HTTP_401") { return LinkResult.ReauthenticationRequired; }
                     return ex.Kind == ApiErrorKind.Rejected && ex.Code == "HTTP_409" ? LinkResult.Conflict : LinkResult.Failed;
                 }
 
@@ -115,6 +118,9 @@ namespace Game.Core
             await _api.DeleteAccount();
             await ReturnToLoginAsync();
         }
+
+        /// <summary>계정과 진행을 지우지 않고 기존 로그인 방식·게스트 ID로 인증 절차를 다시 밟는다.</summary>
+        public UniTask ReauthenticateAsync() => _nav.GoToLoading();
 
         private UniTask ReturnToLoginAsync()
         {

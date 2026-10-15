@@ -159,7 +159,6 @@ namespace Game.Tests
             Assert.AreEqual("g", _credentials.AccountId);
         }
 
-        [TestCase(ApiErrorKind.Rejected, "HTTP_401")]
         [TestCase(ApiErrorKind.Transient, "HTTP_503")]
         [TestCase(ApiErrorKind.Network, "NETWORK_ERROR")]
         [Test(Description = "서버 오류·로그인 만료·네트워크 문제로 연동하지 못하면 실패로 끝나고 게스트 그대로 두며, 다시 시도할 수 있다")]
@@ -176,6 +175,22 @@ namespace Game.Tests
             _api.LinkError = null;
             Assert.AreEqual(LinkResult.Linked, service.LinkAsync().GetAwaiter().GetResult());
             Assert.AreEqual(LoginMethod.Google, _credentials.Method);
+        }
+
+        [TestCase("SESSION_EXPIRED")]
+        [TestCase("HTTP_401")]
+        public void Link_ExpiredSession_RequiresLoginWithoutReplacingGuest(string code)
+        {
+            _credentials.Save(LoginMethod.Guest, "original-guest");
+            _session.Clear();
+            _api.LinkError = new ApiException(ApiErrorKind.Rejected, code);
+            LogAssert.Expect(LogType.Exception, new Regex(code));
+            var result = Create(new FakeSocial(true, "google-token")).LinkAsync().GetAwaiter().GetResult();
+
+            Assert.AreEqual(LinkResult.ReauthenticationRequired, result);
+            Assert.AreEqual(LoginMethod.Guest, _credentials.Method);
+            Assert.AreEqual("original-guest", _credentials.AccountId);
+            Assert.AreEqual(0, _api.Deleted);
         }
 
         [TestCase(204, LinkResult.Linked, LoginMethod.Google)]

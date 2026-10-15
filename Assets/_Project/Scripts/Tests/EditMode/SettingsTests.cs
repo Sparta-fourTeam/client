@@ -34,19 +34,29 @@ namespace Game.Tests
 
         private sealed class GuestCredentials : IAuthCredentialStore
         {
+            public int Cleared;
             public bool HasCredential => true;
             public LoginMethod Method => LoginMethod.Guest;
             public string AccountId => "guest";
             public void Save(LoginMethod method, string accountId) { }
-            public void Clear() { }
+            public void Clear() { Cleared++; }
         }
 
         private sealed class MemoryAccountApi : IAccountApi
         {
             public int Deleted;
+            public System.Exception LinkError;
             public readonly UniTaskCompletionSource Completion = new();
             public UniTask DeleteAccount() { Deleted++; return Completion.Task; }
-            public UniTask LinkAccount(LoginMethod method, string accountId) => UniTask.CompletedTask;
+            public UniTask LinkAccount(LoginMethod method, string accountId) => LinkError != null
+                ? UniTask.FromException(LinkError) : UniTask.CompletedTask;
+        }
+
+        private sealed class AvailableSocial : ISocialSignIn
+        {
+            public LoginMethod Method => LoginMethod.Google;
+            public bool IsAvailable => true;
+            public UniTask<string> SignInAsync() => UniTask.FromResult("google-id-token");
         }
 
         private sealed class MemoryNavigator : ISceneNavigator
@@ -292,6 +302,26 @@ namespace Game.Tests
             Assert.IsTrue(confirm.IsOpen);
             Assert.IsFalse(Field<TMP_InputField>(confirm, "_input").gameObject.activeSelf, "재시도는 첫 확인부터 시작한다");
             Field<Button>(confirm, "_cancelButton").onClick.Invoke();
+        }
+
+        [Test]
+        public void Menu_LinkSessionExpired_OffersLoginAndPreservesGuest()
+        {
+            var (menu, confirm, api, nav) = CreateDeleteMenu();
+            var credentials = new GuestCredentials();
+            menu.Construct(new AccountService(api, credentials, nav, new[] { new AvailableSocial() }), new PlayerProfile(null));
+            api.LinkError = new ApiException(ApiErrorKind.Rejected, "SESSION_EXPIRED");
+            UnityEngine.TestTools.LogAssert.Expect(LogType.Exception, new System.Text.RegularExpressions.Regex("SESSION_EXPIRED"));
+
+            Field<Button>(menu, "_linkAccountButton").onClick.Invoke();
+            Assert.IsTrue(confirm.IsOpen);
+            StringAssert.Contains("로그인", Field<TMP_Text>(confirm, "_message").text);
+            Assert.AreEqual(0, nav.LoadingCalls);
+            Field<Button>(confirm, "_confirmButton").onClick.Invoke();
+            Assert.AreEqual(1, nav.LoadingCalls);
+            Assert.AreEqual("guest", credentials.AccountId);
+            Assert.AreEqual(0, credentials.Cleared);
+            Assert.AreEqual(0, api.Deleted);
         }
 
         private (LobbyMenuPopupView, ConfirmPopupView, MemoryAccountApi, MemoryNavigator) CreateDeleteMenu()

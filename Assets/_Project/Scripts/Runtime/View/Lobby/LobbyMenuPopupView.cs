@@ -150,6 +150,7 @@ namespace Game.View
         private async UniTask LinkAccountAsync()
         {
             string notice = null;
+            bool reauthenticate = false;
             switch (await _account.LinkAsync())
             {
                 case LinkResult.Linked: notice = "계정이 연동되었습니다."; break;
@@ -157,12 +158,22 @@ namespace Game.View
                 case LinkResult.Unavailable: notice = "연동할 수 있는 계정이 아직 없습니다. 준비 중입니다."; break;
                 case LinkResult.Conflict: notice = "이미 연동된 계정이거나, 다른 계정에 연동된 구글 계정입니다."; break;
                 case LinkResult.Failed: notice = "계정을 연동하지 못했습니다. 잠시 후 다시 시도해 주세요."; break;
+                case LinkResult.ReauthenticationRequired:
+                    notice = "계정 연동을 완료하지 못했습니다. 기존 계정으로 다시 로그인한 뒤 연동해 주세요.";
+                    reauthenticate = true;
+                    break;
             }
 
             RefreshAccountButtons();
             if (notice != null)
             {
-                await _confirm.ShowAsync(new ConfirmRequest { Title = "알림", Message = notice });
+                await _confirm.ShowAsync(new ConfirmRequest
+                {
+                    Title = "알림",
+                    Message = notice,
+                    ConfirmLabel = reauthenticate ? "다시 로그인" : "확인",
+                });
+                if (reauthenticate) { await _account.ReauthenticateAsync(); }
             }
         }
 
