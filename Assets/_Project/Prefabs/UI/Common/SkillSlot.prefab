@@ -97,7 +97,8 @@ MonoBehaviour:
   _levelText: {fileID: 2323008072205410461}
   _activeFrame: {fileID: 8544989912913922510}
   _activeSprite: {fileID: 21300000, guid: 0fe2263dcc181e04f9f9511c4097bfae, type: 3}
-  _transformFxPrefab: {fileID: 1265558470888985573, guid: f50f20d3bc313414ebc4052fc4993189, type: 3}
+  _formFlashSprite: {fileID: 21300000, guid: 5a1f0c7e3b9d4e26a8c4d1f7e2b36a90, type: 3}
+  _formRingSprite: {fileID: 21300000, guid: 7c3e9a21d84f4b5e9a06c3d8f1e52b47, type: 3}
 --- !u!1 &1699188941465193361
 GameObject:
   m_ObjectHideFlags: 0
