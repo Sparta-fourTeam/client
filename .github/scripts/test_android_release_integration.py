@@ -25,7 +25,8 @@ class IntegrationTests(unittest.TestCase):
         self.env = dict(f.tag_env, GITHUB_RUN_NUMBER='6')
         self.calls, self.merged, self.created = [], False, False
         self.check_runs = [dict(id=81, head_sha=f.source, status='completed', conclusion='success',
-                               path='.github/workflows/android-release-checks.yml', pull_requests=[{'number':123}])]
+                               path='.github/workflows/android-release-checks.yml@refs/pull/123/merge',
+                               pull_requests=[{'number':123}])]
         self.rows = [dict(id=11, user=dict(id=module.CODEX_ID, login=module.CODEX_LOGIN, type='Bot'),
                           commit_id=f.source, state='COMMENTED', submitted_at='2026-10-15T00:00:00Z', body='Review complete')]
         self.state = dict(headRefOid=f.source, baseRefOid=f.base, headRefName='release/v1.0.3', baseRefName='main',
@@ -147,11 +148,15 @@ class IntegrationTests(unittest.TestCase):
     def test_missing_running_failed_or_stale_release_ci_never_merges(self):
         for runs in [[], [dict(self.check_runs[0], status='in_progress', conclusion=None)],
                      [dict(self.check_runs[0], conclusion='failure')],
+                     [dict(self.check_runs[0], path='.github/workflows/another-check.yml@main')],
                      [dict(self.check_runs[0], head_sha=self.fx.base)]]:
             self.approval_runs = runs
             with self.assertRaisesRegex(ValueError, 'Timed out'):
                 self.integrate()
             self.assertFalse(self.merge_calls())
+
+        self.approval_runs = [dict(self.check_runs[0], path='.github/workflows/android-release-checks.yml')]
+        self.assertEqual(self.integrate()['merge_commit_sha'], self.fx.merged)
 
     def test_mutated_pr_head_or_main_base_never_merges(self):
         with patch.dict(self.state,headRefOid=self.fx.base):
