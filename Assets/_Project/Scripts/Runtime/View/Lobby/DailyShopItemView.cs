@@ -19,6 +19,16 @@ namespace Game.View
         [SerializeField] private TMP_Text _price;
         [SerializeField] private GameObject _soldOut;
 
+        /// <summary>현금으로 사는 묶음 카드(잼 상점). 가격은 이미 만든 문구로 받고 잼 아이콘은 숨기며, 보너스가 있으면 배지에 보여 준다</summary>
+        public void BindCash(string itemName, Sprite icon, int count, string priceLabel, int bonusPercent, bool canBuy, Action onBuy)
+        {
+            Bind(itemName, icon, count, 0, 0, false, canBuy, onBuy);
+            _discountBadge.SetActive(bonusPercent > 0);
+            _discountLabel.text = $"+{bonusPercent}%\n보너스";
+            _gemIcon.SetActive(false);
+            _price.text = priceLabel;
+        }
+
         public void Bind(string itemName, Sprite icon, int count, int price, int discountPercent, bool soldOut, bool canBuy, Action onBuy)
         {
             _name.text = itemName;

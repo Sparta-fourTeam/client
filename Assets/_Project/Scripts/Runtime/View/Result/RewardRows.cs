@@ -8,6 +8,7 @@ namespace Game.View
     {
         /// <summary>코인·EXP 칸의 ItemId. 아이템이 아니라서 Items 표에는 없다</summary>
         public const string CoinId = "currency.coin";
+        public const string GemId = "currency.gem";
         public const string ExpId = "currency.exp";
 
         /// <summary>수령 응답으로 실제 증가한 재화·아이템만 보여준다.</summary>

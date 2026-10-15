@@ -10,6 +10,7 @@ namespace Game.View
             switch (itemId)
             {
                 case RewardRows.CoinId: return "코인";
+                case RewardRows.GemId: return "잼";
                 case RewardRows.ExpId: return "경험치";
                 case ItemIds.RandomSkillMaterial: return "랜덤 마법북";
                 case ItemIds.RandomEquipmentMaterial: return "랜덤 인챈트 주문서";
@@ -23,6 +24,7 @@ namespace Game.View
             switch (itemId)
             {
                 case RewardRows.CoinId: return "스킬과 장비를 강화할 때 쓰는 재화예요.";
+                case RewardRows.GemId: return "상점에서 물품을 사는 데 쓰는 재화예요.";
                 case RewardRows.ExpId: return "모으면 플레이어 레벨이 올라요.\n레벨이 오르면 새 스킬과 장비가 열려요.";
                 case ItemIds.RandomSkillMaterial: return "열린 스킬 중 하나의 마법북을 받아요.";
                 case ItemIds.RandomEquipmentMaterial: return "열린 장비 중 하나의 인챈트 주문서를 받아요.";
