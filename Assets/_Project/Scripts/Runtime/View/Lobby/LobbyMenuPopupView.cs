@@ -167,13 +167,13 @@ namespace Game.View
             RefreshAccountButtons();
             if (notice != null)
             {
-                await _confirm.ShowAsync(new ConfirmRequest
+                bool confirmed = await _confirm.ShowAsync(new ConfirmRequest
                 {
                     Title = "알림",
                     Message = notice,
                     ConfirmLabel = reauthenticate ? "다시 로그인" : "확인",
                 });
-                if (reauthenticate) { await _account.ReauthenticateAsync(); }
+                if (reauthenticate && confirmed) { await _account.ReauthenticateAsync(); }
             }
         }
 

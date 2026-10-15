@@ -304,8 +304,9 @@ namespace Game.Tests
             Field<Button>(confirm, "_cancelButton").onClick.Invoke();
         }
 
-        [Test]
-        public void Menu_LinkSessionExpired_OffersLoginAndPreservesGuest()
+        [TestCase(true)]
+        [TestCase(false)]
+        public void Menu_LinkSessionExpired_OffersLoginAndPreservesGuest(bool confirmLogin)
         {
             var (menu, confirm, api, nav) = CreateDeleteMenu();
             var credentials = new GuestCredentials();
@@ -317,8 +318,8 @@ namespace Game.Tests
             Assert.IsTrue(confirm.IsOpen);
             StringAssert.Contains("로그인", Field<TMP_Text>(confirm, "_message").text);
             Assert.AreEqual(0, nav.LoadingCalls);
-            Field<Button>(confirm, "_confirmButton").onClick.Invoke();
-            Assert.AreEqual(1, nav.LoadingCalls);
+            Field<Button>(confirm, confirmLogin ? "_confirmButton" : "_closeButton").onClick.Invoke();
+            Assert.AreEqual(confirmLogin ? 1 : 0, nav.LoadingCalls);
             Assert.AreEqual("guest", credentials.AccountId);
             Assert.AreEqual(0, credentials.Cleared);
             Assert.AreEqual(0, api.Deleted);
