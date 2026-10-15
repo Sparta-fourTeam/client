@@ -88,6 +88,7 @@ namespace Game.Network
             save.tutorials ??= save.exp > 0 ? new List<string>(_legacyTutorials) : new List<string>();
             // 퀘스트 주기가 지났으면 어느 API가 읽어도 이미 초기화된 상태를 본다
             if (_data != null) { LocalQuests.Roll(save, _data, DateTime.Now); }
+            LocalShop.Roll(save, DateTime.Now);
             return save;
         }
 

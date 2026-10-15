@@ -3,12 +3,14 @@ namespace Game.Core.Messages
     public readonly struct WalletChanged
     {
         public int Gold { get; }
+        public int Gems { get; }
         // Buffered subscriptions replay default(T) before the first publication.
         public bool HasValue { get; }
 
-        public WalletChanged(int gold)
+        public WalletChanged(int gold, int gems)
         {
             Gold = gold;
+            Gems = gems;
             HasValue = true;
         }
     }

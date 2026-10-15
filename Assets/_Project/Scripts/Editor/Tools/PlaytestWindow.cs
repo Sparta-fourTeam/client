@@ -50,6 +50,8 @@ namespace Game.Editor
             Button("deleteSaveButton", DeleteSave);
             Button("restoreSaveButton", RestoreSave);
             Button("addGoldButton", () => Cheat((save, _) => PlaytestCheats.AddGold(save, Int("goldField"))));
+            Button("addGemButton", () => Cheat((save, _) => PlaytestCheats.AddGems(save, Int("gemField"))));
+            Button("resetShopButton", () => Cheat(PlaytestCheats.ResetDailyShop));
             Button("allResourcesButton", () => Cheat(PlaytestCheats.SetAllResources));
             Button("fillEnergyButton", () => Cheat((save, data) => PlaytestCheats.FillEnergy(save, data.Energy)));
             Button("setLevelButton", () => Cheat((save, data) => PlaytestCheats.SetLevel(save, data.PlayerLevels, Int("levelField"), false)));
@@ -137,7 +139,7 @@ namespace Game.Editor
             rootVisualElement.Q<Label>("faultStatus").text = fault == null ? "Local 백엔드로 재생할 때 사용할 수 있습니다." : $"남은 실패 횟수: {fault.FailNextSubmits}";
             rootVisualElement.Q<Label>("savePath").text = SavePath;
             bool local = Resolve<LocalSaveStore>() != null;
-            foreach (string name in new[] { "addGoldButton", "allResourcesButton", "fillEnergyButton", "setLevelButton", "setLevelEdgeButton", "completeTutorialsButton", "resetTutorialsButton", "unlockStagesButton" })
+            foreach (string name in new[] { "addGoldButton", "addGemButton", "resetShopButton", "allResourcesButton", "fillEnergyButton", "setLevelButton", "setLevelEdgeButton", "completeTutorialsButton", "resetTutorialsButton", "unlockStagesButton" })
             {
                 Enable(name, local);
             }

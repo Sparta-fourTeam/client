@@ -7,7 +7,7 @@ namespace Game.Core
     public sealed class PlayerProfile
     {
         private readonly GameDataStore _data;
-        private PlayerSnapshot _snapshot = new PlayerSnapshot { stageProgress = new(), upgrades = new(), items = new(), codex = new(), quests = new(), questChests = new() };
+        private PlayerSnapshot _snapshot = new PlayerSnapshot { stageProgress = new(), upgrades = new(), items = new(), codex = new(), quests = new(), questChests = new(), shop = new() };
 
         public event Action<PlayerProfile> Changed;
 
@@ -35,6 +35,10 @@ namespace Game.Core
 
         /// <summary>보드 게이지의 현재 점수(받은 퀘스트의 점수 합)</summary>
         public int QuestPoints(QuestBoardDefinition board) => QuestRules.Points(board, _snapshot.quests);
+
+        public int Gems => _snapshot.gems;
+        public ShopState Shop => _snapshot.shop;
+        public bool IsShopSlotSold(int slot) => _snapshot.shop.purchased.Contains(slot);
 
         public int EnergyStored => _snapshot.energyStored;
 
@@ -66,6 +70,8 @@ namespace Game.Core
             snap.codex ??= new();
             snap.quests ??= new();
             snap.questChests ??= new();
+            snap.shop ??= new();
+            snap.shop.purchased ??= new();
             _snapshot = snap;
             IsLoaded = true;
             Changed?.Invoke(this);

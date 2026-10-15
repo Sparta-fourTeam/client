@@ -5608,6 +5608,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1fdaa1cd493f1f0458ef3cc0a5000525, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Game.View::Game.View.WalletView
+  _currency: 0
   _value: {fileID: 5752753428365995099}
 --- !u!114 &3873955922136068389
 MonoBehaviour:

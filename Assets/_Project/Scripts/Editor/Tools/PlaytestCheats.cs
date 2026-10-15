@@ -11,9 +11,29 @@ namespace Game.Editor
         internal static void AddGold(LocalSave save, int amount) =>
             save.wallet.gold = (int)Math.Clamp((long)save.wallet.gold + amount, 0, int.MaxValue);
 
+        internal static void AddGems(LocalSave save, int amount) =>
+            save.wallet.gems = (int)Math.Clamp((long)save.wallet.gems + amount, 0, int.MaxValue);
+
+        /// <summary>게임의 초기화 버튼과 같게 일일상점을 다시 뽑는다. 새 구성이 나오고 산 칸 기록이 비워지며, 코인은 받지 않는다.
+        /// 남은 횟수(광고, 그다음 코인)를 하나 쓰고, 횟수가 다 떨어졌으면 횟수를 비우고 처음부터 다시 센다</summary>
+        internal static void ResetDailyShop(LocalSave save, GameDataStore data)
+        {
+            var state = save.shop.state;
+            if (ShopRules.AdLeft(data.Shop, state) > 0) { state.adUsed++; }
+            else if (ShopRules.GoldLeft(data.Shop, state) > 0) { state.goldUsed++; }
+            else
+            {
+                state.adUsed = 1;
+                state.goldUsed = 0;
+            }
+
+            state.purchased.Clear();
+        }
+
         internal static void SetAllResources(LocalSave save, GameDataStore data)
         {
             save.wallet.gold = 999;
+            save.wallet.gems = 999;
             save.wallet.energyStored = 999;
             save.wallet.energyUpdatedAt = DateTime.UtcNow.ToString("O");
             save.items ??= new();

@@ -28,6 +28,11 @@
           <ui:Button name="fillEnergyButton" text="에너지 충전" />
         </ui:VisualElement>
         <ui:VisualElement class="row">
+          <ui:IntegerField name="gemField" value="1000" class="grow" />
+          <ui:Button name="addGemButton" text="잼 지급" />
+          <ui:Button name="resetShopButton" text="일일상점 초기화" />
+        </ui:VisualElement>
+        <ui:VisualElement class="row">
           <ui:IntegerField name="levelField" value="2" class="grow" />
           <ui:Button name="setLevelButton" text="레벨 설정" />
           <ui:Button name="setLevelEdgeButton" text="레벨업 직전" />
