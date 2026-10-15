@@ -24,6 +24,7 @@ namespace Game.Core
         private IDisposable _subscriptions;
         private int _lastWallHp = -1;
         private StageState _state = StageState.Starting;
+        private bool _bgmStarted;
 
         public BattleSoundPlayer(
             IAudioService audio,
@@ -57,7 +58,6 @@ namespace Game.Core
             _stageState.Subscribe(OnStageState).AddTo(bag);
             _subscriptions = bag.Build();
 
-            _audio.PlayBgm(SoundIds.BattleBgm, BgmFadeIn);
         }
 
         public static string DeathSound(EnemyType type) => type switch
@@ -86,6 +86,15 @@ namespace Game.Core
             if (e.State is StageState.Submitting or StageState.Finished)
             {
                 _audio.StopBgm(BgmFadeOut);
+                return;
+            }
+
+            // 이어하기는 Start 뒤에 체크포인트 상태가 복원되므로 Initialize에서 바로 틀지 않는다.
+            // Starting을 벗어난 첫 진행 상태에서 한 번만 시작해, 이미 끝난 전투를 다시 열 때 순간적으로 울리지 않게 한다
+            if (!_bgmStarted && e.State != StageState.Starting)
+            {
+                _bgmStarted = true;
+                _audio.PlayBgm(SoundIds.BattleBgm, BgmFadeIn);
             }
         }
 
