@@ -6,12 +6,12 @@ namespace Game.Core
     /// <summary>적끼리 겹칠 때 화면 아래쪽(발끝이 낮은) 적이 앞에 그려지도록 비주얼 SortingGroup의 순서를 정한다.
     /// 발끝은 Bind 때 스프라이트 아래쪽 끝으로 한 번 재고, 이후에는 위치만 본다.
     /// 순서는 EnemyDepthSorter가 적 전체를 한 줄로 세워 정하고, Bind 직후 첫 순서만 높이로 바로 계산한다.
-    /// 순서는 항상 FrontOrder 이하라서 투사체·이펙트(-8 이상, 바닥 장판 -8~-4 포함)는 적 위에, 배경(-500)은 아래에 그려진다</summary>
+    /// 순서는 항상 [BackOrder, FrontOrder]라서 투사체·이펙트(-9 이상)는 적 위에, 바닥 연출과 배경(SortingBands)은 아래에 그려진다</summary>
     [DefaultExecutionOrder(-100)] // 상태이상 이펙트(EnemyStatusEffects)가 같은 프레임에 정해진 몸 순서를 읽도록 먼저 돈다
     public sealed class EnemyDepthSort : MonoBehaviour
     {
-        public const int FrontOrder = -10; // 맨 앞 적의 상태이상(+1)도 장판(FrostPrison -8, ElectricField -5)보다 뒤
-        public const int BackOrder = -402;
+        public const int FrontOrder = SortingBands.EnemyFront; // 맨 앞 적의 상태이상(+1)도 몬스터 앞 구간(-9 이상)보다 뒤
+        public const int BackOrder = SortingBands.EnemyBack;
         private const float MinY = -10f;          // 이 높이(이하)의 발끝이 FrontOrder
         private const float UnitsPerStep = 0.05f; // 순서 한 칸에 해당하는 높이
 

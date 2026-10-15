@@ -2340,6 +2340,7 @@ GameObject:
   - component: {fileID: 1970908667911574293}
   - component: {fileID: 7091424266259396998}
   - component: {fileID: 2197690915778985951}
+  - component: {fileID: 6220306032343679872}
   m_Layer: 0
   m_Name: EarthExplosion
   m_TagString: Untagged
@@ -4660,6 +4661,19 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
+--- !u!210 &6220306032343679872
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6120861698813806089}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 14
+  m_SortAtRoot: 0
+  m_Sort3DAs2D: 0
 --- !u!1 &6176778819745592676
 GameObject:
   m_ObjectHideFlags: 0

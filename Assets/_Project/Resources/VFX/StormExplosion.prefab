@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 7901631535637562169}
   - component: {fileID: 8635625138417137856}
   - component: {fileID: 8659619720179275830}
+  - component: {fileID: 6869172560406254530}
   m_Layer: 0
   m_Name: StormExplosion
   m_TagString: Untagged
@@ -2301,6 +2302,19 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
+--- !u!210 &6869172560406254530
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 15093714852475977}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 16
+  m_SortAtRoot: 0
+  m_Sort3DAs2D: 0
 --- !u!1 &1660383576872680364
 GameObject:
   m_ObjectHideFlags: 0

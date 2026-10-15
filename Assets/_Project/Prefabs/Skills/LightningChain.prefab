@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 291500406229891326}
   - component: {fileID: 5774374505169883733}
   - component: {fileID: 7213351357207092642}
+  - component: {fileID: 6212098328495798789}
   m_Layer: 0
   m_Name: LightningChain
   m_TagString: Untagged
@@ -165,3 +166,16 @@ LineRenderer:
   m_UseWorldSpace: 1
   m_Loop: 0
   m_ApplyActiveColorSpace: 1
+--- !u!210 &6212098328495798789
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5771007646284350489}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 13
+  m_SortAtRoot: 0
+  m_Sort3DAs2D: 0

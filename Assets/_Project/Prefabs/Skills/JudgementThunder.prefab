@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 3507871529806351}
   - component: {fileID: 7493505751532124129}
   - component: {fileID: 3814410492156620054}
+  - component: {fileID: 1429487563916157576}
   m_Layer: 0
   m_Name: JudgementThunder
   m_TagString: Untagged
@@ -139,6 +140,19 @@ MonoBehaviour:
   radius: 0.7
   hitDelay: 0.1
   releaseDelay: 0.9
+--- !u!210 &1429487563916157576
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 338883375622831117}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 15
+  m_SortAtRoot: 0
+  m_Sort3DAs2D: 0
 --- !u!1 &1434398491558286839
 GameObject:
   m_ObjectHideFlags: 0

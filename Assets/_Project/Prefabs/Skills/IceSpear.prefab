@@ -2371,6 +2371,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4360375446972478452}
   - component: {fileID: 8684981817994995322}
+  - component: {fileID: 8464607305227235507}
   m_Layer: 0
   m_Name: IceSpear
   m_TagString: Untagged
@@ -2411,6 +2412,19 @@ MonoBehaviour:
   impactPrefab: {fileID: 7631996355555626819, guid: b9b2212789dae4a20a707b04f9c13677, type: 3}
   formSprites: []
   baseVisual: {fileID: 6129240465741538276}
+--- !u!210 &8464607305227235507
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 898466977149368188}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 12
+  m_SortAtRoot: 0
+  m_Sort3DAs2D: 0
 --- !u!1 &3910501483826825297
 GameObject:
   m_ObjectHideFlags: 0

@@ -4964,6 +4964,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1896395028821384420}
   - component: {fileID: 4525352320128244483}
+  - component: {fileID: 4294256396633035700}
   m_Layer: 0
   m_Name: FlameArrow
   m_TagString: Untagged
@@ -5004,6 +5005,19 @@ MonoBehaviour:
   impactPrefab: {fileID: 7580318749281349352, guid: ff008c3ab66aa47e3abb0f01d021b1f2, type: 3}
   formSprites: []
   baseVisual: {fileID: 2136047292508042814}
+--- !u!210 &4294256396633035700
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9011048590407165832}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 15
+  m_SortAtRoot: 0
+  m_Sort3DAs2D: 0
 --- !u!1 &9155539610792852471
 GameObject:
   m_ObjectHideFlags: 0

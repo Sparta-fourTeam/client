@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4360375446972478452}
   - component: {fileID: 5523203287904785186}
+  - component: {fileID: 3117214492515803163}
   m_Layer: 0
   m_Name: Log
   m_TagString: Untagged
@@ -49,6 +50,19 @@ MonoBehaviour:
   impactPrefab: {fileID: 3695569400558600095, guid: 05b000ff336434b7c8cde08df98ff136, type: 3}
   formSprites: []
   baseVisual: {fileID: 4619224118869852814}
+--- !u!210 &3117214492515803163
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 898466977149368188}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 12
+  m_SortAtRoot: 0
+  m_Sort3DAs2D: 0
 --- !u!1 &4619224118869852814
 GameObject:
   m_ObjectHideFlags: 0

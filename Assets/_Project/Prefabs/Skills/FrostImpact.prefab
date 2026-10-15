@@ -2358,6 +2358,7 @@ GameObject:
   - component: {fileID: 3633166736863357763}
   - component: {fileID: 7147581876782286570}
   - component: {fileID: 2191790299995600471}
+  - component: {fileID: 3856177643325654765}
   m_Layer: 0
   m_Name: FrostImpact
   m_TagString: Untagged
@@ -4647,6 +4648,19 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
+--- !u!210 &3856177643325654765
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7631996355555626819}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 12
+  m_SortAtRoot: 0
+  m_Sort3DAs2D: 0
 --- !u!1 &8654442675010438623
 GameObject:
   m_ObjectHideFlags: 0

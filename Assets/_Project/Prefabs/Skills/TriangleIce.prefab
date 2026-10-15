@@ -2405,6 +2405,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4831378709106825280}
   - component: {fileID: 7012543020817517245}
+  - component: {fileID: 7935117425729420709}
   m_Layer: 0
   m_Name: TriangleIce
   m_TagString: Untagged
@@ -2445,6 +2446,19 @@ MonoBehaviour:
   impactPrefab: {fileID: 7631996355555626819, guid: b9b2212789dae4a20a707b04f9c13677, type: 3}
   formSprites: []
   baseVisual: {fileID: 637321079101051366}
+--- !u!210 &7935117425729420709
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2034999875842895424}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 12
+  m_SortAtRoot: 0
+  m_Sort3DAs2D: 0
 --- !u!1 &2427552529881081645
 GameObject:
   m_ObjectHideFlags: 0

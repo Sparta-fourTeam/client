@@ -4791,6 +4791,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5227982422527563709}
   - component: {fileID: 723556000058617532}
+  - component: {fileID: 1132044892671154687}
   m_Layer: 0
   m_Name: Fireball
   m_TagString: Untagged
@@ -4834,3 +4835,16 @@ MonoBehaviour:
     impactPrefab: {fileID: 0}
     hideBaseSprite: 1
   baseVisual: {fileID: 1049483058184329416}
+--- !u!210 &1132044892671154687
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7451147369274982716}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 1
+  m_SortAtRoot: 0
+  m_Sort3DAs2D: 0

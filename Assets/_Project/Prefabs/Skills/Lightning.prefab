@@ -4725,6 +4725,7 @@ GameObject:
   - component: {fileID: 9009162591579238842}
   - component: {fileID: 6671576642017992405}
   - component: {fileID: 3373914702578332977}
+  - component: {fileID: 4304641369327984175}
   m_Layer: 0
   m_Name: Lightning
   m_TagString: Untagged
@@ -7049,6 +7050,19 @@ MonoBehaviour:
   radius: 0.7
   hitDelay: 0.1
   releaseDelay: 0.9
+--- !u!210 &4304641369327984175
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4528877711005814777}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 15
+  m_SortAtRoot: 0
+  m_Sort3DAs2D: 0
 --- !u!1 &6738408550048805878
 GameObject:
   m_ObjectHideFlags: 0

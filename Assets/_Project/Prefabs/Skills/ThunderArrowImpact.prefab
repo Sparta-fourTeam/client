@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 3056086894220570447}
   - component: {fileID: 18451100038509362}
   - component: {fileID: 2178675430464157021}
+  - component: {fileID: 4056904732800772670}
   m_Layer: 0
   m_Name: ThunderArrowImpact
   m_TagString: Untagged
@@ -2330,6 +2331,19 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
+--- !u!210 &4056904732800772670
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 843842019836836357}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 13
+  m_SortAtRoot: 0
+  m_Sort3DAs2D: 0
 --- !u!1 &5252158584107578299
 GameObject:
   m_ObjectHideFlags: 0
