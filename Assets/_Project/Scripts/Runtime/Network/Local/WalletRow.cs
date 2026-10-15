@@ -7,6 +7,7 @@ namespace Game.Network
     public class WalletRow
     {
         public int gold;
+        public int gems;
         public int energyStored;
 
         /// <summary>에너지가 마지막으로 갱신된 시각. 경과 시간만큼 자연 회복량을 계산하는 데 쓰인다</summary>

@@ -339,6 +339,7 @@ GameObject:
   - component: {fileID: 4343491703742515280}
   - component: {fileID: 2528076577882115224}
   - component: {fileID: 5805564587403575089}
+  - component: {fileID: 792741826719310144}
   m_Layer: 5
   m_Name: Gem
   m_TagString: Untagged
@@ -405,6 +406,20 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &792741826719310144
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 952264283925392879}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1fdaa1cd493f1f0458ef3cc0a5000525, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.WalletView
+  _currency: 1
+  _value: {fileID: 6177639691788142532}
 --- !u!1 &1137366095082007189
 GameObject:
   m_ObjectHideFlags: 0
@@ -2067,6 +2082,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1fdaa1cd493f1f0458ef3cc0a5000525, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Game.View::Game.View.WalletView
+  _currency: 0
   _value: {fileID: 13551050373610965}
 --- !u!114 &5063323008301469332
 MonoBehaviour:

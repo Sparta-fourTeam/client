@@ -10,8 +10,7 @@ namespace Game.Core
         /// <summary>플레이어 닉네임. 계정을 만들 때 정해지고, 계정 삭제를 확인할 때 입력받는다</summary>
         public string nickname;
         public int gold;
-
-        /// <summary>젬. 서버 응답에만 있고 로컬 저장은 0이다. 상단 재화 표시는 아직 이 값을 쓰지 않는다 (DummyGrowthCatalog.Gems)</summary>
+        /// <summary>잼. 일일상점·코인 상점에서 물품을 살 때 쓰고, 상단 재화 표시도 이 값을 쓴다</summary>
         public int gems;
         public int exp;
         public int energyStored;
@@ -28,5 +27,7 @@ namespace Game.Core
         public List<QuestProgressRow> quests;
         /// <summary>이번 주기에 연 퀘스트 보물상자 ID</summary>
         public List<string> questChests;
+        /// <summary>오늘 일일상점 상태(다시 뽑은 횟수, 산 칸)</summary>
+        public ShopState shop;
     }
 }

@@ -20,6 +20,7 @@ namespace Game.Network
         {
             nickname = save.nickname,
             gold = save.wallet.gold,
+            gems = save.wallet.gems,
             exp = save.exp,
             energyStored = save.wallet.energyStored,
             energyUpdatedAt = save.wallet.energyUpdatedAt,
@@ -29,7 +30,8 @@ namespace Game.Network
             codex = save.codex ?? new(),
             tutorials = save.tutorials ?? new(),
             quests = save.quests?.rows ?? new(),
-            questChests = save.quests?.chests ?? new()
+            questChests = save.quests?.chests ?? new(),
+            shop = save.shop?.state ?? new()
         };
     }
 }

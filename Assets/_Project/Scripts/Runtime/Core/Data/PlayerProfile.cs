@@ -16,7 +16,8 @@ namespace Game.Core
             items = new(),
             codex = new(),
             quests = new(),
-            questChests = new()
+            questChests = new(),
+            shop = new()
         };
 
         /// <summary>삭제된 계정의 진행 캐시를 지운다. 다음 로그인에서 새 스냅샷을 받아야 한다.</summary>
@@ -55,6 +56,9 @@ namespace Game.Core
         /// <summary>보드 게이지의 현재 점수(받은 퀘스트의 점수 합)</summary>
         public int QuestPoints(QuestBoardDefinition board) => QuestRules.Points(board, _snapshot.quests);
 
+        public ShopState Shop => _snapshot.shop;
+        public bool IsShopSlotSold(int slot) => _snapshot.shop.purchased.Contains(slot);
+
         public int EnergyStored => _snapshot.energyStored;
 
         /// <summary>energyUpdatedAt을 UTC로 해석한다. Apply 전(값 없음)에는 DateTime.UtcNow를 반환한다</summary>
@@ -85,6 +89,8 @@ namespace Game.Core
             snap.codex ??= new();
             snap.quests ??= new();
             snap.questChests ??= new();
+            snap.shop ??= new();
+            snap.shop.purchased ??= new();
             _snapshot = snap;
             IsLoaded = true;
             Changed?.Invoke(this);
