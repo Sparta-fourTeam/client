@@ -613,8 +613,11 @@ namespace Game.Tests
         [UnityTest]
         public IEnumerator MenuDeletionClearsRootProfileAndReturnsToLoginSelection()
         {
+            Assert.That(ServerConfig.UseServerAuth, Is.False, "이 삭제 회귀는 로컬 백엔드에서만 실행한다");
             yield return StartFromBoot();
             var root = Object.FindAnyObjectByType<RootLifetimeScope>();
+            Assert.That(root.Container.Resolve<IAccountApi>(), Is.TypeOf<LocalAccountApi>(),
+                "실제 서버 계정에 삭제 요청을 보내지 않는다");
             var profile = root.Container.Resolve<PlayerProfile>();
             var ui = Object.FindAnyObjectByType<LobbyLifetimeScope>().Container.Resolve<IUiRegistry>();
             var menu = ui.Get<LobbyMenuPopupView>();
