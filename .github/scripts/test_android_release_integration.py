@@ -24,6 +24,8 @@ class IntegrationTests(unittest.TestCase):
         f = self.fx
         self.env = dict(f.tag_env, GITHUB_RUN_NUMBER='6')
         self.calls, self.merged, self.created = [], False, False
+        self.check_runs = [dict(id=81, head_sha=f.source, status='completed', conclusion='success',
+                               path='.github/workflows/android-release-checks.yml', pull_requests=[{'number':123}])]
         self.rows = [dict(id=11, user=dict(id=module.CODEX_ID, login=module.CODEX_LOGIN, type='Bot'),
                           commit_id=f.source, state='COMMENTED', submitted_at='2026-10-15T00:00:00Z', body='Review complete')]
         self.state = dict(headRefOid=f.source, baseRefOid=f.base, headRefName='release/v1.0.3', baseRefName='main',
@@ -43,7 +45,7 @@ class IntegrationTests(unittest.TestCase):
         if endpoint == 'issues/123/comments?per_page=100':
             return [getattr(self, 'summary_comments', [])]
         if endpoint.startswith('actions/runs?head_sha='):
-            return [{'workflow_runs':getattr(self, 'approval_runs', [])}]
+            return [{'workflow_runs':getattr(self, 'approval_runs', self.check_runs)}]
         if '/runs?per_page=' in endpoint:
             return [{'workflow_runs':[self.fx.tag_run]}]
         if endpoint.startswith('pulls/123/reviews'):
@@ -131,8 +133,8 @@ class IntegrationTests(unittest.TestCase):
         self.assertFalse(self.merge_calls())
 
     def test_pending_workflow_execution_approval_never_merges_even_without_required_ci(self):
-        self.approval_runs = [dict(head_sha=self.fx.source, status='waiting', conclusion=None,
-                                  pull_requests=[{'number':123}])]
+        self.approval_runs = [dict(self.check_runs[0], status='waiting', conclusion=None,
+                                  pull_requests=[])]
         with self.assertRaisesRegex(ValueError, 'Approve workflows to run'):
             self.integrate()
         self.assertFalse(self.merge_calls())
@@ -141,6 +143,15 @@ class IntegrationTests(unittest.TestCase):
         self.assertFalse(any('/approve' in c[1] for c in self.calls))
         self.approval_runs[0].update(status='completed', conclusion='success')
         self.assertEqual(self.integrate()['merge_commit_sha'], self.fx.merged)
+
+    def test_missing_running_failed_or_stale_release_ci_never_merges(self):
+        for runs in [[], [dict(self.check_runs[0], status='in_progress', conclusion=None)],
+                     [dict(self.check_runs[0], conclusion='failure')],
+                     [dict(self.check_runs[0], head_sha=self.fx.base)]]:
+            self.approval_runs = runs
+            with self.assertRaisesRegex(ValueError, 'Timed out'):
+                self.integrate()
+            self.assertFalse(self.merge_calls())
 
     def test_mutated_pr_head_or_main_base_never_merges(self):
         with patch.dict(self.state,headRefOid=self.fx.base):
@@ -282,6 +293,7 @@ class IntegrationTests(unittest.TestCase):
             'git/ref/tags/v1.0.3': {'ref':'refs/tags/v1.0.3','object':{'sha':f.obj}},
             f'actions/workflows/{module.tag.WORKFLOW_ID}/runs?per_page=100': [{'workflow_runs':[f.tag_run]}],
             'actions/runs/41': f.tag_run,
+            f'actions/runs?head_sha={f.source}&event=pull_request&per_page=100': [{'workflow_runs':self.check_runs}],
             'pulls/123': pr, 'pulls/123/reviews?per_page=100':[self.rows],
             'git/ref/heads/main': {'object':{'sha':f.merged}},
             'git/commits/'+f.merged: {'parents':[{'sha':f.base},{'sha':f.source}],

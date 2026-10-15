@@ -127,12 +127,19 @@ def reviews(number):
     return [r for page in pages for r in page]
 
 
-def pending_workflow_approvals(number, source):
+def pull_request_runs(number, source):
     pages = tag.api(f'actions/runs?head_sha={source}&event=pull_request&per_page=100', paginate=True)
     return [run for page in pages for run in page['workflow_runs']
             if run.get('head_sha') == source and
-            any(pr['number'] == number for pr in run.get('pull_requests', [])) and
-            (run.get('status') in ('waiting', 'action_required') or run.get('conclusion') == 'action_required')]
+            (not run.get('pull_requests') or any(pr['number'] == number for pr in run['pull_requests']))]
+
+
+def release_checks_ready(runs):
+    controls = [run for run in runs if run.get('path') == '.github/workflows/android-release-checks.yml']
+    if not controls:
+        return False
+    latest = max(controls, key=lambda run: run['id'])
+    return latest['status'] == 'completed' and latest['conclusion'] == 'success'
 
 
 def note_workflow_approval(request, number, env):
@@ -240,6 +247,8 @@ def verify_remote_merge(request):
     if ([p['sha'] for p in commit['parents']] != [request['main_base_sha'], request['tag_source_sha']] or
             commit['tree']['sha'] != request['integrated_tree']):
         raise ValueError('Merged parents/tree differ from exact release integration')
+    if not release_checks_ready(pull_request_runs(pr['number'], request['tag_source_sha'])):
+        raise ValueError('Release control CI must pass on the exact source SHA')
     rows = reviews(pr['number'])
     completed = completed_codex_review(pr['number'], request, review_state(pr['number']), rows)
     if (not completed or completed['id'] != request['codex_review_id'] or
@@ -282,11 +291,14 @@ def integrate(request, env, event, timeout=1200, interval=20, clock=time.monoton
         state = review_state(number)
         if state['baseRefOid'] != request['main_base_sha'] or state['mergeable'] == 'CONFLICTING':
             raise ValueError('PR base changed or conflicts; no automatic resolution')
-        approval_pending = pending_workflow_approvals(number, request['tag_source_sha'])
+        runs = pull_request_runs(number, request['tag_source_sha'])
+        approval_pending = any(run.get('status') in ('waiting', 'action_required') or
+                               run.get('conclusion') == 'action_required' for run in runs)
         if approval_pending and not approval_noted:
             note_workflow_approval(request, number, env)
             approval_noted = True
-        completed = None if approval_pending else completed_codex_review(number, request, state, reviews(number))
+        completed = None if approval_pending or not release_checks_ready(runs) else completed_codex_review(
+            number, request, state, reviews(number))
         if completed and state['mergeable'] == 'MERGEABLE' and state['mergeStateStatus'] in ('CLEAN', 'UNSTABLE'):
             # GitHub remains authoritative for required CI/reviews and all rules.
             # UNSTABLE may include this still-running, non-required tag workflow.
