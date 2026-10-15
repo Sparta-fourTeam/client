@@ -30,6 +30,7 @@ namespace Game.Core
         private readonly BgmSlot[] _bgm = { new BgmSlot(), new BgmSlot() };
 
         private AudioLibrary _library;
+        private AudioMixer _mixer;
         private GameObject _root;
         private AudioSource[] _sfx;
         private int _active;
@@ -39,20 +40,29 @@ namespace Game.Core
         public void Start()
         {
             _library = Resources.Load<AudioLibrary>(AudioLibrary.ResourcePath);
+            _mixer = Resources.Load<AudioMixer>(SoundVolumeApplier.MixerPath);
+        }
 
-            var mixer = Resources.Load<AudioMixer>(SoundVolumeApplier.MixerPath);
+        // AudioSource는 소리를 실제로 낼 때 처음 만든다. 클립이 없는 동안(또는 소리를 내지 않는 화면)에는 활성 AudioSource가 없어
+        // AudioListener가 없는 씬에서도 "no audio listeners" 경고가 나지 않는다
+        private void EnsureSources()
+        {
+            if (_root != null)
+            {
+                return;
+            }
 
             _root = new GameObject("AudioService");
             UnityEngine.Object.DontDestroyOnLoad(_root);
 
-            var sfxGroup = FindGroup(mixer, nameof(SoundChannel.Sfx));
+            var sfxGroup = FindGroup(_mixer, nameof(SoundChannel.Sfx));
             _sfx = new AudioSource[SfxVoices];
             for (var i = 0; i < _sfx.Length; i++)
             {
                 _sfx[i] = CreateSource("Sfx" + i, sfxGroup, false);
             }
 
-            var musicGroup = FindGroup(mixer, nameof(SoundChannel.Music));
+            var musicGroup = FindGroup(_mixer, nameof(SoundChannel.Music));
             for (var i = 0; i < _bgm.Length; i++)
             {
                 _bgm[i].Source = CreateSource("Bgm" + i, musicGroup, true);
@@ -72,6 +82,8 @@ namespace Game.Core
                 return;
             }
 
+            EnsureSources();
+
             // 모든 소리가 재생 중이면 새 소리를 버린다. 이미 나는 소리를 끊는 것보다 덜 거슬린다
             var source = FindIdleSfx();
             if (source == null)
@@ -88,10 +100,12 @@ namespace Game.Core
 
         public void PlayBgm(string id, float fadeSeconds = 1f)
         {
-            if (_root == null || !TryGetEntry(id, out var entry))
+            if (!TryGetEntry(id, out var entry))
             {
                 return;
             }
+
+            EnsureSources();
 
             var current = _bgm[_active];
             if (current.Id == id && current.Target > 0f)
