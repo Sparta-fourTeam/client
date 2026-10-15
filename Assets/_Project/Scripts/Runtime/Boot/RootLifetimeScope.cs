@@ -72,6 +72,8 @@ namespace Game.Boot
             builder.Register<IVolumeStore, PlayerPrefsVolumeStore>(Lifetime.Singleton);
             builder.Register<SoundSettings>(Lifetime.Singleton);
             builder.RegisterEntryPoint<SoundVolumeApplier>();
+            // 소리는 ID로 재생한다. 효과음은 풀링, 배경음은 크로스페이드하고 위 믹서 그룹으로 출력한다
+            builder.RegisterEntryPoint<AudioService>().As<IAudioService>();
             // 데미지 표시·프레임레이트 같은 나머지 기기 설정도 기기에 저장하고 시작할 때와 바뀔 때 적용한다
             builder.Register<ISettingsStore, PlayerPrefsSettingsStore>(Lifetime.Singleton);
             builder.Register<GameSettings>(Lifetime.Singleton);
