@@ -14,6 +14,12 @@ namespace Game.Core
         Unavailable,
         /// <summary>사용자가 취소하거나 외부 로그인이 실패했다</summary>
         Cancelled,
+        /// <summary>서버가 연동을 거절했다(409). 이 계정이 이미 외부 계정과 연동됐거나, 그 외부 계정이 이미 다른 계정에 연동돼 있다</summary>
+        Conflict,
+        /// <summary>서버 오류·네트워크 문제 등으로 연동하지 못했다. 로그인 정보는 바꾸지 않았으니 다시 시도할 수 있다</summary>
+        Failed,
+        /// <summary>서버 인증이 만료됐다. 기존 계정 정보를 유지한 채 다시 로그인해야 한다</summary>
+        ReauthenticationRequired,
     }
 
     /// <summary>로그아웃·계정 삭제·계정 연동. 게스트 계정은 기기에만 있으므로 로그아웃하면 데이터도 함께 지운다.
@@ -73,7 +79,22 @@ namespace Game.Core
                     return LinkResult.Cancelled;
                 }
 
-                await _api.LinkAccount(social.Method, accountId);
+                // 서버가 받아들인 뒤에만 로그인 정보를 바꾼다. 거절되거나 실패하면 게스트 그대로 둔다
+                try
+                {
+                    await _api.LinkAccount(social.Method, accountId);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (ApiException ex)
+                {
+                    Debug.LogException(ex);
+                    if (ex.Code == "SESSION_EXPIRED" || ex.Code == "HTTP_401") { return LinkResult.ReauthenticationRequired; }
+                    return ex.Kind == ApiErrorKind.Rejected && ex.Code == "HTTP_409" ? LinkResult.Conflict : LinkResult.Failed;
+                }
+
                 _credentials.Save(social.Method, AuthCredentials.IdToSave(social.Method, accountId));
                 return LinkResult.Linked;
             }
@@ -97,6 +118,9 @@ namespace Game.Core
             await _api.DeleteAccount();
             await ReturnToLoginAsync();
         }
+
+        /// <summary>계정과 진행을 지우지 않고 기존 로그인 방식·게스트 ID로 인증 절차를 다시 밟는다.</summary>
+        public UniTask ReauthenticateAsync() => _nav.GoToLoading();
 
         private UniTask ReturnToLoginAsync()
         {
