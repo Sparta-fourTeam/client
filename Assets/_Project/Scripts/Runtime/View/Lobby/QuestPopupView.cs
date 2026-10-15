@@ -19,7 +19,7 @@ namespace Game.View
         /// <summary>에너지 보상 칸의 ItemId. 아이템이 아니라서 Items 표에는 없다</summary>
         public const string EnergyId = "currency.energy";
         /// <summary>잼 보상 칸의 ItemId. 아이템이 아니라서 Items 표에는 없다</summary>
-        public const string GemId = "currency.gem";
+        public const string GemId = RewardRows.GemId;
 
         [Header("탭")]
         [Tooltip("탭 순서대로, 받을 수 있는 것이 있을 때 켜는 빨간 점. 보드 수보다 길어도 된다(남는 탭은 건드리지 않는다)")]

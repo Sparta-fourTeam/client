@@ -94,6 +94,16 @@ namespace Game.Network
             save.ledger.Add(new LedgerRow { idempotencyKey = idempotencyKey, amount = -price, sourceType = "SHOP_GOLD_PACK", sourceId = index.ToString() });
         }
 
+        public static void BuyGemPack(LocalSave save, GameDataStore data, int index, string idempotencyKey)
+        {
+            var packs = data.Shop.GemPacks;
+            if (index < 0 || index >= packs.Count) { throw new ApiException(ApiErrorKind.Rejected, "INVALID_PACK"); }
+
+            var pack = packs[index];
+            save.wallet.gems = AddChecked(save.wallet.gems, pack.Gems);
+            save.ledger.Add(new LedgerRow { idempotencyKey = idempotencyKey, amount = pack.Gems, sourceType = "SHOP_GEM_PACK", sourceId = index.ToString() });
+        }
+
         private static int AddChecked(int current, int added)
         {
             try { return checked(current + added); }

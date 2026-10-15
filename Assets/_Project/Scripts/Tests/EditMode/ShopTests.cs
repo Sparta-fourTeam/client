@@ -130,6 +130,21 @@ namespace Game.Tests
             Assert.AreEqual(7, _store.Load().wallet.gems);
         }
 
+        [Test(Description = "잼 묶음을 사면 묶음에 정해진 잼이 더해지고, 같은 요청을 다시 보내도 두 번 지급되지 않으며, 없는 묶음은 거절된다")]
+        public void BuyGemPack_PaysGemsOnce_AndRejectsUnknownPack()
+        {
+            int last = _data.Shop.GemPacks.Count - 1;
+            SetGems(5);
+
+            var snapshot = _shop.BuyGemPack(last, "gem-1").GetAwaiter().GetResult();
+            _shop.BuyGemPack(last, "gem-1").GetAwaiter().GetResult();
+
+            Assert.AreEqual(5 + _data.Shop.GemPacks[last].Gems, snapshot.gems);
+            Assert.AreEqual(snapshot.gems, _store.Load().wallet.gems);
+            var invalid = Assert.Throws<ApiException>(() => _shop.BuyGemPack(last + 1, "gem-2").GetAwaiter().GetResult());
+            Assert.AreEqual("INVALID_PACK", invalid.Code);
+        }
+
         [Test(Description = "날이 바뀌면 다시 뽑은 횟수가 비워진다")]
         public void Rollover_ResetsRerollCounts()
         {
