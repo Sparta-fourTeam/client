@@ -79,7 +79,7 @@ def publish(play, bundle, evidence, record, authorize):
     releases = prepared['internal'].get('releases', [])
     require(len(releases) == 1 and all(releases[0].get(k) == v for k, v in desired['releases'][0].items()),
             'Internal prepared release mismatch')
-    # Recheck current main, original run, immutable tag, PR/review and CI after
+    # Recheck trusted infrastructure, original run, immutable tag and required CI after
     # uploading too. A change/uncertain result stops; there is no publish retry.
     authorize()
     record('commit_requested', track='internal', release_name=name)
@@ -91,7 +91,7 @@ def publish(play, bundle, evidence, record, authorize):
 def main():
     evidence = json.loads(Path('verified/artifact-manifest.json').read_text())
     release = json.loads(Path('release-context/tag-release.json').read_text())
-    require(all(evidence.get(k) == v for k, v in release.items()), 'Artifact tag/PR/merge provenance mismatch')
+    require(all(evidence.get(k) == v for k, v in release.items()), 'Artifact tag/source provenance mismatch')
     require(evidence['source_commit'] == os.environ['BUILD_SHA'] and
             evidence['version_code'] == int(os.environ['ANDROID_VERSION_CODE']) and
             evidence['version_name'] == os.environ['RELEASE_VERSION'], 'Artifact build identity mismatch')

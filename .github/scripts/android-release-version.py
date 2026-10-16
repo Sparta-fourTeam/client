@@ -61,16 +61,19 @@ def candidate_code(policy, requested_version, main_policy, number):
 
 def automatic_release_number(policy, requested_version, main_policy, run, pages, env, expected_code=None,
                              event=None, release=None):
-    """Use the original tag run counter while building its verified merge SHA."""
+    """Use the original tag run counter while building its verified source SHA."""
     release = release or {}
+    direct = release.get("source_mode") == "tagged-dev-v1"
+    build_sha = release.get("source_commit") if direct else release.get("merge_commit_sha")
     if (env.get('GITHUB_EVENT_NAME') != 'push' or not (event or {}).get('created') or
             (event or {}).get('forced') or (event or {}).get('deleted') or
             env.get('GITHUB_REF') != 'refs/tags/v' + requested_version or
             release.get('tag') != 'v' + requested_version or
             release.get('tag_source_sha') != env.get('GITHUB_SHA') or
-            release.get('merge_commit_sha') != env.get('BUILD_SHA') or
+            build_sha != env.get('BUILD_SHA') or
+            (direct and build_sha != env.get('GITHUB_SHA')) or
             release.get('tag_run_id') != int(env['GITHUB_RUN_ID'])):
-        raise ValueError('Only the original tag run and its verified merge SHA may allocate a Play code')
+        raise ValueError('Only the original tag run and its verified source SHA may allocate a Play code')
     if (env.get('GITHUB_REPOSITORY') != REPOSITORY or
             run.get('repository', {}).get('full_name') != REPOSITORY or
             run.get('workflow_id') != AUTOMATIC_WORKFLOW_ID or run.get('event') != 'push' or
@@ -78,7 +81,12 @@ def automatic_release_number(policy, requested_version, main_policy, run, pages,
             run.get('run_number') != int(env['GITHUB_RUN_NUMBER']) or run.get('head_sha') != env['GITHUB_SHA']):
         raise ValueError('Release counter identity mismatch; workflow migration requires review')
     if run.get('run_attempt') != 1 or env.get('GITHUB_RUN_ATTEMPT') != '1':
-        raise ValueError('Re-run would reuse a versionCode; use a new version tag')
+        if not direct or run.get('run_attempt') != int(env.get('GITHUB_RUN_ATTEMPT', '0')):
+            raise ValueError('Re-run would reuse a versionCode; use a new version tag')
+        retry_spec = importlib.util.spec_from_file_location('direct_retry', Path(__file__).with_name('android-tag-build.py'))
+        retry = importlib.util.module_from_spec(retry_spec)
+        retry_spec.loader.exec_module(retry)
+        retry.verify_prebuild_retry(env)
     runs = [row for page in pages for row in page['workflow_runs']]
     if not any(row['id'] == run['id'] for row in runs):
         raise ValueError('Current run missing from workflow history')
@@ -174,11 +182,13 @@ def main():
                              text=True, capture_output=True)
     main_policy = json.loads(current.stdout) if current.returncode == 0 else None
     if args.automatic:
-        spec = importlib.util.spec_from_file_location('release_integration', Path(__file__).with_name('android-release-integration.py'))
+        release_input = json.loads(Path(args.release_request).read_text())
+        verifier = 'android-tag-build.py' if release_input.get('source_mode') == 'tagged-dev-v1' else 'android-release-integration.py'
+        spec = importlib.util.spec_from_file_location('release_authorization', Path(__file__).with_name(verifier))
         tag_release = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(tag_release)
         event = json.loads(Path(os.environ['GITHUB_EVENT_PATH']).read_text())
-        release = tag_release.verify_release(json.loads(Path(args.release_request).read_text()), os.environ, event)
+        release = tag_release.verify_release(release_input, os.environ, event)
         Path('build').mkdir(exist_ok=True)
         Path('build/tag-release.json').write_text(json.dumps(release, indent=2) + '\n')
         if args.version is not None and args.version != release['version_name']:
@@ -202,7 +212,7 @@ def main():
             summary.write(f'### Android release candidate\n\nVersion: `{version}`  \n'
                           f'versionCode: `{code}` = {ANCHOR_CODE} + (run {run["run_number"]} - {ANCHOR_RUN_NUMBER})  \n'
                           f'Tag: `{release["tag"]}` / source: `{release["tag_source_sha"]}`  \n'
-                          f'Merged build source: `{release["merge_commit_sha"]}` / PR #{release["pr_number"]}\n\n'
+                          f'Build source: `{release.get("source_commit", release.get("merge_commit_sha"))}`\n\n'
                           'This is a build candidate; it is not proof of a Play upload.\n')
 
 
