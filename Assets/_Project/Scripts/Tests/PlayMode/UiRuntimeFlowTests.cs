@@ -873,6 +873,18 @@ namespace Game.Tests
                 yield return WaitFor(() => !Field<GameObject>(mission, "_panel").activeSelf);
                 ui.Get<ProfilePopupView>().Open();
                 Assert.That(Field<GameObject>(ui.Get<ProfilePopupView>(), "_panel").activeSelf, Is.True);
+                if (pass == 0)
+                {
+                    var profile = root.Container.Resolve<PlayerProfile>();
+                    string playerId = profile.PlayerId;
+                    var confirm = ui.Get<ConfirmPopupView>();
+                    yield return ClickGameButton(Field<Button>(ui.Get<ProfilePopupView>(), "_renameButton"));
+                    yield return WaitFor(() => confirm.IsOpen);
+                    Field<TMP_InputField>(confirm, "_input").text = "플레이검증_2";
+                    yield return ClickGameButton(Field<Button>(confirm, "_confirmButton"));
+                    yield return WaitFor(() => profile.Nickname == "플레이검증_2");
+                    Assert.That(profile.PlayerId, Is.EqualTo(playerId));
+                }
                 ui.Get<CharacterScreenView>().SetVisible(true);
                 ui.Get<SkillScreenView>().SetVisible(true);
                 ui.Get<SkillUpgradePopupView>().Open(0);

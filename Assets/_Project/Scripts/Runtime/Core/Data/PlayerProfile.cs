@@ -35,6 +35,7 @@ namespace Game.Core
             _data = data;
         }
 
+        public string PlayerId => _snapshot.playerId ?? string.Empty;
         public string Nickname => _snapshot.nickname ?? string.Empty;
         public int Gold => _snapshot.gold;
         public int Gems => _snapshot.gems;

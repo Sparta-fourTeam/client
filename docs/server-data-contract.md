@@ -68,7 +68,7 @@ Items의 장비 재료와 스킬 재료 예:
 | StartBattleResponse | `battleId`는 결과 제출과 재제출의 같은 전투를 식별한다 |
 | SubmitResultRequest | `battleId`, `cleared`, `completedWaves`, `reachedWave`, `wallHpPercent`, `encounteredMonsterIds`는 전투 식별·판정·완료 진척·현재 진척·방벽 상태·도감 등록의 서로 다른 입력이다 |
 | SubmitResultResponse | `rewardGold`, `rewardExp`, `clearRating`, `rewardItems`는 서버가 확정한 처리 결과다. 랜덤 재료·재제출 시 확정 결과를 클라이언트 계산으로 대체하지 않는다 |
-| PlayerSnapshot | `nickname`, `gold`, `exp`, `energyStored`, `energyUpdatedAt`, `stageProgress`, `upgrades`, `items`, `codex`, `tutorials`는 최신 상태 전체다. 에너지 잔량과 갱신 시각은 둘 다 자연 회복에 필요하다 |
+| PlayerSnapshot | `playerId`·`nickname`은 현재 로컬 표시 정보이며 서버 저장·기기 간 복원은 후속 계약이다. `nickname`, `gold`, `exp`, `energyStored`, `energyUpdatedAt`, `stageProgress`, `upgrades`, `items`, `codex`, `tutorials`는 최신 상태 전체다. 에너지 잔량과 갱신 시각은 둘 다 자연 회복에 필요하다 |
 | StageProgressRow | `stageId`, `clearRating`, `claimedRating`은 유지한다. 완료 등급과 이미 수령한 등급이 달라야 미수령 보상을 알 수 있다. 파생 불리언 두 개는 보내지 않는다 |
 | UpgradeRow·ItemAmount·CodexRow | 강화 ID·레벨, 아이템 ID·수량, 몬스터 ID·수령 여부는 각 대상과 상태의 쌍이다. 어느 한쪽으로 다른 쪽을 계산할 수 없다 |
 | TutorialCompleteResponse | `snapshot`은 최신 전체 상태, `rewardItems`는 이번 요청에서 실제 지급한 내역이다. 이미 완료한 단계 재요청은 지급 내역이 비므로 인벤토리 전체로 대체할 수 없다 |

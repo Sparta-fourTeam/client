@@ -38,6 +38,29 @@ namespace Game.Tests
             if (Directory.Exists(_folder)) { Directory.Delete(_folder, true); }
         }
 
+        [Test(Description = "새 세이브의 기본 이름·공개 ID는 최초 읽기 때 저장되어 재시작해도 바뀌지 않는다")]
+        public void NewIdentity_IsNamelessAndPersistsWithoutOtherWrites()
+        {
+            var first = new LocalSaveStore(_filePath).Load();
+            var restored = new LocalSaveStore(_filePath).Load();
+            Assert.That(first.nickname, Does.Match(@"\ANameless_[1-9][0-9]{5}\z"));
+            Assert.That(Guid.TryParseExact(first.playerId, "N", out _), Is.True);
+            Assert.That(restored.playerId, Is.EqualTo(first.playerId));
+            Assert.That(restored.nickname, Is.EqualTo(first.nickname));
+        }
+
+        [Test(Description = "구 세이브에는 공개 ID만 보충하고 기존 이름·진행은 보존한다")]
+        public void LegacyIdentity_BackfillsIdWithoutRenamingOrResettingProgress()
+        {
+            var store = new LocalSaveStore(_filePath);
+            store.Flush(new LocalSave { nickname = "Ninja_123456", exp = 123 });
+            var migrated = store.Load();
+            var restored = new LocalSaveStore(_filePath).Load();
+            Assert.That(restored.nickname, Is.EqualTo("Ninja_123456"));
+            Assert.That(restored.exp, Is.EqualTo(123));
+            Assert.That(restored.playerId, Is.Not.Empty.And.EqualTo(migrated.playerId));
+        }
+
         [Test(Description = "Flush()로 저장한 지갑/업그레이드 데이터를 Load()가 그대로 복원한다")]
         public void Flush_ThenLoad_RoundTripsData()
         {

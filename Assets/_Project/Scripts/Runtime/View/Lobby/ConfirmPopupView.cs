@@ -17,6 +17,9 @@ namespace Game.View
         public string CancelLabel;
         public string InputPlaceholder;
         public string RequiredInput;
+        /// <summary>자유 입력의 유효성 검사. RequiredInput이 있으면 기존 삭제 확인처럼 완전 일치를 우선한다</summary>
+        public System.Func<string, bool> InputValidator;
+        public string InputValue;
     }
 
     /// <summary>로비의 공용 확인·안내 팝업. 로그아웃·계정 삭제 확인과 안내 문구에 쓴다.
@@ -67,7 +70,8 @@ namespace Game.View
             ((RectTransform)_confirmButton.transform).anchoredPosition =
                 new Vector2(single ? 0f : _confirmX, ((RectTransform)_confirmButton.transform).anchoredPosition.y);
 
-            bool needsInput = !string.IsNullOrEmpty(request.RequiredInput);
+            bool needsInput = !string.IsNullOrEmpty(request.RequiredInput) || request.InputValidator != null;
+            request.InputValue = null;
             _input.gameObject.SetActive(needsInput);
             _input.SetTextWithoutNotify(string.Empty);
             ((TMP_Text)_input.placeholder).text = request.InputPlaceholder;
@@ -89,11 +93,15 @@ namespace Game.View
                 return;
             }
 
-            _confirmButton.interactable = string.IsNullOrEmpty(_request.RequiredInput) || _input.text == _request.RequiredInput;
+            _confirmButton.interactable = !string.IsNullOrEmpty(_request.RequiredInput)
+                ? _input.text == _request.RequiredInput
+                : _request.InputValidator?.Invoke(_input.text) ?? true;
         }
 
         private void Finish(bool confirmed)
         {
+            if (confirmed && !_confirmButton.interactable) { return; }
+            if (confirmed) { _request.InputValue = _input.text; }
             var result = _result;
             _result = null;
             PopupPanel.Set(_panel, _transition, false);

@@ -17,7 +17,8 @@ namespace Game.Editor
             var profile = new PlayerProfile(data);
             profile.Apply(new PlayerSnapshot
             {
-                nickname = "Ninja_285709",
+                nickname = "Nameless_285709",
+                playerId = "7ff0d5b53cb347b29318c1acb03d4635",
                 exp = 420,
                 stageProgress = new List<StageProgressRow> { new() { stageId = 3 } }
             });
@@ -27,7 +28,7 @@ namespace Game.Editor
             so.FindProperty("_transition").objectReferenceValue = null;
             so.ApplyModifiedPropertiesWithoutUndo();
             view.Initialize();
-            view.Construct(catalog, profile);
+            view.Construct(catalog, profile, null);
             view.Open();
         }
     }

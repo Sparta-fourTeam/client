@@ -25,7 +25,7 @@ namespace Game.Network
         {
             var data = await _client.Get<ServerUserData>(MePath);
             var local = await _local.GetMe();
-            var snapshot = ServerUserMapper.ToSnapshot(data, local.nickname);
+            var snapshot = ServerUserMapper.ToSnapshot(data, local.nickname, local.playerId);
 
             int unapplied = (data.items?.Count ?? 0) + (data.tutorials?.Count ?? 0);
             if (!_warnedIds && unapplied > 0)

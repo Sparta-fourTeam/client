@@ -32,6 +32,9 @@ namespace Game.Network
             catch (UnauthorizedAccessException) { }
         }
 
+        // 서버에 닉네임 계약이 생기기 전까지 로컬에만 저장한다. 임의의 서버 API를 호출하지 않는다.
+        public UniTask<string> ChangeNickname(string nickname) => _local.ChangeNickname(nickname);
+
         public async UniTask LinkAccount(LoginMethod method, string accountId)
         {
             // accountId는 외부 로그인으로 받은 ID 토큰이다. 서버가 검증한다
