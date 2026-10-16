@@ -18,7 +18,8 @@ namespace Game.Core
         [Min(0f)] public float minInterval = 0.05f;
     }
 
-    /// <summary>소리 ID를 클립과 재생 설정에 잇는 표. 소리 연결은 코드가 아니라 이 데이터로 관리한다</summary>
+    /// <summary>소리 ID를 클립과 재생 설정에 잇는 표. 소리 연결은 코드가 아니라 이 데이터로 관리한다.
+    /// 클립이 아직 없는 ID도 자리로 등록해 두면 재생 요청이 조용히 무시된다</summary>
     [CreateAssetMenu(fileName = "AudioLibrary", menuName = "Project Nova/Audio Library")]
     public sealed class AudioLibrary : ScriptableObject
     {
@@ -39,7 +40,7 @@ namespace Game.Core
             var index = new Dictionary<string, AudioEntry>(entries.Count);
             foreach (var entry in entries)
             {
-                if (string.IsNullOrEmpty(entry.id) || entry.clips == null || entry.clips.Length == 0)
+                if (string.IsNullOrEmpty(entry.id))
                 {
                     continue;
                 }

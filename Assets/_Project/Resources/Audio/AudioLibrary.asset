@@ -1,0 +1,65 @@
+%YAML 1.1
+%TAG !u! tag:yaml.org,2002:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 794441f5507b4b628218b728ab098719, type: 3}
+  m_Name: AudioLibrary
+  m_EditorClassIdentifier: 
+  entries:
+  - id: bgm_battle
+    clips: []
+    volume: 1
+    pitchVariance: 0
+    minInterval: 0.05
+  - id: sfx_wave_start
+    clips: []
+    volume: 1
+    pitchVariance: 0
+    minInterval: 0.2
+  - id: sfx_enemy_die
+    clips: []
+    volume: 1
+    pitchVariance: 0.1
+    minInterval: 0.04
+  - id: sfx_elite_die
+    clips: []
+    volume: 1
+    pitchVariance: 0
+    minInterval: 0.05
+  - id: sfx_boss_die
+    clips: []
+    volume: 1
+    pitchVariance: 0
+    minInterval: 0.05
+  - id: sfx_special_warning
+    clips: []
+    volume: 1
+    pitchVariance: 0
+    minInterval: 0.5
+  - id: sfx_wall_hit
+    clips: []
+    volume: 1
+    pitchVariance: 0.05
+    minInterval: 0.1
+  - id: sfx_wall_destroyed
+    clips: []
+    volume: 1
+    pitchVariance: 0
+    minInterval: 0.5
+  - id: sfx_stage_clear
+    clips: []
+    volume: 1
+    pitchVariance: 0
+    minInterval: 0.5
+  - id: sfx_stage_fail
+    clips: []
+    volume: 1
+    pitchVariance: 0
+    minInterval: 0.5

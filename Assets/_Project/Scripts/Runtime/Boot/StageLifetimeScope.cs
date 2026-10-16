@@ -54,6 +54,8 @@ namespace Game.Boot
             builder.RegisterComponentInHierarchy<SpawnArea>();
             builder.Register<EnemyProjectileSystem>(Lifetime.Scoped);
             builder.RegisterEntryPoint<EnemySpawner>(Lifetime.Scoped).AsSelf().As<IEnemyTargetProvider>();
+            // 소리 ID와 클립은 AudioLibrary에서 정한다. 등록 순서에 기대지 않는다(상태 메시지는 Buffered)
+            builder.RegisterEntryPoint<BattleSoundPlayer>();
             builder.RegisterEntryPoint<WaveManager>().AsSelf();
             builder.RegisterBuildCallback(resolver => resolver.Inject(gameObject.AddComponent<BattleCheckpointDriver>()));
         }
