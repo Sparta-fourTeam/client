@@ -26,6 +26,50 @@
 | `sfx_stage_clear` | 징글 | 스테이지 클리어 | 2~3초 | 필수 |
 | `sfx_stage_fail` | 징글 | 스테이지 실패 | 2~3초 | 필수 |
 
+### VARCO Sound 플러그인 준비
+
+- **지원 버전**: 공식 문서 기준 Unity 2021.3 이상이다. 우리 프로젝트는 Unity 6000.6이라 실제로 동작하는지는 직접 확인한다.
+- **설치**: [공식 문서](https://api.varco.ai/en/docs/plugin-sound)에서 Unity용 `.unitypackage`를 내려받아 Assets → Import Package → Custom Package...로 가져오고, Window > VARCO Sound로 연다. 생성은 온라인 API를 쓰므로 인터넷 연결이 필요하다.
+- **계정·키·비용**: 공식 문서에는 키 요구가 따로 적혀 있지 않고 크레딧으로 과금한다. 텍스트→소리는 호출당 35 + (5 × 샘플 수) 크레딧(최소 40), 음악 생성은 호출당 200크레딧이다. 로그인이나 API 키를 요구하면 개인 것을 쓰고 저장소에 넣거나 커밋하지 않는다.
+- **이 저장소에 설치하지 않는다**: 패키지 파일이 저장소에 들어가 팀 전체에 영향이 간다. 빈 임시 Unity 프로젝트에 설치해서 소리를 만들고, 완성된 WAV만 이 프로젝트로 가져온다.
+
+
+### 1차 제작용 프롬프트와 길이
+
+VARCO Sound 플러그인(Window > VARCO Sound)에 넣을 영문 프롬프트다. 텍스트→소리는 항상 **10초짜리**가 나오므로 아래 **목표 길이**로 잘라서 쓴다. 같은 프롬프트도 결과가 다르니 샘플을 5개씩 뽑아 가장 나은 것을 고른다(호출당 크레딧은 샘플이 많을수록 늘어 1개 40, 3개 50, 5개 60이지만, 기본 35를 샘플이 나눠 가져 소리당 단가는 5개일 때 12크레딧으로 가장 싸다).
+
+| ID | 목표 길이 | 프롬프트 |
+| --- | --- | --- |
+| `sfx_enemy_die` | 0.6초 | Tiny cute cartoon pop and soft squish as a small slime monster bursts, very short, light and playful, no music |
+| `sfx_elite_die` | 1.0초 | Cartoon strong monster defeated, deeper pop with a short crunchy thud and a small sparkle at the end, casual mobile game |
+| `sfx_boss_die` | 2.2초 | Big boss monster defeated, deep cartoon explosion with a descending groan and a bright sparkle finish, one shot, no music |
+| `sfx_wave_start` | 1.5초 | Short bright cartoon horn call announcing a new wave of enemies, playful mobile game, one quick phrase |
+| `sfx_special_warning` | 2.0초 | Urgent warning alarm for a dangerous enemy approaching, two quick low pulsing horn blasts, cartoon style, no voice |
+| `sfx_wall_hit` | 0.7초 | Stone wall hit by a small creature, dull cartoon thud with a few tiny crumbling pebbles, short impact |
+| `sfx_wall_destroyed` | 2.6초 | Stone wall collapsing, heavy crumble and crash with falling rocks, dramatic but cartoonish, single event |
+| `sfx_stage_clear` | 3.0초 | Short cheerful victory jingle with bright bells and a tiny fanfare, playful mobile game, triumphant |
+| `sfx_stage_fail` | 2.5초 | Short comedic sad failure sting, descending wobbly brass notes, cartoon style, not too dramatic |
+| `bgm_battle` | 60~120초 루프 | (음악 생성) Upbeat tense but cute battle loop for a casual tower defense game, 120 BPM |
+
+- 클리어·실패 징글과 배경음은 음악에 가까워 텍스트→소리로는 품질이 낮을 수 있다. 플러그인의 음악 생성(호출당 200크레딧)을 쓰거나 다른 출처를 고려한다.
+- 게임 분위기는 귀엽고 가벼운 손그림 모바일 디펜스다(슬라임·박쥐 몬스터, 돌 방벽). 무겁고 사실적인 소리는 어울리지 않는다.
+
+### 만든 소리를 게임에 적용하기
+
+1. **파일 이름과 위치**: 클립 파일은 소리 ID에 번호를 붙여 `sfx_wall_hit_01.wav`, `sfx_wall_hit_02.wav`처럼 짓고(변형이 하나여도 `_01`) `Assets/_Project/Audio/`에 넣는다. 폴더가 없으면 만든다. 소리 ID는 파일 이름이 아니라 `AudioLibrary` 항목의 `id`이고, 번호를 붙여야 변형 파일끼리 덮어쓰지 않는다. 이름은 소문자 snake_case다.
+2. **길이 다듬기**: 10초짜리에서 앞쪽 무음을 없애고, 목표 길이로 자르고, 끝을 짧게 페이드 아웃한다. 최대 볼륨은 편집기의 Normalize로 -3dB 안팎에 맞춘다. 플러그인에 자르기 기능이 없으면 Audacity 같은 편집기를 쓰거나, 아래 명령으로 자른다(무음 제거 → 0.7초로 자르기 → 끝 페이드).
+   ```bash
+   ffmpeg -i in.wav -af "silenceremove=start_periods=1:start_threshold=-50dB:start_silence=0.01,atrim=0:0.7,afade=t=out:st=0.66:d=0.04" -ac 1 -ar 44100 sfx_wall_hit_01.wav
+   ```
+   무음을 없앤 뒤 소리가 목표 길이보다 짧으면 페이드 시작 `st`를 `길이 - 0.04`로 바꾼다.
+3. **임포트 설정** (Inspector에서 파일 선택):
+   - 효과음: Force To Mono 켬, Load Type `Decompress On Load`(아주 짧은 것) 또는 `Compressed In Memory`, Compression `Vorbis`.
+   - 배경음: Load Type `Streaming`, Compression `Vorbis`. 끊김 없이 이어지는 루프 파일이어야 한다.
+4. **AudioLibrary에 연결**: `Assets/_Project/Resources/Audio/AudioLibrary.asset`을 선택하고 `entries`에서 **같은 id** 항목(`sfx_wall_hit`)을 찾아 `clips`에 번호 붙은 클립(`_01`, `_02`, ...)을 모두 끌어다 넣는다. 효과음은 `clips` 중 하나를 무작위로 재생한다. 배경음은 첫 번째 클립만 쓴다.
+5. **값 조정**: 항목의 `volume`(0~1)으로 크기를, `pitchVariance`(0~0.5)로 반복 때 음높이 흔들림을, `minInterval`(초)로 같은 소리가 겹쳐 커지는 것을 막는다. 처치음처럼 자주 나는 소리는 `pitchVariance`를 0.1 안팎으로 둔다.
+6. **확인**: 플레이 모드로 Boot부터 시작해 스테이지 1을 하고 웨이브 시작, 적 처치, 방벽 피격, 파괴, 클리어·실패에서 소리가 나는지 듣는다. 전체 볼륨은 로비 설정 팝업의 음악·효과음 설정(믹서 그룹 Music·Sfx)을 따른다.
+7. **문제 확인**: 클립이 비어 있는 id는 조용히 무음이고, 라이브러리에 없는 id는 콘솔에 경고가 한 번 나온다. 소리가 안 나면 id 철자와 `clips`가 채워졌는지부터 본다.
+
 ## 2차: 아직 코드에 없는 것 (에셋이 정해지면 연결)
 
 | ID(안) | 종류 | 언제 | 비고 | 우선 |
