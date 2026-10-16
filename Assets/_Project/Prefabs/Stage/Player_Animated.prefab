@@ -43,6 +43,7 @@ GameObject:
   - component: {fileID: 2868358806268690223}
   - component: {fileID: 3102175485869776737}
   - component: {fileID: 3102175485869776740}
+  - component: {fileID: 3102175485869776741}
   m_Layer: 0
   m_Name: Player_Animated
   m_TagString: Untagged
@@ -93,6 +94,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: Game.Core::Game.Core.EnemyShadow
   sortingOrder: -400
   bindOnStart: 1
+--- !u!210 &3102175485869776741
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2032114599762951052}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 40
+  m_SortAtRoot: 0
 --- !u!1 &5749592481740122842
 GameObject:
   m_ObjectHideFlags: 0

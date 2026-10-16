@@ -18,14 +18,14 @@
 | 순서 | 대상 | 정하는 곳 |
 | --- | --- | --- |
 | -500 | 배경 | Stage 씬 |
-| -450 ~ -410 | **바닥 구간**: 몬스터 뒤에 깔리는 연출. `FrostPrison`(-440, -436), `ElectricField`(-430, -429), `Log`(그룹 -444), `BurningRootWave`·`LargeRootWave`(-446, -444), `Fx_GroundSlam`·`Fx_SonicWave`(-420) | 각 프리팹 |
+| -450 ~ -410 | **바닥 구간**: 몬스터 뒤에 깔리는 연출. `FrostPrison`(-440, -436), `ElectricField`(-430, -429), `Log`(그룹 -425), `BurningRootWave`·`LargeRootWave`(-427, -425, 장판 위), `Fx_GroundSlam`·`Fx_SonicWave`(-420) | 각 프리팹 |
 | **-402 ~ -10** | **몬스터 몸** (비주얼 `SortingGroup`) | `EnemyDepthSorter` (아래 "몬스터 깊이 정렬") |
 | 몸 + 1 | 몬스터 상태이상 이펙트 (`Resources/VFX/EnemyStatuses`) | `EnemyStatusEffects` |
 | 몸 - 1 | 몬스터 사망 이펙트 (`Resources/VFX/EnemyDeath`) | `Enemy` 사망 처리. 죽는 순간의 몸 순서로 정한다 |
 | -5 | 벽 (`Wall`). 몬스터 앞, 스킬 뒤 | 프리팹 |
 | 0 ~ 30 | 스킬·폭발 이펙트 (`Resources/VFX/*Explosion`, `Prefabs/Skills/*`). 프리팹마다 루트 `SortingGroup` 하나로 묶고, 순서는 안쪽 파츠의 가장 큰 값이다. 안쪽 파츠 순서(-1~16)는 그룹 안에서만 비교한다 | 각 프리팹 |
 | 35 | 적 투사체 (`Slime_Projectile`). 스킬·폭발(0 ~ 30)과 동률 없이 그 위, 플레이어(40) 아래 | 프리팹 |
-| 40 | 플레이어 (`Player_Animated`) | 프리팹 |
+| 40 | 플레이어 (`Player_Animated`). 루트 `SortingGroup`으로 몸통·그림자·오브를 묶어 한 번에 비교한다 | 프리팹 |
 | 90 | 스킬 범위 표시 (`SkillRangeIndicator`) | 프리팹 |
 | 100 ~ 103 | 적 HP 바 (`Resources/UI/EnemyHpBar`) | 프리팹 |
 | 198 ~ 201 | 데미지 숫자 (`Resources/UI/DamagePopup`) | 프리팹 |
