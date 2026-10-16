@@ -4,6 +4,15 @@
 
 > 그림 읽는 법: 초록은 로직, 주황은 뷰, 회색은 서버 통신. 실선은 메시지, 점선은 직접 호출.
 
+## 스토어 업데이트 안내
+
+`LoadingFlow`는 로그인 전에 `IAppUpdateChecker`로 앱 실행당 한 번 새 버전을 확인한다. 업데이트가 있으면 기존 `ConfirmPopupView`에 **업데이트 / 나중에**를 표시한다. 업데이트는 스토어 페이지를 열고, 나중에·닫기는 로그인을 계속한다. 강제 업데이트는 아니며, 조회 실패·5초 제한 시간 초과·미출시 앱은 게임 진입을 막지 않는다. Editor와 데스크톱에서는 조회하지 않는다.
+
+- Android: `StoreUpdate.androidlib`의 공식 Play In-App Update 라이브러리로 설치 계정에 제공되는 업데이트를 조회한다. 문자열 버전이 아니라 Play의 `versionCode` 및 배포 자격을 따른다. 내부 테스트 계정으로 Play에서 설치한 이전 빌드와, 같은 앱 ID·서명에 더 높은 `versionCode`로 배포된 빌드가 있어야 확인할 수 있다. APK를 직접 설치한 것만으로는 이 조건을 보장하지 않는다. [Google 테스트 안내](https://developer.android.com/guide/playcore/in-app-updates/test)를 따른다.
+- iOS: Apple Lookup API로 같은 bundle ID의 **App Store 공개 버전**을 `Application.version`과 숫자 단위로 비교한다. 기기의 지역 설정 국가를 조회에 사용하며, 국가를 얻지 못하면 KR을 사용한다. Apple ID 스토어 국가와 기기 지역이 다르면 해당 국가의 배포 상태가 다를 수 있다. TestFlight의 새 테스트 빌드·빌드 번호는 조회하지 않으므로 TestFlight에서 업데이트한다. [TestFlight 안내](https://testflight.apple.com/)를 참고한다.
+
+이 기능이 포함된 빌드를 먼저 설치해야 이후 업데이트를 안내할 수 있다. 안내 버튼은 다운로드 페이지로 이동하며 실제 다운로드·설치는 스토어에서 사용자가 진행한다.
+
 ## 스테이지 생명주기와 서버 통신 구간
 
 ```mermaid
