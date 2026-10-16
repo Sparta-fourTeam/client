@@ -6,8 +6,13 @@ on:
       - 'v*'
   workflow_dispatch:
     inputs:
+      build_only:
+        description: 'dev 최신 SHA의 서명 AAB만 생성 (Play 게시·제출 없음)'
+        type: boolean
+        required: true
+        default: false
       release_version:
-        description: '고정 원본 code2 복구 전용 표시 버전'
+        description: 'build-only 표시 버전 / 원본 code2 복구는 1.0.2'
         default: '1.0.2'
         type: string
         required: true
@@ -37,7 +42,7 @@ concurrency:
 
 jobs:
   tag_request:
-    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}
+    if: ${{ (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || (github.event_name == 'workflow_dispatch' && inputs.build_only && !inputs.recover_original_code2) }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -63,13 +68,18 @@ jobs:
 
   prepare:
     needs: tag_request
+    permissions:
+      contents: read
+      actions: read
+      checks: read
+      statuses: read
     runs-on: ubuntu-latest
     timeout-minutes: 10
     outputs:
       build_sha: ${{ steps.release.outputs.build_sha }}
       version_name: ${{ steps.release.outputs.version_name }}
     steps:
-      - name: Checkout exact immutable dev tag
+      - name: Checkout exact immutable source
         uses: actions/checkout@v4
         with:
           ref: ${{ github.sha }}
@@ -79,7 +89,7 @@ jobs:
         with:
           name: tag-release-request
           path: release-request
-      - name: Validate exact tag source and configured required CI
+      - name: Validate exact source and configured required CI
         id: release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -93,11 +103,11 @@ jobs:
           retention-days: 90
 
   manual_scope:
-    if: ${{ github.event_name == 'workflow_dispatch' && !inputs.recover_original_code2 }}
+    if: ${{ github.event_name == 'workflow_dispatch' && !inputs.recover_original_code2 && !inputs.build_only }}
     runs-on: ubuntu-latest
     steps:
       - run: |
-          echo 'New releases require a protected dev version tag. Manual dispatch is code2 recovery only.'
+          echo 'New releases require a protected dev version tag. Manual dispatch supports dev build-only or original code2 recovery.'
           exit 1
 
   build:
@@ -105,6 +115,8 @@ jobs:
     permissions:
       contents: read
       actions: read
+      checks: read
+      statuses: read
     env:
       BUILD_SHA: ${{ needs.prepare.outputs.build_sha }}
     runs-on: ubuntu-latest
@@ -112,7 +124,7 @@ jobs:
     outputs:
       version_code: ${{ steps.version.outputs.code }}
     steps:
-      - name: Checkout exact protected dev tag
+      - name: Checkout exact requested source
         uses: actions/checkout@v4
         with:
           ref: ${{ needs.prepare.outputs.build_sha }}
@@ -146,7 +158,7 @@ jobs:
               raise SystemExit('Release package does not match Play app')
           if not re.fullmatch(r'\d+(?:\.\d+){1,2}', version):
               raise SystemExit('Invalid release version')
-          release_tag = 'v' + version
+          release_tag = 'v' + version if os.environ['GITHUB_EVENT_NAME'] == 'push' else None
           if target < 36 or field('AndroidTargetArchitectures') != '2':
               raise SystemExit('API 36+ and ARM64 required')
           if field('m_Development') != '0' or field('m_BuildAppBundle') != '1':
@@ -295,10 +307,13 @@ jobs:
           retention-days: 3
 
   publish:
+    if: ${{ github.event_name == 'push' }}
     needs: [prepare, build]
     permissions:
       contents: read
       actions: read
+      checks: read
+      statuses: read
     env:
       BUILD_SHA: ${{ needs.prepare.outputs.build_sha }}
     runs-on: ubuntu-latest
@@ -413,6 +428,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+
+      - name: Reject mixed build-only and recovery modes
+        if: ${{ inputs.build_only }}
+        run: |
+          echo 'Choose build-only or original code2 recovery; never both.'
+          exit 1
 
       - name: Check explicit scope and acknowledgment
         env:

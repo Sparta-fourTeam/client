@@ -63,6 +63,25 @@ def automatic_release_number(policy, requested_version, main_policy, run, pages,
                              event=None, release=None):
     """Use the original tag run counter while building its verified source SHA."""
     release = release or {}
+    if release.get('source_mode') == 'manual-build-only-v1':
+        if (env.get('GITHUB_EVENT_NAME') != 'workflow_dispatch' or env.get('GITHUB_REF') != 'refs/heads/dev' or
+                env.get('GITHUB_REPOSITORY') != REPOSITORY or env.get('GITHUB_RUN_ATTEMPT') != '1' or
+                release.get('source_commit') != env.get('BUILD_SHA') or env.get('BUILD_SHA') != env.get('GITHUB_SHA') or
+                release.get('build_run_id') != int(env['GITHUB_RUN_ID']) or
+                release.get('version_name') != requested_version or run.get('run_attempt') != 1 or
+                run.get('id') != int(env['GITHUB_RUN_ID']) or run.get('event') != 'workflow_dispatch' or
+                run.get('head_sha') != env['GITHUB_SHA'] or run.get('head_branch') != 'dev' or
+                run.get('workflow_id') != AUTOMATIC_WORKFLOW_ID or
+                run.get('repository', {}).get('full_name') != REPOSITORY or
+                run.get('run_number') != int(env['GITHUB_RUN_NUMBER'])):
+            raise ValueError('Manual build-only code allocation identity mismatch')
+        runs = [row for page in pages for row in page['workflow_runs']]
+        if not any(row['id'] == run['id'] for row in runs) or max(row['run_number'] for row in runs) != run['run_number']:
+            raise ValueError('Newer release/build run exists')
+        code = candidate_code(policy, requested_version, main_policy, run['run_number'])
+        if expected_code is not None and expected_code != code:
+            raise ValueError('Manual build-only code mismatch')
+        return requested_version, code
     direct = release.get("source_mode") == "tagged-dev-v1"
     build_sha = release.get("source_commit") if direct else release.get("merge_commit_sha")
     if (env.get('GITHUB_EVENT_NAME') != 'push' or not (event or {}).get('created') or
@@ -183,7 +202,7 @@ def main():
     main_policy = json.loads(current.stdout) if current.returncode == 0 else None
     if args.automatic:
         release_input = json.loads(Path(args.release_request).read_text())
-        verifier = 'android-tag-build.py' if release_input.get('source_mode') == 'tagged-dev-v1' else 'android-release-integration.py'
+        verifier = 'android-tag-build.py' if release_input.get('source_mode') in ('tagged-dev-v1', 'manual-build-only-v1') else 'android-release-integration.py'
         spec = importlib.util.spec_from_file_location('release_authorization', Path(__file__).with_name(verifier))
         tag_release = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(tag_release)
@@ -211,7 +230,7 @@ def main():
         with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
             summary.write(f'### Android release candidate\n\nVersion: `{version}`  \n'
                           f'versionCode: `{code}` = {ANCHOR_CODE} + (run {run["run_number"]} - {ANCHOR_RUN_NUMBER})  \n'
-                          f'Tag: `{release["tag"]}` / source: `{release["tag_source_sha"]}`  \n'
+                          f'Mode: `{release.get("source_mode", "legacy-merge")}` / source: `{release.get("tag_source_sha", release.get("source_commit"))}`  \n'
                           f'Build source: `{release.get("source_commit", release.get("merge_commit_sha"))}`\n\n'
                           'This is a build candidate; it is not proof of a Play upload.\n')
 
