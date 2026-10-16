@@ -55,6 +55,51 @@ namespace Game.Tests
             Assert.AreEqual(Math.Min(2, Config.Max), snap.energyStored);
         }
 
+        [TestCase(EnergySource.Natural)]
+        [TestCase(EnergySource.Ad)]
+        [TestCase(EnergySource.Purchase)]
+        public void Recover_BelowCap_PreservesPartialRegenAcrossReload(EnergySource source)
+        {
+            var save = _store.Load();
+            var updatedAt = DateTime.UtcNow.AddSeconds(-Config.RegenSeconds * 1.5);
+            save.wallet.energyStored = 0;
+            save.wallet.energyUpdatedAt = updatedAt.ToString("O");
+            _store.Flush(save);
+
+            _api.Recover(source, "partial").GetAwaiter().GetResult();
+
+            var reloaded = new LocalSaveStore(_filePath).Load();
+            Assert.That(EnergyRule.ParseUpdatedAt(reloaded.wallet.energyUpdatedAt),
+                Is.EqualTo(updatedAt.AddSeconds(Config.RegenSeconds)));
+        }
+
+        [Test]
+        public void Recover_Ad_ReplayedKeyAfterReloadDoesNotGrantAgainAndDifferentKeyDoes()
+        {
+            SaveEnergy(2);
+            var save = _store.Load();
+            save.ledger.Add(new LedgerRow { sourceType = "UPGRADE", idempotencyKey = "same" });
+            _store.Flush(save);
+            _api.Recover(EnergySource.Ad, "same").GetAwaiter().GetResult();
+            var replayApi = new LocalEnergyApi(new LocalSaveStore(_filePath), _data);
+            var replay = replayApi.Recover(EnergySource.Ad, "same").GetAwaiter().GetResult();
+            Assert.AreEqual(2 + Config.AdRecoverAmount, replay.energyStored);
+            var next = replayApi.Recover(EnergySource.Ad, "different").GetAwaiter().GetResult();
+            Assert.AreEqual(2 + 2 * Config.AdRecoverAmount, next.energyStored);
+            Assert.AreEqual(2, _store.Load().ledger.FindAll(row => row.sourceType == "ENERGY_AD").Count);
+        }
+
+        [TestCase(null)]
+        [TestCase("")]
+        [TestCase(" ")]
+        public void Recover_Ad_RequiresKeyWithoutChangingSave(string key)
+        {
+            SaveEnergy(2);
+            string before = File.ReadAllText(_filePath);
+            Assert.Throws<ApiException>(() => _api.Recover(EnergySource.Ad, key).GetAwaiter().GetResult());
+            Assert.AreEqual(before, File.ReadAllText(_filePath));
+        }
+
         [Test(Description = "구매 회복은 PurchaseRecoverAmount만큼 더한다 (보석 차감은 서버 연동 전까지 생략)")]
         public void Recover_Purchase_AddsPurchaseAmount()
         {

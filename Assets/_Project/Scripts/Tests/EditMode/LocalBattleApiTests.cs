@@ -59,6 +59,37 @@ namespace Game.Tests
             Assert.AreEqual("Issued", save.battles[0].status);
         }
 
+        [TestCase(0.5)]
+        [TestCase(1.5)]
+        public void StartBattle_BelowCap_PreservesPartialRegen(double intervals)
+        {
+            SeedEnergy(_data.Energy.Cost * 2);
+            var save = _store.Load();
+            var updatedAt = DateTime.UtcNow.AddSeconds(-_data.Energy.RegenSeconds * intervals);
+            save.wallet.energyStored = _data.Energy.Cost * 2;
+            save.wallet.energyUpdatedAt = updatedAt.ToString("O");
+            _store.Flush(save);
+            _api.StartBattle(1).GetAwaiter().GetResult();
+            var reloaded = new LocalSaveStore(_filePath).Load();
+            Assert.That(EnergyRule.ParseUpdatedAt(reloaded.wallet.energyUpdatedAt),
+                Is.EqualTo(updatedAt.AddSeconds(Math.Floor(intervals) * _data.Energy.RegenSeconds)));
+        }
+
+        [Test]
+        public void StartBattle_FromCap_DoesNotBankRegenWhileFull()
+        {
+            SeedEnergy(_data.Energy.Max);
+            var save = _store.Load();
+            save.wallet.energyStored = _data.Energy.Max;
+            save.wallet.energyUpdatedAt = DateTime.UtcNow.AddHours(-1).ToString("O");
+            _store.Flush(save);
+            var before = DateTime.UtcNow;
+            _api.StartBattle(1).GetAwaiter().GetResult();
+            var reloaded = _store.Load();
+            Assert.AreEqual(_data.Energy.Max - _data.Energy.Cost, reloaded.wallet.energyStored);
+            Assert.That(EnergyRule.ParseUpdatedAt(reloaded.wallet.energyUpdatedAt), Is.InRange(before, DateTime.UtcNow));
+        }
+
         [Test(Description = "에너지가 부족하면 INSUFFICIENT_ENERGY로 거절한다")]
         public void StartBattle_WithoutEnoughEnergy_ThrowsInsufficientEnergy()
         {

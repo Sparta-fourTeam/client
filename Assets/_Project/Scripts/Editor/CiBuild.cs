@@ -10,7 +10,7 @@ namespace Game.Editor
 {
     /// <summary>CI 빌드 진입점. game-ci 기본 빌드 스크립트는 빌드 프로파일로 빌드할 때 Android 서명·버전 코드 설정을
     /// 건너뛰므로(프로파일 분기에서 AndroidSettings.Apply를 부르지 않는다), 같은 인자를 읽어 직접 적용한 뒤 프로파일로 빌드한다.
-    /// 앱 번들/APK 여부, 개발 빌드 여부는 프로파일이 정한다</summary>
+    /// 앱 번들/APK 여부는 CI 출력 형식으로, 개발 빌드 여부는 프로파일로 정한다</summary>
     public static class CiBuild
     {
         public static void Build()
@@ -31,6 +31,11 @@ namespace Game.Editor
                 return;
             }
 
+            BuildProfile.SetActiveBuildProfile(profile);
+            if (args.TryGetValue("androidExportType", out var exportType))
+            {
+                ConfigureAndroidExport(exportType, outputPath);
+            }
             ApplyVersion(args);
             ApplyAndroidSigning(args);
 
@@ -45,6 +50,15 @@ namespace Game.Editor
             var summary = report.summary;
             Debug.Log($"빌드 {summary.result}: {profile.name}, {summary.totalSize} bytes, {summary.totalErrors} errors, {summary.totalTime}");
             EditorApplication.Exit(summary.result == BuildResult.Succeeded ? 0 : 2);
+        }
+
+        public static void ConfigureAndroidExport(string exportType, string outputPath)
+        {
+            bool bundle = exportType == "androidAppBundle";
+            if ((!bundle && exportType != "androidPackage") ||
+                !string.Equals(Path.GetExtension(outputPath), bundle ? ".aab" : ".apk", StringComparison.OrdinalIgnoreCase))
+            { throw new ArgumentException("Android 출력 형식과 파일 확장자가 일치해야 한다"); }
+            EditorUserBuildSettings.buildAppBundle = bundle;
         }
 
         private static void ApplyVersion(IReadOnlyDictionary<string, string> args)
@@ -86,7 +100,7 @@ namespace Game.Editor
     {
         private static readonly HashSet<string> ValueKeys = new()
         {
-            "customBuildProfile", "customBuildPath", "buildVersion", "androidVersionCode",
+            "customBuildProfile", "customBuildPath", "buildVersion", "androidVersionCode", "androidExportType",
             "androidKeystoreName", "androidKeystorePass", "androidKeyaliasName", "androidKeyaliasPass",
         };
 

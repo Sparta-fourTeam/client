@@ -34,6 +34,24 @@ namespace Game.Tests
         }
 
         [Test]
+        public void AndroidExportArgumentOverridesProfileBundleFormatAndRejectsMismatch()
+        {
+            bool original = UnityEditor.EditorUserBuildSettings.buildAppBundle;
+            try
+            {
+                var args = CiBuildArgs.Parse(new[] { "-androidExportType", "androidPackage" });
+                UnityEditor.EditorUserBuildSettings.buildAppBundle = true;
+                CiBuild.ConfigureAndroidExport(args["androidExportType"], "build/Android.apk");
+                Assert.That(UnityEditor.EditorUserBuildSettings.buildAppBundle, Is.False);
+                CiBuild.ConfigureAndroidExport("androidAppBundle", "build/Android.aab");
+                Assert.That(UnityEditor.EditorUserBuildSettings.buildAppBundle, Is.True);
+                Assert.Throws<ArgumentException>(() => CiBuild.ConfigureAndroidExport("androidPackage", "build/Android.aab"));
+                Assert.Throws<ArgumentException>(() => CiBuild.ConfigureAndroidExport("unknown", "build/Android.apk"));
+            }
+            finally { UnityEditor.EditorUserBuildSettings.buildAppBundle = original; }
+        }
+
+        [Test]
         public void SaveBackupPreservesOriginalBytesAndCreatesSeparateCopies()
         {
             string folder = Path.Combine(Path.GetTempPath(), "nova-tools-" + Guid.NewGuid().ToString("N"));
