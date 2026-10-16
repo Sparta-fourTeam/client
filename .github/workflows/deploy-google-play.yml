@@ -268,15 +268,12 @@ jobs:
           spec.loader.exec_module(module)
           play = module.PlayApi()
           path = '/03342084333444941779'
-          data = {kind: play.call('GET', path + '/' + kind) for kind in ['tracks', 'bundles', 'apks']}
-          pathlib.Path('build').mkdir(exist_ok=True)
-          pathlib.Path('build/play-existing-edit-inspection.json').write_text(json.dumps(data, indent=2) + '\n')
-          print(json.dumps(data['tracks'], indent=2))
-          print('Existing artifact codes:', sorted(set(int(item['versionCode']) for kind in ['bundles', 'apks'] for item in data[kind].get(kind, []))))
+          track = play.call('GET', path + '/tracks/internal')
+          releases = track.get('releases', [])
+          completed = [r for r in releases if r.get('status') == 'completed' and [str(v) for v in r.get('versionCodes', [])] == ['2']]
+          empty_drafts = [r for r in releases if r.get('status') == 'draft' and not r.get('versionCodes')]
+          print(json.dumps({'release_count': len(releases), 'completed_code2_count': len(completed),
+              'empty_draft_count': len(empty_drafts),
+              'unexpected_release_count': len(releases) - len(completed) - len(empty_drafts)}, indent=2))
+          # Do not print or upload raw Play API responses, names, or other tracks.
           PY
-      - uses: actions/upload-artifact@v4
-        with:
-          name: Play-existing-edit-inspection-${{ github.run_id }}
-          path: build/play-existing-edit-inspection.json
-          if-no-files-found: error
-          retention-days: 14

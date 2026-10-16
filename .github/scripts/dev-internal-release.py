@@ -57,7 +57,7 @@ def publish(play, bundle, evidence, record):
     track_codes = [int(value) for track in original.values() for item in track.get('releases', []) for value in item.get('versionCodes', [])]
     require(code not in codes and code not in track_codes, 'Code3 already used; stop without increment/retry')
     require(all(value < code for value in track_codes), 'A track contains a higher code; inspect before upload')
-    record('play_preflight_verified', existing_artifact_codes=sorted(set(codes)), current_track_codes=sorted(set(track_codes)), original_tracks=original)
+    record('play_preflight_verified', existing_artifact_codes=sorted(set(codes)), current_track_codes=sorted(set(track_codes)))
     record('upload_requested')
     uploaded = play.call('POST', path + '/bundles', bundle=bundle)
     require(uploaded.get('versionCode') == code and uploaded.get('sha256', '').lower() == digest, 'Uploaded bundle identity mismatch')
@@ -71,7 +71,7 @@ def publish(play, bundle, evidence, record):
     require({k: v for k, v in original.items() if k != 'internal'} == {k: v for k, v in prepared.items() if k != 'internal'}, 'Unrelated track changed; no commit')
     actual_releases = prepared['internal'].get('releases', [])
     require(len(actual_releases) == 1 and all(actual_releases[0].get(k) == v for k, v in desired['releases'][0].items()), 'Internal prepared release mismatch')
-    record('commit_requested', track='internal', prepared_internal=prepared['internal'])
+    record('commit_requested', track='internal', release_name=name)
     committed = play.call('POST', path + ':commit', params={'changesInReviewBehavior': 'ERROR_IF_IN_REVIEW'})
     require(committed.get('id') == edit_id, 'Commit uncertain; inspect Play before any new run')
     record('committed', edit_id=edit_id, track='internal', version_code=code)
