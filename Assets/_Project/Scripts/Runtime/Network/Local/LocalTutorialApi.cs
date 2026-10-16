@@ -27,6 +27,14 @@ namespace Game.Network
                 return UniTask.FromResult(Response(save, rewards));
             }
 
+            if (TutorialProgress.IsDialogueId(tutorialId, out string baseId) && _data.Tutorials.Any(t => t.Id == baseId))
+            {
+                // 도입 대사를 봤다는 기록. 조건과 보상 없이 저장만 한다
+                save.tutorials.Add(tutorialId);
+                _store.Flush(save);
+                return UniTask.FromResult(Response(save, rewards));
+            }
+
             var tutorial = _data.Tutorials.FirstOrDefault(t => t.Id == tutorialId)
                 ?? throw new ApiException(ApiErrorKind.Rejected, "UNKNOWN_TUTORIAL");
             if (!TutorialProgress.IsCompletable(tutorial, Facts(save, _data)))
@@ -68,13 +76,18 @@ namespace Game.Network
         }
 
         /// <summary>저장 데이터로 튜토리얼 조건을 판정한다. 전투 발급(튜토리얼 전투 무료)도 쓴다</summary>
-        internal static TutorialFacts Facts(LocalSave save, GameDataStore data) => new()
+        internal static TutorialFacts Facts(LocalSave save, GameDataStore data)
         {
-            Level = data.PlayerLevels.At(save.exp).level,
-            IsStageCleared = id => save.stageProgress.Find(s => s.stageId == id)?.IsCleared ?? false,
-            UpgradeLevel = id => save.upgrades.Find(u => u.upgradeId == id)?.level ?? 0,
-            IsDone = id => save.tutorials?.Contains(id) ?? true,
-        };
+            bool Cleared(int id) => save.stageProgress.Find(s => s.stageId == id)?.IsCleared ?? false;
+            return new TutorialFacts
+            {
+                Level = data.PlayerLevels.At(save.exp).level,
+                IsStageCleared = Cleared,
+                IsFeatureUnlocked = feature => !data.FeatureUnlocks.IsLocked(feature, Cleared),
+                UpgradeLevel = id => save.upgrades.Find(u => u.upgradeId == id)?.level ?? 0,
+                IsDone = id => save.tutorials?.Contains(id) ?? true,
+            };
+        }
 
         // 1레벨(누적 0)부터 level에 도달하는 데 필요한 누적 경험치
         private int ExpToReach(int level)

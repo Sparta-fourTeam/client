@@ -84,12 +84,13 @@ namespace Game.Tests
         [Test(Description = "코인·경험치·랜덤 재료는 정해진 이름, 나머지는 Items 표의 이름을 쓴다")]
         public void ItemInfo_Names()
         {
-            Assert.AreEqual("코인", ItemInfo.NameOf(RewardRows.CoinId, Data));
+            Assert.AreEqual("잉크", ItemInfo.NameOf(RewardRows.CoinId, Data));
             Assert.AreEqual("경험치", ItemInfo.NameOf(RewardRows.ExpId, Data));
             Assert.AreEqual("랜덤 마법북", ItemInfo.NameOf(ItemIds.RandomSkillMaterial, Data));
             Assert.AreEqual("랜덤 인챈트 주문서", ItemInfo.NameOf(ItemIds.RandomEquipmentMaterial, Data));
             Assert.AreEqual(Data.Items.GetOrThrow(ItemIds.ArrowBook).Name, ItemInfo.NameOf(ItemIds.ArrowBook, Data));
             StringAssert.Contains("보석", ItemInfo.DescriptionOf(ItemIds.GemChest));
+            StringAssert.Contains("스테이지", ItemInfo.DescriptionOf(ShopRules.EnergyReward));
         }
 
         [Test(Description = "보상 줄에는 코인·경험치·아이템 ID가 붙는다")]
@@ -170,7 +171,7 @@ namespace Game.Tests
             slot.GetComponent<Button>().onClick.Invoke();
 
             Assert.IsTrue(detail.IsShown);
-            Assert.AreEqual("코인", Field<TMP_Text>(detail, "_titleText").text);
+            Assert.AreEqual("잉크", Field<TMP_Text>(detail, "_titleText").text);
             StringAssert.StartsWith("최대 ", Field<TMP_Text>(detail, "_subtitleText").text);
             Assert.AreEqual(ItemInfo.DescriptionOf(RewardRows.CoinId), Field<TMP_Text>(detail, "_descText").text);
         }

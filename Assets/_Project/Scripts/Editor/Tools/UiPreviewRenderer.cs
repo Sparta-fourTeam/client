@@ -113,7 +113,7 @@ namespace Game.Editor
                     foreach (var entry in composition.Entries)
                     {
                         bool isSelected = entryId == null ? entry.Prefab == prefab : entry.Id == entryId;
-                        bool chrome = sceneName == "Loading" ? entry.Id == "LoadingScreen" : sceneName == "Lobby" ? entry.ParentPath == "NavUI/SafeArea" : entry.Id == "HudCanvas" || entry.Id == "SkillHud" || entry.Id == "StageControls";
+                        bool chrome = sceneName == "Loading" ? entry.Id == "LoadingScreen" : sceneName == "Lobby" ? entry.ParentPath is "NavUI/SafeArea" or "NavUI/NavBar" : entry.Id == "HudCanvas" || entry.Id == "SkillHud" || entry.Id == "StageControls";
                         bool context = sceneName == "Lobby" && ReviewContext(entryId).Contains(entry.Id);
                         if (sceneName == "Lobby" && entry.Id == "LobbyTopBar"
                             && IsLobbyTabContext(entryId)) { chrome = false; }

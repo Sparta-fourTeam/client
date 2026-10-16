@@ -100,6 +100,9 @@ namespace Game.Core
         /// <summary>진행 기록에 줄이 있으면 해금 (LocalBattleApi의 STAGE_LOCKED 판정과 같은 규칙)</summary>
         public bool IsStageUnlocked(int stageId) => _snapshot.stageProgress.Exists(s => s.stageId == stageId);
 
+        /// <summary>스테이지 클리어로 열리는 로비 기능이 열렸는지 (FeatureUnlocks.json). 표에 없는 기능은 처음부터 열려 있다</summary>
+        public bool IsFeatureUnlocked(string feature) => !_data.FeatureUnlocks.IsLocked(feature, IsStageCleared);
+
         /// <summary>0 = 클리어 안 함, 1 = 클리어, 2 = 체력 50%, 3 = 체력 100%</summary>
         public int ClearRating(int stageId) => _snapshot.stageProgress.Find(s => s.stageId == stageId)?.clearRating ?? 0;
 

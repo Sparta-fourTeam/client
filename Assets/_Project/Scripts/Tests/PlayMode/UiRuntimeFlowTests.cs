@@ -374,6 +374,8 @@ namespace Game.Tests
             Assert.That(ui.Get<DialogueView>().IsOpen, Is.False);
             // 스테이지를 깨기 전에는 캐릭터 탭이 자물쇠 판에 덮여 열리지 않고, 판을 누르면 안내가 뜬다
             var nav = ui.Get<LobbyNavView>();
+            Assert.That(nav.IsLockedButton(Field<Button>(nav, "_skillTab")), Is.True,
+                "잠긴 스킬 탭은 공통 버튼 효과음에도 잠금 상태를 알린다");
             var characterLock = Field<Button>(nav.GetComponentsInChildren<FeatureLockView>(true).Single(l => Field<string>(l, "_feature") == "character"), "_lock");
             Assert.That(characterLock.gameObject.activeInHierarchy, Is.True);
             yield return ClickGameButton(characterLock);
@@ -390,7 +392,8 @@ namespace Game.Tests
             var root = VContainer.Unity.VContainerSettings.Instance.GetOrCreateRootLifetimeScopeInstance() as RootLifetimeScope;
             var data = root.Container.Resolve<GameDataStore>();
             var intro = data.Tutorials.First(t => t.IsBattle);
-            var guideTutorial = data.Tutorials.First(t => t.IsGuide && t.After == intro.Id);
+            var guideTutorial = data.Tutorials.First(t => t.IsGuide && t.Start?.Kind == TutorialCondition.FeatureUnlocked
+                && data.FeatureUnlocks.RequiredStage(t.Start.Feature) == intro.Complete.StageId);
             string upgradeId = guideTutorial.Complete.UpgradeId;
             var upgrade = data.Upgrades.GetOrThrow(upgradeId);
             int tutorialLevel = intro.Rewards.Single(r => r.Kind == TutorialReward.SetLevel).Level;
@@ -433,16 +436,9 @@ namespace Game.Tests
             }
 
             yield return ClickGameButton(tapArea);
-            // 레벨업 다음에 새 컨텐츠(스킬 탭) 해금 연출이 나온다. 탭으로 건너뛰고 닫는다
-            var contentUnlock = ui.Get<ContentUnlockView>();
-            yield return WaitFor(() => contentUnlock.IsOpen);
-            var contentTap = Field<Button>(contentUnlock, "_tapArea");
-            if (contentUnlock.IsPlaying)
-            {
-                yield return ClickGameButton(contentTap);
-            }
-
-            yield return ClickGameButton(contentTap);
+            // 앱을 새로 켠 로비는 전투 전 기록이 없어서 스킬 탭은 해금 연출 없이 열려 있다 (해금 연출은 전투에서 돌아왔을 때만 나온다)
+            Assert.That(ui.GetAll<FeatureLockView>().Single(view => Field<string>(view, "_feature") == guideTutorial.Start.Feature).IsLocked, Is.False);
+            Assert.That(ui.Get<ContentUnlockView>().IsOpen, Is.False);
             // 팝업 뒤 가이드 시작 전에 대사 장면이 먼저 나온다. SKIP으로 건너뛴다
             var dialogue = ui.Get<DialogueView>();
             yield return WaitFor(() => dialogue.IsOpen);
@@ -450,6 +446,7 @@ namespace Game.Tests
             yield return WaitFor(() => !dialogue.IsOpen);
             var guide = ui.Get<TutorialGuideView>();
             var nav = ui.Get<LobbyNavView>();
+            Assert.That(nav.IsLockedButton(Field<Button>(nav, "_skillTab")), Is.False);
             yield return WaitFor(() => Field<GameObject>(guide, "_root").activeSelf);
             // 강조한 버튼 외에는 가림판이 터치를 막는다
             Assert.That(TopHit(Field<Button>(nav, "_shopTab")), Is.EqualTo("Blocker"));
@@ -471,7 +468,8 @@ namespace Game.Tests
             var root = VContainer.Unity.VContainerSettings.Instance.GetOrCreateRootLifetimeScopeInstance() as RootLifetimeScope;
             int unlockStage = root.Container.Resolve<GameDataStore>().FeatureUnlocks.RequiredStage("character");
             var gate = root.Container.Resolve<GameDataStore>().Tutorials.Single(t => t.Kind == TutorialDefinition.Milestone);
-            var equipmentGuide = root.Container.Resolve<GameDataStore>().Tutorials.Single(t => t.IsGuide && t.After == gate.Id);
+            var equipmentGuide = root.Container.Resolve<GameDataStore>().Tutorials.Single(t => t.IsGuide && t.Start?.Kind == TutorialCondition.FeatureUnlocked
+                && root.Container.Resolve<GameDataStore>().FeatureUnlocks.RequiredStage(t.Start.Feature) == gate.Complete.StageId);
             void SetCleared(LocalSave save, int stageId, int rating)
             {
                 var row = save.stageProgress.Find(p => p.stageId == stageId);
@@ -837,6 +835,38 @@ namespace Game.Tests
                 shop.SetVisible(false);
                 yield return null;
             }
+
+            // 상점을 닫아 둔 채 날짜가 바뀌면, 어제의 구매·다시 뽑기 기록을 다시 받아 하단 알림도 켠다
+            var notification = Object.FindObjectsByType<LobbyNotificationView>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+                .Single(view => view.isActiveAndEnabled && Field<LobbyNotificationKind>(view, "_kind") == LobbyNotificationKind.Shop);
+            var badge = Field<NotificationBadgeView>(notification, "_badge");
+            var yesterday = _store.Load();
+            yesterday.shop.dayKey = ShopRules.DayKey(DateTime.Now.AddDays(-1));
+            yesterday.shop.state = new ShopState
+            {
+                adUsed = 1,
+                purchased = Enumerable.Range(0, lobby.Container.Resolve<GameDataStore>().Shop.Slots).ToList(),
+            };
+            _store.Flush(yesterday);
+            var stale = profile.Snapshot();
+            stale.shop = yesterday.shop.state;
+            profile.Apply(stale);
+            Assert.That(badge.IsVisible, Is.False);
+            var delayedPlayer = new DelayedPlayerApi();
+            var notificationPlayer = typeof(LobbyNotificationView).GetField("_player", BindingFlags.Instance | BindingFlags.NonPublic);
+            notificationPlayer.SetValue(notification, delayedPlayer);
+            typeof(LobbyNotificationView).GetField("_shopDayKey", BindingFlags.Instance | BindingFlags.NonPublic)
+                .SetValue(notification, yesterday.shop.dayKey);
+            yield return WaitFor(() => delayedPlayer.Calls == 1);
+            // 요청이 기존 검사 간격보다 오래 걸린 뒤 실패해도, 다음 프레임에 곧바로 재시도하면 안 된다
+            yield return WaitFor(() => Time.unscaledTime > Field<float>(notification, "_nextShopDayCheck"));
+            delayedPlayer.Pending.TrySetException(new ApiException(ApiErrorKind.Network, "TIMEOUT"));
+            yield return null;
+            Assert.That(delayedPlayer.Calls, Is.EqualTo(1));
+            notificationPlayer.SetValue(notification, player);
+            yield return WaitFor(() => badge.IsVisible && profile.Shop.purchased.Count == 0);
+            Assert.That(profile.Shop.adUsed, Is.Zero);
+            Assert.That(daily.isActiveAndEnabled, Is.False);
 
             Object.Destroy(daily.gameObject);
             yield return null;
@@ -1373,6 +1403,17 @@ namespace Game.Tests
             foreach (var enemy in Object.FindObjectsByType<Enemy>().Where(e => e.gameObject.scene == stage.gameObject.scene && !e.IsDead).ToArray())
             {
                 enemy.TakeDamage(1000000);
+            }
+        }
+
+        private sealed class DelayedPlayerApi : IPlayerApi
+        {
+            public readonly UniTaskCompletionSource<PlayerSnapshot> Pending = new();
+            public int Calls { get; private set; }
+            public UniTask<PlayerSnapshot> GetMe()
+            {
+                Calls++;
+                return Pending.Task;
             }
         }
 

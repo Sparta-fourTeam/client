@@ -34,13 +34,14 @@
         </ui:VisualElement>
         <ui:VisualElement class="row">
           <ui:IntegerField name="levelField" value="2" class="grow" />
-          <ui:Button name="setLevelButton" text="레벨 설정" />
+          <ui:Button name="setLevelButton" text="레벨 설정 (전부 해금)" />
           <ui:Button name="setLevelEdgeButton" text="레벨업 직전" />
         </ui:VisualElement>
         <ui:VisualElement class="row playtest-actions">
           <ui:Button name="completeTutorialsButton" text="튜토리얼 모두 완료" />
           <ui:Button name="resetTutorialsButton" text="튜토리얼 초기화" />
           <ui:Button name="unlockStagesButton" text="스테이지 모두 해금" />
+          <ui:Button name="clearStagesButton" text="스테이지 모두 클리어 (기능 해금)" />
         </ui:VisualElement>
         <ui:Label name="cheatStatus" class="status" />
       </ui:VisualElement>

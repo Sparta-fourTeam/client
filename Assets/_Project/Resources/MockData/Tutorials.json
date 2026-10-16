@@ -1,6 +1,6 @@
 [
   {"Id": "intro_battle", "Kind": "battle", "StageId": 1, "Complete": {"Kind": "stageCleared", "StageId": 1}, "Rewards": [{"Kind": "setLevel", "Level": 2}, {"Kind": "upgradeMaterial", "UpgradeId": "shuriken", "Level": 1}, {"Kind": "upgradeCost", "UpgradeId": "shuriken", "Level": 1}]},
-  {"Id": "log_upgrade", "Kind": "guide", "After": "intro_battle", "Complete": {"Kind": "upgradeLevel", "UpgradeId": "shuriken", "Level": 1}},
+  {"Id": "log_upgrade", "Kind": "guide", "After": "intro_battle", "Start": {"Kind": "featureUnlocked", "Feature": "skill"}, "Complete": {"Kind": "upgradeLevel", "UpgradeId": "shuriken", "Level": 1}},
   {"Id": "equipment_intro", "Kind": "milestone", "After": "intro_battle", "Complete": {"Kind": "stageCleared", "StageId": 2}, "Rewards": [{"Kind": "upgradeMaterial", "UpgradeId": "equipment.hat", "Level": 1}, {"Kind": "upgradeCost", "UpgradeId": "equipment.hat", "Level": 1}]},
-  {"Id": "equipment_upgrade", "Kind": "guide", "After": "equipment_intro", "Complete": {"Kind": "upgradeLevel", "UpgradeId": "equipment.hat", "Level": 1}}
+  {"Id": "equipment_upgrade", "Kind": "guide", "After": "equipment_intro", "Start": {"Kind": "featureUnlocked", "Feature": "character"}, "Complete": {"Kind": "upgradeLevel", "UpgradeId": "equipment.hat", "Level": 1}}
 ]

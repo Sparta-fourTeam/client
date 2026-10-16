@@ -227,6 +227,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Game.View::Game.View.AspectRatioCamera
   _targetWidth: 9
   _targetHeight: 16
+  _barColor: {r: 0, g: 0, b: 0, a: 1}
 --- !u!114 &214551854
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -423,6 +424,10 @@ PrefabInstance:
       propertyPath: m_Camera
       value: 
       objectReference: {fileID: 214551851}
+    - target: {fileID: 1057848551012261038, guid: f98217930deaf451fb9f491a0fc923f1, type: 3}
+      propertyPath: m_BlockingMask.m_Bits
+      value: 823
+      objectReference: {fileID: 0}
     - target: {fileID: 5849085561781025714, guid: f98217930deaf451fb9f491a0fc923f1, type: 3}
       propertyPath: m_Name
       value: LobbyUiHost

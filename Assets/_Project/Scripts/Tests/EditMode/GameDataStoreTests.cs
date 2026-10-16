@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Game.Core;
+using Game.Network;
 using Newtonsoft.Json;
 using NUnit.Framework;
 
@@ -9,6 +10,19 @@ namespace Game.Tests
 {
     public class GameDataStoreTests
     {
+        [Test]
+        public void TutorialStartSchema_IsPublishedAfterRevisionTwo()
+        {
+            var api = new LocalDataApi(new GameDataStore());
+            var versions = api.GetVersions().GetAwaiter().GetResult();
+            var table = api.GetTable("Tutorials").GetAwaiter().GetResult();
+            var tutorials = JsonConvert.DeserializeObject<List<TutorialDefinition>>(table.json);
+
+            Assert.That(tutorials.Any(t => t.Start?.Kind == TutorialCondition.FeatureUnlocked), Is.True);
+            Assert.That(versions.revisions["Tutorials"], Is.GreaterThan(2),
+                "Start를 포함하는 스키마를 이전 개정 2로 배포하면 캐시가 갱신되지 않는다");
+        }
+
         [TestCase(0f)]
         [TestCase(-1f)]
         [TestCase(float.NaN)]
