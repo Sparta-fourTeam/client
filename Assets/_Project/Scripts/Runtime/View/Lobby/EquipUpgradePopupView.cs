@@ -76,6 +76,7 @@ namespace Game.View
         {
             EquipInfo info = _catalog.Equips[_slot];
             bool isMax = info.IsMaxLevel;
+            bool recovering = _confirmation?.HasPendingRecovery == true;
 
             _nameText.text = info.Name;
             _currentLevelText.text = $"Lv.{info.Level}/{info.MaxLevel}";
@@ -94,8 +95,9 @@ namespace Game.View
             _next.SetActive(!isMax);
             _cost.SetActive(!isMax);
             _maxLevel.SetActive(isMax);
-            _upgradeButton.gameObject.SetActive(!isMax);
-            _upgradeAllButton.gameObject.SetActive(!isMax);
+            _upgradeButton.gameObject.SetActive(!isMax || recovering);
+            _upgradeAllButton.gameObject.SetActive(!isMax && _confirmation?.SinglePurchaseOnly != true);
+            if (recovering) { _upgradeButton.interactable = true; }
             if (isMax)
             {
                 return;
@@ -109,7 +111,7 @@ namespace Game.View
             _materialNameText.text = info.MaterialItemId != null ? _data.Items.GetOrThrow(info.MaterialItemId).Name : string.Empty;
 
             bool canUpgrade = CanUpgrade(info);
-            _upgradeButton.interactable = canUpgrade;
+            _upgradeButton.interactable = recovering || canUpgrade;
             _upgradeAllButton.interactable = canUpgrade;
         }
 
@@ -147,7 +149,7 @@ namespace Game.View
         private void RequestUpgrade(bool all)
         {
             var info = _catalog.Equips[_slot];
-            if (CanUpgrade(info))
+            if (_confirmation?.HasPendingRecovery == true || CanUpgrade(info))
             {
                 _confirmation.Show(info.Name, info.UpgradeId, all);
             }

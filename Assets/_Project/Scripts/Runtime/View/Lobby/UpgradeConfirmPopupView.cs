@@ -30,6 +30,8 @@ namespace Game.View
         public void BindUi(IUiRegistry registry) => _toast = registry.Get<ComingSoonToastView>();
         public bool IsBusy => _busy;
         public bool IsOpen => _visible;
+        public bool HasPendingRecovery => _recovery?.HasPendingPurchase == true;
+        public bool SinglePurchaseOnly => _recovery != null;
         public RectTransform ConfirmButton => (RectTransform)_confirmButton.transform;
 
         [Inject]
@@ -46,7 +48,7 @@ namespace Game.View
 
         public void Show(string name, string id, bool all)
         {
-            if (_busy || string.IsNullOrEmpty(id))
+            if (_busy || (!HasPendingRecovery && string.IsNullOrEmpty(id)))
             {
                 return;
             }

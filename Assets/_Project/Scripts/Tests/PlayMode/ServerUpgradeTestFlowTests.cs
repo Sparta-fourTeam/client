@@ -24,6 +24,8 @@ namespace Game.Tests
     {
         private const string Id = "equipment.hat";
         private GameObject _popup;
+        private GameObject _parentPopup;
+        private DummyGrowthCatalog _catalog;
         private UpgradeConfirmPopupView _view;
         private IObjectResolver _container;
         private PlayerProfile _profile;
@@ -142,6 +144,55 @@ namespace Game.Tests
             Assert.AreEqual(1, _transport.Posts.Count);
         }
 
+        [UnityTest]
+        public IEnumerator EquipmentEntry_ReopensPendingRecovery_WhenServerStateIsMaxedAndUnaffordable() => ParentRecovery(false);
+
+        [UnityTest]
+        public IEnumerator SkillEntry_ReopensPendingRecovery_WhenServerStateIsUnaffordable() => ParentRecovery(true);
+
+        private IEnumerator ParentRecovery(bool skill)
+        {
+            Create(); yield return null;
+            _view.Show("서버 강화", Id, false);
+            Field<Button>(_view, "_confirmButton").onClick.Invoke();
+            _transport.Pending.TrySetResult(HttpResponseData.Failed(HttpFailure.Timeout));
+            yield return Until(() => !_view.IsBusy);
+            Field<Button>(_view, "_cancelButton").onClick.Invoke();
+            _transport.GoldAfterApply = 0; _transport.LevelAfterApply = 3;
+            _profile.Apply(_container.Resolve<IPlayerApi>().GetMe().GetAwaiter().GetResult());
+            var data = _container.Resolve<GameDataStore>();
+            _catalog = new DummyGrowthCatalog(_profile, data);
+            _parentPopup = Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(
+                $"Assets/_Project/Prefabs/UI/Lobby/{(skill ? "Skill" : "Equip")}UpgradePopup.prefab"));
+            var registry = new UiRegistry(); registry.Add(_popup);
+            Button entry;
+            if (skill)
+            {
+                var parent = _parentPopup.GetComponent<SkillUpgradePopupView>();
+                parent.Construct(_catalog, _profile, data); parent.BindUi(registry); parent.Open(0);
+                entry = Field<Button>(parent, "_upgradeButton");
+                Assert.IsFalse(Field<Button>(parent, "_upgradeAllButton").gameObject.activeSelf);
+            }
+            else
+            {
+                var parent = _parentPopup.GetComponent<EquipUpgradePopupView>();
+                parent.Construct(_catalog, _profile, data); parent.BindUi(registry); parent.Open(0);
+                entry = Field<Button>(parent, "_upgradeButton");
+                Assert.IsFalse(Field<Button>(parent, "_upgradeAllButton").gameObject.activeSelf);
+            }
+            yield return null;
+            Assert.IsTrue(entry.gameObject.activeInHierarchy && entry.interactable);
+            entry.onClick.Invoke();
+            Assert.IsTrue(_view.IsOpen);
+            Field<Button>(_view, "_confirmButton").onClick.Invoke();
+            _transport.Pending.TrySetResult(new HttpResponseData(200, "{\"upgradeId\":\"equipment.hat\",\"level\":1}"));
+            yield return Until(() => !_view.IsBusy);
+            Assert.AreEqual(2, _transport.Posts.Count);
+            Assert.AreEqual(_transport.Posts[0].Body, _transport.Posts[1].Body);
+            Assert.AreEqual(0, _profile.Gold);
+            Assert.AreEqual(3, _profile.UpgradeLevel(Id));
+        }
+
         [UnityTearDown]
         public IEnumerator Cleanup()
         {
@@ -151,6 +202,12 @@ namespace Game.Tests
                 Object.Destroy(_popup);
             }
             _container?.Dispose();
+            _catalog?.Dispose();
+            if (_parentPopup != null)
+            {
+                foreach (var transition in _parentPopup.GetComponentsInChildren<PopupTransition>(true)) { transition.HideImmediate(); }
+                Object.Destroy(_parentPopup);
+            }
             if (_savePath != null && File.Exists(_savePath)) { File.Delete(_savePath); }
             yield return null;
         }
@@ -160,6 +217,7 @@ namespace Game.Tests
             private readonly int _unlock;
             private bool _applied;
             public bool FailSnapshot;
+            public int GoldAfterApply = 990, LevelAfterApply = 1;
             public readonly List<HttpRequestData> Posts = new();
             public UniTaskCompletionSource<HttpResponseData> Pending;
             public Transport(int unlock) => _unlock = unlock;
@@ -175,9 +233,9 @@ namespace Game.Tests
                 if (request.Url.EndsWith("/upgrade"))
                 { return new HttpResponseData(200, $"[{{\"upgradeId\":\"equipment.hat\",\"maxLevel\":3,\"unlockLevel\":{_unlock},\"costBase\":10}}]"); }
                 if (_applied && FailSnapshot) { return new HttpResponseData(500, ""); }
-                return new HttpResponseData(200, "{\"gold\":" + (_applied ? 990 : 1000)
+                return new HttpResponseData(200, "{\"gold\":" + (_applied ? GoldAfterApply : 1000)
                     + ",\"gem\":0,\"exp\":2147483647,\"energyStored\":10,\"energyUpdatedAt\":\"2026-10-16T23:00:00\","
-                    + "\"upgrades\":[{\"upgradeId\":\"equipment.hat\",\"level\":" + (_applied ? 1 : 0)
+                    + "\"upgrades\":[{\"upgradeId\":\"equipment.hat\",\"level\":" + (_applied ? LevelAfterApply : 0)
                     + "}],\"items\":[],\"stageProgress\":[],\"codex\":[],\"tutorials\":[]}");
             }
         }
