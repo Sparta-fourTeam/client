@@ -50,7 +50,7 @@ namespace Game.View
         private void Refresh(PlayerProfile profile)
         {
             bool available = false;
-            if (_itemIndex != -2)
+            if (_itemIndex != -2 && !IsLocked(profile))
             {
                 switch (_kind)
                 {
@@ -73,6 +73,19 @@ namespace Game.View
                 }
             }
             _badge.SetVisible(available);
+        }
+
+        // 잠긴 컨텐츠(FeatureUnlocks)의 알림은 열릴 때까지 숨긴다
+        private bool IsLocked(PlayerProfile profile)
+        {
+            string feature = _kind switch
+            {
+                LobbyNotificationKind.Equipment => "character",
+                LobbyNotificationKind.Skill => "skill",
+                LobbyNotificationKind.Quest => "quest",
+                _ => null,
+            };
+            return feature != null && !profile.IsFeatureUnlocked(feature);
         }
 
         protected override void DisposeView()

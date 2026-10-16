@@ -68,7 +68,8 @@ namespace Game.Editor
             save.exp = ExpFor(table, level, justBeforeNext);
 
         internal static void CompleteTutorials(LocalSave save, GameDataStore data) =>
-            save.tutorials = data.Tutorials.Select(t => t.Id).ToList();
+            save.tutorials = data.Tutorials.Select(t => t.Id)
+                .Concat(data.Tutorials.Select(t => TutorialProgress.DialogueId(t.Id))).ToList();
 
         internal static void ResetTutorials(LocalSave save) => save.tutorials = new();
 
@@ -82,6 +83,31 @@ namespace Game.Editor
                     save.stageProgress.Add(new StageProgressRow { stageId = stage.Id });
                 }
             }
+        }
+
+        /// <summary>모든 스테이지를 클리어 처리한다 (로비 기능 해금은 스테이지 클리어 기록 기준). 이미 더 높은 rating이면 유지한다</summary>
+        internal static void ClearAllStages(LocalSave save, GameDataStore data)
+        {
+            foreach (var stage in data.Stages.Values)
+            {
+                var row = save.stageProgress.Find(s => s.stageId == stage.Id);
+                if (row == null)
+                {
+                    row = new StageProgressRow { stageId = stage.Id };
+                    save.stageProgress.Add(row);
+                }
+
+                row.clearRating = Math.Max(row.clearRating, 1);
+            }
+        }
+
+        /// <summary>레벨을 정하고 그 레벨에서 열려 있어야 할 컨텐츠를 모두 연다. 튜토리얼을 먼저 완료해 두어,
+        /// 스테이지 클리어로 시작 전투 튜토리얼이 완료될 때 받는 레벨 보상(setLevel)이 설정한 레벨을 덮어쓰지 않게 한다</summary>
+        internal static void SetLevelAndUnlockAll(LocalSave save, GameDataStore data, int level)
+        {
+            CompleteTutorials(save, data);
+            ClearAllStages(save, data);
+            SetLevel(save, data.PlayerLevels, level, false);
         }
     }
 }

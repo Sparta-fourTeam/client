@@ -35,6 +35,19 @@ namespace Game.Tests
             }
         }
 
+        [Test(Description = "도입 대사를 봤다는 기록은 조건 없이 저장되고, 없는 튜토리얼의 기록은 거절한다")]
+        public void CompleteDialogue_SavesWithoutConditions_AndRejectsUnknownTutorial()
+        {
+            _store.Flush(_store.Load());
+            string seenId = TutorialProgress.DialogueId(Intro.Id);
+
+            _api.Complete(seenId).GetAwaiter().GetResult();
+
+            Assert.That(_store.Load().tutorials, Is.EquivalentTo(new[] { seenId }));
+            var ex = Assert.Throws<ApiException>(() => _api.Complete(TutorialProgress.DialogueId("missing")).GetAwaiter().GetResult());
+            Assert.AreEqual("UNKNOWN_TUTORIAL", ex.Code);
+        }
+
         [Test(Description = "전투 튜토리얼의 스테이지를 깨기 전에는 완료를 거절하고 아무것도 주지 않는다")]
         public void CompleteIntro_BeforeClear_IsRejectedWithoutChanges()
         {
@@ -97,7 +110,8 @@ namespace Game.Tests
         public void EquipmentIntro_RequiresStageClear_GrantsUpgradeOnce_AndPersistsGuideCompletion()
         {
             var milestone = _data.Tutorials.Single(t => t.Kind == TutorialDefinition.Milestone);
-            var guide = _data.Tutorials.Single(t => t.IsGuide && t.After == milestone.Id);
+            var guide = _data.Tutorials.Single(t => t.IsGuide && t.Start?.Kind == TutorialCondition.FeatureUnlocked
+                && _data.FeatureUnlocks.RequiredStage(t.Start.Feature) == milestone.Complete.StageId);
             var upgrade = _data.Upgrades.GetOrThrow(guide.Complete.UpgradeId);
             var save = _store.Load();
             save.tutorials.Add(milestone.After);
