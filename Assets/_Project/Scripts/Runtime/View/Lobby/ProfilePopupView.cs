@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using Game.Core;
 using TMPro;
 using UnityEngine;
@@ -11,19 +12,17 @@ namespace Game.View
     /// 보유 캐릭터 목록은 아직 데이터가 없어 넣지 않았다</summary>
     public sealed class ProfilePopupView : HudView, IUiBindable
     {
-        // TODO(server): PlayerSnapshot에 플레이어 ID가 생기면 그 값으로 바꾼다 (지금은 임시값)
-        private const string TempPlayerId = "LOCAL-0001";
-
         public void BindUi(IUiRegistry registry)
         {
             _equipPopup = registry.Get<EquipUpgradePopupView>();
             _toast = registry.Get<ComingSoonToastView>();
+            _confirm = registry.Get<ConfirmPopupView>();
         }
 
         [SerializeField] private GameObject _panel;
         [SerializeField] private PopupTransition _transition;
         [SerializeField] private Button _closeButton;
-        [SerializeField] private Button _copyIdButton;
+        [SerializeField] private Button _copyIdButton, _renameButton;
         [SerializeField] private TMP_Text _idText, _nameText, _levelText, _expText, _stageText;
         [SerializeField] private Image _expFill;
         [SerializeField] private EquipSlotView[] _equipSlots;   // IGrowthCatalog.Equips와 같은 순서
@@ -31,12 +30,16 @@ namespace Game.View
         private EquipUpgradePopupView _equipPopup;
         private ComingSoonToastView _toast;
 
+        private ConfirmPopupView _confirm;
+        private AccountService _account;
+        private bool _renaming;
         private IGrowthCatalog _catalog;
         private PlayerProfile _profile;
 
         [Inject]
-        public void Construct(IGrowthCatalog catalog, PlayerProfile profile)
+        public void Construct(IGrowthCatalog catalog, PlayerProfile profile, AccountService account)
         {
+            _account = account;
             _catalog = catalog;
             _profile = profile;
             _profile.Changed += OnProfileChanged;
@@ -56,7 +59,41 @@ namespace Game.View
         {
             _panel.SetActive(false);
             _closeButton.onClick.AddListener(() => PopupPanel.Set(_panel, _transition, false));
-            _copyIdButton.onClick.AddListener(() => GUIUtility.systemCopyBuffer = TempPlayerId);
+            _copyIdButton.onClick.AddListener(() => GUIUtility.systemCopyBuffer = _profile.PlayerId);
+            _renameButton.onClick.AddListener(() => RenameAsync().Forget(Debug.LogException));
+        }
+
+        private async UniTask RenameAsync()
+        {
+            if (_renaming || _account == null || !_profile.IsLoaded) { return; }
+            _renaming = true;
+            _renameButton.interactable = false;
+            try
+            {
+                var request = new ConfirmRequest
+                {
+                    Title = "닉네임 변경",
+                    Message = "한글, 영문, 숫자, 밑줄(_)로 2~20자를 입력해 주세요.\n다른 플레이어와 같은 이름을 사용할 수 있습니다.",
+                    ConfirmLabel = "변경",
+                    CancelLabel = "취소",
+                    InputPlaceholder = "새 닉네임",
+                    InputValidator = NicknameRules.IsValid,
+                };
+                if (!await _confirm.ShowAsync(request)) { return; }
+                await _account.ChangeNicknameAsync(request.InputValue);
+                _toast.Show("닉네임을 변경했습니다.");
+            }
+            catch (System.OperationCanceledException) { throw; }
+            catch (System.Exception ex)
+            {
+                Debug.LogException(ex);
+                _toast.Show("닉네임을 저장하지 못했습니다. 다시 시도해 주세요.");
+            }
+            finally
+            {
+                _renaming = false;
+                if (_renameButton != null) { _renameButton.interactable = true; }
+            }
         }
 
         public void Open()
@@ -76,7 +113,10 @@ namespace Game.View
 
         private void Refresh()
         {
-            _idText.text = $"ID: {TempPlayerId}";
+            _idText.text = $"ID: {_profile.PlayerId}";
+            _copyIdButton.interactable = !string.IsNullOrEmpty(_profile.PlayerId);
+            _renameButton.interactable = !_renaming && _account != null && _profile.IsLoaded;
+            _nameText.richText = false;
             _nameText.text = _profile.Nickname;
             _levelText.text = $"Lv.{_profile.Level}";
             _expFill.fillAmount = _profile.LevelProgress;

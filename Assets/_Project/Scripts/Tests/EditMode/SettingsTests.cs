@@ -47,6 +47,7 @@ namespace Game.Tests
             public int Deleted;
             public System.Exception LinkError;
             public readonly UniTaskCompletionSource Completion = new();
+            public UniTask<string> ChangeNickname(string nickname) => UniTask.FromResult(nickname);
             public UniTask DeleteAccount() { Deleted++; return Completion.Task; }
             public UniTask LinkAccount(LoginMethod method, string accountId) => LinkError != null
                 ? UniTask.FromException(LinkError) : UniTask.CompletedTask;

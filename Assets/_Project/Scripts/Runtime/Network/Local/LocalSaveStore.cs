@@ -124,24 +124,27 @@ namespace Game.Network
             return File.Exists(_filePath);
         }
 
-        /// <summary>파일이 없으면 기본값의 LocalSave를 반환한다</summary>
+        /// <summary>파일이 없으면 기본 세이브를 만든다. 누락된 표시 정보는 생성 즉시 저장해 다시 읽어도 유지한다</summary>
         public LocalSave Load()
         {
             ResumePendingDeletion();
             var save = File.Exists(_filePath)
                 ? JsonConvert.DeserializeObject<LocalSave>(File.ReadAllText(_filePath), ReplaceCollections)
                 : NewSave();
-            // 튜토리얼이 생기기 전 저장 파일은 이미 플레이한 계정이므로 튜토리얼을 마친 것으로 본다
+            bool identityMissing = string.IsNullOrEmpty(save.nickname) || string.IsNullOrEmpty(save.playerId);
             save.nickname = string.IsNullOrEmpty(save.nickname) ? NewNickname() : save.nickname;
+            save.playerId = string.IsNullOrEmpty(save.playerId) ? Guid.NewGuid().ToString("N") : save.playerId;
+            // 튜토리얼이 생기기 전 저장 파일은 이미 플레이한 계정이므로 튜토리얼을 마친 것으로 본다
             save.tutorials ??= save.exp > 0 ? new List<string>(_legacyTutorials) : new List<string>();
             // 퀘스트 주기가 지났으면 어느 API가 읽어도 이미 초기화된 상태를 본다
             if (_data != null) { LocalQuests.Roll(save, _data, DateTime.Now); }
             LocalShop.Roll(save, DateTime.Now);
+            if (identityMissing) { Flush(save); }
             return save;
         }
 
         // 서버가 닉네임을 정해 주기 전까지 Local 계정에 붙이는 임시 닉네임. 저장 파일에 남아 같은 계정이면 같은 값이 유지된다
-        private static string NewNickname() => $"Ninja_{UnityEngine.Random.Range(100000, 1000000)}";
+        private static string NewNickname() => $"Nameless_{UnityEngine.Random.Range(100000, 1000000)}";
 
         private LocalSave NewSave()
         {
