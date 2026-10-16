@@ -106,6 +106,39 @@ def request_for_tag(event, env):
     return request
 
 
+def manual_build_request(event, env):
+    inputs = event.get('inputs', {})
+    def enabled(name):
+        return inputs.get(name) is True or inputs.get(name) == 'true'
+    if (env.get('GITHUB_REPOSITORY') != tag.REPOSITORY or event['repository']['full_name'] != tag.REPOSITORY or
+            env.get('GITHUB_EVENT_NAME') != 'workflow_dispatch' or env.get('GITHUB_REF') != 'refs/heads/dev' or
+            not enabled('build_only') or enabled('publish_to_internal') or enabled('recover_original_code2')):
+        raise ValueError('Build-only requires manual dispatch on dev with no publish/recovery permission')
+    if env.get('GITHUB_RUN_ATTEMPT') != '1':
+        raise ValueError('Manual build-only retries are disabled; dispatch a new build with a new code')
+    version = tag.version_from_tag('v' + inputs.get('release_version', ''))
+    source = env['GITHUB_SHA']
+    if not re.fullmatch(r'[0-9a-f]{40}', source) or tag.api('git/ref/heads/dev')['object']['sha'] != source:
+        raise ValueError('Manual build must pin the latest dev SHA; newer work is never mixed in')
+    run = tag.api(f'actions/runs/{env["GITHUB_RUN_ID"]}')
+    if (run['id'] != int(env['GITHUB_RUN_ID']) or run['workflow_id'] != tag.WORKFLOW_ID or
+            run['event'] != 'workflow_dispatch' or run['head_branch'] != 'dev' or
+            run['head_sha'] != source or run['run_attempt'] != 1 or
+            run['run_number'] != int(env['GITHUB_RUN_NUMBER']) or
+            run['repository']['full_name'] != tag.REPOSITORY):
+        raise ValueError('Manual build run/workflow/source identity mismatch')
+    pages = tag.api(f'actions/workflows/{tag.WORKFLOW_ID}/runs?per_page=100', paginate=True)
+    runs = [row for page in pages for row in page['workflow_runs']]
+    if (not any(row['id'] == run['id'] for row in runs) or
+            max(row['run_number'] for row in runs) != run['run_number']):
+        raise ValueError('Newer release/build run exists; no stale build')
+    base = tag.api('git/ref/heads/main')['object']['sha']
+    tag.preserve_release_code(base, source)
+    return dict(schema=2, source_mode='manual-build-only-v1', version_name=version,
+                source_commit=source, source_branch='dev', main_base_sha=base,
+                build_run_id=run['id'], workflow_id=tag.WORKFLOW_ID)
+
+
 def required_ci(source):
     # Respect both current rulesets and classic branch protection. Never change
     # protection or approve workflows. Inline offline release tests run as a
@@ -128,8 +161,11 @@ def required_ci(source):
     if checks:
         if checks.get('checks'):
             required += [(row['context'], row.get('app_id')) for row in checks['checks']]
-        else:
-            required += [(context, None) for context in checks.get('contexts', [])]
+        elif checks.get('contexts'):
+            # Classic summaries may omit checks[].app_id. A context alone
+            # cannot prove that an untrusted producer is permitted. Do not
+            # request new administration credentials or weaken the binding.
+            raise ValueError('Classic required CI App bindings unavailable; no build/publish')
     if not required:
         return
     pages = tag.api(f'commits/{source}/check-runs?per_page=100', paginate=True)
@@ -154,6 +190,11 @@ def required_ci(source):
 
 
 def prepare_release(request, event, env):
+    if request.get('source_mode') == 'manual-build-only-v1':
+        if request != manual_build_request(event, env):
+            raise ValueError('Manual build request changed')
+        required_ci(request['source_commit'])
+        return request
     if request != request_for_tag(event, env):
         raise ValueError('Original tag request changed')
     required_ci(request['tag_source_sha'])
@@ -161,6 +202,13 @@ def prepare_release(request, event, env):
 
 
 def verify_release(release, env, event):
+    if release.get('source_mode') == 'manual-build-only-v1':
+        expected = manual_build_request(event, env)
+        if (release != expected or env.get('BUILD_SHA') != expected['source_commit'] or
+                tag.git('rev-parse', 'HEAD') != expected['source_commit']):
+            raise ValueError('Manual build checkout/source provenance mismatch')
+        required_ci(expected['source_commit'])
+        return release
     expected = request_for_tag(event, env)
     if (release != dict(expected, source_commit=expected['tag_source_sha']) or
             env.get('BUILD_SHA') != expected['tag_source_sha'] or
@@ -177,17 +225,20 @@ def main():
     args = parser.parse_args()
     event = json.loads(Path(os.environ['GITHUB_EVENT_PATH']).read_text())
     if args.mode == 'request':
-        result = request_for_tag(event, os.environ)
+        result = (manual_build_request(event, os.environ) if os.environ['GITHUB_EVENT_NAME'] == 'workflow_dispatch'
+                  else request_for_tag(event, os.environ))
     else:
         request = json.loads(Path(args.request).read_text())
         result = prepare_release(request, event, os.environ) if args.mode == 'prepare' else verify_release(request, os.environ, event)
     Path('build').mkdir(exist_ok=True)
     filename = 'tag-release-request.json' if args.mode == 'request' else 'tag-release.json'
     Path('build', filename).write_text(json.dumps(result, indent=2) + '\n')
+    source = result.get('tag_source_sha', result.get('source_commit'))
+    label = result.get('tag', 'manual build-only ' + result['version_name'])
     with open(os.environ['GITHUB_OUTPUT'], 'a') as out:
-        out.write(f'build_sha={result["tag_source_sha"]}\nversion_name={result["version_name"]}\n')
+        out.write(f'build_sha={source}\nversion_name={result["version_name"]}\n')
     with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as out:
-        out.write(f'### Direct tag release {result["tag"]}\n\nExact build source: `{result["tag_source_sha"]}`\n\n'
+        out.write(f'### {label}\n\nExact build source: `{source}`\n\n'
                   'No deployment PR, Codex review or main merge. Required CI and artifact/Play safety checks remain.\n')
 
 
