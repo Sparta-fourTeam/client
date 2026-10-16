@@ -5,7 +5,7 @@ using VContainer;
 
 namespace Game.View
 {
-    public enum LobbyNotificationKind { Equipment, Skill, Reward, Quest }
+    public enum LobbyNotificationKind { Equipment, Skill, Reward, Quest, Shop }
 
     public static class LobbyAvailability
     {
@@ -22,6 +22,19 @@ namespace Game.View
 
         public static bool HasAnyReward(PlayerProfile profile) =>
             profile.Snapshot().stageProgress.Any(row => row.HasUnclaimedReward);
+
+        /// <summary>일일상점에 아직 받지 않은 무료 물품이 있는가</summary>
+        public static bool HasFreeShopOffer(PlayerProfile profile, GameDataStore data)
+        {
+            var state = profile.Shop;
+            var offers = ShopRules.Roll(data.Shop, ShopRules.DayKey(System.DateTime.Now), state.adUsed + state.goldUsed);
+            for (int i = 0; i < offers.Count; i++)
+            {
+                if (offers[i].Price <= 0 && !profile.IsShopSlotSold(i)) { return true; }
+            }
+
+            return false;
+        }
     }
 
     // Aggregate tabs read the data, so their badge stays current even while the child screen is closed.
@@ -70,6 +83,9 @@ namespace Game.View
                     case LobbyNotificationKind.Quest:
                         available = QuestRules.HasClaimable(profile, _data.QuestBoards);
                         break;
+                    case LobbyNotificationKind.Shop:
+                        available = LobbyAvailability.HasFreeShopOffer(profile, _data);
+                        break;
                 }
             }
             _badge.SetVisible(available);
@@ -83,6 +99,7 @@ namespace Game.View
                 LobbyNotificationKind.Equipment => "character",
                 LobbyNotificationKind.Skill => "skill",
                 LobbyNotificationKind.Quest => "quest",
+                LobbyNotificationKind.Shop => "shop",
                 _ => null,
             };
             return feature != null && !profile.IsFeatureUnlocked(feature);

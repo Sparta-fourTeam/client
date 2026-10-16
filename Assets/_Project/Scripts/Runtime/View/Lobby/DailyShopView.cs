@@ -159,10 +159,10 @@ namespace Game.View
 
             var offer = _offers[slot];
             string price = offer.Price > 0 ? $"{offer.Price:N0}잼" : "무료";
-            // 잼이 모자라도 누를 수 있다. 서버가 거절하면 그때 모자라다고 알려 준다
+            // 잼이 모자라도 누를 수 있다. 서버가 거절하면 그때 모자라다고 알려 준다. 무료 물품은 묻지 않고 바로 받는다
             _busy = true;
             Refresh();
-            bool confirmed = _confirm == null || await _confirm.ShowAsync(new ConfirmRequest
+            bool confirmed = offer.Price <= 0 || _confirm == null || await _confirm.ShowAsync(new ConfirmRequest
             {
                 Title = "구매",
                 Message = $"{NameOf(offer.Reward)} x{offer.Count:N0}을(를)\n{price}에 구매할까요?",

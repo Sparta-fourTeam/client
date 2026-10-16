@@ -18,6 +18,8 @@ namespace Game.View
         [SerializeField] private GameObject _gemIcon;
         [SerializeField] private TMP_Text _price;
         [SerializeField] private GameObject _soldOut;
+        [Tooltip("받을 수 있는 무료 물품에 켜지는 알림 점")]
+        [SerializeField] private GameObject _freeBadge;
 
         /// <summary>현금으로 사는 묶음 카드(잼 상점). 가격은 이미 만든 문구로 받고 잼 아이콘은 숨기며, 보너스가 있으면 배지에 보여 준다</summary>
         public void BindCash(string itemName, Sprite icon, int count, string priceLabel, int bonusPercent, bool canBuy, Action onBuy, Action onInfo = null)
@@ -27,6 +29,7 @@ namespace Game.View
             _discountLabel.text = $"+{bonusPercent}%\n보너스";
             _gemIcon.SetActive(false);
             _price.text = priceLabel;
+            SetFreeBadge(false);
         }
 
         public void Bind(string itemName, Sprite icon, int count, int price, int discountPercent, bool soldOut, bool canBuy, Action onBuy, Action onInfo = null)
@@ -38,9 +41,15 @@ namespace Game.View
             _gemIcon.SetActive(price > 0);
             _price.text = price > 0 ? price.ToString("N0") : "무료";
             _soldOut.SetActive(soldOut);
+            SetFreeBadge(price <= 0 && !soldOut);
             _buy.interactable = !soldOut && canBuy;
             _buy.onClick.RemoveAllListeners();
             _buy.onClick.AddListener(() => onBuy());
+        }
+
+        private void SetFreeBadge(bool visible)
+        {
+            if (_freeBadge != null) { _freeBadge.SetActive(visible); }
         }
     }
 }
