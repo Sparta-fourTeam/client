@@ -92,7 +92,7 @@ jobs:
               output.write('version_name=' + version + '\n')
           PY
 
-      - name: Validate shared Android release number
+      - name: Validate approved code3 release
         id: version
         env:
           RELEASE_VERSION: ${{ inputs.release_version }}
@@ -191,7 +191,7 @@ jobs:
           cert = run(['keytool', '-J-Duser.language=en', '-J-Duser.country=US', '-printcert', '-jarfile', str(aab)])
           fingerprints = re.findall(r'SHA256:\s*([A-F0-9:]+)', cert)
           with tempfile.NamedTemporaryFile(dir=os.environ['RUNNER_TEMP']) as store:
-              store.write(base64.b64decode(os.environ.pop('SIGNING_KEYSTORE_BASE64'), validate=True))
+              store.write(base64.b64decode(''.join(os.environ.pop('SIGNING_KEYSTORE_BASE64').split()), validate=True))
               store.flush()
               configured_cert = run(['keytool', '-J-Duser.language=en', '-J-Duser.country=US', '-list', '-v',
                   '-keystore', store.name, '-storepass:env', 'SIGNING_KEYSTORE_PASS', '-alias', os.environ['SIGNING_KEYALIAS']])

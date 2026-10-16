@@ -4,14 +4,14 @@ import hashlib
 import json
 import os
 from pathlib import Path
-import re
 import sys
 from urllib.parse import quote
 
 PACKAGE = 'com.teamdoodle.doodledefense'
 REF = 'refs/heads/build/internal-dev-f597dd18-1.0.3'
 SOURCE = 'f597dd187a8f55708489a7451e964a1ce984e6fc'
-FLOOR = 214011987  # All-upload Play Console observation, including inactive uploads.
+APPROVED_CODE = 3
+APPROVED_VERSION = '1.0.3'
 
 
 def require(condition, message):
@@ -23,13 +23,9 @@ def allocate(env):
     require(env.get('GITHUB_REPOSITORY') == 'Sparta-fourTeam/client', 'Wrong repository')
     require(env.get('GITHUB_REF') == REF and env.get('GITHUB_EVENT_NAME') == 'workflow_dispatch', 'Wrong execution scope')
     require(env.get('GITHUB_RUN_ATTEMPT') == '1', 'Reruns forbidden: dispatch a new run after inspecting Play')
-    require(env.get('GITHUB_WORKFLOW_REF', '').startswith('Sparta-fourTeam/client/.github/workflows/deploy-google-play.yml@'), 'Workflow counter namespace changed')
-    number = env.get('GITHUB_RUN_NUMBER', '')
-    require(re.fullmatch(r'[1-9][0-9]*', number), 'Invalid workflow counter')
-    code = 300000000 + int(number)
-    require(FLOOR < code <= 2100000000, 'Version code outside approved namespace or Play limit')
-    require(re.fullmatch(r'\d+(?:\.\d+){1,2}', env.get('RELEASE_VERSION', '')), 'Invalid display version')
-    return code
+    require(env.get('GITHUB_WORKFLOW_REF', '').startswith('Sparta-fourTeam/client/.github/workflows/deploy-google-play.yml@'), 'Wrong workflow path')
+    require(env.get('RELEASE_VERSION') == APPROVED_VERSION, 'Display version differs from approved 1.0.3')
+    return APPROVED_CODE
 
 
 def by_track(response):
@@ -41,6 +37,7 @@ def by_track(response):
 
 def publish(play, bundle, evidence, record):
     code = evidence['version_code']
+    require(code == APPROVED_CODE and evidence['version_name'] == APPROVED_VERSION, 'Release differs from approved 1.0.3/code3')
     digest = hashlib.sha256(bundle.read_bytes()).hexdigest()
     require(digest == evidence['artifact_sha256'], 'AAB changed after verification')
     require(evidence['actual'] == {k: evidence[k] for k in ['package', 'version_name', 'version_code', 'target_api']}, 'AAB manifest mismatch')
@@ -54,12 +51,13 @@ def publish(play, bundle, evidence, record):
     original = by_track(play.call('GET', path + '/tracks'))
     releases = original['internal'].get('releases', [])
     require(len(releases) == 1 and releases[0].get('status') == 'completed' and releases[0].get('versionCodes') == ['2'], 'Internal track changed from approved code2; inspect before proceeding')
-    codes = [FLOOR]
+    codes = []
     for kind in ['bundles', 'apks']:
         codes.extend(int(item['versionCode']) for item in play.call('GET', path + '/' + kind).get(kind, []))
-    codes.extend(int(value) for track in original.values() for release in track.get('releases', []) for value in release.get('versionCodes', []))
-    require(max(codes) < code <= 2100000000, 'Play already contains this or a higher code; stop without increment/retry')
-    record('play_preflight_verified', maximum_observed_code=max(codes), original_tracks=original)
+    track_codes = [int(value) for track in original.values() for item in track.get('releases', []) for value in item.get('versionCodes', [])]
+    require(code not in codes and code not in track_codes, 'Code3 already used; stop without increment/retry')
+    require(all(value < code for value in track_codes), 'A track contains a higher code; inspect before upload')
+    record('play_preflight_verified', existing_artifact_codes=sorted(set(codes)), current_track_codes=sorted(set(track_codes)), original_tracks=original)
     record('upload_requested')
     uploaded = play.call('POST', path + '/bundles', bundle=bundle)
     require(uploaded.get('versionCode') == code and uploaded.get('sha256', '').lower() == digest, 'Uploaded bundle identity mismatch')
@@ -97,7 +95,12 @@ class PlayApi:
                     headers={'Content-Type': 'application/octet-stream'}, timeout=(10, 180), allow_redirects=False)
         else:
             response = self.session.request(method, base + route, json=body, params=params, timeout=(10, 120), allow_redirects=False)
-        require(200 <= response.status_code < 300, f'Play {method} failed HTTP {response.status_code}; no automatic retry')
+        if not 200 <= response.status_code < 300:
+            try:
+                message = str(response.json().get('error', {}).get('message', ''))[:400]
+            except ValueError:
+                message = 'No structured Play error returned'
+            raise RuntimeError(f'Play {method} failed HTTP {response.status_code}: {message}; no automatic retry or code change')
         return response.json()
 
 
@@ -106,7 +109,7 @@ def main():
         code = allocate(os.environ)
         with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
             output.write(f"code={code}\nversion_name={os.environ['RELEASE_VERSION']}\n")
-        print(f'Allocated versionCode {code}; first attempt only, shared workflow counter')
+        print(f'Approved one-time 1.0.3 versionCode {code}; first attempt only')
         return
     require(sys.argv[1:] == ['publish'], 'Unknown command')
     evidence = json.loads(Path('build/artifact-manifest.json').read_text())
