@@ -1,6 +1,6 @@
 {
-  "versionName": "1.0.2",
-  "versionCode": 2,
+  "versionName": "1.0.3",
+  "versionCode": 3,
   "playUploads": [
     {
       "versionName": "1.0.1",
@@ -12,13 +12,57 @@
       "aabSha256": "235b4e10436b6e025d4f7d9c0b46897e9ec2860162b5eb37eed586795fd37370",
       "internalReleaseConfirmedAtUtc": "2026-10-13T02:59Z",
       "testerCount": 8
+    },
+    {
+      "versionName": "1.0.2",
+      "versionCode": 2,
+      "state": "internal-committed",
+      "sourceCommit": "10090077763379220123eabbabaedf7ae2ea3ed6",
+      "actionsRun": 38355633941,
+      "sourceActionsRun": 38347195550,
+      "aabSha256": "3c6a2d6dbcc86f7efbde3474b88696264b35e26c7c91a9e76f842a5239e3f23a",
+      "recoveryReceiptArtifactId": 11792248055
+    },
+    {
+      "versionName": "1.0.3",
+      "versionCode": 3,
+      "state": "internal-test-available",
+      "confirmedAtUtc": "2026-10-16T02:34:45Z",
+      "internalReleasePublishedAtSeoul": "2026-10-16T09:59:00+09:00",
+      "sourceCommit": "24c98d88fcef1fda5a17164ea25b02f1a2e8339b",
+      "sourceDevCommit": "f597dd187a8f55708489a7451e964a1ce984e6fc",
+      "actionsRun": 38832543309,
+      "actionsRunNumber": 11,
+      "workflowId": 378016847,
+      "sourceActionsRun": 38828424594,
+      "aabSha256": "f60d8546a3a29ce061e0ceec84d686f2ecbbf22600b452d6aeb15981ebe0a5a5"
     }
   ],
   "legacyDraftUploads": [
     {
       "versionName": "1.0",
       "versionCode": 214011987,
-      "excludedFromCurrentDraft": true
+      "excludedFromCurrentDraft": true,
+      "lastObservedAtUtc": "2026-10-16T00:13:10Z",
+      "lastObservedState": "inactive-draft",
+      "lastObservedReleaseCount": 0
+    }
+  ],
+  "reservedBuilds": [
+    {
+      "versionName": "1.0.3",
+      "versionCode": 3,
+      "sourceCommit": "a3fa406acf91d70f514bc948be3246b816e49bb1",
+      "artifactSha256": "029f206f444482dc64a8ba59235bbee1066e06305565abf480a196dc10ad6cf2",
+      "reason": "Preserved superseded AAB; not uploaded to Play"
+    },
+    {
+      "versionName": "1.0.3",
+      "versionCode": 4,
+      "sourceCommit": "04ec207f80f941b79e7a985fcd0737c38042978c",
+      "sourceDevCommit": "13fd2e670b0c39a2ca0d31f99aa70fe670d94aea",
+      "actionsRun": 38598927868,
+      "reason": "Historical build-only artifact; not uploaded to Play"
     }
   ]
 }

@@ -189,7 +189,8 @@ jobs:
           data['actions_run_id'] = int(os.environ['GITHUB_RUN_ID'])
           data['actions_run_number'] = int(os.environ['GITHUB_RUN_NUMBER'])
           data['actions_run_attempt'] = int(os.environ['GITHUB_RUN_ATTEMPT'])
-          data['version_code_scheme'] = '300000000 + run_number; workflow_id=378016847'
+          data['version_code_scheme'] = '3 + (run_number - 11); workflow_id=378016847'
+          data['version_code_allocation'] = dict(scheme='workflow-run-offset-v1', workflowId=378016847, runNumber=data['actions_run_number'])
           path.write_text(json.dumps(data, indent=2) + '\n')
           PY
 
@@ -217,6 +218,10 @@ jobs:
           androidKeyaliasPass: ${{ secrets.ANDROID_KEYALIAS_PASS }}
 
       - name: Validate actual AAB and record evidence
+        env:
+          SIGNING_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          SIGNING_KEYSTORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASS }}
+          SIGNING_KEYALIAS: ${{ secrets.ANDROID_KEYALIAS_NAME }}
         run: |
           curl --fail --silent --show-error --location \
             https://github.com/google/bundletool/releases/download/1.17.2/bundletool-all-1.17.2.jar \
@@ -224,7 +229,7 @@ jobs:
           printf '%s  %s\n' 2d4ad908faea64047c1cc9cb747e6aa667c6ab192e09607bd16b67246a8cd6ae \
             "$RUNNER_TEMP/bundletool.jar" | sha256sum --check
           python3 - <<'PY'
-          import hashlib, json, os, pathlib, re, struct, subprocess, xml.etree.ElementTree as ET, zipfile
+          import base64, hashlib, json, os, pathlib, re, struct, subprocess, tempfile, xml.etree.ElementTree as ET, zipfile
           files = list(pathlib.Path('build/Android').glob('*.aab'))
           if len(files) != 1:
               raise SystemExit('Exactly one AAB required')
@@ -268,9 +273,17 @@ jobs:
           if 'jar verified.' not in signed or 'unsigned entries' in signed.lower():
               raise SystemExit('AAB signature verification failed')
           cert = run(['keytool', '-J-Duser.language=en', '-J-Duser.country=US', '-printcert', '-jarfile', str(aab)])
+          fingerprints = re.findall(r'SHA256:\s*([A-F0-9:]+)', cert)
+          with tempfile.NamedTemporaryFile(dir=os.environ['RUNNER_TEMP']) as store:
+              store.write(base64.b64decode(''.join(os.environ.pop('SIGNING_KEYSTORE_BASE64').split()), validate=True))
+              store.flush()
+              configured = run(['keytool', '-J-Duser.language=en', '-J-Duser.country=US', '-list', '-v',
+                  '-keystore', store.name, '-storepass:env', 'SIGNING_KEYSTORE_PASS', '-alias', os.environ['SIGNING_KEYALIAS']])
+          if len(fingerprints) != 1 or fingerprints != re.findall(r'SHA256:\s*([A-F0-9:]+)', configured):
+              raise SystemExit('AAB signer differs from configured upload key')
           evidence = dict(expected, **{'actual': actual, 'artifact': aab.name,
               'artifact_sha256': hashlib.sha256(aab.read_bytes()).hexdigest(),
-              'signer_certificate_sha256': re.findall(r'SHA256:\s*([A-F0-9:]+)', cert),
+              'signer_certificate_sha256': fingerprints,
               'architectures': sorted(abis), 'elf_load_alignments': alignments,
               'signature_verified': True,
               'permissions': [p.get(ns + 'name') for p in manifest.findall('uses-permission')]})
@@ -363,15 +376,25 @@ jobs:
               output.write('release_name=' + release_name + '\n')
           PY
 
+      - name: Install existing Play API dependencies
+        run: python3 -m pip install google-auth==2.40.3 requests==2.32.4
+
       - name: Publish the tag-requested and PR-approved internal test release
-        uses: r0adkll/upload-google-play@v1
+        env:
+          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          RELEASE_VERSION: ${{ needs.integrate.outputs.version_name }}
+          ANDROID_VERSION_CODE: ${{ needs.build.outputs.version_code }}
+          GH_TOKEN: ${{ github.token }}
+        run: python3 .github/scripts/publish-play-internal.py
+
+      - name: Preserve minimal upload receipt including uncertain failures
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
         with:
-          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
-          packageName: com.teamdoodle.doodledefense
-          releaseFiles: verified/Android/*.aab
-          tracks: internal
-          status: completed
-          releaseName: ${{ steps.artifact.outputs.release_name }}
+          name: Internal-upload-receipt-${{ github.run_id }}
+          path: build/internal-upload-receipt.json
+          if-no-files-found: warn
+          retention-days: 90
 
   recover_code2:
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.recover_original_code2 }}

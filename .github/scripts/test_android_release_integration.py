@@ -22,17 +22,17 @@ class IntegrationTests(unittest.TestCase):
         self.fx.setUp()
         self.addCleanup(self.fx.doCleanups)
         f = self.fx
-        self.env = dict(f.tag_env, GITHUB_RUN_NUMBER='6')
+        self.env = dict(f.tag_env, GITHUB_RUN_NUMBER='12')
         self.calls, self.merged, self.created = [], False, False
         self.check_runs = [dict(id=81, head_sha=f.source, status='completed', conclusion='success',
                                path='.github/workflows/android-release-checks.yml@refs/pull/123/merge',
                                pull_requests=[{'number':123}])]
         self.rows = [dict(id=11, user=dict(id=module.CODEX_ID, login=module.CODEX_LOGIN, type='Bot'),
                           commit_id=f.source, state='COMMENTED', submitted_at='2026-10-15T00:00:00Z', body='Review complete')]
-        self.state = dict(headRefOid=f.source, baseRefOid=f.base, headRefName='release/v1.0.3', baseRefName='main',
+        self.state = dict(headRefOid=f.source, baseRefOid=f.base, headRefName='release/v1.0.4', baseRefName='main',
                           isDraft=False, state='OPEN', mergeable='MERGEABLE', mergeStateStatus='CLEAN',
                           reviewDecision=None, threads=[])
-        self.pr = dict(number=123, head=dict(ref='release/v1.0.3', sha=f.source, repo={'full_name':module.REPOSITORY}),
+        self.pr = dict(number=123, head=dict(ref='release/v1.0.4', sha=f.source, repo={'full_name':module.REPOSITORY}),
                        base=dict(ref='main', sha=f.base, repo={'full_name':module.REPOSITORY}), draft=False,
                        state='open', merged=False, merge_commit_sha=None)
         self.api_patch = patch.object(module, 'api', self.api)
@@ -58,7 +58,7 @@ class IntegrationTests(unittest.TestCase):
         f = self.fx
         if endpoint == 'git/ref/heads/main':
             return {'object':{'sha': f.merged if self.merged else f.base}}
-        if endpoint == 'git/ref/heads/release/v1.0.3':
+        if endpoint == 'git/ref/heads/release/v1.0.4':
             return {'object':{'sha':f.source}} if self.created else None
         if endpoint == 'git/refs' and method == 'POST':
             self.created = True
@@ -242,7 +242,7 @@ class IntegrationTests(unittest.TestCase):
     def test_existing_wrong_release_branch_is_never_overwritten(self):
         saved = self.api
         def wrong(method,endpoint,payload=None,missing_ok=False):
-            if endpoint=='git/ref/heads/release/v1.0.3':
+            if endpoint=='git/ref/heads/release/v1.0.4':
                 return {'object':{'sha':self.fx.base}}
             return saved(method,endpoint,payload,missing_ok)
         with patch.object(module,'api',wrong), self.assertRaisesRegex(ValueError,'never force'):
@@ -295,7 +295,7 @@ class IntegrationTests(unittest.TestCase):
         pr = copy.deepcopy(self.pr)
         pr.update(merged=True,state='closed',merge_commit_sha=f.merged)
         values = {
-            'git/ref/tags/v1.0.3': {'ref':'refs/tags/v1.0.3','object':{'sha':f.obj}},
+            'git/ref/tags/v1.0.4': {'ref':'refs/tags/v1.0.4','object':{'sha':f.obj}},
             f'actions/workflows/{module.tag.WORKFLOW_ID}/runs?per_page=100': [{'workflow_runs':[f.tag_run]}],
             'actions/runs/41': f.tag_run,
             f'actions/runs?head_sha={f.source}&event=pull_request&per_page=100': [{'workflow_runs':self.check_runs}],
@@ -325,13 +325,13 @@ sys.stdout.write(json.dumps(table[endpoint]))
         command=[sys.executable,str(SCRIPT.with_name('android-release-version.py')),
                  '--automatic','--release-request',str(data)]
         before=f.policy.read_bytes()
-        for extra in [[],['--expected-code','300000006']]:
+        for extra in [[],['--expected-code','4']]:
             result=subprocess.run(command+extra,env=env,text=True,capture_output=True)
             self.assertEqual(result.returncode,0,result.stderr)
-        self.assertEqual(output.read_text(),'version_name=1.0.3\ncode=300000006\n'*2)
+        self.assertEqual(output.read_text(),'version_name=1.0.4\ncode=4\n'*2)
         self.assertIn(f.merged,summary.read_text())
         self.assertEqual(f.policy.read_bytes(),before)
-        for extra,override in [(['--expected-code','300000007'],{}),([] ,{'BUILD_SHA':f.source}),
+        for extra,override in [(['--expected-code','5'],{}),([] ,{'BUILD_SHA':f.source}),
                                ([],{'GITHUB_RUN_ATTEMPT':'2'})]:
             previous=output.read_bytes()
             result=subprocess.run(command+extra,env=dict(env,**override),text=True,capture_output=True)
