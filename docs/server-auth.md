@@ -55,6 +55,8 @@
 
 ## 플레이어 상태 (`GET /api/user/me`)
 
+전투 세션 발급·종료·포기의 HTTP 모듈과 Player 그룹 전환 조건은 [server-battle.md](server-battle.md)에 있다.
+
 서버 PR #47(머지됨)이 `GET /user/me`로 플레이어 상태를 한 번에 준다. 클라이언트는 `HttpPlayerApi`가 받아 `PlayerSnapshot`으로 바꾼다 (`ServerUserMapper`). **기본은 꺼져 있다.** 서버가 배포되기 전에는 요청이 실패하므로, 개발 중에 `PlayerPrefs`의 `dev.server_player`를 `"1"`로 둘 때만 쓴다.
 
 | 서버 필드 | 클라이언트 | 처리 |
