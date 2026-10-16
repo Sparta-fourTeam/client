@@ -16,6 +16,8 @@ REPOSITORY = tag.REPOSITORY
 # Public GitHub account identity checked during implementation, not a display name.
 CODEX_ID = 199175422
 CODEX_LOGIN = 'chatgpt-codex-connector[bot]'
+# Distinguish no summary from a real latest summary that is not ready.
+BLOCKED_CODEX_SUMMARY = object()
 
 
 def api(method, endpoint, payload=None, missing_ok=False):
@@ -172,35 +174,35 @@ def codex_completed_summary(number, source):
     if 'codex-review-state:v1' in body:
         headers = re.findall(r'<!-- codex-review-state:v1 (.*?) -->', body, re.DOTALL)
         if len(headers) != 1:
-            return None
+            return BLOCKED_CODEX_SUMMARY
         try:
             metadata = json.loads(headers[0])
         except ValueError:
-            return None
+            return BLOCKED_CODEX_SUMMARY
         if not isinstance(metadata, dict) or not isinstance(metadata.get('code_review'), dict):
-            return None
+            return BLOCKED_CODEX_SUMMARY
         states = [metadata['code_review']]
         security = metadata.get('security_review')
         if security is not None:
             if not isinstance(security, dict):
-                return None
+                return BLOCKED_CODEX_SUMMARY
             if any(value is not None for value in security.values()):
                 states.append(security)
         if any(state.get('commit_sha') != source or state.get('status') != 'completed' or
                state.get('has_any_findings') is not False or
                state.get('has_unresolved_findings') is not False for state in states):
-            return None
+            return BLOCKED_CODEX_SUMMARY
     matches = re.findall(r'^\| 📝 \*\*Code Review\*\* \| ✅ \*\*Completed\*\* '
                          r'<relative-time datetime="([^"]+)">[^<]*</relative-time> '
                          r'\| `([0-9a-f]{7,40})` \|[^\n]*$', body, re.MULTILINE)
     if len(matches) != 1:
-        return None
+        return BLOCKED_CODEX_SUMMARY
     submitted, short = matches[0]
     datetime.fromisoformat(submitted.replace('Z', '+00:00'))
     # GitHub must resolve the bot's abbreviation unambiguously to the exact
     # immutable source. A missing/ambiguous/different commit stops the release.
     if api('GET', 'commits/' + short)['sha'] != source:
-        return None
+        return BLOCKED_CODEX_SUMMARY
     return dict(id=row['id'], user=row['user'], commit_id=source, state='COMMENTED',
                 submitted_at=submitted, body='', kind='summary')
 
@@ -209,6 +211,8 @@ def review_gate(request, rows, state, summary=None):
     if (state['headRefOid'] != request['tag_source_sha'] or state['baseRefName'] != 'main' or
             state['headRefName'] != 'release/' + request['tag']):
         raise ValueError('PR head moved after review request')
+    if summary is BLOCKED_CODEX_SUMMARY:
+        return None
     if state['isDraft'] or state['reviewDecision'] in ('CHANGES_REQUESTED', 'REVIEW_REQUIRED'):
         return None
     if any(not thread['isResolved'] for thread in state['threads']):
@@ -251,10 +255,12 @@ def review_gate(request, rows, state, summary=None):
 
 
 def completed_codex_review(number, request, state, rows):
+    summary = codex_completed_summary(number, request['tag_source_sha'])
+    if summary is BLOCKED_CODEX_SUMMARY:
+        return None
     completed = review_gate(request, rows, state)
     if completed is not None:
         return completed
-    summary = codex_completed_summary(number, request['tag_source_sha'])
     return review_gate(request, rows, state, summary) if summary else None
 
 

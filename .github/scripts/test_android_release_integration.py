@@ -211,7 +211,15 @@ class IntegrationTests(unittest.TestCase):
         for value in invalid:
             with self.subTest(state=value):
                 self.summary_comments = [response(value)]
-                self.assertIsNone(module.codex_completed_summary(123, self.fx.source))
+                self.assertIs(module.codex_completed_summary(123, self.fx.source), module.BLOCKED_CODEX_SUMMARY)
+
+    def test_running_summary_cannot_fall_back_to_an_earlier_formal_review(self):
+        self.summary_comments = [dict(self.summary_comment(), body=
+            self.summary_comment()['body'] + '\n<!-- codex-review-state:v1 running -->')]
+        # A same-SHA formal completion exists, but a new review is now pending.
+        with self.assertRaisesRegex(ValueError, 'Timed out'):
+            self.integrate()
+        self.assertFalse(self.merge_calls())
 
     def test_summary_cannot_replace_actor_identity_exact_source_or_completed_state(self):
         self.rows = []
@@ -327,6 +335,7 @@ class IntegrationTests(unittest.TestCase):
             'actions/runs/41': f.tag_run,
             f'actions/runs?head_sha={f.source}&event=pull_request&per_page=100': [{'workflow_runs':self.check_runs}],
             'pulls/123': pr, 'pulls/123/reviews?per_page=100':[self.rows],
+            'issues/123/comments?per_page=100': [[]],
             'git/ref/heads/main': {'object':{'sha':f.merged}},
             'git/commits/'+f.merged: {'parents':[{'sha':f.base},{'sha':f.source}],
                                     'tree':{'sha':receipt['integrated_tree']}},
