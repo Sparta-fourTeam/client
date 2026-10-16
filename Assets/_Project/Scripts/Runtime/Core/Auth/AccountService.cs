@@ -32,10 +32,15 @@ namespace Game.Core
         private readonly ISceneNavigator _nav;
         private readonly IReadOnlyList<ISocialSignIn> _social;
         private readonly PlayerProfile _profile;
+        private readonly ILoginConsentStore _consents;
+        private readonly IAnalyticsCollectionControl _analytics;
 
         public AccountService(IAccountApi api, IAuthCredentialStore credentials, ISceneNavigator nav, IReadOnlyList<ISocialSignIn> social,
-            PlayerProfile profile = null, IBattleCheckpointStore checkpoints = null)
+            PlayerProfile profile = null, IBattleCheckpointStore checkpoints = null,
+            ILoginConsentStore consents = null, IAnalyticsCollectionControl analytics = null)
         {
+            _consents = consents;
+            _analytics = analytics;
             _checkpoints = checkpoints;
             _api = api;
             _credentials = credentials;
@@ -140,6 +145,8 @@ namespace Game.Core
 
         private UniTask ReturnToLoginAsync(bool clearProfile = false)
         {
+            _analytics?.SetCollectionAllowed(false);
+            _consents?.Clear();
             _checkpoints?.Clear();
             _credentials.Clear();
             if (clearProfile) { _profile?.Clear(); }

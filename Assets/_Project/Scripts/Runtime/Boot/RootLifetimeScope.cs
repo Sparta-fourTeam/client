@@ -16,11 +16,12 @@ namespace Game.Boot
         {
             builder.RegisterMessagePipe();
 
+            builder.Register<ILoginConsentStore>(_ => new PlayerPrefsLoginConsentStore(), Lifetime.Singleton);
             builder.Register<GameDataStore>(Lifetime.Singleton);
             builder.Register<LocalSaveStore>(Lifetime.Singleton);
             builder.Register<IBattleCheckpointStore, LocalBattleCheckpointStore>(Lifetime.Singleton);
             builder.Register<PlayerProfile>(Lifetime.Singleton);
-            // SDK는 Root에서 시작하지 않고 로그인 흐름의 연령·선택 동의 확인 후 시작한다.
+            // SDK는 Root에서 시작하지 않고 로그인 흐름의 약관·선택 동의 확인 후 시작한다.
             builder.Register<GameAnalyticsService>(Lifetime.Singleton)
                 .As<IGameplayAnalytics>().As<IAnalyticsCollectionControl>();
 
