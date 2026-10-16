@@ -89,8 +89,8 @@ namespace Game.Tests
 
         [TestCase(false)]
         [TestCase(true)]
-        [Test(Description = "end/cancel은 battleId와 Bearer만 보내고 빈 200 응답을 허용한다")]
-        public void Finish_EmptySuccess_DoesNotExpectRewards(bool cancel)
+        [Test(Description = "PR59 end는 결과 4개 필드, cancel은 battleId만 보내고 둘 다 빈 200을 허용한다")]
+        public void Finish_EmptySuccess_UsesCurrentRequestContract(bool cancel)
         {
             _transport.Response = new HttpResponseData(200, "");
             Finish(cancel, "battle").GetAwaiter().GetResult();
@@ -99,7 +99,49 @@ namespace Game.Tests
             Assert.AreEqual(HttpVerb.Post, sent.Verb);
             Assert.AreEqual($"https://example.test/api/battle/{(cancel ? "cancel" : "end")}", sent.Url);
             Assert.AreEqual("Bearer access", sent.Headers["Authorization"]);
-            Assert.That(JToken.DeepEquals(JObject.Parse("{\"battleId\":\"battle\"}"), JObject.Parse(sent.Body)));
+            var expected = cancel ? "{\"battleId\":\"battle\"}"
+                : "{\"battleId\":\"battle\",\"stageId\":7,\"clearedWave\":10,\"rating\":2}";
+            Assert.That(JToken.DeepEquals(JObject.Parse(expected), JObject.Parse(sent.Body)));
+        }
+
+        [TestCase(0, 0)]
+        [TestCase(20, 3)]
+        [Test(Description = "명세의 결과 하한·상한을 누락하거나 바꾸지 않고 전송한다")]
+        public void EndBattle_ResultBounds_AreSerialized(int clearedWave, int rating)
+        {
+            _transport.Response = new HttpResponseData(200, "");
+            _api.EndBattle(new BattleEndRequest("battle", 7, clearedWave, rating)).GetAwaiter().GetResult();
+            var body = JObject.Parse(_transport.Requests[0].Body);
+            Assert.AreEqual(clearedWave, body.Value<int>("clearedWave"));
+            Assert.AreEqual(rating, body.Value<int>("rating"));
+        }
+
+        [TestCase(-1, 0)]
+        [TestCase(21, 0)]
+        [TestCase(0, -1)]
+        [TestCase(0, 4)]
+        [Test(Description = "서버 명세 범위를 벗어난 결과로 상태 변경 요청을 보내지 않는다")]
+        public void EndBattle_InvalidResult_DoesNotSend(int clearedWave, int rating)
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() =>
+                _api.EndBattle(new BattleEndRequest("battle", 7, clearedWave, rating)).GetAwaiter().GetResult());
+            Assert.IsEmpty(_transport.Requests);
+        }
+
+        [Test(Description = "보상 적용 후 응답 유실 가능성이 있으므로 종료를 자동 재시도하거나 뒤의 404를 성공으로 만들지 않는다")]
+        public void EndBattle_LostResponse_ThenNotFound_RemainsUncertain()
+        {
+            _transport.Queued.Enqueue(HttpResponseData.Failed(HttpFailure.Timeout));
+            _transport.Queued.Enqueue(new HttpResponseData(404, ""));
+            var request = new BattleEndRequest("battle", 7, 10, 2);
+
+            var first = Assert.Throws<ApiException>(() => _api.EndBattle(request).GetAwaiter().GetResult());
+            Assert.AreEqual(ApiErrorKind.Transient, first.Kind);
+            Assert.AreEqual(1, _transport.Requests.Count);
+            var second = Assert.Throws<ApiException>(() => _api.EndBattle(request).GetAwaiter().GetResult());
+            Assert.AreEqual("HTTP_404", second.Code);
+            Assert.AreEqual(2, _transport.Requests.Count);
+            Assert.AreEqual(_transport.Requests[0].Body, _transport.Requests[1].Body);
         }
 
         [TestCase(false, 400)]
@@ -119,7 +161,8 @@ namespace Game.Tests
         public void InvalidOrCancelledRequest_DoesNotIssueBattle()
         {
             Assert.Throws<ArgumentNullException>(() => _api.StartBattle(null).GetAwaiter().GetResult());
-            Assert.Throws<ArgumentException>(() => _api.EndBattle(" ").GetAwaiter().GetResult());
+            Assert.Throws<ArgumentNullException>(() => _api.EndBattle(null).GetAwaiter().GetResult());
+            Assert.Throws<ArgumentException>(() => new BattleEndRequest(" ", 7, 0, 0));
             Assert.Throws<ArgumentException>(() => _api.CancelBattle(null).GetAwaiter().GetResult());
             Assert.IsEmpty(_transport.Requests);
             using var cancellation = new CancellationTokenSource();
@@ -127,7 +170,8 @@ namespace Game.Tests
             Assert.Throws<OperationCanceledException>(() => _api.StartBattle(new BattleStartRequest(), cancellation.Token).GetAwaiter().GetResult());
         }
 
-        private UniTask Finish(bool cancel, string battleId) => cancel ? _api.CancelBattle(battleId) : _api.EndBattle(battleId);
+        private UniTask Finish(bool cancel, string battleId) => cancel ? _api.CancelBattle(battleId)
+            : _api.EndBattle(new BattleEndRequest(battleId, 7, 10, 2));
 
         // PR #57의 동일 키 재발급 계약만 재현한다. 실제 서버·DB 동시성 검증은 아니다.
         private sealed class LostStartResponseTransport : IHttpTransport
