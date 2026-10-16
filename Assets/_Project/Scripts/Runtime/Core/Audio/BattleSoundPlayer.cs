@@ -13,6 +13,7 @@ namespace Game.Core
         private const float BgmFadeOut = 0.5f;
 
         private readonly IAudioService _audio;
+        private readonly bool _resuming;
         private readonly ISubscriber<EnemyDied> _enemyDied;
         private readonly ISubscriber<WaveStarted> _waveStarted;
         private readonly ISubscriber<SpecialEnemyWarning> _warning;
@@ -28,6 +29,7 @@ namespace Game.Core
 
         public BattleSoundPlayer(
             IAudioService audio,
+            StageContext stageContext,
             ISubscriber<EnemyDied> enemyDied,
             ISubscriber<WaveStarted> waveStarted,
             ISubscriber<SpecialEnemyWarning> warning,
@@ -37,6 +39,7 @@ namespace Game.Core
             IBufferedSubscriber<StageStateChanged> stageState)
         {
             _audio = audio;
+            _resuming = stageContext.Checkpoint != null;
             _enemyDied = enemyDied;
             _waveStarted = waveStarted;
             _warning = warning;
@@ -50,7 +53,7 @@ namespace Game.Core
         {
             var bag = DisposableBag.CreateBuilder();
             _enemyDied.Subscribe(e => _audio.PlaySfx(DeathSound(e.Type))).AddTo(bag);
-            _waveStarted.Subscribe(_ => _audio.PlaySfx(SoundIds.WaveStart)).AddTo(bag);
+            _waveStarted.Subscribe(_ => OnWaveStarted()).AddTo(bag);
             _warning.Subscribe(_ => _audio.PlaySfx(SoundIds.SpecialWarning)).AddTo(bag);
             _wallHp.Subscribe(OnWallHpChanged).AddTo(bag);
             _wallDestroyed.Subscribe(_ => _audio.PlaySfx(SoundIds.WallDestroyed)).AddTo(bag);
@@ -66,6 +69,18 @@ namespace Game.Core
             EnemyType.Boss => SoundIds.BossDie,
             _ => SoundIds.EnemyDie,
         };
+
+        // 이어하기에서는 WaveManager가 복원 전에 웨이브 1 시작을 먼저 발행한다. 실제로 시작한 웨이브가 아니므로 복원이 끝나
+        // Starting을 벗어나기 전의 시작 메시지는 무시한다. 새 전투의 첫 웨이브 소리는 그대로 낸다
+        private void OnWaveStarted()
+        {
+            if (_resuming && _state == StageState.Starting)
+            {
+                return;
+            }
+
+            _audio.PlaySfx(SoundIds.WaveStart);
+        }
 
         // 방벽 체력은 Buffered라 구독 직후 현재 값이 먼저 온다. 체크포인트 복원도 같은 메시지로 낮은 값을 발행하므로,
         // 복원이 끝나 Playing이 된 뒤에 줄어든 경우만 피격으로 본다
