@@ -80,6 +80,11 @@ namespace Game.Network
             return Deserialize(body, isValid);
         }
 
+        /// <summary>날짜 문자열·필드 존재 여부를 직접 검증해야 하는 Network 내부 독자용 원문.
+        /// 인증·오류 처리는 같으며, 호출부가 JSON 형태와 필수 필드를 검증해야 한다.</summary>
+        internal UniTask<string> GetJson(string path, CancellationToken cancellationToken = default) =>
+            Execute(HttpVerb.Get, path, null, cancellationToken);
+
         public async UniTask<TResponse> Post<TRequest, TResponse>(string path, TRequest request,
             CancellationToken cancellationToken = default, Func<TResponse, bool> isValid = null)
         {
