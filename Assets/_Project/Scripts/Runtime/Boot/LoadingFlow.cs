@@ -13,6 +13,7 @@ namespace Game.Boot
     /// 로그인창에서 직접 로그인했으면 이미 버튼을 눌렀으므로 바로 넘어간다</summary>
     public sealed class LoadingFlow : IStartable
     {
+        private readonly PlayerApiMode _mode;
         private readonly LoginFlow _login;
         private readonly TapToStartView _tapToStart;
         private readonly ISceneNavigator _nav;
@@ -24,8 +25,9 @@ namespace Game.Boot
         private readonly ConfirmPopupView _confirm;
 
         public LoadingFlow(LoginFlow login, TapToStartView tapToStart, ISceneNavigator nav, PlayerProfile profile, BattleLauncher launcher,
-            GameDataStore data, IAppUpdateChecker updates, ConfirmPopupView confirm, IBattleCheckpointStore checkpoints = null)
+            GameDataStore data, IAppUpdateChecker updates, ConfirmPopupView confirm, IBattleCheckpointStore checkpoints = null, PlayerApiMode mode = null)
         {
+            _mode = mode;
             _updates = updates;
             _confirm = confirm;
             _checkpoints = checkpoints;
@@ -61,7 +63,7 @@ namespace Game.Boot
 
             // 전투 발급이 거절되면(에너지 부족 등) 로비로 간다. 로비에서 다시 1스테이지로 보낸다
             // 도입 대사가 있는 전투 튜토리얼은 로비에서 대사를 본 뒤 전투로 간다 (TutorialGuideView)
-            var battle = TutorialProgress.ActiveBattle(_data.Tutorials, TutorialFacts.From(_profile));
+            var battle = _mode?.ServerUpgradeTest == true ? null : TutorialProgress.ActiveBattle(_data.Tutorials, TutorialFacts.From(_profile));
             if (_checkpoints?.Load() == null && battle != null && _data.TutorialPresentations.For(battle.Id).Dialogue.Count == 0 && await _launcher.Launch(battle.StageId))
             {
                 return;

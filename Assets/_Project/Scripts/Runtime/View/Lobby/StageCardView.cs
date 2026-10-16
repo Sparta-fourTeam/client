@@ -29,14 +29,14 @@ namespace Game.View
             set => _rewardStatus.text = value;
         }
 
-        public void Show(int stageId, PlayerProfile profile, bool busy, bool claiming)
+        public void Show(int stageId, PlayerProfile profile, bool busy, bool claiming, bool recovering = false)
         {
             bool unlocked = profile.IsStageUnlocked(stageId);
             int rating = profile.ClearRating(stageId);
             int claimed = profile.ClaimedRating(stageId);
 
             _stageText.text = $"제 {stageId} 관문";
-            _lockOverlay.SetActive(!unlocked);
+            _lockOverlay.SetActive(!unlocked && !recovering);
             _infoButton.interactable = !busy;
             for (int i = 0; i < _rewardNodes.Length; i++)
             {
@@ -45,10 +45,11 @@ namespace Game.View
 
             _rewardFill.fillAmount = rating <= 1 ? 0f : (rating - 1) / 2f;
             bool available = profile.HasUnclaimedReward(stageId);
-            _rewardAreaButton.gameObject.SetActive(available);
+            _rewardAreaButton.gameObject.SetActive(available || recovering);
             _rewardAreaButton.interactable = !busy;
             _rewardBadge.SetActive(available);
             _rewardStatus.text = claiming ? "보상을 받는 중이에요..."
+                : recovering ? "상자 영역을 눌러 서버 수령 상태를 확인하세요"
                 : available ? "상자 영역을 눌러 보상을 모두 받으세요"
                 : claimed >= 3 ? "모든 보상을 받았어요. 상자를 눌러 정보를 확인하세요"
                 : !unlocked ? "이전 관문을 클리어하면 열려요"

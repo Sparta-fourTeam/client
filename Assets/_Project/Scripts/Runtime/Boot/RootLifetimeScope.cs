@@ -15,10 +15,12 @@ namespace Game.Boot
         protected override void Configure(IContainerBuilder builder)
         {
             builder.RegisterMessagePipe();
+            bool upgradeTest = ServerConfig.UseServerUpgradeTest;
+            builder.RegisterInstance(new PlayerApiMode(upgradeTest));
 
             builder.Register<GameDataStore>(Lifetime.Singleton);
-            builder.Register<LocalSaveStore>(Lifetime.Singleton);
-            builder.Register<IBattleCheckpointStore, LocalBattleCheckpointStore>(Lifetime.Singleton);
+            if (!upgradeTest) { builder.Register<LocalSaveStore>(Lifetime.Singleton); }
+            if (!upgradeTest) { builder.Register<IBattleCheckpointStore, LocalBattleCheckpointStore>(Lifetime.Singleton); }
             builder.Register<PlayerProfile>(Lifetime.Singleton);
             // SDK는 Root에서 시작하지 않고 로그인 흐름의 연령·선택 동의 확인 후 시작한다.
             builder.Register<GameAnalyticsService>(Lifetime.Singleton)
@@ -31,10 +33,11 @@ namespace Game.Boot
             builder.Register<AuthSession>(Lifetime.Singleton).AsSelf().As<IAuthHeaderProvider>().As<IAuthTokenStore>();
             builder.Register(c => new HttpApiClient(c.Resolve<HttpApiConfig>(), c.Resolve<IHttpTransport>(), c.Resolve<IAuthHeaderProvider>(), tokens: c.Resolve<IAuthTokenStore>()),
                 Lifetime.Singleton);
-            // 서버에는 아직 인증 외의 API가 없어서 나머지 API는 Local* 구현을 그대로 쓴다. 서버 인증이면 서버 로그인 뒤에 로컬 로그인을 이어서 한다
-            builder.Register<LocalAuthApi>(Lifetime.Singleton);
-            builder.Register<ServerBackedAuthApi>(Lifetime.Singleton);
-            builder.Register<IAuthApi>(c => ServerConfig.UseServerAuth ? c.Resolve<ServerBackedAuthApi>() : c.Resolve<LocalAuthApi>(),
+            // 일반 모드는 서버 인증 뒤 Local 로그인을 유지한다. 서버 강화 테스트는 Local 저장을 건드리지 않는다.
+            if (!upgradeTest) { builder.Register<LocalAuthApi>(Lifetime.Singleton); }
+            builder.Register(c => new ServerBackedAuthApi(c.Resolve<HttpApiClient>(), c.Resolve<AuthSession>(),
+                upgradeTest ? null : c.Resolve<LocalAuthApi>()), Lifetime.Singleton);
+            builder.Register<IAuthApi>(c => upgradeTest || ServerConfig.UseServerAuth ? c.Resolve<ServerBackedAuthApi>() : c.Resolve<LocalAuthApi>(),
                 Lifetime.Singleton);
             // 로그인 정보는 백엔드(Local/서버)와 상관없이 기기에 저장한다
             builder.Register<PlayerPrefsAuthCredentialStore>(Lifetime.Singleton);
@@ -43,33 +46,41 @@ namespace Game.Boot
             // 외부 계정 로그인. 구글은 Android 빌드에서 진짜 로그인을 하고, 에디터에서는 가짜 계정으로 바로 성공한다.
             // 애플은 SDK가 붙기 전까지 자리표시 구현이다
 #if UNITY_EDITOR
-            builder.Register<ISocialSignIn, EditorGoogleSignIn>(Lifetime.Singleton);
+            // 에디터 가짜 Google 토큰을 실제 서버로 보내지 않는다. 테스트 모드 에디터에서는 게스트만 사용한다.
+            if (!upgradeTest) { builder.Register<ISocialSignIn, EditorGoogleSignIn>(Lifetime.Singleton); }
 #else
             builder.Register<ISocialSignIn, AndroidGoogleSignIn>(Lifetime.Singleton);
 #endif
             builder.Register<ISocialSignIn, PlaceholderAppleSignIn>(Lifetime.Singleton);
             // TODO(server): 호출부 없음 — 예: BootFlow에서 GetVersions() 비교 후 GetTable()로 갱신
             builder.Register<IDataApi, LocalDataApi>(Lifetime.Singleton);
-            // 계정 연동은 서버 인증을 쓰는 빌드에서만 서버로 보낸다 (서버 로그인으로 받은 토큰이 있어야 하기 때문)
-            builder.Register<LocalAccountApi>(Lifetime.Singleton);
-            builder.Register<ServerBackedAccountApi>(Lifetime.Singleton);
-            builder.Register<IAccountApi>(c => ServerConfig.UseServerAuth ? c.Resolve<ServerBackedAccountApi>() : c.Resolve<LocalAccountApi>(),
-                Lifetime.Singleton);
             builder.Register<AccountService>(Lifetime.Singleton);
-            // 플레이어 상태는 기본이 로컬이고, 서버(GET /api/user/me)는 dev.server_player가 켜진 개발 중에만 쓴다
-            builder.Register<LocalPlayerApi>(Lifetime.Singleton);
-            builder.Register<HttpPlayerApi>(Lifetime.Singleton);
-            builder.Register<IPlayerApi>(c => ServerConfig.UseServerPlayer ? c.Resolve<HttpPlayerApi>() : c.Resolve<LocalPlayerApi>(),
-                Lifetime.Singleton);
-            builder.Register<IBattleApi, LocalBattleApi>(Lifetime.Singleton).AsSelf().As<ISubmitFaultSwitch>();
-            builder.Register<IUpgradeApi, LocalUpgradeApi>(Lifetime.Singleton);
-            // TODO(server): Recover(Ad) 항상 거절 중 — 예: 광고 SDK 콜백에서 Recover(EnergySource.Ad, adTxId) 호출
-            builder.Register<IEnergyApi, LocalEnergyApi>(Lifetime.Singleton);
-            builder.Register<IStageApi, LocalStageApi>(Lifetime.Singleton);
-            builder.Register<ICodexApi, LocalCodexApi>(Lifetime.Singleton);
-            builder.Register<IQuestApi, LocalQuestApi>(Lifetime.Singleton);
-            builder.Register<IShopApi, LocalShopApi>(Lifetime.Singleton);
-            builder.Register<ITutorialApi, LocalTutorialApi>(Lifetime.Singleton);
+            if (upgradeTest)
+            {
+                ServerUpgradeTestRegistration.Register(builder);
+            }
+            else
+            {
+                // 계정 연동은 서버 인증을 쓰는 빌드에서만 서버로 보낸다 (서버 로그인으로 받은 토큰이 있어야 하기 때문)
+                builder.Register<LocalAccountApi>(Lifetime.Singleton);
+                builder.Register<ServerBackedAccountApi>(Lifetime.Singleton);
+                builder.Register<IAccountApi>(c => ServerConfig.UseServerAuth ? c.Resolve<ServerBackedAccountApi>() : c.Resolve<LocalAccountApi>(),
+                    Lifetime.Singleton);
+                // 플레이어 상태는 기본이 로컬이고, 서버(GET /api/user/me)는 dev.server_player가 켜진 개발 중에만 쓴다
+                builder.Register<LocalPlayerApi>(Lifetime.Singleton);
+                builder.Register<HttpPlayerApi>(Lifetime.Singleton);
+                builder.Register<IPlayerApi>(c => ServerConfig.UseServerPlayer ? c.Resolve<HttpPlayerApi>() : c.Resolve<LocalPlayerApi>(),
+                    Lifetime.Singleton);
+                builder.Register<IBattleApi, LocalBattleApi>(Lifetime.Singleton).AsSelf().As<ISubmitFaultSwitch>();
+                builder.Register<IUpgradeApi, LocalUpgradeApi>(Lifetime.Singleton);
+                // TODO(server): Recover(Ad) 항상 거절 중 — 예: 광고 SDK 콜백에서 Recover(EnergySource.Ad, adTxId) 호출
+                builder.Register<IEnergyApi, LocalEnergyApi>(Lifetime.Singleton);
+                builder.Register<IStageApi, LocalStageApi>(Lifetime.Singleton);
+                builder.Register<ICodexApi, LocalCodexApi>(Lifetime.Singleton);
+                builder.Register<IQuestApi, LocalQuestApi>(Lifetime.Singleton);
+                builder.Register<IShopApi, LocalShopApi>(Lifetime.Singleton);
+                builder.Register<ITutorialApi, LocalTutorialApi>(Lifetime.Singleton);
+            }
 
             // 음악·효과음·음성 볼륨은 기기 설정이라 기기에 저장하고, 시작할 때와 바뀔 때 오디오 믹서에 적용한다
             builder.Register<IVolumeStore, PlayerPrefsVolumeStore>(Lifetime.Singleton);
@@ -89,14 +100,17 @@ namespace Game.Boot
             builder.RegisterEntryPoint<BootFlow>();
 
             // 랜덤 재료는 열린 재료 중에서 뽑는다. 장비와 스킬은 플레이어 레벨이 해금 레벨 이상이면 열린다(EquipmentUnlockRule, SkillUnlockRule).
-            builder.RegisterBuildCallback(c =>
+            if (!upgradeTest)
             {
-                var battleApi = c.Resolve<LocalBattleApi>();
-                var data = c.Resolve<GameDataStore>();
-                var store = c.Resolve<LocalSaveStore>();
-                battleApi.UnlockedSkillIds = () => SkillUnlockRule.UnlockedSkillIds(data, store.Load().exp);
-                battleApi.UnlockedEquipmentIds = () => EquipmentUnlockRule.UnlockedTargetIds(data, store.Load().exp);
-            });
+                builder.RegisterBuildCallback(c =>
+                {
+                    var battleApi = c.Resolve<LocalBattleApi>();
+                    var data = c.Resolve<GameDataStore>();
+                    var store = c.Resolve<LocalSaveStore>();
+                    battleApi.UnlockedSkillIds = () => SkillUnlockRule.UnlockedSkillIds(data, store.Load().exp);
+                    battleApi.UnlockedEquipmentIds = () => EquipmentUnlockRule.UnlockedTargetIds(data, store.Load().exp);
+                });
+            }
 
             // 진단 창(Diagnostics window) 및 전역 기능을 활성화하기 위해 GlobalMessagePipe를 설정합니다.
             builder.RegisterBuildCallback(c => GlobalMessagePipe.SetProvider(c.AsServiceProvider()));

@@ -74,6 +74,7 @@ namespace Game.View
         {
             SkillInfo info = _catalog.Skills[_index];
             bool isMax = info.IsMaxLevel;
+            bool recovering = _confirmation?.HasPendingRecovery == true;
 
             _nameText.text = info.Name;
             _levelText.text = isMax ? "MAX" : $"Lv. {info.Level}";
@@ -107,11 +108,11 @@ namespace Game.View
             _cost.SetActive(!isMax && !locked && upgradable);
             _maxLevel.SetActive(isMax || locked);
             _maxLevelLabel.text = locked ? $"레벨 {info.UnlockLevel}에 해금" : "최대 레벨";
-            _upgradeButton.gameObject.SetActive(!isMax && !locked);
-            _upgradeAllButton.gameObject.SetActive(!isMax && !locked);
+            _upgradeButton.gameObject.SetActive((!isMax && !locked) || recovering);
+            _upgradeAllButton.gameObject.SetActive(!isMax && !locked && _confirmation?.SinglePurchaseOnly != true);
             if (isMax || locked || !upgradable)
             {
-                _upgradeButton.interactable = false;
+                _upgradeButton.interactable = recovering;
                 _upgradeAllButton.interactable = false;
                 RefreshUpgradeLabel();
                 return;
@@ -121,7 +122,7 @@ namespace Game.View
             int material = info.MaterialItemId != null ? _profile.ItemQuantity(info.MaterialItemId) : 0;
             _bookText.text = CostFormat.HaveNeed(material, info.MaterialCost);
             _coinText.text = CostFormat.HaveNeed(coin, info.CoinCost);
-            _upgradeButton.interactable = LobbyAvailability.CanUpgrade(_profile, info);
+            _upgradeButton.interactable = recovering || LobbyAvailability.CanUpgrade(_profile, info);
             _upgradeAllButton.interactable = _upgradeButton.interactable;
             RefreshUpgradeLabel();
         }
@@ -147,7 +148,7 @@ namespace Game.View
         private void RequestUpgrade(bool all)
         {
             var info = _catalog.Skills[_index];
-            if (LobbyAvailability.CanUpgrade(_profile, info))
+            if (_confirmation?.HasPendingRecovery == true || LobbyAvailability.CanUpgrade(_profile, info))
             {
                 _confirmation.Show(info.Name, info.UpgradeId, all);
             }

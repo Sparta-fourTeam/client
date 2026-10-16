@@ -37,6 +37,20 @@ namespace Game.Tests
 
         private LoginResponse Login(LoginMethod method, string accountId) => _api.Login(method, accountId).GetAwaiter().GetResult();
 
+        [Test(Description = "서버 강화 테스트 로그인은 기존 Local 저장의 초기화·이름 생성·계정 갱신을 하지 않는다")]
+        public void ServerOnlyLogin_PreservesExistingLocalFile()
+        {
+            _store.Flush(_store.Load());
+            var before = File.ReadAllBytes(_filePath);
+            _transport.Response = new HttpResponseData(200, Tokens);
+            var api = new ServerBackedAuthApi(new HttpApiClient(new HttpApiConfig("https://example.test"), _transport), _session, null);
+
+            api.Login(LoginMethod.Guest, "existing-fixture-guest").GetAwaiter().GetResult();
+
+            CollectionAssert.AreEqual(before, File.ReadAllBytes(_filePath));
+            Assert.IsTrue(_session.IsSignedIn);
+        }
+
         [TestCase(RuntimePlatform.Android, null, true)]
         [TestCase(RuntimePlatform.Android, "", true)]
         [TestCase(RuntimePlatform.Android, "0", false)]
