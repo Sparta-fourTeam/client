@@ -7,7 +7,7 @@ using UnityEngine.UI;
 namespace Game.View
 {
     /// <summary>캐릭터 화면·프로필 팝업의 장비 칸 하나. 잠긴 칸은 자물쇠로 가리고, 누르면 열리는 플레이어 레벨을 안내한다</summary>
-    public sealed class EquipSlotView : MonoBehaviour
+    public sealed class EquipSlotView : MonoBehaviour, IButtonLockState
     {
         [SerializeField] private Button _button;
         [SerializeField] private TMP_Text _levelText;
@@ -15,6 +15,8 @@ namespace Game.View
         [SerializeField] private GameObject _lock;
 
         private Action _onClick;
+
+        public bool IsLockedButton(Button button) => button == _button && _lock.activeSelf;
 
         private void Awake()
         {

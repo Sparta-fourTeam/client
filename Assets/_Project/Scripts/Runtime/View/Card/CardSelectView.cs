@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using DG.Tweening;
 using Game.Core;
 using Game.Core.Messages;
@@ -19,15 +20,18 @@ namespace Game.View
         [SerializeField] private Sprite _newWeaponBg, _upgradeBg;
 
         private StageManager _stageManager;
+        private IAudioService _audio;
+        private IReadOnlyList<UpgradeChoice> _soundedChoices;
         private bool _picking;   // 선택 연출 중에는 다른 카드를 누를 수 없다
         private Tween _pickTween;
 
         [Inject]
         public void Construct(
             StageManager stageManager,
-            IBufferedSubscriber<StageStateChanged> stateChanged)
+            IBufferedSubscriber<StageStateChanged> stateChanged, IAudioService audio = null)
         {
             _stageManager = stageManager;
+            _audio = audio;
             Track(stateChanged.Subscribe(OnStateChanged));
         }
 
@@ -72,6 +76,12 @@ namespace Game.View
             }
 
             PopupPanel.Set(_panel, _transition, true);
+            // 일시정지에서 돌아와 같은 후보를 다시 보여줄 때는 등장음을 반복하지 않는다.
+            if (choices.Count > 0 && !ReferenceEquals(_soundedChoices, choices))
+            {
+                _soundedChoices = choices;
+                _audio?.PlaySfx(SoundIds.CardShow);
+            }
 
             // 패널이 켜진 뒤에야 레이아웃이 계산되므로 등장 연출은 여기서 시작한다
             for (int i = 0; i < _slots.Length; i++)

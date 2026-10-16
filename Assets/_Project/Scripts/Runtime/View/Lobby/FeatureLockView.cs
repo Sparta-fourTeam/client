@@ -11,7 +11,7 @@ namespace Game.View
     /// <summary>스테이지를 클리어하기 전까지 버튼 위에 자물쇠 판을 덮는다 (ClientData/FeatureUnlocks.json).
     /// 판이 터치를 가로채서 아래 버튼은 눌리지 않고, 판을 누르면 몇 스테이지를 깨야 열리는지 알려 준다. 하단 탭·사이드 메뉴 버튼에 붙인다.
     /// 로비에 돌아와 새로 열렸으면 Hold로 자물쇠를 다시 걸어 두었다가, 컨텐츠 해금 연출 뒤 PlayUnlockAsync로 푼다 (TutorialGuideView)</summary>
-    public sealed class FeatureLockView : MonoBehaviour, IUiBindable
+    public sealed class FeatureLockView : MonoBehaviour, IUiBindable, IButtonLockState
     {
         [Tooltip("FeatureUnlocks.json의 Feature 이름")]
         [SerializeField] private string _feature;
@@ -41,6 +41,8 @@ namespace Game.View
         }
 
         public bool IsLocked => _data != null && _data.FeatureUnlocks.IsLocked(_feature, _profile.IsStageCleared);
+
+        public bool IsLockedButton(Button button) => button == _lock && _lock.gameObject.activeSelf;
 
         /// <summary>붙잡아 둔 사이에 열렸다. 해금 연출을 보여 줄 차례다</summary>
         public bool IsUnlockPending => _held && !IsLocked;

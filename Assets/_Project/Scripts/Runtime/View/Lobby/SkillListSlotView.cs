@@ -7,7 +7,7 @@ using UnityEngine.UI;
 namespace Game.View
 {
     /// <summary>스킬 화면의 칸 하나. 열려 있으면 레벨을, 잠겨 있으면 "레벨 N에 해금"을 표시한다</summary>
-    public sealed class SkillListSlotView : MonoBehaviour
+    public sealed class SkillListSlotView : MonoBehaviour, IButtonLockState
     {
         [SerializeField] private Button _button;
         [SerializeField] private TMP_Text _levelText;
@@ -32,6 +32,8 @@ namespace Game.View
         }
 
         private Action _onClick;
+
+        public bool IsLockedButton(Button button) => button == _button && _lock.activeSelf;
 
         private void Awake()
         {

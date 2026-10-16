@@ -1,5 +1,5 @@
 %YAML 1.1
-%TAG !u! tag:yaml.org,2002:
+%TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14,52 +14,267 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entries:
   - id: bgm_battle
-    clips: []
-    volume: 1
+    clips:
+    - {fileID: 8300000, guid: 2c861ff3d82b08f4db206d16ed87ea78, type: 3}
+    pauseWithBattle: 0
+    volume: 0.28
     pitchVariance: 0
     minInterval: 0.05
   - id: sfx_wave_start
     clips: []
+    pauseWithBattle: 0
     volume: 1
     pitchVariance: 0
     minInterval: 0.2
   - id: sfx_enemy_die
     clips: []
+    pauseWithBattle: 0
     volume: 1
     pitchVariance: 0.1
     minInterval: 0.04
   - id: sfx_elite_die
     clips: []
+    pauseWithBattle: 0
     volume: 1
     pitchVariance: 0
     minInterval: 0.05
   - id: sfx_boss_die
     clips: []
+    pauseWithBattle: 0
     volume: 1
     pitchVariance: 0
     minInterval: 0.05
   - id: sfx_special_warning
-    clips: []
-    volume: 1
+    clips:
+    - {fileID: 8300000, guid: 3e52f2087de6ed64a9fd3e68ca555f48, type: 3}
+    pauseWithBattle: 0
+    volume: 0.43
     pitchVariance: 0
-    minInterval: 0.5
+    minInterval: 0.8
   - id: sfx_wall_hit
-    clips: []
-    volume: 1
+    clips:
+    - {fileID: 8300000, guid: 2f39fbaea42391d4bb5597619bd57e4f, type: 3}
+    pauseWithBattle: 1
+    volume: 0.35
     pitchVariance: 0.05
-    minInterval: 0.1
+    minInterval: 0.15
   - id: sfx_wall_destroyed
     clips: []
+    pauseWithBattle: 0
     volume: 1
     pitchVariance: 0
     minInterval: 0.5
   - id: sfx_stage_clear
-    clips: []
-    volume: 1
+    clips:
+    - {fileID: 8300000, guid: 1f9b6c9d8857a9941b193650a0904d5b, type: 3}
+    pauseWithBattle: 0
+    volume: 0.45
     pitchVariance: 0
-    minInterval: 0.5
+    minInterval: 0.3
   - id: sfx_stage_fail
-    clips: []
-    volume: 1
+    clips:
+    - {fileID: 8300000, guid: 37a8ea8b4896ee449866f3396515b464, type: 3}
+    pauseWithBattle: 0
+    volume: 0.42
     pitchVariance: 0
-    minInterval: 0.5
+    minInterval: 0.3
+  - id: bgm_intro
+    clips:
+    - {fileID: 8300000, guid: 5b28ddde213e2a645b062f48a2287ca8, type: 3}
+    pauseWithBattle: 0
+    volume: 0.28
+    pitchVariance: 0
+    minInterval: 0.05
+  - id: bgm_lobby
+    clips:
+    - {fileID: 8300000, guid: dbba2b73c568d864fa73060c11750c2c, type: 3}
+    pauseWithBattle: 0
+    volume: 0.28
+    pitchVariance: 0
+    minInterval: 0.05
+  - id: sfx_arrow_cast
+    clips:
+    - {fileID: 8300000, guid: 86d31a4f8adb8fb4f86e0016cd82061f, type: 3}
+    pauseWithBattle: 1
+    volume: 0.3
+    pitchVariance: 0.05
+    minInterval: 0.12
+  - id: sfx_arrow_hit
+    clips:
+    - {fileID: 8300000, guid: 7309363cc84447949b7ee7cdcff06fbe, type: 3}
+    - {fileID: 8300000, guid: 7133f49c194a86a4282051f7b5d5084c, type: 3}
+    pauseWithBattle: 1
+    volume: 0.24
+    pitchVariance: 0.05
+    minInterval: 0.12
+  - id: sfx_fireball_cast
+    clips:
+    - {fileID: 8300000, guid: 7e110860c9c70e44c910191ee5801f54, type: 3}
+    pauseWithBattle: 1
+    volume: 0.32
+    pitchVariance: 0.05
+    minInterval: 0.16
+  - id: sfx_fireball_hit
+    clips:
+    - {fileID: 8300000, guid: ae1e3a1f544f99541ba7c960d0bdfbce, type: 3}
+    - {fileID: 8300000, guid: 17f73a1709c2caf4eaec2259199e24bb, type: 3}
+    pauseWithBattle: 1
+    volume: 0.3
+    pitchVariance: 0.05
+    minInterval: 0.18
+  - id: sfx_lightning_cast
+    clips:
+    - {fileID: 8300000, guid: b953ff6fb61914142b8b6daf13669c92, type: 3}
+    pauseWithBattle: 1
+    volume: 0.3
+    pitchVariance: 0.05
+    minInterval: 0.18
+  - id: sfx_lightning_hit
+    clips:
+    - {fileID: 8300000, guid: 00670f31ea4acd446a7c33a627209f3c, type: 3}
+    pauseWithBattle: 1
+    volume: 0.32
+    pitchVariance: 0.05
+    minInterval: 0.2
+  - id: sfx_ice_cast
+    clips:
+    - {fileID: 8300000, guid: a3825ebc8f34f024c9c1faefd680ca97, type: 3}
+    pauseWithBattle: 1
+    volume: 0.3
+    pitchVariance: 0.05
+    minInterval: 0.14
+  - id: sfx_ice_hit
+    clips:
+    - {fileID: 8300000, guid: cc8841dd8dd9fc14da5bab5ff933b6a9, type: 3}
+    - {fileID: 8300000, guid: 036eec21742856944ad694d1b195a2e3, type: 3}
+    pauseWithBattle: 1
+    volume: 0.25
+    pitchVariance: 0.05
+    minInterval: 0.16
+  - id: sfx_vine_cast
+    clips:
+    - {fileID: 8300000, guid: b8c712d7d6901fa468b7c76cab086e09, type: 3}
+    pauseWithBattle: 1
+    volume: 0.3
+    pitchVariance: 0.05
+    minInterval: 0.18
+  - id: sfx_vine_hit
+    clips:
+    - {fileID: 8300000, guid: cfcad02ec1e90ec49aac24238e74a2a4, type: 3}
+    - {fileID: 8300000, guid: 89213154b6dba294c8dc1370168bb9e4, type: 3}
+    pauseWithBattle: 1
+    volume: 0.28
+    pitchVariance: 0.05
+    minInterval: 0.16
+  - id: sfx_cold_zone_cast
+    clips:
+    - {fileID: 8300000, guid: 3fdacce75c9a59848a8fcc6695cc6c4d, type: 3}
+    pauseWithBattle: 1
+    volume: 0.25
+    pitchVariance: 0.05
+    minInterval: 0.3
+  - id: sfx_cold_zone_hit
+    clips:
+    - {fileID: 8300000, guid: 33543e508d0aa2047a2ae740a7f9b043, type: 3}
+    pauseWithBattle: 1
+    volume: 0.16
+    pitchVariance: 0.05
+    minInterval: 0.28
+  - id: sfx_cloud_cast
+    clips:
+    - {fileID: 8300000, guid: 1b9a9a36d6afdf24ea9a843be6fc86e8, type: 3}
+    pauseWithBattle: 1
+    volume: 0.26
+    pitchVariance: 0.05
+    minInterval: 0.3
+  - id: sfx_cloud_hit
+    clips:
+    - {fileID: 8300000, guid: 3bbb96ddfd23f2f4c930c4637a110206, type: 3}
+    pauseWithBattle: 1
+    volume: 0.17
+    pitchVariance: 0.05
+    minInterval: 0.24
+  - id: sfx_beam_cast
+    clips:
+    - {fileID: 8300000, guid: 582ccc7ef697d3140b8a5f943b11ef11, type: 3}
+    pauseWithBattle: 1
+    volume: 0.24
+    pitchVariance: 0.05
+    minInterval: 0.35
+  - id: sfx_beam_hit
+    clips:
+    - {fileID: 8300000, guid: b49f80f0e964a0c478cd48876c708644, type: 3}
+    pauseWithBattle: 1
+    volume: 0.16
+    pitchVariance: 0.05
+    minInterval: 0.24
+  - id: sfx_chain_cast
+    clips:
+    - {fileID: 8300000, guid: 213e6c22ba2208645b8f01c8b27dd147, type: 3}
+    pauseWithBattle: 1
+    volume: 0.29
+    pitchVariance: 0.05
+    minInterval: 0.2
+  - id: sfx_chain_hit
+    clips:
+    - {fileID: 8300000, guid: a4c3247fe4409c042b2f1974b74efa09, type: 3}
+    pauseWithBattle: 1
+    volume: 0.2
+    pitchVariance: 0.05
+    minInterval: 0.18
+  - id: sfx_focus_cast
+    clips:
+    - {fileID: 8300000, guid: 89e5726cfb16ee149bf3bdec9ce7407d, type: 3}
+    pauseWithBattle: 1
+    volume: 0.24
+    pitchVariance: 0.05
+    minInterval: 0.35
+  - id: sfx_focus_hit
+    clips:
+    - {fileID: 8300000, guid: 508da05cd8e74614d879003d4dd8c02c, type: 3}
+    pauseWithBattle: 1
+    volume: 0.15
+    pitchVariance: 0.05
+    minInterval: 0.26
+  - id: sfx_ui_click
+    clips:
+    - {fileID: 8300000, guid: ee2922c0b4a712241ad0a882f9627a78, type: 3}
+    pauseWithBattle: 0
+    volume: 0.38
+    pitchVariance: 0
+    minInterval: 0.055
+  - id: sfx_upgrade_success
+    clips:
+    - {fileID: 8300000, guid: 670370be2dfdd02428e12dc87d47c619, type: 3}
+    pauseWithBattle: 0
+    volume: 0.38
+    pitchVariance: 0
+    minInterval: 0.25
+  - id: sfx_level_up
+    clips:
+    - {fileID: 8300000, guid: e7fac3df71ffbab44b94fd6ac02c4de7, type: 3}
+    pauseWithBattle: 0
+    volume: 0.4
+    pitchVariance: 0
+    minInterval: 0.25
+  - id: sfx_roulette_spin
+    clips:
+    - {fileID: 8300000, guid: d345ddf619ce68e4c82e42bd2c345852, type: 3}
+    pauseWithBattle: 0
+    volume: 0.25
+    pitchVariance: 0
+    minInterval: 0.05
+  - id: sfx_ui_locked
+    clips:
+    - {fileID: 8300000, guid: bd7dc22a0c98f4240b753239428c43cf, type: 3}
+    pauseWithBattle: 0
+    volume: 0.38
+    pitchVariance: 0
+    minInterval: 0.055
+  - id: sfx_card_show
+    clips:
+    - {fileID: 8300000, guid: e936a5c5cd3cd6c46b2fbc4eb2eba680, type: 3}
+    pauseWithBattle: 0
+    volume: 0.36
+    pitchVariance: 0
+    minInterval: 0.08
