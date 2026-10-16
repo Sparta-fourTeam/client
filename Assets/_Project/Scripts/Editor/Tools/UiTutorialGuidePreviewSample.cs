@@ -22,7 +22,6 @@ namespace Game.Editor
             var text = (TMP_Text)so.FindProperty("_dialogText").objectReferenceValue;
             var spotlight = (UnityEngine.UI.Image)so.FindProperty("_spotlight").objectReferenceValue;
             root.SetActive(true);
-            nav.SetSkillLocked(false);
             text.text = new GameDataStore().TutorialPresentations.For("log_upgrade").Lines[0];
             var area = (RectTransform)root.transform;
             var corners = new Vector3[4];

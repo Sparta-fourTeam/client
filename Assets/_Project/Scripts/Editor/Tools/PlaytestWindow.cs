@@ -54,11 +54,12 @@ namespace Game.Editor
             Button("resetShopButton", () => Cheat(PlaytestCheats.ResetDailyShop));
             Button("allResourcesButton", () => Cheat(PlaytestCheats.SetAllResources));
             Button("fillEnergyButton", () => Cheat((save, data) => PlaytestCheats.FillEnergy(save, data.Energy)));
-            Button("setLevelButton", () => Cheat((save, data) => PlaytestCheats.SetLevel(save, data.PlayerLevels, Int("levelField"), false)));
+            Button("setLevelButton", () => Cheat((save, data) => PlaytestCheats.SetLevelAndUnlockAll(save, data, Int("levelField"))));
             Button("setLevelEdgeButton", () => Cheat((save, data) => PlaytestCheats.SetLevel(save, data.PlayerLevels, Int("levelField"), true)));
             Button("completeTutorialsButton", () => Cheat(PlaytestCheats.CompleteTutorials));
             Button("resetTutorialsButton", () => Cheat((save, _) => PlaytestCheats.ResetTutorials(save)));
             Button("unlockStagesButton", () => Cheat(PlaytestCheats.UnlockAllStages));
+            Button("clearStagesButton", () => Cheat(PlaytestCheats.ClearAllStages));
             Button("healWallButton", () => { var wall = ActiveWall(); if (wall != null) { wall.Repair(wall.MaxHp); } });
             Button("speed1Button", () => Resolve<StageManager>()?.SetPlaytestSpeed(1f));
             Button("speed4Button", () => Resolve<StageManager>()?.SetPlaytestSpeed(4f));
@@ -139,7 +140,7 @@ namespace Game.Editor
             rootVisualElement.Q<Label>("faultStatus").text = fault == null ? "Local 백엔드로 재생할 때 사용할 수 있습니다." : $"남은 실패 횟수: {fault.FailNextSubmits}";
             rootVisualElement.Q<Label>("savePath").text = SavePath;
             bool local = Resolve<LocalSaveStore>() != null;
-            foreach (string name in new[] { "addGoldButton", "addGemButton", "resetShopButton", "allResourcesButton", "fillEnergyButton", "setLevelButton", "setLevelEdgeButton", "completeTutorialsButton", "resetTutorialsButton", "unlockStagesButton" })
+            foreach (string name in new[] { "addGoldButton", "addGemButton", "resetShopButton", "allResourcesButton", "fillEnergyButton", "setLevelButton", "setLevelEdgeButton", "completeTutorialsButton", "resetTutorialsButton", "unlockStagesButton", "clearStagesButton" })
             {
                 Enable(name, local);
             }

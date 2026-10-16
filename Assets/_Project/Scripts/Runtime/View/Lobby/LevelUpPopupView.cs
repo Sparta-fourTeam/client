@@ -91,7 +91,7 @@ namespace Game.View
             var rewards = new List<(Sprite icon, string text)>();
             if (news.RewardGold > 0)
             {
-                rewards.Add((_itemIcons != null ? _itemIcons.Coin : null, $"코인\n<color=#FFD35A>×{news.RewardGold}</color>"));
+                rewards.Add((_itemIcons != null ? _itemIcons.Coin : null, $"잉크\n<color=#FFD35A>×{news.RewardGold}</color>"));
             }
 
             foreach (var item in news.RewardItems)

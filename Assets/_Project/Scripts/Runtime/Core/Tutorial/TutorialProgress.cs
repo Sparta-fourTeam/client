@@ -8,10 +8,23 @@ namespace Game.Core
     /// 시작됐지만 완료 조건을 못 채웠으면 진행 중이고, 채웠으면 완료(보상 받기)할 수 있다. 같은 종류끼리는 표에서 앞의 것이 먼저다</summary>
     public static class TutorialProgress
     {
+        private const string DialogueSuffix = ".dialogue";
+
+        /// <summary>튜토리얼의 도입 대사를 봤다는 기록 Id. 완료한 튜토리얼 목록(PlayerSnapshot.tutorials)에 함께 저장해 계정당 한 번만 보여 준다</summary>
+        public static string DialogueId(string tutorialId) => tutorialId + DialogueSuffix;
+
+        public static bool IsDialogueId(string id, out string tutorialId)
+        {
+            bool dialogue = id != null && id.EndsWith(DialogueSuffix, System.StringComparison.Ordinal);
+            tutorialId = dialogue ? id.Substring(0, id.Length - DialogueSuffix.Length) : null;
+            return dialogue;
+        }
+
         public static bool IsStarted(TutorialDefinition tutorial, TutorialFacts facts) =>
             !facts.IsDone(tutorial.Id)
             && (string.IsNullOrEmpty(tutorial.After) || facts.IsDone(tutorial.After))
-            && facts.Level >= tutorial.MinLevel;
+            && facts.Level >= tutorial.MinLevel
+            && (tutorial.Start == null || tutorial.Start.IsMet(facts));
 
         public static bool IsInProgress(TutorialDefinition tutorial, TutorialFacts facts) =>
             IsStarted(tutorial, facts) && !tutorial.Complete.IsMet(facts);
@@ -30,10 +43,6 @@ namespace Game.Core
         /// <summary>지금 이끌 가이드 튜토리얼. 없으면 null</summary>
         public static TutorialDefinition ActiveGuide(IEnumerable<TutorialDefinition> tutorials, TutorialFacts facts) =>
             tutorials.FirstOrDefault(t => t.IsGuide && IsInProgress(t, facts));
-
-        /// <summary>탭을 열어 주는 튜토리얼(TutorialPresentation.UnlocksTab)이 아직 시작 전이면 잠겨 있다. 시작했거나 완료했으면 열려 있다</summary>
-        public static bool IsTabLocked(IEnumerable<TutorialDefinition> tutorials, TutorialPresentationTable presentations, TutorialFacts facts, string tab) =>
-            tutorials.Any(t => presentations.For(t.Id).UnlocksTab == tab && !facts.IsDone(t.Id) && !IsStarted(t, facts));
 
         public static List<TutorialDefinition> Completable(IEnumerable<TutorialDefinition> tutorials, TutorialFacts facts) =>
             tutorials.Where(t => IsCompletable(t, facts)).ToList();

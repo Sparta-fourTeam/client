@@ -52,7 +52,6 @@ namespace Game.View
         private static readonly int ParamsId = Shader.PropertyToID("_Params");
         private static readonly int RingId = Shader.PropertyToID("_Ring");
         private static readonly int RingColorId = Shader.PropertyToID("_RingColor");
-        private const string SkillTab = "skill";
 
         private IUiRegistry _ui;
         private LevelUpPopupView _levelUp;
@@ -124,10 +123,6 @@ namespace Game.View
 
         private async UniTask RunAsync()
         {
-            // 해금 전이면 스킬 탭에 자물쇠를 걸어 두었다가 레벨업 연출 뒤에 푼다
-            var nav = _ui.Get<LobbyNavView>();
-            bool tabWasLocked = TutorialProgress.IsTabLocked(_data.Tutorials, _data.TutorialPresentations, TutorialFacts.From(_profile), SkillTab);
-            nav.SetSkillLocked(tabWasLocked);
             var news = await _arrival.CollectAsync();
             if (this == null)
             {
@@ -177,30 +172,25 @@ namespace Game.View
                 featureLock.Hold(_arrival.WasStageCleared);
             }
 
-            bool tabLocked = TutorialProgress.IsTabLocked(_data.Tutorials, _data.TutorialPresentations, TutorialFacts.From(_profile), SkillTab);
-            // 새 컨텐츠 해금·레벨업 연출이 끝날 때까지는 잠긴 채로 둔다
-            nav.SetSkillLocked(tabLocked || tabWasLocked);
-
             // 이번 실행에서 이미 전투를 하고 돌아왔으면(튜토리얼 전투에서 져서 나옴) 다시 보내지 않는다. 게임을 새로 켜면 다시 시작한다
+            // 전투 진입은 도입 대사의 결과다. 대사를 이미 봤으면(스킵·포기 포함) 다시 강제로 보내지 않고 로비에서 직접 들어가게 한다
             var battle = TutorialProgress.ActiveBattle(_data.Tutorials, TutorialFacts.From(_profile));
-            if (battle != null && _stageContext.BattleId == null)
+            bool dialogueSeen = battle != null && _profile.IsTutorialDone(TutorialProgress.DialogueId(battle.Id));
+            if (battle != null && _stageContext.BattleId == null && !dialogueSeen)
             {
                 // 첫 시작: 로비에서 도입 대사를 보여 준 뒤 전투로 보낸다
-                if (_data.TutorialPresentations.For(battle.Id).Dialogue.Count > 0)
+                try
                 {
-                    try
-                    {
-                        await _dialogue.PlayAsync(_data.TutorialPresentations.For(battle.Id).Dialogue);
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        return;
-                    }
+                    await PlayDialogueOnceAsync(battle);
+                }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }
 
-                    if (this == null)
-                    {
-                        return;
-                    }
+                if (this == null)
+                {
+                    return;
                 }
 
                 await _launcher.Launch(battle.StageId);
@@ -225,35 +215,7 @@ namespace Game.View
                 return;
             }
 
-            // 레벨업 화면 다음에, 새 컨텐츠(스킬 탭)가 열렸으면 해금 연출을 보여 준다
-            if (tabWasLocked && !tabLocked)
-            {
-                try
-                {
-                    await _contentUnlock.ShowAsync(nav.SkillTabName, nav.SkillTabIcon);
-                }
-                catch (OperationCanceledException)
-                {
-                    return;
-                }
-
-                if (this == null)
-                {
-                    return;
-                }
-            }
-
-            if (tabWasLocked && !tabLocked)
-            {
-                nav.SetSkillLocked(true);
-                await nav.PlaySkillUnlockAsync();
-                if (this == null)
-                {
-                    return;
-                }
-            }
-
-            // 이번에 깬 스테이지로 열린 기능(캐릭터·인벤토리 탭 등)도 하나씩 해금 연출을 보여 준다
+            // 이번에 깬 스테이지로 열린 기능(스킬·캐릭터·인벤토리 탭 등)도 하나씩 해금 연출을 보여 준다
             foreach (var featureLock in featureLocks)
             {
                 if (!featureLock.IsUnlockPending)
@@ -285,11 +247,11 @@ namespace Game.View
 
             // 레벨업이나 첫 강화 보상 지급으로 시작되는 가이드의 도입 대사를 재생한다
             var starting = TutorialProgress.ActiveGuide(_data.Tutorials, TutorialFacts.From(_profile));
-            if (!news.IsEmpty && starting != null && _data.TutorialPresentations.For(starting.Id).Dialogue.Count > 0)
+            if (!news.IsEmpty && starting != null)
             {
                 try
                 {
-                    await _dialogue.PlayAsync(_data.TutorialPresentations.For(starting.Id).Dialogue);
+                    await PlayDialogueOnceAsync(starting);
                 }
                 catch (OperationCanceledException)
                 {
@@ -299,6 +261,20 @@ namespace Game.View
 
             _ready = this != null;
             RefreshGuide();
+        }
+
+        // 도입 대사는 계정당 한 번만 보여 준다. 끝까지 봤거나 건너뛰면 서버에 저장하고, 도중에 취소되면 저장하지 않는다
+        private async UniTask PlayDialogueOnceAsync(TutorialDefinition tutorial)
+        {
+            var lines = _data.TutorialPresentations.For(tutorial.Id).Dialogue;
+            string seenId = TutorialProgress.DialogueId(tutorial.Id);
+            if (lines.Count == 0 || _profile.IsTutorialDone(seenId))
+            {
+                return;
+            }
+
+            await _dialogue.PlayAsync(lines);
+            await _arrival.CompleteAsync(seenId);
         }
 
         private void OnProfileChanged(PlayerProfile _) => RefreshGuide();
@@ -344,9 +320,9 @@ namespace Game.View
 
             // 먼저 진행하던 가이드를 끝내 새 가이드로 넘어가는 경우에도 도입 대사를 보여 준다.
             var next = TutorialProgress.ActiveGuide(_data.Tutorials, TutorialFacts.From(_profile));
-            if (response != null && next != null && _data.TutorialPresentations.For(next.Id).Dialogue.Count > 0)
+            if (response != null && next != null)
             {
-                try { await _dialogue.PlayAsync(_data.TutorialPresentations.For(next.Id).Dialogue); }
+                try { await PlayDialogueOnceAsync(next); }
                 catch (OperationCanceledException) { return; }
                 if (this == null) { return; }
             }

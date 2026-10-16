@@ -6,7 +6,6 @@ namespace Game.Core
 {
     /// <summary>튜토리얼 한 단계의 표시·화면 연결 정보. 클라이언트 전용이라 서버 테이블(Tutorials)에 두지 않고 Id로 짝을 맞춘다.
     /// Script는 로비 가이드 단계 템플릿 이름이고, Lines는 같은 순번 단계에서 보여 주는 대사다.
-    /// UnlocksTab은 이 튜토리얼이 시작되기 전까지 잠가 둘 하단 탭(예: skill)이다. 시작되면 해금 연출과 함께 열린다.
     /// Dialogue는 가이드·전투 시작 전에 재생하는 대사 장면이다</summary>
     [Serializable]
     public sealed class TutorialPresentation
@@ -15,7 +14,6 @@ namespace Game.Core
 
         public string Id;
         public string Script;
-        public string UnlocksTab;
         public List<string> Lines = new();
         public List<DialogueLine> Dialogue = new();
     }

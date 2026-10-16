@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Game.Core;
 using Game.Network;
+using Newtonsoft.Json;
 using NUnit.Framework;
 
 namespace Game.Tests
@@ -60,6 +61,40 @@ namespace Game.Tests
 
             Assert.IsEmpty(snapshot.items);
             Assert.IsEmpty(snapshot.tutorials);
+        }
+
+        [TestCase("{\"gem\":12}", 12)]
+        [TestCase("{\"jem\":7}", 7)]
+        [TestCase("{\"gem\":0,\"jem\":7}", 0)]
+        [Test(Description = "신규 gem과 이전 jem을 읽고 명시적인 gem 0을 이전 잔액으로 덮어쓰지 않는다")]
+        public void GemContract_UsesNewFieldBeforeLegacy(string json, int expected)
+        {
+            var snapshot = ServerUserMapper.ToSnapshot(JsonConvert.DeserializeObject<ServerUserData>(json), "n");
+            Assert.AreEqual(expected, snapshot.gems);
+        }
+
+        [Test(Description = "PR58 문자열 아이템 ID·수량은 그대로 반영하고 이전 숫자 ID는 문자열로 추측하지 않는다")]
+        public void Items_StringIdsAreApplied_LegacyNumericIdsAreSkipped()
+        {
+            var data = JsonConvert.DeserializeObject<ServerUserData>("{\"items\":[{\"itemId\":\"book.arrow\",\"quantity\":5},{\"itemId\":9,\"quantity\":8},{\"itemId\":\"book.weapon\",\"quantity\":0}],\"tutorials\":[3]}");
+            var snapshot = ServerUserMapper.ToSnapshot(data, "n");
+            Assert.AreEqual(2, snapshot.items.Count);
+            Assert.AreEqual("book.arrow", snapshot.items[0].itemId);
+            Assert.AreEqual(5, snapshot.items[0].quantity);
+            Assert.AreEqual("book.weapon", snapshot.items[1].itemId);
+            Assert.AreEqual(0, snapshot.items[1].quantity);
+            Assert.IsEmpty(snapshot.tutorials);
+        }
+
+        [TestCase("[{\"itemId\":\" \" ,\"quantity\":1}]")]
+        [TestCase("[{\"itemId\":\"book.arrow\",\"quantity\":-1}]")]
+        [TestCase("[{\"itemId\":\"book.arrow\",\"quantity\":1},{\"itemId\":\"book.arrow\",\"quantity\":2}]")]
+        [Test(Description = "문자열 아이템의 빈 ID·음수 수량·중복 행으로 인벤토리가 오염되지 않게 응답을 거절한다")]
+        public void Items_InvalidStringRowsAreRejected(string rows)
+        {
+            var data = JsonConvert.DeserializeObject<ServerUserData>("{\"items\":" + rows + "}");
+            var ex = Assert.Throws<ApiException>(() => ServerUserMapper.ToSnapshot(data, "n"));
+            Assert.AreEqual(HttpErrorMapper.InvalidResponse, ex.Code);
         }
         [Test(Description = "int 범위를 넘는 스테이지·몬스터 ID는 잘못된 응답이다")]
         public void OutOfRangeIds_AreRejected()
