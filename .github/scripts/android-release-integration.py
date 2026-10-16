@@ -166,10 +166,30 @@ def codex_completed_summary(number, source):
         return None
     row = max(summaries, key=lambda r: (r.get('updated_at', ''), r['id']))
     body = row['body']
-    # The service removes this machine-readable state when rendering its final
-    # table. Never fall back to an older completed table during a new review.
+    # Current bot responses retain this header even after a clean completion.
+    # Require exact-source completed/no-findings states, never an older table
+    # behind a running/unknown review. Legacy completed tables remain supported.
     if 'codex-review-state:v1' in body:
-        return None
+        headers = re.findall(r'<!-- codex-review-state:v1 (.*?) -->', body, re.DOTALL)
+        if len(headers) != 1:
+            return None
+        try:
+            metadata = json.loads(headers[0])
+        except ValueError:
+            return None
+        if not isinstance(metadata, dict) or not isinstance(metadata.get('code_review'), dict):
+            return None
+        states = [metadata['code_review']]
+        security = metadata.get('security_review')
+        if security is not None:
+            if not isinstance(security, dict):
+                return None
+            if any(value is not None for value in security.values()):
+                states.append(security)
+        if any(state.get('commit_sha') != source or state.get('status') != 'completed' or
+               state.get('has_any_findings') is not False or
+               state.get('has_unresolved_findings') is not False for state in states):
+            return None
     matches = re.findall(r'^\| 📝 \*\*Code Review\*\* \| ✅ \*\*Completed\*\* '
                          r'<relative-time datetime="([^"]+)">[^<]*</relative-time> '
                          r'\| `([0-9a-f]{7,40})` \|[^\n]*$', body, re.MULTILINE)

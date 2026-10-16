@@ -9,12 +9,11 @@ git tag -a v1.0.4 <검토된-dev-커밋-SHA> -m 'Release 1.0.4'
 git push origin refs/tags/v1.0.4
 ```
 
-태그 push는 **고정 출시 PR 생성 → 최신 source SHA Codex 검토 → GitHub 보호 조건에 따른 merge commit 병합 → 실제 merge SHA 빌드·검증 → Console 확인 → internal 게시**를 승인하는 신호다. **Actions → Deploy Google Play Internal**에서 실행 상태와 Summary를 확인한다. 새 dev 커밋이 들어와도 태그의 소스는 바뀌지 않는다. 일반 기능 PR이나 태그 없는 main 변경은 이 흐름을 실행하지 않는다.
+태그 push는 **고정 출시 PR 생성 → 최신 source SHA Codex 검토 → GitHub 보호 조건에 따른 merge commit 병합 → 실제 merge SHA 빌드·검증 → internal 게시**를 승인하는 신호다. **Actions → Deploy Google Play Internal**에서 실행 상태와 Summary를 확인한다. 새 dev 커밋이 들어와도 태그의 소스는 바뀌지 않는다. 일반 기능 PR이나 태그 없는 main 변경은 이 흐름을 실행하지 않는다.
 
-빌드가 끝나면 **Actions → Deploy Google Play Internal → 해당 실행 → publish → Prepare receipt and request clean Console confirmation → 로그**를 확인한다. 태그를 push한 사용자가 **Play Console → 이 게임 → 게시 개요**에서 다른 검토 전송 대기·검토 중·게시 대기 변경이 없는지 확인하고, 다른 Console/API 작성 작업을 실행 종료까지 멈춘다. 읽기는 가능하다. 그 로그의 `Play-Console-Clean: ...` 한 줄을 **그 출시 PR에 새 댓글로 그대로** 붙인다. 확인은 원래 태그 작성자의 GitHub ID와 run·merge SHA·versionCode·AAB hash에 고정되며, 빌드 후 요청된 확인만 최대 10분 기다린다. 댓글 생성 후 10분 동안만 유효하며 삭제/수정으로 철회할 수 있다. 확인이 없거나 만료/철회되면 edit/upload/commit을 중단한다. 같은 내용은 작업이 끝난 뒤 Summary에도 남지만, 실행 중에는 준비 단계의 실시간 로그를 사용한다.
+이 앱은 **다른 Console 제출 대기 변경을 두지 않고 새 배포 태그 push 자체를 게시 승인으로 삼는 운영 정책**을 사용한다. 별도 확인 댓글이나 매 출시 JSON/코드 입력은 요구하지 않는다. 태그 push부터 실행 종료까지 다른 Console/API 작성 작업을 멈추며 읽기는 가능하다. 다른 트랙·스토어 설명·앱 콘텐츠 등 제출/게시 대기 변경이 생기면 정리한 뒤 출시 태그를 만든다.
 
-**이 Console 확인은 매 게시마다 필요한 운영 단계이므로 태그만으로 완전 무인 게시되지는 않는다.** Google은 API edit commit이 Console의 미전송 변경도 함께 제출할 수 있다고 설명한다. 트랙 비교와 `ERROR_IF_IN_REVIEW`만으로 검토 전송 대기 변경 전체가 없음을 보증하지 않는다. 새 credential/권한을 만들거나 이 위험을 묵인하는 대신 현재 구현은 위 확인을 요구한다. [Google 동시 작업 주의사항](https://developers.google.com/android-publisher/concurrency-considerations).
-
+이 정책은 API가 Console 전체를 자동 검사했다는 뜻은 아니다. Google은 API edit commit이 Console의 미전송 변경도 함께 검토에 제출할 수 있다고 설명한다. 트랙 비교와 `ERROR_IF_IN_REVIEW`는 모든 스토어/앱 콘텐츠의 미전송 변경 부재를 증명하지 않는다. 운영 전제를 어기면 내부 테스트 외의 변경도 검토에 제출될 수 있다. 태그를 push하는 담당자는 이 전제가 유지된 상태에서 게시를 승인한다. [Google 동시 작업 주의사항](https://developers.google.com/android-publisher/concurrency-considerations).
 
 출시 PR 생성·병합은 자동화한다. **GitHub가 PR workflow 실행 승인을 요구하면 저장소 write 권한을 가진 사람이 PR 병합 영역의 `Approve workflows to run`을 눌러야 한다.** 이 경우 태그만으로 무인 완료되지 않는다. 새 token이나 `actions: write`로 승인 단계를 우회하지 않는다. 또한  필요한 설정이 꺼졌거나 검토/필수 검사/충돌이 해결되지 않으면 자동으로 중단한다. 출시 의사가 없으면 태그를 push하지 않는다. 현재 main의 승인 수 0을 기준으로 동작하며, 별도의 사람 승인 1명 규칙을 추가하지 않는다. 향후 GitHub 보호 조건이 강화되면 그 조건을 충족할 때까지 대기하거나 실패한다.
 

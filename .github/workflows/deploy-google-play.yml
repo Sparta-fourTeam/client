@@ -311,7 +311,7 @@ jobs:
     env:
       BUILD_SHA: ${{ needs.integrate.outputs.merged_sha }}
     runs-on: ubuntu-latest
-    # Reserve the Console wait plus Play requests, setup and GitHub preflights.
+    # Reserve Play request timeouts plus setup and fresh GitHub preflights.
     timeout-minutes: 45
     steps:
       - name: Initialize minimal publish attempt before checkout
@@ -374,7 +374,7 @@ jobs:
               output.write('release_name=' + release_name + '\n')
           PY
 
-      - name: Prepare receipt and request clean Console confirmation
+      - name: Prepare verified artifact receipt before revalidation
         env:
           RELEASE_VERSION: ${{ needs.integrate.outputs.version_name }}
           ANDROID_VERSION_CODE: ${{ needs.build.outputs.version_code }}
