@@ -25,9 +25,10 @@ start에는 `userId`, `stageId`, 데이터 개정, seed를 보내지 않는다. 
 ## Player 그룹 전환 전 필요한 계약
 
 - 서버 end는 세션 삭제만 구현되어 있다. 클라이언트의 `SubmitResultRequest`와 확정 보상 응답, 재제출 원장, 스테이지 진척·도감 등록 처리가 필요하다. 빈 성공을 `SubmitResultResponse`로 꾸미거나 Local로 보상을 지급하지 않는다.
-- 강화 구매, 스테이지·도감 보상 수령, 에너지 회복, 상점·퀘스트·튜토리얼 변경 API가 없다. 서비스의 `grantEnergy`만으로 외부 API가 있다고 판단하지 않는다.
+- 서버 PR #58은 아이템·강화 조회와 `POST /api/user/upgrades`를 추가했다. 구매 요청은 `{ upgradeId, createId }`, 응답은 `{ upgradeId, level }`이며 전체 스냅샷은 별도 조회가 필요하다. 서버 구매 서비스는 `unlockLevel`을 검사하지 않는다. 클라이언트의 경험치 기반 진입 제한을 서버 보안 보장으로 해석하지 않는다.
+- 스테이지·도감 보상 수령, 에너지 회복, 상점·퀘스트·튜토리얼 변경 API는 여전히 없다. 서비스의 `grantEnergy`만으로 외부 API가 있다고 판단하지 않는다.
 - 서버 오류 본문은 `status`, `error`, `message`, `path`이며 기계 판독용 도메인 코드가 없다. 409는 `INSUFFICIENT_ENERGY`와 `ENERGY_LOCK_CONFLICT` 모두 가능하므로 현재 `HTTP_409`를 유지한다. message 문자열로 둘을 구분하지 않는다.
 - 서버 `ClockConfig`는 `Asia/Seoul`이고 `UserService`는 이 Clock의 시간대 없는 LocalDateTime을 쓴다. 기존 `ServerUserMapper`/`EnergyRule`은 UTC로 읽으므로 실제 전환 전 offset 포함 시각 계약과 기존 DB 시각 확인이 필요하다. 서버 최대 에너지·회복 주기·입장 비용과 클라이언트 Energy 테이블의 일치도 함께 확인한다.
-- 아이템·튜토리얼 ID 대응과 테이블 본문 계약은 미확정이다. 인증·user/me·버전·스킬 조회 API가 있어도 전체 게임 데이터 전환이 완료된 것은 아니다.
+- PR #58의 아이템 ID는 문자열로 정리됐다. `user/me`의 `jem`은 `gem`으로 바뀌므로 이전 클라이언트 매핑은 호환 수정이 필요하다. 튜토리얼 ID 대응과 전체 테이블 본문 계약은 여전히 미확정이다. 인증·user/me·버전·스킬·아이템·강화 조회 API가 있어도 전체 게임 데이터 전환이 완료된 것은 아니다.
 
 OpenAPI에 새 필드와 경로가 나타나는 것은 명세 배포의 증거다. 보호된 API의 실제 처리와 `battle_session.create_id` 컬럼·유일 제약 등 DB 적용을 증명하지 않는다. 운영 상태 변경 요청 없이 이를 확인할 수 없으므로, 실제 검증은 서버 담당자가 로컬/테스트 DB에서 진행해야 한다.
