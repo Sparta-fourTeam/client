@@ -122,6 +122,22 @@ namespace Game.Tests
             AssertRequestOrder(HttpVerb.Post, HttpVerb.Get, HttpVerb.Get);
         }
 
+        [Test(Description = "서버가 허용하는 null 강화 레벨을 부분 응답으로 오판하지 않고 원래 값으로 보존한다")]
+        public void NullableUpgradeLevel_IsPreserved()
+        {
+            var state = JObject.Parse(State);
+            state["upgrades"] = JArray.Parse("[{\"upgradeId\":\"attack\",\"level\":null}]");
+            _transport.Queued.Enqueue(new HttpResponseData(200, ""));
+            _transport.Queued.Enqueue(new HttpResponseData(200, state.ToString()));
+
+            var result = _reconciler.Submit().GetAwaiter().GetResult();
+
+            Assert.AreEqual(BattleSubmissionStatus.Acknowledged, result.SubmissionStatus);
+            Assert.IsNull(result.ObservedState.upgrades.Single().level);
+        }
+
+        [TestCase("upgrades", "[{\"upgradeId\":\"attack\"}]")]
+        [TestCase("upgrades", "[{\"upgradeId\":\"attack\",\"level\":-1}]")]
         [TestCase("items", "[{\"itemId\":\"book.arrow\",\"quantity\":-1}]")]
         [TestCase("items", "[{\"itemId\":\"book.arrow\",\"quantity\":1},{\"itemId\":\"book.arrow\",\"quantity\":2}]")]
         [TestCase("stageProgress", "[{\"stageId\":7,\"clearRating\":1,\"claimedRating\":3}]")]
