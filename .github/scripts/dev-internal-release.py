@@ -45,7 +45,8 @@ def validate_internal_before_upload(track):
     empty = [item for item in releases if item.get('status') == 'draft'
              and not item.get('versionCodes') and not item.get('releaseNotes')
              and item.get('name') in (None, '', 'Untitled release', '제목 없는 버전', '제목없는 버전')
-             and not item.get('userFraction') and not item.get('countryTargeting')]
+             and not item.get('userFraction') and not item.get('countryTargeting')
+             and not item.get('inAppUpdatePriority')]
     require(len(completed) == 1 and len(empty) <= 1 and len(releases) == 1 + len(empty),
             'Internal track contains a different release or non-empty draft; inspect before proceeding')
     return bool(empty)

@@ -29,7 +29,7 @@ class InternalReleaseTests(unittest.TestCase):
         self.assertTrue(release.validate_internal_before_upload({'releases': [completed, empty]}))
         for changed in [dict(empty, versionCodes=['3']), dict(empty, releaseNotes=[{'text': 'work in progress'}]),
                         dict(empty, name='Another planned release'), dict(empty, userFraction=0.1),
-                        dict(empty, countryTargeting={'countries': ['KR']})]:
+                        dict(empty, countryTargeting={'countries': ['KR']}), dict(empty, inAppUpdatePriority=5)]:
             with self.subTest(draft=changed), self.assertRaises(RuntimeError):
                 release.validate_internal_before_upload({'releases': [completed, changed]})
 
