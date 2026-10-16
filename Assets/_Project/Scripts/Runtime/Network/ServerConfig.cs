@@ -18,6 +18,18 @@ namespace Game.Network
         // 개발 중에 PlayerPrefs의 dev.server_player를 "1"로 두어야 켠다
         private const string PlayerOverrideKey = "dev.server_player";
 
+        public const string UpgradeTestKey = "dev.server_upgrade_test";
+
+        /// <summary>기본은 꺼짐. 릴리스 빌드에서는 저장된 개발 설정이 있어도 켜지지 않는다. 변경 후 Boot부터 다시 시작한다.</summary>
+        public static bool UseServerUpgradeTest
+        {
+            get
+            {
+                return (Application.isEditor || Debug.isDebugBuild)
+                    && PlayerPrefs.GetString(UpgradeTestKey, string.Empty) == "1";
+            }
+        }
+
         public static bool UseServerPlayer => PlayerPrefs.GetString(PlayerOverrideKey, string.Empty) == "1";
 
         public static bool UseServerAuth => ResolveServerAuth(Application.platform, PlayerPrefs.GetString(OverrideKey, string.Empty));

@@ -21,6 +21,7 @@ namespace Game.View
         private PlayerProfile _profile;
         private GameDataStore _data;
         private IUpgradeApi _api;
+        private IUpgradeRecovery _recovery;
         private IAudioService _audio;
         private UpgradePurchasePlan _plan;
         private string _name;
@@ -33,7 +34,7 @@ namespace Game.View
 
         [Inject]
         public void Construct(PlayerProfile profile, GameDataStore data, IUpgradeApi api, IAudioService audio = null)
-        { _profile = profile; _data = data; _api = api; _audio = audio; }
+        { _profile = profile; _data = data; _api = api; _recovery = api as IUpgradeRecovery; _audio = audio; }
 
         protected override void InitializeView()
         {
@@ -50,8 +51,20 @@ namespace Game.View
                 return;
             }
 
+            if (_recovery != null && all && !_recovery.HasPendingPurchase)
+            {
+                _toast?.Show("서버 강화 테스트는 단건 구매만 지원합니다.", 1f);
+                return;
+            }
+            if (_recovery?.HasPendingPurchase == true)
+            {
+                id = _recovery.PendingUpgradeId;
+                name = id;
+                all = false;
+            }
             _name = name; _all = all; _visible = true;
-            Present(UpgradePurchasePlan.Create(_profile, _data, id, all));
+            Present(UpgradePurchasePlan.Create(_profile, _data, id, all),
+                _recovery?.HasPendingPurchase == true ? "미확정 서버 강화가 있습니다. 확인을 누르면 같은 구매를 복구합니다." : null);
             PopupPanel.Set(_panel, _transition, true);
             PopupPanel.FitContent(_scroll, 560f, 1040f);
             _scroll.verticalNormalizedPosition = 1f;
@@ -77,7 +90,7 @@ namespace Game.View
         private void SetButtons()
         {
             _closeButton.interactable = _cancelButton.interactable = !_busy;
-            _confirmButton.interactable = !_busy && _plan.Count > 0;
+            _confirmButton.interactable = !_busy && (_plan.Count > 0 || _recovery?.HasPendingPurchase == true);
         }
 
         private void Close()
@@ -93,8 +106,14 @@ namespace Game.View
 
         private async UniTask ConfirmAsync()
         {
-            if (_busy || !_visible || !_panel.activeSelf || _plan.Count == 0)
+            if (_busy || !_visible || !_panel.activeSelf || (_plan.Count == 0 && _recovery?.HasPendingPurchase != true))
             {
+                return;
+            }
+
+            if (_recovery != null)
+            {
+                await ConfirmServerAsync();
                 return;
             }
 
@@ -165,6 +184,43 @@ namespace Game.View
                 {
                     SetButtons();
                 }
+            }
+        }
+
+        private async UniTask ConfirmServerAsync()
+        {
+            if (!_recovery.HasPendingPurchase)
+            {
+                var current = UpgradePurchasePlan.Create(_profile, _data, _plan.UpgradeId, false);
+                if (!_plan.SameQuote(current)) { Present(current, "상태가 변경됐습니다. 단건 비용을 다시 확인해 주세요."); return; }
+            }
+            _busy = true; SetButtons();
+            _description.text = "서버 강화 상태를 확인하고 있습니다.";
+            try
+            {
+                var snapshot = _recovery.HasPendingPurchase ? await _recovery.RecoverPurchase()
+                    : await _api.Purchase(_plan.UpgradeId, Guid.NewGuid().ToString("N"));
+                _profile.Apply(snapshot);
+                if (this == null) { return; }
+                _visible = false;
+                PopupPanel.Set(_panel, _transition, false);
+                _toast?.Show("서버 강화 결과와 현재 상태를 확인했습니다.", 1f);
+            }
+            catch (Exception error)
+            {
+                if (this == null) { return; }
+                string status = _recovery.HasPendingPurchase
+                    ? "구매 결과 또는 상태 조회가 미확정입니다. 확인을 눌러 같은 구매를 복구해 주세요. 새 구매는 잠겨 있습니다."
+                    : "구매하지 못했습니다. 서버와 표시된 비용·해금 조건이 같은지 확인해 주세요.";
+                if (error is ApiException sessionError && sessionError.Code == "SESSION_EXPIRED")
+                { status = "로그인 상태가 바뀌었습니다. 다시 로그인한 뒤 서버의 강화 상태를 확인해 주세요."; }
+                Present(UpgradePurchasePlan.Create(_profile, _data, _plan.UpgradeId, false), status);
+                Debug.LogWarning($"서버 강화 요청: {(error is ApiException api ? api.Code : error.GetType().Name)}");
+            }
+            finally
+            {
+                _busy = false;
+                if (this != null) { SetButtons(); }
             }
         }
 

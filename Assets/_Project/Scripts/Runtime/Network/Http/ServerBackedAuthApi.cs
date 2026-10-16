@@ -29,7 +29,8 @@ namespace Game.Network
         {
             var response = method == LoginMethod.Guest ? await GuestLoginAsync(accountId) : await SocialLoginAsync(method, accountId);
             _session.Set(response.accessToken, response.refreshToken);
-            await _local.Login(method, accountId);
+            // 서버 강화 테스트 모드는 Local 저장을 만들거나 초기화하지 않는다.
+            if (_local != null) { await _local.Login(method, accountId); }
             return response;
         }
 

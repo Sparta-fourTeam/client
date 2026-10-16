@@ -63,6 +63,7 @@ namespace Game.View
         private BattleLauncher _launcher;
         private StageContext _stageContext;
         private IBattleCheckpointStore _checkpoints;
+        private PlayerApiMode _mode;
         private bool _ready;
         private bool _completing;
         private CanvasGroup _rootGroup;
@@ -76,8 +77,9 @@ namespace Game.View
 
         [Inject]
         public void Construct(LobbyArrival arrival, PlayerProfile profile, GameDataStore data, BattleLauncher launcher,
-            StageContext stageContext, IBattleCheckpointStore checkpoints = null)
+            StageContext stageContext, IBattleCheckpointStore checkpoints = null, PlayerApiMode mode = null)
         {
+            _mode = mode;
             _checkpoints = checkpoints;
             _stageContext = stageContext;
             _arrival = arrival;
@@ -123,6 +125,7 @@ namespace Game.View
 
         private async UniTask RunAsync()
         {
+            if (_mode?.ServerUpgradeTest == true) { return; }
             var news = await _arrival.CollectAsync();
             if (this == null)
             {
