@@ -4,6 +4,6 @@ namespace Game.Core
     public static class ExternalLinks
     {
         public const string PrivacyPolicy = "https://sparta-fourteam.github.io/privacy-policy/ko/";
-        public const string TermsOfUse = "";
+        public const string TermsOfUse = "https://sparta-fourteam.github.io/privacy-policy/terms/ko/";
     }
 }

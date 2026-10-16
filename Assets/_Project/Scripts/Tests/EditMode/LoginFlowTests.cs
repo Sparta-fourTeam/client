@@ -49,6 +49,20 @@ namespace Game.Tests
         // 사용자가 버튼을 바로 누른 것처럼 즉시 끝나고, 호출 순서와 제시된 방식을 기록한다
         private sealed class FakePrompt : ILoginPrompt
         {
+            public bool AnalyticsAccepted = true;
+            public UniTaskCompletionSource<bool> PendingAnalyticsConsent;
+            public UniTask<bool> WaitForAnalyticsConsentAsync()
+            {
+                Calls.Add("analyticsConsent");
+                return PendingAnalyticsConsent != null ? PendingAnalyticsConsent.Task : UniTask.FromResult(AnalyticsAccepted);
+            }
+            public bool ConsentAccepted = true;
+            public UniTaskCompletionSource<bool> PendingConsent;
+            public UniTask<bool> WaitForServiceConsentAsync()
+            {
+                Calls.Add("consent");
+                return PendingConsent != null ? PendingConsent.Task : UniTask.FromResult(ConsentAccepted);
+            }
             public readonly List<string> Calls = new();
             public readonly Queue<LoginMethod> Choices = new();     // 로그인창에서 차례로 고를 방식 (비면 게스트)
             public readonly List<LoginMethod[]> Offered = new();
@@ -93,6 +107,14 @@ namespace Game.Tests
             }
         }
 
+        private sealed class RecordingCollection : IAnalyticsCollectionControl
+        {
+            public readonly List<bool> Choices = new();
+            public bool Allowed;
+            public void SetCollectionAllowed(bool allowed) { Choices.Add(allowed); Allowed = allowed; }
+        }
+
+        private RecordingCollection _analytics;
         private FakeAuthApi _auth;
         private PlayerProfile _profile;
         private MemoryCredentialStore _credentials;
@@ -101,6 +123,7 @@ namespace Game.Tests
         [SetUp]
         public void SetUp()
         {
+            _analytics = new RecordingCollection();
             _auth = new FakeAuthApi();
             _profile = new PlayerProfile(new GameDataStore());
             _credentials = new MemoryCredentialStore();
@@ -108,7 +131,7 @@ namespace Game.Tests
         }
 
         private LoginFlow Flow(params ISocialSignIn[] social) =>
-            new LoginFlow(_auth, new FakePlayerApi(), _profile, _credentials, _prompt, social);
+            new LoginFlow(_auth, new FakePlayerApi(), _profile, _credentials, _prompt, social, _analytics);
 
         private static void ExpectLoginFailureLog(int times)
         {
@@ -123,7 +146,7 @@ namespace Game.Tests
             bool prompted = Flow().RunAsync().GetAwaiter().GetResult();
 
             Assert.IsFalse(prompted, "로그인창을 띄우지 않았으므로 Loading에서 터치를 기다린다");
-            CollectionAssert.AreEqual(new[] { "signing", "hide" }, _prompt.Calls);
+            CollectionAssert.AreEqual(new[] { "consent", "analyticsConsent", "signing", "hide" }, _prompt.Calls);
             Assert.AreEqual(1, _auth.Calls);
             Assert.AreEqual(77, _profile.Gold);
             Assert.AreEqual("saved", _credentials.AccountId, "기존 로그인 정보는 그대로 둔다");
@@ -135,7 +158,7 @@ namespace Game.Tests
             bool prompted = Flow().RunAsync().GetAwaiter().GetResult();
 
             Assert.IsTrue(prompted, "로그인창에서 버튼을 눌렀으므로 터치를 다시 기다리지 않는다");
-            CollectionAssert.AreEqual(new[] { "signIn", "signing", "hide" }, _prompt.Calls);
+            CollectionAssert.AreEqual(new[] { "consent", "analyticsConsent", "signIn", "signing", "hide" }, _prompt.Calls);
             Assert.AreEqual(1, _auth.Calls);
             Assert.AreEqual(LoginMethod.Guest, _credentials.Method);
             Assert.IsTrue(_credentials.HasCredential);
@@ -174,7 +197,7 @@ namespace Game.Tests
 
             Flow(google).RunAsync().GetAwaiter().GetResult();
 
-            CollectionAssert.AreEqual(new[] { "signIn", "signIn", "signing", "hide" }, _prompt.Calls);
+            CollectionAssert.AreEqual(new[] { "consent", "analyticsConsent", "signIn", "signIn", "signing", "hide" }, _prompt.Calls);
             Assert.AreEqual(1, _auth.Calls, "취소한 동안에는 서버에 로그인하지 않는다");
             Assert.AreEqual(LoginMethod.Guest, _credentials.Method);
         }
@@ -186,7 +209,7 @@ namespace Game.Tests
 
             Flow(new FakeSocial(LoginMethod.Apple, available: false, "apple-account")).RunAsync().GetAwaiter().GetResult();
 
-            Assert.AreEqual("signIn", _prompt.Calls[0]);
+            Assert.AreEqual("signIn", _prompt.Calls[2]);
             Assert.AreEqual(LoginMethod.Guest, _credentials.Method, "새로 고른 방식으로 바꿔 저장한다");
         }
 
@@ -199,7 +222,7 @@ namespace Game.Tests
 
             Flow().RunAsync().GetAwaiter().GetResult();
 
-            CollectionAssert.AreEqual(new[] { "signIn", "signing", "retry", "signing", "retry", "signing", "hide" }, _prompt.Calls);
+            CollectionAssert.AreEqual(new[] { "consent", "analyticsConsent", "signIn", "signing", "retry", "signing", "retry", "signing", "hide" }, _prompt.Calls);
             Assert.AreEqual(3, _auth.Calls);
             Assert.IsTrue(store.HasCredential);
         }
@@ -228,7 +251,7 @@ namespace Game.Tests
 
             Flow().RunAsync().GetAwaiter().GetResult();
 
-            CollectionAssert.AreEqual(new[] { "signing", "retry", "signing", "hide" }, _prompt.Calls);
+            CollectionAssert.AreEqual(new[] { "consent", "analyticsConsent", "signing", "retry", "signing", "hide" }, _prompt.Calls);
             Assert.AreEqual("saved", _credentials.AccountId);
         }
 
@@ -315,8 +338,70 @@ namespace Game.Tests
             Assert.IsFalse(_credentials.HasCredential);
         }
 
+        [TestCase(false)]
+        [TestCase(true)]
+        public void ServiceConsentRejected_DoesNotAuthenticateOrChangeCredentials(bool savedGoogle)
+        {
+            if (savedGoogle) { _credentials.Save(LoginMethod.Google, AuthCredentials.SocialAccountId); }
+            _prompt.ConsentAccepted = false;
+            var google = new FakeSocial(LoginMethod.Google, true, "unused-token");
+
+            Assert.Throws<OperationCanceledException>(() => Flow(google).RunAsync().GetAwaiter().GetResult());
+
+            Assert.AreEqual(0, _auth.Calls);
+            Assert.AreEqual(0, google.Calls);
+            Assert.AreEqual(savedGoogle, _credentials.HasCredential);
+            Assert.IsFalse(_profile.IsLoaded);
+            CollectionAssert.AreEqual(new[] { "consent" }, _prompt.Calls);
+        }
+
+        [Test]
+        public void ServiceConsentPending_BlocksSavedGuestUntilAccepted()
+        {
+            _credentials.Save(LoginMethod.Guest, "saved");
+            _prompt.PendingConsent = new UniTaskCompletionSource<bool>();
+            var pending = Flow().RunAsync();
+
+            Assert.AreEqual(0, _auth.Calls);
+            Assert.IsFalse(_profile.IsLoaded);
+            _prompt.PendingConsent.TrySetResult(true);
+            pending.GetAwaiter().GetResult();
+            Assert.AreEqual(1, _auth.Calls);
+            Assert.AreEqual("saved", _credentials.AccountId);
+        }
+
+        [TestCase(false)]
+        [TestCase(true)]
+        public void AnalyticsChoice_DoesNotBlockGameAndStartsOnlyWhenGranted(bool granted)
+        {
+            _prompt.AnalyticsAccepted = granted;
+            Flow().RunAsync().GetAwaiter().GetResult();
+            Assert.AreEqual(1, _auth.Calls);
+            Assert.AreEqual(77, _profile.Gold);
+            Assert.AreEqual(granted, _analytics.Allowed);
+            CollectionAssert.AreEqual(new[] { false, granted }, _analytics.Choices);
+        }
+
+        [Test]
+        public void AnalyticsChoicePending_DoesNotInitializeOrAuthenticate()
+        {
+            _credentials.Save(LoginMethod.Google, AuthCredentials.SocialAccountId);
+            var google = new FakeSocial(LoginMethod.Google, true, "unused");
+            _prompt.PendingAnalyticsConsent = new UniTaskCompletionSource<bool>();
+            var pending = Flow(google).RunAsync();
+            Assert.AreEqual(0, _auth.Calls);
+            Assert.AreEqual(0, google.Calls);
+            CollectionAssert.AreEqual(new[] { false }, _analytics.Choices);
+            _prompt.PendingAnalyticsConsent.TrySetResult(false);
+            pending.GetAwaiter().GetResult();
+            Assert.AreEqual(1, _auth.Calls);
+            Assert.IsFalse(_analytics.Allowed);
+        }
+
         private sealed class CancellingPrompt : ILoginPrompt
         {
+            public UniTask<bool> WaitForServiceConsentAsync() => UniTask.FromResult(true);
+            public UniTask<bool> WaitForAnalyticsConsentAsync() => UniTask.FromResult(false);
             public UniTask<LoginMethod> WaitForSignInAsync(IReadOnlyCollection<LoginMethod> available) => UniTask.FromCanceled<LoginMethod>();
             public UniTask WaitForRetryAsync() => UniTask.FromCanceled();
             public void ShowSigningIn() { }

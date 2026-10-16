@@ -4,15 +4,29 @@ using Game.Core;
 using Game.Core.Messages;
 using GameAnalyticsSDK;
 using UnityEngine;
-using VContainer.Unity;
 
 namespace Game.Boot
 {
-    public sealed class GameAnalyticsService : IGameplayAnalytics, IInitializable
+    public sealed class GameAnalyticsService : IGameplayAnalytics, IAnalyticsCollectionControl
     {
         private bool _ready;
 
-        public void Initialize()
+        public void SetCollectionAllowed(bool allowed)
+        {
+            _ready = false;
+#if !UNITY_EDITOR
+            if (!allowed)
+            {
+                // 이미 시작한 SDK의 이벤트 제출·로컬 캐시를 중지한다. SDK 전체 해제를 뜻하지 않는다.
+                if (GameAnalytics.Initialized) { TrySend(() => GameAnalytics.SetEnabledEventSubmission(false, false)); }
+                return;
+            }
+            Initialize();
+            if (GameAnalytics.Initialized) { TrySend(() => GameAnalytics.SetEnabledEventSubmission(true)); }
+#endif
+        }
+
+        private void Initialize()
         {
             // 에디터 플레이·테스트·샌드박스는 운영 통계에 넣지 않는다.
 #if !UNITY_EDITOR
