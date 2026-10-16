@@ -760,6 +760,21 @@ namespace Game.Tests
         }
 
         [UnityTest]
+        public IEnumerator ConsentRejectionPreservesProgressAndTransferDeclineStillAllowsPlay()
+        {
+            Assert.That(ServerConfig.UseServerAuth, Is.False, "동의 회귀는 실제 서버 인증을 호출하지 않는다");
+            yield return StartFromBoot(save => save.wallet.gold = 321, verifyConsentRejections: true);
+            var lobby = Object.FindAnyObjectByType<LobbyLifetimeScope>();
+            Assert.That(lobby.Container.Resolve<PlayerProfile>().Gold, Is.EqualTo(321));
+            var menu = lobby.Container.Resolve<IUiRegistry>().Get<LobbyMenuPopupView>();
+            menu.Open();
+            var terms = Field<Button>(menu, "_termsButton");
+            Assert.That(terms.interactable, Is.True);
+            Assert.That(terms.GetComponentInChildren<TMP_Text>(true).text, Does.Not.Contain("준비"));
+            yield return ClickGameButton(terms);
+        }
+
+        [UnityTest]
         public IEnumerator MenuDeletionClearsRootProfileAndReturnsToLoginSelection()
         {
             Assert.That(ServerConfig.UseServerAuth, Is.False, "이 삭제 회귀는 로컬 백엔드에서만 실행한다");
@@ -1185,7 +1200,7 @@ namespace Game.Tests
         }
 
         // seed가 없으면 튜토리얼을 마친 계정으로 시작한다. 튜토리얼 중인 새 계정은 로비 대신 1스테이지로 들어간다
-        private IEnumerator StartFromBoot(Action<LocalSave> seed = null, string expectedScene = "Lobby")
+        private IEnumerator StartFromBoot(Action<LocalSave> seed = null, string expectedScene = "Lobby", bool verifyConsentRejections = false)
         {
             _hadSpeedPreference = PlayerPrefs.HasKey("stage_speed");
             _speedPreference = PlayerPrefs.GetFloat("stage_speed");
@@ -1218,8 +1233,8 @@ namespace Game.Tests
             SceneManager.LoadSceneAsync("Boot");
             yield return WaitFor(() => SceneManager.GetActiveScene().name == "Boot");
             boot.Start();
-            // 실제 로그인 전 연령·약관 흐름을 거치고 선택 분석은 거절한다.
-            yield return AcceptServiceConditions();
+            // 실제 로그인 전 연령·약관 흐름을 거친다. 추가 회귀에서는 두 거절과 국외 이전 선택을 확인한다.
+            yield return AcceptServiceConditions(verifyConsentRejections);
             yield return WaitFor(() => SceneManager.GetActiveScene().name == "Loading" && LoginPanelShown());
             var login = Object.FindAnyObjectByType<LoginView>();
             yield return ClickGameButton(Field<Button>(login, "_guestButton"));
@@ -1230,18 +1245,51 @@ namespace Game.Tests
             yield return null;
         }
 
-        private static IEnumerator AcceptServiceConditions()
+        private static IEnumerator AcceptServiceConditions(bool verifyRejections = false)
         {
             yield return WaitFor(() => SceneManager.GetActiveScene().name == "Loading" && LoginPanelShown());
             var login = Object.FindAnyObjectByType<LoginView>();
             var confirm = Field<ConfirmPopupView>(login, "_confirm");
+            var root = Object.FindAnyObjectByType<RootLifetimeScope>();
+            if (verifyRejections)
+            {
+                yield return WaitFor(() => confirm.IsOpen && Field<TMP_Text>(confirm, "_title").text == "이용 연령 확인");
+                yield return ClickGameButton(Field<Button>(confirm, "_cancelButton"));
+                yield return RetryRejectedConditions(login, root);
+            }
             foreach (string title in new[] { "이용 연령 확인", "이용약관 전문", "개인정보처리방침", "이용약관 동의" })
             {
                 yield return WaitFor(() => confirm.IsOpen && Field<TMP_Text>(confirm, "_title").text == title, title);
-                yield return ClickGameButton(Field<Button>(confirm, "_confirmButton"));
+                if (verifyRejections && title == "이용약관 동의")
+                {
+                    yield return ClickGameButton(Field<Button>(confirm, "_cancelButton"));
+                    yield return RetryRejectedConditions(login, root);
+                    // 연령부터 다시 확인한 뒤에는 다음 반복에서 실제로 동의한다.
+                    foreach (string retryTitle in new[] { "이용 연령 확인", "이용약관 전문", "개인정보처리방침", "이용약관 동의" })
+                    {
+                        yield return WaitFor(() => confirm.IsOpen && Field<TMP_Text>(confirm, "_title").text == retryTitle, retryTitle);
+                        yield return ClickGameButton(Field<Button>(confirm, "_confirmButton"));
+                    }
+                }
+                else { yield return ClickGameButton(Field<Button>(confirm, "_confirmButton")); }
             }
             yield return WaitFor(() => confirm.IsOpen && Field<TMP_Text>(confirm, "_title").text == "게임 이용 분석 (선택)");
+            if (verifyRejections)
+            {
+                yield return ClickGameButton(Field<Button>(confirm, "_confirmButton"));
+                yield return WaitFor(() => confirm.IsOpen && Field<TMP_Text>(confirm, "_title").text == "분석 정보 국외 이전 (선택)");
+                Assert.That(root.Container.Resolve<IAuthCredentialStore>().HasCredential, Is.False);
+            }
             yield return ClickGameButton(Field<Button>(confirm, "_cancelButton"));
+        }
+
+        private static IEnumerator RetryRejectedConditions(LoginView login, RootLifetimeScope root)
+        {
+            var retry = Field<Button>(login, "_retryButton");
+            yield return WaitFor(() => retry.gameObject.activeInHierarchy);
+            Assert.That(root.Container.Resolve<IAuthCredentialStore>().HasCredential, Is.False);
+            Assert.That(root.Container.Resolve<PlayerProfile>().IsLoaded, Is.False);
+            yield return ClickGameButton(retry);
         }
 
         private static bool LoginPanelShown()

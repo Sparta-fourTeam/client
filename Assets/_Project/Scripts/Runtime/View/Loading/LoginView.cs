@@ -98,8 +98,8 @@ namespace Game.View
             if (!await ShowConsentAsync(new ConfirmRequest
             {
                 Title = "게임 이용 분석 (선택)",
-                Message = "분석용 식별자·기기/앱/세션 정보와\n전투 결과·시간·피해량·카드 선택을 분석해\n이용 현황과 밸런스를 개선해요.\n처리 수탁자: GameAnalytics",
-                Warning = "보관: 원시 기록 1개월, 분석 보관 1년,\n유지율 확인 기록 18개월\n동의하지 않아도 게임을 이용할 수 있어요.",
+                Message = "분석용 식별자·기기/앱/세션·국가 정보와\n전투 결과·도달 웨이브·시간·처치 수,\n스킬 피해량·카드 선택을 분석해\n이용 현황과 밸런스를 개선해요.\n처리 수탁자: GameAnalytics",
+                Warning = "보관: 원시 기록 1개월, 분석 보관 1년,\n유지율 확인 기록 18개월\n동의하지 않아도 게임을 이용할 수 있어요.\nUnity 진단은 이 선택과 별개예요.",
                 ConfirmLabel = "분석에 동의",
                 CancelLabel = "동의하지 않음",
             })) { return false; }
