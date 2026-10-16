@@ -305,7 +305,7 @@ class PlayReleaseNameTests(unittest.TestCase):
     def test_artifact_from_another_release_pr_cannot_publish(self):
         result, output = self.run_artifact_preflight(expected_pr=456)
         self.assertNotEqual(result.returncode, 0)
-        self.assertIn('Artifact tag/PR/merge provenance mismatch', result.stderr)
+        self.assertIn('Artifact tag/source provenance mismatch', result.stderr)
         self.assertEqual(output, '')
 
 
