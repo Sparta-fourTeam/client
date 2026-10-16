@@ -18,11 +18,13 @@ namespace Game.Core
         private readonly ILoginPrompt _prompt;
         private readonly IReadOnlyList<ISocialSignIn> _social;
         private readonly IAnalyticsCollectionControl _analytics;
+        private readonly ILoginConsentStore _consents;
 
         public LoginFlow(IAuthApi auth, IPlayerApi player, PlayerProfile profile, IAuthCredentialStore credentials, ILoginPrompt prompt,
-            IReadOnlyList<ISocialSignIn> social, IAnalyticsCollectionControl analytics = null)
+            IReadOnlyList<ISocialSignIn> social, IAnalyticsCollectionControl analytics = null, ILoginConsentStore consents = null)
         {
             _analytics = analytics;
+            _consents = consents;
             _auth = auth;
             _player = player;
             _profile = profile;
@@ -37,10 +39,15 @@ namespace Game.Core
         {
             // 이전 세션의 분석 이벤트가 새로운 이용 조건 확인 중에 전송되지 않게 한다.
             _analytics?.SetCollectionAllowed(false);
-            // 최초 로그인과 저장된 계정의 자동 로그인 모두 인증 요청 전에 확인한다.
-            if (!await _prompt.WaitForServiceConsentAsync()) { throw new OperationCanceledException(); }
-
-            bool analyticsAllowed = _analytics != null && await _prompt.WaitForAnalyticsConsentAsync();
+            // 저장된 선택이 없으면 선택 분석 안내와 약관을 확인한다. 외부 페이지를 자동으로 열지 않는다.
+            LoginConsent consent;
+            if (_consents == null || !_consents.TryLoad(out consent))
+            {
+                consent = await _prompt.WaitForConsentAsync();
+                if (!consent.TermsAccepted) { throw new OperationCanceledException(); }
+                _consents?.Save(consent);
+            }
+            bool analyticsAllowed = consent.AllowsAnalytics;
 
             bool prompted = false;
             // 저장된 방식을 지금 쓸 수 없으면(예: 외부 계정 SDK가 빠진 빌드) 로그인창부터 다시 띄운다
@@ -89,7 +96,7 @@ namespace Game.Core
                 _credentials.Save(method.Value, saveId);
             }
 
-            // 분석은 연령·약관·별도 선택 동의와 로그인 성공 후에 시작한다.
+            // 분석은 약관·별도 선택 동의와 로그인 성공 후에 시작한다.
             _analytics?.SetCollectionAllowed(analyticsAllowed);
             _prompt.Hide();
             return prompted;
