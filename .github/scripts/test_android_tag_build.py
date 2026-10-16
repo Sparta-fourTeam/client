@@ -43,6 +43,10 @@ class DirectTagTests(unittest.TestCase):
         f = self.fx
         if endpoint == 'git/ref/tags/v1.0.4':
             return f.fake_api(endpoint)
+        if endpoint == 'git/ref/heads/dev':
+            return {'object': {'sha': f.source}}
+        if endpoint == 'actions/runs/41':
+            return self.run
         if endpoint == 'git/ref/heads/main':
             return {'object': {'sha': f.base}}
         if endpoint.startswith('actions/workflows/'):
@@ -109,9 +113,15 @@ class DirectTagTests(unittest.TestCase):
         self.rules, self.checks = [], []
         self.statuses = [dict(id=1, context='Classic CI', state='success')]
         with patch.dict(self.branch['protection'], required_status_checks={'contexts': ['Classic CI']}):
+            with self.assertRaisesRegex(ValueError, 'App bindings unavailable'):
+                module.required_ci(self.fx.source)
+        self.checks = [dict(id=1, name='Classic CI', head_sha=self.fx.source, app={'id': 7},
+                            status='completed', conclusion='success')]
+        with patch.dict(self.branch['protection'], required_status_checks={
+                'contexts': ['Classic CI'], 'checks': [{'context': 'Classic CI', 'app_id': 7}]}):
             module.required_ci(self.fx.source)
-            self.statuses.append(dict(id=2, context='Classic CI', state='pending'))
-            with self.assertRaises(ValueError):
+            self.checks[0]['app']['id'] = 99
+            with self.assertRaisesRegex(ValueError, 'Required CI'):
                 module.required_ci(self.fx.source)
         with patch.dict(self.branch, protection={}):
             with self.assertRaises(ValueError):
@@ -169,6 +179,38 @@ class DirectTagTests(unittest.TestCase):
         self.extra_runs = [dict(self.run, id=42, run_number=13, head_branch='v1.0.5')]
         with self.assertRaisesRegex(ValueError, 'Newer release'):
             module.request_for_tag(self.fx.tag_event, self.env)
+
+    def test_manual_build_only_pins_latest_dev_and_cannot_request_publish_or_recovery(self):
+        env = dict(self.env, GITHUB_EVENT_NAME='workflow_dispatch', GITHUB_REF='refs/heads/dev', BUILD_SHA=self.fx.source)
+        self.run.update(event='workflow_dispatch', head_branch='dev')
+        event = dict(repository={'full_name': module.tag.REPOSITORY}, inputs={
+            'build_only': 'true', 'release_version': '1.0.4', 'publish_to_internal': 'false',
+            'recover_original_code2': 'false'})
+        request = module.manual_build_request(event, env)
+        self.assertEqual(request['source_commit'], self.fx.source)
+        self.assertNotIn('tag', request)
+        self.assertNotIn('merge_commit_sha', request)
+        self.assertEqual(module.prepare_release(request, event, env), request)
+        self.fx.git('switch', '--detach', '-q', self.fx.source)
+        self.assertEqual(module.verify_release(request, env, event), request)
+        for flag in ['publish_to_internal', 'recover_original_code2']:
+            with self.subTest(flag=flag), patch.dict(event['inputs'], **{flag: 'true'}), self.assertRaises(ValueError):
+                module.manual_build_request(event, env)
+        for changed in [dict(GITHUB_REF='refs/heads/main'), dict(GITHUB_RUN_ATTEMPT='2'),
+                        dict(GITHUB_SHA=self.fx.base), dict(GITHUB_EVENT_NAME='push')]:
+            with self.subTest(changed=changed), self.assertRaises(ValueError):
+                module.manual_build_request(event, dict(env, **changed))
+        version_spec = importlib.util.spec_from_file_location('manual_version', SCRIPT.with_name('android-release-version.py'))
+        version = importlib.util.module_from_spec(version_spec)
+        version_spec.loader.exec_module(version)
+        ledger = json.loads(self.fx.policy.read_text())
+        self.run['run_number'] = 13
+        env['GITHUB_RUN_NUMBER'] = '13'
+        self.assertEqual(version.automatic_release_number(ledger, '1.0.4', ledger, self.run,
+            [{'workflow_runs': [self.run]}], env, event=event, release=request), ('1.0.4', 5))
+        with self.assertRaises(ValueError):
+            version.automatic_release_number(ledger, '1.0.4', ledger, self.run,
+                [{'workflow_runs': [self.run]}], dict(env, GITHUB_RUN_ATTEMPT='2'), event=event, release=request)
 
     def test_real_version_cli_keeps_same_code_after_safe_retry_and_rejects_started_build(self):
         f = self.fx

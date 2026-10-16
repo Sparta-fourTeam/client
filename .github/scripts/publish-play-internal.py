@@ -91,6 +91,7 @@ def publish(play, bundle, evidence, record, authorize):
 def main():
     evidence = json.loads(Path('verified/artifact-manifest.json').read_text())
     release = json.loads(Path('release-context/tag-release.json').read_text())
+    require(release.get('source_mode') != 'manual-build-only-v1', 'Build-only artifacts cannot be published by this action')
     require(all(evidence.get(k) == v for k, v in release.items()), 'Artifact tag/source provenance mismatch')
     require(evidence['source_commit'] == os.environ['BUILD_SHA'] and
             evidence['version_code'] == int(os.environ['ANDROID_VERSION_CODE']) and
