@@ -1,4 +1,5 @@
 using System.Linq;
+using Cysharp.Threading.Tasks;
 using Game.Core;
 using UnityEngine;
 using VContainer;
@@ -47,18 +48,46 @@ namespace Game.View
         private IGrowthCatalog _catalog;
         private PlayerProfile _profile;
         private GameDataStore _data;
+        private string _shopDayKey;
+        private IPlayerApi _player;
+        private bool _refreshingShopDay;
+        private float _nextShopDayCheck;
 
         [Inject]
-        public void Construct(IGrowthCatalog catalog, PlayerProfile profile, GameDataStore data)
+        public void Construct(IGrowthCatalog catalog, PlayerProfile profile, GameDataStore data, IPlayerApi player)
         {
             _catalog = catalog;
             _profile = profile;
             _data = data;
+            _player = player;
+            _shopDayKey = ShopRules.DayKey(System.DateTime.Now);
             _profile.Changed += Refresh;
             Refresh(profile);
         }
 
         protected override void InitializeView() => _badge.Initialize();
+
+        private void Update()
+        {
+            if (_kind != LobbyNotificationKind.Shop || _profile == null || !_profile.IsLoaded
+                || _refreshingShopDay || Time.unscaledTime < _nextShopDayCheck) { return; }
+            _nextShopDayCheck = Time.unscaledTime + 1f;
+            string dayKey = ShopRules.DayKey(System.DateTime.Now);
+            if (dayKey != _shopDayKey) { RefreshShopDayAsync(dayKey).Forget(Debug.LogException); }
+        }
+
+        // 하단 알림은 상점 화면이 꺼져 있어도 날짜 변경 후 구매·다시 뽑기 기록을 갱신한다
+        private async UniTask RefreshShopDayAsync(string dayKey)
+        {
+            _refreshingShopDay = true;
+            try
+            {
+                _profile.Apply(await _player.GetMe());
+                _shopDayKey = dayKey;
+            }
+            catch (ApiException) { }
+            finally { _refreshingShopDay = false; }
+        }
 
         private void Refresh(PlayerProfile profile)
         {

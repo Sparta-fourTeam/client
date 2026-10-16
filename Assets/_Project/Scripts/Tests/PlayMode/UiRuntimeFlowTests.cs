@@ -836,6 +836,28 @@ namespace Game.Tests
                 yield return null;
             }
 
+            // 상점을 닫아 둔 채 날짜가 바뀌면, 어제의 구매·다시 뽑기 기록을 다시 받아 하단 알림도 켠다
+            var notification = Object.FindObjectsByType<LobbyNotificationView>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+                .Single(view => view.isActiveAndEnabled && Field<LobbyNotificationKind>(view, "_kind") == LobbyNotificationKind.Shop);
+            var badge = Field<NotificationBadgeView>(notification, "_badge");
+            var yesterday = _store.Load();
+            yesterday.shop.dayKey = ShopRules.DayKey(DateTime.Now.AddDays(-1));
+            yesterday.shop.state = new ShopState
+            {
+                adUsed = 1,
+                purchased = Enumerable.Range(0, lobby.Container.Resolve<GameDataStore>().Shop.Slots).ToList(),
+            };
+            _store.Flush(yesterday);
+            var stale = profile.Snapshot();
+            stale.shop = yesterday.shop.state;
+            profile.Apply(stale);
+            Assert.That(badge.IsVisible, Is.False);
+            typeof(LobbyNotificationView).GetField("_shopDayKey", BindingFlags.Instance | BindingFlags.NonPublic)
+                .SetValue(notification, yesterday.shop.dayKey);
+            yield return WaitFor(() => badge.IsVisible && profile.Shop.purchased.Count == 0);
+            Assert.That(profile.Shop.adUsed, Is.Zero);
+            Assert.That(daily.isActiveAndEnabled, Is.False);
+
             Object.Destroy(daily.gameObject);
             yield return null;
             profile.Apply(new LocalPlayerApi(_store).GetMe().GetAwaiter().GetResult());
