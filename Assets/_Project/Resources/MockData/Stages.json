@@ -42,7 +42,7 @@
   "Id": 2,
   "EliteRouletteMinCards": 2,
   "EliteRouletteMaxCards": 4,
-  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 6 } ],
+  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 23 }, { "Stat": "Damage", "Percent": 6 } ],
   "RatingRewards": [
     200,
     350,
@@ -82,7 +82,7 @@
   "Id": 3,
   "EliteRouletteMinCards": 1,
   "EliteRouletteMaxCards": 5,
-  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 17 }, { "Stat": "Damage", "Percent": 6 }, { "Stat": "Speed", "Percent": 25 } ],
+  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 46 }, { "Stat": "Damage", "Percent": 11 }, { "Stat": "Speed", "Percent": 25 } ],
   "RatingRewards": [
     250,
     400,
@@ -122,7 +122,7 @@
   "Id": 4,
   "EliteRouletteMinCards": 1,
   "EliteRouletteMaxCards": 5,
-  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 39 }, { "Stat": "Damage", "Percent": 17 }, { "Stat": "Speed", "Percent": 50 } ],
+  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 69 }, { "Stat": "Damage", "Percent": 17 }, { "Stat": "Speed", "Percent": 50 } ],
   "RatingRewards": [
     300,
     450,
@@ -162,7 +162,7 @@
   "Id": 5,
   "EliteRouletteMinCards": 1,
   "EliteRouletteMaxCards": 5,
-  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 91 }, { "Stat": "Damage", "Percent": 31 }, { "Stat": "Speed", "Percent": 110 } ],
+  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 92 }, { "Stat": "Damage", "Percent": 23 }, { "Stat": "Speed", "Percent": 110 } ],
   "RatingRewards": [
     350,
     500,
@@ -202,7 +202,7 @@
   "Id": 6,
   "EliteRouletteMinCards": 1,
   "EliteRouletteMaxCards": 5,
-  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 61 }, { "Stat": "Damage", "Percent": 41 } ],
+  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 116 }, { "Stat": "Damage", "Percent": 29 } ],
   "RatingRewards": [
     80,
     195,
@@ -241,7 +241,7 @@
   "Id": 7,
   "EliteRouletteMinCards": 1,
   "EliteRouletteMaxCards": 5,
-  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 80 }, { "Stat": "Damage", "Percent": 52 } ],
+  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 140 }, { "Stat": "Damage", "Percent": 36 } ],
   "RatingRewards": [
     85,
     210,
@@ -280,7 +280,7 @@
   "Id": 8,
   "EliteRouletteMinCards": 1,
   "EliteRouletteMaxCards": 5,
-  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 98 }, { "Stat": "Damage", "Percent": 62 } ],
+  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 164 }, { "Stat": "Damage", "Percent": 43 } ],
   "RatingRewards": [
     90,
     225,
@@ -319,7 +319,7 @@
   "Id": 9,
   "EliteRouletteMinCards": 1,
   "EliteRouletteMaxCards": 5,
-  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 114 }, { "Stat": "Damage", "Percent": 72 } ],
+  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 188 }, { "Stat": "Damage", "Percent": 50 } ],
   "RatingRewards": [
     95,
     240,
@@ -358,7 +358,7 @@
   "Id": 10,
   "EliteRouletteMinCards": 1,
   "EliteRouletteMaxCards": 5,
-  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 130 }, { "Stat": "Damage", "Percent": 80 } ],
+  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 213 }, { "Stat": "Damage", "Percent": 58 } ],
   "RatingRewards": [
     100,
     255,
@@ -397,7 +397,7 @@
   "Id": 11,
   "EliteRouletteMinCards": 1,
   "EliteRouletteMaxCards": 5,
-  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 145 }, { "Stat": "Damage", "Percent": 89 } ],
+  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 238 }, { "Stat": "Damage", "Percent": 66 } ],
   "RatingRewards": [
     110,
     270,
@@ -436,7 +436,7 @@
   "Id": 12,
   "EliteRouletteMinCards": 1,
   "EliteRouletteMaxCards": 5,
-  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 160 }, { "Stat": "Damage", "Percent": 98 } ],
+  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 263 }, { "Stat": "Damage", "Percent": 74 } ],
   "RatingRewards": [
     115,
     285,
@@ -475,7 +475,7 @@
   "Id": 13,
   "EliteRouletteMinCards": 1,
   "EliteRouletteMaxCards": 5,
-  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 175 }, { "Stat": "Damage", "Percent": 107 } ],
+  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 288 }, { "Stat": "Damage", "Percent": 83 } ],
   "RatingRewards": [
     120,
     300,
@@ -514,7 +514,7 @@
   "Id": 14,
   "EliteRouletteMinCards": 1,
   "EliteRouletteMaxCards": 5,
-  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 194 }, { "Stat": "Damage", "Percent": 116 } ],
+  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 314 }, { "Stat": "Damage", "Percent": 92 } ],
   "RatingRewards": [
     125,
     315,
@@ -553,7 +553,7 @@
   "Id": 15,
   "EliteRouletteMinCards": 1,
   "EliteRouletteMaxCards": 5,
-  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 211 }, { "Stat": "Damage", "Percent": 123 } ],
+  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 340 }, { "Stat": "Damage", "Percent": 101 } ],
   "RatingRewards": [
     130,
     330,
@@ -592,7 +592,7 @@
   "Id": 16,
   "EliteRouletteMinCards": 1,
   "EliteRouletteMaxCards": 5,
-  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 228 }, { "Stat": "Damage", "Percent": 135 } ],
+  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 366 }, { "Stat": "Damage", "Percent": 110 } ],
   "RatingRewards": [
     140,
     345,
@@ -631,7 +631,7 @@
   "Id": 17,
   "EliteRouletteMinCards": 1,
   "EliteRouletteMaxCards": 5,
-  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 244 }, { "Stat": "Damage", "Percent": 146 } ],
+  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 392 }, { "Stat": "Damage", "Percent": 120 } ],
   "RatingRewards": [
     145,
     360,
@@ -670,7 +670,7 @@
   "Id": 18,
   "EliteRouletteMinCards": 1,
   "EliteRouletteMaxCards": 5,
-  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 261 }, { "Stat": "Damage", "Percent": 157 } ],
+  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 419 }, { "Stat": "Damage", "Percent": 130 } ],
   "RatingRewards": [
     150,
     375,
@@ -709,7 +709,7 @@
   "Id": 19,
   "EliteRouletteMinCards": 1,
   "EliteRouletteMaxCards": 5,
-  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 276 }, { "Stat": "Damage", "Percent": 168 } ],
+  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 446 }, { "Stat": "Damage", "Percent": 140 } ],
   "RatingRewards": [
     155,
     390,
@@ -748,7 +748,7 @@
   "Id": 20,
   "EliteRouletteMinCards": 1,
   "EliteRouletteMaxCards": 5,
-  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 290 }, { "Stat": "Damage", "Percent": 179 } ],
+  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 473 }, { "Stat": "Damage", "Percent": 151 } ],
   "RatingRewards": [
     160,
     405,
@@ -787,7 +787,7 @@
   "Id": 21,
   "EliteRouletteMinCards": 1,
   "EliteRouletteMaxCards": 5,
-  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 305 }, { "Stat": "Damage", "Percent": 189 } ],
+  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 500 }, { "Stat": "Damage", "Percent": 161 } ],
   "RatingRewards": [
     170,
     420,
@@ -826,7 +826,7 @@
   "Id": 22,
   "EliteRouletteMinCards": 1,
   "EliteRouletteMaxCards": 5,
-  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 320 }, { "Stat": "Damage", "Percent": 199 } ],
+  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 528 }, { "Stat": "Damage", "Percent": 172 } ],
   "RatingRewards": [
     175,
     435,
@@ -865,7 +865,7 @@
   "Id": 23,
   "EliteRouletteMinCards": 1,
   "EliteRouletteMaxCards": 5,
-  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 334 }, { "Stat": "Damage", "Percent": 209 } ],
+  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 556 }, { "Stat": "Damage", "Percent": 183 } ],
   "RatingRewards": [
     180,
     450,
@@ -904,7 +904,7 @@
   "Id": 24,
   "EliteRouletteMinCards": 1,
   "EliteRouletteMaxCards": 5,
-  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 348 }, { "Stat": "Damage", "Percent": 219 } ],
+  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 584 }, { "Stat": "Damage", "Percent": 195 } ],
   "RatingRewards": [
     185,
     465,
@@ -943,7 +943,7 @@
   "Id": 25,
   "EliteRouletteMinCards": 1,
   "EliteRouletteMaxCards": 5,
-  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 362 }, { "Stat": "Damage", "Percent": 228 } ],
+  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 612 }, { "Stat": "Damage", "Percent": 207 } ],
   "RatingRewards": [
     190,
     480,
@@ -982,7 +982,7 @@
   "Id": 26,
   "EliteRouletteMinCards": 1,
   "EliteRouletteMaxCards": 5,
-  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 375 }, { "Stat": "Damage", "Percent": 238 } ],
+  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 641 }, { "Stat": "Damage", "Percent": 220 } ],
   "RatingRewards": [
     200,
     495,
@@ -1021,7 +1021,7 @@
   "Id": 27,
   "EliteRouletteMinCards": 1,
   "EliteRouletteMaxCards": 5,
-  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 393 }, { "Stat": "Damage", "Percent": 246 } ],
+  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 670 }, { "Stat": "Damage", "Percent": 232 } ],
   "RatingRewards": [
     205,
     510,
@@ -1060,7 +1060,7 @@
   "Id": 28,
   "EliteRouletteMinCards": 1,
   "EliteRouletteMaxCards": 5,
-  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 408 }, { "Stat": "Damage", "Percent": 255 } ],
+  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 699 }, { "Stat": "Damage", "Percent": 245 } ],
   "RatingRewards": [
     210,
     525,
@@ -1099,7 +1099,7 @@
   "Id": 29,
   "EliteRouletteMinCards": 1,
   "EliteRouletteMaxCards": 5,
-  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 424 }, { "Stat": "Damage", "Percent": 264 } ],
+  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 728 }, { "Stat": "Damage", "Percent": 258 } ],
   "RatingRewards": [
     215,
     540,
@@ -1138,7 +1138,7 @@
   "Id": 30,
   "EliteRouletteMinCards": 1,
   "EliteRouletteMaxCards": 5,
-  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 439 }, { "Stat": "Damage", "Percent": 273 } ],
+  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 758 }, { "Stat": "Damage", "Percent": 272 } ],
   "RatingRewards": [
     220,
     555,
@@ -1177,7 +1177,7 @@
   "Id": 31,
   "EliteRouletteMinCards": 1,
   "EliteRouletteMaxCards": 5,
-  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 469 }, { "Stat": "Damage", "Percent": 285 } ],
+  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 788 }, { "Stat": "Damage", "Percent": 286 } ],
   "RatingRewards": [
     230,
     570,
@@ -1216,7 +1216,7 @@
   "Id": 32,
   "EliteRouletteMinCards": 1,
   "EliteRouletteMaxCards": 5,
-  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 498 }, { "Stat": "Damage", "Percent": 296 } ],
+  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 818 }, { "Stat": "Damage", "Percent": 300 } ],
   "RatingRewards": [
     235,
     585,
@@ -1255,7 +1255,7 @@
   "Id": 33,
   "EliteRouletteMinCards": 1,
   "EliteRouletteMaxCards": 5,
-  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 527 }, { "Stat": "Damage", "Percent": 307 } ],
+  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 848 }, { "Stat": "Damage", "Percent": 314 } ],
   "RatingRewards": [
     240,
     600,
@@ -1294,7 +1294,7 @@
   "Id": 34,
   "EliteRouletteMinCards": 1,
   "EliteRouletteMaxCards": 5,
-  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 554 }, { "Stat": "Damage", "Percent": 317 } ],
+  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 879 }, { "Stat": "Damage", "Percent": 329 } ],
   "RatingRewards": [
     245,
     615,
@@ -1333,7 +1333,7 @@
   "Id": 35,
   "EliteRouletteMinCards": 1,
   "EliteRouletteMaxCards": 5,
-  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 581 }, { "Stat": "Damage", "Percent": 328 } ],
+  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 910 }, { "Stat": "Damage", "Percent": 344 } ],
   "RatingRewards": [
     250,
     630,
@@ -1372,7 +1372,7 @@
   "Id": 36,
   "EliteRouletteMinCards": 1,
   "EliteRouletteMaxCards": 5,
-  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 606 }, { "Stat": "Damage", "Percent": 339 } ],
+  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 941 }, { "Stat": "Damage", "Percent": 359 } ],
   "RatingRewards": [
     260,
     645,
@@ -1411,7 +1411,7 @@
   "Id": 37,
   "EliteRouletteMinCards": 1,
   "EliteRouletteMaxCards": 5,
-  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 631 }, { "Stat": "Damage", "Percent": 349 } ],
+  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 972 }, { "Stat": "Damage", "Percent": 375 } ],
   "RatingRewards": [
     265,
     660,
@@ -1450,7 +1450,7 @@
   "Id": 38,
   "EliteRouletteMinCards": 1,
   "EliteRouletteMaxCards": 5,
-  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 657 }, { "Stat": "Damage", "Percent": 359 } ],
+  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 1004 }, { "Stat": "Damage", "Percent": 391 } ],
   "RatingRewards": [
     270,
     675,
@@ -1489,7 +1489,7 @@
   "Id": 39,
   "EliteRouletteMinCards": 1,
   "EliteRouletteMaxCards": 5,
-  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 680 }, { "Stat": "Damage", "Percent": 369 } ],
+  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 1036 }, { "Stat": "Damage", "Percent": 407 } ],
   "RatingRewards": [
     275,
     690,
@@ -1528,7 +1528,7 @@
   "Id": 40,
   "EliteRouletteMinCards": 1,
   "EliteRouletteMaxCards": 5,
-  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 704 }, { "Stat": "Damage", "Percent": 391 } ],
+  "MonsterBonuses": [ { "Stat": "Hp", "Percent": 1068 }, { "Stat": "Damage", "Percent": 423 } ],
   "RatingRewards": [
     280,
     705,
