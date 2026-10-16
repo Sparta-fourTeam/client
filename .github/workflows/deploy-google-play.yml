@@ -332,15 +332,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: python3 .github/scripts/android-release-version.py --automatic --release-request release-context/tag-release.json --expected-code "$ANDROID_VERSION_CODE"
 
-      - name: Check existing Play upload credential
-        env:
-          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
-        run: |
-          if [ -z "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" ]; then
-            echo 'Existing GOOGLE_PLAY_SERVICE_ACCOUNT_JSON is not configured. No upload attempted.'
-            exit 1
-          fi
-
       - name: Download this run's verified AAB
         uses: actions/download-artifact@v4
         with:
@@ -375,6 +366,12 @@ jobs:
           with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
               output.write('release_name=' + release_name + '\n')
           PY
+
+      - name: Prepare receipt and request clean Console confirmation
+        env:
+          RELEASE_VERSION: ${{ needs.integrate.outputs.version_name }}
+          ANDROID_VERSION_CODE: ${{ needs.build.outputs.version_code }}
+        run: python3 .github/scripts/publish-play-internal.py --prepare
 
       - name: Install existing Play API dependencies
         run: python3 -m pip install google-auth==2.40.3 requests==2.32.4
