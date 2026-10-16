@@ -21,6 +21,7 @@ namespace Game.View
         private GameDataStore _data;
         private IShopApi _api;
         private RewardPopupView _rewardPopup;
+        private DetailPopupView _detail;
         private ConfirmPopupView _confirm;
         private bool _busy;
 
@@ -28,6 +29,7 @@ namespace Game.View
         {
             _rewardPopup = registry.Get<RewardPopupView>();
             _confirm = registry.Get<ConfirmPopupView>();
+            _detail = registry.Get<DetailPopupView>();
         }
 
         [Inject]
@@ -57,7 +59,8 @@ namespace Game.View
 
                 int index = i;
                 var pack = packs[i];
-                _items[i].BindCash("잼", _gemIcon, pack.Gems, PriceLabel(pack), pack.BonusPercent, !_busy, () => BuyAsync(index).Forget(Debug.LogException));
+                _items[i].BindCash("잼", _gemIcon, pack.Gems, PriceLabel(pack), pack.BonusPercent, !_busy, () => BuyAsync(index).Forget(Debug.LogException),
+                    () => _detail?.Show(_gemIcon, "잼", $"x{pack.Gems:N0}", ItemInfo.DescriptionOf(RewardRows.GemId)));
             }
         }
 

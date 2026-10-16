@@ -20,6 +20,7 @@ namespace Game.View
         private GameDataStore _data;
         private IShopApi _api;
         private RewardPopupView _rewardPopup;
+        private DetailPopupView _detail;
         private ConfirmPopupView _confirm;
         private bool _busy;
 
@@ -27,6 +28,7 @@ namespace Game.View
         {
             _rewardPopup = registry.Get<RewardPopupView>();
             _confirm = registry.Get<ConfirmPopupView>();
+            _detail = registry.Get<DetailPopupView>();
         }
 
         [Inject]
@@ -55,7 +57,8 @@ namespace Game.View
                 int index = i;
                 var pack = config.GoldPacks[i];
                 _items[i].Bind("코인", _itemIcons != null ? _itemIcons.Coin : null, pack.Gold, ShopRules.GoldPackPrice(config, pack),
-                    pack.DiscountPercent, false, !_busy, () => BuyAsync(index).Forget(Debug.LogException));
+                    pack.DiscountPercent, false, !_busy, () => BuyAsync(index).Forget(Debug.LogException),
+                    () => _detail?.Show(_itemIcons != null ? _itemIcons.Coin : null, "코인", $"x{pack.Gold:N0}", ItemInfo.DescriptionOf(RewardRows.CoinId)));
             }
         }
 

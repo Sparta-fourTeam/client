@@ -33,6 +33,7 @@ namespace Game.View
         private IShopApi _api;
         private IPlayerApi _player;
         private RewardPopupView _rewardPopup;
+        private DetailPopupView _detail;
         private ConfirmPopupView _confirm;
         private List<ShopOffer> _offers;
         private string _rolledKey;
@@ -45,6 +46,7 @@ namespace Game.View
         {
             _rewardPopup = registry.Get<RewardPopupView>();
             _confirm = registry.Get<ConfirmPopupView>();
+            _detail = registry.Get<DetailPopupView>();
         }
 
         [Inject]
@@ -241,7 +243,8 @@ namespace Game.View
                 var offer = _offers[i];
                 bool canBuy = !_busy;
                 _items[i].Bind(NameOf(offer.Reward), IconOf(offer.Reward), offer.Count, offer.Price, offer.DiscountPercent,
-                    _profile.IsShopSlotSold(i), canBuy, () => BuyAsync(slot).Forget(Debug.LogException));
+                    _profile.IsShopSlotSold(i), canBuy, () => BuyAsync(slot).Forget(Debug.LogException),
+                    () => _detail?.Show(IconOf(offer.Reward), NameOf(offer.Reward), $"x{offer.Count:N0}", ItemInfo.DescriptionOf(offer.Reward)));
             }
 
             var config = _data.Shop;

@@ -47,8 +47,8 @@ MonoBehaviour:
     SiblingIndex: 1
   - Id: MissionScreen
     Prefab: {fileID: 672039837340624520, guid: 412c72eb7c9d6d44dbac4ba5448a874b, type: 3}
-    ParentPath: NavUI/Screens
-    SiblingIndex: 2
+    ParentPath: NavUI/TopScreens
+    SiblingIndex: 0
   - Id: InventoryScreen
     Prefab: {fileID: 5206714037083988636, guid: 8753b644e98325e4d8bf855a31ce528f, type: 3}
     ParentPath: NavUI/Screens
