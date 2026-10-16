@@ -9,7 +9,7 @@ namespace Game.View
         {
             switch (itemId)
             {
-                case RewardRows.CoinId: return "코인";
+                case RewardRows.CoinId: return "잉크";
                 case RewardRows.GemId: return "잼";
                 case RewardRows.ExpId: return "경험치";
                 case ItemIds.RandomSkillMaterial: return "랜덤 마법북";

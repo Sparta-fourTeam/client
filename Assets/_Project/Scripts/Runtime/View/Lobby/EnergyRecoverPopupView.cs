@@ -41,8 +41,8 @@ namespace Game.View
 
         public void Open()
         {
-            _adTitle.text = $"에너지 x{_profile.EnergyConfig.AdRecoverAmount}";
-            _purchaseTitle.text = $"에너지 x{_profile.EnergyConfig.PurchaseRecoverAmount}";
+            _adTitle.text = $"잉크펜 x{_profile.EnergyConfig.AdRecoverAmount}";
+            _purchaseTitle.text = $"잉크펜 x{_profile.EnergyConfig.PurchaseRecoverAmount}";
             PopupPanel.Set(_panel, _transition, true);
         }
 

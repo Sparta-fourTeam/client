@@ -127,7 +127,7 @@ namespace Game.View
             int max = ad ? config.AdRerollsPerDay : config.GoldRerollsPerDay;
             string question = ad
                 ? "광고를 보고 상점을 초기화할까요?"
-                : $"{config.GoldRerollCost:N0} 골드를 사용해 상점을 초기화할까요?";
+                : $"{config.GoldRerollCost:N0} 잉크를 사용해 상점을 초기화할까요?";
 
             // 골드가 모자라도 누를 수 있다. 서버가 거절하면 그때 모자라다고 알려 준다
             _busy = true;
@@ -149,7 +149,7 @@ namespace Game.View
             string error = await RunAsync(() => _api.Reroll(kind, Guid.NewGuid().ToString("N")));
             if (error == "INSUFFICIENT_GOLD" && _confirm != null)
             {
-                await _confirm.ShowAsync(new ConfirmRequest { Title = "일일상점 초기화", Message = "골드가 부족해요." });
+                await _confirm.ShowAsync(new ConfirmRequest { Title = "일일상점 초기화", Message = "잉크가 부족해요." });
             }
         }
 
@@ -213,7 +213,7 @@ namespace Game.View
 
         private string NameOf(string reward) => reward switch
         {
-            ShopRules.CoinReward => "코인",
+            ShopRules.CoinReward => "잉크",
             ShopRules.EnergyReward => "잉크펜",
             _ => ItemInfo.NameOf(reward, _data),
         };
