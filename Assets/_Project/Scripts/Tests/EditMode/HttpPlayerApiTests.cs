@@ -60,5 +60,21 @@ namespace Game.Tests
 
             Assert.AreEqual("HTTP_401", ex.Code);
         }
+
+        [Test(Description = "배포된 PR58 user/me의 문자열 아이템과 gem을 역직렬화해 반영하고 로컬 저장 잔액은 수정하지 않는다")]
+        public void GetMe_Pr58Response_AppliesGemAndStringItems()
+        {
+            var before = File.ReadAllText(_filePath);
+            _transport.Response = new HttpResponseData(200, "{\"gold\":50,\"gem\":3,\"exp\":0,\"energyStored\":20,\"energyUpdatedAt\":\"2026-10-16T20:00:00\",\"stageProgress\":[],\"upgrades\":[],\"items\":[{\"itemId\":\"book.arrow\",\"quantity\":2}],\"codex\":[],\"tutorials\":[]}");
+
+            var snapshot = _api.GetMe().GetAwaiter().GetResult();
+
+            Assert.AreEqual(3, snapshot.gems);
+            Assert.AreEqual(1, snapshot.items.Count);
+            Assert.AreEqual("book.arrow", snapshot.items[0].itemId);
+            Assert.AreEqual(2, snapshot.items[0].quantity);
+            Assert.AreEqual(before, File.ReadAllText(_filePath));
+            UnityEngine.TestTools.LogAssert.NoUnexpectedReceived();
+        }
     }
 }

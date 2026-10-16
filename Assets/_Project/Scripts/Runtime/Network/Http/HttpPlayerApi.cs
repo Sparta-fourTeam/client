@@ -6,7 +6,7 @@ namespace Game.Network
 {
     /// <summary>서버의 GET /api/user/me로 플레이어 상태를 받는다 (서버 PR #47).
     /// 서버에는 닉네임이 없어서, 아직 로컬 저장이 데이터를 맡는 동안은 로컬에 저장된 닉네임을 쓴다.
-    /// 서버 아이템·튜토리얼 ID와 클라이언트 ID의 대응이 정해지기 전까지 두 목록은 옮기지 않는다 (ServerUserMapper)</summary>
+    /// PR #58의 문자열 아이템 ID는 그대로 옮기고, 이전 숫자 아이템·튜토리얼 ID는 대응이 없어 옮기지 않는다.</summary>
     public sealed class HttpPlayerApi : IPlayerApi
     {
         private const string MePath = "api/user/me";
@@ -27,7 +27,7 @@ namespace Game.Network
             var local = await _local.GetMe();
             var snapshot = ServerUserMapper.ToSnapshot(data, local.nickname, local.playerId);
 
-            int unapplied = (data.items?.Count ?? 0) + (data.tutorials?.Count ?? 0);
+            int unapplied = (data.items?.Count ?? 0) - snapshot.items.Count + (data.tutorials?.Count ?? 0);
             if (!_warnedIds && unapplied > 0)
             {
                 _warnedIds = true;
