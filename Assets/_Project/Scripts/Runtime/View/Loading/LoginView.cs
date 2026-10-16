@@ -47,6 +47,99 @@ namespace Game.View
             _pending = null;
         }
 
+        // 생년월일·신분증을 수집하지 않는 이용자 자기확인이다. 매 로그인 흐름에서 확인하며
+        // 약관 동의를 개인정보 처리 동의로 간주하지 않는다. 동의 전에는 LoginFlow가 인증하지 않는다.
+        public async UniTask<bool> WaitForServiceConsentAsync()
+        {
+            while (true)
+            {
+                Show("서비스 이용 조건을 확인해 주세요.", methods: false, retry: false);
+                bool ageConfirmed = await ShowConsentAsync(new ConfirmRequest
+                {
+                    Title = "이용 연령 확인",
+                    Message = "끄적끄적 디펜스는 만 14세 이상 이용할 수 있어요.\n만 14세 이상인가요?",
+                    ConfirmLabel = "만 14세 이상",
+                    CancelLabel = "취소",
+                });
+                if (!ageConfirmed)
+                {
+                    await WaitForConditionsRetryAsync("만 14세 이상 확인과 약관 동의 전에는\n로그인을 진행하지 않아요.");
+                    continue;
+                }
+
+                // 게시·승인 검증 후 URL을 넣기 전까지 동의를 받거나 인증을 진행하지 않는다.
+                if (!IsDocumentAvailable(ExternalLinks.TermsOfUse) || !IsDocumentAvailable(ExternalLinks.PrivacyPolicy))
+                {
+                    await WaitForConditionsRetryAsync("서비스 이용 안내를 준비 중이에요.\n안내가 준비된 뒤 다시 이용해 주세요.");
+                    continue;
+                }
+
+                bool termsOpened = await OpenDocumentAsync("이용약관 전문", ExternalLinks.TermsOfUse);
+                bool privacyOpened = termsOpened && await OpenDocumentAsync("개인정보처리방침", ExternalLinks.PrivacyPolicy);
+                if (privacyOpened && await ShowConsentAsync(new ConfirmRequest
+                {
+                    Title = "이용약관 동의",
+                    Message = "이용약관 전문을 확인하고 동의하시나요?\n개인정보처리방침은 처리사항 안내이며,\n이 버튼은 별도 개인정보 동의를 대신하지 않아요.",
+                    Warning = "테스트 진행 유지·정식 이전은 보장되지 않아요.\n계정 삭제에는 복구 유예가 없고,\n게스트 로그아웃도 삭제 확인으로 이어져요.",
+                    ConfirmLabel = "약관에 동의",
+                    CancelLabel = "동의하지 않음",
+                }))
+                {
+                    Hide();
+                    return true;
+                }
+
+                await WaitForConditionsRetryAsync("약관에 동의하지 않아 로그인을 진행하지 않았어요.\n다시 시도로 이용 조건을 확인할 수 있어요.");
+            }
+        }
+
+        public async UniTask<bool> WaitForAnalyticsConsentAsync()
+        {
+            if (!await ShowConsentAsync(new ConfirmRequest
+            {
+                Title = "게임 이용 분석 (선택)",
+                Message = "분석용 식별자·기기/앱/세션 정보와\n전투 결과·시간·피해량·카드 선택을 분석해\n이용 현황과 밸런스를 개선해요.\n처리 수탁자: GameAnalytics",
+                Warning = "보관: 원시 기록 1개월, 분석 보관 1년,\n유지율 확인 기록 18개월\n동의하지 않아도 게임을 이용할 수 있어요.",
+                ConfirmLabel = "분석에 동의",
+                CancelLabel = "동의하지 않음",
+            })) { return false; }
+
+            return await ShowConsentAsync(new ConfirmRequest
+            {
+                Title = "분석 정보 국외 이전 (선택)",
+                Message = "받는 곳: GameAnalytics ApS 및 관계사\n미국 · privacy@gameanalytics.com\n게임 이용 중 SDK로 앞서 안내한 정보를\n분석 목적으로 네트워크 전송해요.",
+                Warning = "보관: 원시 기록 1개월, 분석 보관 1년,\n유지율 확인 기록 18개월\n거부하면 분석을 사용하지 않고 게임은 가능해요.",
+                ConfirmLabel = "국외 이전 동의",
+                CancelLabel = "동의하지 않음",
+            });
+        }
+
+        private async UniTask<bool> OpenDocumentAsync(string title, string url)
+        {
+            if (!await ShowConsentAsync(new ConfirmRequest
+            {
+                Title = title,
+                Message = "브라우저에서 전체 내용을 확인해 주세요.\n페이지가 열리지 않으면 다음 단계에서 취소해 주세요.",
+                ConfirmLabel = "전문 열기",
+                CancelLabel = "취소",
+            })) { return false; }
+            Application.OpenURL(url);
+            return true;
+        }
+
+        private UniTask WaitForConditionsRetryAsync(string message)
+        {
+            Show(message, methods: false, retry: true);
+            return Wait().AsUniTask();
+        }
+
+        private static bool IsDocumentAvailable(string url) =>
+            System.Uri.TryCreate(url, System.UriKind.Absolute, out var uri) &&
+            uri.Scheme == System.Uri.UriSchemeHttps && uri.Host != "example.com";
+
+        private UniTask<bool> ShowConsentAsync(ConfirmRequest request) =>
+            _confirm.ShowAsync(request).AttachExternalCancellation(this.GetCancellationTokenOnDestroy());
+
         public UniTask<LoginMethod> WaitForSignInAsync(IReadOnlyCollection<LoginMethod> available)
         {
             Show(SignInMessage, methods: true, retry: false);

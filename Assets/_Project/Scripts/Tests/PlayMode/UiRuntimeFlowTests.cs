@@ -745,6 +745,7 @@ namespace Game.Tests
             var navigator = root.Container.Resolve<ISceneNavigator>();
             string guestId = _credentials.AccountId;
             var pending = root.Container.Resolve<AccountService>().ReauthenticateAsync();
+            yield return AcceptServiceConditions();
             yield return WaitFor(() => previousLobby == null && SceneManager.GetActiveScene().name == "Loading"
                 && Object.FindAnyObjectByType<TapToStartView>() != null
                 && Field<GameObject>(Object.FindAnyObjectByType<TapToStartView>(), "_panel").activeSelf);
@@ -1217,7 +1218,8 @@ namespace Game.Tests
             SceneManager.LoadSceneAsync("Boot");
             yield return WaitFor(() => SceneManager.GetActiveScene().name == "Boot");
             boot.Start();
-            // Loading의 로그인창에서 게스트를 고르고 확인창에서 로그인을 누른다
+            // 실제 로그인 전 연령·약관 흐름을 거치고 선택 분석은 거절한다.
+            yield return AcceptServiceConditions();
             yield return WaitFor(() => SceneManager.GetActiveScene().name == "Loading" && LoginPanelShown());
             var login = Object.FindAnyObjectByType<LoginView>();
             yield return ClickGameButton(Field<Button>(login, "_guestButton"));
@@ -1226,6 +1228,20 @@ namespace Game.Tests
             yield return ClickGameButton(Field<Button>(confirm, "_confirmButton"));
             yield return WaitFor(() => SceneManager.GetActiveScene().name == expectedScene && navigator.Current.ToString() == expectedScene);
             yield return null;
+        }
+
+        private static IEnumerator AcceptServiceConditions()
+        {
+            yield return WaitFor(() => SceneManager.GetActiveScene().name == "Loading" && LoginPanelShown());
+            var login = Object.FindAnyObjectByType<LoginView>();
+            var confirm = Field<ConfirmPopupView>(login, "_confirm");
+            foreach (string title in new[] { "이용 연령 확인", "이용약관 전문", "개인정보처리방침", "이용약관 동의" })
+            {
+                yield return WaitFor(() => confirm.IsOpen && Field<TMP_Text>(confirm, "_title").text == title, title);
+                yield return ClickGameButton(Field<Button>(confirm, "_confirmButton"));
+            }
+            yield return WaitFor(() => confirm.IsOpen && Field<TMP_Text>(confirm, "_title").text == "게임 이용 분석 (선택)");
+            yield return ClickGameButton(Field<Button>(confirm, "_cancelButton"));
         }
 
         private static bool LoginPanelShown()

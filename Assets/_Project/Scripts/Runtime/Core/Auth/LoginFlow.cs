@@ -17,10 +17,12 @@ namespace Game.Core
         private readonly IAuthCredentialStore _credentials;
         private readonly ILoginPrompt _prompt;
         private readonly IReadOnlyList<ISocialSignIn> _social;
+        private readonly IAnalyticsCollectionControl _analytics;
 
         public LoginFlow(IAuthApi auth, IPlayerApi player, PlayerProfile profile, IAuthCredentialStore credentials, ILoginPrompt prompt,
-            IReadOnlyList<ISocialSignIn> social)
+            IReadOnlyList<ISocialSignIn> social, IAnalyticsCollectionControl analytics = null)
         {
+            _analytics = analytics;
             _auth = auth;
             _player = player;
             _profile = profile;
@@ -33,6 +35,13 @@ namespace Game.Core
         /// 로그인창을 띄워 사용자가 방식을 골랐으면 true, 저장된 로그인 정보로 바로 로그인했으면 false를 돌려준다</summary>
         public async UniTask<bool> RunAsync()
         {
+            // 이전 세션의 분석 이벤트가 새로운 이용 조건 확인 중에 전송되지 않게 한다.
+            _analytics?.SetCollectionAllowed(false);
+            // 최초 로그인과 저장된 계정의 자동 로그인 모두 인증 요청 전에 확인한다.
+            if (!await _prompt.WaitForServiceConsentAsync()) { throw new OperationCanceledException(); }
+
+            bool analyticsAllowed = _analytics != null && await _prompt.WaitForAnalyticsConsentAsync();
+
             bool prompted = false;
             // 저장된 방식을 지금 쓸 수 없으면(예: 외부 계정 SDK가 빠진 빌드) 로그인창부터 다시 띄운다
             LoginMethod? method = _credentials.HasCredential && IsAvailable(_credentials.Method) ? _credentials.Method : null;
@@ -80,6 +89,8 @@ namespace Game.Core
                 _credentials.Save(method.Value, saveId);
             }
 
+            // 분석은 연령·약관·별도 선택 동의와 로그인 성공 후에 시작한다.
+            _analytics?.SetCollectionAllowed(analyticsAllowed);
             _prompt.Hide();
             return prompted;
         }

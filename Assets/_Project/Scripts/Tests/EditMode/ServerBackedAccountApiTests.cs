@@ -54,6 +54,8 @@ namespace Game.Tests
 
         private sealed class Prompt : ILoginPrompt
         {
+            public UniTask<bool> WaitForServiceConsentAsync() => UniTask.FromResult(true);
+            public UniTask<bool> WaitForAnalyticsConsentAsync() => UniTask.FromResult(false);
             public int Choices;
             public UniTask<LoginMethod> WaitForSignInAsync(IReadOnlyCollection<LoginMethod> available)
             { Choices++; return UniTask.FromResult(LoginMethod.Google); }

@@ -20,7 +20,9 @@ namespace Game.Boot
             builder.Register<LocalSaveStore>(Lifetime.Singleton);
             builder.Register<IBattleCheckpointStore, LocalBattleCheckpointStore>(Lifetime.Singleton);
             builder.Register<PlayerProfile>(Lifetime.Singleton);
-            builder.RegisterEntryPoint<GameAnalyticsService>().As<IGameplayAnalytics>();
+            // SDK는 Root에서 시작하지 않고 로그인 흐름의 연령·선택 동의 확인 후 시작한다.
+            builder.Register<GameAnalyticsService>(Lifetime.Singleton)
+                .As<IGameplayAnalytics>().As<IAnalyticsCollectionControl>();
 
             // Android 개발·릴리스 빌드는 기본으로 서버 인증을 쓰고, 에디터는 로컬 인증을 쓴다
             builder.RegisterInstance(new HttpApiConfig(ServerConfig.BaseUrl));
