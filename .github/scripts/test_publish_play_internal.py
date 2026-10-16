@@ -1,9 +1,13 @@
 import copy
 import hashlib
 import importlib.util
+import json
+import os
 from pathlib import Path
+import subprocess
 import tempfile
 import unittest
+from unittest.mock import patch
 
 spec = importlib.util.spec_from_file_location('release', Path(__file__).with_name('publish-play-internal.py'))
 release = importlib.util.module_from_spec(spec)
@@ -11,6 +15,64 @@ spec.loader.exec_module(release)
 
 
 class InternalReleaseTests(unittest.TestCase):
+    def test_console_confirmation_requires_fresh_artifact_bound_original_human_pusher(self):
+        request = dict(issued_at='2026-10-16T00:00:00+00:00', line='exact run/source/code/AAB confirmation', actor_id=7)
+        now = release.datetime.fromisoformat('2026-10-16T00:01:00+00:00').timestamp()
+        row = dict(id=1, body=request['line'], created_at='2026-10-16T00:00:30Z',
+                   user={'id': 7, 'login': 'writer', 'type': 'User'})
+        self.assertEqual(release.clean_confirmation(request, [row], now), row)
+        invalid = [dict(row, body='another source or AAB'), dict(row, created_at='2026-10-15T23:59:59Z'),
+                   dict(row, user={'id': 7, 'login': 'bot', 'type': 'Bot'})]
+        for changed in invalid:
+            with self.subTest(row=changed):
+                self.assertIsNone(release.clean_confirmation(request, [changed], now))
+        self.assertIsNone(release.clean_confirmation(request, [dict(row, user={'id': 8, 'type': 'User'})], now))
+        self.assertIsNone(release.clean_confirmation(request, [row], now + 601))
+        self.assertIsNone(release.clean_confirmation(request, [], now))
+
+    def test_initial_receipt_survives_first_release_authorization_failure(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            (root / 'verified/Android').mkdir(parents=True)
+            (root / 'build').mkdir()
+            bundle = root / 'verified/Android/test.aab'
+            bundle.write_bytes(b'verified offline fixture')
+            evidence = dict(source_commit='merge', version_code=4, version_name='1.0.4', pr_number=123,
+                            artifact_sha256=hashlib.sha256(bundle.read_bytes()).hexdigest(),
+                            version_code_allocation={'scheme': 'workflow-run-offset-v1', 'workflowId': 378016847, 'runNumber': 12})
+            (root / 'verified/artifact-manifest.json').write_text(json.dumps(evidence))
+            (root / 'build/tag-release.json').write_text(json.dumps({'source_commit': 'merge'}))
+            env = dict(BUILD_SHA='merge', ANDROID_VERSION_CODE='4', RELEASE_VERSION='1.0.4', GITHUB_RUN_ID='42', GITHUB_ACTOR_ID='7',
+                       GITHUB_STEP_SUMMARY=str(root / 'summary'))
+            previous = Path.cwd()
+            try:
+                os.chdir(root)
+                with patch.dict(os.environ, env), patch.object(release.sys, 'argv', ['publish', '--prepare']):
+                    release.main()
+                with patch.dict(os.environ, env), patch.object(release.sys, 'argv', ['publish']), \
+                        patch.object(release.subprocess, 'run', side_effect=subprocess.CalledProcessError(1, ['offline'])), \
+                        patch.object(release, 'current_confirmation') as confirmation:
+                    with self.assertRaises(subprocess.CalledProcessError):
+                        release.main()
+                    confirmation.assert_not_called()
+                receipt = json.loads((root / 'build/internal-upload-receipt.json').read_text())
+                self.assertEqual(receipt['artifact_sha256'], evidence['artifact_sha256'])
+                self.assertEqual([r['event'] for r in receipt['events']], ['prepared', 'release_preflight_requested', 'stopped'])
+                # Missing/expired Console evidence must stop before constructing
+                # the credential client or creating any Play edit.
+                with patch.dict(os.environ, env), patch.object(release.sys, 'argv', ['publish']), \
+                        patch.object(release.subprocess, 'run'), \
+                        patch.object(release, 'current_confirmation', return_value=None), \
+                        patch.object(release.time, 'time', return_value=release.time.time() + 601):
+                    with self.assertRaisesRegex(RuntimeError, 'confirmation missing'):
+                        release.main()
+                receipt = json.loads((root / 'build/internal-upload-receipt.json').read_text())
+                events = [r['event'] for r in receipt['events']]
+                self.assertEqual(events[-3:], ['release_preflight_requested', 'awaiting_console_confirmation', 'stopped'])
+                self.assertNotIn('authentication_requested', events)
+            finally:
+                os.chdir(previous)
+
     def test_only_truly_empty_unnamed_draft_can_accompany_completed_release(self):
         completed = {'status': 'completed', 'versionCodes': ['3']}
         empty = {'status': 'draft'}
