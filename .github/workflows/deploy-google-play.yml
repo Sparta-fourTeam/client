@@ -311,8 +311,22 @@ jobs:
     env:
       BUILD_SHA: ${{ needs.integrate.outputs.merged_sha }}
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # Reserve the Console wait plus Play requests, setup and GitHub preflights.
+    timeout-minutes: 45
     steps:
+      - name: Initialize minimal publish attempt before checkout
+        env:
+          RELEASE_VERSION: ${{ needs.integrate.outputs.version_name }}
+          ANDROID_VERSION_CODE: ${{ needs.build.outputs.version_code }}
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib
+          state = dict(source_commit=os.environ['BUILD_SHA'], actions_run=int(os.environ['GITHUB_RUN_ID']),
+              version_name=os.environ['RELEASE_VERSION'], version_code=int(os.environ['ANDROID_VERSION_CODE']),
+              track='internal', phase='job_started', artifact_verified=False)
+          (pathlib.Path(os.environ['RUNNER_TEMP']) / 'internal-publish-attempt.json').write_text(json.dumps(state, indent=2) + '\n')
+          PY
+
       - name: Checkout source and current release ledger
         uses: actions/checkout@v4
         with:
@@ -324,13 +338,6 @@ jobs:
         with:
           name: release-integration
           path: release-context
-
-      - name: Revalidate the protected release merge and its original code
-        env:
-          RELEASE_VERSION: ${{ needs.integrate.outputs.version_name }}
-          ANDROID_VERSION_CODE: ${{ needs.build.outputs.version_code }}
-          GH_TOKEN: ${{ github.token }}
-        run: python3 .github/scripts/android-release-version.py --automatic --release-request release-context/tag-release.json --expected-code "$ANDROID_VERSION_CODE"
 
       - name: Download this run's verified AAB
         uses: actions/download-artifact@v4
@@ -347,7 +354,7 @@ jobs:
           python3 - <<'PY'
           import hashlib, json, os, pathlib
           evidence = json.loads(pathlib.Path('verified/artifact-manifest.json').read_text())
-          release = json.loads(pathlib.Path('build/tag-release.json').read_text())
+          release = json.loads(pathlib.Path('release-context/tag-release.json').read_text())
           if any(evidence.get(key) != value for key, value in release.items()):
               raise SystemExit('Artifact tag/PR/merge provenance mismatch')
           files = list(pathlib.Path('verified/Android').glob('*.aab'))
@@ -373,6 +380,13 @@ jobs:
           ANDROID_VERSION_CODE: ${{ needs.build.outputs.version_code }}
         run: python3 .github/scripts/publish-play-internal.py --prepare
 
+      - name: Revalidate the protected release merge and its original code
+        env:
+          RELEASE_VERSION: ${{ needs.integrate.outputs.version_name }}
+          ANDROID_VERSION_CODE: ${{ needs.build.outputs.version_code }}
+          GH_TOKEN: ${{ github.token }}
+        run: python3 .github/scripts/android-release-version.py --automatic --release-request release-context/tag-release.json --expected-code "$ANDROID_VERSION_CODE"
+
       - name: Install existing Play API dependencies
         run: python3 -m pip install google-auth==2.40.3 requests==2.32.4
 
@@ -389,7 +403,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Internal-upload-receipt-${{ github.run_id }}
-          path: build/internal-upload-receipt.json
+          path: |
+            ${{ runner.temp }}/internal-publish-attempt.json
+            build/internal-upload-receipt.json
           if-no-files-found: warn
           retention-days: 90
 
