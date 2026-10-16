@@ -10,11 +10,12 @@ namespace Game.Network
     ///   클라이언트 ID의 대응이 정해져야 한다. 틀린 ID로 옮기면 소유량·완료 여부를 잘못 읽으므로, 대응이 정해질 때까지 빈 목록으로 둔다</summary>
     public static class ServerUserMapper
     {
-        public static PlayerSnapshot ToSnapshot(ServerUserData data, string nickname)
+        public static PlayerSnapshot ToSnapshot(ServerUserData data, string nickname, string playerId = null)
         {
             var snapshot = new PlayerSnapshot
             {
                 nickname = nickname,
+                playerId = playerId,
                 gold = data.gold,
                 gems = data.jem,
                 exp = data.exp ?? 0,

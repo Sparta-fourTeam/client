@@ -87,7 +87,15 @@ namespace Game.Tests
         [Test(Description = "구글 ID 토큰을 게스트 토큰과 함께 POST /api/auth/social/link로 보내고, 204면 성공한다")]
         public void Link_SendsProviderAndIdTokenWithBearer()
         {
+            var before = _store.Load();
+            before.nickname = "연동전이름";
+            before.exp = 123;
+            _store.Flush(before);
             _api.LinkAccount(LoginMethod.Google, "google-id-token").GetAwaiter().GetResult();
+            var after = _store.Load();
+            Assert.That(after.nickname, Is.EqualTo("연동전이름"));
+            Assert.That(after.playerId, Is.EqualTo(before.playerId));
+            Assert.That(after.exp, Is.EqualTo(123));
 
             var request = _transport.Requests[0];
             Assert.AreEqual(HttpVerb.Post, request.Verb);

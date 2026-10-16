@@ -42,6 +42,7 @@ namespace Game.Tests
             Assert.AreEqual(HttpVerb.Get, _transport.Requests[0].Verb);
             Assert.AreEqual("https://example.test/api/user/me", _transport.Requests[0].Url);
             Assert.AreEqual("로컬닉네임", snapshot.nickname);
+            Assert.AreEqual(_store.Load().playerId, snapshot.playerId);
             Assert.AreEqual(50, snapshot.gold);
             Assert.AreEqual(3, snapshot.gems);
             Assert.AreEqual(0, snapshot.exp, "서버가 null이면 0");

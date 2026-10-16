@@ -107,6 +107,17 @@ namespace Game.Core
             return LinkResult.Unavailable;
         }
 
+        /// <summary>저장이 성공한 뒤 표시 이름만 바꾸고 프로필 구독자에게 알린다. ID·진행·로그인 방식은 유지한다</summary>
+        public async UniTask ChangeNicknameAsync(string nickname)
+        {
+            if (!NicknameRules.IsValid(nickname)) { throw new ApiException(ApiErrorKind.Rejected, "INVALID_NICKNAME"); }
+            if (_profile == null || !_profile.IsLoaded) { throw new InvalidOperationException("플레이어 정보를 먼저 불러와야 합니다."); }
+            string saved = await _api.ChangeNickname(nickname);
+            var snapshot = _profile.Snapshot();
+            snapshot.nickname = saved;
+            _profile.Apply(snapshot);
+        }
+
         /// <summary>로그아웃한다. 게스트면 계정 데이터도 지운다</summary>
         public async UniTask LogoutAsync()
         {

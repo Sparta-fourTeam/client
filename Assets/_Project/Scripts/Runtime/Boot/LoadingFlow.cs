@@ -20,10 +20,14 @@ namespace Game.Boot
         private readonly BattleLauncher _launcher;
         private readonly GameDataStore _data;
         private readonly IBattleCheckpointStore _checkpoints;
+        private readonly IAppUpdateChecker _updates;
+        private readonly ConfirmPopupView _confirm;
 
         public LoadingFlow(LoginFlow login, TapToStartView tapToStart, ISceneNavigator nav, PlayerProfile profile, BattleLauncher launcher,
-            GameDataStore data, IBattleCheckpointStore checkpoints = null)
+            GameDataStore data, IAppUpdateChecker updates, ConfirmPopupView confirm, IBattleCheckpointStore checkpoints = null)
         {
+            _updates = updates;
+            _confirm = confirm;
             _checkpoints = checkpoints;
             _data = data;
             _login = login;
@@ -42,6 +46,7 @@ namespace Game.Boot
         {
             try
             {
+                await CheckForUpdateAsync();
                 bool prompted = await _login.RunAsync();
                 if (!prompted)
                 {
@@ -63,6 +68,44 @@ namespace Game.Boot
             }
 
             await _nav.GoToLobby();
+        }
+
+        private async UniTask CheckForUpdateAsync()
+        {
+            var cancellationToken = _confirm.GetCancellationTokenOnDestroy();
+            AppUpdateInfo update;
+            try
+            {
+                update = await _updates.CheckAsync(cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception error)
+            {
+                // 스토어 장애·오프라인·미출시 상태로 게임 진입을 막지 않는다.
+                Debug.LogWarning($"스토어 업데이트 확인 실패: {error.Message}");
+                return;
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+            if (update == null)
+            {
+                return;
+            }
+
+            bool confirmed = await _confirm.ShowAsync(new ConfirmRequest
+            {
+                Title = "새 버전 안내",
+                Message = "새로운 버전이 출시되었습니다.\n스토어에서 업데이트할까요?",
+                ConfirmLabel = "업데이트",
+                CancelLabel = "나중에",
+            }).AttachExternalCancellation(cancellationToken);
+            if (confirmed)
+            {
+                Application.OpenURL(update.StoreUrl);
+            }
         }
     }
 }

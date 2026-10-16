@@ -3,6 +3,7 @@ using System.IO;
 using Game.Core;
 using Game.Network;
 using NUnit.Framework;
+using UnityEngine;
 
 namespace Game.Tests
 {
@@ -35,6 +36,41 @@ namespace Game.Tests
         }
 
         private LoginResponse Login(LoginMethod method, string accountId) => _api.Login(method, accountId).GetAwaiter().GetResult();
+
+        [TestCase(RuntimePlatform.Android, null, true)]
+        [TestCase(RuntimePlatform.Android, "", true)]
+        [TestCase(RuntimePlatform.Android, "0", false)]
+        [TestCase(RuntimePlatform.Android, "1", true)]
+        [TestCase(RuntimePlatform.OSXEditor, "", false)]
+        [TestCase(RuntimePlatform.WindowsEditor, "", false)]
+        [TestCase(RuntimePlatform.OSXEditor, "1", true)]
+        [TestCase(RuntimePlatform.OSXEditor, "0", false)]
+        public void ServerAuth_AndroidReleaseDefaultAndExplicitOverrides(RuntimePlatform platform, string preference, bool expected)
+        {
+            Assert.That(ServerConfig.ResolveServerAuth(platform, preference), Is.EqualTo(expected));
+        }
+
+        [Test]
+        public void ServerAuthOverride_DoesNotEnableServerPlayerApi()
+        {
+            const string authKey = "dev.server_auth", playerKey = "dev.server_player";
+            bool hadAuth = PlayerPrefs.HasKey(authKey), hadPlayer = PlayerPrefs.HasKey(playerKey);
+            string auth = PlayerPrefs.GetString(authKey), player = PlayerPrefs.GetString(playerKey);
+            try
+            {
+                PlayerPrefs.SetString(authKey, "1");
+                PlayerPrefs.DeleteKey(playerKey);
+                Assert.That(ServerConfig.UseServerAuth, Is.True);
+                Assert.That(ServerConfig.UseServerPlayer, Is.False);
+                PlayerPrefs.SetString(authKey, "0");
+                Assert.That(ServerConfig.UseServerAuth, Is.False);
+            }
+            finally
+            {
+                if (hadAuth) { PlayerPrefs.SetString(authKey, auth); } else { PlayerPrefs.DeleteKey(authKey); }
+                if (hadPlayer) { PlayerPrefs.SetString(playerKey, player); } else { PlayerPrefs.DeleteKey(playerKey); }
+            }
+        }
 
         [Test(Description = "구글은 provider GOOGLE과 ID 토큰을 소셜 로그인 경로로 보내고, 받은 토큰을 세션에 담는다")]
         public void Google_PostsIdTokenAndStoresTokens()

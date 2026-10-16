@@ -22,9 +22,10 @@ namespace Game.Boot
             builder.Register<PlayerProfile>(Lifetime.Singleton);
             builder.RegisterEntryPoint<GameAnalyticsService>().As<IGameplayAnalytics>();
 
-            // 서버 통신. 서버 인증을 쓰는 빌드(Android 개발 빌드)에서만 로그인이 서버로 간다
+            // Android 개발·릴리스 빌드는 기본으로 서버 인증을 쓰고, 에디터는 로컬 인증을 쓴다
             builder.RegisterInstance(new HttpApiConfig(ServerConfig.BaseUrl));
             builder.Register<IHttpTransport, UnityWebRequestTransport>(Lifetime.Singleton);
+            builder.Register<IAppUpdateChecker, StoreAppUpdateChecker>(Lifetime.Singleton);
             builder.Register<AuthSession>(Lifetime.Singleton).AsSelf().As<IAuthHeaderProvider>().As<IAuthTokenStore>();
             builder.Register(c => new HttpApiClient(c.Resolve<HttpApiConfig>(), c.Resolve<IHttpTransport>(), c.Resolve<IAuthHeaderProvider>(), tokens: c.Resolve<IAuthTokenStore>()),
                 Lifetime.Singleton);
@@ -72,6 +73,8 @@ namespace Game.Boot
             builder.Register<IVolumeStore, PlayerPrefsVolumeStore>(Lifetime.Singleton);
             builder.Register<SoundSettings>(Lifetime.Singleton);
             builder.RegisterEntryPoint<SoundVolumeApplier>();
+            // 소리는 ID로 재생한다. 효과음은 풀링, 배경음은 크로스페이드하고 위 믹서 그룹으로 출력한다
+            builder.RegisterEntryPoint<AudioService>().As<IAudioService>();
             // 데미지 표시·프레임레이트 같은 나머지 기기 설정도 기기에 저장하고 시작할 때와 바뀔 때 적용한다
             builder.Register<ISettingsStore, PlayerPrefsSettingsStore>(Lifetime.Singleton);
             builder.Register<GameSettings>(Lifetime.Singleton);

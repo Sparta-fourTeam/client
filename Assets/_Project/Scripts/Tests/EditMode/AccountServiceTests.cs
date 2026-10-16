@@ -17,7 +17,9 @@ namespace Game.Tests
         {
             public int Deleted;
             public LoginMethod? Linked;
-            public System.Exception LinkError;
+            public System.Exception LinkError, RenameError;
+            public UniTask<string> ChangeNickname(string nickname) => RenameError != null
+                ? UniTask.FromException<string>(RenameError) : UniTask.FromResult(nickname);
             public UniTask DeleteAccount() { Deleted++; return UniTask.CompletedTask; }
 
             public UniTask LinkAccount(LoginMethod method, string accountId)
@@ -73,6 +75,19 @@ namespace Game.Tests
         }
 
         private AccountService Create(params ISocialSignIn[] social) => new(_api, new SessionAuthCredentialStore(_credentials, _session), _nav, new List<ISocialSignIn>(social));
+
+        [Test(Description = "닉네임 저장 실패 시 화면 캐시의 이름·ID·진행은 바뀌지 않는다")]
+        public void Rename_SaveFails_KeepsCurrentProfile()
+        {
+            var profile = new PlayerProfile(null);
+            profile.Apply(new PlayerSnapshot { nickname = "기존이름", playerId = "public-id", exp = 123 });
+            _api.RenameError = new System.IO.IOException("save failed");
+            var account = new AccountService(_api, _credentials, _nav, null, profile);
+            Assert.Throws<System.IO.IOException>(() => account.ChangeNicknameAsync("새이름").GetAwaiter().GetResult());
+            Assert.That(profile.Nickname, Is.EqualTo("기존이름"));
+            Assert.That(profile.PlayerId, Is.EqualTo("public-id"));
+            Assert.That(profile.Exp, Is.EqualTo(123));
+        }
 
         [Test(Description = "게스트가 로그아웃하면 데이터를 지우고 로그인 정보를 비우고 Loading으로 돌아간다")]
         public void Logout_Guest_DeletesData()
