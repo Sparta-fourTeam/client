@@ -852,8 +852,18 @@ namespace Game.Tests
             stale.shop = yesterday.shop.state;
             profile.Apply(stale);
             Assert.That(badge.IsVisible, Is.False);
+            var delayedPlayer = new DelayedPlayerApi();
+            var notificationPlayer = typeof(LobbyNotificationView).GetField("_player", BindingFlags.Instance | BindingFlags.NonPublic);
+            notificationPlayer.SetValue(notification, delayedPlayer);
             typeof(LobbyNotificationView).GetField("_shopDayKey", BindingFlags.Instance | BindingFlags.NonPublic)
                 .SetValue(notification, yesterday.shop.dayKey);
+            yield return WaitFor(() => delayedPlayer.Calls == 1);
+            // 요청이 기존 검사 간격보다 오래 걸린 뒤 실패해도, 다음 프레임에 곧바로 재시도하면 안 된다
+            yield return WaitFor(() => Time.unscaledTime > Field<float>(notification, "_nextShopDayCheck"));
+            delayedPlayer.Pending.TrySetException(new ApiException(ApiErrorKind.Network, "TIMEOUT"));
+            yield return null;
+            Assert.That(delayedPlayer.Calls, Is.EqualTo(1));
+            notificationPlayer.SetValue(notification, player);
             yield return WaitFor(() => badge.IsVisible && profile.Shop.purchased.Count == 0);
             Assert.That(profile.Shop.adUsed, Is.Zero);
             Assert.That(daily.isActiveAndEnabled, Is.False);
@@ -1393,6 +1403,17 @@ namespace Game.Tests
             foreach (var enemy in Object.FindObjectsByType<Enemy>().Where(e => e.gameObject.scene == stage.gameObject.scene && !e.IsDead).ToArray())
             {
                 enemy.TakeDamage(1000000);
+            }
+        }
+
+        private sealed class DelayedPlayerApi : IPlayerApi
+        {
+            public readonly UniTaskCompletionSource<PlayerSnapshot> Pending = new();
+            public int Calls { get; private set; }
+            public UniTask<PlayerSnapshot> GetMe()
+            {
+                Calls++;
+                return Pending.Task;
             }
         }
 

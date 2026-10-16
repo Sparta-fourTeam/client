@@ -86,7 +86,11 @@ namespace Game.View
                 _shopDayKey = dayKey;
             }
             catch (ApiException) { }
-            finally { _refreshingShopDay = false; }
+            finally
+            {
+                _nextShopDayCheck = Time.unscaledTime + 1f;
+                _refreshingShopDay = false;
+            }
         }
 
         private void Refresh(PlayerProfile profile)
