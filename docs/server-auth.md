@@ -60,15 +60,18 @@
 | 서버 필드 | 클라이언트 | 처리 |
 | --- | --- | --- |
 | `gold`, `energyStored` | 같은 이름 | 그대로 |
-| `jem` | `gems` | 이름만 바꾼다. 상단 재화 표시는 아직 `DummyGrowthCatalog.Gems`(더미)를 쓴다 |
+| `gem` (PR #58), 이전 `jem` | `gems` | `gem`이 있으면 0도 그대로 사용하고, 없을 때만 이전 `jem`을 읽는다 |
 | `exp`(null 가능) | `exp` | null이면 0 |
 | `energyUpdatedAt`(시간대 없는 `LocalDateTime`) | `energyUpdatedAt` | 클라이언트가 UTC로 읽는다 (`EnergyRule`). **서버가 UTC로 주는지 확인 필요** |
 | `stageProgress[].stageId`, `codex[].monsterId`(`Long`) | `int` | 변환하고, `int` 범위를 넘으면 잘못된 응답 |
 | `upgrades[]`(`upgradeId`, `level`) | 같은 이름 | 레벨이 null이면 0 |
 | 닉네임 | `nickname` | 서버에 없다. 로컬 저장 값을 쓴다 |
-| `items[].itemId`, `tutorials[]`(`Long`) | 문자열 ID(`book.arrow`, `intro_battle`) | **옮기지 않는다.** 서버 ID와 클라이언트 ID의 대응이 정해져야 한다. 틀린 ID로 옮기면 소유량·완료 여부를 잘못 읽기 때문이다 |
+| `items[].itemId` (PR #58 문자열) | 문자열 ID(`book.arrow`) | 문자열 ID와 수량을 그대로 반영한다. 이전 배포의 숫자 ID는 문자열로 추측 변환하지 않고 건너뛴다. 문자열의 빈 ID·음수 수량·중복 행은 잘못된 응답으로 거절한다 |
+| `tutorials[]`(`Long`) | 문자열 ID(`intro_battle`) | 서버 ID와 클라이언트 ID의 대응이 없어 아직 옮기지 않는다 |
 
-서버와 정해야 할 것: 아이템·튜토리얼 ID 대응, 닉네임 필드, 에너지 시각의 시간대. 서버의 `Item`·`Tutorials` 엔티티에는 자동 증가 `Long id`뿐이고 `book.arrow` 같은 이름(코드) 열이 없어서, 서버가 이름 열을 두거나 양쪽이 ID 표를 공유해야 대응할 수 있다.
+서버 PR #58은 `Item.itemId`와 `UserItemResponse.itemId`를 문자열로 맞췄다. 서버와 정해야 할 것은 튜토리얼 ID 대응, 닉네임 필드, 에너지 시각의 시간대다. 튜토리얼은 아직 숫자 ID여서 클라이언트 문자열 ID와 대응표가 필요하다.
+
+PR #58은 `GET /api/item`, `GET /api/upgrade`, `POST /api/user/upgrades`도 추가했다. 강화 구매는 `{ upgradeId, createId }`를 받고 `{ upgradeId, level }`만 반환하며 전체 스냅샷은 주지 않는다. `unlockLevel`은 서버 구매 서비스에서 검사하지 않으므로 클라이언트 표시·진입 제한을 서버의 보안 보장으로 해석하지 않는다. 지갑 락과 중복 요청 원장이 있어도 실제 DB 동시성·스키마 마이그레이션 적용은 별도 검증 대상이다. Player 그룹·강화 구매 DI는 이 조회 호환 수정만으로 전환하지 않는다.
 
 ## 계정 연동 (`POST /api/auth/social/link`)
 
