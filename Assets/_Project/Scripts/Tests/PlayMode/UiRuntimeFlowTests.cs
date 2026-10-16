@@ -390,7 +390,8 @@ namespace Game.Tests
             var root = VContainer.Unity.VContainerSettings.Instance.GetOrCreateRootLifetimeScopeInstance() as RootLifetimeScope;
             var data = root.Container.Resolve<GameDataStore>();
             var intro = data.Tutorials.First(t => t.IsBattle);
-            var guideTutorial = data.Tutorials.First(t => t.IsGuide && t.After == intro.Id);
+            var guideTutorial = data.Tutorials.First(t => t.IsGuide && t.Start?.Kind == TutorialCondition.FeatureUnlocked
+                && data.FeatureUnlocks.RequiredStage(t.Start.Feature) == intro.Complete.StageId);
             string upgradeId = guideTutorial.Complete.UpgradeId;
             var upgrade = data.Upgrades.GetOrThrow(upgradeId);
             int tutorialLevel = intro.Rewards.Single(r => r.Kind == TutorialReward.SetLevel).Level;
@@ -433,16 +434,7 @@ namespace Game.Tests
             }
 
             yield return ClickGameButton(tapArea);
-            // 레벨업 다음에 새 컨텐츠(스킬 탭) 해금 연출이 나온다. 탭으로 건너뛰고 닫는다
-            var contentUnlock = ui.Get<ContentUnlockView>();
-            yield return WaitFor(() => contentUnlock.IsOpen);
-            var contentTap = Field<Button>(contentUnlock, "_tapArea");
-            if (contentUnlock.IsPlaying)
-            {
-                yield return ClickGameButton(contentTap);
-            }
-
-            yield return ClickGameButton(contentTap);
+            // 앱을 새로 켠 로비는 전투 전 기록이 없어서 스킬 탭은 해금 연출 없이 열려 있다 (해금 연출은 전투에서 돌아왔을 때만 나온다)
             // 팝업 뒤 가이드 시작 전에 대사 장면이 먼저 나온다. SKIP으로 건너뛴다
             var dialogue = ui.Get<DialogueView>();
             yield return WaitFor(() => dialogue.IsOpen);
@@ -471,7 +463,8 @@ namespace Game.Tests
             var root = VContainer.Unity.VContainerSettings.Instance.GetOrCreateRootLifetimeScopeInstance() as RootLifetimeScope;
             int unlockStage = root.Container.Resolve<GameDataStore>().FeatureUnlocks.RequiredStage("character");
             var gate = root.Container.Resolve<GameDataStore>().Tutorials.Single(t => t.Kind == TutorialDefinition.Milestone);
-            var equipmentGuide = root.Container.Resolve<GameDataStore>().Tutorials.Single(t => t.IsGuide && t.After == gate.Id);
+            var equipmentGuide = root.Container.Resolve<GameDataStore>().Tutorials.Single(t => t.IsGuide && t.Start?.Kind == TutorialCondition.FeatureUnlocked
+                && root.Container.Resolve<GameDataStore>().FeatureUnlocks.RequiredStage(t.Start.Feature) == gate.Complete.StageId);
             void SetCleared(LocalSave save, int stageId, int rating)
             {
                 var row = save.stageProgress.Find(p => p.stageId == stageId);
