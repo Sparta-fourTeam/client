@@ -8,8 +8,10 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Boot;
 using Game.Core;
+using Game.Core.Messages;
 using Game.Network;
 using Game.View;
+using MessagePipe;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
@@ -23,6 +25,10 @@ namespace Game.Tests
     public sealed class ServerUpgradeTestFlowTests
     {
         private const string Id = "equipment.hat";
+        private readonly List<GameObject> _missionParts = new();
+        private bool _restoreMissionSelection, _hadMissionSelection;
+        private int _missionSelection;
+        private IServiceProvider _messageServices;
         private GameObject _popup;
         private GameObject _parentPopup;
         private DummyGrowthCatalog _catalog;
@@ -121,7 +127,6 @@ namespace Game.Tests
                 () => _container.Resolve<IBattleApi>().StartBattle(1).GetAwaiter().GetResult(),
                 () => _container.Resolve<IBattleApi>().SubmitResult(null).GetAwaiter().GetResult(),
                 () => _container.Resolve<IEnergyApi>().Recover(default).GetAwaiter().GetResult(),
-                () => _container.Resolve<IStageApi>().ClaimRatingReward(1).GetAwaiter().GetResult(),
                 () => _container.Resolve<ICodexApi>().ClaimMonsterReward(1).GetAwaiter().GetResult(),
                 () => _container.Resolve<IQuestApi>().ClaimQuest("q").GetAwaiter().GetResult(),
                 () => _container.Resolve<IQuestApi>().ClaimQuestChest("c").GetAwaiter().GetResult(),
@@ -193,6 +198,84 @@ namespace Game.Tests
             Assert.AreEqual(3, _profile.UpgradeLevel(Id));
         }
 
+        private MissionScreenView CreateMission(out RewardPopupView reward)
+        {
+            _restoreMissionSelection = true;
+            _hadMissionSelection = PlayerPrefs.HasKey("mission_selected_stage");
+            _missionSelection = PlayerPrefs.GetInt("mission_selected_stage");
+            PlayerPrefs.SetInt("mission_selected_stage", 1);
+            var registry = new UiRegistry();
+            foreach (string name in new[] { "EnergyRecoverPopup", "RewardPopup", "MissionDetailsPopup", "MissionRewardInfoPopup", "MissionScreen" })
+            {
+                var part = Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>($"Assets/_Project/Prefabs/UI/Lobby/{name}.prefab"));
+                _missionParts.Add(part); registry.Add(part);
+            }
+            reward = registry.Get<RewardPopupView>();
+            var mission = registry.Get<MissionScreenView>();
+            _messageServices = new BuiltinContainerBuilder().AddMessagePipe().AddMessageBroker<EnergyChanged>()
+                .AddMessageBroker<StartFailed>().BuildServiceProvider();
+            mission.Construct(_profile, _container.Resolve<GameDataStore>(), null,
+                (IBufferedSubscriber<EnergyChanged>)_messageServices.GetService(typeof(IBufferedSubscriber<EnergyChanged>)),
+                (ISubscriber<StartFailed>)_messageServices.GetService(typeof(ISubscriber<StartFailed>)),
+                _container.Resolve<IStageApi>());
+            mission.BindUi(registry); mission.Open();
+            return mission;
+        }
+
+        [UnityTest]
+        public IEnumerator MissionClaim_LostResponse_UsesGetOnlyAndNeverInfersRewardAmount()
+        {
+            Create(); _transport.KeepClaimUnconfirmed = true;
+            var mission = CreateMission(out var reward);
+            yield return null;
+            var card = Field<StageCardView>(mission, "_card");
+            card.RewardAreaButton.onClick.Invoke();
+            card.RewardAreaButton.onClick.Invoke();
+            Assert.AreEqual(1, _transport.Posts.Count);
+            Assert.Throws<InvalidOperationException>(() => _container.Resolve<IUpgradeApi>().Purchase(Id, "other-key").GetAwaiter().GetResult());
+            _transport.Pending.TrySetResult(HttpResponseData.Failed(HttpFailure.Timeout));
+            yield return Until(() => !Field<bool>(mission, "_claiming"));
+            Assert.That(card.Status, Does.Contain("미확정"));
+            Assert.That(_profile.ClaimedRating(1), Is.EqualTo(0));
+            var pending = (IStageRewardRecovery)_container.Resolve<IStageApi>();
+            Assert.AreEqual(2, pending.PendingTargetRating);
+            _view.Show("새 강화", Id, false);
+            Assert.IsFalse(_view.IsOpen);
+            _transport.ClaimClearRating = 3; _transport.ClaimedRating = 2;
+            card.RewardAreaButton.onClick.Invoke();
+            yield return Until(() => !Field<bool>(mission, "_claiming"));
+            Assert.AreEqual(1, _transport.Posts.Count);
+            Assert.AreEqual(2, _profile.ClaimedRating(1));
+            Assert.That(card.Status, Does.Contain("서버에서 2등급까지 수령된 상태"));
+            Assert.IsFalse(Field<GameObject>(reward, "_panel").activeSelf);
+            CollectionAssert.AreEqual(_saved, File.ReadAllBytes(_savePath));
+        }
+
+        [UnityTest]
+        public IEnumerator MissionClaim_AcknowledgedThenGetFails_ReopensRecoveryEvenWhenAllGradesAreClaimed()
+        {
+            Create(); _transport.FailSnapshot = true;
+            var mission = CreateMission(out var reward);
+            yield return null;
+            var card = Field<StageCardView>(mission, "_card");
+            card.RewardAreaButton.onClick.Invoke();
+            _transport.Pending.TrySetResult(new HttpResponseData(200, "{\"stageId\":1,\"clearRating\":2,\"claimedRating\":2}"));
+            yield return Until(() => !Field<bool>(mission, "_claiming"));
+            Assert.AreEqual(0, _profile.ClaimedRating(1));
+            _transport.FailSnapshot = false;
+            _profile.Apply(_container.Resolve<IPlayerApi>().GetMe().GetAwaiter().GetResult());
+            Assert.IsFalse(_profile.HasUnclaimedReward(1));
+            Field<Button>(mission, "_backButton").onClick.Invoke();
+            mission.Open();
+            Assert.IsTrue(card.RewardAreaButton.gameObject.activeInHierarchy);
+            card.RewardAreaButton.onClick.Invoke();
+            yield return Until(() => !Field<bool>(mission, "_claiming"));
+            Assert.AreEqual(1, _transport.Posts.Count);
+            Assert.That(card.Status, Does.Contain("수령된 상태"));
+            Assert.IsFalse(Field<GameObject>(reward, "_panel").activeSelf);
+            CollectionAssert.AreEqual(_saved, File.ReadAllBytes(_savePath));
+        }
+
         [UnityTearDown]
         public IEnumerator Cleanup()
         {
@@ -201,6 +284,21 @@ namespace Game.Tests
                 foreach (var transition in _popup.GetComponentsInChildren<PopupTransition>(true)) { transition.HideImmediate(); }
                 Object.Destroy(_popup);
             }
+            foreach (var part in _missionParts)
+            {
+                foreach (var transition in part.GetComponentsInChildren<PopupTransition>(true)) { transition.HideImmediate(); }
+                Object.Destroy(part);
+            }
+            _missionParts.Clear();
+            if (_restoreMissionSelection)
+            {
+                if (_hadMissionSelection) { PlayerPrefs.SetInt("mission_selected_stage", _missionSelection); }
+                else { PlayerPrefs.DeleteKey("mission_selected_stage"); }
+                PlayerPrefs.Save();
+                _restoreMissionSelection = false;
+            }
+            (_messageServices as IDisposable)?.Dispose();
+            _messageServices = null;
             _container?.Dispose();
             _catalog?.Dispose();
             if (_parentPopup != null)
@@ -215,7 +313,9 @@ namespace Game.Tests
         private sealed class Transport : IHttpTransport
         {
             private readonly int _unlock;
-            private bool _applied;
+            private bool _applied, _claimAttempted;
+            public bool KeepClaimUnconfirmed;
+            public int ClaimClearRating = 2, ClaimedRating;
             public bool FailSnapshot;
             public int GoldAfterApply = 990, LevelAfterApply = 1;
             public readonly List<HttpRequestData> Posts = new();
@@ -227,16 +327,22 @@ namespace Game.Tests
                 {
                     Posts.Add(request); Pending = new UniTaskCompletionSource<HttpResponseData>();
                     var response = await Pending.Task;
-                    _applied = true; // fixture는 응답 유실 전에도 서버 적용이 끝난 경우를 만든다.
+                    if (request.Url.EndsWith("/stage-progress/claim"))
+                    {
+                        _claimAttempted = true;
+                        if (!KeepClaimUnconfirmed) { ClaimedRating = 2; }
+                    }
+                    else { _applied = true; } // 응답 유실 전에 이미 적용됐을 수 있다.
                     return response;
                 }
                 if (request.Url.EndsWith("/upgrade"))
                 { return new HttpResponseData(200, $"[{{\"upgradeId\":\"equipment.hat\",\"maxLevel\":3,\"unlockLevel\":{_unlock},\"costBase\":10}}]"); }
-                if (_applied && FailSnapshot) { return new HttpResponseData(500, ""); }
-                return new HttpResponseData(200, "{\"gold\":" + (_applied ? GoldAfterApply : 1000)
+                if ((_applied || _claimAttempted) && FailSnapshot) { return new HttpResponseData(500, ""); }
+                return new HttpResponseData(200, "{\"gold\":" + (_applied ? GoldAfterApply : _claimAttempted ? 875 : 1000)
                     + ",\"gem\":0,\"exp\":2147483647,\"energyStored\":10,\"energyUpdatedAt\":\"2026-10-16T23:00:00\","
                     + "\"upgrades\":[{\"upgradeId\":\"equipment.hat\",\"level\":" + (_applied ? LevelAfterApply : 0)
-                    + "}],\"items\":[],\"stageProgress\":[],\"codex\":[],\"tutorials\":[]}");
+                    + "}],\"items\":[],\"stageProgress\":[{\"stageId\":1,\"clearRating\":" + ClaimClearRating
+                    + ",\"claimedRating\":" + ClaimedRating + "}],\"codex\":[],\"tutorials\":[]}");
             }
         }
     }

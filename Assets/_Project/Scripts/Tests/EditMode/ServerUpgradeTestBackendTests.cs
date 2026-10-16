@@ -40,6 +40,139 @@ namespace Game.Tests
             return state.ToString();
         }
 
+        private static string ClaimState(int clear, int claimed, int gold = 1000)
+        {
+            var state = JObject.Parse(State); state["gold"] = gold;
+            state["stageProgress"] = JArray.Parse($"[{{\"stageId\":1,\"clearRating\":{clear},\"claimedRating\":{claimed}}},{{\"stageId\":2,\"clearRating\":1,\"claimedRating\":0}}]");
+            return state.ToString();
+        }
+
+        private void LoadClaimState()
+        {
+            _transport.Queued.Enqueue(new HttpResponseData(200, ClaimState(2, 0)));
+            _backend.GetMe().GetAwaiter().GetResult();
+        }
+
+        [TestCase(200)]
+        [TestCase(409)]
+        [TestCase(500)]
+        [TestCase(0)]
+        [Test(Description = "별 보상 POST 확인/409/5xx/유실 뒤에는 최초 목표를 보존하고 GET만 하며 강화·다른 수령을 막는다")]
+        public void StageClaim_Unconfirmed_OnlyReadsFrozenTarget(int status)
+        {
+            LoadClaimState();
+            _transport.Queued.Enqueue(status == 0 ? HttpResponseData.Failed(HttpFailure.Timeout)
+                : new HttpResponseData(status, "{\"stageId\":1,\"clearRating\":2,\"claimedRating\":2}"));
+            _transport.Queued.Enqueue(new HttpResponseData(200, ClaimState(3, 0)));
+            var pending = Assert.Throws<ApiException>(() => _backend.ClaimRatingReward(1).GetAwaiter().GetResult());
+            Assert.AreEqual("STAGE_REWARD_PENDING", pending.Code);
+            Assert.AreEqual(2, _backend.PendingTargetRating);
+            Assert.Throws<ApiException>(() => _backend.Purchase("atk", "new-key").GetAwaiter().GetResult());
+            Assert.Throws<ApiException>(() => _backend.ClaimRatingReward(2).GetAwaiter().GetResult());
+            _transport.Queued.Enqueue(new HttpResponseData(500, ""));
+            Assert.Throws<ApiException>(() => _backend.RecoverStageReward().GetAwaiter().GetResult());
+            _transport.Queued.Enqueue(new HttpResponseData(200, ClaimState(3, 2, 700)));
+            var state = _backend.RecoverStageReward().GetAwaiter().GetResult();
+            Assert.AreEqual(700, state.gold, "잔액 증가를 성공 조건으로 사용하지 않는다");
+            Assert.AreEqual(2, state.stageProgress.Single(row => row.stageId == 1).claimedRating);
+            Assert.IsFalse(_backend.HasPendingStageReward);
+            var post = _transport.Requests.Single(row => row.Verb == HttpVerb.Post);
+            Assert.AreEqual("https://example.test/api/user/stage-progress/claim", post.Url);
+            Assert.AreEqual(1, (int)JObject.Parse(post.Body)["stageId"]);
+            Assert.AreEqual(1, JObject.Parse(post.Body).Count);
+        }
+
+        [Test(Description = "ACK가 더 높은 등급을 확인했으면 그보다 낮은 GET 상태를 적용하지 않는다")]
+        public void StageClaim_AcknowledgedHigherRating_WaitsForMatchingState()
+        {
+            LoadClaimState();
+            _transport.Queued.Enqueue(new HttpResponseData(200, "{\"stageId\":1,\"clearRating\":3,\"claimedRating\":3}"));
+            _transport.Queued.Enqueue(new HttpResponseData(200, ClaimState(3, 2)));
+            Assert.Throws<ApiException>(() => _backend.ClaimRatingReward(1).GetAwaiter().GetResult());
+            Assert.AreEqual(2, _backend.PendingTargetRating);
+            _transport.Queued.Enqueue(new HttpResponseData(200, ClaimState(3, 3)));
+            _backend.RecoverStageReward().GetAwaiter().GetResult();
+            Assert.AreEqual(1, _transport.Requests.Count(row => row.Verb == HttpVerb.Post));
+        }
+
+        [Test(Description = "부분 GET 응답으로 수령을 확정하거나 잠금을 해제하지 않는다")]
+        public void StageClaim_PartialState_RetainsReadOnlyRecovery()
+        {
+            LoadClaimState();
+            _transport.Queued.Enqueue(new HttpResponseData(200, "{\"stageId\":1,\"clearRating\":2,\"claimedRating\":2}"));
+            _transport.Queued.Enqueue(new HttpResponseData(200, "{}"));
+            Assert.Throws<ApiException>(() => _backend.ClaimRatingReward(1).GetAwaiter().GetResult());
+            Assert.IsTrue(_backend.HasPendingStageReward);
+            _transport.Queued.Enqueue(new HttpResponseData(200, ClaimState(2, 2)));
+            _backend.RecoverStageReward().GetAwaiter().GetResult();
+            Assert.AreEqual(1, _transport.Requests.Count(row => row.Verb == HttpVerb.Post));
+        }
+
+        [Test(Description = "미확정 강화가 있으면 별 보상 POST를 보내지 않는다")]
+        public void PendingUpgrade_BlocksStageClaim()
+        {
+            LoadClaimState(); QuoteAndResponse(HttpResponseData.Failed(HttpFailure.Timeout));
+            Assert.Throws<ApiException>(() => _backend.Purchase("atk", "key").GetAwaiter().GetResult());
+            var error = Assert.Throws<ApiException>(() => _backend.ClaimRatingReward(1).GetAwaiter().GetResult());
+            Assert.AreEqual("UPGRADE_RECOVERY_REQUIRED", error.Code);
+            Assert.IsFalse(_transport.Requests.Any(row => row.Url.EndsWith("/stage-progress/claim")));
+        }
+
+        [Test(Description = "이미 수령한 등급은 POST 없이 거절한다")]
+        public void StageClaim_AlreadyClaimed_DoesNotPost()
+        {
+            _transport.Queued.Enqueue(new HttpResponseData(200, ClaimState(2, 2)));
+            _backend.GetMe().GetAwaiter().GetResult();
+            var error = Assert.Throws<ApiException>(() => _backend.ClaimRatingReward(1).GetAwaiter().GetResult());
+            Assert.AreEqual("NO_REWARD", error.Code);
+            Assert.IsFalse(_transport.Requests.Any(row => row.Verb == HttpVerb.Post));
+        }
+
+        [Test(Description = "409 자체가 아니라 후속 수령 상태로만 확인한다")]
+        public void StageClaim_ConflictThenCoveredTarget_ReturnsObservedState()
+        {
+            LoadClaimState();
+            _transport.Queued.Enqueue(new HttpResponseData(409, ""));
+            _transport.Queued.Enqueue(new HttpResponseData(200, ClaimState(2, 2, 600)));
+            var snapshot = _backend.ClaimRatingReward(1).GetAwaiter().GetResult();
+            Assert.AreEqual(2, snapshot.stageProgress.Single(row => row.stageId == 1).claimedRating);
+            Assert.IsFalse(_backend.HasPendingStageReward);
+            Assert.AreEqual(1, _transport.Requests.Count(row => row.Verb == HttpVerb.Post));
+        }
+
+        [TestCase(false)]
+        [TestCase(true)]
+        [Test(Description = "별 보상 POST/GET 도중 계정 전환이면 이전 응답을 새 계정에 반환하지 않는다")]
+        public void StageClaim_AccountChange_DiscardsResponse(bool duringRead)
+        {
+            var transport = new ClaimSwitchingTransport(_tokens, duringRead);
+            var backend = new ServerUpgradeTestBackend(new HttpApiConfig("https://example.test"), transport, _tokens, _data);
+            backend.GetMe().GetAwaiter().GetResult();
+            var error = Assert.Throws<ApiException>(() => backend.ClaimRatingReward(1).GetAwaiter().GetResult());
+            Assert.AreEqual(HttpErrorMapper.SessionExpired, error.Code);
+            Assert.IsFalse(backend.HasPendingStageReward);
+            Assert.Throws<InvalidOperationException>(() => backend.RecoverStageReward().GetAwaiter().GetResult());
+            Assert.AreEqual(1, transport.Posts);
+        }
+
+        private sealed class ClaimSwitchingTransport : IHttpTransport
+        {
+            private readonly AuthSession _tokens;
+            private readonly bool _duringRead;
+            public int Posts;
+            public ClaimSwitchingTransport(AuthSession tokens, bool duringRead) { _tokens = tokens; _duringRead = duringRead; }
+            public UniTask<HttpResponseData> Send(HttpRequestData request, float timeoutSeconds, CancellationToken token)
+            {
+                if (request.Verb == HttpVerb.Post)
+                {
+                    Posts++; if (!_duringRead) { _tokens.Set("b", "r-b"); }
+                    return UniTask.FromResult(new HttpResponseData(200, "{\"stageId\":1,\"clearRating\":2,\"claimedRating\":2}"));
+                }
+                if (Posts > 0 && _duringRead) { _tokens.Set("b", "r-b"); }
+                return UniTask.FromResult(new HttpResponseData(200, ClaimState(2, Posts > 0 ? 2 : 0)));
+            }
+        }
+
         private void QuoteAndResponse(HttpResponseData response)
         {
             _transport.Queued.Enqueue(new HttpResponseData(200, Catalog));

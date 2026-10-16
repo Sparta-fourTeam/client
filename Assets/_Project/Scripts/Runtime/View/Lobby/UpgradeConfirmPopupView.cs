@@ -22,6 +22,7 @@ namespace Game.View
         private GameDataStore _data;
         private IUpgradeApi _api;
         private IUpgradeRecovery _recovery;
+        private IStageRewardRecovery _stageRecovery;
         private IAudioService _audio;
         private UpgradePurchasePlan _plan;
         private string _name;
@@ -36,7 +37,7 @@ namespace Game.View
 
         [Inject]
         public void Construct(PlayerProfile profile, GameDataStore data, IUpgradeApi api, IAudioService audio = null)
-        { _profile = profile; _data = data; _api = api; _recovery = api as IUpgradeRecovery; _audio = audio; }
+        { _profile = profile; _data = data; _api = api; _recovery = api as IUpgradeRecovery; _stageRecovery = api as IStageRewardRecovery; _audio = audio; }
 
         protected override void InitializeView()
         {
@@ -48,6 +49,8 @@ namespace Game.View
 
         public void Show(string name, string id, bool all)
         {
+            if (_stageRecovery?.HasPendingStageReward == true)
+            { _toast?.Show("미확정 별 보상의 수령 상태를 먼저 확인해 주세요.", 1f); return; }
             if (_busy || (!HasPendingRecovery && string.IsNullOrEmpty(id)))
             {
                 return;
@@ -115,6 +118,8 @@ namespace Game.View
 
             if (_recovery != null)
             {
+                if (_stageRecovery?.HasPendingStageReward == true)
+                { Present(_plan, "미확정 별 보상의 수령 상태를 먼저 확인해 주세요."); return; }
                 await ConfirmServerAsync();
                 return;
             }

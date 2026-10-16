@@ -7,9 +7,9 @@ using Game.Core;
 
 namespace Game.Network
 {
-    /// <summary>명시적으로 켠 개발 모드 전용. 서버 조회·단건 강화 외 모든 Local 상태 변경과 체크포인트 접근을 막는다.
+    /// <summary>명시적으로 켠 개발 모드 전용. 서버 조회·단건 강화·별 보상 외 모든 Local 상태 변경과 체크포인트 접근을 막는다.
     /// pending은 메모리 수명이며 앱 종료 후 복구 원장이 아니다. 서버 영수증/revision이나 카탈로그 일치를 보장하지 않는다.</summary>
-    public sealed class ServerUpgradeTestBackend : IPlayerApi, IUpgradeApi, IUpgradeRecovery, IBattleApi, IEnergyApi,
+    public sealed class ServerUpgradeTestBackend : IPlayerApi, IUpgradeApi, IUpgradeRecovery, IStageRewardRecovery, IBattleApi, IEnergyApi,
         IStageApi, ICodexApi, IQuestApi, IShopApi, ITutorialApi, IAccountApi, IBattleCheckpointStore, ISubmitFaultSwitch
     {
         public const string Disabled = "SERVER_TEST_DISABLED";
@@ -21,6 +21,17 @@ namespace Game.Network
         private long _operationGeneration;
         private int _busy;
         private PendingPurchase _pending;
+        private PendingClaim _claim;
+        private sealed class PendingClaim
+        {
+            public readonly int StageId, TargetRating;
+            public readonly long Generation;
+            public bool PostAttempted;
+            public int AcknowledgedRating;
+            public PendingClaim(int stageId, int targetRating, long generation)
+            { StageId = stageId; TargetRating = targetRating; Generation = generation; }
+        }
+        private sealed class ClaimResponse { public int? stageId, clearRating, claimedRating; }
         private sealed class PendingPurchase
         {
             public readonly string upgradeId, createId;
@@ -46,6 +57,9 @@ namespace Game.Network
 
         public bool HasPendingPurchase => _pending != null && _pending.Generation == _tokens.Generation;
         public string PendingUpgradeId => HasPendingPurchase ? _pending.upgradeId : null;
+        public bool HasPendingStageReward => _claim != null && _claim.Generation == _tokens.Generation;
+        public int PendingStageId => HasPendingStageReward ? _claim.StageId : 0;
+        public int PendingTargetRating => HasPendingStageReward ? _claim.TargetRating : 0;
         public int FailNextSubmits { get; set; }
 
         public async UniTask<PlayerSnapshot> GetMe()
@@ -65,6 +79,7 @@ namespace Game.Network
             Enter();
             try
             {
+                if (_claim != null) { throw new ApiException(ApiErrorKind.Rejected, "STAGE_REWARD_PENDING"); }
                 if (recover && _pending == null) { throw new InvalidOperationException("복구할 강화 요청이 없습니다"); }
                 if (_pending == null)
                 {
@@ -89,9 +104,7 @@ namespace Game.Network
                     catch (ApiException error)
                     {
                         // 409는 처리 중 중복과 재화 부족을 구분할 수 없다. 5xx/유실/잘못된 성공 응답도 같은 키로만 복구한다.
-                        bool definitive = error.Kind == ApiErrorKind.Rejected
-                            && error.Code != null && error.Code.StartsWith("HTTP_", StringComparison.Ordinal)
-                            && int.TryParse(error.Code.Substring(5), out int status) && status >= 400 && status < 500 && status != 409;
+                        bool definitive = IsDefinitiveRejection(error);
                         // 이번 거절은 이전 시도에서 이미 적용됐을 가능성까지 취소하지 않는다.
                         if (definitive && !_pending.HasAmbiguousAttempt) { _pending = null; }
                         else if (!definitive) { _pending.HasAmbiguousAttempt = true; }
@@ -107,6 +120,61 @@ namespace Game.Network
             }
             finally { Interlocked.Exchange(ref _busy, 0); }
         }
+
+        public UniTask<PlayerSnapshot> ClaimRatingReward(int stageId) => ClaimOrRecover(stageId, false);
+        public UniTask<PlayerSnapshot> RecoverStageReward() => ClaimOrRecover(0, true);
+
+        private async UniTask<PlayerSnapshot> ClaimOrRecover(int stageId, bool recover)
+        {
+            Enter();
+            try
+            {
+                if (_pending != null) { throw new ApiException(ApiErrorKind.Rejected, "UPGRADE_RECOVERY_REQUIRED"); }
+                if (recover && _claim == null) { throw new InvalidOperationException("확인할 별 보상 요청이 없습니다"); }
+                if (_claim == null)
+                {
+                    if (_observed == null || _observedGeneration != _operationGeneration)
+                    { throw new ApiException(ApiErrorKind.Rejected, "PLAYER_NOT_LOADED"); }
+                    var progress = _observed.stageProgress.Find(row => row.stageId == stageId);
+                    if (progress == null || progress.clearRating <= progress.claimedRating)
+                    { throw new ApiException(ApiErrorKind.Rejected, "NO_REWARD"); }
+                    _claim = new PendingClaim(stageId, progress.clearRating, _operationGeneration);
+                }
+                else if (!recover && stageId != _claim.StageId)
+                { throw new ApiException(ApiErrorKind.Rejected, "STAGE_REWARD_PENDING"); }
+
+                if (!_claim.PostAttempted)
+                {
+                    _claim.PostAttempted = true;
+                    try
+                    {
+                        var response = await _client.Post<object, ClaimResponse>("api/user/stage-progress/claim",
+                            new { stageId = _claim.StageId }, isValid: value => value.stageId == _claim.StageId
+                                && value.clearRating >= _claim.TargetRating && value.clearRating <= 3
+                                && value.claimedRating >= _claim.TargetRating && value.claimedRating <= value.clearRating);
+                        EnsureSession();
+                        _claim.AcknowledgedRating = response.claimedRating.Value;
+                    }
+                    catch (ApiException error)
+                    {
+                        if (IsDefinitiveRejection(error)) { _claim = null; throw; }
+                        // 409/5xx/유실/잘못된 성공 본문 뒤에는 GET만 한다. 같은 stageId 재전송도 새 등급까지 수령할 수 있다.
+                    }
+                }
+
+                var snapshot = await ReadState();
+                var observed = snapshot.stageProgress.Find(row => row.stageId == _claim.StageId);
+                if (observed == null || observed.claimedRating < Math.Max(_claim.TargetRating, _claim.AcknowledgedRating))
+                { throw new ApiException(ApiErrorKind.Rejected, "STAGE_REWARD_PENDING"); }
+                _claim = null;
+                return snapshot; // 수령 상태의 확인이지 이 POST의 지급 영수증이 아니다.
+            }
+            finally { Interlocked.Exchange(ref _busy, 0); }
+        }
+
+        private static bool IsDefinitiveRejection(ApiException error) => error.Kind == ApiErrorKind.Rejected
+            && error.Code != null && error.Code.StartsWith("HTTP_", StringComparison.Ordinal)
+            && int.TryParse(error.Code.Substring(5), out int status) && status >= 400 && status < 500 && status != 409;
 
         private async UniTask<PlayerSnapshot> ReadState()
         {
@@ -147,6 +215,7 @@ namespace Game.Network
             { throw new InvalidOperationException("서버 상태 요청이 이미 진행 중입니다"); }
             _operationGeneration = _tokens.Generation;
             if (_pending != null && _pending.Generation != _operationGeneration) { _pending = null; }
+            if (_claim != null && _claim.Generation != _operationGeneration) { _claim = null; }
             try { EnsureSession(); }
             catch { Interlocked.Exchange(ref _busy, 0); throw; }
         }
@@ -170,7 +239,6 @@ namespace Game.Network
         public UniTask<StartBattleResponse> StartBattle(int stageId) => throw Blocked();
         public UniTask<SubmitResultResponse> SubmitResult(SubmitResultRequest request) => throw Blocked();
         public UniTask<PlayerSnapshot> Recover(EnergySource source, string idempotencyKey = null) => throw Blocked();
-        public UniTask<PlayerSnapshot> ClaimRatingReward(int stageId) => throw Blocked();
         public UniTask<PlayerSnapshot> ClaimMonsterReward(int monsterId) => throw Blocked();
         public UniTask<PlayerSnapshot> ClaimQuest(string questId) => throw Blocked();
         public UniTask<PlayerSnapshot> ClaimQuestChest(string chestId) => throw Blocked();
