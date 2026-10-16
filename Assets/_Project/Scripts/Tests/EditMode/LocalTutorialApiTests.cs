@@ -147,6 +147,32 @@ namespace Game.Tests
             Assert.That(reloaded.tutorials.Count(id => id == milestone.Id), Is.EqualTo(1));
         }
 
+        [TestCase("log_upgrade", "intro_battle")]
+        [TestCase("equipment_upgrade", "equipment_intro")]
+        public void UpgradeGuide_RequiresRewardPredecessorAndFeatureUnlock(string guideId, string predecessorId)
+        {
+            var guide = _data.Tutorials.Single(t => t.Id == guideId);
+            var save = _store.Load();
+            save.tutorials = _data.Tutorials.Where(t => t.Id != guideId && t.Id != predecessorId).Select(t => t.Id).ToList();
+            save.stageProgress = _data.Stages.Values.Select(stage => new StageProgressRow { stageId = stage.Id, clearRating = 1 }).ToList();
+            _store.Flush(save);
+            var beforeRewards = Profile(new LocalPlayerApi(_store).GetMe().GetAwaiter().GetResult());
+
+            Assert.That(beforeRewards.IsFeatureUnlocked(guide.Start.Feature), Is.True);
+            Assert.That(TutorialProgress.IsStarted(guide, TutorialFacts.From(beforeRewards)), Is.False,
+                "탭이 열려도 선행 튜토리얼 보상을 받기 전에는 강화 안내를 시작하지 않는다");
+
+            var granted = _api.Complete(predecessorId).GetAwaiter().GetResult();
+            Assert.That(TutorialProgress.IsStarted(guide, TutorialFacts.From(Profile(granted.snapshot))), Is.True);
+
+            save = _store.Load();
+            save.stageProgress.RemoveAll(row => row.stageId == _data.FeatureUnlocks.RequiredStage(guide.Start.Feature));
+            _store.Flush(save);
+            var featureLocked = Profile(new LocalPlayerApi(_store).GetMe().GetAwaiter().GetResult());
+            Assert.That(TutorialProgress.IsStarted(guide, TutorialFacts.From(featureLocked)), Is.False,
+                "선행 보상을 받아도 기능 해금 조건을 함께 채워야 한다");
+        }
+
         private PlayerProfile Profile(PlayerSnapshot snapshot)
         {
             var profile = new PlayerProfile(_data);

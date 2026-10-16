@@ -56,7 +56,7 @@ Items의 장비 재료와 스킬 재료 예:
 | GeneralCards | `Id`, `MaxPicks`, `Forced`, `Priority`, `Condition.Kind/Value`, `Effect.Kind/Value` | 등장 조건과 선택 효과, 강제 등장과 강제 카드 간 우선순위는 별개다. 같은 현재 값을 갖더라도 계산 가능한 중복이 아니다. 이름·설명은 클라이언트 표에서 찾는다 |
 | PlayerLevels | `BaseExp`, `StepExp`, `MaxLevel` | 시작 요구 경험치·증가량·진행 상한은 독립이다. 레벨별 배열은 이미 로드 때 만든다 |
 | CodexRewards | `Grade`, `Gold` | 몬스터별이 아닌 등급별 지급 정책이다. 등급 키와 지급량 모두 필요하다 |
-| Tutorials | `Id`, `Kind`, `After`, `MinLevel`, `StageId`, `Start.Kind/StageId/UpgradeId/Level/Feature`(선택, Kind `featureUnlocked`는 클라이언트 FeatureUnlocks의 Feature가 열렸는지), `Complete.Kind/StageId/UpgradeId/Level`, `Rewards.Kind/Level/UpgradeId/ItemId/Quantity` | 시작 전투와 완료 목표, 시작 레벨과 목표 레벨, 앞 단계 의존과 배열 순서는 별개다. `Kind`는 `battle`(자동 전투), `guide`(화면 안내), `milestone`(완료 조건 달성 시 보상 지급)을 지원한다. `milestone`은 자동 입장이나 가이드를 시작하지 않는다. 현재 한 행에서 같은 StageId라고 공통 필드를 제거하지 않는다. Kind의 파생 불리언은 전송하지 않는다 |
+| Tutorials | `Id`, `Kind`, `After`, `MinLevel`, `StageId`, `Start.Kind/StageId/UpgradeId/Level/Feature`(선택, Kind `featureUnlocked`는 클라이언트 FeatureUnlocks의 Feature가 열렸는지), `Complete.Kind/StageId/UpgradeId/Level`, `Rewards.Kind/Level/UpgradeId/ItemId/Quantity` | 시작 전투와 완료 목표, 시작 레벨과 목표 레벨, 앞 단계 의존과 배열 순서는 별개다. 시작은 `After` 완료·`MinLevel`·`Start`를 모두 만족해야 하며, 강화 가이드는 선행 보상 지급을 보장하는 `After`를 기능 해금 `Start`와 함께 유지한다. `Kind`는 `battle`(자동 전투), `guide`(화면 안내), `milestone`(완료 조건 달성 시 보상 지급)을 지원한다. `milestone`은 자동 입장이나 가이드를 시작하지 않는다. 현재 한 행에서 같은 StageId라고 공통 필드를 제거하지 않는다. Kind의 파생 불리언은 전송하지 않는다 |
 
 ## API·플레이어 상태 검토
 

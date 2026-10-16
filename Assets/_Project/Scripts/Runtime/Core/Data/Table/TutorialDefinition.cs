@@ -7,7 +7,7 @@ namespace Game.Core
     /// Kind battle: 시작 조건을 채웠고 완료 조건(Complete)을 못 채웠으면 로비 대신 StageId 전투로 보내고, 그 전투는 에너지를 쓰지 않는다.
     /// Kind guide: 로비에서 가이드 단계를 하나씩 강조해 완료 조건까지 이끈다. 단계 템플릿·대사·탭 잠금은 클라이언트 전용 TutorialPresentation이 같은 Id로 갖는다.
     /// Kind milestone: 화면 안내나 자동 전투 없이 완료 조건을 채우면 보상을 지급하고 다음 단계를 연다.
-    /// 시작 조건은 앞 튜토리얼(After) 완료, 플레이어 레벨(MinLevel), 선택 조건 Start(없으면 항상 충족)이다. 스테이지 클리어로 열리는 컨텐츠에 맞춘 가이드는 After 대신 Start를 쓴다. 완료 조건을 채우면 서버에 완료로 저장하며 Rewards를 받는다</summary>
+    /// 시작 조건은 앞 튜토리얼(After) 완료, 플레이어 레벨(MinLevel), 선택 조건 Start(없으면 항상 충족)를 모두 채워야 한다. 가이드는 After로 선행 보상 지급을 보장하고 Start로 기능 해금도 확인한다. 완료 조건을 채우면 서버에 완료로 저장하며 Rewards를 받는다</summary>
     [Serializable]
     public sealed class TutorialDefinition
     {

@@ -435,6 +435,8 @@ namespace Game.Tests
 
             yield return ClickGameButton(tapArea);
             // 앱을 새로 켠 로비는 전투 전 기록이 없어서 스킬 탭은 해금 연출 없이 열려 있다 (해금 연출은 전투에서 돌아왔을 때만 나온다)
+            Assert.That(ui.GetAll<FeatureLockView>().Single(view => Field<string>(view, "_feature") == guideTutorial.Start.Feature).IsLocked, Is.False);
+            Assert.That(ui.Get<ContentUnlockView>().IsOpen, Is.False);
             // 팝업 뒤 가이드 시작 전에 대사 장면이 먼저 나온다. SKIP으로 건너뛴다
             var dialogue = ui.Get<DialogueView>();
             yield return WaitFor(() => dialogue.IsOpen);
