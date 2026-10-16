@@ -23,6 +23,16 @@ class InternalReleaseTests(unittest.TestCase):
             with self.subTest(key=key), self.assertRaises(RuntimeError):
                 release.allocate(dict(env, **{key: value}))
 
+    def test_only_truly_empty_unnamed_draft_can_accompany_completed_code2(self):
+        completed = {'status': 'completed', 'versionCodes': ['2']}
+        empty = {'status': 'draft'}
+        self.assertTrue(release.validate_internal_before_upload({'releases': [completed, empty]}))
+        for changed in [dict(empty, versionCodes=['3']), dict(empty, releaseNotes=[{'text': 'work in progress'}]),
+                        dict(empty, name='Another planned release'), dict(empty, userFraction=0.1),
+                        dict(empty, countryTargeting={'countries': ['KR']})]:
+            with self.subTest(draft=changed), self.assertRaises(RuntimeError):
+                release.validate_internal_before_upload({'releases': [completed, changed]})
+
     def exercise(self, used=False, active_higher=False, foreign_change=False, hash_mismatch=False, uncertain=False):
         with tempfile.TemporaryDirectory() as folder:
             bundle = Path(folder) / 'test.aab'

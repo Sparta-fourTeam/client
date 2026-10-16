@@ -8,6 +8,11 @@ on:
         type: string
         required: true
         default: '1.0.3'
+      publish_verified_code3:
+        description: '새 빌드 없이 검증된 run38828424594의 동일 code3 AAB 게시'
+        type: boolean
+        required: true
+        default: false
       inspect_existing_edit:
         description: '실패한 code3 실행의 기존 Play edit만 읽기 전용 진단'
         type: boolean
@@ -33,7 +38,7 @@ concurrency:
 
 jobs:
   build:
-    if: ${{ !inputs.inspect_existing_edit }}
+    if: ${{ !inputs.inspect_existing_edit && !inputs.publish_verified_code3 }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
     env:
@@ -277,3 +282,43 @@ jobs:
               'unexpected_release_count': len(releases) - len(completed) - len(empty_drafts)}, indent=2))
           # Do not print or upload raw Play API responses, names, or other tracks.
           PY
+
+  publish_verified_code3:
+    if: ${{ inputs.publish_verified_code3 && !inputs.inspect_existing_edit && inputs.publish_to_internal && inputs.acknowledge_edit_invalidation }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Download the exact verified code3 artifact
+        uses: actions/download-artifact@v4
+        with:
+          artifact-ids: '12016589655'
+          github-token: ${{ github.token }}
+          repository: Sparta-fourTeam/client
+          run-id: '38828424594'
+          merge-multiple: true
+          path: build
+      - name: Check publication guards offline
+        run: PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s .github/scripts -p test_dev_internal_release.py -v
+      - name: Install existing Play API dependencies
+        run: python3 -m pip install google-auth==2.40.3 requests==2.32.4
+      - name: Publish the exact verified AAB to internal only
+        env:
+          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          CONFIRM_INTERNAL: ${{ inputs.publish_to_internal }}
+          ACKNOWLEDGE_EDIT_INVALIDATION: ${{ inputs.acknowledge_edit_invalidation }}
+        run: python3 .github/scripts/dev-internal-release.py publish-verified
+      - name: Preserve minimal publication receipt
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: Internal-upload-receipt-${{ github.run_id }}
+          path: build/internal-upload-receipt.json
+          if-no-files-found: warn
+          retention-days: 90

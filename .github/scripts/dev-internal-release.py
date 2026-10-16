@@ -12,6 +12,8 @@ REF = 'refs/heads/build/internal-dev-f597dd18-1.0.3'
 SOURCE = 'f597dd187a8f55708489a7451e964a1ce984e6fc'
 APPROVED_CODE = 3
 APPROVED_VERSION = '1.0.3'
+VERIFIED_BUILD_COMMIT = '24c98d88fcef1fda5a17164ea25b02f1a2e8339b'
+VERIFIED_AAB_SHA256 = 'f60d8546a3a29ce061e0ceec84d686f2ecbbf22600b452d6aeb15981ebe0a5a5'
 
 
 def require(condition, message):
@@ -35,6 +37,20 @@ def by_track(response):
     return result
 
 
+
+def validate_internal_before_upload(track):
+    releases = track.get('releases', [])
+    completed = [item for item in releases if item.get('status') == 'completed'
+                 and [str(value) for value in item.get('versionCodes', [])] == ['2']]
+    empty = [item for item in releases if item.get('status') == 'draft'
+             and not item.get('versionCodes') and not item.get('releaseNotes')
+             and item.get('name') in (None, '', 'Untitled release', '제목 없는 버전', '제목없는 버전')
+             and not item.get('userFraction') and not item.get('countryTargeting')]
+    require(len(completed) == 1 and len(empty) <= 1 and len(releases) == 1 + len(empty),
+            'Internal track contains a different release or non-empty draft; inspect before proceeding')
+    return bool(empty)
+
+
 def publish(play, bundle, evidence, record):
     code = evidence['version_code']
     require(code == APPROVED_CODE and evidence['version_name'] == APPROVED_VERSION, 'Release differs from approved 1.0.3/code3')
@@ -49,15 +65,14 @@ def publish(play, bundle, evidence, record):
     path = '/' + quote(edit_id, safe='')
     record('edit_created', edit_id=edit_id)
     original = by_track(play.call('GET', path + '/tracks'))
-    releases = original['internal'].get('releases', [])
-    require(len(releases) == 1 and releases[0].get('status') == 'completed' and releases[0].get('versionCodes') == ['2'], 'Internal track changed from approved code2; inspect before proceeding')
+    replacing_empty_draft = validate_internal_before_upload(original['internal'])
     codes = []
     for kind in ['bundles', 'apks']:
         codes.extend(int(item['versionCode']) for item in play.call('GET', path + '/' + kind).get(kind, []))
     track_codes = [int(value) for track in original.values() for item in track.get('releases', []) for value in item.get('versionCodes', [])]
     require(code not in codes and code not in track_codes, 'Code3 already used; stop without increment/retry')
     require(all(value < code for value in track_codes), 'A track contains a higher code; inspect before upload')
-    record('play_preflight_verified', existing_artifact_codes=sorted(set(codes)), current_track_codes=sorted(set(track_codes)))
+    record('play_preflight_verified', current_internal_code=2, candidate_code3_unused=True, replacing_empty_draft=replacing_empty_draft)
     record('upload_requested')
     uploaded = play.call('POST', path + '/bundles', bundle=bundle)
     require(uploaded.get('versionCode') == code and uploaded.get('sha256', '').lower() == digest, 'Uploaded bundle identity mismatch')
@@ -111,12 +126,15 @@ def main():
             output.write(f"code={code}\nversion_name={os.environ['RELEASE_VERSION']}\n")
         print(f'Approved one-time 1.0.3 versionCode {code}; first attempt only')
         return
-    require(sys.argv[1:] == ['publish'], 'Unknown command')
+    require(sys.argv[1:] in (['publish'], ['publish-verified']), 'Unknown command')
     evidence = json.loads(Path('build/artifact-manifest.json').read_text())
     env = dict(os.environ, RELEASE_VERSION=evidence['version_name'])
-    require(evidence['source_commit'] == env['GITHUB_SHA'] and allocate(env) == evidence['version_code'], 'Wrong build identity/code')
+    expected_source = VERIFIED_BUILD_COMMIT if sys.argv[1:] == ['publish-verified'] else env['GITHUB_SHA']
+    require(evidence['source_commit'] == expected_source and allocate(env) == evidence['version_code'], 'Wrong build identity/code')
+    if sys.argv[1:] == ['publish-verified']:
+        require(evidence['artifact_sha256'] == VERIFIED_AAB_SHA256, 'Verified run38828424594 AAB hash mismatch')
     require(env.get('CONFIRM_INTERNAL') == 'true' and env.get('ACKNOWLEDGE_EDIT_INVALIDATION') == 'true', 'Internal publication/edit acknowledgment required')
-    receipt = dict(source_commit=evidence['source_commit'], source_dev_commit=SOURCE, version_name=evidence['version_name'], version_code=evidence['version_code'], track='internal', events=[])
+    receipt = dict(source_commit=evidence['source_commit'], source_dev_commit=SOURCE, version_name=evidence['version_name'], version_code=evidence['version_code'], track='internal', uploader_commit=env['GITHUB_SHA'], events=[])
     def record(event, **values):
         receipt['events'].append(dict(event=event, **values))
         Path('build/internal-upload-receipt.json').write_text(json.dumps(receipt, indent=2) + '\n')
