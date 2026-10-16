@@ -8,12 +8,28 @@ import re
 import subprocess
 
 
-# This namespace is bound to the existing repository/workflow counter. Changing
-# the ID or base requires a new range above every previously allocated code.
-AUTOMATIC_CODE_BASE = 300000000
+# The completed code3 publication is the counter anchor. Failed/build-only runs
+# consume counter numbers, but their unuploaded candidates are not Play receipts.
+ANCHOR_CODE = 3
+ANCHOR_RUN_NUMBER = 11
+ANCHOR_RUN_ID = 38832543309
 AUTOMATIC_WORKFLOW_ID = 378016847
 REPOSITORY = 'Sparta-fourTeam/client'
 MAX_VERSION_CODE = 2100000000
+ALLOCATION_SCHEME = 'workflow-run-offset-v1'
+
+
+def code_for_run(number):
+    if type(number) is not int or number <= ANCHOR_RUN_NUMBER:
+        raise ValueError('Workflow counter is not newer than the confirmed publication anchor')
+    code = ANCHOR_CODE + number - ANCHOR_RUN_NUMBER
+    if code > MAX_VERSION_CODE:
+        raise ValueError('Automatic versionCode exceeds the Google Play limit')
+    return code
+
+
+def allocation_receipt(number):
+    return dict(scheme=ALLOCATION_SCHEME, workflowId=AUTOMATIC_WORKFLOW_ID, runNumber=number)
 
 
 def candidate_code(policy, requested_version, main_policy, number):
@@ -21,20 +37,22 @@ def candidate_code(policy, requested_version, main_policy, number):
         raise ValueError('Current main release ledger is required')
     if not re.fullmatch(r'[0-9]+(?:\.[0-9]+){1,2}', requested_version):
         raise ValueError('Invalid tag version')
-    if type(number) is not int or number <= 0:
-        raise ValueError('Invalid workflow run number')
-    code = AUTOMATIC_CODE_BASE + number
-    if code > MAX_VERSION_CODE:
-        raise ValueError('Automatic versionCode exceeds the Google Play limit')
+    code = code_for_run(number)
     for ledger in [policy, main_policy]:
-        records = [ledger] + ledger.get('playUploads', []) + ledger.get('legacyDraftUploads', [])
+        published = ledger.get('playUploads', [])
+        if not any(row.get('versionCode') == ANCHOR_CODE and row.get('versionName') == '1.0.3'
+                   and row.get('actionsRun') == ANCHOR_RUN_ID for row in published):
+            raise ValueError('Confirmed code3 publication anchor is missing from release ledger')
+        records = published + ledger.get('legacyDraftUploads', [])
         for row in records:
             used = row['versionCode']
             if type(used) is not int or not 0 < used <= MAX_VERSION_CODE:
                 raise ValueError('Invalid recorded version code')
-            if code <= used:
-                raise ValueError('Automatic versionCode must exceed every recorded code')
-        if requested_version in [row['versionName'] for row in ledger.get('playUploads', [])]:
+            if code == used:
+                raise ValueError('Automatic versionCode has already been uploaded')
+        if any(code <= row['versionCode'] for row in published):
+            raise ValueError('Automatic versionCode must exceed every confirmed published code')
+        if requested_version in [row['versionName'] for row in published]:
             raise ValueError('Version name is already recorded as uploaded')
     if len(f'{requested_version}({code})') > 50:
         raise ValueError('Play release name exceeds 50 characters')
@@ -106,10 +124,20 @@ def release_number(policy, requested_version, main_policy=None, apk_build=False)
             consumed[number] = name
         # Keep historical small-code integrity checks. Confirmed automatic AAB
         # receipts may have gaps because every dispatch consumes a run number.
-        small = {number for number in seen if number <= AUTOMATIC_CODE_BASE}
+        automatic = set()
+        for row in ledger.get('playUploads', []):
+            allocation = row.get('versionCodeAllocation')
+            if allocation is not None:
+                if (allocation != allocation_receipt(allocation.get('runNumber')) or
+                        row['versionCode'] != code_for_run(allocation.get('runNumber'))):
+                    raise ValueError('Invalid automatic Play upload allocation receipt')
+                automatic.add(row['versionCode'])
+        small = seen - automatic
         if sorted(small) != list(range(1, len(small) + 1)):
             raise ValueError('Each confirmed Play upload ledger must be sequential from 1')
-    small = {number for number in consumed if number <= AUTOMATIC_CODE_BASE}
+    automatic = {row['versionCode'] for ledger in [policy, main_policy or {}]
+                 for row in ledger.get('playUploads', []) if row.get('versionCodeAllocation') is not None}
+    small = set(consumed) - automatic
     if sorted(small) != list(range(1, len(small) + 1)):
         raise ValueError('Confirmed Play upload codes must be sequential from 1')
     if len(set(consumed.values())) != len(consumed):
@@ -172,7 +200,7 @@ def main():
     if args.automatic and 'GITHUB_STEP_SUMMARY' in os.environ:
         with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
             summary.write(f'### Android release candidate\n\nVersion: `{version}`  \n'
-                          f'versionCode: `{code}` = {AUTOMATIC_CODE_BASE} + run {run["run_number"]}  \n'
+                          f'versionCode: `{code}` = {ANCHOR_CODE} + (run {run["run_number"]} - {ANCHOR_RUN_NUMBER})  \n'
                           f'Tag: `{release["tag"]}` / source: `{release["tag_source_sha"]}`  \n'
                           f'Merged build source: `{release["merge_commit_sha"]}` / PR #{release["pr_number"]}\n\n'
                           'This is a build candidate; it is not proof of a Play upload.\n')

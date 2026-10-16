@@ -62,6 +62,16 @@ class ReleaseNumberTests(unittest.TestCase):
             module.release_number(policy(2, released=[{'versionName': '1.0.0', 'versionCode': 1}]), '1.0.1',
                                   policy(2, released=[{'versionName': '0.9.0', 'versionCode': 1}]))
 
+    def test_historical_apk_accepts_confirmed_automatic_gap_only_with_valid_allocation(self):
+        rows = [dict(versionName=f'1.0.{n}', versionCode=n) for n in [1, 2, 3]]
+        row = dict(versionName='1.0.5', versionCode=6,
+                   versionCodeAllocation=module.allocation_receipt(14))
+        ledger = policy(6, '1.0.5', rows + [row])
+        self.assertEqual(module.release_number(ledger, '1.0.5', apk_build=True), ('1.0.5', 6))
+        row['versionCodeAllocation']['runNumber'] = 15
+        with self.assertRaises(ValueError):
+            module.release_number(ledger, '1.0.5', apk_build=True)
+
     def test_requested_version_must_match_and_unuploaded_candidate_can_change_name(self):
         with self.assertRaises(ValueError):
             module.release_number(policy(), '1.0')
@@ -77,16 +87,6 @@ class ReleaseNumberTests(unittest.TestCase):
         main_gap = policy(4, '1.0.4', [rows[0], rows[2]])
         with self.assertRaises(ValueError):
             module.release_number(local_contiguous, '1.0.4', main_gap)
-
-    def test_automatic_upload_receipts_keep_historical_apk_rebuilds_valid(self):
-        ledger = policy(300000009, '1.0.3', [
-            {'versionName': '1.0.1', 'versionCode': 1},
-            {'versionName': '1.0.2', 'versionCode': 300000007},
-            {'versionName': '1.0.3', 'versionCode': 300000009}])
-        self.assertEqual(module.release_number(ledger, '1.0.3', ledger, apk_build=True), ('1.0.3', 300000009))
-        self.assertEqual(module.release_number(policy(), '1.0.1', ledger, apk_build=True), ('1.0.1', 1))
-        with self.assertRaises(ValueError):
-            module.release_number(ledger, '1.0.3', ledger)
 
     def test_cli_ignores_old_high_code_build_tag_and_checks_new_tag_tree(self):
         with tempfile.TemporaryDirectory() as folder:
@@ -150,31 +150,42 @@ class ReleaseNumberTests(unittest.TestCase):
 class AutomaticReleaseNumberTests(unittest.TestCase):
     def setUp(self):
         self.env = dict(GITHUB_REPOSITORY='Sparta-fourTeam/client', GITHUB_RUN_ID='42',
-                        GITHUB_RUN_NUMBER='7', GITHUB_RUN_ATTEMPT='1', GITHUB_SHA='tag-source', BUILD_SHA='fixture-sha',
-                        GITHUB_EVENT_NAME='push', GITHUB_REF='refs/tags/v1.0.3')
-        self.run = dict(id=42, workflow_id=378016847, run_number=7, run_attempt=1,
+                        GITHUB_RUN_NUMBER='12', GITHUB_RUN_ATTEMPT='1', GITHUB_SHA='tag-source', BUILD_SHA='fixture-sha',
+                        GITHUB_EVENT_NAME='push', GITHUB_REF='refs/tags/v1.0.4')
+        self.run = dict(id=42, workflow_id=378016847, run_number=12, run_attempt=1,
                         event='push', head_sha='tag-source',
                         repository={'full_name': 'Sparta-fourTeam/client'})
         self.pages = [{'workflow_runs': [self.run]}]
         self.event = {'created': True, 'forced': False, 'deleted': False}
-        self.release = {'tag': 'v1.0.3', 'tag_source_sha': 'tag-source', 'merge_commit_sha': 'fixture-sha', 'tag_run_id': 42}
+        self.release = {'tag': 'v1.0.4', 'tag_source_sha': 'tag-source', 'merge_commit_sha': 'fixture-sha', 'tag_run_id': 42}
 
 
-    def allocate(self, ledger=None, main=None, version='1.0.3', expected_code=None):
+    def allocate(self, ledger=None, main=None, version='1.0.4', expected_code=None):
         event = json.loads(json.dumps(self.event))
         release = dict(self.release, tag='v' + version)
         env = dict(self.env, GITHUB_REF='refs/tags/v' + version)
-        return module.automatic_release_number(ledger or policy(), version, main or policy(),
+        return module.automatic_release_number(ledger or self.ledger(), version, main or self.ledger(),
                                                self.run, self.pages, env, expected_code, event, release)
 
-    def test_input_version_replaces_stale_candidate_and_exceeds_all_old_codes(self):
-        ledger = policy(2, '1.0.2', [{'versionName': '1.0.1', 'versionCode': 1}])
+    def ledger(self):
+        return policy(3, '1.0.3', [dict(versionName=f'1.0.{n}', versionCode=n,
+                      actionsRun=38832543309 if n == 3 else n) for n in [1, 2, 3]])
+
+    def test_small_codes_start_after_published_anchor_not_old_builds_or_large_draft(self):
+        ledger = self.ledger()
+        ledger['versionCode'] = 4  # Historical build-only candidate is not a publication.
+        ledger['reservedBuilds'] = [{'versionCode': 4}]
         before = json.dumps(ledger)
-        self.assertEqual(self.allocate(ledger), ('1.0.3', 300000007))
-        self.assertEqual(json.dumps(ledger), before)  # Allocation is not an upload receipt.
-        self.run['run_number'] = 8
-        self.env['GITHUB_RUN_NUMBER'] = '8'
-        self.assertEqual(self.allocate(ledger), ('1.0.3', 300000008))
+        self.assertEqual(self.allocate(ledger), ('1.0.4', 4))
+        self.assertEqual(json.dumps(ledger), before)
+        self.run['run_number'] = 13
+        self.env['GITHUB_RUN_NUMBER'] = '13'
+        self.assertEqual(self.allocate(ledger), ('1.0.4', 5))
+        for number in [0, 11, -1, True]:
+            with self.subTest(number=number), self.assertRaises(ValueError):
+                module.candidate_code(ledger, '1.0.4', ledger, number)
+        with self.assertRaisesRegex(ValueError, 'anchor'):
+            self.allocate(main=policy())
 
     def test_rerun_and_new_workflow_counter_fail_closed(self):
         for overrides in [{'run_attempt': 2}, {'workflow_id': 999},
@@ -188,43 +199,41 @@ class AutomaticReleaseNumberTests(unittest.TestCase):
                 self.allocate()
 
     def test_newer_dispatch_on_another_page_rejects_old_queued_run(self):
-        self.pages.append({'workflow_runs': [dict(self.run, id=43, run_number=8, conclusion='failure')]})
+        self.pages.append({'workflow_runs': [dict(self.run, id=43, run_number=13, conclusion='failure')]})
         with self.assertRaisesRegex(ValueError, 'newer release'):
             self.allocate()
         self.pages = [{'workflow_runs': []}]
         with self.assertRaisesRegex(ValueError, 'missing'):
             self.allocate()
 
-    def test_used_code_floor_and_name_checked_in_both_ledgers(self):
-        for key in ['versionCode', 'playUploads', 'legacyDraftUploads']:
-            used = policy()
-            if key == 'versionCode':
-                used[key] = 300000007
-            else:
-                used[key] = [{'versionName': '0.9', 'versionCode': 300000008}]
+    def test_used_code_and_published_floor_checked_in_both_ledgers(self):
+        for key, used_code in [('playUploads', 4), ('playUploads', 5), ('legacyDraftUploads', 4)]:
+            used = self.ledger()
+            used[key].append({'versionName': '0.9', 'versionCode': used_code})
             for kwargs in [{'ledger': used}, {'main': used}]:
                 with self.subTest(key=key, kwargs=kwargs), self.assertRaises(ValueError):
                     self.allocate(**kwargs)
         with self.assertRaises(ValueError):
-            self.allocate(main=policy(released=[{'versionName': '1.0.3', 'versionCode': 2}]))
+            self.allocate(version='1.0.3')
         with self.assertRaisesRegex(ValueError, 'main release ledger'):
-            module.automatic_release_number(policy(), '1.0.3', None, self.run, self.pages, self.env, event=self.event, release=self.release)
+            module.automatic_release_number(self.ledger(), '1.0.4', None, self.run, self.pages,
+                                            self.env, event=self.event, release=self.release)
 
     def test_play_boundaries_and_artifact_code_binding(self):
-        self.assertEqual(self.allocate(expected_code=300000007), ('1.0.3', 300000007))
+        self.assertEqual(self.allocate(expected_code=4), ('1.0.4', 4))
         with self.assertRaisesRegex(ValueError, 'artifact code'):
-            self.allocate(expected_code=300000008)
-        self.run['run_number'] = 1800000000
-        self.env['GITHUB_RUN_NUMBER'] = '1800000000'
-        self.assertEqual(self.allocate(), ('1.0.3', 2100000000))
+            self.allocate(expected_code=5)
+        self.run['run_number'] = 2100000008
+        self.env['GITHUB_RUN_NUMBER'] = '2100000008'
+        self.assertEqual(self.allocate(), ('1.0.4', 2100000000))
         self.run['run_number'] += 1
-        self.env['GITHUB_RUN_NUMBER'] = '1800000001'
+        self.env['GITHUB_RUN_NUMBER'] = '2100000009'
         with self.assertRaisesRegex(ValueError, 'Google Play limit'):
             self.allocate()
-        self.run['run_number'] = 7
-        self.env['GITHUB_RUN_NUMBER'] = '7'
-        self.assertEqual(len(f'{self.allocate(version="1" * 37 + ".0")[0]}(300000007)'), 50)
-        for version in ['v1.0.3', '1.0.3\ncode=1', '1', '1' * 38 + '.0']:
+        self.run['run_number'] = 12
+        self.env['GITHUB_RUN_NUMBER'] = '12'
+        self.assertEqual(len(f'{self.allocate(version="1" * 45 + ".0")[0]}(4)'), 50)
+        for version in ['v1.0.4', '1.0.3\ncode=1', '1', '1' * 46 + '.0']:
             with self.subTest(version=version), self.assertRaises(ValueError):
                 self.allocate(version=version)
 
@@ -273,7 +282,7 @@ class PlayReleaseNameTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(output, 'release_name=1.0.2(2)\n')
         workflow = (SCRIPT.parent.parent / 'workflows/deploy-google-play.yml').read_text()
-        self.assertIn('releaseName: ${{ steps.artifact.outputs.release_name }}', workflow)
+        self.assertIn('python3 .github/scripts/publish-play-internal.py', workflow)
 
     def test_release_name_accepts_50_characters_and_rejects_51_before_upload(self):
         result, output = self.run_artifact_preflight(version='1' * 45 + '.0')

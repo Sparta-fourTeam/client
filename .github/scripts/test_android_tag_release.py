@@ -38,7 +38,7 @@ class TagReleaseTests(unittest.TestCase):
             path.write_text('same release infrastructure\n')
         self.policy = self.root / '.github/android-release.json'
         self.policy.write_text(json.dumps({'versionName': '1.0.2', 'versionCode': 2,
-            'playUploads': [{'versionName': '1.0.1', 'versionCode': 1}],
+            'playUploads': [{'versionName': f'1.0.{n}', 'versionCode': n, 'actionsRun': 38832543309 if n == 3 else n} for n in [1, 2, 3]],
             'legacyDraftUploads': [{'versionName': '1.0', 'versionCode': 214011987}]}))
         (self.root / 'game.txt').write_text('common\n')
         self.commit('common')
@@ -48,12 +48,12 @@ class TagReleaseTests(unittest.TestCase):
         self.git('switch', '-q', 'dev')
         (self.root / 'game.txt').write_text('tagged release\n')
         self.source = self.commit('selected dev source')
-        self.git('tag', '-a', 'v1.0.3', '-m', 'version fixture')
-        self.obj = self.git('rev-parse', 'v1.0.3')
+        self.git('tag', '-a', 'v1.0.4', '-m', 'version fixture')
+        self.obj = self.git('rev-parse', 'v1.0.4')
         self.origin = self.folder / 'origin.git'
         self.git('init', '-q', '--bare', str(self.origin))
         self.git('remote', 'add', 'origin', str(self.origin))
-        self.git('push', '-q', 'origin', 'main', 'dev', 'refs/tags/v1.0.3')
+        self.git('push', '-q', 'origin', 'main', 'dev', 'refs/tags/v1.0.4')
         self.git('update-ref', 'refs/remotes/origin/main', self.base)
         self.git('update-ref', 'refs/remotes/origin/dev', self.source)
         self.git('switch', '-q', 'main')
@@ -61,21 +61,21 @@ class TagReleaseTests(unittest.TestCase):
         self.merged = self.git('rev-parse', 'HEAD')
         self.tag_event = dict(repository={'full_name': module.REPOSITORY}, created=True,
                               deleted=False, forced=False, before='0' * 40, after=self.obj,
-                              ref='refs/tags/v1.0.3')
+                              ref='refs/tags/v1.0.4')
         self.tag_env = dict(GITHUB_REPOSITORY=module.REPOSITORY, GITHUB_RUN_ATTEMPT='1',
-                            GITHUB_EVENT_NAME='push', GITHUB_REF='refs/tags/v1.0.3',
+                            GITHUB_EVENT_NAME='push', GITHUB_REF='refs/tags/v1.0.4',
                             GITHUB_REF_PROTECTED='true', GITHUB_SHA=self.source, GITHUB_RUN_ID='41')
-        self.tag_run = dict(id=41, workflow_id=module.WORKFLOW_ID, event='push', head_branch='v1.0.3',
-                            head_sha=self.source, run_number=6, run_attempt=1, status='completed',
+        self.tag_run = dict(id=41, workflow_id=module.WORKFLOW_ID, event='push', head_branch='v1.0.4',
+                            head_sha=self.source, run_number=12, run_attempt=1, status='completed',
                             conclusion='success', repository={'full_name': module.REPOSITORY})
-        self.run = dict(self.tag_run, id=42, event='pull_request', head_branch='release/v1.0.3', run_number=7)
+        self.run = dict(self.tag_run, id=42, event='pull_request', head_branch='release/v1.0.4', run_number=13)
         self.pr_event = dict(repository={'full_name': module.REPOSITORY}, action='closed',
             pull_request=dict(number=123, merged=True, merge_commit_sha=self.merged,
-                head=dict(ref='release/v1.0.3', sha=self.source, repo={'full_name': module.REPOSITORY}),
+                head=dict(ref='release/v1.0.4', sha=self.source, repo={'full_name': module.REPOSITORY}),
                 base=dict(ref='main', sha=self.base, repo={'full_name': module.REPOSITORY})))
         self.pr_env = dict(self.tag_env, GITHUB_EVENT_NAME='pull_request', GITHUB_REF='refs/heads/main',
-                           GITHUB_SHA=self.merged, GITHUB_RUN_ID='42', GITHUB_RUN_NUMBER='7')
-        self.request = dict(schema=1, tag='v1.0.3', version_name='1.0.3', tag_object_sha=self.obj,
+                           GITHUB_SHA=self.merged, GITHUB_RUN_ID='42', GITHUB_RUN_NUMBER='13')
+        self.request = dict(schema=1, tag='v1.0.4', version_name='1.0.4', tag_object_sha=self.obj,
                             tag_source_sha=self.source, main_base_sha=self.base,
                             tag_run_id=41, workflow_id=module.WORKFLOW_ID, protected_tag=True)
 
@@ -94,9 +94,9 @@ class TagReleaseTests(unittest.TestCase):
         return stream.getvalue()
 
     def fake_api(self, endpoint, paginate=False, binary=False):
-        if endpoint == 'git/ref/tags/v1.0.3':
-            obj = self.git('--git-dir=' + str(self.origin), 'rev-parse', 'refs/tags/v1.0.3')
-            return {'ref': 'refs/tags/v1.0.3', 'object': {'sha': obj}}
+        if endpoint == 'git/ref/tags/v1.0.4':
+            obj = self.git('--git-dir=' + str(self.origin), 'rev-parse', 'refs/tags/v1.0.4')
+            return {'ref': 'refs/tags/v1.0.4', 'object': {'sha': obj}}
         if '/runs?per_page=' in endpoint:
             return [{'workflow_runs': [self.run, self.tag_run]}]
         if endpoint == 'actions/runs/41/artifacts?per_page=100':
@@ -130,18 +130,18 @@ class TagReleaseTests(unittest.TestCase):
         for changes in [{'GITHUB_REF_PROTECTED': 'false'}, {'GITHUB_RUN_ATTEMPT': '2'}]:
             with self.subTest(changes=changes), self.assertRaises(ValueError):
                 module.prepare_request(self.tag_event, dict(self.tag_env, **changes))
-        for tag in ['v1.0', 'v01.0.3', '1.0.3', 'v1.0.3-beta', 'v1.0.3\ncode=1']:
+        for tag in ['v1.0', 'v01.0.3', '1.0.4', 'v1.0.4-beta', 'v1.0.4\ncode=1']:
             with self.subTest(tag=tag), self.assertRaises(ValueError):
                 module.version_from_tag(tag)
 
     def test_moved_tag_or_second_push_cannot_reuse_original_request(self):
-        self.git('--git-dir=' + str(self.origin), 'update-ref', 'refs/tags/v1.0.3', self.base)
+        self.git('--git-dir=' + str(self.origin), 'update-ref', 'refs/tags/v1.0.4', self.base)
         with patch.object(module, 'api', self.fake_api), self.assertRaisesRegex(ValueError, 'moved'):
-            module.tag_identity('v1.0.3')
-        self.git('--git-dir=' + str(self.origin), 'update-ref', 'refs/tags/v1.0.3', self.obj)
+            module.tag_identity('v1.0.4')
+        self.git('--git-dir=' + str(self.origin), 'update-ref', 'refs/tags/v1.0.4', self.obj)
         with patch.object(module, 'api', return_value=[{'workflow_runs': [self.tag_run, dict(self.tag_run, id=99)]}]):
             with self.assertRaisesRegex(ValueError, 'reused'):
-                module.tag_run('v1.0.3', self.source)
+                module.tag_run('v1.0.4', self.source)
 
     def test_newer_dev_is_not_mixed_into_fixed_release_pr(self):
         self.git('switch', '-q', 'dev')
@@ -200,23 +200,23 @@ class TagReleaseTests(unittest.TestCase):
                 return [{'artifacts': [dict(id=99, name='tag-release-request', expired=True)]}]
             return real_api(endpoint, **kwargs)
         with patch.object(module, 'api', expired), self.assertRaisesRegex(ValueError, 'expired'):
-            module.load_request('v1.0.3', self.source)
+            module.load_request('v1.0.4', self.source)
         def tampered(endpoint, **kwargs):
             if endpoint.endswith('/99/zip'):
                 return self.archive(dict(self.request, tag_object_sha=self.base))
             return real_api(endpoint, **kwargs)
         with patch.object(module, 'api', tampered), self.assertRaisesRegex(ValueError, 'no longer matches'):
-            module.load_request('v1.0.3', self.source)
+            module.load_request('v1.0.4', self.source)
         self.tag_run['conclusion'] = 'failure'
         with patch.object(module, 'api', self.fake_api), self.assertRaisesRegex(ValueError, 'finish successfully'):
-            module.load_request('v1.0.3', self.source)
+            module.load_request('v1.0.4', self.source)
 
     def test_real_tag_gates_and_version_cli_with_offline_api(self):
         self.git('update-ref', 'refs/remotes/origin/main', self.merged)
         fixture = self.folder / 'api'
         fixture.mkdir()
         values = {'runs': [{'workflow_runs': [self.run, self.tag_run]}], 'run': self.run,
-                  'ref': {'ref': 'refs/tags/v1.0.3', 'object': {'sha': self.obj}},
+                  'ref': {'ref': 'refs/tags/v1.0.4', 'object': {'sha': self.obj}},
                   'artifacts': [{'artifacts': [dict(id=99, name='tag-release-request', expired=False)]}]}
         for key, value in values.items():
             (fixture / (key + '.json')).write_text(json.dumps(value))
