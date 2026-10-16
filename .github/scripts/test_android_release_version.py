@@ -268,7 +268,8 @@ class PlayReleaseNameTests(unittest.TestCase):
                                    'version_name': version, 'version_code': code}}
             (root / 'verified/artifact-manifest.json').write_text(json.dumps(evidence))
             (root / 'build').mkdir()
-            (root / 'build/tag-release.json').write_text(json.dumps({'source_commit': 'fixture-sha',
+            (root / 'release-context').mkdir()
+            (root / 'release-context/tag-release.json').write_text(json.dumps({'source_commit': 'fixture-sha',
                                                                     'pr_number': expected_pr}))
             output = root / 'output.txt'
             env = dict(os.environ, GITHUB_SHA='tag-source', BUILD_SHA='fixture-sha', GITHUB_OUTPUT=str(output),

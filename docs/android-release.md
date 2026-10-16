@@ -11,7 +11,7 @@ git push origin refs/tags/v1.0.4
 
 태그 push는 **고정 출시 PR 생성 → 최신 source SHA Codex 검토 → GitHub 보호 조건에 따른 merge commit 병합 → 실제 merge SHA 빌드·검증 → Console 확인 → internal 게시**를 승인하는 신호다. **Actions → Deploy Google Play Internal**에서 실행 상태와 Summary를 확인한다. 새 dev 커밋이 들어와도 태그의 소스는 바뀌지 않는다. 일반 기능 PR이나 태그 없는 main 변경은 이 흐름을 실행하지 않는다.
 
-빌드가 끝나면 **Actions 실행 → Summary → Clean Play Console confirmation required**를 확인한다. 태그를 push한 사용자가 **Play Console → 이 게임 → 게시 개요**에서 다른 검토 전송 대기·검토 중·게시 대기 변경이 없는지 확인하고, 다른 Console/API 작성 작업을 실행 종료까지 멈춘다. 읽기는 가능하다. Summary의 `Play-Console-Clean: ...` 한 줄을 **그 출시 PR에 새 댓글로 그대로** 붙인다. 확인은 원래 태그 작성자의 GitHub ID와 run·merge SHA·versionCode·AAB hash에 고정되며, 빌드 후 요청된 확인만 최대 10분 기다린다. 댓글 생성 후 10분 동안만 유효하며 삭제/수정으로 철회할 수 있다. 확인이 없거나 만료/철회되면 edit/upload/commit을 중단한다.
+빌드가 끝나면 **Actions → Deploy Google Play Internal → 해당 실행 → publish → Prepare receipt and request clean Console confirmation → 로그**를 확인한다. 태그를 push한 사용자가 **Play Console → 이 게임 → 게시 개요**에서 다른 검토 전송 대기·검토 중·게시 대기 변경이 없는지 확인하고, 다른 Console/API 작성 작업을 실행 종료까지 멈춘다. 읽기는 가능하다. 그 로그의 `Play-Console-Clean: ...` 한 줄을 **그 출시 PR에 새 댓글로 그대로** 붙인다. 확인은 원래 태그 작성자의 GitHub ID와 run·merge SHA·versionCode·AAB hash에 고정되며, 빌드 후 요청된 확인만 최대 10분 기다린다. 댓글 생성 후 10분 동안만 유효하며 삭제/수정으로 철회할 수 있다. 확인이 없거나 만료/철회되면 edit/upload/commit을 중단한다. 같은 내용은 작업이 끝난 뒤 Summary에도 남지만, 실행 중에는 준비 단계의 실시간 로그를 사용한다.
 
 **이 Console 확인은 매 게시마다 필요한 운영 단계이므로 태그만으로 완전 무인 게시되지는 않는다.** Google은 API edit commit이 Console의 미전송 변경도 함께 제출할 수 있다고 설명한다. 트랙 비교와 `ERROR_IF_IN_REVIEW`만으로 검토 전송 대기 변경 전체가 없음을 보증하지 않는다. 새 credential/권한을 만들거나 이 위험을 묵인하는 대신 현재 구현은 위 확인을 요구한다. [Google 동시 작업 주의사항](https://developers.google.com/android-publisher/concurrency-considerations).
 
@@ -66,7 +66,7 @@ workflow ID `378016847`과 repository에 결합되어 있다. workflow 이름만
 
 서명, `com.teamdoodle.doodledefense`, API 36+, ARM64, 비개발 AAB, 실제 manifest·서명·16KB alignment·hash 검증을 유지한다. 서명 인증서는 기존 설정의 업로드 keystore와 대조한다. 기존 `.github/android-release.json` 기록은 보존하고 자동 후보/빌드 성공을 Play 업로드 완료로 기록하지 않는다. 다음 자동 실행마다 JSON을 편집할 필요는 없다.
 
-자동 게시도 기존 서비스 계정과 권한을 사용한다. Play preflight는 candidate code가 bundles/APKs/트랙 어디에도 사용되지 않았고 현재 모든 트랙의 코드보다 큰지 검사한다. internal의 기존 완료 출시 한 개와 실제 코드·메모·대상 국가·이름·우선순위가 없는 빈 초안 최대 한 개만 허용한다. 그 밖의 작업 중 초안은 덮어쓰지 않는다. internal 이외의 트랙이 달라지면 commit하지 않는다. 업로드 후 commit 직전에도 현재 main·원본 실행·태그·PR·최신 Codex 리뷰·CI를 다시 확인한다. 검증된 artifact의 식별자와 최초 단계는 인증·token refresh·최초 게시 검증보다 먼저 receipt에 기록한다. 이후 실패/응답 불명확 때에도 최소 단계 receipt를 보존하며 원시 Play 응답이나 인증 정보는 남기지 않는다.
+자동 게시도 기존 서비스 계정과 권한을 사용한다. Play preflight는 candidate code가 bundles/APKs/트랙 어디에도 사용되지 않았고 현재 모든 트랙의 코드보다 큰지 검사한다. internal의 기존 완료 출시 한 개와 실제 코드·메모·대상 국가·이름·우선순위가 없는 빈 초안 최대 한 개만 허용한다. 그 밖의 작업 중 초안은 덮어쓰지 않는다. internal 이외의 트랙이 달라지면 commit하지 않는다. 업로드 후 commit 직전에도 현재 main·원본 실행·태그·PR·최신 Codex 리뷰·CI를 다시 확인한다. 검증된 artifact의 식별자와 최초 단계는 인증·token refresh·최초 원격 게시 검증보다 먼저 receipt에 기록한다. 이후 실패/응답 불명확 때에도 최소 단계 receipt를 보존하며 원시 Play 응답이나 인증 정보는 남기지 않는다.
 
 **Actions → Deploy Google Play Internal → Run workflow**는 고정 원본 code2 복구 전용이다. main에서 `release_version=1.0.2`, `recover_original_code2=true`, `publish_to_internal=true`, `acknowledge_edit_invalidation=true`를 명시해야 한다. 원본 artifact/hash·게시 범위·edit 무효화·재실행 검증을 유지하며 태그 경로와 분리한다.
 

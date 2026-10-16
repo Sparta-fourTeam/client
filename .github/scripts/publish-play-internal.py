@@ -126,7 +126,7 @@ def publish(play, bundle, evidence, record, authorize):
 
 def main():
     evidence = json.loads(Path('verified/artifact-manifest.json').read_text())
-    release = json.loads(Path('build/tag-release.json').read_text())
+    release = json.loads(Path('release-context/tag-release.json').read_text())
     require(all(evidence.get(k) == v for k, v in release.items()), 'Artifact tag/PR/merge provenance mismatch')
     require(evidence['source_commit'] == os.environ['BUILD_SHA'] and
             evidence['version_code'] == int(os.environ['ANDROID_VERSION_CODE']) and
@@ -134,6 +134,7 @@ def main():
     files = list(Path('verified/Android').glob('*.aab'))
     require(len(files) == 1, 'Exactly one verified AAB required')
     require(hashlib.sha256(files[0].read_bytes()).hexdigest() == evidence['artifact_sha256'], 'AAB hash mismatch')
+    Path('build').mkdir(exist_ok=True)
     receipt_path = Path('build/internal-upload-receipt.json')
     request_path = Path('build/console-clean-request.json')
     state = dict(source_commit=evidence['source_commit'], actions_run=int(os.environ['GITHUB_RUN_ID']),
@@ -159,6 +160,11 @@ def main():
                        issued_at=datetime.now(timezone.utc).isoformat(),
                        line=confirmation_line(evidence, state['actions_run']))
         request_path.write_text(json.dumps(request, indent=2) + '\n')
+        # Job summaries are published only after the job ends. The operator must
+        # receive the request in the completed preparation step's live log.
+        print('Play Console → this game → Publishing overview: confirm no other ready/in-review/pending changes; pause other writers.', flush=True)
+        print(f'Original tag pusher: add the following exact new comment to https://github.com/Sparta-fourTeam/client/pull/{request["pr_number"]} within 10 minutes:', flush=True)
+        print(request['line'], flush=True)
         with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as out:
             out.write(f'### Clean Play Console confirmation required\n\n'
                       'Play Console → this game → Publishing overview: confirm there are no other changes '

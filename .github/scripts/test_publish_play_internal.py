@@ -1,6 +1,8 @@
 import copy
+from contextlib import redirect_stdout
 import hashlib
 import importlib.util
+import io
 import json
 import os
 from pathlib import Path
@@ -35,20 +37,24 @@ class InternalReleaseTests(unittest.TestCase):
             root = Path(folder)
             (root / 'verified/Android').mkdir(parents=True)
             (root / 'build').mkdir()
+            (root / 'release-context').mkdir()
             bundle = root / 'verified/Android/test.aab'
             bundle.write_bytes(b'verified offline fixture')
             evidence = dict(source_commit='merge', version_code=4, version_name='1.0.4', pr_number=123,
                             artifact_sha256=hashlib.sha256(bundle.read_bytes()).hexdigest(),
                             version_code_allocation={'scheme': 'workflow-run-offset-v1', 'workflowId': 378016847, 'runNumber': 12})
             (root / 'verified/artifact-manifest.json').write_text(json.dumps(evidence))
-            (root / 'build/tag-release.json').write_text(json.dumps({'source_commit': 'merge'}))
+            (root / 'release-context/tag-release.json').write_text(json.dumps({'source_commit': 'merge'}))
             env = dict(BUILD_SHA='merge', ANDROID_VERSION_CODE='4', RELEASE_VERSION='1.0.4', GITHUB_RUN_ID='42', GITHUB_ACTOR_ID='7',
                        GITHUB_STEP_SUMMARY=str(root / 'summary'))
             previous = Path.cwd()
             try:
                 os.chdir(root)
-                with patch.dict(os.environ, env), patch.object(release.sys, 'argv', ['publish', '--prepare']):
+                live_log = io.StringIO()
+                with patch.dict(os.environ, env), patch.object(release.sys, 'argv', ['publish', '--prepare']), redirect_stdout(live_log):
                     release.main()
+                self.assertIn('https://github.com/Sparta-fourTeam/client/pull/123', live_log.getvalue())
+                self.assertIn('Play-Console-Clean: run=42 source=merge code=4 sha256=' + evidence['artifact_sha256'], live_log.getvalue())
                 with patch.dict(os.environ, env), patch.object(release.sys, 'argv', ['publish']), \
                         patch.object(release.subprocess, 'run', side_effect=subprocess.CalledProcessError(1, ['offline'])), \
                         patch.object(release, 'current_confirmation') as confirmation:
