@@ -53,7 +53,7 @@ namespace Game.Core
         {
             var bag = DisposableBag.CreateBuilder();
             _enemyDied.Subscribe(e => _audio.PlaySfx(DeathSound(e.Type))).AddTo(bag);
-            _waveStarted.Subscribe(_ => OnWaveStarted()).AddTo(bag);
+            _waveStarted.Subscribe(OnWaveStarted).AddTo(bag);
             _warning.Subscribe(_ => _audio.PlaySfx(SoundIds.SpecialWarning)).AddTo(bag);
             _wallHp.Subscribe(OnWallHpChanged).AddTo(bag);
             _wallDestroyed.Subscribe(_ => _audio.PlaySfx(SoundIds.WallDestroyed)).AddTo(bag);
@@ -70,16 +70,14 @@ namespace Game.Core
             _ => SoundIds.EnemyDie,
         };
 
-        // 이어하기에서는 WaveManager가 복원 전에 웨이브 1 시작을 먼저 발행한다. 실제로 시작한 웨이브가 아니므로 복원이 끝나
-        // Starting을 벗어나기 전의 시작 메시지는 무시한다. 새 전투의 첫 웨이브 소리는 그대로 낸다
-        private void OnWaveStarted()
+        // 웨이브 1의 시작 메시지는 WaveManager.Initialize에서 발행돼 엔트리포인트 실행 순서에 따라 놓칠 수 있다.
+        // 그래서 첫 웨이브 소리는 Buffered인 상태 메시지에서 따로 내고, 시작 메시지는 웨이브 2부터만 받는다
+        private void OnWaveStarted(WaveStarted e)
         {
-            if (_resuming && _state == StageState.Starting)
+            if (e.WaveIndex > 1)
             {
-                return;
+                _audio.PlaySfx(SoundIds.WaveStart);
             }
-
-            _audio.PlaySfx(SoundIds.WaveStart);
         }
 
         // 방벽 체력은 Buffered라 구독 직후 현재 값이 먼저 온다. 체크포인트 복원도 같은 메시지로 낮은 값을 발행하므로,
@@ -110,6 +108,10 @@ namespace Game.Core
             {
                 _bgmStarted = true;
                 _audio.PlayBgm(SoundIds.BattleBgm, BgmFadeIn);
+                if (!_resuming)
+                {
+                    _audio.PlaySfx(SoundIds.WaveStart);
+                }
             }
         }
 
