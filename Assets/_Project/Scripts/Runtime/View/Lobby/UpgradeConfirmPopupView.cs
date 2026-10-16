@@ -21,6 +21,7 @@ namespace Game.View
         private PlayerProfile _profile;
         private GameDataStore _data;
         private IUpgradeApi _api;
+        private IAudioService _audio;
         private UpgradePurchasePlan _plan;
         private string _name;
         private bool _all, _busy, _visible;
@@ -31,8 +32,8 @@ namespace Game.View
         public RectTransform ConfirmButton => (RectTransform)_confirmButton.transform;
 
         [Inject]
-        public void Construct(PlayerProfile profile, GameDataStore data, IUpgradeApi api)
-        { _profile = profile; _data = data; _api = api; }
+        public void Construct(PlayerProfile profile, GameDataStore data, IUpgradeApi api, IAudioService audio = null)
+        { _profile = profile; _data = data; _api = api; _audio = audio; }
 
         protected override void InitializeView()
         {
@@ -141,6 +142,7 @@ namespace Game.View
                 }
                 if (this != null)
                 {
+                    _audio?.PlaySfx(SoundIds.Upgrade);
                     _visible = false;
                     PopupPanel.Set(_panel, _transition, false);
                     _toast?.Show($"<color=#FFCF5B>{_name} Lv.{_profile.UpgradeLevel(approved.UpgradeId)} 강화 완료!</color>", 1f);

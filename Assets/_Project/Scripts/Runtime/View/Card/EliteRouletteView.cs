@@ -40,15 +40,17 @@ namespace Game.View
         [SerializeField] private RectTransform _winGlow;
 
         private StageManager _manager;
+        private IAudioService _audio;
         private Tween _animation;
         private TMP_Text _skipButtonLabel;
         private bool _awaitingConfirmation;
         private int _run, _shownCards;
 
         [Inject]
-        public void Construct(StageManager manager, IBufferedSubscriber<StageStateChanged> stateChanged)
+        public void Construct(StageManager manager, IBufferedSubscriber<StageStateChanged> stateChanged, IAudioService audio = null)
         {
             _manager = manager;
+            _audio = audio;
             Track(stateChanged.Subscribe(OnStateChanged));
         }
 
@@ -63,6 +65,7 @@ namespace Game.View
         private void OnStateChanged(StageStateChanged message)
         {
             _animation?.Kill();
+            _audio?.StopUiLoop(SoundIds.RouletteSpin);
             HideWinGlow();
             _run++;
             _awaitingConfirmation = false;
@@ -109,6 +112,8 @@ namespace Game.View
         public Tween PlaySpin(int winnerIndex, TweenCallback onComplete = null)
         {
             HideWinGlow();
+            _audio?.PlayUiLoop(SoundIds.RouletteSpin);
+            bool finished = false;
             float start = _spinner.localEulerAngles.z;
             float target = 22.5f + winnerIndex * 45f;
             float travel = Mathf.Repeat(start - target, 360f) + 1080f;
@@ -125,7 +130,16 @@ namespace Game.View
                     }
                 })
                 .SetEase(Ease.OutQuart).SetUpdate(true).SetLink(gameObject)
-                .OnComplete(onComplete);
+                .OnComplete(() =>
+                {
+                    finished = true;
+                    _audio?.StopUiLoop(SoundIds.RouletteSpin);
+                    onComplete?.Invoke();
+                })
+                .OnKill(() =>
+                {
+                    if (!finished) { _audio?.StopUiLoop(SoundIds.RouletteSpin); }
+                });
         }
 
         // 알전구가 핀 끝을 밀어 올렸다가 놓아 주면 핀이 제자리로 튕겨 돌아온다
@@ -295,6 +309,7 @@ namespace Game.View
             _run++;
             _animation?.Kill();
             _winFxStop?.Kill();
+            _audio?.StopUiLoop(SoundIds.RouletteSpin);
             _winGlowTween?.Kill();
             _skipButton.onClick.RemoveListener(OnActionClicked);
             if (_background != null) { _background.Clicked -= SkipCurrentRound; }

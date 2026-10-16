@@ -4,7 +4,7 @@ using UnityEngine.UI;
 namespace Game.View
 {
     /// <summary>하단 메뉴. 인벤토리·캐릭터·스킬·상점 탭은 해당 화면을 열고, 홈은 모두 닫는다. 화면은 한 번에 하나만 열린다</summary>
-    public sealed class LobbyNavView : MonoBehaviour, IUiBindable
+    public sealed class LobbyNavView : MonoBehaviour, IUiBindable, IButtonLockState
     {
         public void BindUi(IUiRegistry registry)
         {
@@ -50,6 +50,11 @@ namespace Game.View
         /// <summary>튜토리얼이 강조하는 스킬 탭 버튼</summary>
         public RectTransform SkillTab => (RectTransform)_skillTab.transform;
         public RectTransform CharacterTab => (RectTransform)_characterTab.transform;
+
+        // 공통 버튼 효과음의 잠금 계약을 유지하고, 새 공용 탭 잠금 상태를 읽는다
+        public bool IsLockedButton(Button button) => button == _skillTab
+            && _skillTab.TryGetComponent<FeatureLockView>(out var featureLock)
+            && (featureLock.IsLocked || featureLock.IsUnlockPending);
 
         /// <summary>스킬 화면을 연다 (인벤토리의 "강화하러 가기" 등)</summary>
         public void OpenSkill() => Select(Tab.Skill);

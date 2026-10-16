@@ -218,6 +218,30 @@ namespace Game.Tests
         // ───────── 스폰 ─────────
 
         [Test]
+        public void Dispose_StopsSpawningAndTargetingAfterSceneObjectsAreDestroyed()
+        {
+            var area = CreateTestSpawnArea();
+            var factory = new FakeEnemyViewFactory(0f);
+            var spawner = CreateSpawner(factory, out var waveStarted, out _, spawnArea: area);
+            StartWave(waveStarted, enemyCount: 5);
+            spawner.Advance(1f);
+            Assert.That(factory.Created.Count, Is.EqualTo(1));
+
+            spawner.Dispose();
+            Object.DestroyImmediate(area.gameObject);
+            foreach (var enemy in factory.Created) { Object.DestroyImmediate(enemy.gameObject); }
+
+            Assert.DoesNotThrow(() => spawner.Advance(100f));
+            StartWave(waveStarted, enemyCount: 5);
+            Assert.DoesNotThrow(() => spawner.Advance(100f));
+            var targets = new List<IEnemyTarget>();
+            Assert.That(spawner.GetNearest(Vector2.zero, 5, targets), Is.Zero);
+            Assert.That(spawner.NextSpawnSeconds, Is.Zero);
+            Assert.That(factory.CreateCallCount, Is.EqualTo(1));
+            Assert.DoesNotThrow(spawner.Dispose);
+        }
+
+        [Test]
         public void Advance_BeforeWaveStarted_DoesNotSpawn()
         {
             var factory = new FakeEnemyViewFactory(3f);

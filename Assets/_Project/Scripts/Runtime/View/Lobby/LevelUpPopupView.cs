@@ -54,6 +54,7 @@ namespace Game.View
         private readonly List<LevelUpLineView> _unlockCards = new();
         private readonly List<LevelUpLineView> _rewardCards = new();
         private GameDataStore _data;
+        private IAudioService _audio;
         private UniTaskCompletionSource _closed;
         private Sequence _sequence;
         private Tween _hintBlink;
@@ -68,7 +69,8 @@ namespace Game.View
         public bool IsPlaying => _playing;
 
         [Inject]
-        public void Construct(GameDataStore data) => _data = data;
+        public void Construct(GameDataStore data, IAudioService audio = null)
+        { _data = data; _audio = audio; }
 
         protected override void InitializeView()
         {
@@ -148,6 +150,7 @@ namespace Game.View
             _unlockSection.transform.localScale = Vector3.zero;
             _rewardSection.transform.localScale = Vector3.zero;
             bool leveled = news.LeveledUp && _levelLabel != null;
+            if (news.LeveledUp && !leveled) { _audio?.PlaySfx(SoundIds.LevelUp); }
             if (_levelRow != null)
             {
                 _levelRow.SetActive(news.LeveledUp);
@@ -200,11 +203,12 @@ namespace Game.View
                 seq.Join(DOTween.To(() => _levelLabel.alpha, a => _levelLabel.alpha = a, 1f, 0.12f));
                 float impact = seq.Duration();
                 InsertImpact(seq, impact);
+                seq.InsertCallback(impact, () => _audio?.PlaySfx(SoundIds.LevelUp));
                 seq.Append(_levelLabel.transform.DOPunchScale(Vector3.one * 0.18f, 0.3f, 6));
             }
 
-            AppendCards(seq, _unlockSection, _unlockCards, unlockCount);
-            AppendCards(seq, _rewardSection, _rewardCards, rewardCount);
+            AppendCards(seq, _unlockSection, _unlockCards, unlockCount, !news.LeveledUp);
+            AppendCards(seq, _rewardSection, _rewardCards, rewardCount, !news.LeveledUp && unlockCount == 0);
             seq.OnComplete(OnSequenceDone);
             _sequence = seq;
         }
@@ -249,7 +253,7 @@ namespace Game.View
             }
         }
 
-        private void AppendCards(Sequence seq, GameObject section, List<LevelUpLineView> cards, int count)
+        private void AppendCards(Sequence seq, GameObject section, List<LevelUpLineView> cards, int count, bool playSound)
         {
             if (count == 0)
             {
@@ -258,6 +262,7 @@ namespace Game.View
 
             seq.AppendInterval(0.08f);
             seq.Append(section.transform.DOScale(1f, 0.18f).SetEase(Ease.OutCubic));
+            if (playSound) { seq.AppendCallback(() => _audio?.PlaySfx(SoundIds.LevelUp)); }
             for (int i = 0; i < count; i++)
             {
                 seq.Append(cards[i].transform.DOScale(1f, 0.28f).SetEase(Ease.OutBack));

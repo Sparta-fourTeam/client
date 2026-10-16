@@ -374,6 +374,8 @@ namespace Game.Tests
             Assert.That(ui.Get<DialogueView>().IsOpen, Is.False);
             // 스테이지를 깨기 전에는 캐릭터 탭이 자물쇠 판에 덮여 열리지 않고, 판을 누르면 안내가 뜬다
             var nav = ui.Get<LobbyNavView>();
+            Assert.That(nav.IsLockedButton(Field<Button>(nav, "_skillTab")), Is.True,
+                "잠긴 스킬 탭은 공통 버튼 효과음에도 잠금 상태를 알린다");
             var characterLock = Field<Button>(nav.GetComponentsInChildren<FeatureLockView>(true).Single(l => Field<string>(l, "_feature") == "character"), "_lock");
             Assert.That(characterLock.gameObject.activeInHierarchy, Is.True);
             yield return ClickGameButton(characterLock);
@@ -444,6 +446,7 @@ namespace Game.Tests
             yield return WaitFor(() => !dialogue.IsOpen);
             var guide = ui.Get<TutorialGuideView>();
             var nav = ui.Get<LobbyNavView>();
+            Assert.That(nav.IsLockedButton(Field<Button>(nav, "_skillTab")), Is.False);
             yield return WaitFor(() => Field<GameObject>(guide, "_root").activeSelf);
             // 강조한 버튼 외에는 가림판이 터치를 막는다
             Assert.That(TopHit(Field<Button>(nav, "_shopTab")), Is.EqualTo("Blocker"));

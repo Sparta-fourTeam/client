@@ -20,6 +20,7 @@ namespace Game.Core
         private readonly TargetReservations reservations = new();
         private IEnemyTargetProvider targetProvider;
         private IBufferedPublisher<SkillChanged> skillChanged;
+        private IPublisher<SkillFired> skillFired;
         private ChildSkillCaster childCaster;
         private ISkillUnlock skillUnlock;
         private IPermanentSkillEffects permanentEffects;
@@ -28,7 +29,7 @@ namespace Game.Core
         private static readonly int AttackHash = Animator.StringToHash("Attack");
 
         [Inject]
-        public void Construct(IEnemyTargetProvider targetProvider, IBufferedPublisher<SkillChanged> skillChanged, ISkillDataProvider dataProvider, IWeaponProgression progression = null, Game.Core.Defense.Wall wall = null, IStartingSkills startingSkills = null, ISkillUnlock skillUnlock = null, IPermanentSkillEffects permanentEffects = null)
+        public void Construct(IEnemyTargetProvider targetProvider, IBufferedPublisher<SkillChanged> skillChanged, ISkillDataProvider dataProvider, IWeaponProgression progression = null, Game.Core.Defense.Wall wall = null, IStartingSkills startingSkills = null, ISkillUnlock skillUnlock = null, IPermanentSkillEffects permanentEffects = null, IPublisher<SkillFired> skillFired = null)
         {
             this.startingSkills = startingSkills ?? new DefaultStartingSkills();
             this.targetProvider = targetProvider;
@@ -38,6 +39,7 @@ namespace Game.Core
             this.wall = wall;
             this.skillUnlock = skillUnlock;
             this.permanentEffects = permanentEffects;
+            this.skillFired = skillFired;
         }
 
         // 스킬의 기본 설정에 영구 강화 효과를 적용한다. 판 안의 카드 강화는 이 설정 위에 쌓인다 (영구 강화가 없으면 기본 설정 그대로)
@@ -115,7 +117,7 @@ namespace Game.Core
             var weapon = SkillFactory.Create(data, prefab, transform, targetProvider, wall, CreateConfig(data),
                 reservations: reservations, formPrefabs: assets.GetFormPrefabs(data.id));
             weapon.UseChildCaster(childCaster);
-            weapon.Fired += OnSkillFired;
+            weapon.Fired += () => OnSkillFired(weapon);
             skills.Add(weapon);
             PublishSkills();
             return true;
@@ -220,8 +222,10 @@ namespace Game.Core
             }
         }
 
-        private void OnSkillFired()
+        private void OnSkillFired(SkillCaster skill)
         {
+            skillFired?.Publish(new SkillFired(skill.Data.id,
+                skill.Data.castType == CastType.Beam ? skill.Stats.Beam.Duration : 0f));
             if (attackAnimator == null || Time.time - lastAttackPose < 0.16f) { return; }
             lastAttackPose = Time.time;
             attackAnimator.SetTrigger(AttackHash);

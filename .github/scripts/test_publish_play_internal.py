@@ -15,6 +15,22 @@ spec.loader.exec_module(release)
 
 
 class InternalReleaseTests(unittest.TestCase):
+    def test_manual_build_only_artifact_is_rejected_before_any_play_access(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            (root / 'verified').mkdir()
+            (root / 'release-context').mkdir()
+            (root / 'verified/artifact-manifest.json').write_text('{}')
+            (root / 'release-context/tag-release.json').write_text(json.dumps({'source_mode': 'manual-build-only-v1'}))
+            before = Path.cwd()
+            try:
+                os.chdir(root)
+                with patch.object(release.subprocess, 'run', side_effect=AssertionError('External access forbidden')):
+                    with self.assertRaisesRegex(RuntimeError, 'Build-only artifacts cannot be published'):
+                        release.main()
+            finally:
+                os.chdir(before)
+
     def test_initial_receipt_survives_first_release_authorization_failure(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
