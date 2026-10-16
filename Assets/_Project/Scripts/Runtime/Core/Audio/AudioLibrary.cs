@@ -11,6 +11,8 @@ namespace Game.Core
         public string id;
         [Tooltip("효과음은 이 중 하나를 무작위로 재생하고, 배경음은 첫 번째 클립을 쓴다")]
         public AudioClip[] clips;
+        [Tooltip("전투가 멈추면 재생 위치를 보존해 멈추고, 전투 재개 시 이어서 재생한다")]
+        public bool pauseWithBattle;
         [Range(0f, 1f)] public float volume = 1f;
         [Tooltip("효과음 피치를 1 ± 이 값 안에서 무작위로 흔든다")]
         [Range(0f, 0.5f)] public float pitchVariance;

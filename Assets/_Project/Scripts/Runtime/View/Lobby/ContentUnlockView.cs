@@ -1,8 +1,10 @@
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
+using Game.Core;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using VContainer;
 
 namespace Game.View
 {
@@ -35,6 +37,10 @@ namespace Game.View
         private Tween _hintBlink;
         private Tween _fxStop;
         private bool _playing;
+        private IAudioService _audio;
+
+        [Inject]
+        public void Construct(IAudioService audio) => _audio = audio;
 
         public bool IsOpen => _panel.activeSelf;
 
@@ -83,6 +89,7 @@ namespace Game.View
             seq.InsertCallback(open, () =>
             {
                 _lock.sprite = _lockOpen;
+                _audio?.PlaySfx(SoundIds.LevelUp);
                 PlayFx();
             });
             seq.Insert(open, DOTween.To(() => _flash.alpha, a => _flash.alpha = a, 0.35f, 0.04f));

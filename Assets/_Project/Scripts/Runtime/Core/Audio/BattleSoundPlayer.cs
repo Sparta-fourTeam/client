@@ -15,6 +15,8 @@ namespace Game.Core
         private readonly IAudioService _audio;
         private readonly bool _resuming;
         private readonly ISubscriber<EnemyDied> _enemyDied;
+        private readonly ISubscriber<EnemyHpChanged> _enemyHp;
+        private readonly ISubscriber<SkillFired> _skillFired;
         private readonly ISubscriber<WaveStarted> _waveStarted;
         private readonly ISubscriber<SpecialEnemyWarning> _warning;
         private readonly ISubscriber<WallHpChanged> _wallHp;
@@ -31,6 +33,8 @@ namespace Game.Core
             IAudioService audio,
             StageContext stageContext,
             ISubscriber<EnemyDied> enemyDied,
+            ISubscriber<EnemyHpChanged> enemyHp,
+            ISubscriber<SkillFired> skillFired,
             ISubscriber<WaveStarted> waveStarted,
             ISubscriber<SpecialEnemyWarning> warning,
             ISubscriber<WallHpChanged> wallHp,
@@ -41,6 +45,8 @@ namespace Game.Core
             _audio = audio;
             _resuming = stageContext.Checkpoint != null;
             _enemyDied = enemyDied;
+            _enemyHp = enemyHp;
+            _skillFired = skillFired;
             _waveStarted = waveStarted;
             _warning = warning;
             _wallHp = wallHp;
@@ -52,6 +58,8 @@ namespace Game.Core
         public void Initialize()
         {
             var bag = DisposableBag.CreateBuilder();
+            _skillFired.Subscribe(OnSkillFired).AddTo(bag);
+            _enemyHp.Subscribe(e => PlayIfMapped(SoundIds.SkillHit(e.Damage))).AddTo(bag);
             _enemyDied.Subscribe(e => _audio.PlaySfx(DeathSound(e.Type))).AddTo(bag);
             _waveStarted.Subscribe(OnWaveStarted).AddTo(bag);
             _warning.Subscribe(_ => _audio.PlaySfx(SoundIds.SpecialWarning)).AddTo(bag);
@@ -69,6 +77,25 @@ namespace Game.Core
             EnemyType.Boss => SoundIds.BossDie,
             _ => SoundIds.EnemyDie,
         };
+
+        private void PlayIfMapped(string id)
+        {
+            if (id != null) { _audio.PlaySfx(id); }
+        }
+
+        private void OnSkillFired(SkillFired e)
+        {
+            var id = SoundIds.SkillCast(e.SkillId);
+            if (id == null) { return; }
+            if (e.SkillId is 13 or 14 && e.Duration > 0f)
+            {
+                _audio.PlaySfx(id, e.Duration, 0.3f);
+            }
+            else
+            {
+                _audio.PlaySfx(id);
+            }
+        }
 
         // 웨이브 1의 시작 메시지는 WaveManager.Initialize에서 발행돼 엔트리포인트 실행 순서에 따라 놓칠 수 있다.
         // 그래서 첫 웨이브 소리는 Buffered인 상태 메시지에서 따로 내고, 시작 메시지는 웨이브 2부터만 받는다
@@ -98,9 +125,12 @@ namespace Game.Core
             _state = e.State;
             if (e.State is StageState.Submitting or StageState.Finished)
             {
+                _audio.StopBattleSfx();
                 _audio.StopBgm(BgmFadeOut);
                 return;
             }
+
+            _audio.SetBattleSfxPaused(e.State is StageState.CardSelect or StageState.EliteRoulette or StageState.Paused);
 
             // 이어하기는 Start 뒤에 체크포인트 상태가 복원되므로 Initialize에서 바로 틀지 않는다.
             // Starting을 벗어난 첫 진행 상태에서 한 번만 시작해, 이미 끝난 전투를 다시 열 때 순간적으로 울리지 않게 한다
@@ -117,6 +147,7 @@ namespace Game.Core
 
         private void OnStageEnded(StageEnded e)
         {
+            _audio.StopBattleSfx();
             _audio.StopBgm(BgmFadeOut);
             _audio.PlaySfx(e.Outcome == StageOutcome.Clear ? SoundIds.StageClear : SoundIds.StageFail);
         }
@@ -124,6 +155,7 @@ namespace Game.Core
         public void Dispose()
         {
             _subscriptions?.Dispose();
+            _audio.StopBattleSfx();
             _audio.StopBgm(BgmFadeOut);
         }
     }

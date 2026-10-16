@@ -1,9 +1,11 @@
 using System.Collections.Generic;
 using DG.Tweening;
+using Game.Core;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using VContainer;
 
 namespace Game.View
 {
@@ -113,24 +115,32 @@ namespace Game.View
 
     /// <summary>모든 화면의 버튼에 눌림 피드백(살짝 줄었다 되돌아옴)을 준다. 프리팹마다 붙이지 않고 한 곳에서 처리하므로
     /// 실행 중에 만들어지는 버튼과 앞으로 추가하는 버튼도 자동으로 적용된다. 끄고 싶은 버튼에는 NoPressFeedback을 붙인다.
-    /// 눌린 위치에서 이벤트 시스템이 고르는 대상(가장 위의 클릭 가능한 오브젝트)이 눌릴 수 있는 Button일 때만 반응한다</summary>
+    /// 눌린 위치에서 이벤트 시스템이 고르는 대상(가장 위의 클릭 가능한 오브젝트)이 눌릴 수 있는 Button일 때만 반응한다.
+    /// 버튼 누름 소리는 크기 애니메이션 여부와 관계없이 공용 오디오 서비스로 재생한다</summary>
     public sealed class ButtonPressFeedback : MonoBehaviour
     {
         private readonly PressScaleAnimator _animator = new();
         private readonly List<RaycastResult> _hits = new();
         private PointerEventData _eventData;
+        private IAudioService _audio;
+
+        [Inject]
+        public void Construct(IAudioService audio) => _audio = audio;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        private static void Install()
+        private static void Install() => EnsureInstance();
+
+        public static ButtonPressFeedback EnsureInstance()
         {
-            if (FindFirstObjectByType<ButtonPressFeedback>() != null)
+            var existing = FindFirstObjectByType<ButtonPressFeedback>();
+            if (existing != null)
             {
-                return;
+                return existing;
             }
 
             var go = new GameObject(nameof(ButtonPressFeedback));
             DontDestroyOnLoad(go);
-            go.AddComponent<ButtonPressFeedback>();
+            return go.AddComponent<ButtonPressFeedback>();
         }
 
         private void Update()
@@ -156,6 +166,10 @@ namespace Game.View
         internal Button Press(Vector2 screenPosition)
         {
             var button = FindButton(screenPosition);
+            if (button != null)
+            {
+                _audio?.PlaySfx(ClickSoundFor(button));
+            }
             if (button != null && button.GetComponentInParent<NoPressFeedback>() == null)
             {
                 _animator.Press(button.transform);
@@ -166,6 +180,18 @@ namespace Game.View
         }
 
         internal void ReleasePress() => _animator.Release();
+
+        private static string ClickSoundFor(Button button)
+        {
+            foreach (var behaviour in button.GetComponentsInParent<MonoBehaviour>())
+            {
+                if (behaviour is IButtonLockState state && state.IsLockedButton(button))
+                {
+                    return SoundIds.UiLocked;
+                }
+            }
+            return SoundIds.UiClick;
+        }
 
         private Button FindButton(Vector2 screenPosition)
         {

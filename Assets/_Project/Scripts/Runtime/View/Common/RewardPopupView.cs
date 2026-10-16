@@ -1,8 +1,10 @@
 using System.Collections.Generic;
 using DG.Tweening;
+using Game.Core;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using VContainer;
 
 namespace Game.View
 {
@@ -34,6 +36,10 @@ namespace Game.View
         private RectTransform _rewardContent;
         private float _rewardAreaHeight;
         private Vector2 _rewardPosition;
+        private IAudioService _audio;
+
+        [Inject]
+        public void Construct(IAudioService audio) => _audio = audio;
 
         /// <summary>등장 연출이 아직 재생 중인가 (이때 탭하면 연출만 건너뛴다)</summary>
         public bool IsPlaying => _playing;
@@ -124,6 +130,7 @@ namespace Game.View
 
             seq.Append(Fade(_description, 1f, 0.2f));
             float reveal = seq.Duration();
+            if (count > 0) { seq.InsertCallback(reveal, () => _audio?.PlaySfx(SoundIds.LevelUp)); }
             foreach (var cell in cells)
             {
                 seq.Append(cell.DOScale(1f, 0.28f).SetEase(Ease.OutBack));

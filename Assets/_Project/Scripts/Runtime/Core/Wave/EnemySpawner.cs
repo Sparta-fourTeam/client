@@ -45,6 +45,7 @@ namespace Game.Core
 
         private IDisposable _subscriptions;
         private bool _isSpawningAllowed;
+        private bool _disposed;
 
         // 지금 버스트에서 스폰할 몬스터 ID를 섞어 둔 순서. 하나씩 꺼내 스폰한다
         private readonly List<int> _burst = new();
@@ -113,6 +114,7 @@ namespace Game.Core
 
         public void Initialize()
         {
+            if (_disposed) { return; }
             DisposableBagBuilder bag = DisposableBag.CreateBuilder();
             _waveStartedSubscriber.Subscribe(OnWaveStarted).AddTo(bag);
             _subscriptions = bag.Build();
@@ -120,7 +122,20 @@ namespace Game.Core
 
         public void Dispose()
         {
+            if (_disposed) { return; }
+            _disposed = true;
+            _isSpawningAllowed = false;
             _subscriptions?.Dispose();
+            _subscriptions = null;
+            foreach (var enemy in _activeEnemies)
+            {
+                if (enemy != null) { enemy.SpawnRequested -= OnSpawnRequested; }
+            }
+            _activeEnemies.Clear();
+            _nearestCandidates.Clear();
+            _pendingSpawns.Clear();
+            _burst.Clear();
+            _waveSpawns = Array.Empty<WaveSpawn>();
         }
 
         public void Tick()
@@ -131,6 +146,7 @@ namespace Game.Core
         // 스폰 로직
         public void Advance(float deltaTime)
         {
+            if (_disposed) { return; }
             FlushSpawnRequests();
             TickCombat(deltaTime);
 
@@ -213,6 +229,7 @@ namespace Game.Core
 
         private void OnWaveStarted(WaveStarted message)
         {
+            if (_disposed) { return; }
             _checkpointWaveIndex = message.WaveIndex - 1;
             _specialWarned = false;
             _waveSpawns = message.Spawns;
@@ -287,6 +304,7 @@ namespace Game.Core
 
         private void OnSpawnRequested(EnemySpawnRequest request)
         {
+            if (_disposed) { return; }
             _pendingSpawns.Enqueue(request);
         }
 

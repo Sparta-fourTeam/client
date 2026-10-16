@@ -12,15 +12,17 @@ namespace Game.Boot
         private readonly ITransitionCurtain _curtain;
         private readonly StageContext _stageContext;
         private readonly LifetimeScope _root;
+        private readonly IAudioService _audio;
         private bool _busy;
 
         public SceneId Current { get; private set; } = SceneId.Boot;
 
-        public SceneLoader(ITransitionCurtain curtain, StageContext stageContext, LifetimeScope root)
+        public SceneLoader(ITransitionCurtain curtain, StageContext stageContext, LifetimeScope root, IAudioService audio = null)
         {
             _curtain = curtain;
             _stageContext = stageContext;
             _root = root;
+            _audio = audio;
         }
 
         public UniTask GoToLoading() => Load(SceneId.Loading);
@@ -57,6 +59,8 @@ namespace Game.Boot
 
                 try
                 {
+                    // 전투 음악은 Stage의 상태 메시지가 시작한다. 기존 음악은 로드 전에 줄인다.
+                    if (next == SceneId.Stage) { _audio?.StopBgm(0.35f); }
                     using (LifetimeScope.EnqueueParent(_root))
                     {
                         await SceneManager.LoadSceneAsync(next.ToString(), LoadSceneMode.Single).ToUniTask();
@@ -71,6 +75,8 @@ namespace Game.Boot
                     }
 
                     Current = next;
+                    if (next == SceneId.Loading) { _audio?.PlayBgm(SoundIds.IntroBgm); }
+                    else if (next == SceneId.Lobby) { _audio?.PlayBgm(SoundIds.LobbyBgm); }
                 }
                 catch
                 {
