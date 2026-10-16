@@ -186,6 +186,33 @@ class IntegrationTests(unittest.TestCase):
         self.assertEqual(receipt['codex_review_id'], 22)
         self.assertEqual(receipt['codex_commit_sha'], self.fx.source)
 
+    def test_current_completed_machine_summary_requires_exact_clean_finished_reviews(self):
+        # Actual no-findings bot responses retain this state header as of
+        # 2026-10-16; its mere presence must not stall every release.
+        state = dict(code_review=dict(commit_sha=self.fx.source, status='completed',
+                         has_any_findings=False, has_unresolved_findings=False),
+                     security_review=dict(commit_sha=None, status=None,
+                         has_any_findings=None, has_unresolved_findings=None))
+        original = self.summary_comment()
+        def response(value):
+            return dict(original, body=original['body'] + '\n<!-- codex-review-state:v1 ' + json.dumps(value) + ' -->')
+        self.summary_comments = [response(state)]
+        self.assertEqual(module.codex_completed_summary(123, self.fx.source)['commit_id'], self.fx.source)
+        invalid = []
+        for changes in [dict(status='running'), dict(commit_sha=self.fx.base),
+                        dict(has_any_findings=True), dict(has_unresolved_findings=True),
+                        dict(has_any_findings=None)]:
+            changed = copy.deepcopy(state)
+            changed['code_review'].update(changes)
+            invalid.append(changed)
+        changed = copy.deepcopy(state)
+        changed['security_review'].update(status='running', commit_sha=self.fx.source)
+        invalid.append(changed)
+        for value in invalid:
+            with self.subTest(state=value):
+                self.summary_comments = [response(value)]
+                self.assertIsNone(module.codex_completed_summary(123, self.fx.source))
+
     def test_summary_cannot_replace_actor_identity_exact_source_or_completed_state(self):
         self.rows = []
         original = self.summary_comment()

@@ -6,50 +6,14 @@ import os
 from pathlib import Path
 import subprocess
 import sys
-import time
-from datetime import datetime, timezone
 from urllib.parse import quote
 
 PACKAGE = 'com.teamdoodle.doodledefense'
-CONSOLE_CONFIRMATION_TTL = 600
 
 
 def require(condition, message):
     if not condition:
         raise RuntimeError(message)
-
-
-def confirmation_line(evidence, run_id):
-    return (f'Play-Console-Clean: run={run_id} source={evidence["source_commit"]} '
-            f'code={evidence["version_code"]} sha256={evidence["artifact_sha256"]}')
-
-
-def github_json(endpoint, paginate=False):
-    command = ['gh', 'api', 'repos/Sparta-fourTeam/client/' + endpoint]
-    if paginate:
-        command += ['--paginate', '--slurp']
-    return json.loads(subprocess.check_output(command, text=True))
-
-
-def clean_confirmation(request, comments, now):
-    issued = datetime.fromisoformat(request['issued_at']).timestamp()
-    matches = []
-    for row in comments:
-        actor = row.get('user', {})
-        if (row.get('body', '').strip() != request['line'] or actor.get('type') != 'User'
-                or actor.get('id') != request['actor_id']):
-            continue
-        created = datetime.fromisoformat(row['created_at'].replace('Z', '+00:00')).timestamp()
-        if not issued <= created <= now or now - created > CONSOLE_CONFIRMATION_TTL:
-            continue
-        matches.append(row)
-    return max(matches, key=lambda row: row['id']) if matches else None
-
-
-def current_confirmation(request):
-    pages = github_json(f'issues/{request["pr_number"]}/comments?per_page=100', paginate=True)
-    comments = [row for page in pages for row in page]
-    return clean_confirmation(request, comments, time.time())
 
 
 def tracks_by_name(response):
@@ -136,13 +100,13 @@ def main():
     require(hashlib.sha256(files[0].read_bytes()).hexdigest() == evidence['artifact_sha256'], 'AAB hash mismatch')
     Path('build').mkdir(exist_ok=True)
     receipt_path = Path('build/internal-upload-receipt.json')
-    request_path = Path('build/console-clean-request.json')
     state = dict(source_commit=evidence['source_commit'], actions_run=int(os.environ['GITHUB_RUN_ID']),
                  version_name=evidence['version_name'], version_code=evidence['version_code'],
                  artifact_sha256=evidence['artifact_sha256'],
-                 version_code_allocation=evidence['version_code_allocation'], track='internal', events=[])
+                 version_code_allocation=evidence['version_code_allocation'], track='internal',
+                 publication_policy='protected-tag-approval; no-other-pending-console-changes', events=[])
     if sys.argv[1:] != ['--prepare']:
-        require(not sys.argv[1:] and receipt_path.exists(), 'Initial receipt and Console request must be prepared first')
+        require(not sys.argv[1:] and receipt_path.exists(), 'Initial artifact receipt must be prepared first')
         previous = json.loads(receipt_path.read_text())
         require(all(previous.get(k) == v for k, v in state.items() if k != 'events'), 'Initial receipt identity mismatch')
         state = previous
@@ -151,31 +115,13 @@ def main():
         receipt_path.write_text(json.dumps(state, indent=2) + '\n')
         print(event)
     if sys.argv[1:] == ['--prepare']:
-        record('prepared')  # Before auth, token refresh, or the first release authorization.
-        # The original protected tag pusher is already authorized by GitHub's
-        # push rules. Pin its immutable actor ID; no new role-reading permission.
-        actor_id = int(os.environ['GITHUB_ACTOR_ID'])
-        require(actor_id > 0, 'Missing original tag actor')
-        request = dict(pr_number=evidence['pr_number'], actor_id=actor_id,
-                       issued_at=datetime.now(timezone.utc).isoformat(),
-                       line=confirmation_line(evidence, state['actions_run']))
-        request_path.write_text(json.dumps(request, indent=2) + '\n')
-        # Job summaries are published only after the job ends. The operator must
-        # receive the request in the completed preparation step's live log.
-        print('Play Console → this game → Publishing overview: confirm no other ready/in-review/pending changes; pause other writers.', flush=True)
-        print(f'Original tag pusher: add the following exact new comment to https://github.com/Sparta-fourTeam/client/pull/{request["pr_number"]} within 10 minutes:', flush=True)
-        print(request['line'], flush=True)
+        record('prepared')  # Before auth, token refresh, or the first remote release gate.
+        message = ('The new protected version tag authorizes internal publication under the agreed '
+                   'no-other-pending-Console-changes policy. No confirmation comment is required. '
+                   'Other Console/API writers must stay paused until this run ends.')
+        print(message, flush=True)
         with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as out:
-            out.write(f'### Clean Play Console confirmation required\n\n'
-                      'Play Console → this game → Publishing overview: confirm there are no other changes '
-                      'ready to send, in review, or pending publication. Pause other Console/API writers '
-                      'until this run ends. Reading is allowed. Track preflight cannot establish this state.\n\n'
-                      f'The original tag pusher must add this exact new comment to '
-                      f'https://github.com/Sparta-fourTeam/client/pull/{request["pr_number"]} '
-                      'after this request, within 10 minutes; delete it to revoke before commit:\n\n'
-                      f'```text\n{request["line"]}\n```\n\n'
-                      'The confirmation binds this run, merge SHA, code and AAB hash. '
-                      'Without it, no Play authentication/edit/upload is attempted.\n')
+            out.write('### Tag-authorized internal publication\n\n' + message + '\n')
         return
     def validate_release():
         subprocess.run([sys.executable, str(Path(__file__).with_name('android-release-version.py')),
@@ -184,28 +130,11 @@ def main():
     record('release_preflight_requested')
     try:
         validate_release()
-        request = json.loads(request_path.read_text())
-        require(request['line'] == confirmation_line(evidence, state['actions_run']) and
-                request['pr_number'] == evidence['pr_number'] and
-                request['actor_id'] == int(os.environ['GITHUB_ACTOR_ID']), 'Console confirmation request identity mismatch')
-        record('awaiting_console_confirmation')
-        deadline = datetime.fromisoformat(request['issued_at']).timestamp() + CONSOLE_CONFIRMATION_TTL
-        confirmation = current_confirmation(request)
-        while confirmation is None and time.time() < deadline:
-            time.sleep(15)
-            confirmation = current_confirmation(request)
-        require(confirmation is not None, 'Fresh clean Console confirmation missing; no Play edit/upload attempted')
-        record('console_confirmed', comment_id=confirmation['id'])
-        def authorize():
-            validate_release()
-            current = current_confirmation(request)
-            require(current is not None and current['id'] == confirmation['id'],
-                    'Console confirmation expired/revoked; no commit')
         spec = importlib.util.spec_from_file_location('play_recovery', Path(__file__).with_name('recover-play-code2.py'))
         recovery = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(recovery)
         record('authentication_requested')
-        publish(recovery.PlayApi(), files[0], evidence, record, authorize)
+        publish(recovery.PlayApi(), files[0], evidence, record, validate_release)
     except Exception:
         record('stopped')
         raise
