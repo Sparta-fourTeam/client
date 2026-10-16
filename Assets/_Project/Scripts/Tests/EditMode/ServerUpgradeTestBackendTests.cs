@@ -60,12 +60,15 @@ namespace Game.Tests
         }
 
         [TestCase(409)]
+        [TestCase(408)]
+        [TestCase(429)]
         [TestCase(500)]
         [TestCase(0)]
+        [TestCase(200)]
         [Test(Description = "중복 처리중/서버 오류/응답 유실 뒤 새 구매를 막고 같은 createId로만 복구한다")]
         public void UnknownPurchase_ReusesExactKey_AndBlocksNewPurchase(int status)
         {
-            QuoteAndResponse(status == 0 ? HttpResponseData.Failed(HttpFailure.Timeout) : new HttpResponseData(status, ""));
+            QuoteAndResponse(status == 0 ? HttpResponseData.Failed(HttpFailure.Timeout) : new HttpResponseData(status, status == 200 ? "{}" : ""));
             Assert.Throws<ApiException>(() => _backend.Purchase("atk", "original-key").GetAwaiter().GetResult());
             Assert.IsTrue(_backend.HasPendingPurchase);
             var error = Assert.Throws<ApiException>(() => _backend.Purchase("atk", "new-key").GetAwaiter().GetResult());
@@ -76,6 +79,39 @@ namespace Game.Tests
             var posts = _transport.Requests.Where(r => r.Verb == HttpVerb.Post).ToArray();
             Assert.AreEqual(2, posts.Length);
             Assert.AreEqual(posts[0].Body, posts[1].Body);
+        }
+
+        [TestCase(403)]
+        [TestCase(422)]
+        [Test(Description = "최초 구매가 확정 거절되면 미확정 잠금을 남기지 않는다")]
+        public void DefinitiveRejection_ReleasesPending(int status)
+        {
+            QuoteAndResponse(new HttpResponseData(status, ""));
+            Assert.Throws<ApiException>(() => _backend.Purchase("atk", "key").GetAwaiter().GetResult());
+            Assert.IsFalse(_backend.HasPendingPurchase);
+        }
+
+        [Test(Description = "토큰 갱신 후에도 구매가 401 거절되면 새 구매를 영구 잠그지 않는다")]
+        public void SecondUnauthorized_AfterRefresh_ReleasesPending()
+        {
+            QuoteAndResponse(new HttpResponseData(401, ""));
+            _transport.Queued.Enqueue(new HttpResponseData(200, "{\"accessToken\":\"renewed\",\"refreshToken\":\"renewed-r\"}"));
+            _transport.Queued.Enqueue(new HttpResponseData(401, ""));
+            var error = Assert.Throws<ApiException>(() => _backend.Purchase("atk", "key").GetAwaiter().GetResult());
+            Assert.AreEqual("HTTP_401", error.Code);
+            Assert.IsFalse(_backend.HasPendingPurchase);
+        }
+
+        [Test(Description = "이전 응답 유실 뒤 받은 403은 이전 지급의 취소 증거가 아니므로 기존 키를 잊지 않는다")]
+        public void DefinitiveRejection_AfterLostResponse_PreservesEarlierUncertainty()
+        {
+            QuoteAndResponse(HttpResponseData.Failed(HttpFailure.Timeout));
+            Assert.Throws<ApiException>(() => _backend.Purchase("atk", "original-key").GetAwaiter().GetResult());
+            _transport.Queued.Enqueue(new HttpResponseData(403, ""));
+            Assert.Throws<ApiException>(() => _backend.RecoverPurchase().GetAwaiter().GetResult());
+            Assert.IsTrue(_backend.HasPendingPurchase);
+            var error = Assert.Throws<ApiException>(() => _backend.Purchase("atk", "new-key").GetAwaiter().GetResult());
+            Assert.AreEqual("UPGRADE_RECOVERY_REQUIRED", error.Code);
         }
 
         [TestCase("{}")]

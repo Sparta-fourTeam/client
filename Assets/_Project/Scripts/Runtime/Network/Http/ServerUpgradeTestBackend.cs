@@ -26,6 +26,7 @@ namespace Game.Network
             public readonly string upgradeId, createId;
             public readonly long Generation;
             public int? ResultLevel;
+            public bool HasAmbiguousAttempt;
             public PendingPurchase(string id, string key, long generation)
             { upgradeId = id; createId = key; Generation = generation; }
         }
@@ -88,8 +89,12 @@ namespace Game.Network
                     catch (ApiException error)
                     {
                         // 409는 처리 중 중복과 재화 부족을 구분할 수 없다. 5xx/유실/잘못된 성공 응답도 같은 키로만 복구한다.
-                        if (error.Kind == ApiErrorKind.Rejected && (error.Code == "HTTP_400" || error.Code == "HTTP_404"))
-                        { _pending = null; }
+                        bool definitive = error.Kind == ApiErrorKind.Rejected
+                            && error.Code != null && error.Code.StartsWith("HTTP_", StringComparison.Ordinal)
+                            && int.TryParse(error.Code.Substring(5), out int status) && status >= 400 && status < 500 && status != 409;
+                        // 이번 거절은 이전 시도에서 이미 적용됐을 가능성까지 취소하지 않는다.
+                        if (definitive && !_pending.HasAmbiguousAttempt) { _pending = null; }
+                        else if (!definitive) { _pending.HasAmbiguousAttempt = true; }
                         throw;
                     }
                 }
