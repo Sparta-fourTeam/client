@@ -90,6 +90,7 @@ namespace Game.Tests
             Assert.AreEqual("랜덤 인챈트 주문서", ItemInfo.NameOf(ItemIds.RandomEquipmentMaterial, Data));
             Assert.AreEqual(Data.Items.GetOrThrow(ItemIds.ArrowBook).Name, ItemInfo.NameOf(ItemIds.ArrowBook, Data));
             StringAssert.Contains("보석", ItemInfo.DescriptionOf(ItemIds.GemChest));
+            StringAssert.Contains("스테이지", ItemInfo.DescriptionOf(ShopRules.EnergyReward));
         }
 
         [Test(Description = "보상 줄에는 코인·경험치·아이템 ID가 붙는다")]
