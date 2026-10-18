@@ -85,6 +85,10 @@ namespace Game.Network
         internal UniTask<string> GetJson(string path, CancellationToken cancellationToken = default) =>
             Execute(HttpVerb.Get, path, null, cancellationToken);
 
+        /// <summary>필드 존재와 UTC 원문 검증이 필요한 상태 변경 응답용.</summary>
+        internal UniTask<string> PostJson<TRequest>(string path, TRequest request, CancellationToken cancellationToken = default) =>
+            Execute(HttpVerb.Post, path, JsonConvert.SerializeObject(request), cancellationToken);
+
         public async UniTask<TResponse> Post<TRequest, TResponse>(string path, TRequest request,
             CancellationToken cancellationToken = default, Func<TResponse, bool> isValid = null)
         {
