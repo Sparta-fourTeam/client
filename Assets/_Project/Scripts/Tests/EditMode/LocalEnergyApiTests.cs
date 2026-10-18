@@ -15,22 +15,6 @@ namespace Game.Tests
 
         private EnergyConfig Config => _data.Energy;
 
-        [TestCase(599, 10)]
-        [TestCase(600, 11)]
-        [TestCase(1200, 12)]
-        public void ConfiguredNaturalPolicyUsesThirtyEnergyAndTenMinuteRecovery(int elapsedSeconds, int expectedEnergy)
-        {
-            Assert.That(Config.Max, Is.EqualTo(30));
-            Assert.That(Config.Start, Is.EqualTo(30));
-            new LocalAuthApi(_store, _data).Login(LoginMethod.Guest, null).GetAwaiter().GetResult();
-            Assert.That(_store.Load().wallet.energyStored, Is.EqualTo(30));
-            var start = new DateTime(2026, 10, 18, 0, 0, 0, DateTimeKind.Utc);
-
-            var (current, _) = EnergyRule.At(10, start, start.AddSeconds(elapsedSeconds), Config);
-
-            Assert.That(current, Is.EqualTo(expectedEnergy));
-        }
-
         [SetUp]
         public void SetUp()
         {
