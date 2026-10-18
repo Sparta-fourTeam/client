@@ -1241,7 +1241,7 @@ MonoBehaviour:
     m_Top: 14
     m_Bottom: 0
   m_ChildAlignment: 0
-  m_Spacing: 12
+  m_Spacing: 8
   m_ChildForceExpandWidth: 0
   m_ChildForceExpandHeight: 0
   m_ChildControlWidth: 1
@@ -1350,7 +1350,7 @@ MonoBehaviour:
   m_IgnoreLayout: 0
   m_MinWidth: 0
   m_MinHeight: -1
-  m_PreferredWidth: 270
+  m_PreferredWidth: 250
   m_PreferredHeight: 108
   m_FlexibleWidth: 0
   m_FlexibleHeight: -1
@@ -2213,11 +2213,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7139106508164742755, guid: ef5c156ee260be441a080271db906c82, type: 3}
       propertyPath: m_Padding.m_Left
-      value: 102
+      value: 106
       objectReference: {fileID: 0}
     - target: {fileID: 7139106508164742755, guid: ef5c156ee260be441a080271db906c82, type: 3}
       propertyPath: m_Padding.m_Right
-      value: 20
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 7139106508164742755, guid: ef5c156ee260be441a080271db906c82, type: 3}
       propertyPath: m_Padding.m_Bottom
@@ -2399,7 +2399,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.LayoutElement
   m_IgnoreLayout: 0
-  m_MinWidth: 0
+  m_MinWidth: 220
   m_MinHeight: 102
   m_PreferredWidth: 0
   m_PreferredHeight: 102
@@ -2695,11 +2695,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7139106508164742755, guid: ef5c156ee260be441a080271db906c82, type: 3}
       propertyPath: m_Padding.m_Left
-      value: 102
+      value: 106
       objectReference: {fileID: 0}
     - target: {fileID: 7139106508164742755, guid: ef5c156ee260be441a080271db906c82, type: 3}
       propertyPath: m_Padding.m_Right
-      value: 20
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 7139106508164742755, guid: ef5c156ee260be441a080271db906c82, type: 3}
       propertyPath: m_Padding.m_Bottom
@@ -2881,7 +2881,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.LayoutElement
   m_IgnoreLayout: 0
-  m_MinWidth: 0
+  m_MinWidth: 220
   m_MinHeight: 102
   m_PreferredWidth: 0
   m_PreferredHeight: 102
@@ -3191,11 +3191,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7139106508164742755, guid: ef5c156ee260be441a080271db906c82, type: 3}
       propertyPath: m_Padding.m_Left
-      value: 102
+      value: 106
       objectReference: {fileID: 0}
     - target: {fileID: 7139106508164742755, guid: ef5c156ee260be441a080271db906c82, type: 3}
       propertyPath: m_Padding.m_Right
-      value: 20
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 7139106508164742755, guid: ef5c156ee260be441a080271db906c82, type: 3}
       propertyPath: m_Padding.m_Bottom
@@ -3377,7 +3377,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.LayoutElement
   m_IgnoreLayout: 0
-  m_MinWidth: 0
+  m_MinWidth: 220
   m_MinHeight: 102
   m_PreferredWidth: 0
   m_PreferredHeight: 102
