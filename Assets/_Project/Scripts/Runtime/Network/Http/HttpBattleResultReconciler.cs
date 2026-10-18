@@ -24,18 +24,20 @@ namespace Game.Network
         public BattleSubmissionStatus SubmissionStatus { get; }
         public string SubmissionErrorCode { get; }
         public ServerUserData ObservedState { get; }
+        public BattleEndReceipt Receipt { get; }
 
-        internal BattleReconciliationResult(BattleSubmissionStatus status, string errorCode, ServerUserData state)
+        internal BattleReconciliationResult(BattleSubmissionStatus status, string errorCode, ServerUserData state, BattleEndReceipt receipt)
         {
             SubmissionStatus = status;
             SubmissionErrorCode = errorCode;
             ObservedState = state;
+            Receipt = receipt;
         }
     }
 
-    /// <summary>한 로그인 세대·한 전투 결과의 POST 1회와 후속 GET을 연결한다.
-    /// 같은 인스턴스에서 재시도는 GET만 한다. Local 저장·보상 계산·프로필 적용·DI 전환은 하지 않는다.
-    /// 앱 재시작 복구용 영구 원장이 아니며, Unknown을 확정하려면 서버의 battleId별 처리 결과 조회가 필요하다.</summary>
+    /// <summary>서버 #73의 동일 POST 재시도와 후속 현재 상태 조회를 연결한다.
+    /// 미확정 제출은 같은 요청을 재전송하고, 영수증 확인 후에는 GET만 재시도한다.
+    /// Local 저장·프로필 적용·DI 전환·앱 재시작 원장은 다루지 않는다.</summary>
     public sealed class HttpBattleResultReconciler
     {
         private readonly HttpApiClient _client;
@@ -46,6 +48,7 @@ namespace Game.Network
         private bool _attempted;
         private int _busy;
         private string _submissionError;
+        private BattleEndReceipt _receipt;
 
         public BattleSubmissionStatus SubmissionStatus { get; private set; }
 
@@ -60,7 +63,7 @@ namespace Game.Network
             _battles = new HttpBattleSessionApi(_client);
         }
 
-        /// <summary>최초 호출만 end를 보낸다. 재호출은 성공 응답 유실 여부와 관계없이 상태 조회만 한다.</summary>
+        /// <summary>미확정 상태는 동일 end 요청으로 복원한다. 확정 후 재호출은 현재 상태만 읽는다.</summary>
         public async UniTask<BattleReconciliationResult> Submit(CancellationToken cancellationToken = default)
         {
             Enter();
@@ -68,20 +71,24 @@ namespace Game.Network
             {
                 EnsureSession();
                 cancellationToken.ThrowIfCancellationRequested();
-                if (!_attempted)
+                if (!_attempted || SubmissionStatus == BattleSubmissionStatus.Unknown)
                 {
+                    bool previouslyUnknown = _attempted;
                     _attempted = true;
                     // 전송 중 취소나 예상 밖 예외도 서버에서 적용됐을 가능성을 보존한다.
                     SubmissionStatus = BattleSubmissionStatus.Unknown;
                     try
                     {
-                        await _battles.EndBattle(_request, cancellationToken);
+                        _receipt = await _battles.EndBattle(_request, cancellationToken);
+                        EnsureSession();
                         SubmissionStatus = BattleSubmissionStatus.Acknowledged;
+                        _submissionError = null;
                     }
                     catch (ApiException ex)
                     {
                         _submissionError = ex.Code;
-                        SubmissionStatus = ex.Kind == ApiErrorKind.Rejected && ex.Code != "HTTP_404"
+                        SubmissionStatus = !previouslyUnknown && ex.Kind == ApiErrorKind.Rejected
+                            && ex.Code != "HTTP_404" && ex.Code != HttpErrorMapper.InvalidResponse
                             ? BattleSubmissionStatus.Rejected : BattleSubmissionStatus.Unknown;
                     }
                 }
@@ -125,7 +132,7 @@ namespace Game.Network
                 {
                     throw new ApiException(ApiErrorKind.Rejected, HttpErrorMapper.InvalidResponse);
                 }
-                return new BattleReconciliationResult(SubmissionStatus, _submissionError, state.ToObject<ServerUserData>());
+                return new BattleReconciliationResult(SubmissionStatus, _submissionError, state.ToObject<ServerUserData>(), _receipt);
             }
             catch (JsonException)
             {

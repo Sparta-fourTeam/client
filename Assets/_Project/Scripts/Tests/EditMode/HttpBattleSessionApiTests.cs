@@ -89,10 +89,10 @@ namespace Game.Tests
 
         [TestCase(false)]
         [TestCase(true)]
-        [Test(Description = "PR59 end는 결과 4개 필드, cancel은 battleId만 보내고 둘 다 빈 200을 허용한다")]
-        public void Finish_EmptySuccess_UsesCurrentRequestContract(bool cancel)
+        [Test(Description = "end는 확정 영수증을 검증하고 cancel은 battleId만 보내며 빈 200을 허용한다")]
+        public void Finish_UsesCurrentRequestContract(bool cancel)
         {
-            _transport.Response = new HttpResponseData(200, "");
+            _transport.Response = new HttpResponseData(200, cancel ? "" : EndReceipt(10, 2));
             Finish(cancel, "battle").GetAwaiter().GetResult();
 
             var sent = _transport.Requests[0];
@@ -109,7 +109,7 @@ namespace Game.Tests
         [Test(Description = "명세의 결과 하한·상한을 누락하거나 바꾸지 않고 전송한다")]
         public void EndBattle_ResultBounds_AreSerialized(int clearedWave, int rating)
         {
-            _transport.Response = new HttpResponseData(200, "");
+            _transport.Response = new HttpResponseData(200, EndReceipt(clearedWave, rating));
             _api.EndBattle(new BattleEndRequest("battle", 7, clearedWave, rating)).GetAwaiter().GetResult();
             var body = JObject.Parse(_transport.Requests[0].Body);
             Assert.AreEqual(clearedWave, body.Value<int>("clearedWave"));
@@ -170,8 +170,55 @@ namespace Game.Tests
             Assert.Throws<OperationCanceledException>(() => _api.StartBattle(new BattleStartRequest(), cancellation.Token).GetAwaiter().GetResult());
         }
 
-        private UniTask Finish(bool cancel, string battleId) => cancel ? _api.CancelBattle(battleId)
-            : _api.EndBattle(new BattleEndRequest(battleId, 7, 10, 2));
+        private async UniTask Finish(bool cancel, string battleId)
+        {
+            if (cancel) { await _api.CancelBattle(battleId); }
+            else { await _api.EndBattle(new BattleEndRequest(battleId, 7, 10, 2)); }
+        }
+
+        private static string EndReceipt(int wave, int rating) => new JObject
+        {
+            ["battleId"] = "battle",
+            ["stageId"] = 7,
+            ["clearedWave"] = wave,
+            ["rating"] = rating,
+            ["exp"] = 13,
+            ["gold"] = 17,
+            ["items"] = new JObject { ["book.arrow"] = 2 },
+            ["clearRating"] = rating,
+            ["completedAt"] = "2026-10-18T20:21:22.123456Z"
+        }.ToString();
+
+        [TestCase("battleId", "\"other-battle\"")]
+        [TestCase("stageId", "8")]
+        [TestCase("clearedWave", "9")]
+        [TestCase("rating", "1")]
+        [TestCase("clearRating", "1")]
+        [TestCase("gold", "-1")]
+        [TestCase("exp", "null")]
+        [TestCase("items", "{\"book.arrow\":0}")]
+        [TestCase("items", "{\"book.arrow\":1.5}")]
+        [TestCase("completedAt", "\"2026-10-18T20:21:22\"")]
+        [TestCase("completedAt", "\"2026-10-18T20:21:22+09:00\"")]
+        public void EndBattle_InvalidOrMismatchedReceipt_IsNotConfirmed(string field, string value)
+        {
+            var receipt = JObject.Parse(EndReceipt(10, 2));
+            receipt[field] = JToken.Parse(value);
+            _transport.Response = new HttpResponseData(200, receipt.ToString());
+            var error = Assert.Throws<ApiException>(() =>
+                _api.EndBattle(new BattleEndRequest("battle", 7, 10, 2)).GetAwaiter().GetResult());
+            Assert.AreEqual(HttpErrorMapper.InvalidResponse, error.Code);
+        }
+
+        [TestCase("")]
+        [TestCase("{}")]
+        public void EndBattle_MissingReceipt_IsNotConfirmed(string body)
+        {
+            _transport.Response = new HttpResponseData(200, body);
+            var error = Assert.Throws<ApiException>(() =>
+                _api.EndBattle(new BattleEndRequest("battle", 7, 10, 2)).GetAwaiter().GetResult());
+            Assert.AreEqual(HttpErrorMapper.InvalidResponse, error.Code);
+        }
 
         // PR #57의 동일 키 재발급 계약만 재현한다. 실제 서버·DB 동시성 검증은 아니다.
         private sealed class LostStartResponseTransport : IHttpTransport

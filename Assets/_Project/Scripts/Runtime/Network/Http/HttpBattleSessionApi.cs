@@ -1,7 +1,13 @@
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Globalization;
+using System.IO;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Core;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Game.Network
 {
@@ -34,8 +40,71 @@ namespace Game.Network
         }
     }
 
-    /// <summary>서버의 발급·결과 제출·포기 계약. end는 보상·진척을 변경하지만 스냅샷을 반환하지 않으므로
-    /// IBattleApi를 구현하거나 Local 전투에 섞지 않는다. Player 그룹의 전체 정합성 확인 후 연결한다.</summary>
+    /// <summary>서버가 해당 전투에서 한 번 지급한 불변 영수증. 현재 잔액과 구분한다.</summary>
+    public sealed class BattleEndReceipt
+    {
+        public string BattleId { get; }
+        public int StageId { get; }
+        public int ClearedWave { get; }
+        public int Rating { get; }
+        public int Exp { get; }
+        public int Gold { get; }
+        public IReadOnlyDictionary<string, int> Items { get; }
+        public int ClearRating { get; }
+        public DateTimeOffset CompletedAt { get; }
+
+        private BattleEndReceipt(JObject body, Dictionary<string, int> items, DateTimeOffset completedAt)
+        {
+            BattleId = body.Value<string>("battleId");
+            StageId = body.Value<int>("stageId");
+            ClearedWave = body.Value<int>("clearedWave");
+            Rating = body.Value<int>("rating");
+            Exp = body.Value<int>("exp");
+            Gold = body.Value<int>("gold");
+            Items = new ReadOnlyDictionary<string, int>(items);
+            ClearRating = body.Value<int>("clearRating");
+            CompletedAt = completedAt;
+        }
+
+        internal static BattleEndReceipt Parse(string json, BattleEndRequest request)
+        {
+            try
+            {
+                using var reader = new JsonTextReader(new StringReader(json ?? string.Empty))
+                { DateParseHandling = DateParseHandling.None };
+                var body = JObject.Load(reader, new JsonLoadSettings { DuplicatePropertyNameHandling = DuplicatePropertyNameHandling.Error });
+                if (reader.Read() || body["battleId"]?.Type != JTokenType.String
+                    || body.Value<string>("battleId") != request.battleId
+                    || !Integer(body["stageId"], int.MinValue, int.MaxValue) || body.Value<int>("stageId") != request.stageId
+                    || !Integer(body["clearedWave"], 0, 20) || body.Value<int>("clearedWave") != request.clearedWave
+                    || !Integer(body["rating"], 0, 3) || body.Value<int>("rating") != request.rating
+                    || !Integer(body["exp"], 0, int.MaxValue) || !Integer(body["gold"], 0, int.MaxValue)
+                    || !Integer(body["clearRating"], request.rating, 3)
+                    || body["items"] is not JObject itemRows || body["completedAt"]?.Type != JTokenType.String
+                    || !DateTimeOffset.TryParseExact(body.Value<string>("completedAt"),
+                        new[] { "yyyy-MM-dd'T'HH:mm:ss'Z'", "yyyy-MM-dd'T'HH:mm:ss.FFFFFFF'Z'" },
+                        CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var completedAt))
+                { throw InvalidReceipt(); }
+                var items = new Dictionary<string, int>(StringComparer.Ordinal);
+                foreach (var item in itemRows.Properties())
+                {
+                    if (string.IsNullOrWhiteSpace(item.Name) || !Integer(item.Value, 1, int.MaxValue)) { throw InvalidReceipt(); }
+                    items.Add(item.Name, item.Value.Value<int>());
+                }
+                return new BattleEndReceipt(body, items, completedAt);
+            }
+            catch (JsonException) { throw InvalidReceipt(); }
+        }
+
+        private static bool Integer(JToken token, long min, long max) =>
+            token?.Type == JTokenType.Integer
+            && long.TryParse(token.ToString(Formatting.None), NumberStyles.Integer, CultureInfo.InvariantCulture, out var value)
+            && value >= min && value <= max;
+        private static ApiException InvalidReceipt() => new(ApiErrorKind.Rejected, HttpErrorMapper.InvalidResponse);
+    }
+
+    /// <summary>서버의 발급·결과 제출·포기 계약. end의 영수증은 현재 플레이어 스냅샷과 다르다.
+    /// Player 그룹의 전체 정합성 확인 후 연결하며 Local 전투에 섞지 않는다.</summary>
     public sealed class HttpBattleSessionApi
     {
         private readonly HttpApiClient _client;
@@ -52,12 +121,12 @@ namespace Game.Network
                 isValid: response => !string.IsNullOrWhiteSpace(response.battleId));
         }
 
-        /// <summary>서버에서 보상 지급·진척 갱신 후 세션을 삭제한다. 성공 본문은 없다.
-        /// 네트워크 실패 뒤 자동 재전송하거나 404를 성공으로 바꾸지 않는다.</summary>
-        public UniTask EndBattle(BattleEndRequest request, CancellationToken cancellationToken = default)
+        /// <summary>서버 #73 계약. 같은 결과 재요청은 최초 영수증을 반환한다. 자동 재전송은 하지 않는다.</summary>
+        public async UniTask<BattleEndReceipt> EndBattle(BattleEndRequest request, CancellationToken cancellationToken = default)
         {
             if (request == null) { throw new ArgumentNullException(nameof(request)); }
-            return _client.Post("api/battle/end", request, cancellationToken);
+            var json = await _client.PostJson("api/battle/end", request, cancellationToken);
+            return BattleEndReceipt.Parse(json, request);
         }
 
         /// <summary>세션만 포기한다. 에너지 환불 계약은 없다. 실패 시 자동 재전송하지 않는다.</summary>

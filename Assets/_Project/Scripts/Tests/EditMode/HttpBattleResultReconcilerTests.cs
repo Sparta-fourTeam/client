@@ -16,6 +16,8 @@ namespace Game.Tests
         private const string State = "{\"gold\":80,\"gem\":3,\"exp\":20,\"energyStored\":15,"
             + "\"energyUpdatedAt\":\"2026-10-16T23:00:00\",\"stageProgress\":[{\"stageId\":7,\"clearRating\":3,\"claimedRating\":0}],"
             + "\"items\":[{\"itemId\":\"book.arrow\",\"quantity\":2}],\"upgrades\":[],\"codex\":[],\"tutorials\":[]}";
+        private const string Receipt = "{\"battleId\":\"battle\",\"stageId\":7,\"clearedWave\":20,\"rating\":3,"
+            + "\"exp\":13,\"gold\":17,\"items\":{\"book.arrow\":2},\"clearRating\":3,\"completedAt\":\"2026-10-18T20:21:22.123456Z\"}";
         private FakeHttpTransport _transport;
         private AuthSession _tokens;
         private HttpBattleResultReconciler _reconciler;
@@ -38,12 +40,14 @@ namespace Game.Tests
                 var store = new LocalSaveStore(path);
                 store.Flush(store.Load());
                 var before = File.ReadAllBytes(path);
-                _transport.Queued.Enqueue(new HttpResponseData(200, ""));
+                _transport.Queued.Enqueue(new HttpResponseData(200, Receipt));
 
                 var result = _reconciler.Submit().GetAwaiter().GetResult();
 
                 Assert.AreEqual(BattleSubmissionStatus.Acknowledged, result.SubmissionStatus);
                 Assert.AreEqual(80, result.ObservedState.gold);
+                Assert.AreEqual(17, result.Receipt.Gold);
+                Assert.AreEqual("battle", result.Receipt.BattleId);
                 Assert.AreEqual("2026-10-16T23:00:00", result.ObservedState.energyUpdatedAt);
                 Assert.AreEqual(2, result.ObservedState.items.Single().quantity);
                 Assert.AreEqual(3, result.ObservedState.stageProgress.Single().clearRating);
@@ -61,7 +65,7 @@ namespace Game.Tests
         [Test(Description = "end 성공 뒤 user/me 조회만 실패하면 재시도는 GET만 하고 end를 다시 보내지 않는다")]
         public void SnapshotFailure_AfterAcknowledgement_RetryOnlyReads()
         {
-            _transport.Queued.Enqueue(new HttpResponseData(200, ""));
+            _transport.Queued.Enqueue(new HttpResponseData(200, Receipt));
             _transport.Queued.Enqueue(new HttpResponseData(500, ""));
             Assert.Throws<ApiException>(() => _reconciler.Submit().GetAwaiter().GetResult());
             Assert.AreEqual(BattleSubmissionStatus.Acknowledged, _reconciler.SubmissionStatus);
@@ -88,15 +92,21 @@ namespace Game.Tests
             AssertRequestOrder(HttpVerb.Post, HttpVerb.Get, HttpVerb.Get);
         }
 
-        [Test(Description = "POST 응답 유실 뒤 조회와 재호출이 성공해도 end를 자동/수동 중복 전송하지 않는다")]
-        public void LostResponse_RepeatedSubmit_OnlyReadsAndRemainsUnknown()
+        [Test(Description = "POST 응답 유실은 동일 본문 재전송으로 확정하며 과거 영수증과 현재 잔액을 구분한다")]
+        public void LostResponse_RepeatedSubmit_ReplaysSamePostAndConfirmsReceipt()
         {
             _transport.Queued.Enqueue(HttpResponseData.Failed(HttpFailure.Timeout));
             var first = _reconciler.Submit().GetAwaiter().GetResult();
+            _transport.Queued.Enqueue(new HttpResponseData(200, Receipt));
             var second = _reconciler.Submit().GetAwaiter().GetResult();
             Assert.AreEqual(HttpErrorMapper.Timeout, first.SubmissionErrorCode);
-            Assert.AreEqual(BattleSubmissionStatus.Unknown, second.SubmissionStatus);
-            AssertRequestOrder(HttpVerb.Post, HttpVerb.Get, HttpVerb.Get);
+            Assert.IsNull(first.Receipt);
+            Assert.AreEqual(BattleSubmissionStatus.Acknowledged, second.SubmissionStatus);
+            Assert.IsNull(second.SubmissionErrorCode);
+            Assert.AreEqual(17, second.Receipt.Gold);
+            Assert.AreEqual(80, second.ObservedState.gold);
+            AssertRequestOrder(HttpVerb.Post, HttpVerb.Get, HttpVerb.Post, HttpVerb.Get);
+            Assert.AreEqual(_transport.Requests[0].Body, _transport.Requests[2].Body);
         }
 
         [Test(Description = "서버 거절과 관측 상태를 함께 돌려주며 거절 뒤 조회 성공을 제출 확인으로 바꾸지 않는다")]
@@ -114,7 +124,7 @@ namespace Game.Tests
         [Test(Description = "부분 응답을 0/빈 목록 상태로 바꾸지 않으며 후속 재조회에도 POST는 늘리지 않는다")]
         public void PartialSnapshot_IsRejected_AndCanBeReadAgain(string body)
         {
-            _transport.Queued.Enqueue(new HttpResponseData(200, ""));
+            _transport.Queued.Enqueue(new HttpResponseData(200, Receipt));
             _transport.Queued.Enqueue(new HttpResponseData(200, body));
             var error = Assert.Throws<ApiException>(() => _reconciler.Submit().GetAwaiter().GetResult());
             Assert.AreEqual(HttpErrorMapper.InvalidResponse, error.Code);
@@ -127,7 +137,7 @@ namespace Game.Tests
         {
             var state = JObject.Parse(State);
             state["upgrades"] = JArray.Parse("[{\"upgradeId\":\"attack\",\"level\":null}]");
-            _transport.Queued.Enqueue(new HttpResponseData(200, ""));
+            _transport.Queued.Enqueue(new HttpResponseData(200, Receipt));
             _transport.Queued.Enqueue(new HttpResponseData(200, state.ToString()));
 
             var result = _reconciler.Submit().GetAwaiter().GetResult();
@@ -146,7 +156,7 @@ namespace Game.Tests
         {
             var state = JObject.Parse(State);
             state[field] = JArray.Parse(rows);
-            _transport.Queued.Enqueue(new HttpResponseData(200, ""));
+            _transport.Queued.Enqueue(new HttpResponseData(200, Receipt));
             _transport.Queued.Enqueue(new HttpResponseData(200, state.ToString()));
             var error = Assert.Throws<ApiException>(() => _reconciler.Submit().GetAwaiter().GetResult());
             Assert.AreEqual(HttpErrorMapper.InvalidResponse, error.Code);
@@ -172,7 +182,7 @@ namespace Game.Tests
             var task = reconciler.Submit();
             Assert.Throws<InvalidOperationException>(() => reconciler.Submit().GetAwaiter().GetResult());
             _tokens.Set("access-b", "refresh-b");
-            pending.Complete(new HttpResponseData(200, ""));
+            pending.Complete(new HttpResponseData(200, Receipt));
             var error = Assert.Throws<ApiException>(() => task.GetAwaiter().GetResult());
             Assert.AreEqual(HttpErrorMapper.SessionExpired, error.Code);
             Assert.AreEqual(1, pending.Requests.Count);
@@ -197,7 +207,7 @@ namespace Game.Tests
             var task = reconciler.Submit(cancellation.Token);
             cancellation.Cancel();
             Assert.Throws<OperationCanceledException>(() => task.GetAwaiter().GetResult());
-            transport.Complete(new HttpResponseData(200, ""));
+            transport.Complete(new HttpResponseData(200, Receipt));
             var result = reconciler.RefreshState().GetAwaiter().GetResult();
             Assert.AreEqual(BattleSubmissionStatus.Unknown, result.SubmissionStatus);
             Assert.AreEqual(1, transport.Requests.Count(r => r.Verb == HttpVerb.Post));
@@ -221,13 +231,37 @@ namespace Game.Tests
         [Test(Description = "같은 로그인 세대의 토큰 갱신은 허용하고 재조회만 새 Bearer로 이어간다")]
         public void SnapshotTokenRefresh_DoesNotRepeatEnd()
         {
-            _transport.Queued.Enqueue(new HttpResponseData(200, ""));
+            _transport.Queued.Enqueue(new HttpResponseData(200, Receipt));
             _transport.Queued.Enqueue(new HttpResponseData(401, ""));
             _transport.Queued.Enqueue(new HttpResponseData(200, "{\"accessToken\":\"new-access\",\"refreshToken\":\"new-refresh\"}"));
             var result = _reconciler.Submit().GetAwaiter().GetResult();
             Assert.AreEqual(BattleSubmissionStatus.Acknowledged, result.SubmissionStatus);
             Assert.AreEqual(1, _transport.Requests.Count(r => r.Url.EndsWith("api/battle/end")));
             Assert.AreEqual("Bearer new-access", _transport.Requests.Last().Headers["Authorization"]);
+        }
+
+        [Test]
+        public void EmptySuccessfulResponse_RemainsUnknownUntilValidReceipt()
+        {
+            _transport.Queued.Enqueue(new HttpResponseData(200, ""));
+            var first = _reconciler.Submit().GetAwaiter().GetResult();
+            Assert.AreEqual(BattleSubmissionStatus.Unknown, first.SubmissionStatus);
+            Assert.IsNull(first.Receipt);
+            _transport.Queued.Enqueue(new HttpResponseData(200, Receipt));
+            Assert.AreEqual(BattleSubmissionStatus.Acknowledged,
+                _reconciler.Submit().GetAwaiter().GetResult().SubmissionStatus);
+            AssertRequestOrder(HttpVerb.Post, HttpVerb.Get, HttpVerb.Post, HttpVerb.Get);
+        }
+
+        [Test]
+        public void LaterRejection_CannotDisproveEarlierAmbiguousCommit()
+        {
+            _transport.Queued.Enqueue(HttpResponseData.Failed(HttpFailure.Timeout));
+            _reconciler.Submit().GetAwaiter().GetResult();
+            _transport.Queued.Enqueue(new HttpResponseData(400, ""));
+            Assert.AreEqual(BattleSubmissionStatus.Unknown,
+                _reconciler.Submit().GetAwaiter().GetResult().SubmissionStatus);
+            Assert.AreEqual(_transport.Requests[0].Body, _transport.Requests[2].Body);
         }
 
         private static HttpBattleResultReconciler Create(IHttpTransport transport, IAuthTokenStore tokens) =>
@@ -248,7 +282,7 @@ namespace Game.Tests
                 Requests.Add(request);
                 return request.Verb == (_deferGet ? HttpVerb.Get : HttpVerb.Post)
                     ? _pending.Task.AttachExternalCancellation(cancellationToken)
-                    : UniTask.FromResult(new HttpResponseData(200, request.Verb == HttpVerb.Get ? State : ""));
+                    : UniTask.FromResult(new HttpResponseData(200, request.Verb == HttpVerb.Get ? State : Receipt));
             }
         }
 
