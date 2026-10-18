@@ -1,6 +1,6 @@
 namespace Game.Core
 {
-    /// <summary>한 Root 수명 동안 고정한다. 서버 테스트에서는 강화·별 보상 외 진행·튜토리얼·재화 변경을 사용하지 않는다.</summary>
+    /// <summary>한 Root 수명 동안 고정한다. 서버 테스트에서는 강화·별 보상·에너지 구매 외 진행·튜토리얼·재화 변경을 사용하지 않는다.</summary>
     public sealed class PlayerApiMode
     {
         public bool ServerUpgradeTest { get; }

@@ -19,10 +19,11 @@ namespace Game.Tests
             public readonly List<HttpRequestData> Requests = new();
             public readonly Queue<HttpResponseData> Responses = new();
             public UniTaskCompletionSource<HttpResponseData> Gate;
+            public string GatePath;
             public UniTask<HttpResponseData> Send(HttpRequestData request, float timeoutSeconds, CancellationToken cancellationToken)
             {
                 Requests.Add(request);
-                if (Gate != null) { var gate = Gate; Gate = null; return gate.Task; }
+                if (Gate != null && (GatePath == null || request.Url.EndsWith(GatePath))) { var gate = Gate; Gate = null; return gate.Task; }
                 return UniTask.FromResult(Responses.Dequeue());
             }
         }
@@ -138,6 +139,21 @@ namespace Game.Tests
             gate.TrySetResult(new HttpResponseData(200, Me()));
             Assert.ThrowsAsync<ApiException>(async () => await first);
             Assert.That(_api.PurchaseState, Is.Null);
+            await Task.CompletedTask;
+        }
+
+        [Test]
+        public async Task LogoutDuringStatusResponse_DoesNotCacheLateState()
+        {
+            Queue(Me());
+            var gate = _transport.Gate = new UniTaskCompletionSource<HttpResponseData>();
+            _transport.GatePath = "/energy/purchase-state";
+            var request = _api.RefreshPurchaseState().AsTask();
+            _session.Clear(); gate.TrySetResult(new HttpResponseData(200, State()));
+            var error = Assert.ThrowsAsync<ApiException>(async () => await request);
+            Assert.That(error.Code, Is.EqualTo(HttpErrorMapper.SessionExpired));
+            Assert.That(_api.PurchaseState, Is.Null);
+            Assert.That(_transport.Requests.Count, Is.EqualTo(2));
             await Task.CompletedTask;
         }
 

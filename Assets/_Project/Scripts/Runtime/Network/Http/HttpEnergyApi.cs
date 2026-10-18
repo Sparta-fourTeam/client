@@ -108,7 +108,7 @@ namespace Game.Network
         }
 
         private bool ValidReceipt(Receipt value) => value.createId == _pending.Key && value.source == "Purchase"
-            && value.energyGranted > 0 && value.gemsSpent >= 0 && value.purchaseCount > 0
+            && value.energyGranted > 0 && value.gemsSpent > 0 && value.purchaseCount > 0
             && TryDay(value.purchaseDay, out _) && TryUtc(value.completedAt, out _);
 
         private static bool ValidState(StateResponse value)
@@ -118,7 +118,7 @@ namespace Game.Network
             return value.dailyLimit > 0 && value.gemCost > 0 && value.energyGranted > 0
                 && value.purchaseCount >= 0 && value.purchaseCount <= value.dailyLimit
                 && value.remainingPurchases == value.dailyLimit - value.purchaseCount
-                && day == now.AddHours(5).Date && reset == DateTime.SpecifyKind(day.AddDays(1).AddHours(-5), DateTimeKind.Utc)
+                && day == GameDay.Date(now) && reset == GameDay.NextResetUtc(now)
                 && reset > now;
         }
 

@@ -13,6 +13,7 @@ using Game.Network;
 using Game.View;
 using MessagePipe;
 using NUnit.Framework;
+using TMPro;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -276,6 +277,95 @@ namespace Game.Tests
             CollectionAssert.AreEqual(_saved, File.ReadAllBytes(_savePath));
         }
 
+        private EnergyRecoverPopupView CreateEnergy()
+        {
+            Create(); _transport.EnergyGems = 84;
+            _messageServices = new BuiltinContainerBuilder().AddMessagePipe()
+                .AddMessageBroker<LobbyRequestFailed>().BuildServiceProvider();
+            _parentPopup = Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(
+                "Assets/_Project/Prefabs/UI/Lobby/EnergyRecoverPopup.prefab"));
+            var view = _parentPopup.GetComponent<EnergyRecoverPopupView>();
+            var recovery = new EnergyRecovery(_profile, _container.Resolve<IEnergyApi>(),
+                (IPublisher<LobbyRequestFailed>)_messageServices.GetService(typeof(IPublisher<LobbyRequestFailed>)));
+            view.Construct(recovery, _profile,
+                (ISubscriber<LobbyRequestFailed>)_messageServices.GetService(typeof(ISubscriber<LobbyRequestFailed>)));
+            return view;
+        }
+
+        [Serializable]
+        private sealed class EnergyRequest { public string createId; }
+
+        private string EnergyReceipt()
+        {
+            string key = JsonUtility.FromJson<EnergyRequest>(_transport.Posts[_transport.Posts.Count - 1].Body).createId;
+            return "{\"createId\":\"" + key + "\",\"source\":\"Purchase\",\"energyGranted\":9,\"gemsSpent\":21,"
+                + "\"purchaseDay\":\"2026-10-18\",\"purchaseCount\":1,\"completedAt\":\"2026-10-18T18:00:00Z\"}";
+        }
+
+        [UnityTest]
+        public IEnumerator EnergyPopup_LostResponseReopenKeepsKeyAndAppliesServerBalances()
+        {
+            var view = CreateEnergy(); yield return null;
+            view.Open();
+            var purchase = Field<Button>(view, "_purchaseButton");
+            var label = purchase.GetComponentInChildren<TMP_Text>(true);
+            yield return Until(() => purchase.interactable);
+            Assert.That(label.text, Does.Contain("21"));
+            Assert.That(label.text, Does.Contain("7/7"));
+            purchase.onClick.Invoke(); purchase.onClick.Invoke();
+            Assert.That(_transport.Posts.Count, Is.EqualTo(1));
+            Assert.That(purchase.interactable, Is.False);
+            LogAssert.Expect(LogType.Warning, new System.Text.RegularExpressions.Regex("회복 실패"));
+            _transport.Pending.TrySetResult(HttpResponseData.Failed(HttpFailure.Timeout));
+            yield return Until(() => !Field<bool>(view, "_busy"));
+            Assert.That(_profile.Gems, Is.EqualTo(84));
+            var blocked = Assert.Throws<ApiException>(() => _container.Resolve<IUpgradeApi>()
+                .Purchase(Id, "different-purchase").GetAwaiter().GetResult());
+            Assert.That(blocked.Code, Is.EqualTo("ENERGY_RECOVERY_REQUIRED"));
+            Field<Button>(view, "_closeButton").onClick.Invoke();
+            view.Open(); yield return Until(() => purchase.interactable);
+            Assert.That(label.text, Does.Contain("결과 다시 확인"));
+            purchase.onClick.Invoke();
+            Assert.That(_transport.Posts[1].Body, Is.EqualTo(_transport.Posts[0].Body));
+            _transport.Pending.TrySetResult(new HttpResponseData(200, EnergyReceipt()));
+            yield return Until(() => !Field<bool>(view, "_busy"));
+            Assert.That(_profile.Gems, Is.EqualTo(63));
+            Assert.That(_profile.EnergyStored, Is.EqualTo(19));
+            view.Open(); yield return Until(() => purchase.interactable);
+            Assert.That(label.text, Does.Contain("6/7"));
+            Assert.That(Field<Button>(view, "_adButton").interactable, Is.False);
+            CollectionAssert.AreEqual(_saved, File.ReadAllBytes(_savePath));
+        }
+
+        [UnityTest]
+        public IEnumerator EnergyPopup_AccountChangeDuringPost_DoesNotApplyLateSnapshot()
+        {
+            var view = CreateEnergy(); yield return null;
+            view.Open();
+            var purchase = Field<Button>(view, "_purchaseButton");
+            yield return Until(() => purchase.interactable);
+            purchase.onClick.Invoke();
+            _container.Resolve<IAuthTokenStore>().Clear(); _profile.Clear();
+            _transport.Pending.TrySetResult(new HttpResponseData(200, EnergyReceipt()));
+            yield return Until(() => !Field<bool>(view, "_busy"));
+            Assert.That(_profile.IsLoaded, Is.False);
+            Assert.That(_profile.Gems, Is.Zero);
+            Assert.That(_container.Resolve<IEnergyPurchaseApi>().HasPendingPurchase, Is.False);
+            CollectionAssert.AreEqual(_saved, File.ReadAllBytes(_savePath));
+        }
+
+        [UnityTest]
+        public IEnumerator EnergyPopup_ResetBoundaryRefreshesStatusWithoutPurchase()
+        {
+            var view = CreateEnergy(); _transport.ResetBoundary = true; yield return null;
+            view.Open();
+            var purchase = Field<Button>(view, "_purchaseButton");
+            yield return Until(() => _transport.EnergyStateReads >= 2 && purchase.interactable);
+            Assert.That(purchase.GetComponentInChildren<TMP_Text>(true).text, Does.Contain("7/7"));
+            Assert.That(purchase.GetComponentInChildren<TMP_Text>(true).text, Does.Contain("24:00:00"));
+            Assert.That(_transport.Posts, Is.Empty);
+        }
+
         [UnityTearDown]
         public IEnumerator Cleanup()
         {
@@ -317,6 +407,9 @@ namespace Game.Tests
             public bool KeepClaimUnconfirmed;
             public int ClaimClearRating = 2, ClaimedRating;
             public bool FailSnapshot;
+            public int EnergyGems, StoredEnergy = 10, EnergyStateReads;
+            public bool ResetBoundary;
+            private readonly HashSet<string> _energyKeys = new();
             public int GoldAfterApply = 990, LevelAfterApply = 1;
             public readonly List<HttpRequestData> Posts = new();
             public UniTaskCompletionSource<HttpResponseData> Pending;
@@ -329,7 +422,12 @@ namespace Game.Tests
                 {
                     Posts.Add(request); Pending = new UniTaskCompletionSource<HttpResponseData>();
                     var response = await Pending.Task;
-                    if (request.Url.EndsWith("/stage-progress/claim"))
+                    if (request.Url.EndsWith("/energy/recover"))
+                    {
+                        if (_energyKeys.Add(JsonUtility.FromJson<EnergyRequest>(request.Body).createId))
+                        { EnergyGems -= 21; StoredEnergy += 9; }
+                    }
+                    else if (request.Url.EndsWith("/stage-progress/claim"))
                     {
                         _claimAttempted = true;
                         if (!KeepClaimUnconfirmed) { ClaimedRating = 2; }
@@ -339,9 +437,19 @@ namespace Game.Tests
                 }
                 if (request.Url.EndsWith("/upgrade"))
                 { return new HttpResponseData(200, $"[{{\"upgradeId\":\"equipment.hat\",\"maxLevel\":3,\"unlockLevel\":{_unlock},\"effectiveUnlockLevel\":{_unlock},\"costBase\":10}}]"); }
-                if ((_applied || _claimAttempted) && FailSnapshot) { return new HttpResponseData(500, ""); }
+                if (request.Url.EndsWith("/energy/purchase-state"))
+                {
+                    EnergyStateReads++;
+                    string day = ResetBoundary && EnergyStateReads > 1 ? "2026-10-20" : "2026-10-19";
+                    string now = ResetBoundary ? (EnergyStateReads > 1 ? "2026-10-19T19:00:00Z" : "2026-10-19T18:59:59.999999Z") : "2026-10-19T18:00:00Z";
+                    int count = ResetBoundary ? (EnergyStateReads > 1 ? 0 : 7) : _energyKeys.Count;
+                    return new HttpResponseData(200, "{\"serverTime\":\"" + now + "\",\"purchaseDay\":\"" + day
+                        + "\",\"resetsAt\":\"" + day + "T19:00:00Z\",\"purchaseCount\":" + count
+                        + ",\"remainingPurchases\":" + (7 - count) + ",\"gemCost\":21,\"energyGranted\":9,\"dailyLimit\":7}");
+                }
+                if ((_applied || _claimAttempted || _energyKeys.Count > 0) && FailSnapshot) { return new HttpResponseData(500, ""); }
                 return new HttpResponseData(200, "{\"gold\":" + (_applied ? GoldAfterApply : _claimAttempted ? 875 : 1000)
-                    + ",\"gem\":0,\"exp\":2147483647,\"energyStored\":10,\"energyUpdatedAt\":\"2026-10-16T23:00:00\","
+                    + ",\"gem\":" + EnergyGems + ",\"exp\":2147483647,\"energyStored\":" + StoredEnergy + ",\"energyUpdatedAt\":\"2026-10-16T23:00:00Z\","
                     + "\"upgrades\":[{\"upgradeId\":\"equipment.hat\",\"level\":" + (_applied ? LevelAfterApply : 0)
                     + "}],\"items\":[],\"stageProgress\":[{\"stageId\":1,\"clearRating\":" + ClaimClearRating
                     + ",\"claimedRating\":" + ClaimedRating + "}],\"codex\":[],\"tutorials\":[]}");

@@ -12,7 +12,7 @@ namespace Game.Editor
         {
             PlayerPrefs.SetString(ServerConfig.UpgradeTestKey, ServerConfig.UseServerUpgradeTest ? "0" : "1");
             PlayerPrefs.Save();
-            Debug.Log("서버 강화 테스트 모드를 변경했습니다. Boot부터 재생하세요. 서버 조회·단건 강화만 사용하며 기존 Local 저장은 유지합니다.");
+            Debug.Log("서버 강화 테스트 모드를 변경했습니다. Boot부터 재생하세요. 서버 조회·단건 강화·별 보상·에너지 구매를 사용하며 기존 Local 저장은 유지합니다.");
         }
         [MenuItem(Path, true)]
         private static bool Validate()

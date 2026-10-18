@@ -7,13 +7,14 @@ using Game.Core;
 
 namespace Game.Network
 {
-    /// <summary>명시적으로 켠 개발 모드 전용. 서버 조회·단건 강화·별 보상 외 모든 Local 상태 변경과 체크포인트 접근을 막는다.
+    /// <summary>명시적으로 켠 개발 모드 전용. 서버 조회·단건 강화·별 보상·에너지 구매 외 모든 Local 상태 변경과 체크포인트 접근을 막는다.
     /// pending은 메모리 수명이며 앱 종료 후 복구 원장이 아니다. 서버 영수증/revision이나 카탈로그 일치를 보장하지 않는다.</summary>
     public sealed class ServerUpgradeTestBackend : IPlayerApi, IUpgradeApi, IUpgradeRecovery, IStageRewardRecovery, IBattleApi, IEnergyApi,
-        IStageApi, ICodexApi, IQuestApi, IShopApi, ITutorialApi, IAccountApi, IBattleCheckpointStore, ISubmitFaultSwitch
+        IStageApi, ICodexApi, IQuestApi, IShopApi, ITutorialApi, IAccountApi, IBattleCheckpointStore, ISubmitFaultSwitch, IEnergyPurchaseApi
     {
         public const string Disabled = "SERVER_TEST_DISABLED";
         private readonly HttpApiClient _client;
+        private readonly HttpEnergyApi _energy;
         private readonly IAuthTokenStore _tokens;
         private readonly GameDataStore _data;
         private PlayerSnapshot _observed;
@@ -60,6 +61,7 @@ namespace Game.Network
             _data = data ?? throw new ArgumentNullException(nameof(data));
             _data.InvalidateServerPlayerLevels();
             _client = new HttpApiClient(config, new BoundTransport(transport, EnsureSession), tokens: tokens);
+            _energy = new HttpEnergyApi(config, transport, tokens);
         }
 
         public bool HasPendingPurchase => _pending != null && _pending.Generation == _tokens.Generation;
@@ -87,6 +89,7 @@ namespace Game.Network
             try
             {
                 if (_claim != null) { throw new ApiException(ApiErrorKind.Rejected, "STAGE_REWARD_PENDING"); }
+                if (_energy.HasPendingPurchase) { throw new ApiException(ApiErrorKind.Rejected, "ENERGY_RECOVERY_REQUIRED"); }
                 if (recover && _pending == null) { throw new InvalidOperationException("복구할 강화 요청이 없습니다"); }
                 if (_pending == null)
                 {
@@ -137,6 +140,7 @@ namespace Game.Network
             try
             {
                 if (_pending != null) { throw new ApiException(ApiErrorKind.Rejected, "UPGRADE_RECOVERY_REQUIRED"); }
+                if (_energy.HasPendingPurchase) { throw new ApiException(ApiErrorKind.Rejected, "ENERGY_RECOVERY_REQUIRED"); }
                 if (recover && _claim == null) { throw new InvalidOperationException("확인할 별 보상 요청이 없습니다"); }
                 if (_claim == null)
                 {
@@ -285,7 +289,29 @@ namespace Game.Network
         private static ApiException Blocked() => new(ApiErrorKind.Rejected, Disabled);
         public UniTask<StartBattleResponse> StartBattle(int stageId) => throw Blocked();
         public UniTask<SubmitResultResponse> SubmitResult(SubmitResultRequest request) => throw Blocked();
-        public UniTask<PlayerSnapshot> Recover(EnergySource source, string idempotencyKey = null) => throw Blocked();
+        public long SessionGeneration => _tokens.Generation;
+        public EnergyPurchaseState PurchaseState => _energy.PurchaseState;
+        bool IEnergyPurchaseApi.HasPendingPurchase => _energy.HasPendingPurchase;
+        public UniTask<PlayerSnapshot> RefreshPurchaseState() => EnergyOperation(null);
+        public UniTask<PlayerSnapshot> Recover(EnergySource source, string idempotencyKey = null) => EnergyOperation(source, idempotencyKey);
+
+        private async UniTask<PlayerSnapshot> EnergyOperation(EnergySource? source, string key = null)
+        {
+            if (source.HasValue && source.Value != EnergySource.Purchase) { throw Blocked(); }
+            try { Enter(); }
+            catch (InvalidOperationException) { throw new ApiException(ApiErrorKind.Rejected, "ENERGY_REQUEST_BUSY"); }
+            try
+            {
+                if (_pending != null) { throw new ApiException(ApiErrorKind.Rejected, "UPGRADE_RECOVERY_REQUIRED"); }
+                if (_claim != null) { throw new ApiException(ApiErrorKind.Rejected, "STAGE_REWARD_PENDING"); }
+                var snapshot = source.HasValue ? await _energy.Recover(source.Value, key) : await _energy.RefreshPurchaseState();
+                EnsureSession();
+                _observed = snapshot;
+                _observedGeneration = _operationGeneration;
+                return snapshot;
+            }
+            finally { Interlocked.Exchange(ref _busy, 0); }
+        }
         public UniTask<PlayerSnapshot> ClaimMonsterReward(int monsterId) => throw Blocked();
         public UniTask<PlayerSnapshot> ClaimQuest(string questId) => throw Blocked();
         public UniTask<PlayerSnapshot> ClaimQuestChest(string chestId) => throw Blocked();
