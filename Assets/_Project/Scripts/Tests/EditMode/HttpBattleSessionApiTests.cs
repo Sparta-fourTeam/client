@@ -268,6 +268,14 @@ namespace Game.Tests
             Assert.AreSame(previous, data.RewardRules);
             Assert.AreEqual(previousRaw, data.RawJson("RewardRules"));
             Assert.AreEqual(7, data.Revisions["RewardRules"]);
+            json = JObject.Parse(previousRaw);
+            json["version"] = 8;
+            json["items"][ItemIds.ArrowBook]["random"] = true;
+            _transport.Response = new HttpResponseData(200, json.ToString());
+            Assert.Throws<ApiException>(() => api.Refresh(data).GetAwaiter().GetResult());
+            Assert.AreSame(previous, data.RewardRules);
+            Assert.AreEqual(previousRaw, data.RawJson("RewardRules"));
+            Assert.AreEqual(7, data.Revisions["RewardRules"]);
         }
 
         [Test]

@@ -129,10 +129,6 @@ namespace Game.Core
                 balance.RewardRules = RewardRules;
                 balance.Validate();
                 if (!Stages.Contains(balance.StageId)) { throw new InvalidOperationException("보상의 스테이지가 없습니다."); }
-                foreach (var item in balance.Items)
-                {
-                    if (item.itemId != ItemIds.RandomSkillMaterial && item.itemId != ItemIds.RandomEquipmentMaterial) { Items.GetOrThrow(item.itemId); }
-                }
             }
             foreach (var stage in stages.Values)
             {
@@ -323,6 +319,8 @@ namespace Game.Core
         {
             foreach (var rule in rules.Items)
             {
+                if (rule.Value.Random && Items.Contains(rule.Key))
+                { throw new InvalidOperationException($"RewardRules: 랜덤 추첨 ID는 실제 아이템과 달라야 합니다: {rule.Key}"); }
                 if (!rule.Value.Random && !Items.Contains(rule.Key))
                 { throw new InvalidOperationException($"RewardRules: 없는 아이템 {rule.Key}"); }
             }
