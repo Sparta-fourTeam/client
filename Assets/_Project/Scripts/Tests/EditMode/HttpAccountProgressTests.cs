@@ -252,6 +252,27 @@ namespace Game.Tests
         private static QuestClaimRequest Request() => new("daily.login", QuestPeriod.Daily, "20261019");
 
         [Test]
+        public void PostRefreshUnauthorizedRemainsRetryableAfterStateRefreshSucceeds()
+        {
+            _transport.Queued.Enqueue(new HttpResponseData(401, ""));
+            _transport.Queued.Enqueue(new HttpResponseData(200, "{\"accessToken\":\"renewed-1\",\"refreshToken\":\"refresh-1\"}"));
+            _transport.Queued.Enqueue(new HttpResponseData(401, ""));
+            _transport.Queued.Enqueue(new HttpResponseData(401, ""));
+            _transport.Queued.Enqueue(new HttpResponseData(200, "{\"accessToken\":\"renewed-2\",\"refreshToken\":\"refresh-2\"}"));
+            _transport.Queued.Enqueue(new HttpResponseData(200, State));
+            var operation = QuestOperation();
+            var first = operation.Submit().GetAwaiter().GetResult();
+            Assert.AreEqual(ProgressSubmissionStatus.Unknown, first.Status);
+            Assert.AreEqual("HTTP_401", first.ErrorCode);
+            Assert.IsNotNull(first.ObservedState);
+            _transport.Queued.Enqueue(new HttpResponseData(200, QuestReceipt));
+            Assert.AreEqual(ProgressSubmissionStatus.Acknowledged, operation.Submit().GetAwaiter().GetResult().Status);
+            var posts = _transport.Requests.Where(r => r.Url.EndsWith("/quests/claim", StringComparison.Ordinal)).ToArray();
+            Assert.AreEqual(3, posts.Length);
+            Assert.That(posts.All(r => r.Body == posts[0].Body), Is.True);
+        }
+
+        [Test]
         public void ConcurrentClaimsInSameSessionShareOneRefreshAndKeepBothRequests()
         {
             var transport = new RefreshTransport();

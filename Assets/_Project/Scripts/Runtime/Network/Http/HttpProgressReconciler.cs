@@ -65,6 +65,7 @@ namespace Game.Network
                         _error = ex.Code;
                         Status = !previouslyUnknown && ex.Kind == ApiErrorKind.Rejected
                             && ex.Code != HttpErrorMapper.InvalidResponse && ex.Code != "HTTP_404"
+                            && ex.Code != "HTTP_401"
                             && ex.Code != HttpErrorMapper.SessionExpired
                             ? ProgressSubmissionStatus.Rejected : ProgressSubmissionStatus.Unknown;
                     }
