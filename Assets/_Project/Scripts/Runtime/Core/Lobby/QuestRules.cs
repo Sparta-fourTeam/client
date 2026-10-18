@@ -1,24 +1,25 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace Game.Core
 {
     /// <summary>퀘스트 주기와 보드 점수 계산. 서버와 Local이 같은 규칙을 쓰고, 화면은 점수·수령 가능 여부를 이것으로 읽는다</summary>
     public static class QuestRules
     {
-        /// <summary>매일 이 시각(기기 시각)에 초기화된다</summary>
-        public const int ResetHour = 4;
+        /// <summary>한국시간 기준 일일 초기화 시각.</summary>
+        public const int ResetHour = GameDay.ResetHour;
 
         /// <summary>지금이 속한 주기의 키. 키가 바뀌면 그 주기의 진행이 초기화된다. 주간은 월요일 시작</summary>
-        public static string PeriodKey(QuestPeriod period, DateTime localNow)
+        public static string PeriodKey(QuestPeriod period, DateTime utcNow)
         {
-            var shifted = localNow.AddHours(-ResetHour).Date;
+            var shifted = GameDay.Date(utcNow);
             if (period == QuestPeriod.Weekly)
             {
                 shifted = shifted.AddDays(-(((int)shifted.DayOfWeek + 6) % 7));
             }
 
-            return shifted.ToString("yyyyMMdd");
+            return shifted.ToString("yyyyMMdd", CultureInfo.InvariantCulture);
         }
 
         /// <summary>게이지가 닿았고 아직 열지 않은 상자인가</summary>

@@ -28,7 +28,7 @@ namespace Game.View
         public static bool HasFreeShopOffer(PlayerProfile profile, GameDataStore data)
         {
             var state = profile.Shop;
-            var offers = ShopRules.Roll(data.Shop, ShopRules.DayKey(System.DateTime.Now), state.adUsed + state.goldUsed);
+            var offers = ShopRules.Roll(data.Shop, ShopRules.DayKey(System.DateTime.UtcNow), state.adUsed + state.goldUsed);
             for (int i = 0; i < offers.Count; i++)
             {
                 if (offers[i].Price <= 0 && !profile.IsShopSlotSold(i)) { return true; }
@@ -60,7 +60,7 @@ namespace Game.View
             _profile = profile;
             _data = data;
             _player = player;
-            _shopDayKey = ShopRules.DayKey(System.DateTime.Now);
+            _shopDayKey = ShopRules.DayKey(System.DateTime.UtcNow);
             _profile.Changed += Refresh;
             Refresh(profile);
         }
@@ -72,7 +72,7 @@ namespace Game.View
             if (_kind != LobbyNotificationKind.Shop || _profile == null || !_profile.IsLoaded
                 || _refreshingShopDay || Time.unscaledTime < _nextShopDayCheck) { return; }
             _nextShopDayCheck = Time.unscaledTime + 1f;
-            string dayKey = ShopRules.DayKey(System.DateTime.Now);
+            string dayKey = ShopRules.DayKey(System.DateTime.UtcNow);
             if (dayKey != _shopDayKey) { RefreshShopDayAsync(dayKey).Forget(Debug.LogException); }
         }
 

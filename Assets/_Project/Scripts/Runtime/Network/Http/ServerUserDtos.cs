@@ -22,7 +22,7 @@ namespace Game.Network
 
         public int energyStored;
 
-        /// <summary>서버 LocalDateTime(시간대 없는 ISO 문자열). 클라이언트는 UTC로 해석한다 (EnergyRule.ParseUpdatedAt)</summary>
+        /// <summary>서버 UTC Instant(ISO8601 Z). EnergyRule.ParseUpdatedAt으로 UTC 시각을 읽는다</summary>
         public string energyUpdatedAt;
 
         public List<ServerStageProgress> stageProgress;

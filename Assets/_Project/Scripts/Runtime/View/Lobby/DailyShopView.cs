@@ -56,7 +56,7 @@ namespace Game.View
             _data = data;
             _api = api;
             _player = player;
-            _dayKey = ShopRules.DayKey(DateTime.Now);
+            _dayKey = ShopRules.DayKey(DateTime.UtcNow);
             if (isActiveAndEnabled)
             {
                 _profile.Changed += OnProfileChanged;
@@ -77,7 +77,7 @@ namespace Game.View
             // 구독은 켜져 있는 동안만 둔다. 비활성인 채 씬이 내려가면 OnDestroy가 불리지 않아 파괴된 뷰에 구독이 남는다
             _profile.Changed -= OnProfileChanged;
             _profile.Changed += OnProfileChanged;
-            _dayKey = ShopRules.DayKey(DateTime.Now);
+            _dayKey = ShopRules.DayKey(DateTime.UtcNow);
             _shownMinute = -1;
             Refresh();
             UpdateTimer();
@@ -91,7 +91,7 @@ namespace Game.View
         private void Update()
         {
             if (_profile == null) { return; }
-            if (ShopRules.DayKey(DateTime.Now) != _dayKey) { RefreshDayAsync().Forget(Debug.LogException); }
+            if (ShopRules.DayKey(DateTime.UtcNow) != _dayKey) { RefreshDayAsync().Forget(Debug.LogException); }
             UpdateTimer();
         }
 
@@ -105,7 +105,7 @@ namespace Game.View
             try
             {
                 _profile.Apply(await _player.GetMe());
-                _dayKey = ShopRules.DayKey(DateTime.Now);
+                _dayKey = ShopRules.DayKey(DateTime.UtcNow);
             }
             catch (ApiException)
             {
@@ -228,7 +228,7 @@ namespace Game.View
         private void Refresh()
         {
             var state = _profile.Shop;
-            string dayKey = ShopRules.DayKey(DateTime.Now);
+            string dayKey = ShopRules.DayKey(DateTime.UtcNow);
             int rerolls = state.adUsed + state.goldUsed;
             string rolled = $"{dayKey}:{rerolls}";
             if (_offers == null || rolled != _rolledKey)
@@ -259,7 +259,8 @@ namespace Game.View
 
         private void UpdateTimer()
         {
-            var remain = DateTime.Today.AddDays(1) - DateTime.Now;
+            var utcNow = DateTime.UtcNow;
+            var remain = GameDay.NextResetUtc(utcNow) - utcNow;
             int minute = (int)remain.TotalMinutes;
             if (minute == _shownMinute) { return; }
             _shownMinute = minute;

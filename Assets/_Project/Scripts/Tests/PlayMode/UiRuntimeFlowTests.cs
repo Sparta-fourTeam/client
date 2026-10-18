@@ -906,7 +906,7 @@ namespace Game.Tests
                 .Single(view => view.isActiveAndEnabled && Field<LobbyNotificationKind>(view, "_kind") == LobbyNotificationKind.Shop);
             var badge = Field<NotificationBadgeView>(notification, "_badge");
             var yesterday = _store.Load();
-            yesterday.shop.dayKey = ShopRules.DayKey(DateTime.Now.AddDays(-1));
+            yesterday.shop.dayKey = ShopRules.DayKey(DateTime.UtcNow.AddDays(-1));
             yesterday.shop.state = new ShopState
             {
                 adUsed = 1,
