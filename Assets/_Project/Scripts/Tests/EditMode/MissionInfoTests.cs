@@ -98,9 +98,10 @@ namespace Game.Tests
         public void RandomRewardPresentationUsesTheConfiguredKind(string kind, string name, string description)
         {
             var data = new GameDataStore();
-            data.RewardRules.Items[ItemIds.ArrowBook] = new RewardItemRule { Kind = kind, Random = true };
-            Assert.AreEqual(name, ItemInfo.NameOf(ItemIds.ArrowBook, data));
-            StringAssert.Contains(description, ItemInfo.DescriptionOf(ItemIds.ArrowBook, data));
+            const string randomId = "fixture.random.material";
+            data.RewardRules.Items[randomId] = new RewardItemRule { Kind = kind, Random = true };
+            Assert.AreEqual(name, ItemInfo.NameOf(randomId, data));
+            StringAssert.Contains(description, ItemInfo.DescriptionOf(randomId, data));
         }
 
         [Test(Description = "보상 줄에는 코인·경험치·아이템 ID가 붙는다")]
