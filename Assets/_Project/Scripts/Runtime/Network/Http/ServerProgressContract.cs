@@ -40,7 +40,8 @@ namespace Game.Network
         internal static ServerUserData ReadMe(string json)
         {
             var state = Read(json) as JObject;
-            if (state == null || !Integer(state["gold"]) || !Integer(state["gem"])
+            if (state == null || !Integer(state["gold"])
+                || !(state.Property("gem") == null ? Integer(state["jem"]) : Integer(state["gem"]))
                 || !(Null(state["exp"]) || Integer(state["exp"]))
                 || !Integer(state["energyStored"]) || !Utc(state["energyUpdatedAt"])
                 || state["tutorials"] is not JArray

@@ -78,5 +78,28 @@ namespace Game.Tests
             Assert.AreEqual(HttpErrorMapper.InvalidResponse,
                 Assert.Throws<ApiException>(() => _api.GetMe().GetAwaiter().GetResult()).Code);
         }
+        [TestCase(false, 12)]
+        [TestCase(true, 0)]
+        public void GetMe_DocumentedLegacyJemFallbackKeepsExplicitGemZero(bool includeGem, int expected)
+        {
+            var state = JObject.Parse(HttpAccountProgressTests.State);
+            state["jem"] = 12;
+            if (includeGem) { state["gem"] = 0; }
+            else { state.Property("gem").Remove(); }
+            _transport.Response = new HttpResponseData(200, state.ToString());
+            Assert.AreEqual(expected, _api.GetMe().GetAwaiter().GetResult().gems);
+        }
+
+        [TestCase(true)]
+        [TestCase(false)]
+        public void GetMe_InvalidCurrencyDoesNotUseLegacyFieldToMaskMalformedGem(bool malformedGem)
+        {
+            var state = JObject.Parse(HttpAccountProgressTests.State);
+            if (malformedGem) { state["gem"] = "invalid"; state["jem"] = 12; }
+            else { state.Property("gem").Remove(); }
+            _transport.Response = new HttpResponseData(200, state.ToString());
+            Assert.AreEqual(HttpErrorMapper.InvalidResponse,
+                Assert.Throws<ApiException>(() => _api.GetMe().GetAwaiter().GetResult()).Code);
+        }
     }
 }
