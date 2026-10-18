@@ -99,6 +99,11 @@ def target_ratio(cfg, s):
     return r
 
 
+def tuning_k(cfg, s):
+    """오토플레이로 맞춘 스테이지별 난이도 배수 (curves.json tuning.stageMultiplier, 없으면 1)."""
+    return cfg.get("tuning", {}).get("stageMultiplier", {}).get(str(s), 1.0)
+
+
 def wave_weights(cfg, n, player_by_wave=None):
     """웨이브별 예산 비중 = 압박 곡선(waveShape) * 그 웨이브 시점 플레이어 전투력.
     압박 곡선이 평평하면 모든 웨이브에서 적/플레이어 비율이 같아진다."""
@@ -186,7 +191,7 @@ def cmd_report(args):
         s = st["Id"]
         pc, lvl = player_curve(cfg, st, monsters)
         pw = sum(pc) / len(pc)
-        r = target_ratio(cfg, s)
+        r = target_ratio(cfg, s) * tuning_k(cfg, s)
         want = pw * r
         got = stage_power(st, monsters)
         tot = sum(got)
@@ -270,7 +275,12 @@ def cmd_generate(args):
                 p = power(monsters[mid], monsters, mult)
                 spawns.append({"MonsterId": mid, "Count": max(1, round(wb * w / wsum / p))})
             wave["Spawns"] = spawns
-        got = stage_power(new, monsters)
+        # 수량은 위에서 target 기준으로 만들었다. 오토플레이 배수는 HP·공격 강화율에만 곱한다(전투력이 배수만큼 줄어든다)
+        k = tuning_k(cfg, s)
+        if k != 1.0:
+            for b in new.get("MonsterBonuses", []):
+                if b["Stat"] in ("Hp", "Damage"):
+                    b["Percent"] = round(((1 + b["Percent"] / 100) * k - 1) * 100)
         peak = max(peak, max(sum(sp["Count"] for sp in w["Spawns"]) for w in new["Waves"]))
         out.append(new)
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)

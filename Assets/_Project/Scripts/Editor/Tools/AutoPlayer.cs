@@ -50,6 +50,12 @@ namespace Game.Editor
             var def = data.Stages.GetOrThrow(stage);
             if (!BaseBonuses.TryGetValue(stage, out var entry) || !ReferenceEquals(entry.Def, def))
             {
+                // 강화 줄이 없는 스테이지(1관문)도 배수가 적용되도록 0% 줄을 메모리에만 더해 둔다
+                foreach (string stat in new[] { "Hp", "Damage" })
+                {
+                    if (!def.MonsterBonuses.Any(b => b.Stat == stat)) { def.MonsterBonuses.Add(new MonsterBonus { Stat = stat, Percent = 0 }); }
+                }
+
                 entry = (def, def.MonsterBonuses.Select(b => (b.Stat, b.Percent)).ToList());
                 BaseBonuses[stage] = entry;
             }
