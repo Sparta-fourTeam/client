@@ -24,6 +24,8 @@ namespace Game.View
         private bool _busy;
         private int _version;
         private EnergyPurchaseState _expiredRefreshAttempt;
+        private TMP_Text _purchaseRemaining, _description;
+        private GameObject _adRemaining;
         private TMP_Text _purchaseLabel;
         private string _localLabel;
 
@@ -39,6 +41,9 @@ namespace Game.View
             _panel.SetActive(false);
             _purchaseLabel = _purchaseButton.GetComponentInChildren<TMP_Text>(true);
             _localLabel = _purchaseLabel != null ? _purchaseLabel.text : null;
+            _purchaseRemaining = _purchaseTitle.transform.parent.Find("RemainingText")?.GetComponent<TMP_Text>();
+            _adRemaining = _adTitle.transform.parent.Find("RemainingText")?.gameObject;
+            _description = _panel.transform.Find("Window/DescText")?.GetComponent<TMP_Text>();
             _closeButton.onClick.AddListener(() => { _version++; PopupPanel.Set(_panel, _transition, false); });
             _adButton.interactable = false;
             _purchaseButton.onClick.AddListener(() => RecoverAsync().Forget());
@@ -105,11 +110,16 @@ namespace Game.View
             bool pending = _energyRecovery.HasPendingPurchase;
             _purchaseButton.interactable = !_busy && (pending || state == null
                 || state.RemainingSeconds <= 0 || state.RemainingPurchases > 0 && _profile.Gems >= state.GemCost);
-            if (state != null) { _purchaseTitle.text = $"잉크펜 x{state.EnergyGranted}"; }
+            _purchaseTitle.text = state != null ? $"잉크펜 x{state.EnergyGranted}" : "에너지 구매";
+            if (_adRemaining != null) { _adRemaining.SetActive(false); }
+            if (_purchaseRemaining != null)
+            { _purchaseRemaining.text = state != null ? $"남은 횟수 {state.RemainingPurchases}/{state.DailyLimit}" : "횟수 확인 중"; }
             var remaining = TimeSpan.FromSeconds(Math.Ceiling(state?.RemainingSeconds ?? 0));
             string countdown = $"{(int)remaining.TotalHours:00}:{remaining.Minutes:00}:{remaining.Seconds:00}";
-            string label = _busy ? "확인 중" : pending ? "구매 결과 다시 확인" : state == null || state.RemainingSeconds <= 0 ? "구매 정보 다시 확인"
-                : $"젬 {state.GemCost} · 남은 {state.RemainingPurchases}/{state.DailyLimit}\n초기화 {countdown}";
+            if (_description != null)
+            { _description.text = state != null ? $"초기화까지 {countdown}" : pending ? "같은 구매 결과를 확인합니다" : "구매 정보를 다시 확인해 주세요"; }
+            string label = _busy ? "확인 중" : pending ? "결과 확인" : state == null || state.RemainingSeconds <= 0 ? "정보 확인"
+                : $"젬 {state.GemCost}";
             if (_purchaseLabel != null) { _purchaseLabel.text = label; }
         }
         protected override void DisposeView() { _version++; }

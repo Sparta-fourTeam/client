@@ -311,7 +311,7 @@ namespace Game.Tests
             var label = purchase.GetComponentInChildren<TMP_Text>(true);
             yield return Until(() => purchase.interactable);
             Assert.That(label.text, Does.Contain("21"));
-            Assert.That(label.text, Does.Contain("7/7"));
+            Assert.That(Field<TMP_Text>(view, "_purchaseRemaining").text, Does.Contain("7/7"));
             purchase.onClick.Invoke(); purchase.onClick.Invoke();
             Assert.That(_transport.Posts.Count, Is.EqualTo(1));
             Assert.That(purchase.interactable, Is.False);
@@ -324,7 +324,7 @@ namespace Game.Tests
             Assert.That(blocked.Code, Is.EqualTo("ENERGY_RECOVERY_REQUIRED"));
             Field<Button>(view, "_closeButton").onClick.Invoke();
             view.Open(); yield return Until(() => purchase.interactable);
-            Assert.That(label.text, Does.Contain("결과 다시 확인"));
+            Assert.That(label.text, Does.Contain("결과 확인"));
             purchase.onClick.Invoke();
             Assert.That(_transport.Posts[1].Body, Is.EqualTo(_transport.Posts[0].Body));
             _transport.Pending.TrySetResult(new HttpResponseData(200, EnergyReceipt()));
@@ -332,7 +332,7 @@ namespace Game.Tests
             Assert.That(_profile.Gems, Is.EqualTo(63));
             Assert.That(_profile.EnergyStored, Is.EqualTo(19));
             view.Open(); yield return Until(() => purchase.interactable);
-            Assert.That(label.text, Does.Contain("6/7"));
+            Assert.That(Field<TMP_Text>(view, "_purchaseRemaining").text, Does.Contain("6/7"));
             Assert.That(Field<Button>(view, "_adButton").interactable, Is.False);
             CollectionAssert.AreEqual(_saved, File.ReadAllBytes(_savePath));
         }
@@ -361,8 +361,8 @@ namespace Game.Tests
             view.Open();
             var purchase = Field<Button>(view, "_purchaseButton");
             yield return Until(() => _transport.EnergyStateReads >= 2 && purchase.interactable);
-            Assert.That(purchase.GetComponentInChildren<TMP_Text>(true).text, Does.Contain("7/7"));
-            Assert.That(purchase.GetComponentInChildren<TMP_Text>(true).text, Does.Contain("24:00:00"));
+            Assert.That(Field<TMP_Text>(view, "_purchaseRemaining").text, Does.Contain("7/7"));
+            Assert.That(Field<TMP_Text>(view, "_description").text, Does.Contain("24:00:00"));
             Assert.That(_transport.Posts, Is.Empty);
         }
 
