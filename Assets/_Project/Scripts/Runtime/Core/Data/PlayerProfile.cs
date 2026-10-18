@@ -17,6 +17,8 @@ namespace Game.Core
             codex = new(),
             quests = new(),
             questChests = new(),
+            tutorialStates = new(),
+            questPeriods = new(),
             shop = new()
         };
 
@@ -54,8 +56,13 @@ namespace Game.Core
         public bool IsQuestClaimed(string questId) => _snapshot.quests.Find(q => q.questId == questId)?.claimed ?? false;
         public bool IsQuestChestClaimed(string chestId) => _snapshot.questChests.Contains(chestId);
 
-        /// <summary>보드 게이지의 현재 점수(받은 퀘스트의 점수 합)</summary>
-        public int QuestPoints(QuestBoardDefinition board) => QuestRules.Points(board, _snapshot.quests);
+        /// <summary>서버 보드는 저장된 수령 점수를 쓴다. int 게이지 상한 밖 점수는 questPeriods에 원래 long 값으로 남는다.</summary>
+        public int QuestPoints(QuestBoardDefinition board)
+        {
+            var period = _snapshot.questPeriods.Find(p => p.period == board.Period);
+            return period == null ? QuestRules.Points(board, _snapshot.quests)
+                : (int)Math.Min(int.MaxValue, period.points);
+        }
 
         public ShopState Shop => _snapshot.shop;
         public bool IsShopSlotSold(int slot) => _snapshot.shop.purchased.Contains(slot);
@@ -90,6 +97,8 @@ namespace Game.Core
             snap.codex ??= new();
             snap.quests ??= new();
             snap.questChests ??= new();
+            snap.tutorialStates ??= new();
+            snap.questPeriods ??= new();
             snap.shop ??= new();
             snap.shop.purchased ??= new();
             _snapshot = snap;

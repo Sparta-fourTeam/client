@@ -5,7 +5,7 @@ using Newtonsoft.Json.Linq;
 namespace Game.Network
 {
     /// <summary>GET /api/user/me 응답. 서버 UserDataResponse와 필드 이름이 같다 (서버 PR #47).
-    /// 스테이지·몬스터·튜토리얼 ID는 숫자(Long), PR #58 이후 아이템 ID는 문자열이다. 변환 규칙은 ServerUserMapper에 있다.</summary>
+    /// 튜토리얼은 #78 문자열 ID, 퀘스트는 #79 서버 기간별 보드다. 변환 규칙은 ServerUserMapper에 있다.</summary>
     [Serializable]
     public class ServerUserData
     {
@@ -29,7 +29,9 @@ namespace Game.Network
         public List<ServerUpgrade> upgrades;
         public List<ServerItem> items;
         public List<ServerCodex> codex;
-        public List<long> tutorials;
+        public List<string> tutorials;
+        public List<ServerTutorialState> tutorialStates;
+        public List<ServerQuestBoard> quests;
     }
 
     [Serializable]

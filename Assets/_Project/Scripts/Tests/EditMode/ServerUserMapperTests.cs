@@ -20,7 +20,7 @@ namespace Game.Tests
             upgrades = new List<ServerUpgrade> { new() { upgradeId = "shuriken", level = 4 } },
             items = new List<ServerItem> { new() { itemId = 9, quantity = 5 } },
             codex = new List<ServerCodex> { new() { monsterId = 12, claimed = true } },
-            tutorials = new List<long> { 3 },
+            tutorials = new List<string>(),
         };
 
         [Test(Description = "서버 필드 이름(jem)과 목록이 클라이언트 스냅샷 필드로 옮겨지고, 닉네임은 넘긴 값을 쓴다")]
@@ -54,8 +54,8 @@ namespace Game.Tests
             Assert.IsEmpty(snapshot.codex);
         }
 
-        [Test(Description = "아이템·튜토리얼은 서버와 클라이언트 ID 대응이 정해지기 전까지 옮기지 않고 빈 목록으로 둔다")]
-        public void ItemsAndTutorials_AreNotApplied()
+        [Test(Description = "이전 숫자 아이템은 문자열 ID로 추측하지 않는다")]
+        public void LegacyNumericItems_AreNotApplied()
         {
             var snapshot = ServerUserMapper.ToSnapshot(Full(), "n");
 
@@ -76,7 +76,7 @@ namespace Game.Tests
         [Test(Description = "PR58 문자열 아이템 ID·수량은 그대로 반영하고 이전 숫자 ID는 문자열로 추측하지 않는다")]
         public void Items_StringIdsAreApplied_LegacyNumericIdsAreSkipped()
         {
-            var data = JsonConvert.DeserializeObject<ServerUserData>("{\"items\":[{\"itemId\":\"book.arrow\",\"quantity\":5},{\"itemId\":9,\"quantity\":8},{\"itemId\":\"book.weapon\",\"quantity\":0}],\"tutorials\":[3]}");
+            var data = JsonConvert.DeserializeObject<ServerUserData>("{\"items\":[{\"itemId\":\"book.arrow\",\"quantity\":5},{\"itemId\":9,\"quantity\":8},{\"itemId\":\"book.weapon\",\"quantity\":0}],\"tutorials\":[]}");
             var snapshot = ServerUserMapper.ToSnapshot(data, "n");
             Assert.AreEqual(2, snapshot.items.Count);
             Assert.AreEqual("book.arrow", snapshot.items[0].itemId);

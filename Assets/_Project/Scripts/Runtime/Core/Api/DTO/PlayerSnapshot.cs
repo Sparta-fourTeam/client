@@ -25,11 +25,38 @@ namespace Game.Core
         public List<CodexRow> codex;
         /// <summary>완료한 튜토리얼 ID (Tutorials.json)</summary>
         public List<string> tutorials;
+        /// <summary>서버에 저장된 시청·완료·수령 구분. Local 스냅샷에는 없을 수 있다.</summary>
+        public List<TutorialAccountState> tutorialStates;
+        /// <summary>서버가 정한 기간키·다음 초기화·수령 점수. 기기 시각으로 갱신하지 않는다.</summary>
+        public List<QuestAccountPeriod> questPeriods;
         /// <summary>이번 일일·주간 주기의 퀘스트 진행. 진행이 생긴 퀘스트만 줄이 있다</summary>
         public List<QuestProgressRow> quests;
         /// <summary>이번 주기에 연 퀘스트 보물상자 ID</summary>
         public List<string> questChests;
         /// <summary>오늘 일일상점 상태(다시 뽑은 횟수, 산 칸)</summary>
         public ShopState shop;
+    }
+
+    [Serializable]
+    public class TutorialAccountState
+    {
+        public string tutorialId;
+        public bool dialogueSeen;
+        public bool completed;
+        public bool rewardClaimed;
+        public string dialogueSeenAt;
+        public string completedAt;
+    }
+
+    [Serializable]
+    public class QuestAccountPeriod
+    {
+        public QuestPeriod period;
+        public string periodKey;
+        public string nextResetAt;
+        public string lastLoginDay;
+        public int loginCount;
+        public int spentEnergy;
+        public long points;
     }
 }
