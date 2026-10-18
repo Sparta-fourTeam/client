@@ -16,12 +16,12 @@ namespace Game.Network
     internal static class LocalShop
     {
         /// <summary>날이 바뀌었으면 상점 상태를 비운다. 저장 파일을 읽을 때마다 부른다</summary>
-        public static void Roll(LocalSave save, DateTime localNow)
+        public static void Roll(LocalSave save, DateTime utcNow)
         {
             save.shop ??= new ShopSave();
             save.shop.state ??= new ShopState();
             save.shop.state.purchased ??= new List<int>();
-            string key = ShopRules.DayKey(localNow);
+            string key = ShopRules.DayKey(utcNow);
             if (save.shop.dayKey == key) { return; }
 
             save.shop.dayKey = key;

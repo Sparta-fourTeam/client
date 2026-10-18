@@ -22,8 +22,8 @@ namespace Game.Core
         /// <summary>물품 보상이 에너지(잉크펜)임을 나타내는 값</summary>
         public const string EnergyReward = "currency.energy";
 
-        /// <summary>오늘의 키. 매일 00시(기기 시각)에 바뀌고, 바뀌면 상점 상태가 초기화된다</summary>
-        public static string DayKey(DateTime localNow) => localNow.Date.ToString("yyyyMMdd");
+        /// <summary>오늘의 키. 한국시간 매일 04시에 바뀌면 상점 상태가 초기화된다.</summary>
+        public static string DayKey(DateTime utcNow) => GameDay.Key(utcNow);
 
         /// <summary>코인 묶음의 가격(잼). 기준 비율(잼 1개 = GemGoldRate 코인)로 바꾼 값에서 할인율을 뺀다</summary>
         public static int GoldPackPrice(ShopConfig config, GoldPackDefinition pack) =>

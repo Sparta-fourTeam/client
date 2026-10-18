@@ -38,6 +38,36 @@ namespace Game.Tests
 
         private int CountOf(string questId) => _store.Load().quests.rows.Find(r => r.questId == questId)?.count ?? 0;
 
+        [TestCase("2026-10-18T18:59:59Z", "20261018", "2026-10-18T19:00:00Z")]
+        [TestCase("2026-10-18T19:00:00Z", "20261019", "2026-10-19T19:00:00Z")]
+        [TestCase("2026-10-19T00:00:00Z", "20261019", "2026-10-19T19:00:00Z")]
+        [TestCase("2026-12-31T18:59:59Z", "20261231", "2026-12-31T19:00:00Z")]
+        [TestCase("2026-12-31T19:00:00Z", "20270101", "2027-01-01T19:00:00Z")]
+        [Test(Description = "상점·일일 퀘스트와 타이머가 UTC 입력에서 한국시간04시를 같은 경계로 사용한다")]
+        public void DailyReset_SharesKoreaBoundaryAcrossFeatures(string utcText, string day, string resetText)
+        {
+            var utcNow = DateTime.Parse(utcText, System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.AdjustToUniversal);
+            var reset = DateTime.Parse(resetText, System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.AdjustToUniversal);
+
+            Assert.AreEqual(day, ShopRules.DayKey(utcNow));
+            Assert.AreEqual(day, QuestRules.PeriodKey(QuestPeriod.Daily, utcNow));
+            Assert.AreEqual(reset, GameDay.NextResetUtc(utcNow));
+            Assert.AreEqual(DateTimeKind.Utc, GameDay.NextResetUtc(utcNow).Kind);
+            Assert.Greater((GameDay.NextResetUtc(utcNow) - utcNow).TotalSeconds, 0);
+        }
+
+        [TestCase("2026-10-18T18:59:59Z", "20261012")]
+        [TestCase("2026-10-18T19:00:00Z", "20261019")]
+        [Test(Description = "주간 퀘스트는 UTC 일요일19시인 한국시간 월요일04시에 새 주간으로 넘어간다")]
+        public void WeeklyReset_UsesMondayFourAmKorea(string utcText, string expected)
+        {
+            var utcNow = DateTime.Parse(utcText, System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.AdjustToUniversal);
+            Assert.AreEqual(expected, QuestRules.PeriodKey(QuestPeriod.Weekly, utcNow));
+        }
+
         // 목표를 채운 상태를 직접 만든다 (진행 계산은 다른 테스트가 본다)
         private void Complete(QuestDefinition quest)
         {

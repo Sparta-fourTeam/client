@@ -21,7 +21,7 @@ namespace Game.Network
     internal static class LocalQuests
     {
         /// <summary>주기가 바뀐 보드의 진행·상자 기록을 비운다. 저장 파일을 읽을 때마다 부른다</summary>
-        public static void Roll(LocalSave save, GameDataStore data, DateTime localNow)
+        public static void Roll(LocalSave save, GameDataStore data, DateTime utcNow)
         {
             save.quests ??= new QuestSave();
             var quests = save.quests;
@@ -29,7 +29,7 @@ namespace Game.Network
             quests.chests ??= new();
             foreach (var board in data.QuestBoards)
             {
-                string key = QuestRules.PeriodKey(board.Period, localNow);
+                string key = QuestRules.PeriodKey(board.Period, utcNow);
                 string saved = board.Period == QuestPeriod.Daily ? quests.dailyKey : quests.weeklyKey;
                 if (saved == key) { continue; }
 
@@ -40,9 +40,9 @@ namespace Game.Network
         }
 
         /// <summary>오늘 첫 로그인이면 로그인 퀘스트를 한 번 센다</summary>
-        public static void MarkLogin(LocalSave save, GameDataStore data, DateTime localNow)
+        public static void MarkLogin(LocalSave save, GameDataStore data, DateTime utcNow)
         {
-            Roll(save, data, localNow);
+            Roll(save, data, utcNow);
             string today = save.quests.dailyKey;
             if (save.quests.lastLoginDay == today) { return; }
 
