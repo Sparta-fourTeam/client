@@ -28,7 +28,7 @@ namespace Game.View
             }
 
             detail.Show(item.Icon, ItemInfo.NameOf(item.ItemId, data), string.Format(countFormat, CurrencyFormat.Format(item.Count)),
-                ItemInfo.DescriptionOf(item.ItemId));
+                ItemInfo.DescriptionOf(item.ItemId, data));
             detail.OfferOdds(item.ItemId);
         }
     }

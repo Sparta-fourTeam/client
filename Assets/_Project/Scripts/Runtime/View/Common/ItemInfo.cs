@@ -7,6 +7,8 @@ namespace Game.View
     {
         public static string NameOf(string itemId, GameDataStore data)
         {
+            if (RandomRewardOdds.IsRandom(itemId, data))
+            { return data.RewardRules.Items[itemId].Kind == "SkillMaterial" ? "랜덤 마법북" : "랜덤 인챈트 주문서"; }
             switch (itemId)
             {
                 case RewardRows.CoinId: return "잉크";
@@ -20,8 +22,13 @@ namespace Game.View
             return data != null && itemId != null && data.Items.Contains(itemId) ? data.Items.GetOrThrow(itemId).Name : itemId ?? string.Empty;
         }
 
-        public static string DescriptionOf(string itemId)
+        public static string DescriptionOf(string itemId, GameDataStore data = null)
         {
+            if (RandomRewardOdds.IsRandom(itemId, data))
+            {
+                return data.RewardRules.Items[itemId].Kind == "SkillMaterial"
+                    ? "열린 스킬 중 하나의 마법북을 받아요." : "열린 장비 중 하나의 인챈트 주문서를 받아요.";
+            }
             switch (itemId)
             {
                 case RewardRows.CoinId: return "스킬과 장비를 강화할 때 쓰는 재화예요.";

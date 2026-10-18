@@ -93,6 +93,16 @@ namespace Game.Tests
             StringAssert.Contains("스테이지", ItemInfo.DescriptionOf(ShopRules.EnergyReward));
         }
 
+        [TestCase("SkillMaterial", "랜덤 마법북", "열린 스킬")]
+        [TestCase("EquipmentMaterial", "랜덤 인챈트 주문서", "열린 장비")]
+        public void RandomRewardPresentationUsesTheConfiguredKind(string kind, string name, string description)
+        {
+            var data = new GameDataStore();
+            data.RewardRules.Items[ItemIds.ArrowBook] = new RewardItemRule { Kind = kind, Random = true };
+            Assert.AreEqual(name, ItemInfo.NameOf(ItemIds.ArrowBook, data));
+            StringAssert.Contains(description, ItemInfo.DescriptionOf(ItemIds.ArrowBook, data));
+        }
+
         [Test(Description = "보상 줄에는 코인·경험치·아이템 ID가 붙는다")]
         public void RewardRows_CarryIds()
         {

@@ -21,8 +21,8 @@ namespace Game.Core
     /// 지급이 후보를 균등하게 뽑으므로 확률은 1/후보 수다. 열린 스킬·장비가 바뀌면 후보도 확률도 따라 바뀐다</summary>
     public static class RandomRewardOdds
     {
-        public static bool IsRandom(string itemId) =>
-            itemId == ItemIds.RandomSkillMaterial || itemId == ItemIds.RandomEquipmentMaterial;
+        public static bool IsRandom(string itemId, GameDataStore data) =>
+            itemId != null && data != null && data.RewardRules.Items.TryGetValue(itemId, out var rule) && rule.Random;
 
         public static List<RewardOdd> For(string itemId, IEnumerable<int> unlockedSkills, IEnumerable<string> unlockedEquipment, GameDataStore data)
         {
