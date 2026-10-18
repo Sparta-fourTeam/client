@@ -106,7 +106,7 @@ namespace Game.View
         public void OfferOdds(string itemId)
         {
             _oddsItemId = itemId;
-            SetOddsVisible(_oddsButton != null && _oddsPopup != null && _profile != null && RandomRewardOdds.IsRandom(itemId));
+            SetOddsVisible(_oddsButton != null && _oddsPopup != null && _profile != null && RandomRewardOdds.IsRandom(itemId, _data));
         }
 
         private void SetOddsVisible(bool visible)
@@ -120,7 +120,7 @@ namespace Game.View
         private void ShowOdds()
         {
             string itemId = _oddsItemId;
-            if (!RandomRewardOdds.IsRandom(itemId)) { return; }
+            if (!RandomRewardOdds.IsRandom(itemId, _data)) { return; }
 
             var rows = new System.Collections.Generic.List<RewardOddsRow>();
             foreach (var odd in RandomRewardOdds.ForExp(itemId, _data, _profile.Exp))
@@ -129,7 +129,7 @@ namespace Game.View
                     ItemInfo.NameOf(odd.ItemId, _data), RandomRewardOdds.Percent(odd.Probability)));
             }
 
-            string what = itemId == ItemIds.RandomSkillMaterial ? "열린 스킬의 마법북" : "열린 장비의 인챈트 주문서";
+            string what = _data.RewardRules.Items[itemId].Kind == "SkillMaterial" ? "열린 스킬의 마법북" : "열린 장비의 인챈트 주문서";
             _oddsPopup.Show($"{ItemInfo.NameOf(itemId, _data)} 확률", $"현재 레벨에서 {what}이 같은 확률로 나와요.", rows);
         }
 

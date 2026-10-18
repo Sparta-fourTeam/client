@@ -72,9 +72,10 @@ namespace Game.View
                 return null;
             }
 
-            if (itemId == ItemIds.RandomSkillMaterial || itemId == ItemIds.RandomEquipmentMaterial)
+            if (RandomRewardOdds.IsRandom(itemId, data))
             {
-                return icons.GetRandom(itemId);
+                return icons.GetRandom(data.RewardRules.Items[itemId].Kind == "SkillMaterial"
+                    ? ItemIds.RandomSkillMaterial : ItemIds.RandomEquipmentMaterial);
             }
 
             return icons.Get(itemId);

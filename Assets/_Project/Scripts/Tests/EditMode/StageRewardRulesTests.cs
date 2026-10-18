@@ -164,16 +164,21 @@ namespace Game.Tests
             Assert.Throws<InvalidOperationException>(balance.Validate);
         }
 
-        [Test(Description = "확률 안내는 지급과 같은 후보를 균등 확률로 보여주고, 열린 재료가 없으면 후보도 없다")]
-        public void RandomRewardOdds_ListsTheSameCandidatesTheResolverCanPick_WithEqualProbability()
+        [TestCase(ItemIds.RandomSkillMaterial)]
+        [TestCase("fixture.random.skill")]
+        public void RandomRewardOdds_ListsTheSameCandidatesTheResolverCanPick_WithEqualProbability(string randomId)
         {
             var data = new GameDataStore();
-            var odds = RandomRewardOdds.For(ItemIds.RandomSkillMaterial, new[] { 1, 2, 3, 999 }, null, data);
+            data.RewardRules.Items[randomId] = new RewardItemRule { Kind = "SkillMaterial", Random = true };
+            Assert.IsTrue(RandomRewardOdds.IsRandom(randomId, data));
+            Assert.IsFalse(RandomRewardOdds.IsRandom(ItemIds.ArrowBook, data));
+            Assert.IsFalse(RandomRewardOdds.IsRandom("fixture.unknown", data));
+            var odds = RandomRewardOdds.For(randomId, new[] { 1, 2, 3, 999 }, null, data);
 
             CollectionAssert.AreEquivalent(new[] { ItemIds.ArrowBook, ItemIds.FireballBook, ItemIds.LightningBook }, odds.Select(odd => odd.ItemId));
             Assert.That(odds.Sum(odd => odd.Probability), Is.EqualTo(1f).Within(1e-5f));
             Assert.That(odds.Select(odd => odd.Probability), Is.All.EqualTo(1f / 3f).Within(1e-5f));
-            var rewards = new[] { new ItemAmount { itemId = ItemIds.RandomSkillMaterial, quantity = 40 } };
+            var rewards = new[] { new ItemAmount { itemId = randomId, quantity = 40 } };
             for (int seed = 1; seed <= 100; seed++)
             {
                 var picked = RandomMaterialResolver.Resolve(rewards, new[] { 1, 2, 3, 999 }, null, data, seed).Select(item => item.itemId);
