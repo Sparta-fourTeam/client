@@ -218,6 +218,13 @@ namespace Game.Tests
             }
         }
 
+        [Test]
+        public void PlayerLevels_RejectsUnreachableCumulativeExperience()
+        {
+            var config = new PlayerLevelConfig { BaseExp = 1500000000, StepExp = 0, MaxLevel = 3 };
+            Assert.Throws<System.InvalidOperationException>(() => config.ToTable());
+        }
+
         [Test(Description = "PlayerLevels는 시작값과 증가분으로 레벨별 필요 경험치를 만든다")]
         public void PlayerLevels_BuildsRequiredExpFromBaseAndStep()
         {
