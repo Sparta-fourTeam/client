@@ -6,7 +6,7 @@ using Game.Core;
 namespace Game.Network
 {
     /// <summary>전투 발급과 결과 제출을 로컬 저장소에 반영하는 Mock 구현</summary>
-    public sealed class LocalBattleApi : IBattleApi, ISubmitFaultSwitch
+    public sealed partial class LocalBattleApi : IBattleApi, ISubmitFaultSwitch, IBattleProgressApi
     {
         private readonly LocalSaveStore _store;
         private readonly GameDataStore _data;
@@ -97,6 +97,7 @@ namespace Game.Network
                 });
             }
 
+            if (req.killedMonsters < battle.reportedKills) { throw new ApiException(ApiErrorKind.Rejected, "BATTLE_PROGRESS_CONFLICT"); }
             int rating = req.cleared ? StageRewardRules.ClearRating(req.wallHpPercent) : 0;
             if (req.completedWaves < 0 || req.completedWaves > StageRewardRules.WaveCount
                 || req.reachedWave < req.completedWaves || req.reachedWave > StageRewardRules.WaveCount
@@ -121,7 +122,7 @@ namespace Game.Network
             save.wallet.gold = totalGold;
             save.exp = totalExp;
             RegisterEncounters(save, req.encounteredMonsterIds);
-            LocalQuests.Add(save, _data, QuestKind.KillMonsters, req.killedMonsters);
+            LocalQuests.Add(save, _data, QuestKind.KillMonsters, req.killedMonsters - battle.reportedKills);
 
             if (req.cleared)
             {

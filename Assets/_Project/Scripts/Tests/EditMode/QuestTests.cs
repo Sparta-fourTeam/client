@@ -99,6 +99,44 @@ namespace Game.Tests
             }
         }
 
+        [Test(Description = "웨이브 누적 보고와 최종 결과가 같은 처치를 다시 더하지 않고, 이어하지 않는 포기도 중간 진행을 보존한다")]
+        public void CheckpointProgressAndFinalResultCountOnlyTheCumulativeDifference()
+        {
+            var start = _battle.StartBattle(1).GetAwaiter().GetResult();
+            int monster = _data.Stages.GetOrThrow(1).Waves[0].Spawns[0].MonsterId;
+            var first = new BattleProgressRequest
+            {
+                battleId = start.battleId,
+                reportId = Guid.NewGuid().ToString("D"),
+                killedMonsters = 3,
+                reachedWave = 1,
+                encounteredMonsterIds = new System.Collections.Generic.List<int> { monster },
+            };
+            var ack = _battle.ReportProgress(first).GetAwaiter().GetResult();
+            Assert.AreEqual(3, ack.acceptedDelta);
+            Assert.AreEqual(ack.revision, _battle.ReportProgress(first).GetAwaiter().GetResult().revision);
+            Assert.AreEqual(3, CountOf(QuestOf(_daily, QuestKind.KillMonsters).Id));
+            _battle.SubmitResult(new SubmitResultRequest
+            { battleId = start.battleId, reachedWave = 1, killedMonsters = 5 }).GetAwaiter().GetResult();
+            Assert.AreEqual(5, CountOf(QuestOf(_daily, QuestKind.KillMonsters).Id));
+            Assert.AreEqual(ack.revision, _battle.ReportProgress(first).GetAwaiter().GetResult().revision);
+            var other = _battle.StartBattle(1).GetAwaiter().GetResult();
+            var discard = new BattleProgressRequest
+            {
+                battleId = other.battleId,
+                reportId = Guid.NewGuid().ToString("D"),
+                killedMonsters = 4,
+                reachedWave = 1,
+                encounteredMonsterIds = new System.Collections.Generic.List<int> { monster },
+            };
+            int beforeGold = _store.Load().wallet.gold;
+            var receipt = _battle.AbandonProgress(discard).GetAwaiter().GetResult();
+            Assert.AreEqual(receipt.revision, _battle.AbandonProgress(discard).GetAwaiter().GetResult().revision);
+            Assert.AreEqual(9, CountOf(QuestOf(_daily, QuestKind.KillMonsters).Id));
+            Assert.AreEqual(beforeGold, _store.Load().wallet.gold);
+            Assert.AreEqual("Abandoned", _store.Load().battles.Find(b => b.battleKey == other.battleId).status);
+        }
+
         [Test(Description = "목표 미달이면 받을 수 없고, 받은 퀘스트는 다시 받을 수 없다. 받으면 점수가 오른다")]
         public void ClaimQuest_RequiresCompletion_AndPaysPointsOnce()
         {

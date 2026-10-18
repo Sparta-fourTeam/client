@@ -106,7 +106,7 @@ namespace Game.Network
             foreach (var board in array.Cast<JObject>())
             {
                 if (!Rows(board["quests"], "id", row => Id(row["id"]) && usedIds.Add(row.Value<string>("id"))
-                    && (row.Value<string>("kind") == "LOGIN" || row.Value<string>("kind") == "SPEND_ENERGY")
+                    && (row.Value<string>("kind") == "LOGIN" || row.Value<string>("kind") == "SPEND_ENERGY" || row.Value<string>("kind") == "KILL_MONSTERS")
                     && Integer(row["target"], 1) && Integer(row["points"], 1)
                     && Integer(row["count"], 0, row.Value<int>("target")) && Boolean(row["claimed"])
                     && (!row.Value<bool>("claimed") || row.Value<int>("count") == row.Value<int>("target"))

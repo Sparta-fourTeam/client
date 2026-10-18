@@ -46,6 +46,10 @@ namespace Game.Core
         public List<SavedChoice> RouletteSelected = new();
         public List<WaveRuntimeState> Waves = new();
         public SubmitResultRequest PendingRequest;
+        public BattleProgressRequest PendingProgress;
+        public long ProgressRevision;
+        public bool ProgressRequested;
+        public bool PendingProgressAbandon;
         public int ResultKills;
         public float ResultTime;
     }

@@ -24,6 +24,46 @@ namespace Game.Core
             _startFailed = startFailed;
         }
 
+        /// <summary>저장된 마지막 누적 진행을 접수한 뒤 이어하기를 포기한다. 재시도할 요청은 먼저 로컬에 확정한다.</summary>
+        public async UniTask Discard(BattleCheckpoint checkpoint)
+        {
+            if (_battleApi is not IBattleProgressApi api) { return; }
+            var state = checkpoint.Stage;
+            if (state.PendingProgress != null && state.PendingProgressAbandon)
+            {
+                await api.AbandonProgress(state.PendingProgress);
+                return;
+            }
+            if (state.PendingProgress != null)
+            {
+                var prior = await api.ReportProgress(state.PendingProgress);
+                state.ProgressRevision = prior.revision;
+                state.PendingProgress = null;
+                SaveProgress(checkpoint);
+            }
+            state.PendingProgress = new BattleProgressRequest
+            {
+                battleId = checkpoint.BattleId,
+                reportId = System.Guid.NewGuid().ToString("D"),
+                expectedRevision = state.ProgressRevision,
+                killedMonsters = state.Kills,
+                completedWaves = state.CompletedWaves,
+                reachedWave = state.ReachedWave,
+                encounteredMonsterIds = new System.Collections.Generic.List<int>(state.Encountered),
+            };
+            state.PendingProgressAbandon = true;
+            SaveProgress(checkpoint);
+            await api.AbandonProgress(state.PendingProgress);
+        }
+
+        private void SaveProgress(BattleCheckpoint checkpoint)
+        {
+            if (_checkpoints == null) { throw new ApiException(ApiErrorKind.Transient, "PROGRESS_STORAGE_UNAVAILABLE"); }
+            try { _checkpoints.Save(checkpoint); }
+            catch (System.Exception error) when (error is System.IO.IOException or System.InvalidOperationException or System.UnauthorizedAccessException)
+            { throw new ApiException(ApiErrorKind.Transient, "PROGRESS_STORAGE_UNAVAILABLE"); }
+        }
+
         /// <summary>기기에 저장된 같은 전투를 재개한다. 새 전투 발급이나 에너지 차감은 하지 않는다.</summary>
         public UniTask Resume(BattleCheckpoint checkpoint)
         {

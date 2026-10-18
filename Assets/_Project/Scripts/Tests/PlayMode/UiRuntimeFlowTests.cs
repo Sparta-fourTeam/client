@@ -151,10 +151,15 @@ namespace Game.Tests
             Assert.That(restored.Skills.Select(s => s.Attacks.Count), Is.EqualTo(saved.Skills.Select(s => s.Attacks.Count)));
             manager.Resume();
             yield return CompleteEnemiesUntil(stage, () => manager.State == StageState.CardSelect);
+            yield return WaitFor(() => _store.Load().battles.Single(b => b.battleKey == battleId).progressRevision > 0);
             driver = Object.FindAnyObjectByType<BattleCheckpointDriver>();
             driver.SaveNow();
             var selected = checkpoints.Load();
             Assert.That(selected.Stage.Choices, Is.Not.Empty);
+            var accepted = _store.Load().battles.Single(b => b.battleKey == battleId);
+            Assert.That(accepted.reportedKills, Is.EqualTo(selected.Stage.Kills));
+            Assert.That(selected.Stage.ProgressRevision, Is.EqualTo(accepted.progressRevision));
+            Assert.That(selected.Stage.PendingProgress, Is.Null);
             context.SetBattle(null);
             yield return nav.GoToLobby().ToCoroutine();
             confirm = Object.FindAnyObjectByType<LobbyLifetimeScope>().Container.Resolve<IUiRegistry>().Get<ConfirmPopupView>();
