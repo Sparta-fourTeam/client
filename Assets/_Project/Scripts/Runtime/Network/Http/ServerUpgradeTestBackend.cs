@@ -304,6 +304,8 @@ namespace Game.Network
             {
                 if (_pending != null) { throw new ApiException(ApiErrorKind.Rejected, "UPGRADE_RECOVERY_REQUIRED"); }
                 if (_claim != null) { throw new ApiException(ApiErrorKind.Rejected, "STAGE_REWARD_PENDING"); }
+                await RefreshPlayerLevels();
+                EnsureSession();
                 var snapshot = source.HasValue ? await _energy.Recover(source.Value, key) : await _energy.RefreshPurchaseState();
                 EnsureSession();
                 _observed = snapshot;

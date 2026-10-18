@@ -365,6 +365,7 @@ namespace Game.Tests
             _levels = new HttpResponseData(503, "");
 
             Assert.Throws<ApiException>(() => _backend.Purchase("atk", "blocked").GetAwaiter().GetResult());
+            Assert.Throws<ApiException>(() => _backend.Recover(EnergySource.Purchase).GetAwaiter().GetResult());
 
             Assert.IsFalse(_data.HasServerPlayerLevels);
             Assert.IsFalse(_transport.Requests.Any(row => row.Verb == HttpVerb.Post));
