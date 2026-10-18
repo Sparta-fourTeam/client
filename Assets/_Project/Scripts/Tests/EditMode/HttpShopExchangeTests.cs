@@ -1,4 +1,7 @@
+using System;
+using System.IO;
 using System.Linq;
+using System.Text;
 using Cysharp.Threading.Tasks;
 using Game.Core;
 using Game.Network;
@@ -162,6 +165,116 @@ namespace Game.Tests
             var error = Assert.Throws<ApiException>(() => ShopExchangeRequest.AdReroll());
             Assert.AreEqual("SHOP_AD_UNAVAILABLE", error.Code);
             Assert.IsEmpty(_transport.Requests);
+        }
+
+        [Test(Description = "응답 유실 뒤 재시작해도 동일 계정의 동일 요청 ID와 견적을 재전송하고 영수증 확인 후 삭제한다")]
+        public void PendingBuy_SurvivesRestart_WithoutSecondPurchase()
+        {
+            string directory = TemporaryDirectory();
+            try
+            {
+                _tokens.Set(Token(41), "refresh-a");
+                _api = new HttpShopApi(new HttpApiConfig("https://example.test"), _transport, _tokens);
+                var journal = new ShopPendingRequestStore(directory, _tokens);
+                var exchange = journal.Begin(_api, ShopExchangeRequest.Buy(State(), 0, "saved-buy"));
+                _transport.Queued.Enqueue(HttpResponseData.Failed(HttpFailure.Timeout));
+                _transport.Queued.Enqueue(Ok(Account(40, 5, Daily(purchased: true))));
+                Assert.AreEqual(ShopSubmissionStatus.Unknown, exchange.Submit().GetAwaiter().GetResult().Status);
+                Assert.AreEqual(1, Directory.GetFiles(directory, "shop-pending-*.json").Length);
+                Assert.Throws<InvalidOperationException>(() =>
+                    journal.Begin(_api, ShopExchangeRequest.GoldReroll(State(), "second-key")));
+
+                var otherAccount = new AuthSession();
+                otherAccount.Set(Token(42), "refresh-b");
+                var otherApi = new HttpShopApi(new HttpApiConfig("https://example.test"), _transport, otherAccount);
+                Assert.IsNull(new ShopPendingRequestStore(directory, otherAccount).Recover(otherApi));
+
+                var restarted = new AuthSession();
+                restarted.Set(Token(41), "refresh-new-device");
+                var api = new HttpShopApi(new HttpApiConfig("https://example.test"), _transport, restarted);
+                var recovered = new ShopPendingRequestStore(directory, restarted).Recover(api);
+                Assert.AreEqual(ShopSubmissionStatus.Unknown, recovered.Status);
+                _transport.Queued.Enqueue(Ok(DailyReceipt("saved-buy", "BUY", 0, Daily(purchased: true))));
+                _transport.Queued.Enqueue(Ok(Account(40, 5, Daily(purchased: true))));
+                var result = recovered.Submit().GetAwaiter().GetResult();
+                Assert.AreEqual(ShopSubmissionStatus.Acknowledged, result.Status);
+                Assert.AreEqual(7, result.DailyReceipt.GemsSpent);
+                Assert.IsNull(new ShopPendingRequestStore(directory, restarted).Recover(api));
+                var posts = _transport.Requests.Where(r => r.Verb == HttpVerb.Post).ToArray();
+                Assert.AreEqual(2, posts.Length);
+                Assert.AreEqual(posts[0].Body, posts[1].Body);
+            }
+            finally { Directory.Delete(directory, true); }
+        }
+
+        [Test(Description = "첫 요청의 확정 거절은 저장 요청을 제거하고 새 요청을 허용한다")]
+        public void DefiniteRejection_ClearsPendingRequest()
+        {
+            string directory = TemporaryDirectory();
+            try
+            {
+                _tokens.Set(Token(41), "refresh-a");
+                _api = new HttpShopApi(new HttpApiConfig("https://example.test"), _transport, _tokens);
+                var journal = new ShopPendingRequestStore(directory, _tokens);
+                var exchange = journal.Begin(_api, ShopExchangeRequest.Buy(State(), 0, "rejected-buy"));
+                _transport.Queued.Enqueue(new HttpResponseData(409, ""));
+                _transport.Queued.Enqueue(Ok(Account(40, 12, Daily())));
+                Assert.AreEqual(ShopSubmissionStatus.Rejected, exchange.Submit().GetAwaiter().GetResult().Status);
+                Assert.IsNull(journal.Recover(_api));
+            }
+            finally { Directory.Delete(directory, true); }
+        }
+
+        [Test(Description = "영수증을 받은 뒤 계정 조회가 실패하면 재시작 후 POST를 다시 보내지 않는다")]
+        public void AcknowledgedReceipt_ClearsJournalBeforeAccountRead()
+        {
+            string directory = TemporaryDirectory();
+            try
+            {
+                _tokens.Set(Token(41), "refresh-a");
+                _api = new HttpShopApi(new HttpApiConfig("https://example.test"), _transport, _tokens);
+                var journal = new ShopPendingRequestStore(directory, _tokens);
+                var exchange = journal.Begin(_api, ShopExchangeRequest.GoldReroll(State(), "roll-saved"));
+                _transport.Queued.Enqueue(Ok(DailyReceipt("roll-saved", "GOLD_REROLL", null, Daily(reroll: 1))));
+                _transport.Queued.Enqueue(new HttpResponseData(500, ""));
+                Assert.Throws<ApiException>(() => exchange.Submit().GetAwaiter().GetResult());
+                Assert.AreEqual(ShopSubmissionStatus.Acknowledged, exchange.Status);
+                Assert.IsNull(journal.Recover(_api));
+                Assert.AreEqual(1, _transport.Requests.Count(r => r.Verb == HttpVerb.Post));
+            }
+            finally { Directory.Delete(directory, true); }
+        }
+
+        [Test(Description = "대기 요청을 디스크에 쓸 수 없으면 POST를 보내지 않는다")]
+        public void PersistenceFailure_DoesNotSendPurchase()
+        {
+            string directory = TemporaryDirectory();
+            try
+            {
+                _tokens.Set(Token(41), "refresh-a");
+                _api = new HttpShopApi(new HttpApiConfig("https://example.test"), _transport, _tokens);
+                string occupiedPath = Path.Combine(directory, "occupied");
+                File.WriteAllText(occupiedPath, "file");
+                var journal = new ShopPendingRequestStore(occupiedPath, _tokens);
+                var exchange = journal.Begin(_api, ShopExchangeRequest.Buy(State(), 0, "cannot-save"));
+                Assert.Throws<IOException>(() => exchange.Submit().GetAwaiter().GetResult());
+                Assert.IsFalse(_transport.Requests.Any(r => r.Verb == HttpVerb.Post));
+            }
+            finally { Directory.Delete(directory, true); }
+        }
+
+        private static string TemporaryDirectory()
+        {
+            string path = Path.Combine(Path.GetTempPath(), "shop-pending-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(path);
+            return path;
+        }
+
+        private static string Token(long id)
+        {
+            string payload = Convert.ToBase64String(Encoding.UTF8.GetBytes(new JObject
+            { ["sub"] = id.ToString() }.ToString(Formatting.None))).TrimEnd('=').Replace('+', '-').Replace('/', '_');
+            return "header." + payload + ".signature";
         }
 
         private ServerDailyShop State()
