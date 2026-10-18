@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Game.Core;
 using Newtonsoft.Json.Linq;
 
@@ -7,7 +8,7 @@ namespace Game.Network
     /// <summary>서버의 유저 상태(ServerUserData)를 클라이언트 PlayerSnapshot으로 바꾼다.
     /// 클라이언트만으로 맞출 수 있는 것(필드 이름, null, 숫자 범위)은 여기서 맞추고, 서버와 합의가 필요한 것은 아래에 적는다.
     /// - 닉네임: 서버 응답에 없어서 호출한 쪽이 넘긴 값을 쓴다
-    /// - PR #58의 문자열 아이템 ID는 그대로 옮긴다. 이전 숫자 아이템 ID와 숫자 튜토리얼 ID는 대응표가 없어 옮기지 않는다.</summary>
+    /// - 튜토리얼 문자열 ID·시청/수령 상태와 서버 기간의 퀘스트 진행을 그대로 복원한다.</summary>
     public static class ServerUserMapper
     {
         public static PlayerSnapshot ToSnapshot(ServerUserData data, string nickname, string playerId = null)
@@ -26,6 +27,10 @@ namespace Game.Network
                 items = new List<ItemAmount>(),
                 codex = new List<CodexRow>(),
                 tutorials = new List<string>(),
+                tutorialStates = new List<TutorialAccountState>(),
+                quests = new List<QuestProgressRow>(),
+                questChests = new List<string>(),
+                questPeriods = new List<QuestAccountPeriod>(),
             };
 
             foreach (var row in data.stageProgress ?? new List<ServerStageProgress>())
@@ -61,6 +66,44 @@ namespace Game.Network
             }
 
 
+            return ServerProgressContract.Parse(() => MapProgress(data, snapshot));
+        }
+
+        private static PlayerSnapshot MapProgress(ServerUserData data, PlayerSnapshot snapshot)
+        {
+            var states = JToken.FromObject(data.tutorialStates ?? new List<ServerTutorialState>());
+            ServerProgressContract.ValidateTutorials(JToken.FromObject(data.tutorials ?? new List<string>()), states);
+            snapshot.tutorials.AddRange(data.tutorials ?? new List<string>());
+            foreach (var state in data.tutorialStates ?? new List<ServerTutorialState>())
+            {
+                snapshot.tutorialStates.Add(new TutorialAccountState
+                {
+                    tutorialId = state.tutorialId,
+                    dialogueSeen = state.dialogueSeen,
+                    completed = state.completed,
+                    rewardClaimed = state.rewardClaimed,
+                    dialogueSeenAt = state.dialogueSeenAt,
+                    completedAt = state.completedAt,
+                });
+            }
+            if (data.quests == null) { return snapshot; }
+            ServerProgressContract.ValidateBoards(JToken.FromObject(data.quests));
+            foreach (var board in data.quests)
+            {
+                snapshot.questPeriods.Add(new QuestAccountPeriod
+                {
+                    period = board.period == "DAILY" ? QuestPeriod.Daily : QuestPeriod.Weekly,
+                    periodKey = board.periodKey,
+                    nextResetAt = board.nextResetAt,
+                    lastLoginDay = board.lastLoginDay,
+                    loginCount = board.loginCount,
+                    spentEnergy = board.spentEnergy,
+                    points = board.points,
+                });
+                snapshot.quests.AddRange(board.quests.Select(row => new QuestProgressRow
+                { questId = row.id, count = row.count, claimed = row.claimed }));
+                snapshot.questChests.AddRange(board.chests.Where(row => row.claimed).Select(row => row.id));
+            }
             return snapshot;
         }
 
