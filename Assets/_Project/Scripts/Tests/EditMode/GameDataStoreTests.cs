@@ -208,6 +208,23 @@ namespace Game.Tests
             Assert.That(explicitCosts.LevelCosts, Is.EqualTo(new[] { 7, 9 }));
         }
 
+        [Test]
+        public void PlayerLevels_RejectsUnsupportedSizeBeforeAllocatingRows()
+        {
+            foreach (int size in new[] { PlayerLevelConfig.MaxSupportedLevel + 1, int.MaxValue })
+            {
+                var config = new PlayerLevelConfig { BaseExp = 1, StepExp = 0, MaxLevel = size };
+                Assert.Throws<System.InvalidOperationException>(() => config.ToTable());
+            }
+        }
+
+        [Test]
+        public void PlayerLevels_RejectsUnreachableCumulativeExperience()
+        {
+            var config = new PlayerLevelConfig { BaseExp = 1500000000, StepExp = 0, MaxLevel = 3 };
+            Assert.Throws<System.InvalidOperationException>(() => config.ToTable());
+        }
+
         [Test(Description = "PlayerLevels는 시작값과 증가분으로 레벨별 필요 경험치를 만든다")]
         public void PlayerLevels_BuildsRequiredExpFromBaseAndStep()
         {

@@ -42,6 +42,11 @@ namespace Game.Tests
             SessionState.SetBool(EditorStateKey + ".HadPreference", EditorPrefs.HasKey(PlayFromBootKey));
             SessionState.SetBool(EditorStateKey + ".Preference", EditorPrefs.GetBool(PlayFromBootKey, false));
             SessionState.SetBool(EditorStateKey, true);
+            SessionState.SetBool(EditorStateKey + ".HadUpgradeTest", PlayerPrefs.HasKey(ServerConfig.UpgradeTestKey));
+            SessionState.SetString(EditorStateKey + ".UpgradeTest", PlayerPrefs.GetString(ServerConfig.UpgradeTestKey, ""));
+            // 이 fixture는 Local 저장/전투 흐름을 검증한다. 개발자의 서버 테스트 모드와 격리한다.
+            PlayerPrefs.SetString(ServerConfig.UpgradeTestKey, "0");
+            PlayerPrefs.Save();
             // PlayFromBootMenu would otherwise restore Boot again after the domain reload.
             EditorPrefs.SetBool(PlayFromBootKey, false);
             EditorSceneManager.playModeStartScene = null;
@@ -59,6 +64,12 @@ namespace Game.Tests
                 EditorPrefs.SetBool(PlayFromBootKey, SessionState.GetBool(EditorStateKey + ".Preference", false));
             }
             else { EditorPrefs.DeleteKey(PlayFromBootKey); }
+            if (SessionState.GetBool(EditorStateKey + ".HadUpgradeTest", false))
+            { PlayerPrefs.SetString(ServerConfig.UpgradeTestKey, SessionState.GetString(EditorStateKey + ".UpgradeTest", "")); }
+            else { PlayerPrefs.DeleteKey(ServerConfig.UpgradeTestKey); }
+            PlayerPrefs.Save();
+            SessionState.EraseBool(EditorStateKey + ".HadUpgradeTest");
+            SessionState.EraseString(EditorStateKey + ".UpgradeTest");
             SessionState.EraseString(EditorStateKey + ".Scene");
             SessionState.EraseBool(EditorStateKey + ".HadPreference");
             SessionState.EraseBool(EditorStateKey + ".Preference");

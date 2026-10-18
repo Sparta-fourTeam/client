@@ -26,6 +26,7 @@ namespace Game.Core
     /// 전투 전 레벨과 비교해 레벨업 소식을 만든다. 보여주는 것은 View가 한다</summary>
     public sealed class LobbyArrival
     {
+        private readonly PlayerApiMode _mode;
         private readonly LobbyProfileRefresher _refresher;
         private readonly PlayerProfile _profile;
         private readonly ITutorialApi _tutorialApi;
@@ -33,8 +34,9 @@ namespace Game.Core
         private readonly IReadOnlyList<ILevelUnlockSource> _unlockSources;
 
         public LobbyArrival(LobbyProfileRefresher refresher, PlayerProfile profile, ITutorialApi tutorialApi, GameDataStore data,
-            IReadOnlyList<ILevelUnlockSource> unlockSources)
+            IReadOnlyList<ILevelUnlockSource> unlockSources, PlayerApiMode mode = null)
         {
+            _mode = mode;
             _refresher = refresher;
             _profile = profile;
             _tutorialApi = tutorialApi;
@@ -76,7 +78,7 @@ namespace Game.Core
         }
 
         private TutorialDefinition Completable() =>
-            TutorialProgress.Completable(_data.Tutorials, TutorialFacts.From(_profile)).FirstOrDefault();
+            _mode?.ServerUpgradeTest == true ? null : TutorialProgress.Completable(_data.Tutorials, TutorialFacts.From(_profile)).FirstOrDefault();
 
         /// <summary>튜토리얼을 완료로 저장하고 프로필에 반영한다. 받은 보상이 담긴 응답을 돌려주고,
         /// 실패하면 로그만 남기고 null을 돌려준다 (다음 로비 진입 때 다시 시도된다)</summary>
