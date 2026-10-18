@@ -215,7 +215,7 @@ def cmd_calibrate(args):
     anchor = next(s for s in stages if s["Id"] == args.anchor)
     raw, _ = player_curve(cfg, anchor, monsters)
     enemy = sum(stage_power(anchor, monsters))
-    scale = enemy / (sum(raw) / len(raw) * target_ratio(cfg, anchor["Id"]))
+    scale = enemy / (sum(raw) / len(raw) * target_ratio(cfg, anchor["Id"]) * tuning_k(cfg, anchor["Id"]))
     text = path.read_text(encoding="utf-8")
     if '"scale"' in text:
         text = re.sub(r'"scale":\s*[0-9.eE+-]+', f'"scale": {scale:.6g}', text)
@@ -278,7 +278,12 @@ def cmd_generate(args):
         # 수량은 위에서 target 기준으로 만들었다. 오토플레이 배수는 HP·공격 강화율에만 곱한다(전투력이 배수만큼 줄어든다)
         k = tuning_k(cfg, s)
         if k != 1.0:
-            for b in new.get("MonsterBonuses", []):
+            rows = new.setdefault("MonsterBonuses", [])
+            for stat in ("Hp", "Damage"):
+                # 강화 줄이 없는 스테이지(예: 1관문)도 배수가 적용되도록 0% 줄을 먼저 만든다
+                if not any(r["Stat"] == stat for r in rows):
+                    rows.insert(0 if stat == "Hp" else min(1, len(rows)), {"Stat": stat, "Percent": 0})
+            for b in rows:
                 if b["Stat"] in ("Hp", "Damage"):
                     b["Percent"] = round(((1 + b["Percent"] / 100) * k - 1) * 100)
         peak = max(peak, max(sum(sp["Count"] for sp in w["Spawns"]) for w in new["Waves"]))
