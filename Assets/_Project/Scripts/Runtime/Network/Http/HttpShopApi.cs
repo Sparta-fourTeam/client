@@ -57,6 +57,20 @@ namespace Game.Network
         public static ShopExchangeRequest AdReroll() =>
             throw new ApiException(ApiErrorKind.Rejected, "SHOP_AD_UNAVAILABLE");
 
+        internal static ShopExchangeRequest Restore(string key, string operation, string day, int reroll,
+            int? slot, int version, int index)
+        {
+            if ((operation == "BUY" && ValidDay(day) && reroll >= 0 && slot >= 0 && version == 0 && index == 0)
+                || (operation == "GOLD_REROLL" && ValidDay(day) && reroll >= 0 && slot == null && version == 0 && index == 0)
+                || (operation == "GOLD_PACK" && day == null && reroll == 0 && slot == null && version > 0 && index >= 0))
+            { return new ShopExchangeRequest(key, operation, day, reroll, slot, version, index); }
+            throw new ArgumentException("저장된 상점 요청 형식이 올바르지 않습니다");
+        }
+
+        private static bool ValidDay(string day) => day != null && day.Length == 8
+            && System.DateTime.TryParseExact(day, "yyyyMMdd", System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.None, out _);
+
         private static string ValidKey(string key)
         {
             if (string.IsNullOrEmpty(key) || key.Length > 64) { throw new ArgumentException("요청 ID가 필요합니다", nameof(key)); }
@@ -75,6 +89,7 @@ namespace Game.Network
         private readonly HttpApiClient _client;
         private readonly IAuthTokenStore _tokens;
         private readonly long _generation;
+        internal IAuthTokenStore TokenStore => _tokens;
 
         public HttpShopApi(HttpApiConfig config, IHttpTransport transport, IAuthTokenStore tokens)
         {

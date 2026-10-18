@@ -26,6 +26,7 @@ namespace Game.Network
     {
         private readonly HttpShopApi _api;
         private readonly ShopExchangeRequest _request;
+        private readonly ShopPendingRequestStore _pending;
         private bool _attempted;
         private int _busy;
         private string _error;
@@ -35,9 +36,15 @@ namespace Game.Network
         public ShopSubmissionStatus Status { get; private set; }
 
         public HttpShopExchange(HttpShopApi api, ShopExchangeRequest request)
+            : this(api, request, null, false) { }
+
+        internal HttpShopExchange(HttpShopApi api, ShopExchangeRequest request, ShopPendingRequestStore pending, bool recovered)
         {
             _api = api ?? throw new ArgumentNullException(nameof(api));
             _request = request ?? throw new ArgumentNullException(nameof(request));
+            _pending = pending;
+            _attempted = recovered;
+            Status = recovered ? ShopSubmissionStatus.Unknown : ShopSubmissionStatus.NotSubmitted;
             _api.EnsureSession();
         }
 
@@ -50,6 +57,7 @@ namespace Game.Network
                 cancellationToken.ThrowIfCancellationRequested();
                 if (!_attempted || Status == ShopSubmissionStatus.Unknown)
                 {
+                    _pending?.Prepare(_request);
                     bool previouslyUnknown = _attempted;
                     _attempted = true;
                     Status = ShopSubmissionStatus.Unknown;
@@ -59,6 +67,7 @@ namespace Game.Network
                         _api.EnsureSession();
                         Status = ShopSubmissionStatus.Acknowledged;
                         _error = null;
+                        _pending?.Complete(_request);
                     }
                     catch (ApiException error)
                     {
@@ -67,6 +76,7 @@ namespace Game.Network
                             && error.Code != "HTTP_404" && error.Code != HttpErrorMapper.InvalidResponse
                             && error.Code != HttpErrorMapper.SessionExpired
                             ? ShopSubmissionStatus.Rejected : ShopSubmissionStatus.Unknown;
+                        if (Status == ShopSubmissionStatus.Rejected) { _pending?.Complete(_request); }
                     }
                 }
                 return await ReadAccount(cancellationToken);
