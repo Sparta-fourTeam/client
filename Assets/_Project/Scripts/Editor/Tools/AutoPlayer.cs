@@ -328,41 +328,49 @@ namespace Game.Editor
             int minWall = 100, cards = 0;
             var picked = new List<string>();
             var deadline = Time.realtimeSinceStartup + 1500f;
-            while (manager.State != StageState.Finished)
+            try
             {
-                ct.ThrowIfCancellationRequested();
-                if (Time.realtimeSinceStartup > deadline) { throw new TimeoutException("전투 제한 시간 초과 stage " + stageId); }
-                switch (manager.State)
+                while (manager.State != StageState.Finished)
                 {
-                    case StageState.Playing:
-                        Time.timeScale = speed;
-                        var wall = Object.FindAnyObjectByType<Wall>();
-                        if (wall != null && wall.MaxHp > 0) { minWall = Math.Min(minWall, wall.CurrentHp * 100 / wall.MaxHp); }
-                        break;
-                    case StageState.CardSelect:
-                        int index = ChooseCard(manager.Choices);
-                        if (index >= 0)
-                        {
-                            picked.Add(Describe(manager.Choices[index]));
-                            cards++;
-                            manager.PickCard(index);
-                        }
-                        break;
-                    case StageState.EliteRoulette:
-                        for (int guard = 0; guard < 12 && !manager.Roulette.IsComplete; guard++)
-                        {
-                            var round = manager.Roulette.PrepareRound();
-                            if (round == null) { break; }
-                            if (manager.ApplyRouletteReward(round)) { picked.Add("roulette:" + round.Winner.Option.id); }
-                        }
-                        manager.FinishEliteRoulette();
-                        break;
-                    case StageState.Starting:
-                        if (Resolve<StageContext>()?.Checkpoint != null) { throw new InvalidOperationException("체크포인트 재개 상태"); }
-                        break;
-                }
+                    ct.ThrowIfCancellationRequested();
+                    if (Time.realtimeSinceStartup > deadline) { throw new TimeoutException("전투 제한 시간 초과 stage " + stageId); }
+                    switch (manager.State)
+                    {
+                        case StageState.Playing:
+                            Time.timeScale = speed;
+                            var wall = Object.FindAnyObjectByType<Wall>();
+                            if (wall != null && wall.MaxHp > 0) { minWall = Math.Min(minWall, wall.CurrentHp * 100 / wall.MaxHp); }
+                            break;
+                        case StageState.CardSelect:
+                            int index = ChooseCard(manager.Choices);
+                            if (index >= 0)
+                            {
+                                picked.Add(Describe(manager.Choices[index]));
+                                cards++;
+                                manager.PickCard(index);
+                            }
+                            break;
+                        case StageState.EliteRoulette:
+                            for (int guard = 0; guard < 12 && !manager.Roulette.IsComplete; guard++)
+                            {
+                                var round = manager.Roulette.PrepareRound();
+                                if (round == null) { break; }
+                                if (manager.ApplyRouletteReward(round)) { picked.Add("roulette:" + round.Winner.Option.id); }
+                            }
+                            manager.FinishEliteRoulette();
+                            break;
+                        case StageState.Starting:
+                            if (Resolve<StageContext>()?.Checkpoint != null) { throw new InvalidOperationException("체크포인트 재개 상태"); }
+                            break;
+                    }
 
-                await UniTask.Yield();
+                    await UniTask.Yield();
+                }
+            }
+            finally
+            {
+                // 예외로 끝나도 오토플레이가 올린 배속이 남지 않게 StageManager의 원래 배속으로 되돌린다
+                if (manager.State == StageState.Playing) { Time.timeScale = manager.Speed; }
             }
 
             var walls = Object.FindAnyObjectByType<Wall>();

@@ -225,6 +225,35 @@ def cmd_calibrate(args):
     print(f"scale = {scale:.6g} (anchor stage {args.anchor}: enemy {enemy:.0f}, player raw {sum(raw) / len(raw):.1f})")
 
 
+def apply_tuning(stage, k, monsters):
+    """오토플레이 배수 k를 적용한다: HP·공격 강화 배수를 k배로 곱하면 전투력이 k배가 된다.
+    게임은 Percent <= 0 인 강화 줄을 거절하므로 강화 배수가 1 이하가 되면 그 줄을 빼고, 모자란 만큼은 일반 몬스터 수량으로 맞춘다.
+    강화 줄이 없는 스테이지(예: 1관문)는 배수 1에서 시작한다."""
+    if k == 1.0:
+        return
+    rows = stage.get("MonsterBonuses", [])
+    factor = {st: 1.0 for st in ("Hp", "Damage")}
+    for r in rows:
+        if r["Stat"] in factor:
+            factor[r["Stat"]] = 1 + r["Percent"] / 100
+    kept = {}
+    for st, f in factor.items():
+        want = f * k
+        kept[st] = want if round((want - 1) * 100) > 0 else 1.0
+    achieved = ((kept["Hp"] * kept["Damage"]) / (factor["Hp"] * factor["Damage"])) ** 0.5
+    others = [r for r in rows if r["Stat"] not in factor]
+    new_rows = [{"Stat": st, "Percent": round((kept[st] - 1) * 100)} for st in ("Hp", "Damage") if kept[st] != 1.0]
+    stage["MonsterBonuses"] = new_rows + others
+    if not stage["MonsterBonuses"]:
+        stage.pop("MonsterBonuses")
+    scale = k / achieved
+    if abs(scale - 1) > 0.01:
+        for wave in stage["Waves"]:
+            for sp in wave["Spawns"]:
+                if monsters[sp["MonsterId"]]["Grade"] == "Normal":
+                    sp["Count"] = max(1, round(sp["Count"] * scale))
+
+
 def cmd_generate(args):
     cfg = load(HERE / "curves.json")
     monsters = {m["Id"]: m for m in load(DATA / "Monsters.json")}
@@ -275,17 +304,8 @@ def cmd_generate(args):
                 p = power(monsters[mid], monsters, mult)
                 spawns.append({"MonsterId": mid, "Count": max(1, round(wb * w / wsum / p))})
             wave["Spawns"] = spawns
-        # 수량은 위에서 target 기준으로 만들었다. 오토플레이 배수는 HP·공격 강화율에만 곱한다(전투력이 배수만큼 줄어든다)
-        k = tuning_k(cfg, s)
-        if k != 1.0:
-            rows = new.setdefault("MonsterBonuses", [])
-            for stat in ("Hp", "Damage"):
-                # 강화 줄이 없는 스테이지(예: 1관문)도 배수가 적용되도록 0% 줄을 먼저 만든다
-                if not any(r["Stat"] == stat for r in rows):
-                    rows.insert(0 if stat == "Hp" else min(1, len(rows)), {"Stat": stat, "Percent": 0})
-            for b in rows:
-                if b["Stat"] in ("Hp", "Damage"):
-                    b["Percent"] = round(((1 + b["Percent"] / 100) * k - 1) * 100)
+        # 수량은 위에서 target 기준으로 만들었다. 오토플레이 배수는 그 위에 곱한다
+        apply_tuning(new, tuning_k(cfg, s), monsters)
         peak = max(peak, max(sum(sp["Count"] for sp in w["Spawns"]) for w in new["Waves"]))
         out.append(new)
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
