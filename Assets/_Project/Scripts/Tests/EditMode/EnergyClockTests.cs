@@ -59,6 +59,19 @@ namespace Game.Tests
             });
         }
 
+        [TestCase(6, 2, 1)]
+        [TestCase(7, 3, 7)]
+        [TestCase(14, 4, 7)]
+        public void NaturalRecoveryUsesConfiguredInterval(int elapsedSeconds, int expectedEnergy, int expectedNextIn)
+        {
+            var config = new EnergyConfig { Max = 11, RegenSeconds = 7 };
+
+            var (current, nextIn) = EnergyRule.At(2, T0, T0.AddSeconds(elapsedSeconds), config);
+
+            Assert.That(current, Is.EqualTo(expectedEnergy));
+            Assert.That(nextIn, Is.EqualTo(expectedNextIn));
+        }
+
         [TestCase(0, 299, 0)]
         [TestCase(0, 300, 300)]
         [TestCase(0, 599, 300)]

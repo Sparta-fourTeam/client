@@ -42,6 +42,11 @@ namespace Game.Tests
             SessionState.SetBool(EditorStateKey + ".HadPreference", EditorPrefs.HasKey(PlayFromBootKey));
             SessionState.SetBool(EditorStateKey + ".Preference", EditorPrefs.GetBool(PlayFromBootKey, false));
             SessionState.SetBool(EditorStateKey, true);
+            SessionState.SetBool(EditorStateKey + ".HadUpgradeTest", PlayerPrefs.HasKey(ServerConfig.UpgradeTestKey));
+            SessionState.SetString(EditorStateKey + ".UpgradeTest", PlayerPrefs.GetString(ServerConfig.UpgradeTestKey, ""));
+            // 이 fixture는 Local 저장/전투 흐름을 검증한다. 개발자의 서버 테스트 모드와 격리한다.
+            PlayerPrefs.SetString(ServerConfig.UpgradeTestKey, "0");
+            PlayerPrefs.Save();
             // PlayFromBootMenu would otherwise restore Boot again after the domain reload.
             EditorPrefs.SetBool(PlayFromBootKey, false);
             EditorSceneManager.playModeStartScene = null;
@@ -59,6 +64,12 @@ namespace Game.Tests
                 EditorPrefs.SetBool(PlayFromBootKey, SessionState.GetBool(EditorStateKey + ".Preference", false));
             }
             else { EditorPrefs.DeleteKey(PlayFromBootKey); }
+            if (SessionState.GetBool(EditorStateKey + ".HadUpgradeTest", false))
+            { PlayerPrefs.SetString(ServerConfig.UpgradeTestKey, SessionState.GetString(EditorStateKey + ".UpgradeTest", "")); }
+            else { PlayerPrefs.DeleteKey(ServerConfig.UpgradeTestKey); }
+            PlayerPrefs.Save();
+            SessionState.EraseBool(EditorStateKey + ".HadUpgradeTest");
+            SessionState.EraseString(EditorStateKey + ".UpgradeTest");
             SessionState.EraseString(EditorStateKey + ".Scene");
             SessionState.EraseBool(EditorStateKey + ".HadPreference");
             SessionState.EraseBool(EditorStateKey + ".Preference");
@@ -78,6 +89,9 @@ namespace Game.Tests
         private bool _hadCredential;
         private LoginMethod _credentialMethod;
         private string _credentialAccountId;
+        private bool _restoreConsentPreference, _hadConsentPreference;
+        private string _consentPreference;
+        private ILoginConsentStore _consents;
         private static readonly FieldInfo StorePath = typeof(LocalSaveStore).GetField("_filePath", BindingFlags.Instance | BindingFlags.NonPublic);
         private static T Field<T>(object target, string name) =>
             (T)target.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(target);
@@ -745,7 +759,6 @@ namespace Game.Tests
             var navigator = root.Container.Resolve<ISceneNavigator>();
             string guestId = _credentials.AccountId;
             var pending = root.Container.Resolve<AccountService>().ReauthenticateAsync();
-            yield return AcceptServiceConditions();
             yield return WaitFor(() => previousLobby == null && SceneManager.GetActiveScene().name == "Loading"
                 && Object.FindAnyObjectByType<TapToStartView>() != null
                 && Field<GameObject>(Object.FindAnyObjectByType<TapToStartView>(), "_panel").activeSelf);
@@ -760,18 +773,64 @@ namespace Game.Tests
         }
 
         [UnityTest]
-        public IEnumerator ConsentRejectionPreservesProgressAndTransferDeclineStillAllowsPlay()
+        public IEnumerator CompactConsentDefaultsAndSettingsKeepSavedChoices()
         {
-            Assert.That(ServerConfig.UseServerAuth, Is.False, "동의 회귀는 실제 서버 인증을 호출하지 않는다");
-            yield return StartFromBoot(save => save.wallet.gold = 321, verifyConsentRejections: true);
+            Assert.That(ServerConfig.UseServerAuth, Is.False, "실제 서버 계정은 사용하지 않는다");
+            yield return StartFromBoot(save => save.wallet.gold = 321);
+            Assert.That(_consents.TryLoad(out var saved), Is.True);
+            Assert.That(saved.AnalyticsAccepted || saved.AnalyticsTransferAccepted, Is.False);
             var lobby = Object.FindAnyObjectByType<LobbyLifetimeScope>();
             Assert.That(lobby.Container.Resolve<PlayerProfile>().Gold, Is.EqualTo(321));
-            var menu = lobby.Container.Resolve<IUiRegistry>().Get<LobbyMenuPopupView>();
+            var ui = lobby.Container.Resolve<IUiRegistry>();
+            var menu = ui.Get<LobbyMenuPopupView>();
             menu.Open();
             var terms = Field<Button>(menu, "_termsButton");
             Assert.That(terms.interactable, Is.True);
             Assert.That(terms.GetComponentInChildren<TMP_Text>(true).text, Does.Not.Contain("준비"));
             yield return ClickGameButton(terms);
+            yield return ClickGameButton(Field<Button>(menu, "_settingsButton"));
+            var settings = ui.Get<SettingsPopupView>();
+            var scroll = settings.GetComponentInChildren<UnityEngine.UI.ScrollRect>(true);
+            scroll.verticalNormalizedPosition = 0;
+            Canvas.ForceUpdateCanvases();
+            yield return null;
+            yield return ClickGameButton(Field<Button>(settings, "_privacyChoicesButton"));
+            var view = Object.FindAnyObjectByType<ServiceConsentView>();
+            Assert.That(Field<UnityEngine.UI.Toggle>(view, "_analyticsToggle").isOn, Is.False);
+            Assert.That(Field<UnityEngine.UI.Toggle>(view, "_transferToggle").isOn, Is.False);
+            yield return ClickGameTarget(Field<UnityEngine.UI.Toggle>(view, "_analyticsToggle"));
+            Assert.That(Field<UnityEngine.UI.Toggle>(view, "_analyticsToggle").isOn, Is.False,
+                "상세 고지의 별도 동의 전에는 분석을 켜지 않는다");
+            yield return ClickGameButton(Field<Button>(view, "_detailCancel"));
+            Assert.That(Field<UnityEngine.UI.Toggle>(view, "_analyticsToggle").isOn, Is.False);
+            yield return ClickGameTarget(Field<UnityEngine.UI.Toggle>(view, "_analyticsToggle"));
+            yield return ClickGameButton(Field<Button>(view, "_detailAccept"));
+            yield return ClickGameButton(Field<Button>(view, "_individualButton"));
+            Assert.That(_consents.TryLoad(out saved), Is.True);
+            Assert.That(saved.AnalyticsAccepted, Is.True);
+            Assert.That(saved.AllowsAnalytics, Is.False, "국외 이전 미선택은 분석 허용이 아니다");
+            yield return ClickGameButton(Field<Button>(settings, "_privacyChoicesButton"));
+            view = Object.FindAnyObjectByType<ServiceConsentView>();
+            Assert.That(Field<UnityEngine.UI.Toggle>(view, "_analyticsToggle").isOn, Is.True);
+            Assert.That(Field<UnityEngine.UI.Toggle>(view, "_transferToggle").isOn, Is.False);
+            Assert.That(Field<TMP_Text>(view, "_startLabel").text, Is.EqualTo("전체 동의"));
+            yield return ClickGameButton(Field<Button>(view, "_startButton"));
+            Assert.That(_consents.TryLoad(out saved) && saved.AllowsAnalytics, Is.True);
+            yield return ClickGameButton(Field<Button>(settings, "_privacyChoicesButton"));
+            view = Object.FindAnyObjectByType<ServiceConsentView>();
+            yield return ClickGameButton(Field<Button>(view, "_declineButton"));
+            Assert.That(new PlayerPrefsLoginConsentStore().TryLoad(out saved), Is.True);
+            Assert.That(saved.AllowsAnalytics, Is.False, "재생성한 저장소에서도 거절 선택을 유지한다");
+            Assert.That(saved.AnalyticsAccepted || saved.AnalyticsTransferAccepted, Is.False,
+                "동의 안 함은 두 선택을 모두 거절로 저장한다");
+        }
+
+        [UnityTest]
+        public IEnumerator AnalyticsAllChoiceStillWaitsForExplicitTerms()
+        {
+            Assert.That(ServerConfig.UseServerAuth, Is.False, "실제 서버 계정은 사용하지 않는다");
+            yield return StartFromBoot(allowAnalytics: true);
+            Assert.That(_consents.TryLoad(out var saved) && saved.AllowsAnalytics, Is.True);
         }
 
         [UnityTest]
@@ -795,7 +854,8 @@ namespace Game.Tests
             yield return ClickGameButton(Field<Button>(confirm, "_confirmButton"));
             Field<TMP_InputField>(confirm, "_input").text = nickname;
             yield return ClickGameButton(Field<Button>(confirm, "_confirmButton"));
-            yield return WaitFor(() => SceneManager.GetActiveScene().name == "Loading" && LoginPanelShown());
+            yield return WaitFor(() => SceneManager.GetActiveScene().name == "Loading" && Object.FindAnyObjectByType<ServiceConsentView>() != null);
+            Assert.That(_consents.TryLoad(out _), Is.False);
             Assert.That(_credentials.HasCredential, Is.False);
             Assert.That(_store.Exists(), Is.False);
             Assert.That(root.Container.Resolve<AuthSession>().IsSignedIn, Is.False);
@@ -1200,7 +1260,7 @@ namespace Game.Tests
         }
 
         // seed가 없으면 튜토리얼을 마친 계정으로 시작한다. 튜토리얼 중인 새 계정은 로비 대신 1스테이지로 들어간다
-        private IEnumerator StartFromBoot(Action<LocalSave> seed = null, string expectedScene = "Lobby", bool verifyConsentRejections = false)
+        private IEnumerator StartFromBoot(Action<LocalSave> seed = null, string expectedScene = "Lobby", bool allowAnalytics = false)
         {
             _hadSpeedPreference = PlayerPrefs.HasKey("stage_speed");
             _speedPreference = PlayerPrefs.GetFloat("stage_speed");
@@ -1228,13 +1288,17 @@ namespace Game.Tests
             _credentialMethod = _credentials.Method;
             _credentialAccountId = _credentials.AccountId;
             _credentials.Clear();
+            _hadConsentPreference = PlayerPrefs.HasKey(PlayerPrefsLoginConsentStore.DefaultKey);
+            _consentPreference = PlayerPrefs.GetString(PlayerPrefsLoginConsentStore.DefaultKey, "");
+            _restoreConsentPreference = true;
+            _consents = root.Container.Resolve<ILoginConsentStore>();
+            _consents.Clear();
             var navigator = root.Container.Resolve<ISceneNavigator>();
             var boot = new BootFlow(navigator);
             SceneManager.LoadSceneAsync("Boot");
             yield return WaitFor(() => SceneManager.GetActiveScene().name == "Boot");
             boot.Start();
-            // 실제 로그인 전 연령·약관 흐름을 거친다. 추가 회귀에서는 두 거절과 국외 이전 선택을 확인한다.
-            yield return AcceptServiceConditions(verifyConsentRejections);
+            yield return AcceptServiceConditions(allowAnalytics);
             yield return WaitFor(() => SceneManager.GetActiveScene().name == "Loading" && LoginPanelShown());
             var login = Object.FindAnyObjectByType<LoginView>();
             yield return ClickGameButton(Field<Button>(login, "_guestButton"));
@@ -1245,51 +1309,23 @@ namespace Game.Tests
             yield return null;
         }
 
-        private static IEnumerator AcceptServiceConditions(bool verifyRejections = false)
+        private static IEnumerator AcceptServiceConditions(bool allowAnalytics = false)
         {
-            yield return WaitFor(() => SceneManager.GetActiveScene().name == "Loading" && LoginPanelShown());
-            var login = Object.FindAnyObjectByType<LoginView>();
-            var confirm = Field<ConfirmPopupView>(login, "_confirm");
-            var root = Object.FindAnyObjectByType<RootLifetimeScope>();
-            if (verifyRejections)
-            {
-                yield return WaitFor(() => confirm.IsOpen && Field<TMP_Text>(confirm, "_title").text == "이용 연령 확인");
-                yield return ClickGameButton(Field<Button>(confirm, "_cancelButton"));
-                yield return RetryRejectedConditions(login, root);
-            }
-            foreach (string title in new[] { "이용 연령 확인", "이용약관 전문", "개인정보처리방침", "이용약관 동의" })
-            {
-                yield return WaitFor(() => confirm.IsOpen && Field<TMP_Text>(confirm, "_title").text == title, title);
-                if (verifyRejections && title == "이용약관 동의")
-                {
-                    yield return ClickGameButton(Field<Button>(confirm, "_cancelButton"));
-                    yield return RetryRejectedConditions(login, root);
-                    // 연령부터 다시 확인한 뒤에는 다음 반복에서 실제로 동의한다.
-                    foreach (string retryTitle in new[] { "이용 연령 확인", "이용약관 전문", "개인정보처리방침", "이용약관 동의" })
-                    {
-                        yield return WaitFor(() => confirm.IsOpen && Field<TMP_Text>(confirm, "_title").text == retryTitle, retryTitle);
-                        yield return ClickGameButton(Field<Button>(confirm, "_confirmButton"));
-                    }
-                }
-                else { yield return ClickGameButton(Field<Button>(confirm, "_confirmButton")); }
-            }
-            yield return WaitFor(() => confirm.IsOpen && Field<TMP_Text>(confirm, "_title").text == "게임 이용 분석 (선택)");
-            if (verifyRejections)
-            {
-                yield return ClickGameButton(Field<Button>(confirm, "_confirmButton"));
-                yield return WaitFor(() => confirm.IsOpen && Field<TMP_Text>(confirm, "_title").text == "분석 정보 국외 이전 (선택)");
-                Assert.That(root.Container.Resolve<IAuthCredentialStore>().HasCredential, Is.False);
-            }
-            yield return ClickGameButton(Field<Button>(confirm, "_cancelButton"));
-        }
-
-        private static IEnumerator RetryRejectedConditions(LoginView login, RootLifetimeScope root)
-        {
-            var retry = Field<Button>(login, "_retryButton");
-            yield return WaitFor(() => retry.gameObject.activeInHierarchy);
-            Assert.That(root.Container.Resolve<IAuthCredentialStore>().HasCredential, Is.False);
-            Assert.That(root.Container.Resolve<PlayerProfile>().IsLoaded, Is.False);
-            yield return ClickGameButton(retry);
+            yield return WaitFor(() => SceneManager.GetActiveScene().name == "Loading" && Object.FindAnyObjectByType<ServiceConsentView>() != null);
+            var view = Object.FindAnyObjectByType<ServiceConsentView>();
+            Assert.That(Field<UnityEngine.UI.Toggle>(view, "_analyticsToggle").isOn, Is.False);
+            Assert.That(Field<UnityEngine.UI.Toggle>(view, "_transferToggle").isOn, Is.False);
+            Assert.That(Field<TMP_Text>(view, "_startLabel").text, Is.EqualTo("전체 동의"));
+            Assert.That(view.GetComponentsInChildren<TMP_Text>(true).Any(t => t.text.Contains("14")), Is.False);
+            yield return ClickGameButton(Field<Button>(view, allowAnalytics ? "_startButton" : "_declineButton"));
+            Assert.That(Field<UnityEngine.UI.Toggle>(view, "_analyticsToggle").isOn, Is.EqualTo(allowAnalytics));
+            Assert.That(Field<UnityEngine.UI.Toggle>(view, "_transferToggle").isOn, Is.EqualTo(allowAnalytics));
+            Assert.That(Field<GameObject>(view, "_termsPanel").activeSelf, Is.True);
+            Assert.That(Field<UnityEngine.UI.Toggle>(view, "_termsToggle").isOn, Is.False);
+            Assert.That(Field<Button>(view, "_startButton").interactable, Is.False,
+                "약관의 명시적 체크 전에는 확인으로 로그인하지 않는다");
+            yield return ClickGameTarget(Field<UnityEngine.UI.Toggle>(view, "_termsToggle"));
+            yield return ClickGameButton(Field<Button>(view, "_startButton"));
         }
 
         private static bool LoginPanelShown()
@@ -1331,6 +1367,13 @@ namespace Game.Tests
             {
                 foreach (string suffix in new[] { ".battle", ".battle.bak", ".battle.tmp" })
                 { if (File.Exists(_savePath + suffix)) { File.Delete(_savePath + suffix); } }
+            }
+            if (_restoreConsentPreference)
+            {
+                if (_hadConsentPreference) { PlayerPrefs.SetString(PlayerPrefsLoginConsentStore.DefaultKey, _consentPreference); }
+                else { PlayerPrefs.DeleteKey(PlayerPrefsLoginConsentStore.DefaultKey); }
+                PlayerPrefs.Save();
+                _restoreConsentPreference = false;
             }
             _store = null;
             _originalSavePath = null;

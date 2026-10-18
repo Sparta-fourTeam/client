@@ -23,7 +23,22 @@ namespace Game.Core
         public EnergyConfig Energy { get; }
         public ShopConfig Shop { get; }
         public CombatConfig Combat { get; }
-        public PlayerLevelTable PlayerLevels { get; }
+        public PlayerLevelTable PlayerLevels { get; private set; }
+        public bool HasServerPlayerLevels { get; private set; }
+
+        /// <summary>서버 기준 로드가 실패하거나 세션이 바뀌면 새 구매에 재사용하지 않는다</summary>
+        public void InvalidateServerPlayerLevels() => HasServerPlayerLevels = false;
+
+        /// <summary>서버 모드에서만 호출한다. 표시·해금 계산과 테이블 버전에 같은 DB 기준을 적용한다</summary>
+        public void ApplyServerPlayerLevels(PlayerLevelConfig config, int version)
+        {
+            if (config == null || version < 1) { throw new ArgumentException("서버 PlayerLevels가 필요합니다"); }
+            var table = config.ToTable();
+            PlayerLevels = table;
+            _rawJson["PlayerLevels"] = JsonConvert.SerializeObject(config);
+            Revisions["PlayerLevels"] = version;
+            HasServerPlayerLevels = true;
+        }
 
         /// <summary>튜토리얼 정의. 표의 순서가 진행 우선순위다 (TutorialProgress)</summary>
         public IReadOnlyList<TutorialDefinition> Tutorials { get; }

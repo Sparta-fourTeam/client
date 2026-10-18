@@ -85,6 +85,7 @@ namespace Game.Tests
         public void Login_AllowsFirstBattleAndPreservesExistingEnergy()
         {
             _api.Login(LoginMethod.Guest, null).GetAwaiter().GetResult();
+            Assert.That(_store.Load().wallet.energyStored, Is.EqualTo(_data.Energy.Start));
             var battleApi = new LocalBattleApi(_store, _data);
 
             var response = battleApi.StartBattle(1).GetAwaiter().GetResult();

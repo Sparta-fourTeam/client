@@ -45,13 +45,20 @@ namespace Game.Network
         private sealed class CatalogRow
         {
             public string upgradeId, materialItemId;
-            public int? maxLevel, unlockLevel, costBase, costStep, materialBase, materialStep;
+            public int? maxLevel, unlockLevel, effectiveUnlockLevel, costBase, costStep, materialBase, materialStep;
+            public int?[] levelCosts, materialCosts;
+        }
+
+        private sealed class PlayerLevelsResponse
+        {
+            public int? baseExp, stepExp, maxLevel, version;
         }
 
         public ServerUpgradeTestBackend(HttpApiConfig config, IHttpTransport transport, IAuthTokenStore tokens, GameDataStore data)
         {
             _tokens = tokens ?? throw new ArgumentNullException(nameof(tokens));
             _data = data ?? throw new ArgumentNullException(nameof(data));
+            _data.InvalidateServerPlayerLevels();
             _client = new HttpApiClient(config, new BoundTransport(transport, EnsureSession), tokens: tokens);
         }
 
@@ -178,6 +185,7 @@ namespace Game.Network
 
         private async UniTask<PlayerSnapshot> ReadState()
         {
+            await RefreshPlayerLevels();
             EnsureSession();
             var body = await _client.GetJson("api/user/me");
             EnsureSession();
@@ -191,6 +199,7 @@ namespace Game.Network
         {
             if (_observed == null || _observedGeneration != _operationGeneration)
             { throw new ApiException(ApiErrorKind.Rejected, "PLAYER_NOT_LOADED"); }
+            await RefreshPlayerLevels();
             var local = _data.Upgrades.GetOrThrow(id);
             var rows = await _client.Get<List<CatalogRow>>("api/upgrade");
             EnsureSession();
@@ -199,14 +208,48 @@ namespace Game.Network
             if (matches.Count != 1 || level >= local.MaxLevel)
             { throw new ApiException(ApiErrorKind.Rejected, "UPGRADE_CATALOG_MISMATCH"); }
             var server = matches[0];
-            long coin = server.costBase.HasValue ? (long)server.costBase + (long)(server.costStep ?? 0) * level : 0;
-            long material = server.materialBase.HasValue ? (long)server.materialBase + (long)(server.materialStep ?? 0) * level : 0;
-            if (server.maxLevel != local.MaxLevel || server.unlockLevel != _data.UnlockLevelOf(local)
+            if (!TryCost(server.levelCosts, server.costBase, server.costStep, level, server.maxLevel, out long coin)
+                || !TryCost(server.materialCosts, server.materialBase, server.materialStep, level, server.maxLevel, out long material)
+                || server.maxLevel != local.MaxLevel || server.effectiveUnlockLevel != _data.UnlockLevelOf(local)
                 || (server.materialItemId ?? "") != (local.MaterialItemId ?? "") || coin != local.CostAt(level + 1)
                 || (local.UsesMaterial && material != local.MaterialAt(level + 1)))
             { throw new ApiException(ApiErrorKind.Rejected, "UPGRADE_CATALOG_MISMATCH"); }
             if (_data.PlayerLevels.At(_observed.exp).level < _data.UnlockLevelOf(local))
             { throw new ApiException(ApiErrorKind.Rejected, "LOCKED"); }
+        }
+
+        private async UniTask RefreshPlayerLevels()
+        {
+            _data.InvalidateServerPlayerLevels();
+            EnsureSession();
+            var response = await _client.Get<PlayerLevelsResponse>("api/player-levels", isValid: value =>
+                value.baseExp > 0 && value.stepExp >= 0 && value.maxLevel >= 2 && value.version > 0);
+            EnsureSession();
+            try
+            {
+                _data.ApplyServerPlayerLevels(new PlayerLevelConfig
+                {
+                    BaseExp = response.baseExp.Value,
+                    StepExp = response.stepExp.Value,
+                    MaxLevel = response.maxLevel.Value
+                }, response.version.Value);
+            }
+            catch (Exception error) when (error is InvalidOperationException || error is OverflowException || error is ArgumentException)
+            { throw new ApiException(ApiErrorKind.Rejected, HttpErrorMapper.InvalidResponse); }
+        }
+
+        private static bool TryCost(int?[] costs, int? basis, int? step, int level, int? maxLevel, out long value)
+        {
+            value = 0;
+            if (costs != null)
+            {
+                if (costs.Length != maxLevel || costs.Any(cost => !cost.HasValue || cost.Value <= 0)
+                    || level < 0 || level >= costs.Length) { return false; }
+                value = costs[level].Value;
+                return true;
+            }
+            value = basis.HasValue ? (long)basis.Value + (long)(step ?? 0) * level : 0;
+            return value >= 0 && value <= int.MaxValue;
         }
 
         private void Enter()
@@ -223,7 +266,10 @@ namespace Game.Network
         private void EnsureSession()
         {
             if (_tokens.Generation != _operationGeneration || string.IsNullOrEmpty(_tokens.AccessToken))
-            { throw new ApiException(ApiErrorKind.Rejected, HttpErrorMapper.SessionExpired); }
+            {
+                _data.InvalidateServerPlayerLevels();
+                throw new ApiException(ApiErrorKind.Rejected, HttpErrorMapper.SessionExpired);
+            }
         }
 
         private sealed class BoundTransport : IHttpTransport

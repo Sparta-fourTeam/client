@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using Game.Core;
 using TMPro;
 using UnityEngine;
@@ -28,6 +29,13 @@ namespace Game.View
         [SerializeField] private Button _languageButton;
         [SerializeField] private TMP_Text _languageLabel;
 
+        [SerializeField] private Button _privacyChoicesButton;
+        [SerializeField] private ServiceConsentView _serviceConsentPrefab;
+        private ILoginConsentStore _consents;
+        private IAnalyticsCollectionControl _analytics;
+        private bool _changingPrivacy;
+        private ServiceConsentView _privacyView;
+
         private SoundSettings _settings;
         private GameSettings _game;
         private LanguagePopupView _language;
@@ -35,8 +43,10 @@ namespace Game.View
         public bool IsOpen => _panel.activeSelf;
 
         [Inject]
-        public void Construct(SoundSettings settings, GameSettings game)
+        public void Construct(SoundSettings settings, GameSettings game, ILoginConsentStore consents = null, IAnalyticsCollectionControl analytics = null)
         {
+            _consents = consents;
+            _analytics = analytics;
             _settings = settings;
             _game = game;
             _game.Changed += RefreshLanguage;
@@ -50,12 +60,14 @@ namespace Game.View
                 _game.Changed -= RefreshLanguage;
             }
 
+            if (_privacyView != null) { Destroy(_privacyView.gameObject); }
             base.DisposeView();
         }
 
         protected override void InitializeView()
         {
             _panel.SetActive(false);
+            _privacyChoicesButton.onClick.AddListener(() => ChangePrivacyAsync().Forget(Debug.LogException));
             _closeButton.onClick.AddListener(Close);
             _damageToggle.onValueChanged.AddListener(on => _game.SetDamageIndication(on));
             _debuffToggle.onValueChanged.AddListener(on => _game.SetDebuffEffects(on));
@@ -90,6 +102,27 @@ namespace Game.View
         }
 
         public void Close() => PopupPanel.Set(_panel, _transition, false);
+
+        private async UniTask ChangePrivacyAsync()
+        {
+            if (_changingPrivacy) { return; }
+            _changingPrivacy = true;
+            _analytics.SetCollectionAllowed(false);
+            try
+            {
+                _privacyView = Instantiate(_serviceConsentPrefab, _panel.transform.parent);
+                LoginConsent? current = _consents.TryLoad(out var saved) ? saved : null;
+                var choice = await _privacyView.ShowAsync(current);
+                _consents.Save(choice);
+                _analytics.SetCollectionAllowed(choice.AllowsAnalytics);
+            }
+            catch (System.OperationCanceledException) { }
+            finally
+            {
+                if (_privacyView != null) { Destroy(_privacyView.gameObject); }
+                _changingPrivacy = false;
+            }
+        }
 
         private void RefreshLanguage()
         {

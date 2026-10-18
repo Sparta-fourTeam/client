@@ -14,7 +14,9 @@ namespace Game.Tests
         private const string State = "{\"gold\":1000,\"gem\":3,\"exp\":2147483647,\"energyStored\":15,"
             + "\"energyUpdatedAt\":\"2026-10-16T23:00:00\",\"stageProgress\":[],\"items\":[],"
             + "\"upgrades\":[{\"upgradeId\":\"atk\",\"level\":0}],\"codex\":[],\"tutorials\":[]}";
-        private const string Catalog = "[{\"upgradeId\":\"atk\",\"maxLevel\":3,\"unlockLevel\":1,\"costBase\":10,\"costStep\":0}]";
+        private const string Levels = "{\"baseExp\":10,\"stepExp\":5,\"maxLevel\":4,\"version\":2}";
+        private HttpResponseData _levels = new HttpResponseData(200, Levels);
+        private const string Catalog = "[{\"upgradeId\":\"atk\",\"maxLevel\":3,\"unlockLevel\":1,\"effectiveUnlockLevel\":1,\"costBase\":10,\"costStep\":0}]";
         private FakeHttpTransport _transport;
         private AuthSession _tokens;
         private ServerUpgradeTestBackend _backend;
@@ -24,14 +26,30 @@ namespace Game.Tests
         public void SetUp()
         {
             _transport = new FakeHttpTransport();
+            _levels = new HttpResponseData(200, Levels);
             _tokens = new AuthSession(); _tokens.Set("a", "r");
             _data = new GameDataStore();
             var definition = _data.Upgrades.GetOrThrow("atk");
             definition.MaxLevel = 3; definition.UnlockLevel = 1;
             definition.LevelCosts = new[] { 10, 10, 10 }; definition.MaterialItemId = null;
-            _backend = new ServerUpgradeTestBackend(new HttpApiConfig("https://example.test"), _transport, _tokens, _data);
+            _backend = new ServerUpgradeTestBackend(new HttpApiConfig("https://example.test"), new LevelTransport(this), _tokens, _data);
             _transport.Queued.Enqueue(new HttpResponseData(200, State));
             _backend.GetMe().GetAwaiter().GetResult();
+        }
+
+        private sealed class LevelTransport : IHttpTransport
+        {
+            private readonly ServerUpgradeTestBackendTests _owner;
+            public LevelTransport(ServerUpgradeTestBackendTests owner) => _owner = owner;
+            public UniTask<HttpResponseData> Send(HttpRequestData request, float timeout, CancellationToken token)
+            {
+                if (request.Url.EndsWith("/player-levels"))
+                {
+                    _owner._transport.Requests.Add(request);
+                    return UniTask.FromResult(_owner._levels);
+                }
+                return _owner._transport.Send(request, timeout, token);
+            }
         }
 
         private static string UpdatedState()
@@ -169,7 +187,8 @@ namespace Game.Tests
                     return UniTask.FromResult(new HttpResponseData(200, "{\"stageId\":1,\"clearRating\":2,\"claimedRating\":2}"));
                 }
                 if (Posts > 0 && _duringRead) { _tokens.Set("b", "r-b"); }
-                return UniTask.FromResult(new HttpResponseData(200, ClaimState(2, Posts > 0 ? 2 : 0)));
+                return UniTask.FromResult(new HttpResponseData(200,
+                    request.Url.EndsWith("/player-levels") ? Levels : ClaimState(2, Posts > 0 ? 2 : 0)));
             }
         }
 
@@ -303,6 +322,102 @@ namespace Game.Tests
             Assert.AreEqual(1, transport.Posts);
         }
 
+        [Test]
+        public void ServerCurveUpdatesProfileAndLeavesLocalModeIndependent()
+        {
+            var localMode = new GameDataStore();
+            string localJson = localMode.RawJson("PlayerLevels");
+            var state = JObject.Parse(State); state["exp"] = 25;
+            _transport.Queued.Enqueue(new HttpResponseData(200, state.ToString()));
+
+            var profile = new PlayerProfile(_data);
+            profile.Apply(_backend.GetMe().GetAwaiter().GetResult());
+
+            Assert.AreEqual(3, profile.Level); // 테스트 곡선 10 + 15의 누적 경계
+            Assert.AreEqual(4, _data.PlayerLevels.MaxLevel);
+            Assert.AreEqual(2, _data.Revisions["PlayerLevels"]);
+            Assert.IsTrue(_data.HasServerPlayerLevels);
+            Assert.AreEqual(localJson, localMode.RawJson("PlayerLevels"));
+            Assert.IsFalse(localMode.HasServerPlayerLevels);
+        }
+
+        [TestCase("{\"baseExp\":10,\"maxLevel\":4,\"version\":2}")]
+        [TestCase("{\"baseExp\":10,\"stepExp\":-1,\"maxLevel\":4,\"version\":2}")]
+        [TestCase("{\"baseExp\":2147483647,\"stepExp\":1,\"maxLevel\":3,\"version\":2}")]
+        [TestCase("{}")]
+        public void InvalidServerCurveCannotUsePreviousOrLocalValuesToPurchase(string body)
+        {
+            _levels = new HttpResponseData(200, body);
+
+            var error = Assert.Throws<ApiException>(() => _backend.Purchase("atk", "blocked").GetAwaiter().GetResult());
+
+            Assert.AreEqual(HttpErrorMapper.InvalidResponse, error.Code);
+            Assert.IsFalse(_data.HasServerPlayerLevels);
+            Assert.IsFalse(_backend.HasPendingPurchase);
+            Assert.IsFalse(_transport.Requests.Any(row => row.Verb == HttpVerb.Post));
+        }
+
+        [Test]
+        public void UnconfiguredServerCurveBlocksPurchaseWithoutLocalFallback()
+        {
+            _levels = new HttpResponseData(503, "");
+
+            Assert.Throws<ApiException>(() => _backend.Purchase("atk", "blocked").GetAwaiter().GetResult());
+
+            Assert.IsFalse(_data.HasServerPlayerLevels);
+            Assert.IsFalse(_transport.Requests.Any(row => row.Verb == HttpVerb.Post));
+        }
+
+        [TestCase("[10,13,29]", "[2,5,9]", true)]
+        [TestCase("[10,13]", "[2,5,9]", false)]
+        [TestCase("[10,13,29]", "[2,0,9]", false)]
+        public void QuoteUsesArraysBeforeLinearFieldsAndRejectsMalformedArrays(string gold, string materials, bool allowed)
+        {
+            var def = _data.Upgrades.GetOrThrow("atk");
+            def.LevelCosts = new[] { 10, 13, 29 };
+            def.MaterialItemId = "fixture.material"; def.MaterialCosts = new[] { 2, 5, 9 };
+            string catalog = "[{\"upgradeId\":\"atk\",\"maxLevel\":3,\"unlockLevel\":1,\"effectiveUnlockLevel\":1,"
+                + "\"materialItemId\":\"fixture.material\",\"costBase\":900,\"materialBase\":900,"
+                + "\"levelCosts\":" + gold + ",\"materialCosts\":" + materials + "}]";
+            _transport.Queued.Enqueue(new HttpResponseData(200, catalog));
+            if (allowed)
+            {
+                _transport.Queued.Enqueue(new HttpResponseData(200, "{\"upgradeId\":\"atk\",\"level\":1}"));
+                _transport.Queued.Enqueue(new HttpResponseData(200, UpdatedState()));
+                _backend.Purchase("atk", "key").GetAwaiter().GetResult();
+                Assert.AreEqual(1, _transport.Requests.Count(row => row.Verb == HttpVerb.Post));
+            }
+            else
+            {
+                Assert.Throws<ApiException>(() => _backend.Purchase("atk", "key").GetAwaiter().GetResult());
+                Assert.IsFalse(_transport.Requests.Any(row => row.Verb == HttpVerb.Post));
+            }
+        }
+
+        [Test]
+        public void QuoteUsesEffectiveUnlockRatherThanRawUpgradeUnlock()
+        {
+            var def = _data.Upgrades.GetOrThrow("atk"); def.UnlockLevel = 3;
+            var state = JObject.Parse(State); state["exp"] = 24;
+            _transport.Queued.Enqueue(new HttpResponseData(200, state.ToString()));
+            _backend.GetMe().GetAwaiter().GetResult();
+            string catalog = Catalog.Replace("\"effectiveUnlockLevel\":1", "\"effectiveUnlockLevel\":3");
+            _transport.Queued.Enqueue(new HttpResponseData(200, catalog));
+
+            var locked = Assert.Throws<ApiException>(() => _backend.Purchase("atk", "key").GetAwaiter().GetResult());
+            Assert.AreEqual("LOCKED", locked.Code);
+            Assert.IsFalse(_transport.Requests.Any(row => row.Verb == HttpVerb.Post));
+
+            state["exp"] = 25;
+            _transport.Queued.Enqueue(new HttpResponseData(200, state.ToString()));
+            _backend.GetMe().GetAwaiter().GetResult();
+            _transport.Queued.Enqueue(new HttpResponseData(200, catalog));
+            _transport.Queued.Enqueue(new HttpResponseData(200, "{\"upgradeId\":\"atk\",\"level\":1}"));
+            _transport.Queued.Enqueue(new HttpResponseData(200, UpdatedState()));
+            _backend.Purchase("atk", "key").GetAwaiter().GetResult();
+            Assert.AreEqual(1, _transport.Requests.Count(row => row.Verb == HttpVerb.Post));
+        }
+
         private sealed class SwitchingTransport : IHttpTransport
         {
             private readonly AuthSession _session;
@@ -315,7 +430,7 @@ namespace Game.Tests
                     Posts++; _session.Set("b", "rb");
                     return UniTask.FromResult(new HttpResponseData(200, "{\"upgradeId\":\"atk\",\"level\":1}"));
                 }
-                return UniTask.FromResult(new HttpResponseData(200, request.Url.EndsWith("/upgrade") ? Catalog : State));
+                return UniTask.FromResult(new HttpResponseData(200, request.Url.EndsWith("/player-levels") ? Levels : request.Url.EndsWith("/upgrade") ? Catalog : State));
             }
         }
     }

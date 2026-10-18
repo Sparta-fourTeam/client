@@ -457,7 +457,7 @@ namespace Game.Tests
             menu.Toggle();
             Assert.IsTrue(menu.IsOpen);
             Assert.IsTrue(Field<Button>(menu, "_settingsButton").interactable);
-            Assert.IsFalse(Field<Button>(menu, "_termsButton").interactable);
+            Assert.IsTrue(Field<Button>(menu, "_termsButton").interactable);
             Assert.IsTrue(Field<Button>(menu, "_privacyButton").interactable);
 
             Field<PointerClickRelay>(menu, "_background").OnPointerClick(new PointerEventData(null));

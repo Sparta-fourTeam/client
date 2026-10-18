@@ -323,6 +323,8 @@ namespace Game.Tests
             public Transport(int unlock) => _unlock = unlock;
             public async UniTask<HttpResponseData> Send(HttpRequestData request, float timeoutSeconds, CancellationToken cancellationToken)
             {
+                if (request.Url.EndsWith("/player-levels"))
+                { return new HttpResponseData(200, "{\"baseExp\":10,\"stepExp\":5,\"maxLevel\":20,\"version\":2}"); }
                 if (request.Verb == HttpVerb.Post)
                 {
                     Posts.Add(request); Pending = new UniTaskCompletionSource<HttpResponseData>();
@@ -336,7 +338,7 @@ namespace Game.Tests
                     return response;
                 }
                 if (request.Url.EndsWith("/upgrade"))
-                { return new HttpResponseData(200, $"[{{\"upgradeId\":\"equipment.hat\",\"maxLevel\":3,\"unlockLevel\":{_unlock},\"costBase\":10}}]"); }
+                { return new HttpResponseData(200, $"[{{\"upgradeId\":\"equipment.hat\",\"maxLevel\":3,\"unlockLevel\":{_unlock},\"effectiveUnlockLevel\":{_unlock},\"costBase\":10}}]"); }
                 if ((_applied || _claimAttempted) && FailSnapshot) { return new HttpResponseData(500, ""); }
                 return new HttpResponseData(200, "{\"gold\":" + (_applied ? GoldAfterApply : _claimAttempted ? 875 : 1000)
                     + ",\"gem\":0,\"exp\":2147483647,\"energyStored\":10,\"energyUpdatedAt\":\"2026-10-16T23:00:00\","
