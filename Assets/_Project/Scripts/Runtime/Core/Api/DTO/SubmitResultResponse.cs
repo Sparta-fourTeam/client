@@ -10,6 +10,8 @@ namespace Game.Core
         /// <summary>서버가 검증 후 확정한 보상 골드. 재전송돼도 중복 지급되지 않는다</summary>
         public int rewardGold;
         public int rewardExp;
+        /// <summary>rewardExp에 이미 포함된 3성 보너스. 화면에서만 분리한다.</summary>
+        public int rewardBonusExp;
         public int clearRating;
 
         /// <summary>전투 결과 처리에서 확정·지급한 마법북. 재제출에도 처음 확정된 보상을 반환한다.</summary>

@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using Newtonsoft.Json;
 
 namespace Game.Core
 {
@@ -8,6 +8,7 @@ namespace Game.Core
     {
         public int Coin { get; internal set; }
         public int Exp { get; internal set; }
+        public int BonusExp { get; internal set; }
         public List<ItemAmount> Items { get; } = new();
     }
 
@@ -15,10 +16,11 @@ namespace Game.Core
     /// 보너스 수량은 스테이지가 정한 총수량에서 계산한다</summary>
     public readonly struct RewardSchedule
     {
-        public int Start { get; }
-        public int PerWave { get; }
-        public int BonusWave { get; }
+        [JsonProperty(Required = Required.Always)] public int Start { get; }
+        [JsonProperty(Required = Required.Always)] public int PerWave { get; }
+        [JsonProperty(Required = Required.Always)] public int BonusWave { get; }
 
+        [JsonConstructor]
         public RewardSchedule(int start, int perWave, int bonusWave)
         {
             Start = start;
@@ -36,25 +38,7 @@ namespace Game.Core
         }
     }
 
-    /// <summary>모든 스테이지가 같은 보상별 지급 규칙. 새 종류의 아이템 보상은 여기에 규칙을 추가한다</summary>
-    public static class StageRewardSchedule
-    {
-        public static readonly RewardSchedule Coin = new(25, 5, 6);
-        public static readonly RewardSchedule SkillMaterial = new(1, 1, 3);
-        public static readonly RewardSchedule EquipmentMaterial = new(0, 0, 4);
-        public static readonly RewardSchedule GemChest = new(0, 0, 5);
-
-        public static bool TryGetItem(string itemId, out RewardSchedule schedule)
-        {
-            if (itemId == ItemIds.RandomSkillMaterial || ItemIds.SkillMaterials.Contains(itemId)) { schedule = SkillMaterial; return true; }
-            if (itemId == ItemIds.RandomEquipmentMaterial || ItemIds.EquipmentMaterials.Contains(itemId)) { schedule = EquipmentMaterial; return true; }
-            if (itemId == ItemIds.GemChest) { schedule = GemChest; return true; }
-            schedule = default;
-            return false;
-        }
-    }
-
-    /// <summary>지급 시점은 공통 규칙(StageRewardSchedule)이며 총수량·재료 선택은 스테이지 밸런스다.</summary>
+    /// <summary>지급 시점은 공통 규칙(RewardRules)이며 총수량·재료 선택은 스테이지 밸런스다.</summary>
     public static class StageRewardRules
     {
         public const int WaveCount = 20;
@@ -65,14 +49,16 @@ namespace Game.Core
             if (completedWaves < 0 || completedWaves > WaveCount || (cleared && completedWaves != WaveCount)
                 || rating < 0 || rating > 3 || (!cleared && rating != 0) || (cleared && rating == 0))
             { throw new ArgumentException("완료 웨이브와 클리어·별 등급이 일치해야 합니다."); }
+            int bonusExp = cleared && rating == 3 ? balance.ThreeStarBonusExp : 0;
             var result = new StageRewards
             {
-                Coin = StageRewardSchedule.Coin.Amount(completedWaves, balance.FinalCoin),
-                Exp = checked((completedWaves >= 1 ? balance.BaseExp : 0) + (cleared && rating == 3 ? balance.ThreeStarBonusExp : 0))
+                Coin = balance.RewardRules.Coin.Amount(completedWaves, balance.FinalCoin),
+                Exp = checked((completedWaves >= 1 ? balance.BaseExp : 0) + bonusExp),
+                BonusExp = bonusExp
             };
             foreach (var item in balance.Items)
             {
-                StageRewardSchedule.TryGetItem(item.itemId, out var schedule);
+                balance.RewardRules.TryGetItem(item.itemId, out var schedule);
                 int quantity = schedule.Amount(completedWaves, item.finalAmount);
                 if (quantity > 0) { result.Items.Add(new ItemAmount { itemId = item.itemId, quantity = quantity }); }
             }

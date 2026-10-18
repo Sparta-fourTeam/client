@@ -41,7 +41,7 @@ namespace Game.View
                 }
 
                 int index = i;
-                _cells[i].Show(items[i].Icon, $"x{items[i].Count:N0}", onClick == null ? null : () => onClick(index));
+                _cells[i].Show(items[i].Icon, items[i].ItemId == RewardRows.BonusExpId ? $"+{items[i].Count:N0}" : $"x{items[i].Count:N0}", onClick == null ? null : () => onClick(index));
             }
 
             gameObject.SetActive(items.Count > 0);

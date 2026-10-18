@@ -12,6 +12,7 @@ namespace Game.View
                 case RewardRows.CoinId: return "잉크";
                 case RewardRows.GemId: return "잼";
                 case RewardRows.ExpId: return "경험치";
+                case RewardRows.BonusExpId: return "3성 보너스 경험치";
                 case ItemIds.RandomSkillMaterial: return "랜덤 마법북";
                 case ItemIds.RandomEquipmentMaterial: return "랜덤 인챈트 주문서";
             }
@@ -27,6 +28,7 @@ namespace Game.View
                 case RewardRows.GemId: return "상점에서 물품을 사는 데 쓰는 재화예요.";
                 case ShopRules.EnergyReward: return "스테이지에 입장할 때 쓰는 잉크펜이에요.";
                 case RewardRows.ExpId: return "모으면 플레이어 레벨이 올라요.\n레벨이 오르면 새 스킬과 장비가 열려요.";
+                case RewardRows.BonusExpId: return "3성으로 클리어해서 추가로 받은 경험치예요.\n지급 경험치 합계에 이미 포함되어 있어요.";
                 case ItemIds.RandomSkillMaterial: return "열린 스킬 중 하나의 마법북을 받아요.";
                 case ItemIds.RandomEquipmentMaterial: return "열린 장비 중 하나의 인챈트 주문서를 받아요.";
                 case ItemIds.GemChest: return "보석이 들어 있는 상자예요.";

@@ -1,0 +1,106 @@
+{
+  "schedules": {
+    "Coin": {
+      "start": 25,
+      "perWave": 5,
+      "bonusWave": 6
+    },
+    "SkillMaterial": {
+      "start": 1,
+      "perWave": 1,
+      "bonusWave": 3
+    },
+    "EquipmentMaterial": {
+      "start": 0,
+      "perWave": 0,
+      "bonusWave": 4
+    },
+    "GemChest": {
+      "start": 0,
+      "perWave": 0,
+      "bonusWave": 5
+    }
+  },
+  "items": {
+    "book.arrow": {
+      "kind": "SkillMaterial",
+      "random": false
+    },
+    "book.fireball": {
+      "kind": "SkillMaterial",
+      "random": false
+    },
+    "book.lightning": {
+      "kind": "SkillMaterial",
+      "random": false
+    },
+    "book.frost_crystal": {
+      "kind": "SkillMaterial",
+      "random": false
+    },
+    "book.log": {
+      "kind": "SkillMaterial",
+      "random": false
+    },
+    "book.cold_zone": {
+      "kind": "SkillMaterial",
+      "random": false
+    },
+    "book.lightning_cloud": {
+      "kind": "SkillMaterial",
+      "random": false
+    },
+    "book.energy_beam": {
+      "kind": "SkillMaterial",
+      "random": false
+    },
+    "book.chain_lightning": {
+      "kind": "SkillMaterial",
+      "random": false
+    },
+    "book.focus_beam": {
+      "kind": "SkillMaterial",
+      "random": false
+    },
+    "book.hat": {
+      "kind": "EquipmentMaterial",
+      "random": false
+    },
+    "book.top": {
+      "kind": "EquipmentMaterial",
+      "random": false
+    },
+    "book.shoes": {
+      "kind": "EquipmentMaterial",
+      "random": false
+    },
+    "book.weapon": {
+      "kind": "EquipmentMaterial",
+      "random": false
+    },
+    "book.ring": {
+      "kind": "EquipmentMaterial",
+      "random": false
+    },
+    "book.tie": {
+      "kind": "EquipmentMaterial",
+      "random": false
+    },
+    "book.employee_id": {
+      "kind": "EquipmentMaterial",
+      "random": false
+    },
+    "chest.gem": {
+      "kind": "GemChest",
+      "random": false
+    },
+    "material.skill.random": {
+      "kind": "SkillMaterial",
+      "random": true
+    },
+    "material.equipment.random": {
+      "kind": "EquipmentMaterial",
+      "random": true
+    }
+  }
+}

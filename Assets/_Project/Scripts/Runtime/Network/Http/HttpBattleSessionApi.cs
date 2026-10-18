@@ -48,6 +48,7 @@ namespace Game.Network
         public int ClearedWave { get; }
         public int Rating { get; }
         public int Exp { get; }
+        public int ThreeStarBonusExp { get; }
         public int Gold { get; }
         public IReadOnlyDictionary<string, int> Items { get; }
         public int ClearRating { get; }
@@ -60,6 +61,7 @@ namespace Game.Network
             ClearedWave = body.Value<int>("clearedWave");
             Rating = body.Value<int>("rating");
             Exp = body.Value<int>("exp");
+            ThreeStarBonusExp = body.Value<int>("threeStarBonusExp");
             Gold = body.Value<int>("gold");
             Items = new ReadOnlyDictionary<string, int>(items);
             ClearRating = body.Value<int>("clearRating");
@@ -79,6 +81,8 @@ namespace Game.Network
                     || !Integer(body["clearedWave"], 0, 20) || body.Value<int>("clearedWave") != request.clearedWave
                     || !Integer(body["rating"], 0, 3) || body.Value<int>("rating") != request.rating
                     || !Integer(body["exp"], 0, int.MaxValue) || !Integer(body["gold"], 0, int.MaxValue)
+                    || !Integer(body["threeStarBonusExp"], 0, body.Value<int>("exp"))
+                    || (request.rating != 3 && body.Value<int>("threeStarBonusExp") != 0)
                     || !Integer(body["clearRating"], request.rating, 3)
                     || body["items"] is not JObject itemRows || body["completedAt"]?.Type != JTokenType.String
                     || !DateTimeOffset.TryParseExact(body.Value<string>("completedAt"),

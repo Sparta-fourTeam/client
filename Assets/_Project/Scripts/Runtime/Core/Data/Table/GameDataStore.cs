@@ -9,7 +9,7 @@ namespace Game.Core
     /// <summary>Resources/MockData의 테이블 JSON을 읽어 도메인 모델 테이블로 만든다</summary>
     public sealed class GameDataStore
     {
-        private static readonly string[] TableNames = { "Monsters", "Stages", "Upgrades", "Energy", "Combat", "GeneralCards", "Skills", "Items", "StageRewards", "PlayerLevels", "CodexRewards", "Tutorials", "Quests", "Shop" };
+        private static readonly string[] TableNames = { "Monsters", "Stages", "Upgrades", "Energy", "Combat", "GeneralCards", "Skills", "Items", "StageRewards", "RewardRules", "PlayerLevels", "CodexRewards", "Tutorials", "Quests", "Shop" };
         private readonly Dictionary<string, string> _rawJson;
         private readonly DisplayTexts _texts;
         private readonly Dictionary<string, int> _skillUnlockLevels;
@@ -20,6 +20,7 @@ namespace Game.Core
         public Table<string, UpgradeDefinition> Upgrades { get; }
         public Table<string, ItemDefinition> Items { get; }
         public Table<int, StageRewardBalance> StageRewards { get; }
+        public RewardRulesConfig RewardRules { get; private set; }
         public EnergyConfig Energy { get; }
         public ShopConfig Shop { get; }
         public CombatConfig Combat { get; }
@@ -119,9 +120,13 @@ namespace Game.Core
                     Items.GetOrThrow(upgrade.MaterialItemId);
                 }
             }
+            RewardRules = JsonConvert.DeserializeObject<RewardRulesConfig>(_rawJson["RewardRules"]);
+            RewardRules.Validate();
+            ValidateRewardItemReferences(RewardRules);
             var rewards = ParseIndexed<int, StageRewardBalance>("StageRewards", d => d.StageId);
             foreach (var balance in rewards.Values)
             {
+                balance.RewardRules = RewardRules;
                 balance.Validate();
                 if (!Stages.Contains(balance.StageId)) { throw new InvalidOperationException("보상의 스테이지가 없습니다."); }
                 foreach (var item in balance.Items)
@@ -291,6 +296,35 @@ namespace Game.Core
                             $"Monsters {monster.Id}: 소환 대상 {target.Id}이(가) 다시 {PassiveKind.Spawn} 패시브를 가집니다 (연쇄 소환 금지)");
                     }
                 }
+            }
+        }
+
+        /// <summary>호출부가 전투 시작 전에 갱신한다. 검증 완료 전에는 어떤 기존 설정도 바꾸지 않는다.</summary>
+        public void ApplyRewardRules(string json, int version)
+        {
+            var rules = JsonConvert.DeserializeObject<RewardRulesConfig>(json);
+            if (rules == null || rules.Version != version || version <= 0)
+            { throw new InvalidOperationException("RewardRules 버전이 잘못되었습니다."); }
+            if (RewardRules.Version.HasValue && version < RewardRules.Version.Value)
+            { throw new InvalidOperationException("이전 RewardRules 버전은 적용할 수 없습니다."); }
+            if (RewardRules.Version == version && !Newtonsoft.Json.Linq.JToken.DeepEquals(
+                    Newtonsoft.Json.Linq.JToken.Parse(_rawJson["RewardRules"]), Newtonsoft.Json.Linq.JToken.Parse(json)))
+            { throw new InvalidOperationException("동일한 RewardRules 버전의 내용이 다릅니다."); }
+            rules.Validate();
+            ValidateRewardItemReferences(rules);
+            foreach (var balance in StageRewards.Values) { balance.Validate(rules); }
+            RewardRules = rules;
+            foreach (var balance in StageRewards.Values) { balance.RewardRules = rules; }
+            Revisions["RewardRules"] = version;
+            _rawJson["RewardRules"] = json;
+        }
+
+        private void ValidateRewardItemReferences(RewardRulesConfig rules)
+        {
+            foreach (var rule in rules.Items)
+            {
+                if (!rule.Value.Random && !Items.Contains(rule.Key))
+                { throw new InvalidOperationException($"RewardRules: 없는 아이템 {rule.Key}"); }
             }
         }
 

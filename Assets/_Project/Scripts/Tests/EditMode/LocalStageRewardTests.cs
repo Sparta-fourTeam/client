@@ -27,6 +27,7 @@ namespace Game.Tests
             balance.BaseExp = fixture.BaseExp; balance.ThreeStarBonusExp = fixture.ThreeStarBonusExp;
             balance.FinalCoin = fixture.FinalCoin;
             balance.Items = fixture.Items;
+            balance.RewardRules = fixture.RewardRules;
             var save = _store.Load();
             save.wallet.energyStored = 10; save.wallet.energyUpdatedAt = DateTime.UtcNow.ToString("O");
             _store.Flush(save);
@@ -69,6 +70,12 @@ namespace Game.Tests
             { battleId = issued.battleId, completedWaves = 20, reachedWave = 20, cleared = true, wallHpPercent = hp }).GetAwaiter().GetResult();
             Assert.AreEqual(165, result.rewardGold); Assert.AreEqual(exp, result.rewardExp);
             Assert.AreEqual(rating, result.clearRating);
+            Assert.AreEqual(rating == 3 ? 50 : 0, result.rewardBonusExp);
+            _data.StageRewards.GetOrThrow(1).ThreeStarBonusExp = 999;
+            var replay = new LocalBattleApi(_store, _data).SubmitResult(new SubmitResultRequest
+            { battleId = issued.battleId }).GetAwaiter().GetResult();
+            Assert.AreEqual(exp, replay.rewardExp);
+            Assert.AreEqual(rating == 3 ? 50 : 0, replay.rewardBonusExp);
             Assert.AreEqual(rating, _store.Load().stageProgress[0].clearRating);
         }
 

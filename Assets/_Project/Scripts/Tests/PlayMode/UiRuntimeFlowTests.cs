@@ -1234,6 +1234,18 @@ namespace Game.Tests
             var result = ui.Get<ResultPopupView>();
             Assert.That(Field<TMP_Text>(result, "_titleText").text, Is.EqualTo("방어 성공!"));
             yield return WaitFor(() => Field<Button>(result, "_lobbyButton").interactable);
+            var receipt = new LocalSaveStore(_savePath).Load().battles.Last();
+            var rewardCells = Field<ResultRewardListView>(result, "_rewardList").Cells.Where(cell => cell.gameObject.activeSelf).ToArray();
+            int baseExp = receipt.rewardExp - receipt.rewardBonusExp;
+            int expectedCells = 1 + (baseExp > 0 ? 1 : 0) + (receipt.rewardBonusExp > 0 ? 1 : 0) + receipt.rewardItems.Count;
+            Assert.That(rewardCells.Length, Is.EqualTo(expectedCells));
+            if (baseExp > 0) { Assert.That(rewardCells[1].CountText, Is.EqualTo($"x{baseExp:N0}")); }
+            if (receipt.rewardBonusExp > 0)
+            {
+                int bonusIndex = baseExp > 0 ? 2 : 1;
+                Assert.That(rewardCells[bonusIndex].CountText, Is.EqualTo($"+{receipt.rewardBonusExp:N0}"));
+                Assert.That(rewardCells[bonusIndex].Icon.sprite, Is.Not.Null);
+            }
             Assert.That(stats.ReachedWave, Is.EqualTo(stage.Container.Resolve<StageDefinition>().Waves.Count));
             Assert.That(stats.BuildLog.Count, Is.GreaterThan(0));
             Assert.That(Field<ResultTipView>(result, "_tip").IsShown, Is.False);

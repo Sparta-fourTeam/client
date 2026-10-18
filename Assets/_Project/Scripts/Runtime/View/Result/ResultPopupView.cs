@@ -193,7 +193,7 @@ namespace Game.View
             _bubbleText.text = result.Cleared
                 ? (_firstStageClear ? "첫 클리어! 로비에서 새 무기를 확인해 봐요!" : ClearBubble)
                 : "확보한 보상은 받을 수 있어요.\n강화한 뒤 다시 도전해 봐요!";
-            var rewards = RewardRows.Build(_itemIcons, _data, result.RewardGold, result.RewardExp, result.RewardItems);
+            var rewards = RewardRows.Build(_itemIcons, _data, result.RewardGold, result.RewardExp, result.RewardItems, result.RewardBonusExp);
             _rewardList.Show(rewards, i => DetailContent.ShowReward(_detail, _data, rewards[i], "획득 {0}개"));
             _starsView.Show(result.Cleared, result.ClearRating);
             if (_damageList != null)

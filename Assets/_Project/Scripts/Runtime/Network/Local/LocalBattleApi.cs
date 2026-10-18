@@ -91,6 +91,7 @@ namespace Game.Network
                 {
                     rewardGold = battle.rewardGold,
                     rewardExp = battle.rewardExp,
+                    rewardBonusExp = battle.rewardBonusExp,
                     clearRating = battle.clearRating,
                     rewardItems = battle.rewardItems ?? new()
                 });
@@ -114,6 +115,7 @@ namespace Game.Network
             battle.status = req.cleared ? "Cleared" : "Failed";
             battle.rewardGold = reward;
             battle.rewardExp = rewardExp;
+            battle.rewardBonusExp = calculated.BonusExp;
             battle.clearRating = rating;
             battle.rewardItems = itemRewards;
             save.wallet.gold = totalGold;
@@ -128,7 +130,7 @@ namespace Game.Network
 
             _store.Flush(save);
             return UniTask.FromResult(new SubmitResultResponse
-            { rewardGold = reward, rewardExp = rewardExp, clearRating = rating, rewardItems = itemRewards });
+            { rewardGold = reward, rewardExp = rewardExp, rewardBonusExp = calculated.BonusExp, clearRating = rating, rewardItems = itemRewards });
         }
 
         /// <summary>마주친 몬스터를 도감에 등록한다. 이미 있는 줄(수령 여부)은 건드리지 않고, 없는 몬스터 ID는 무시한다</summary>

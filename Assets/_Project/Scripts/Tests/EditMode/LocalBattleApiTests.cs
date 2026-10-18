@@ -195,15 +195,24 @@ namespace Game.Tests
         [Test(Description = "실패 제출은 시작 보상을 지급하고 clearRating은 바꾸지 않는다")]
         public void SubmitResult_Failed_GrantsStartRewardAndKeepsRating()
         {
+            var rules = StageRewardRulesTests.RulesFixture();
+            rules.Schedules["Coin"] = new RewardSchedule(7, 3, 6);
+            rules.Schedules["SkillMaterial"] = new RewardSchedule(3, 1, 3);
+            _data.StageRewards.GetOrThrow(1).RewardRules = rules;
             SeedEnergy(_data.Energy.Cost * 2);
             var start = _api.StartBattle(1).GetAwaiter().GetResult();
+            Assert.AreEqual(0, _store.Load().wallet.gold);
 
             var result = _api.SubmitResult(new SubmitResultRequest { battleId = start.battleId, cleared = false })
                 .GetAwaiter().GetResult();
 
             Assert.AreEqual(0, result.clearRating);
-            Assert.AreEqual(StageRewardRules.Calculate(_data.StageRewards.GetOrThrow(1), 0, false, 0).Coin, result.rewardGold);
-            Assert.AreEqual(0, _store.Load().stageProgress.Find(p => p.stageId == 1).clearRating);
+            Assert.AreEqual(7, result.rewardGold);
+            Assert.AreEqual(0, result.rewardExp);
+            Assert.AreEqual(3, result.rewardItems.Single(item => item.itemId == ItemIds.ArrowBook).quantity);
+            var save = _store.Load();
+            Assert.AreEqual(7, save.wallet.gold);
+            Assert.AreEqual(0, save.stageProgress.Find(p => p.stageId == 1).clearRating);
         }
 
         [Test(Description = "같은 battleId로 두 번 제출하면 처음 확정된 결과를 그대로 재반환하고 중복 지급하지 않는다")]

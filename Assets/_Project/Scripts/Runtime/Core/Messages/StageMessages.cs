@@ -52,6 +52,7 @@ namespace Game.Core.Messages
         public float PlayTime { get; }
         public int RewardGold { get; }
         public int RewardExp { get; }
+        public int RewardBonusExp { get; }
         public int ClearRating { get; }
         public IReadOnlyList<ItemAmount> RewardItems { get; }
 
@@ -60,7 +61,7 @@ namespace Game.Core.Messages
 
         public StageResult(bool cleared, int kills, int reachedWave, float playTime, int rewardGold,
             IEnumerable<ItemAmount> rewardItems = null, int rewardExp = 0, int clearRating = 0,
-            IEnumerable<SkillDamage> skillDamages = null)
+            IEnumerable<SkillDamage> skillDamages = null, int rewardBonusExp = 0)
         {
             Cleared = cleared;
             Kills = kills;
@@ -68,6 +69,7 @@ namespace Game.Core.Messages
             PlayTime = playTime;
             RewardGold = rewardGold;
             RewardExp = rewardExp;
+            RewardBonusExp = rewardBonusExp;
             ClearRating = clearRating;
             SkillDamages = (skillDamages ?? Enumerable.Empty<SkillDamage>()).ToList().AsReadOnly();
             RewardItems = (rewardItems ?? Enumerable.Empty<ItemAmount>())
