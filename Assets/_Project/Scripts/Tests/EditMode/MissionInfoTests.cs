@@ -100,8 +100,11 @@ namespace Game.Tests
             var data = new GameDataStore();
             const string randomId = "fixture.random.material";
             data.RewardRules.Items[randomId] = new RewardItemRule { Kind = kind, Random = true };
-            Assert.AreEqual(name, ItemInfo.NameOf(randomId, data));
+            Assert.AreEqual(name, ItemInfo.RewardNameOf(randomId, data));
             StringAssert.Contains(description, ItemInfo.DescriptionOf(randomId, data));
+            data.RewardRules.Items[ItemIds.ArrowBook] = new RewardItemRule { Kind = kind, Random = true };
+            Assert.AreEqual(data.Items.GetOrThrow(ItemIds.ArrowBook).Name, ItemInfo.NameOf(ItemIds.ArrowBook, data));
+            Assert.AreEqual(name, ItemInfo.RewardNameOf(ItemIds.ArrowBook, data));
         }
 
         [Test(Description = "보상 줄에는 코인·경험치·아이템 ID가 붙는다")]
@@ -198,6 +201,24 @@ namespace Game.Tests
             Assert.AreEqual("잉크", Field<TMP_Text>(detail, "_titleText").text);
             StringAssert.StartsWith("최대 ", Field<TMP_Text>(detail, "_subtitleText").text);
             Assert.AreEqual(ItemInfo.DescriptionOf(RewardRows.CoinId), Field<TMP_Text>(detail, "_descText").text);
+        }
+
+        [TestCase(false)]
+        [TestCase(true)]
+        public void ConfirmedItemKeepsItsNameAndIconWhenPreviewRulesChange(bool preview)
+        {
+            var (mission, detail) = OpenMission(3);
+            var data = new GameDataStore();
+            data.RewardRules.Items[ItemIds.ArrowBook].Random = true;
+            var icons = Field<ItemIconTable>(mission, "_itemIcons");
+            var row = RewardRows.Build(icons, data, 0, 0,
+                new[] { new ItemAmount { itemId = ItemIds.ArrowBook, quantity = 3 } }, preview: preview)
+                .Single(item => item.ItemId == ItemIds.ArrowBook);
+            DetailContent.ShowReward(detail, data, row, "{0}개");
+            Assert.AreEqual(preview ? "랜덤 마법북" : data.Items.GetOrThrow(ItemIds.ArrowBook).Name,
+                Field<TMP_Text>(detail, "_titleText").text);
+            Assert.AreEqual(preview ? icons.GetRandom(ItemIds.RandomSkillMaterial) : icons.Get(ItemIds.ArrowBook),
+                Field<Image>(detail, "_icon").sprite);
         }
 
         [Test(Description = "누를 일을 넘기지 않는 곳(결과·일시정지 창)에서는 칸이 버튼이 되지 않는다")]

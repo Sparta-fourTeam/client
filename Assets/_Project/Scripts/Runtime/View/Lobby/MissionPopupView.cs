@@ -46,7 +46,7 @@ namespace Game.View
             var monsters = MonsterRows.Build(_monsterDisplay, data, stageId);
             _monsters.Show(monsters, i => DetailContent.ShowMonster(_detail, _data, _monsterDisplay, monsters[i]));
             var maximum = StageRewardRules.Maximum(data.StageRewards.GetOrThrow(stageId));
-            var rewards = RewardRows.Build(_itemIcons, data, maximum.Coin, maximum.Exp, maximum.Items, maximum.BonusExp);
+            var rewards = RewardRows.Build(_itemIcons, data, maximum.Coin, maximum.Exp, maximum.Items, maximum.BonusExp, preview: true);
             _rewards.Show(rewards, i => DetailContent.ShowReward(_detail, _data, rewards[i], "최대 {0}개 획득"));
             Show();
         }

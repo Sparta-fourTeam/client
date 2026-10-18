@@ -319,8 +319,6 @@ namespace Game.Core
         {
             foreach (var rule in rules.Items)
             {
-                if (rule.Value.Random && Items.Contains(rule.Key))
-                { throw new InvalidOperationException($"RewardRules: 랜덤 추첨 ID는 실제 아이템과 달라야 합니다: {rule.Key}"); }
                 if (!rule.Value.Random && !Items.Contains(rule.Key))
                 { throw new InvalidOperationException($"RewardRules: 없는 아이템 {rule.Key}"); }
             }

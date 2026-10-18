@@ -7,8 +7,6 @@ namespace Game.View
     {
         public static string NameOf(string itemId, GameDataStore data)
         {
-            if (RandomRewardOdds.IsRandom(itemId, data))
-            { return data.RewardRules.Items[itemId].Kind == "SkillMaterial" ? "랜덤 마법북" : "랜덤 인챈트 주문서"; }
             switch (itemId)
             {
                 case RewardRows.CoinId: return "잉크";
@@ -21,6 +19,12 @@ namespace Game.View
 
             return data != null && itemId != null && data.Items.Contains(itemId) ? data.Items.GetOrThrow(itemId).Name : itemId ?? string.Empty;
         }
+
+        /// <summary>추첨 전 보상 미리보기의 이름. 상점·인벤토리의 실제 아이템 이름과 구분한다.</summary>
+        public static string RewardNameOf(string itemId, GameDataStore data) =>
+            RandomRewardOdds.IsRandom(itemId, data)
+                ? data.RewardRules.Items[itemId].Kind == "SkillMaterial" ? "랜덤 마법북" : "랜덤 인챈트 주문서"
+                : NameOf(itemId, data);
 
         public static string DescriptionOf(string itemId, GameDataStore data = null)
         {

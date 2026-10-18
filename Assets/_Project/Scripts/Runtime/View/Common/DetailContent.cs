@@ -27,9 +27,10 @@ namespace Game.View
                 return;
             }
 
-            detail.Show(item.Icon, ItemInfo.NameOf(item.ItemId, data), string.Format(countFormat, CurrencyFormat.Format(item.Count)),
-                ItemInfo.DescriptionOf(item.ItemId, data));
-            detail.OfferOdds(item.ItemId);
+            detail.Show(item.Icon, item.IsRandomPreview ? ItemInfo.RewardNameOf(item.ItemId, data) : ItemInfo.NameOf(item.ItemId, data),
+                string.Format(countFormat, CurrencyFormat.Format(item.Count)),
+                ItemInfo.DescriptionOf(item.ItemId, item.IsRandomPreview ? data : null));
+            if (item.IsRandomPreview) { detail.OfferOdds(item.ItemId); }
         }
     }
 }
