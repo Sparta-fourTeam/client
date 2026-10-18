@@ -101,8 +101,18 @@ namespace Game.Editor
         [MenuItem(MenuRoot + "Stop", true)]
         private static bool MenuStopEnabled() => EditorApplication.isPlaying && _cts != null;
 
+        // 한 번 클리어를 얻기 위해 이전 스테이지를 다시 도는 최대 횟수 (계속 못 깨는 스테이지에서 무한 반복하지 않게)
+        private const int MaxFarmAttemptsPerClear = 4;
+
         public static void Stop()
         {
+            // 전투 중 멈추면 오토플레이가 올린 배속이 남지 않게 StageManager의 원래 배속으로 되돌린다
+            if (EditorApplication.isPlaying)
+            {
+                var manager = Resolve<StageManager>();
+                if (manager != null && manager.State == StageState.Playing) { Time.timeScale = manager.Speed; }
+            }
+
             _cts?.Cancel();
             _cts = null;
             Status = "stopped";
@@ -211,19 +221,22 @@ namespace Game.Editor
                 cleared = (await Run(stage, speed, nav, ct, "retryUpgrade", prepare: false)).Cleared;
             }
 
+            // farms는 이전 스테이지를 실제로 클리어한 횟수다. 실패한 판은 세지 않고, 한 번도 못 깨는 스테이지에서 멈추지 않도록 시도 횟수에 상한을 둔다
+            int attempts = 0;
             while (farms < farmMax && !cleared)
             {
                 int farmStage = Math.Max(1, stage - 1);
                 int target = farms < farmMin ? farmMin : farms + 1;
-                while (farms < target)
+                while (farms < target && attempts < target * MaxFarmAttemptsPerClear)
                 {
                     SetK(data, farmStage, Ks.TryGetValue(farmStage, out var farmK) ? farmK : 1f);
-                    await Run(farmStage, speed, nav, ct, "farm");
-                    farms++;
+                    attempts++;
+                    if ((await Run(farmStage, speed, nav, ct, "farm")).Cleared) { farms++; }
                 }
 
                 SetK(data, stage, CurrentK(stage));
                 cleared = (await Run(stage, speed, nav, ct, "retry" + farms)).Cleared;
+                if (!cleared && farms < target) { break; }
             }
 
             return cleared ? farms : -1;
