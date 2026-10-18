@@ -245,9 +245,10 @@ namespace Game.Editor
                     if ((await Run(farmStage, speed, nav, ct, "farm")).Cleared) { farms++; }
                 }
 
+                // 시도 상한까지 돌고도 목표 클리어 수를 못 채웠으면 재도전 없이 이 시도를 실패로 끝낸다
+                if (farms < target) { break; }
                 SetK(data, stage, CurrentK(stage));
                 cleared = (await Run(stage, speed, nav, ct, "retry" + farms)).Cleared;
-                if (!cleared && farms < target) { break; }
             }
 
             return cleared ? farms : -1;
@@ -323,6 +324,12 @@ namespace Game.Editor
             float realStart = Time.realtimeSinceStartup;
             Status = $"stage {stageId} ({tag})";
             if (!await launcher.Launch(stageId)) { throw new InvalidOperationException("전투 발급 거절: stage " + stageId); }
+            if (ct.IsCancellationRequested)
+            {
+                // 전투를 시작하는 동안 Stop이 눌렸다. 오토플레이 없이 전투가 남지 않도록 로비로 돌려보낸다
+                await nav.GoToLobby();
+                ct.ThrowIfCancellationRequested();
+            }
 
             var manager = await Need<StageManager>(ct);
             int minWall = 100, cards = 0;
