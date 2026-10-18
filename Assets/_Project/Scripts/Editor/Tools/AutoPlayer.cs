@@ -176,8 +176,11 @@ namespace Game.Editor
                     continue;
                 }
 
-                // 튜닝: 스테이지 난이도 배수 k를 조절해 "못 깨면 이전 스테이지 3~5회 뒤 깬다" 범위에 맞춘다
+                // 튜닝: 스테이지 난이도 배수 k를 조절한다. 상한은 "못 깨면 이전 스테이지 5회 안에 깬다"이고,
+                // 반복 없이(0~2회) 깬 스테이지도 그 k로 확정한 뒤 다음 스테이지의 시작 k만 올려 가며 시험한다.
+                // 실패한 후보가 남긴 반복 클리어·강화가 다음 후보에 이어지지 않게, 후보마다 시작 세이브로 되돌린다
                 int tries = 0;
+                string arrival = File.ReadAllText(LocalSavePath.Current);
                 while (true)
                 {
                     SetK(data, stage, k);
@@ -191,6 +194,8 @@ namespace Game.Editor
                         break;
                     }
 
+                    File.WriteAllText(LocalSavePath.Current, arrival);
+                    profile.Apply(await (await Need<IPlayerApi>(ct)).GetMe());
                     k *= 0.85f;
                     if (tries >= 8) { Status = "tune stuck at " + stage; Log("TUNE_STUCK " + stage); return; }
                 }
