@@ -268,14 +268,24 @@ namespace Game.Tests
             Assert.AreSame(previous, data.RewardRules);
             Assert.AreEqual(previousRaw, data.RawJson("RewardRules"));
             Assert.AreEqual(7, data.Revisions["RewardRules"]);
+            foreach (var id in new[] { ShopRules.CoinReward, ShopRules.EnergyReward, "currency.exp" })
+            {
+                json = JObject.Parse(previousRaw);
+                json["version"] = 8;
+                json["items"][id] = JObject.FromObject(new { kind = "SkillMaterial", random = true });
+                _transport.Response = new HttpResponseData(200, json.ToString());
+                Assert.Throws<ApiException>(() => api.Refresh(data).GetAwaiter().GetResult());
+                Assert.AreSame(previous, data.RewardRules);
+                Assert.AreEqual(previousRaw, data.RawJson("RewardRules"));
+                Assert.AreEqual(7, data.Revisions["RewardRules"]);
+            }
             json = JObject.Parse(previousRaw);
             json["version"] = 8;
             json["items"][ItemIds.ArrowBook]["random"] = true;
             _transport.Response = new HttpResponseData(200, json.ToString());
-            Assert.Throws<ApiException>(() => api.Refresh(data).GetAwaiter().GetResult());
-            Assert.AreSame(previous, data.RewardRules);
-            Assert.AreEqual(previousRaw, data.RawJson("RewardRules"));
-            Assert.AreEqual(7, data.Revisions["RewardRules"]);
+            api.Refresh(data).GetAwaiter().GetResult();
+            Assert.IsTrue(data.RewardRules.Items[ItemIds.ArrowBook].Random);
+            Assert.IsTrue(data.Items.Contains(ItemIds.ArrowBook));
         }
 
         [Test]

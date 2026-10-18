@@ -51,7 +51,9 @@ namespace Game.Core.Messages
         public int ReachedWave { get; }
         public float PlayTime { get; }
         public int RewardGold { get; }
+        /// <summary>3성 보너스를 포함한 총 지급 경험치.</summary>
         public int RewardExp { get; }
+        /// <summary>RewardExp에 이미 포함된 표시용 3성 보너스. 총 경험치에 다시 더하지 않는다.</summary>
         public int RewardBonusExp { get; }
         public int ClearRating { get; }
         public IReadOnlyList<ItemAmount> RewardItems { get; }

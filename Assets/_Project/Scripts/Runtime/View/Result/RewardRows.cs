@@ -39,7 +39,7 @@ namespace Game.View
         }
 
         /// <summary>코인은 항상, EXP는 받을 때만 보여준다. 재료는 주어진 순서대로 나열하고 보석상자를 맨 끝에 둔다</summary>
-        public static List<ResultRewardItem> Build(ItemIconTable icons, GameDataStore data, int coin, int exp, IEnumerable<ItemAmount> items, int bonusExp = 0)
+        public static List<ResultRewardItem> Build(ItemIconTable icons, GameDataStore data, int coin, int exp, IEnumerable<ItemAmount> items, int bonusExp = 0, bool preview = false)
         {
             if (bonusExp < 0 || bonusExp > exp) { throw new System.ArgumentOutOfRangeException(nameof(bonusExp)); }
             int baseExp = exp - bonusExp;
@@ -57,7 +57,9 @@ namespace Game.View
             var chests = new List<ResultRewardItem>();
             foreach (var item in items)
             {
-                var row = new ResultRewardItem(IconOf(icons, data, item.itemId), item.quantity, item.itemId);
+                bool randomPreview = preview && RandomRewardOdds.IsRandom(item.itemId, data);
+                var icon = randomPreview ? IconOf(icons, data, item.itemId) : icons != null ? icons.Get(item.itemId) : null;
+                var row = new ResultRewardItem(icon, item.quantity, item.itemId, randomPreview);
                 if (item.itemId == ItemIds.GemChest) { chests.Add(row); } else { rows.Add(row); }
             }
 

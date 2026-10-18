@@ -10,12 +10,14 @@ namespace Game.View
         public Sprite Icon { get; }
         public int Count { get; }
         public string ItemId { get; }
+        public bool IsRandomPreview { get; }
 
-        public ResultRewardItem(Sprite icon, int count, string itemId = null)
+        public ResultRewardItem(Sprite icon, int count, string itemId = null, bool isRandomPreview = false)
         {
             Icon = icon;
             Count = count;
             ItemId = itemId;
+            IsRandomPreview = isRandomPreview;
         }
     }
 

@@ -130,7 +130,7 @@ namespace Game.View
             }
 
             string what = _data.RewardRules.Items[itemId].Kind == "SkillMaterial" ? "열린 스킬의 마법북" : "열린 장비의 인챈트 주문서";
-            _oddsPopup.Show($"{ItemInfo.NameOf(itemId, _data)} 확률", $"현재 레벨에서 {what}이 같은 확률로 나와요.", rows);
+            _oddsPopup.Show($"{ItemInfo.RewardNameOf(itemId, _data)} 확률", $"현재 레벨에서 {what}이 같은 확률로 나와요.", rows);
         }
 
         private void SetClaimVisible(bool visible)

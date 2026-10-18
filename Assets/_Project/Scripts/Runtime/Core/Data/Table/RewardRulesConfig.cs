@@ -43,7 +43,8 @@ namespace Game.Core
             }
             foreach (var item in Items)
             {
-                if (string.IsNullOrWhiteSpace(item.Key) || item.Value == null || item.Value.Kind == null
+                if (string.IsNullOrWhiteSpace(item.Key) || item.Key.StartsWith("currency.", StringComparison.Ordinal)
+                    || item.Value == null || item.Value.Kind == null
                     || item.Value.Kind == "Coin" || !kinds.Contains(item.Value.Kind)
                     || (item.Value.Random && item.Value.Kind == "GemChest"))
                 { throw new InvalidOperationException("RewardRules: 아이템 분류가 잘못되었습니다."); }
