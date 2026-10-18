@@ -1,0 +1,20 @@
+{
+  "_doc": "player: mode=formula 면 Skills/Upgrades/PlayerLevels로 플레이어 전투력을 계산한다(Tools/LevelDesign/player.py). scale은 calibrate 명령이 정한다.",
+  "player": { "mode": "formula", "scale": 15.2201 },
+  "_doc_progress": "스테이지별 영구 성장 가정. 계정 레벨은 별 3개 첫 클리어 경험치로 계산. skillBase + skillPerLevel*(계정레벨-스킬 해금 레벨) = 스킬 영구 레벨, equipBase + equipPerLevel*(계정레벨-1) = 장비 레벨(최대 10). cardEfficiency = 카드 3장 중 최선을 못 고르는 손실 보정(0~1). wallRepairs = 방벽 수리 카드 평균 횟수.",
+  "progress": {
+    "pool": [1, 2, 3, 4, 5, 6, 7, 13, 15, 16],
+    "start": [3],
+    "skillBase": 1, "skillPerLevel": 0.6,
+    "equipBase": 0, "equipPerLevel": 0.25,
+    "cardEfficiency": 0.7, "wallRepairs": 1
+  },
+  "_doc_target": "target = 목표 비율 R(스테이지 적 총전투력 / 플레이어 전투력). spikeEvery 스테이지마다 spike 만큼 가산.",
+  "target": { "base": 1.0, "perStage": 0.33, "spikeEvery": 10, "spike": 0.15 },
+  "_doc_wave": "waveShape = 웨이브 압박 곡선(start -> end, exponent 로 휨). 1이면 평평. 웨이브 예산은 이 곡선 * 그 시점 플레이어 전투력에 비례하므로 기본 곡선이 평평하면 모든 웨이브에서 적/플레이어 비율이 같다.",
+  "waveShape": { "start": 0.6, "end": 1.4, "exponent": 1.0 },
+  "_doc_generate": "roleWeights = 기본/2번째/3번째 몬스터의 웨이브 예산 비중. bonusShare = 성장분 중 HP·공격 강화율로 흡수할 비율(나머지는 수량). hpShare = 강화율 중 HP 쪽 비중.",
+  "generate": { "roleWeights": [0.5, 0.3, 0.2], "bonusShare": 0.55, "hpShare": 0.6 },
+  "_doc_tuning": "stageMultiplier = 오토플레이(Tools > Project Nova > AutoPlay)로 실제 전투를 돌려 맞춘 스테이지별 난이도 배수(곡선으로 다듬은 값). 적 총전투력 목표는 target * 배수가 되고, generate는 수량을 target 기준으로 만든 뒤 HP·공격 강화율에만 배수를 곱한다. 적혀 있지 않은 스테이지는 1. 플레이어 성장(재료 보상 등)을 바꾸면 다시 맞춘다.",
+  "tuning": { "stageMultiplier": { "9": 0.985, "10": 0.9702, "11": 0.9247, "12": 0.8813, "13": 0.8399, "14": 0.7851, "15": 0.7338, "16": 0.6804, "17": 0.6298, "18": 0.6025, "19": 0.5764, "20": 0.5408, "21": 0.4937, "22": 0.4506, "23": 0.421, "24": 0.3939, "25": 0.3686, "26": 0.3356, "27": 0.3115, "28": 0.303, "29": 0.2948, "30": 0.2868, "31": 0.279, "32": 0.2623, "33": 0.2536, "34": 0.2451, "35": 0.2369, "36": 0.229, "37": 0.2029, "38": 0.1933, "39": 0.1894, "40": 0.1837 } }
+}

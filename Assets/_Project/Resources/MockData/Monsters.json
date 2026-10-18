@@ -333,23 +333,16 @@
   },
   {
     "Id": 23,
-    "Hp": 80,
-    "Damage": 19,
-    "Speed": 0.15,
-    "AttackInterval": 2.5,
+    "Hp": 65,
+    "Damage": 13,
+    "Speed": 0.12,
+    "AttackInterval": 2.8,
     "AttackRange": 0.0,
     "ProjectileSpeed": 0.0,
     "Passives": [
       {
-        "Kind": "Shield",
-        "Trigger": "OnHit",
-        "Chance": 0.3,
-        "Hits": 3,
-        "Duration": 4
-      },
-      {
         "Kind": "Evade",
-        "Chance": 0.2
+        "Chance": 0.1
       }
     ],
     "Grade": "Normal",
@@ -361,7 +354,7 @@
     "Id": 24,
     "Hp": 40,
     "Damage": 14,
-    "Speed": 0.25,
+    "Speed": 0.22,
     "AttackInterval": 3,
     "AttackRange": 0.0,
     "ProjectileSpeed": 0.0,
