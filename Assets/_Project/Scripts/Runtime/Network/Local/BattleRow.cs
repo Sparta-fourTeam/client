@@ -16,7 +16,7 @@ namespace Game.Network
         public string status;
 
         public int rewardGold;
-        public int rewardExp, clearRating;
+        public int rewardExp, rewardBonusExp, clearRating;
         public List<ItemAmount> rewardItems = new();
     }
 }

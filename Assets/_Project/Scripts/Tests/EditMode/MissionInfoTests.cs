@@ -101,6 +101,19 @@ namespace Game.Tests
             CollectionAssert.AreEqual(new[] { RewardRows.CoinId, RewardRows.ExpId, ItemIds.ArrowBook, ItemIds.GemChest }, rows.Select(r => r.ItemId).ToArray());
         }
 
+        [TestCase(17, 0, 17, 0)]
+        [TestCase(30, 17, 13, 17)]
+        [TestCase(17, 17, 0, 17)]
+        public void ExperienceRowsSeparateBaseAndBonusWithoutDoubleCounting(int total, int bonus, int expectedBase, int expectedBonus)
+        {
+            var rows = RewardRows.Build(null, Data, 0, total, new ItemAmount[0], bonus);
+            Assert.AreEqual(expectedBase, rows.Where(row => row.ItemId == RewardRows.ExpId).Sum(row => row.Count));
+            Assert.AreEqual(expectedBonus, rows.Where(row => row.ItemId == RewardRows.BonusExpId).Sum(row => row.Count));
+            Assert.AreEqual(total, rows.Where(row => row.ItemId != RewardRows.CoinId).Sum(row => row.Count));
+            Assert.AreEqual(bonus > 0 ? 1 : 0, rows.Count(row => row.ItemId == RewardRows.BonusExpId));
+            Assert.AreEqual("3성 보너스 경험치", ItemInfo.NameOf(RewardRows.BonusExpId, Data));
+        }
+
         // ---------- 미션 상세 팝업 (실제 프리팹) ----------
 
         private readonly List<GameObject> _spawned = new();

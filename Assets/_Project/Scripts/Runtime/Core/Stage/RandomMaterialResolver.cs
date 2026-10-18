@@ -16,8 +16,9 @@ namespace Game.Core
             var random = new Random(seed);
             foreach (var item in rewards)
             {
-                bool isSkill = item.itemId == ItemIds.RandomSkillMaterial;
-                if (!isSkill && item.itemId != ItemIds.RandomEquipmentMaterial)
+                bool isRandom = data.RewardRules.Items.TryGetValue(item.itemId, out var rule) && rule.Random;
+                bool isSkill = isRandom && rule.Kind == "SkillMaterial";
+                if (!isRandom)
                 { result.Add(new ItemAmount { itemId = item.itemId, quantity = item.quantity }); continue; }
                 if (item.quantity <= 0) { throw new ApiException(ApiErrorKind.Rejected, "INVALID_ITEM_REWARD"); }
 
@@ -49,22 +50,24 @@ namespace Game.Core
         public static List<string> Candidates(string randomItemId, IEnumerable<int> unlockedSkills,
             IEnumerable<string> unlockedEquipment, GameDataStore data)
         {
-            if (randomItemId == ItemIds.RandomSkillMaterial) { return SkillCandidates(unlockedSkills, data); }
-            if (randomItemId == ItemIds.RandomEquipmentMaterial) { return EquipmentCandidates(unlockedEquipment, data); }
+            if (!data.RewardRules.Items.TryGetValue(randomItemId, out var rule) || !rule.Random) { return new List<string>(); }
+            if (rule.Kind == "SkillMaterial") { return SkillCandidates(unlockedSkills, data); }
+            if (rule.Kind == "EquipmentMaterial") { return EquipmentCandidates(unlockedEquipment, data); }
             return new List<string>();
         }
 
         private static List<string> SkillCandidates(IEnumerable<int> unlocked, GameDataStore data)
         {
             var ids = new HashSet<int>(unlocked ?? Array.Empty<int>());
-            return ItemIds.SkillMaterials.Where(id =>
+            return data.RewardRules.Items.Where(item => !item.Value.Random && item.Value.Kind == "SkillMaterial").Select(item => item.Key).Where(id =>
                 int.TryParse(data.Items.GetOrThrow(id).TargetId, out var skillId) && ids.Contains(skillId)).ToList();
         }
 
         private static List<string> EquipmentCandidates(IEnumerable<string> unlocked, GameDataStore data)
         {
             var ids = new HashSet<string>(unlocked ?? Array.Empty<string>(), StringComparer.Ordinal);
-            return ItemIds.EquipmentMaterials.Where(id => ids.Contains(data.Items.GetOrThrow(id).TargetId)).ToList();
+            return data.RewardRules.Items.Where(item => !item.Value.Random && item.Value.Kind == "EquipmentMaterial")
+                .Select(item => item.Key).Where(id => ids.Contains(data.Items.GetOrThrow(id).TargetId)).ToList();
         }
     }
 

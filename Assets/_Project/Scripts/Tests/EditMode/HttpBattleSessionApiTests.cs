@@ -116,6 +116,19 @@ namespace Game.Tests
             Assert.AreEqual(rating, body.Value<int>("rating"));
         }
 
+        [TestCase(-1)]
+        [TestCase(14)]
+        [TestCase(null)]
+        public void EndBattle_InvalidBonusBreakdownIsRejected(int? bonus)
+        {
+            var body = JObject.Parse(EndReceipt(20, 3));
+            if (bonus.HasValue) { body["threeStarBonusExp"] = bonus.Value; }
+            else { body.Remove("threeStarBonusExp"); }
+            _transport.Response = new HttpResponseData(200, body.ToString());
+            var error = Assert.Throws<ApiException>(() => _api.EndBattle(new BattleEndRequest("battle", 7, 20, 3)).GetAwaiter().GetResult());
+            Assert.AreEqual(HttpErrorMapper.InvalidResponse, error.Code);
+        }
+
         [TestCase(-1, 0)]
         [TestCase(21, 0)]
         [TestCase(0, -1)]
@@ -183,6 +196,7 @@ namespace Game.Tests
             ["clearedWave"] = wave,
             ["rating"] = rating,
             ["exp"] = 13,
+            ["threeStarBonusExp"] = rating == 3 ? 5 : 0,
             ["gold"] = 17,
             ["items"] = new JObject { ["book.arrow"] = 2 },
             ["clearRating"] = rating,
@@ -218,6 +232,67 @@ namespace Game.Tests
             var error = Assert.Throws<ApiException>(() =>
                 _api.EndBattle(new BattleEndRequest("battle", 7, 10, 2)).GetAwaiter().GetResult());
             Assert.AreEqual(HttpErrorMapper.InvalidResponse, error.Code);
+        }
+
+        [Test]
+        public void RewardRulesRefreshUsesServerDataAndInvalidSnapshotDoesNotPartiallyApply()
+        {
+            var data = new GameDataStore();
+            var session = new AuthSession(); session.Set("access", "refresh");
+            var api = new HttpRewardRulesApi(new HttpApiConfig("https://example.test"), _transport, session);
+            var json = JObject.Parse(data.RawJson("RewardRules"));
+            json["version"] = 7;
+            json["schedules"]["Coin"]["start"] = 9;
+            json["schedules"]["Coin"]["perWave"] = 2;
+            json["schedules"]["Coin"]["bonusWave"] = 3;
+            _transport.Response = new HttpResponseData(200, json.ToString());
+            api.Refresh(data).GetAwaiter().GetResult();
+            Assert.AreEqual(9, StageRewardRules.Calculate(data.StageRewards.GetOrThrow(1), 0, false, 0).Coin);
+            Assert.AreEqual(7, data.Revisions["RewardRules"]);
+            var previous = data.RewardRules;
+            var previousRaw = data.RawJson("RewardRules");
+            json["version"] = 6;
+            _transport.Response = new HttpResponseData(200, json.ToString());
+            Assert.Throws<ApiException>(() => api.Refresh(data).GetAwaiter().GetResult());
+            Assert.AreSame(previous, data.RewardRules);
+            json["version"] = 7;
+            json["schedules"]["Coin"]["start"] = 10;
+            _transport.Response = new HttpResponseData(200, json.ToString());
+            Assert.Throws<ApiException>(() => api.Refresh(data).GetAwaiter().GetResult());
+            Assert.AreSame(previous, data.RewardRules);
+            json["version"] = 8;
+            json["schedules"]["SkillMaterial"]["perWave"] = int.MaxValue;
+            _transport.Response = new HttpResponseData(200, json.ToString());
+            var error = Assert.Throws<ApiException>(() => api.Refresh(data).GetAwaiter().GetResult());
+            Assert.AreEqual(HttpErrorMapper.InvalidResponse, error.Code);
+            Assert.AreSame(previous, data.RewardRules);
+            Assert.AreEqual(previousRaw, data.RawJson("RewardRules"));
+            Assert.AreEqual(7, data.Revisions["RewardRules"]);
+        }
+
+        [Test]
+        public async System.Threading.Tasks.Task RewardRulesLateResponseAfterLogoutCannotApply()
+        {
+            var data = new GameDataStore();
+            var session = new AuthSession(); session.Set("access", "refresh");
+            var gate = new UniTaskCompletionSource<HttpResponseData>();
+            var transport = new RuleGateTransport(gate);
+            var api = new HttpRewardRulesApi(new HttpApiConfig("https://example.test"), transport, session);
+            var old = data.RewardRules;
+            var task = api.Refresh(data).AsTask();
+            session.Clear();
+            var json = JObject.Parse(data.RawJson("RewardRules")); json["version"] = 8;
+            gate.TrySetResult(new HttpResponseData(200, json.ToString()));
+            try { await task; Assert.Fail("로그아웃 후 응답이 적용됨"); }
+            catch (ApiException error) { Assert.AreEqual(HttpErrorMapper.SessionExpired, error.Code); }
+            Assert.AreSame(old, data.RewardRules);
+        }
+
+        private sealed class RuleGateTransport : IHttpTransport
+        {
+            private readonly UniTaskCompletionSource<HttpResponseData> _gate;
+            public RuleGateTransport(UniTaskCompletionSource<HttpResponseData> gate) { _gate = gate; }
+            public UniTask<HttpResponseData> Send(HttpRequestData request, float timeoutSeconds, CancellationToken cancellationToken) => _gate.Task;
         }
 
         // PR #57의 동일 키 재발급 계약만 재현한다. 실제 서버·DB 동시성 검증은 아니다.

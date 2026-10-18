@@ -367,7 +367,7 @@ namespace Game.Core
                 _checkpoints?.Clear();
                 _result.Publish(new StageResult(request.cleared, _resultKills, request.reachedWave, _resultPlayTime,
                     response.rewardGold, response.rewardItems, response.rewardExp, response.clearRating,
-                    _stats.SkillDamageRanking()));
+                    _stats.SkillDamageRanking(), response.rewardBonusExp));
                 ChangeState(StageState.Finished);
             }
             finally

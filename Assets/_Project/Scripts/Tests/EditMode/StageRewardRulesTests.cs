@@ -12,6 +12,7 @@ namespace Game.Tests
         internal static StageRewardBalance Balance() => new()
         {
             StageId = 1,
+            RewardRules = RulesFixture(),
             BaseExp = 100,
             ThreeStarBonusExp = 50,
             FinalCoin = 165,
@@ -20,6 +21,57 @@ namespace Game.Tests
                 .Append(new StageRewardEntry { itemId = ItemIds.GemChest, finalAmount = 1 })
                 .ToList()
         };
+
+        internal static RewardRulesConfig RulesFixture()
+        {
+            var rules = new RewardRulesConfig
+            {
+                Schedules = new Dictionary<string, RewardSchedule>
+                {
+                    ["Coin"] = new(25, 5, 6),
+                    ["SkillMaterial"] = new(1, 1, 3),
+                    ["EquipmentMaterial"] = new(0, 0, 4),
+                    ["GemChest"] = new(0, 0, 5)
+                },
+                Items = new Dictionary<string, RewardItemRule>()
+            };
+            foreach (var id in ItemIds.SkillMaterials) { rules.Items[id] = new RewardItemRule { Kind = "SkillMaterial" }; }
+            foreach (var id in ItemIds.EquipmentMaterials) { rules.Items[id] = new RewardItemRule { Kind = "EquipmentMaterial" }; }
+            rules.Items[ItemIds.GemChest] = new RewardItemRule { Kind = "GemChest" };
+            rules.Items[ItemIds.RandomSkillMaterial] = new RewardItemRule { Kind = "SkillMaterial", Random = true };
+            rules.Items[ItemIds.RandomEquipmentMaterial] = new RewardItemRule { Kind = "EquipmentMaterial", Random = true };
+            return rules;
+        }
+
+        [Test]
+        public void ZeroWavesKeepConfiguredStartingRewardsWithoutExperience()
+        {
+            var balance = Balance();
+            balance.RewardRules.Schedules["Coin"] = new RewardSchedule(7, 3, 6);
+            balance.RewardRules.Schedules["SkillMaterial"] = new RewardSchedule(3, 1, 3);
+            var rewards = StageRewardRules.Calculate(balance, 0, false, 0);
+            Assert.AreEqual(7, rewards.Coin);
+            Assert.AreEqual(0, rewards.Exp);
+            Assert.AreEqual(1, rewards.Items.Count);
+            Assert.AreEqual(ItemIds.ArrowBook, rewards.Items.Single().itemId);
+            Assert.AreEqual(3, rewards.Items.Single().quantity);
+        }
+
+        [Test]
+        public void SchedulesAndArbitraryItemClassificationComeFromData()
+        {
+            var balance = Balance();
+            balance.RewardRules.Schedules["Coin"] = new RewardSchedule(9, 2, 3);
+            balance.RewardRules.Items["new.material"] = new RewardItemRule { Kind = "EquipmentMaterial" };
+            balance.Items = new List<StageRewardEntry> { new() { itemId = "new.material", finalAmount = 7 } };
+            var before = StageRewardRules.Calculate(balance, 2, false, 0);
+            var after = StageRewardRules.Calculate(balance, 4, false, 0);
+            Assert.AreEqual(13, before.Coin);
+            Assert.IsEmpty(before.Items);
+            Assert.AreEqual(133, after.Coin);
+            Assert.AreEqual("new.material", after.Items.Single().itemId);
+            Assert.AreEqual(7, after.Items.Single().quantity);
+        }
 
         [TestCase(-1, false, 0)]
         [TestCase(21, false, 0)]
@@ -156,10 +208,10 @@ namespace Game.Tests
         public void FinalAmountBelowBaseAccumulation_IsRejected()
         {
             var coin = Balance();
-            coin.FinalCoin = StageRewardSchedule.Coin.MinimumFinal - 1;
+            coin.FinalCoin = coin.RewardRules.Coin.MinimumFinal - 1;
             Assert.Throws<InvalidOperationException>(coin.Validate);
             var skill = Balance();
-            skill.Items[0].finalAmount = StageRewardSchedule.SkillMaterial.MinimumFinal - 1;
+            skill.Items[0].finalAmount = skill.RewardRules.Schedules["SkillMaterial"].MinimumFinal - 1;
             Assert.Throws<InvalidOperationException>(skill.Validate);
         }
     }

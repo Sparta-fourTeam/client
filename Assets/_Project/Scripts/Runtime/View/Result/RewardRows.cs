@@ -10,6 +10,7 @@ namespace Game.View
         public const string CoinId = "currency.coin";
         public const string GemId = "currency.gem";
         public const string ExpId = "currency.exp";
+        public const string BonusExpId = "currency.exp.bonus";
 
         /// <summary>수령 응답으로 실제 증가한 재화·아이템만 보여준다.</summary>
         public static List<ResultRewardItem> Gained(ItemIconTable icons, GameDataStore data, PlayerSnapshot before, PlayerSnapshot after)
@@ -38,12 +39,19 @@ namespace Game.View
         }
 
         /// <summary>코인은 항상, EXP는 받을 때만 보여준다. 재료는 주어진 순서대로 나열하고 보석상자를 맨 끝에 둔다</summary>
-        public static List<ResultRewardItem> Build(ItemIconTable icons, GameDataStore data, int coin, int exp, IEnumerable<ItemAmount> items)
+        public static List<ResultRewardItem> Build(ItemIconTable icons, GameDataStore data, int coin, int exp, IEnumerable<ItemAmount> items, int bonusExp = 0)
         {
+            if (bonusExp < 0 || bonusExp > exp) { throw new System.ArgumentOutOfRangeException(nameof(bonusExp)); }
+            int baseExp = exp - bonusExp;
             var rows = new List<ResultRewardItem> { new(icons != null ? icons.Coin : null, coin, CoinId) };
-            if (exp > 0)
+            if (baseExp > 0)
             {
-                rows.Add(new ResultRewardItem(icons != null ? icons.Exp : null, exp, ExpId));
+                rows.Add(new ResultRewardItem(icons != null ? icons.Exp : null, baseExp, ExpId));
+            }
+
+            if (bonusExp > 0)
+            {
+                rows.Add(new ResultRewardItem(icons != null ? icons.Exp : null, bonusExp, BonusExpId));
             }
 
             var chests = new List<ResultRewardItem>();

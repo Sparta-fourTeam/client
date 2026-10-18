@@ -17,7 +17,7 @@ namespace Game.Tests
             + "\"energyUpdatedAt\":\"2026-10-16T23:00:00\",\"stageProgress\":[{\"stageId\":7,\"clearRating\":3,\"claimedRating\":0}],"
             + "\"items\":[{\"itemId\":\"book.arrow\",\"quantity\":2}],\"upgrades\":[],\"codex\":[],\"tutorials\":[]}";
         private const string Receipt = "{\"battleId\":\"battle\",\"stageId\":7,\"clearedWave\":20,\"rating\":3,"
-            + "\"exp\":13,\"gold\":17,\"items\":{\"book.arrow\":2},\"clearRating\":3,\"completedAt\":\"2026-10-18T20:21:22.123456Z\"}";
+            + "\"exp\":13,\"threeStarBonusExp\":5,\"gold\":17,\"items\":{\"book.arrow\":2},\"clearRating\":3,\"completedAt\":\"2026-10-18T20:21:22.123456Z\"}";
         private FakeHttpTransport _transport;
         private AuthSession _tokens;
         private HttpBattleResultReconciler _reconciler;
@@ -47,6 +47,8 @@ namespace Game.Tests
                 Assert.AreEqual(BattleSubmissionStatus.Acknowledged, result.SubmissionStatus);
                 Assert.AreEqual(80, result.ObservedState.gold);
                 Assert.AreEqual(17, result.Receipt.Gold);
+                Assert.AreEqual(13, result.Receipt.Exp);
+                Assert.AreEqual(5, result.Receipt.ThreeStarBonusExp);
                 Assert.AreEqual("battle", result.Receipt.BattleId);
                 Assert.AreEqual("2026-10-16T23:00:00", result.ObservedState.energyUpdatedAt);
                 Assert.AreEqual(2, result.ObservedState.items.Single().quantity);
