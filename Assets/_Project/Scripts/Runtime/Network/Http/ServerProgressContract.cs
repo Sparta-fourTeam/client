@@ -43,13 +43,13 @@ namespace Game.Network
             if (state == null || !Integer(state["gold"])
                 || !(state.Property("gem") == null ? Integer(state["jem"]) : Integer(state["gem"]))
                 || !(Null(state["exp"]) || Integer(state["exp"]))
-                || !Integer(state["energyStored"]) || !Utc(state["energyUpdatedAt"])
+                || !Integer(state["energyStored"]) || !EnergyTime(state["energyUpdatedAt"])
                 || state["tutorials"] is not JArray
                 || !Rows(state["stageProgress"], "stageId", row => Integer(row["stageId"], int.MinValue)
                     && Integer(row["clearRating"], 0, 3) && Integer(row["claimedRating"], 0, row.Value<int>("clearRating")))
                 || !Rows(state["upgrades"], "upgradeId", row => Text(row["upgradeId"])
                     && (Null(row["level"]) || Integer(row["level"])))
-                || !Rows(state["items"], "itemId", row => Text(row["itemId"]) && Integer(row["quantity"]))
+                || !ItemRows(state["items"])
                 || !Rows(state["codex"], "monsterId", row => Integer(row["monsterId"], 1)
                     && Boolean(row["claimed"])))
             { throw Invalid(); }
@@ -177,6 +177,14 @@ namespace Game.Network
         private static bool Integer(JToken token, long min = 0, long max = int.MaxValue) => token?.Type == JTokenType.Integer
             && long.TryParse(token.ToString(Formatting.None), NumberStyles.Integer, CultureInfo.InvariantCulture, out var value)
             && value >= min && value <= max;
+        private static bool ItemRows(JToken token) => token is JArray rows
+            && rows.All(row => row is JObject item && (Text(item["itemId"])
+                || Integer(item["itemId"], long.MinValue, long.MaxValue)) && Integer(item["quantity"]))
+            && rows.Where(row => row["itemId"].Type == JTokenType.String).Select(row => row.Value<string>("itemId"))
+                .Distinct(StringComparer.Ordinal).Count() == rows.Count(row => row["itemId"].Type == JTokenType.String);
+        private static bool EnergyTime(JToken token) => Utc(token) || (Text(token)
+            && DateTime.TryParseExact(token.Value<string>(), new[] { "yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd'T'HH:mm:ss.FFFFFFF" },
+                CultureInfo.InvariantCulture, DateTimeStyles.None, out _));
         private static bool Utc(JToken token) => Text(token) && DateTimeOffset.TryParseExact(token.Value<string>(),
             new[] { "yyyy-MM-dd'T'HH:mm:ss'Z'", "yyyy-MM-dd'T'HH:mm:ss.FFFFFFF'Z'" }, CultureInfo.InvariantCulture,
             DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out _);

@@ -101,5 +101,29 @@ namespace Game.Tests
             Assert.AreEqual(HttpErrorMapper.InvalidResponse,
                 Assert.Throws<ApiException>(() => _api.GetMe().GetAwaiter().GetResult()).Code);
         }
+        [TestCase(2, true)]
+        [TestCase(-1, false)]
+        public void GetMe_LegacyNumericItemsAreSkippedButTheirQuantityIsValidated(int quantity, bool valid)
+        {
+            var state = JObject.Parse(HttpAccountProgressTests.State);
+            state["items"] = JArray.Parse("[{\"itemId\":9,\"quantity\":" + quantity + "},{\"itemId\":\"book.arrow\",\"quantity\":4}]");
+            _transport.Response = new HttpResponseData(200, state.ToString());
+            if (!valid) { Assert.Throws<ApiException>(() => _api.GetMe().GetAwaiter().GetResult()); return; }
+            var snapshot = _api.GetMe().GetAwaiter().GetResult();
+            Assert.AreEqual(1, snapshot.items.Count);
+            Assert.AreEqual("book.arrow", snapshot.items[0].itemId);
+            Assert.AreEqual(4, snapshot.items[0].quantity);
+        }
+
+        [TestCase("2026-10-18T20:21:22")]
+        [TestCase("2026-10-18T20:21:22.123456")]
+        public void GetMe_DocumentedLegacyEnergyUtcTimestampRemainsReadable(string timestamp)
+        {
+            var state = JObject.Parse(HttpAccountProgressTests.State);
+            state["energyUpdatedAt"] = timestamp;
+            _transport.Response = new HttpResponseData(200, state.ToString());
+            var snapshot = _api.GetMe().GetAwaiter().GetResult();
+            Assert.AreEqual(DateTimeKind.Utc, EnergyRule.ParseUpdatedAt(snapshot.energyUpdatedAt).Kind);
+        }
     }
 }
