@@ -10,7 +10,7 @@ using VContainer;
 namespace Game.View
 {
     /// <summary>
-    /// 상점 화면의 일반 탭(일일상점). 자정(00시)에 물품이 바뀌고, 광고나 코인으로 다시 뽑을 수 있다.
+    /// 상점 화면의 일반 탭(일일상점). 자정(00시)에 물품이 바뀌고, 잉크로 다시 뽑을 수 있다.
     /// 물품 구성은 날짜와 다시 뽑은 횟수로 정해지고(ShopRules.Roll), 다시 뽑기·구매와 재화 소모는 IShopApi가 맡는다.
     /// 구매한 물품은 서버가 보상으로 지급하고, 화면은 받은 것을 보상 팝업으로 보여준다
     /// </summary>
@@ -66,8 +66,8 @@ namespace Game.View
 
         private void Awake()
         {
-            _adReroll.onClick.AddListener(() => RerollAsync(ShopRerollKind.Ad).Forget(Debug.LogException));
-            _goldReroll.onClick.AddListener(() => RerollAsync(ShopRerollKind.Gold).Forget(Debug.LogException));
+            _adReroll.interactable = false;
+            _goldReroll.onClick.AddListener(() => RerollAsync().Forget(Debug.LogException));
         }
 
         private void OnEnable()
@@ -116,18 +116,14 @@ namespace Game.View
             }
         }
 
-        private async UniTask RerollAsync(ShopRerollKind kind)
+        private async UniTask RerollAsync()
         {
             if (_busy) { return; }
 
             var config = _data.Shop;
             var state = _profile.Shop;
-            bool ad = kind == ShopRerollKind.Ad;
-            int left = ad ? ShopRules.AdLeft(config, state) : ShopRules.GoldLeft(config, state);
-            int max = ad ? config.AdRerollsPerDay : config.GoldRerollsPerDay;
-            string question = ad
-                ? "광고를 보고 상점을 초기화할까요?"
-                : $"{config.GoldRerollCost:N0} 잉크를 사용해 상점을 초기화할까요?";
+            int left = ShopRules.GoldLeft(config, state);
+            string question = $"{config.GoldRerollCost:N0} 잉크를 사용해 상점을 초기화할까요?";
 
             // 골드가 모자라도 누를 수 있다. 서버가 거절하면 그때 모자라다고 알려 준다
             _busy = true;
@@ -135,8 +131,8 @@ namespace Game.View
             bool confirmed = _confirm == null || await _confirm.ShowAsync(new ConfirmRequest
             {
                 Title = "일일상점 초기화",
-                Message = $"{question}\n남은 횟수 {left}/{max}\n초기화하면 품절된 상품도 새로 채워져요.",
-                ConfirmLabel = ad ? "광고 보기" : "초기화",
+                Message = $"{question}\n남은 횟수 {left}/{config.GoldRerollsPerDay}\n초기화하면 품절된 상품도 새로 채워져요.",
+                ConfirmLabel = "초기화",
                 CancelLabel = "취소",
             });
             _busy = false;
@@ -146,7 +142,7 @@ namespace Game.View
                 return;
             }
 
-            string error = await RunAsync(() => _api.Reroll(kind, Guid.NewGuid().ToString("N")));
+            string error = await RunAsync(() => _api.Reroll(ShopRerollKind.Gold, Guid.NewGuid().ToString("N")));
             if (error == "INSUFFICIENT_GOLD" && _confirm != null)
             {
                 await _confirm.ShowAsync(new ConfirmRequest { Title = "일일상점 초기화", Message = "잉크가 부족해요." });
@@ -248,12 +244,11 @@ namespace Game.View
             }
 
             var config = _data.Shop;
-            int adLeft = ShopRules.AdLeft(config, state);
             int goldLeft = ShopRules.GoldLeft(config, state);
-            _adCount.text = $"{adLeft}/{config.AdRerollsPerDay}";
+            _adCount.text = "0/0";
             _goldCount.text = $"{goldLeft}/{config.GoldRerollsPerDay}";
             _goldCost.text = config.GoldRerollCost.ToString("N0");
-            _adReroll.interactable = !_busy && adLeft > 0;
+            _adReroll.interactable = false;
             _goldReroll.interactable = !_busy && goldLeft > 0;
         }
 
