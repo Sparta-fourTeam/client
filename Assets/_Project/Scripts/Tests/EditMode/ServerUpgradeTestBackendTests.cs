@@ -344,6 +344,7 @@ namespace Game.Tests
         [TestCase("{\"baseExp\":10,\"maxLevel\":4,\"version\":2}")]
         [TestCase("{\"baseExp\":10,\"stepExp\":-1,\"maxLevel\":4,\"version\":2}")]
         [TestCase("{\"baseExp\":2147483647,\"stepExp\":1,\"maxLevel\":3,\"version\":2}")]
+        [TestCase("{\"baseExp\":1,\"stepExp\":0,\"maxLevel\":2147483647,\"version\":2}")]
         [TestCase("{}")]
         public void InvalidServerCurveCannotUsePreviousOrLocalValuesToPurchase(string body)
         {

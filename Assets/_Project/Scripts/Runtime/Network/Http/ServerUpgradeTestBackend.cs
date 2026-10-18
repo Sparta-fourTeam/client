@@ -223,7 +223,8 @@ namespace Game.Network
             _data.InvalidateServerPlayerLevels();
             EnsureSession();
             var response = await _client.Get<PlayerLevelsResponse>("api/player-levels", isValid: value =>
-                value.baseExp > 0 && value.stepExp >= 0 && value.maxLevel >= 2 && value.version > 0);
+                value.baseExp > 0 && value.stepExp >= 0 && value.maxLevel >= 2
+                && value.maxLevel <= PlayerLevelConfig.MaxSupportedLevel && value.version > 0);
             EnsureSession();
             try
             {
