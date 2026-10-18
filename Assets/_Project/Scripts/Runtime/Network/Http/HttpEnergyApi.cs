@@ -95,7 +95,10 @@ namespace Game.Network
             _state = null;
             string body = await _client.GetJson("api/user/me");
             EnsureSession();
-            var snapshot = ServerUserMapper.ToSnapshot(ServerUserStateReader.Parse(body), "서버 계정");
+            var user = ServerUserStateReader.Parse(body);
+            if (!TryUtc(user.energyUpdatedAt, out _))
+            { throw new ApiException(ApiErrorKind.Rejected, HttpErrorMapper.InvalidResponse); }
+            var snapshot = ServerUserMapper.ToSnapshot(user, "서버 계정");
             var state = await _client.Get<StateResponse>("api/user/energy/purchase-state", isValid: ValidState);
             EnsureSession();
             TryUtc(state.serverTime, out var serverTime);

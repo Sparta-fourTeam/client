@@ -157,6 +157,16 @@ namespace Game.Tests
             await Task.CompletedTask;
         }
 
+        [TestCase("not-a-date")]
+        [TestCase("2026-10-19T18:00:00")]
+        public void InvalidEnergyTimestamp_DoesNotUseClientTimeFallback(string timestamp)
+        {
+            Queue(Me().Replace("2026-10-19T18:00:00Z", timestamp));
+            Assert.That(Error(_api.RefreshPurchaseState()).Code, Is.EqualTo(HttpErrorMapper.InvalidResponse));
+            Assert.That(_api.PurchaseState, Is.Null);
+            Assert.That(_transport.Requests.Count, Is.EqualTo(1));
+        }
+
         [TestCase("{}")]
         [TestCase("{\"purchaseCount\":0}")]
         public void IncompleteState_IsRejectedInsteadOfDefaultZeros(string state)
