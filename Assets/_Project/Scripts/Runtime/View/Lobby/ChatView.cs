@@ -27,6 +27,7 @@ namespace Game.View
         [SerializeField] private GameObject _emojiPanel;
         [SerializeField] private UnityEngine.UI.Button[] _emojiChoices;
         private Vector2 _inputPosition, _sendPosition;
+        private Vector2 _retryPosition, _statusPosition;
         private Vector2 _scrollOffset;
 
         [Inject]
@@ -43,6 +44,8 @@ namespace Game.View
             _canvas = _window.GetComponentInParent<Canvas>()?.rootCanvas;
             _inputPosition = _input.GetComponent<RectTransform>().anchoredPosition;
             _sendPosition = _sendButton.GetComponent<RectTransform>().anchoredPosition;
+            _retryPosition = _retryButton.GetComponent<RectTransform>().anchoredPosition;
+            _statusPosition = _status.rectTransform.anchoredPosition;
             _scrollOffset = ((RectTransform)_scroll.transform).offsetMin;
             _emojiPanel.SetActive(false);
             _panel.SetActive(false);
@@ -106,6 +109,8 @@ namespace Game.View
             float lift = open ? 330 : 0;
             _input.GetComponent<RectTransform>().anchoredPosition = _inputPosition + new Vector2(0, lift);
             _sendButton.GetComponent<RectTransform>().anchoredPosition = _sendPosition + new Vector2(0, lift);
+            _retryButton.GetComponent<RectTransform>().anchoredPosition = _retryPosition + new Vector2(0, lift);
+            _status.rectTransform.anchoredPosition = _statusPosition + new Vector2(0, lift);
             ((RectTransform)_scroll.transform).offsetMin = _scrollOffset + new Vector2(0, lift);
             RestoreDistanceFromBottom(distance);
         }

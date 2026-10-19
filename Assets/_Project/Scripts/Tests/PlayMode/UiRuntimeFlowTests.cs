@@ -1262,9 +1262,15 @@ namespace Game.Tests
 
             private static JObject EmptyBoard(string period, string nextResetAt) => new()
             {
-                ["period"] = period, ["periodKey"] = "20261019", ["nextResetAt"] = nextResetAt,
-                ["lastLoginDay"] = JValue.CreateNull(), ["loginCount"] = 0,
-                ["spentEnergy"] = 0, ["points"] = 0, ["quests"] = new JArray(), ["chests"] = new JArray()
+                ["period"] = period,
+                ["periodKey"] = "20261019",
+                ["nextResetAt"] = nextResetAt,
+                ["lastLoginDay"] = JValue.CreateNull(),
+                ["loginCount"] = 0,
+                ["spentEnergy"] = 0,
+                ["points"] = 0,
+                ["quests"] = new JArray(),
+                ["chests"] = new JArray()
             };
 
             private static JObject Packs() => new()
@@ -1320,8 +1326,20 @@ namespace Game.Tests
                 yield return ClickGameButton(Field<Button>(ui.Get<ChatOpenButton>(), "_button"));
                 Assert.That(Field<GameObject>(chat, "_panel").activeSelf, Is.True);
                 Assert.That(Field<Button>(chat, "_sendButton").interactable, Is.False, "로컬 인증에서는 실제 서버 채팅 전송을 막는다");
+                var retryButton = Field<Button>(chat, "_retryButton");
+                var window = Field<RectTransform>(chat, "_window");
+                var retryBounds = RectTransformUtility.CalculateRelativeRectTransformBounds(window, retryButton.transform);
+                var sendBounds = RectTransformUtility.CalculateRelativeRectTransformBounds(window, Field<Button>(chat, "_sendButton").transform);
+                Assert.That(retryBounds.min.y, Is.GreaterThan(sendBounds.max.y), "재접속과 전송의 클릭 영역을 분리한다");
+                yield return ClickGameButton(retryButton);
                 yield return ClickGameButton(Field<Button>(chat, "_emojiButton"));
                 Assert.That(Field<GameObject>(chat, "_emojiPanel").activeSelf, Is.True);
+                retryBounds = RectTransformUtility.CalculateRelativeRectTransformBounds(window, retryButton.transform);
+                sendBounds = RectTransformUtility.CalculateRelativeRectTransformBounds(window, Field<Button>(chat, "_sendButton").transform);
+                var emojiBounds = RectTransformUtility.CalculateRelativeRectTransformBounds(window, Field<GameObject>(chat, "_emojiPanel").transform);
+                Assert.That(retryBounds.min.y, Is.GreaterThan(sendBounds.max.y));
+                Assert.That(retryBounds.min.y, Is.GreaterThan(emojiBounds.max.y), "이모지 창이 재접속 버튼을 덮지 않는다");
+                yield return ClickGameButton(retryButton);
                 yield return ClickGameButton(Field<Button[]>(chat, "_emojiChoices")[0]);
                 Assert.That(Field<TMP_InputField>(chat, "_input").text, Does.Contain(ChatEmojiPalette.Values[0]));
                 yield return ClickGameButton(Field<Button>(chat, "_closeButton"));
