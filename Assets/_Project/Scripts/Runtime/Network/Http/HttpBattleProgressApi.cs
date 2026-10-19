@@ -43,11 +43,24 @@ namespace Game.Network
         private async UniTask<BattleProgressAck> Send(BattleProgressRequest request, bool abandon)
         {
             if (request == null) { throw new ArgumentNullException(nameof(request)); }
-            if (request.sourceRevision != _sourceRevision) { throw new ApiException(ApiErrorKind.Rejected, "BATTLE_SOURCE_MISMATCH"); }
+            if (request.sourceRevision != _sourceRevision)
+            {
+                // 원본 갱신 전 이미 고정된 전투는 서버 원장을 확인한 뒤 같은 원문 보고만 복구한다.
+                var saved = await _client.GetJson("api/battle/progress/" + Uri.EscapeDataString(request.battleId));
+                ServerProgressContract.Parse(() =>
+                {
+                    var state = ServerProgressContract.Read(saved);
+                    if (state?["progress"]?.Value<string>("battleId") != request.battleId
+                        || state?["progress"]?.Value<string>("sourceRevision") != request.sourceRevision
+                        || !Integer(state?["progress"]?["stageId"], _stageId, _stageId))
+                    { throw new ApiException(ApiErrorKind.Rejected, "BATTLE_SOURCE_MISMATCH"); }
+                    return true;
+                });
+            }
             string json;
             var path = abandon ? "api/battle/progress/abandon" : "api/battle/progress";
             try { json = await _client.PostJson(path, request); }
-            catch (ApiException error) when (error.Code == "HTTP_404" && _openedBattle != request.battleId)
+            catch (ApiException error) when (error.Code == "HTTP_404" && _openedBattle != request.battleId && request.sourceRevision == _sourceRevision)
             {
                 // 원장이 없다는 최초 404만 open 뒤 재전송한다. 닫힌 전투의 기존 보고는 open 없이 원래 ACK를 읽는다.
                 await Bind(request.battleId);
@@ -60,7 +73,7 @@ namespace Game.Network
         {
             if (ServerProgressContract.Read(json) is not JObject ack || ack.Value<string>("battleId") != request.battleId
                 || !Integer(ack["stageId"], _stageId, _stageId) || !Integer(ack["policyVersion"], 1)
-                || ack.Value<string>("sourceRevision") != _sourceRevision
+                || ack.Value<string>("sourceRevision") != request.sourceRevision
                 || !Integer(ack["revision"], request.expectedRevision + 1, request.expectedRevision + 1)
                 || !Integer(ack["killedMonsters"], request.killedMonsters, request.killedMonsters)
                 || !Integer(ack["completedWaves"], request.completedWaves, request.completedWaves)

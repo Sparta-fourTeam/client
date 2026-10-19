@@ -36,6 +36,7 @@ namespace Game.Core
         public float Speed, Clock, PlayTime;
         public int Kills, ReachedWave, WallHp, WallMaxHp, WaveIndex, GaugeKills, CompletedWaves;
         public bool Ended;
+        public string ProgressSourceRevision;
         public List<int> DeadEnemyIds = new(), Encountered = new(), RewardedElites = new();
         public Dictionary<int, long> SkillDamage = new();
         public List<string> BuildLog = new();

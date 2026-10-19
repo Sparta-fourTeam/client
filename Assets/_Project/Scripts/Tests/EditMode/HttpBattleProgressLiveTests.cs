@@ -81,7 +81,7 @@ namespace Game.Tests
             transport.LoseNext = true;
             try { await api.AbandonProgress(request); Assert.Fail("닫힌 전투의 응답 유실을 재현해야 합니다"); }
             catch (ApiException error) { Assert.AreEqual(ApiErrorKind.Transient, error.Kind); }
-            replay = await new HttpBattleProgressApi(client, stageId, data).AbandonProgress(request);
+            replay = await new HttpBattleProgressApi(client, stageId, local).AbandonProgress(request);
             Assert.AreEqual(2, replay.revision);
             Assert.AreEqual(5, replay.acceptedDelta);
             var state = await client.Get<JObject>("api/battle/progress/" + request.battleId);

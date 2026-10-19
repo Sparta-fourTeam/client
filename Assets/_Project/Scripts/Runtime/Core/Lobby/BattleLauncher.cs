@@ -38,6 +38,7 @@ namespace Game.Core
             {
                 var prior = await api.ReportProgress(state.PendingProgress);
                 state.ProgressRevision = prior.revision;
+                state.ProgressSourceRevision = state.PendingProgress.sourceRevision;
                 state.PendingProgress = null;
                 SaveProgress(checkpoint);
             }
@@ -45,7 +46,7 @@ namespace Game.Core
             {
                 battleId = checkpoint.BattleId,
                 reportId = System.Guid.NewGuid().ToString("D"),
-                sourceRevision = api.SourceRevision,
+                sourceRevision = state.ProgressSourceRevision ?? api.SourceRevision,
                 expectedRevision = state.ProgressRevision,
                 killedMonsters = state.Kills,
                 completedWaves = state.CompletedWaves,

@@ -64,6 +64,7 @@ namespace Game.Core
         }
 
         /// <summary>개발·테스트용 로컬 테이블로 구성한다.</summary>
+        [VContainer.Inject]
         public GameDataStore() : this(LoadLocalTables()) { }
 
         /// <summary>공급받은 원문으로 런타임 테이블을 만든다. 전투 원본은 HTTP 공급자가 덮어쓴다.</summary>

@@ -39,7 +39,7 @@ namespace Game.Tests
         }
 
         [Test]
-        public void BindUsesActualLoadedRevisionAndDifferentReportNeverDispatches()
+        public void BindUsesActualRevisionAndDifferentSourceRequiresServerLedger()
         {
             var data = new GameDataStore();
             var transport = new FakeHttpTransport
@@ -52,7 +52,8 @@ namespace Game.Tests
             Assert.AreEqual(data.BattleSourceRevision, JObject.Parse(transport.Requests.Single().Body).Value<string>("sourceRevision"));
             Assert.AreEqual("BATTLE_SOURCE_MISMATCH", Assert.Throws<ApiException>(() => api.ReportProgress(new BattleProgressRequest
             { battleId = "battle", sourceRevision = new string('0', 64) }).GetAwaiter().GetResult()).Code);
-            Assert.AreEqual(1, transport.Requests.Count);
+            Assert.AreEqual(2, transport.Requests.Count);
+            Assert.AreEqual(HttpVerb.Get, transport.Requests.Last().Verb);
         }
 
         private static FakeHttpTransport Transport(GameDataStore data, string stages, bool mixed = false, string combat = null)

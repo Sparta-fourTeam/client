@@ -40,6 +40,18 @@ namespace Game.Tests
         }
 
         [Test]
+        public void NewServerSourceDoesNotRewriteStoredBattleSourceDuringDiscard()
+        {
+            var checkpoint = Checkpoint();
+            checkpoint.Stage.ProgressSourceRevision = new string('b', 64);
+            var store = new Store();
+            var api = new Api();
+            new BattleLauncher(api, null, null, null, store).Discard(checkpoint).GetAwaiter().GetResult();
+            Assert.AreEqual(checkpoint.Stage.ProgressSourceRevision,
+                store.Load().Stage.PendingProgress.sourceRevision);
+        }
+
+        [Test]
         public void FailedDurableWritePreventsAbandonDispatch()
         {
             var api = new Api();

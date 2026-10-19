@@ -22,6 +22,7 @@ namespace Game.Core
                 PendingRequest = _pendingRequest,
                 PendingProgress = _pendingProgress,
                 ProgressRevision = _progressRevision,
+                ProgressSourceRevision = (_battleApi as IBattleProgressApi)?.SourceRevision,
                 ProgressRequested = _progressRequested,
                 ResultKills = _resultKills,
                 ResultTime = _resultPlayTime
