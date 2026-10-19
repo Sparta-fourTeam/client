@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using MessagePipe;
@@ -41,26 +42,63 @@ namespace Game.Core
         {
             _running = true;
             OnlineCount = null;
-            Status = "최근 대화 불러오는 중…";
+            Status = "채팅 연결 중…";
             Notify();
+            using var attempt = CancellationTokenSource.CreateLinkedTokenSource(_token);
+            UniTask running = default;
+            bool started = false;
             try
             {
-                var recent = await _client.GetRecentAsync(_token);
-                _messages.Clear();
-                _messages.AddRange(recent);
-                Status = "채팅 연결 중…";
-                Notify();
-                await _client.RunAsync(() =>
+                var subscribed = new UniTaskCompletionSource();
+                var buffered = new List<ChatMessage>();
+                var overlap = new Dictionary<(long, string, DateTimeOffset), int>();
+                bool loading = true;
+                void Incoming(ChatMessage message)
                 {
-                    IsConnected = true;
-                    Status = "실시간 연결됨";
-                    Notify();
-                }, Receive, count =>
+                    if (_disposed || attempt.IsCancellationRequested) { return; }
+                    if (loading)
+                    {
+                        buffered.Add(message);
+                        if (buffered.Count > 200) { buffered.RemoveAt(0); }
+                        return;
+                    }
+                    var key = (message.SenderId, message.Content, message.SentAt);
+                    if (overlap.TryGetValue(key, out int count) && count > 0)
+                    { overlap[key] = count - 1; return; }
+                    Receive(message);
+                }
+                running = _client.RunAsync(() => subscribed.TrySetResult(), Incoming, count =>
                 {
                     if (count < 0 || _disposed) { return; }
                     OnlineCount = count;
                     Notify();
-                }, _token);
+                }, attempt.Token).Preserve();
+                started = true;
+                if (await UniTask.WhenAny(subscribed.Task, running) == 1)
+                { throw new InvalidOperationException("Chat disconnected before subscription."); }
+                Status = "최근 대화 불러오는 중…";
+                Notify();
+                var history = _client.GetRecentAsync(attempt.Token).Preserve();
+                if (await UniTask.WhenAny(history.AsUniTask(), running) == 1)
+                { throw new InvalidOperationException("Chat disconnected during history load."); }
+                var recent = await history;
+                _messages.Clear();
+                _messages.AddRange(recent);
+                foreach (var message in recent)
+                {
+                    var key = (message.SenderId, message.Content, message.SentAt);
+                    overlap.TryGetValue(key, out int count);
+                    overlap[key] = count + 1;
+                }
+                loading = false;
+                foreach (var message in buffered) { Incoming(message); }
+                var ordered = _messages.OrderBy(message => message.SentAt).TakeLast(200).ToArray();
+                _messages.Clear();
+                _messages.AddRange(ordered);
+                IsConnected = true;
+                Status = "실시간 연결됨";
+                Notify();
+                await running;
                 Status = "연결이 끊겼습니다. 다시 연결해 주세요.";
             }
             catch (OperationCanceledException) when (_lifetime.IsCancellationRequested) { }
@@ -68,6 +106,12 @@ namespace Game.Core
             catch (Exception) { Status = "채팅에 연결하지 못했습니다. 다시 연결해 주세요."; }
             finally
             {
+                attempt.Cancel();
+                if (started)
+                {
+                    try { await running; }
+                    catch (Exception) { } // 위의 연결/조회 오류를 표시하고 소켓 종료까지 기다린다.
+                }
                 _running = false;
                 IsConnected = false;
                 OnlineCount = null;

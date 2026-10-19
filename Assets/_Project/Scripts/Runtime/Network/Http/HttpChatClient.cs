@@ -22,19 +22,25 @@ namespace Game.Network
 
         public async UniTask<IReadOnlyList<ChatMessage>> GetRecentAsync(CancellationToken cancellationToken)
         {
-#if UNITY_WEBGL && !UNITY_EDITOR
-            throw new NotSupportedException("WebGL cannot set WebSocket handshake headers.");
-#else
-            if (!_auth.IsSignedIn) { throw new NotSupportedException("Server sign-in required."); }
+            EnsureSupported();
             var rows = await _http.Get<ChatDto[]>("api/chat/recent", cancellationToken);
             var messages = new List<ChatMessage>(rows.Length);
             foreach (var row in rows) { messages.Add(Map(row)); }
             return messages;
+        }
+
+        private void EnsureSupported()
+        {
+#if UNITY_WEBGL && !UNITY_EDITOR
+            throw new NotSupportedException("WebGL cannot set WebSocket handshake headers.");
+#else
+            if (!_auth.IsSignedIn) { throw new NotSupportedException("Server sign-in required."); }
 #endif
         }
 
         public async UniTask RunAsync(Action connected, Action<ChatMessage> received, Action<int> presence, CancellationToken cancellationToken)
         {
+            EnsureSupported();
             var apiUri = new Uri(_config.BaseUrl);
             var uri = new UriBuilder(apiUri)
             {
@@ -54,6 +60,7 @@ namespace Game.Network
             await socket.ConnectAsync(uri, timeout.Token);
             _socket = socket;
             bool ready = false;
+            bool subscribed = false;
             try
             {
                 await WriteAsync(socket, $"CONNECT\naccept-version:1.2,1.1,1.0\nhost:{uri.Host}\nheart-beat:0,0\n\n\0", timeout.Token);
@@ -61,7 +68,7 @@ namespace Game.Network
                 var buffer = new byte[8192];
                 while (socket.State == WebSocketState.Open)
                 {
-                    var read = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), ready ? cancellationToken : timeout.Token);
+                    var read = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), subscribed ? cancellationToken : timeout.Token);
                     if (read.MessageType == WebSocketMessageType.Close) { return; }
                     if (read.MessageType != WebSocketMessageType.Text) { throw new FormatException("Expected STOMP text."); }
                     reader.Append(buffer, read.Count);
@@ -75,9 +82,6 @@ namespace Game.Network
                             await WriteAsync(socket, "SUBSCRIBE\nid:chat\ndestination:/topic/chat\nack:auto\n\n\0", timeout.Token);
                             await WriteAsync(socket, "SUBSCRIBE\nid:chat-presence\ndestination:/topic/chat/presence\nack:auto\n\n\0", timeout.Token);
                             ready = true;
-                            timeout.CancelAfter(Timeout.Infinite);
-                            await UniTask.SwitchToMainThread(cancellationToken);
-                            connected();
                         }
                         else if (frame.Command == "MESSAGE" && ready
                             && frame.Headers.TryGetValue("destination", out var destination))
@@ -95,6 +99,14 @@ namespace Game.Network
                                 {
                                     await UniTask.SwitchToMainThread(cancellationToken);
                                     presence(update.onlineCount.Value);
+                                    // 서버 #92는 구독을 등록한 뒤 첫 presence를 보낸다.
+                                    // 앞서 보낸 chat 구독까지 활성화된 다음에만 REST 이력을 읽는다.
+                                    if (!subscribed)
+                                    {
+                                        subscribed = true;
+                                        timeout.CancelAfter(Timeout.Infinite);
+                                        connected();
+                                    }
                                 }
                             }
                         }

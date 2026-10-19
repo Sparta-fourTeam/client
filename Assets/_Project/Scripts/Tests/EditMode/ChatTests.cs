@@ -94,6 +94,59 @@ namespace Game.Tests
             Assert.IsNull(service.OnlineCount, "연결 종료 후 이전 인원수를 현재 값으로 표시하지 않는다");
         }
 
+        [Test]
+        public void Chat_SubscriptionHandoffMergesHistoryAndLiveMessagesWithoutLossOrDuplicates()
+        {
+            var time = DateTimeOffset.Parse("2026-10-19T03:00:00Z");
+            var old = new ChatMessage(1, "기존", time);
+            var early = new ChatMessage(2, "구독 직후", time.AddSeconds(1));
+            var during = new ChatMessage(3, "조회 중", time.AddSeconds(2));
+            var late = new ChatMessage(4, "늦은 방송", time.AddSeconds(3));
+            var client = new Client { DelayConnected = true, PendingHistory = new() };
+            using var service = new ChatService(client, new Publisher());
+
+            service.Start();
+            Assert.Zero(client.RecentRequests, "구독 확인 전에는 REST 스냅샷을 찍지 않는다");
+            client.Received(early);
+            client.Connected();
+            client.Received(during);
+            Assert.IsFalse(service.IsConnected, "이력 병합 전에는 전송을 열지 않는다");
+            client.PendingHistory.TrySetResult(new[] { old, early, late });
+
+            Assert.IsTrue(service.IsConnected);
+            CollectionAssert.AreEqual(new[] { old, early, during, late }, service.Messages);
+            Assert.AreEqual(1, service.UnreadCount, "이력에 이미 포함된 방송은 중복 알림에 세지 않는다");
+            client.Received(late);
+            Assert.AreEqual(4, service.Messages.Count, "REST보다 늦게 도착한 같은 방송도 한 번만 표시한다");
+            client.Received(new ChatMessage(5, "연결 이후", time.AddSeconds(4)));
+            Assert.AreEqual(5, service.Messages.Count);
+            Assert.AreEqual(2, service.UnreadCount);
+        }
+
+        [TestCase(false)]
+        [TestCase(true)]
+        public void Chat_InterruptedHistoryClosesAttemptAndCanRetry(bool disconnected)
+        {
+            var client = new Client { PendingHistory = new() };
+            using var service = new ChatService(client, new Publisher());
+            service.Start();
+            var firstToken = client.Token;
+            client.Received(new ChatMessage(2, "실패한 시도", DateTimeOffset.UtcNow));
+            if (disconnected) { client.Disconnect(); }
+            else { client.PendingHistory.TrySetException(new InvalidOperationException("history unavailable")); }
+            Assert.IsTrue(firstToken.IsCancellationRequested);
+            Assert.IsFalse(service.IsConnected);
+            Assert.IsEmpty(service.Messages);
+            client.PendingHistory = null;
+
+            service.Retry();
+
+            Assert.IsTrue(service.IsConnected);
+            Assert.AreEqual(2, client.RecentRequests);
+            Assert.AreEqual(1, service.Messages.Count);
+            Assert.AreEqual("기존", service.Messages[0].Content);
+        }
+
         private sealed class Publisher : IBufferedPublisher<ChatChanged>
         { public void Publish(ChatChanged message) { } }
         private sealed class Client : IChatClient
@@ -101,14 +154,30 @@ namespace Game.Tests
             public Action<ChatMessage> Received;
             public Action<int> Presence;
             public CancellationToken Token;
-            private readonly UniTaskCompletionSource _disconnected = new();
-            public UniTask<IReadOnlyList<ChatMessage>> GetRecentAsync(CancellationToken token) =>
-                UniTask.FromResult<IReadOnlyList<ChatMessage>>(new[] { new ChatMessage(1, "기존", DateTimeOffset.UtcNow) });
+            private UniTaskCompletionSource _disconnected;
+            public Action Connected;
+            public bool DelayConnected;
+            public int RecentRequests;
+            public UniTaskCompletionSource<IReadOnlyList<ChatMessage>> PendingHistory;
+            public UniTask<IReadOnlyList<ChatMessage>> GetRecentAsync(CancellationToken token)
+            {
+                RecentRequests++;
+                if (PendingHistory != null)
+                {
+                    var pending = PendingHistory;
+                    token.Register(() => pending.TrySetCanceled(token));
+                    return pending.Task;
+                }
+                return UniTask.FromResult<IReadOnlyList<ChatMessage>>(new[] { new ChatMessage(1, "기존", DateTimeOffset.UtcNow) });
+            }
+            public void Disconnect() => _disconnected.TrySetResult();
             public UniTask RunAsync(Action connected, Action<ChatMessage> received, Action<int> presence, CancellationToken token)
             {
-                Token = token; Received = received; Presence = presence; connected();
-                token.Register(() => _disconnected.TrySetCanceled(token));
-                return _disconnected.Task;
+                var disconnected = _disconnected = new UniTaskCompletionSource();
+                Token = token; Received = received; Presence = presence; Connected = connected;
+                token.Register(() => disconnected.TrySetCanceled(token));
+                if (!DelayConnected) { connected(); }
+                return disconnected.Task;
             }
             public UniTask SendAsync(string content, CancellationToken token) => UniTask.CompletedTask;
         }
