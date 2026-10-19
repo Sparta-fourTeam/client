@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Cysharp.Threading.Tasks;
 using Game.Core;
 using TMPro;
@@ -41,6 +42,18 @@ namespace Game.View
         private int _shownMinute = -1;
         private bool _busy;
         private bool _refreshingDay;
+        private float _nextServerDayCheck;
+        private IServerShopViewSession _server;
+
+        /// <summary>서버 모드를 명시적으로 주입한다. 현재 Root의 Local 등록은 변경하지 않는다.</summary>
+        public void UseServerShop(IServerShopViewSession session)
+        {
+            if (_server != null && isActiveAndEnabled) { _server.Changed -= Refresh; }
+            _server = session ?? throw new ArgumentNullException(nameof(session));
+            if (isActiveAndEnabled) { _server.Changed += Refresh; }
+            Refresh();
+            if (isActiveAndEnabled) { RefreshServerAsync().Forget(Debug.LogException); }
+        }
 
         public void BindUi(IUiRegistry registry)
         {
@@ -77,20 +90,35 @@ namespace Game.View
             // 구독은 켜져 있는 동안만 둔다. 비활성인 채 씬이 내려가면 OnDestroy가 불리지 않아 파괴된 뷰에 구독이 남는다
             _profile.Changed -= OnProfileChanged;
             _profile.Changed += OnProfileChanged;
+            if (_server != null) { _server.Changed += Refresh; }
             _dayKey = ShopRules.DayKey(DateTime.UtcNow);
             _shownMinute = -1;
             Refresh();
             UpdateTimer();
+            if (_server != null) { RefreshServerAsync().Forget(Debug.LogException); }
         }
 
         private void OnDisable()
         {
             if (_profile != null) { _profile.Changed -= OnProfileChanged; }
+            if (_server != null) { _server.Changed -= Refresh; }
         }
 
         private void Update()
         {
             if (_profile == null) { return; }
+            if (_server != null)
+            {
+                if (Time.unscaledTime >= _nextServerDayCheck
+                    && (_server.HasPending || _server.Account == null || _server.Account.Daily == null
+                        || DateTimeOffset.UtcNow >= _server.Account.Daily.NextResetAt))
+                {
+                    _nextServerDayCheck = Time.unscaledTime + 10f;
+                    RefreshServerAsync().Forget(Debug.LogException);
+                }
+                UpdateTimer();
+                return;
+            }
             if (ShopRules.DayKey(DateTime.UtcNow) != _dayKey) { RefreshDayAsync().Forget(Debug.LogException); }
             UpdateTimer();
         }
@@ -118,6 +146,7 @@ namespace Game.View
 
         private async UniTask RerollAsync()
         {
+            if (_server != null) { await RerollServerAsync(); return; }
             if (_busy) { return; }
 
             var config = _data.Shop;
@@ -151,6 +180,7 @@ namespace Game.View
 
         private async UniTask BuyAsync(int slot)
         {
+            if (_server != null) { await BuyServerAsync(slot); return; }
             if (_busy || _offers == null || slot >= _offers.Count) { return; }
 
             var offer = _offers[slot];
@@ -223,6 +253,7 @@ namespace Game.View
 
         private void Refresh()
         {
+            if (_server != null) { RefreshServer(); return; }
             var state = _profile.Shop;
             string dayKey = ShopRules.DayKey(DateTime.UtcNow);
             int rerolls = state.adUsed + state.goldUsed;
@@ -255,11 +286,137 @@ namespace Game.View
         private void UpdateTimer()
         {
             var utcNow = DateTime.UtcNow;
-            var remain = GameDay.NextResetUtc(utcNow) - utcNow;
+            var remain = _server?.Account?.Daily != null
+                ? _server.Account.Daily.NextResetAt.UtcDateTime - utcNow : GameDay.NextResetUtc(utcNow) - utcNow;
+            if (_server != null && _server.Account?.Daily == null)
+            {
+                _timer.text = "확인 중";
+                return;
+            }
+            if (remain < TimeSpan.Zero) { remain = TimeSpan.Zero; }
             int minute = (int)remain.TotalMinutes;
             if (minute == _shownMinute) { return; }
             _shownMinute = minute;
             _timer.text = $"{minute / 60}시간 {minute % 60:D2}분";
+        }
+
+        private async UniTask RefreshServerAsync()
+        {
+            if (_refreshingDay || _server.IsBusy) { return; }
+            _refreshingDay = true;
+            try
+            {
+                var restored = await _server.Restore();
+                if (this != null && restored?.Status == ShopViewSubmissionStatus.Acknowledged && restored.IsPurchase)
+                {
+                    _rewardPopup?.Show(restored.Rewards.Select(reward =>
+                        new ResultRewardItem(IconOf(reward.ItemId), reward.Count, reward.ItemId)).ToList(),
+                        "물품을 구매했어요.", "구매 완료");
+                }
+            }
+            catch (ApiException) { }
+            finally { _refreshingDay = false; if (this != null) { Refresh(); UpdateTimer(); } }
+        }
+
+        private void RefreshServer()
+        {
+            if (_profile == null) { return; }
+            var daily = _server.Account?.Daily;
+            bool ready = daily != null && daily.Available;
+            for (int i = 0; i < _items.Length; i++)
+            {
+                bool exists = ready && i < daily.Offers.Count;
+                _items[i].gameObject.SetActive(exists);
+                if (!exists) { continue; }
+                int slot = i;
+                var offer = daily.Offers[i];
+                var rewards = offer.Rewards;
+                string name = rewards.Count == 1 ? NameOf(rewards[0].ItemId)
+                    : string.Join(" · ", rewards.Select(reward => $"{NameOf(reward.ItemId)} x{reward.Count:N0}"));
+                string count = rewards.Count == 1 ? $"x{rewards[0].Count:N0}" : string.Empty;
+                Sprite icon = rewards.Count > 0 ? IconOf(rewards[0].ItemId) : null;
+                bool sold = daily.Purchased.Contains(slot);
+                _items[i].BindServer(name, icon, count, offer.Price, offer.DiscountPercent,
+                    sold, !_busy && !_server.IsBusy && !_server.HasPending, () => BuyAsync(slot).Forget(Debug.LogException),
+                    () => _detail?.Show(icon, name, count, string.Join("\n", rewards.Select(reward =>
+                        $"{NameOf(reward.ItemId)} x{reward.Count:N0}"))));
+            }
+            _adCount.text = "0/0";
+            _adReroll.interactable = false;
+            _goldCount.text = _server.HasPending ? "확인 중" : ready
+                ? $"{daily.GoldLeft}/{daily.GoldLeft + daily.GoldUsed}" : "0/0";
+            _goldCost.text = ready ? daily.GoldRerollCost.ToString("N0") : "0";
+            _goldReroll.interactable = ready && daily.GoldLeft > 0 && !_busy && !_server.IsBusy && !_server.HasPending;
+            _shownMinute = -1;
+            UpdateTimer();
+        }
+
+        private async UniTask RerollServerAsync()
+        {
+            var quoted = _server.Account?.Daily;
+            if (_busy || _server.IsBusy || _server.HasPending || quoted == null || quoted.GoldLeft == 0) { return; }
+            _busy = true;
+            Refresh();
+            bool confirmed;
+            try
+            {
+                confirmed = _confirm == null || await _confirm.ShowAsync(new ConfirmRequest
+                {
+                    Title = "일일상점 초기화",
+                    Message = $"{quoted.GoldRerollCost:N0} 잉크를 사용해 상점을 초기화할까요?\n남은 횟수 {quoted.GoldLeft}",
+                    ConfirmLabel = "초기화",
+                    CancelLabel = "취소"
+                });
+            }
+            finally { _busy = false; if (this != null) { Refresh(); } }
+            if (!confirmed) { return; }
+            var result = await RunServerAsync(() => _server.GoldReroll(quoted));
+            if (result?.ErrorCode == "INSUFFICIENT_GOLD" && _confirm != null)
+            { await _confirm.ShowAsync(new ConfirmRequest { Title = "일일상점 초기화", Message = "잉크가 부족해요." }); }
+        }
+
+        private async UniTask BuyServerAsync(int slot)
+        {
+            var daily = _server.Account?.Daily;
+            if (_busy || _server.IsBusy || _server.HasPending || daily == null || slot >= daily.Offers.Count
+                || daily.Purchased.Contains(slot)) { return; }
+            var offer = daily.Offers[slot];
+            var rewards = offer.Rewards;
+            string name = string.Join(" · ", rewards.Select(reward => $"{NameOf(reward.ItemId)} x{reward.Count:N0}"));
+            _busy = true;
+            Refresh();
+            bool confirmed;
+            try
+            {
+                confirmed = offer.Price <= 0 || _confirm == null || await _confirm.ShowAsync(new ConfirmRequest
+                {
+                    Title = "구매",
+                    Message = $"{name}을(를)\n{offer.Price:N0}잼에 구매할까요?",
+                    ConfirmLabel = "구매",
+                    CancelLabel = "취소"
+                });
+            }
+            finally { _busy = false; if (this != null) { Refresh(); } }
+            if (!confirmed) { return; }
+            var result = await RunServerAsync(() => _server.BuyDaily(daily, slot));
+            if (result?.Status == ShopViewSubmissionStatus.Acknowledged)
+            {
+                var items = result.Rewards.Select(reward =>
+                    new ResultRewardItem(IconOf(reward.ItemId), reward.Count, reward.ItemId)).ToList();
+                _rewardPopup?.Show(items, "물품을 구매했어요.", "구매 완료");
+            }
+            else if (result?.ErrorCode == "INSUFFICIENT_GEMS" && _confirm != null)
+            { await _confirm.ShowAsync(new ConfirmRequest { Title = "구매", Message = "잼이 부족해요." }); }
+        }
+
+        private async UniTask<ShopViewResult> RunServerAsync(Func<UniTask<ShopViewResult>> request)
+        {
+            _busy = true;
+            Refresh();
+            try { return await request(); }
+            catch (ApiException) { return null; }
+            catch (InvalidOperationException) { await RefreshServerAsync(); return null; }
+            finally { _busy = false; if (this != null) { Refresh(); } }
         }
     }
 }

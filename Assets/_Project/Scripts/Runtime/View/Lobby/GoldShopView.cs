@@ -15,6 +15,7 @@ namespace Game.View
     {
         [SerializeField] private DailyShopItemView[] _items;
         [SerializeField] private ItemIconTable _itemIcons;
+        [SerializeField] private Sprite _energyIcon;
 
         private PlayerProfile _profile;
         private GameDataStore _data;
@@ -23,6 +24,19 @@ namespace Game.View
         private DetailPopupView _detail;
         private ConfirmPopupView _confirm;
         private bool _busy;
+        private bool _refreshing;
+        private float _nextServerRefresh;
+        private IServerShopViewSession _server;
+
+        /// <summary>서버 카탈로그를 명시적으로 주입한다. 기본 Local 상점 DI는 그대로 둔다.</summary>
+        public void UseServerShop(IServerShopViewSession session)
+        {
+            if (_server != null && isActiveAndEnabled) { _server.Changed -= Refresh; }
+            _server = session ?? throw new ArgumentNullException(nameof(session));
+            if (isActiveAndEnabled) { _server.Changed += Refresh; }
+            Refresh();
+            if (isActiveAndEnabled) { RefreshServerAsync().Forget(Debug.LogException); }
+        }
 
         public void BindUi(IUiRegistry registry)
         {
@@ -42,11 +56,28 @@ namespace Game.View
 
         private void OnEnable()
         {
-            if (_profile != null) { Refresh(); }
+            if (_profile == null) { return; }
+            if (_server != null) { _server.Changed += Refresh; }
+            Refresh();
+            if (_server != null) { RefreshServerAsync().Forget(Debug.LogException); }
+        }
+
+        private void OnDisable()
+        {
+            if (_server != null) { _server.Changed -= Refresh; }
+        }
+
+        private void Update()
+        {
+            if (_server == null || _profile == null || Time.unscaledTime < _nextServerRefresh
+                || (!_server.HasPending && _server.Account != null && _server.GoldPacks != null)) { return; }
+            _nextServerRefresh = Time.unscaledTime + 10f;
+            RefreshServerAsync().Forget(Debug.LogException);
         }
 
         private void Refresh()
         {
+            if (_server != null) { RefreshServer(); return; }
             var config = _data.Shop;
             for (int i = 0; i < _items.Length; i++)
             {
@@ -64,6 +95,7 @@ namespace Game.View
 
         private async UniTask BuyAsync(int index)
         {
+            if (_server != null) { await BuyServerAsync(index); return; }
             if (_busy) { return; }
 
             var pack = _data.Shop.GoldPacks[index];
@@ -108,6 +140,93 @@ namespace Game.View
             {
                 await _confirm.ShowAsync(new ConfirmRequest { Title = "구매", Message = "잼이 부족해요." });
             }
+        }
+
+        private async UniTask RefreshServerAsync()
+        {
+            if (_refreshing || _server.IsBusy) { return; }
+            _refreshing = true;
+            try
+            {
+                var restored = await _server.Restore();
+                if (this != null && restored?.Status == ShopViewSubmissionStatus.Acknowledged && restored.IsPurchase)
+                {
+                    var rewards = new List<ResultRewardItem>();
+                    foreach (var reward in restored.Rewards)
+                    {
+                        var icon = reward.ItemId switch
+                        {
+                            ShopRules.CoinReward => _itemIcons != null ? _itemIcons.Coin : null,
+                            ShopRules.EnergyReward => _energyIcon,
+                            _ => _itemIcons != null ? _itemIcons.Get(reward.ItemId) : null
+                        };
+                        rewards.Add(new ResultRewardItem(icon, reward.Count, reward.ItemId));
+                    }
+                    _rewardPopup?.Show(rewards, "물품을 구매했어요.", "구매 완료");
+                }
+            }
+            catch (ApiException) { }
+            finally { _refreshing = false; if (this != null) { Refresh(); } }
+        }
+
+        private void RefreshServer()
+        {
+            if (_profile == null) { return; }
+            var catalog = _server.GoldPacks;
+            bool ready = _server.Account != null && catalog != null && catalog.Available;
+            for (int i = 0; i < _items.Length; i++)
+            {
+                bool exists = ready && i < catalog.Packs.Count;
+                _items[i].gameObject.SetActive(exists);
+                if (!exists) { continue; }
+                int index = i;
+                var pack = catalog.Packs[i];
+                _items[i].Bind("잉크", _itemIcons != null ? _itemIcons.Coin : null, pack.Gold,
+                    pack.GemPrice, pack.DiscountPercent, false,
+                    !_busy && !_server.IsBusy && !_server.HasPending,
+                    () => BuyAsync(index).Forget(Debug.LogException),
+                    () => _detail?.Show(_itemIcons != null ? _itemIcons.Coin : null, "잉크",
+                        $"x{pack.Gold:N0}", ItemInfo.DescriptionOf(RewardRows.CoinId)));
+            }
+        }
+
+        private async UniTask BuyServerAsync(int index)
+        {
+            var catalog = _server.GoldPacks;
+            if (_busy || _server.IsBusy || _server.HasPending || _server.Account == null
+                || catalog == null || index >= catalog.Packs.Count) { return; }
+            var pack = catalog.Packs[index];
+            _busy = true;
+            Refresh();
+            bool confirmed;
+            try
+            {
+                confirmed = _confirm == null || await _confirm.ShowAsync(new ConfirmRequest
+                {
+                    Title = "구매",
+                    Message = $"잉크 x{pack.Gold:N0}을(를)\n{pack.GemPrice:N0}잼에 구매할까요?",
+                    ConfirmLabel = "구매",
+                    CancelLabel = "취소"
+                });
+            }
+            finally { _busy = false; if (this != null) { Refresh(); } }
+            if (!confirmed) { return; }
+            ShopViewResult result = null;
+            _busy = true;
+            Refresh();
+            try { result = await _server.BuyGoldPack(catalog, index); }
+            catch (ApiException) { }
+            catch (InvalidOperationException) { await RefreshServerAsync(); }
+            finally { _busy = false; if (this != null) { Refresh(); } }
+
+            if (result?.Status == ShopViewSubmissionStatus.Acknowledged)
+            {
+                _rewardPopup?.Show(new List<ResultRewardItem>
+                { new(_itemIcons != null ? _itemIcons.Coin : null, result.Rewards[0].Count, RewardRows.CoinId) },
+                    "잉크를 구매했어요.", "구매 완료");
+            }
+            else if (result?.ErrorCode == "INSUFFICIENT_GEMS" && _confirm != null)
+            { await _confirm.ShowAsync(new ConfirmRequest { Title = "구매", Message = "잼이 부족해요." }); }
         }
     }
 }

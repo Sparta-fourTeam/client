@@ -33,9 +33,18 @@ namespace Game.View
         }
 
         public void Bind(string itemName, Sprite icon, int count, int price, int discountPercent, bool soldOut, bool canBuy, Action onBuy, Action onInfo = null)
+            => BindDisplay(itemName, icon, $"x{count:N0}", price, discountPercent, soldOut, canBuy, onBuy, onInfo);
+
+        /// <summary>서버가 확정한 복합 보상은 숫자 하나로 축약하지 않고 이름·수량을 모두 표시한다.</summary>
+        public void BindServer(string itemName, Sprite icon, string countLabel, int price, int discountPercent,
+            bool soldOut, bool canBuy, Action onBuy, Action onInfo = null)
+            => BindDisplay(itemName, icon, countLabel, price, discountPercent, soldOut, canBuy, onBuy, onInfo);
+
+        private void BindDisplay(string itemName, Sprite icon, string countLabel, int price, int discountPercent,
+            bool soldOut, bool canBuy, Action onBuy, Action onInfo)
         {
             _name.text = itemName;
-            _cell.Show(icon, $"x{count:N0}", onInfo);
+            _cell.Show(icon, countLabel, onInfo);
             _discountBadge.SetActive(discountPercent > 0);
             _discountLabel.text = $"{discountPercent}%\n할인";
             _gemIcon.SetActive(price > 0);
