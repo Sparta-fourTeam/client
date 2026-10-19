@@ -895,6 +895,8 @@ namespace Game.Tests
                 shop.SelectTab(ShopTab.Daily);
                 yield return null;
                 Assert.That(daily.isActiveAndEnabled, Is.True);
+                Assert.That(Field<Button>(daily, "_adReroll").interactable, Is.False,
+                    "광고 검증이 연결되기 전에는 상점을 다시 열어도 광고 재추첨을 누를 수 없다");
                 Assert.That(Field<GameObject>(item, "_soldOut").activeSelf, Is.EqualTo(pass % 2 == 0));
                 Assert.That(Field<Button>(item, "_buy").interactable, Is.EqualTo(pass % 2 != 0));
                 // An active view must also react to profile updates without being reopened.
