@@ -55,6 +55,7 @@ namespace Game.Core
                         {
                             battleId = _battleId,
                             reportId = Guid.NewGuid().ToString("D"),
+                            sourceRevision = ((IBattleProgressApi)_battleApi).SourceRevision,
                             expectedRevision = _progressRevision,
                             killedMonsters = _stats.Kills,
                             completedWaves = _rewards?.CompletedWaves ?? 0,

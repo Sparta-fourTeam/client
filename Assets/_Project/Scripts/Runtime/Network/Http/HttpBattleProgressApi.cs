@@ -13,8 +13,29 @@ namespace Game.Network
     {
         private readonly HttpApiClient _client;
         private readonly int _stageId;
+        private readonly string _sourceRevision;
         private string _openedBattle;
-        public HttpBattleProgressApi(HttpApiClient client, int stageId) { _client = client; _stageId = stageId; }
+        public string SourceRevision => _sourceRevision;
+        public HttpBattleProgressApi(HttpApiClient client, int stageId, GameDataStore data)
+        {
+            _client = client; _stageId = stageId;
+            _sourceRevision = (data ?? throw new ArgumentNullException(nameof(data))).BattleSourceRevision;
+        }
+
+        /// <summary>전투 시작 전에 실제 로드한 원문 버전으로 최초 고정한다.</summary>
+        public async UniTask Bind(string battleId)
+        {
+            var openedJson = await _client.PostJson("api/battle/progress/open", new { battleId, stageId = _stageId, sourceRevision = _sourceRevision });
+            ServerProgressContract.Parse(() =>
+            {
+                if (ServerProgressContract.Read(openedJson) is not JObject opened || opened["closed"]?.Type != JTokenType.Boolean
+                    || opened.Value<bool>("closed") || opened["progress"]?.Value<string>("battleId") != battleId
+                    || opened["progress"]?.Value<string>("sourceRevision") != _sourceRevision
+                    || !Integer(opened["progress"]?["stageId"], _stageId, _stageId)) { throw ServerProgressContract.Invalid(); }
+                return true;
+            });
+            _openedBattle = battleId;
+        }
 
         public UniTask<BattleProgressAck> ReportProgress(BattleProgressRequest request) => Send(request, false);
         public UniTask<BattleProgressAck> AbandonProgress(BattleProgressRequest request) => Send(request, true);
@@ -22,21 +43,14 @@ namespace Game.Network
         private async UniTask<BattleProgressAck> Send(BattleProgressRequest request, bool abandon)
         {
             if (request == null) { throw new ArgumentNullException(nameof(request)); }
+            if (request.sourceRevision != _sourceRevision) { throw new ApiException(ApiErrorKind.Rejected, "BATTLE_SOURCE_MISMATCH"); }
             string json;
             var path = abandon ? "api/battle/progress/abandon" : "api/battle/progress";
             try { json = await _client.PostJson(path, request); }
             catch (ApiException error) when (error.Code == "HTTP_404" && _openedBattle != request.battleId)
             {
                 // 원장이 없다는 최초 404만 open 뒤 재전송한다. 닫힌 전투의 기존 보고는 open 없이 원래 ACK를 읽는다.
-                var openedJson = await _client.PostJson("api/battle/progress/open", new { battleId = request.battleId, stageId = _stageId });
-                ServerProgressContract.Parse(() =>
-                {
-                    if (ServerProgressContract.Read(openedJson) is not JObject opened || opened["closed"]?.Type != JTokenType.Boolean
-                        || opened.Value<bool>("closed") || opened["progress"]?.Value<string>("battleId") != request.battleId
-                        || !Integer(opened["progress"]?["stageId"], _stageId, _stageId)) { throw ServerProgressContract.Invalid(); }
-                    return true;
-                });
-                _openedBattle = request.battleId;
+                await Bind(request.battleId);
                 json = await _client.PostJson(path, request);
             }
             return ServerProgressContract.Parse(() => ParseAck(json, request));
@@ -46,6 +60,7 @@ namespace Game.Network
         {
             if (ServerProgressContract.Read(json) is not JObject ack || ack.Value<string>("battleId") != request.battleId
                 || !Integer(ack["stageId"], _stageId, _stageId) || !Integer(ack["policyVersion"], 1)
+                || ack.Value<string>("sourceRevision") != _sourceRevision
                 || !Integer(ack["revision"], request.expectedRevision + 1, request.expectedRevision + 1)
                 || !Integer(ack["killedMonsters"], request.killedMonsters, request.killedMonsters)
                 || !Integer(ack["completedWaves"], request.completedWaves, request.completedWaves)

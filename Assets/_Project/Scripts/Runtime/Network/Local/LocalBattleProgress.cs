@@ -9,6 +9,7 @@ namespace Game.Network
 {
     public sealed partial class LocalBattleApi
     {
+        public string SourceRevision => _data.BattleSourceRevision;
         public async UniTask<BattleProgressAck> AbandonProgress(BattleProgressRequest request)
         {
             var ack = await ReportProgress(request);
@@ -30,6 +31,7 @@ namespace Game.Network
             {
                 battleId = request.battleId,
                 reportId = request.reportId,
+                sourceRevision = request.sourceRevision,
                 expectedRevision = request.expectedRevision,
                 killedMonsters = request.killedMonsters,
                 completedWaves = request.completedWaves,
@@ -44,7 +46,7 @@ namespace Game.Network
                 return UniTask.FromResult(prior.ack);
             }
             var stage = _data.Stages.GetOrThrow(battle.stageId);
-            if (battle.status != "Issued" || request.expectedRevision != battle.progressRevision
+            if (request.sourceRevision != SourceRevision || battle.status != "Issued" || request.expectedRevision != battle.progressRevision
                 || request.killedMonsters < battle.reportedKills || request.completedWaves < battle.reportedCompletedWaves
                 || request.reachedWave < battle.reportedReachedWave || request.completedWaves > request.reachedWave
                 || request.reachedWave > stage.Waves.Count || request.reachedWave > request.completedWaves + 1
@@ -77,6 +79,7 @@ namespace Game.Network
                 battleId = battle.battleKey,
                 stageId = battle.stageId,
                 policyVersion = 1,
+                sourceRevision = _data.BattleSourceRevision,
                 revision = battle.progressRevision,
                 killedMonsters = request.killedMonsters,
                 completedWaves = request.completedWaves,

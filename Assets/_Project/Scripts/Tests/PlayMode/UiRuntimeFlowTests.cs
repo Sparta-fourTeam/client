@@ -158,6 +158,7 @@ namespace Game.Tests
             Assert.That(selected.Stage.Choices, Is.Not.Empty);
             var accepted = _store.Load().battles.Single(b => b.battleKey == battleId);
             Assert.That(accepted.reportedKills, Is.EqualTo(selected.Stage.Kills));
+            Assert.That(accepted.progressReceipts.Last().request.sourceRevision, Is.EqualTo(root.Container.Resolve<GameDataStore>().BattleSourceRevision));
             Assert.That(selected.Stage.ProgressRevision, Is.EqualTo(accepted.progressRevision));
             Assert.That(selected.Stage.PendingProgress, Is.Null);
             context.SetBattle(null);

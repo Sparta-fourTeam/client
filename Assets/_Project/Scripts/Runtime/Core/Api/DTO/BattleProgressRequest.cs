@@ -9,6 +9,7 @@ namespace Game.Core
     {
         public string battleId;
         public string reportId;
+        public string sourceRevision;
         public long expectedRevision;
         public int killedMonsters;
         public int completedWaves;
@@ -23,6 +24,7 @@ namespace Game.Core
         public string battleId;
         public int stageId;
         public int policyVersion;
+        public string sourceRevision;
         public long revision;
         public int killedMonsters;
         public int completedWaves;

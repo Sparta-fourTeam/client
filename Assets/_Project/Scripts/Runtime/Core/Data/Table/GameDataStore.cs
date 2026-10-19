@@ -15,6 +15,7 @@ namespace Game.Core
         private readonly Dictionary<string, int> _skillUnlockLevels;
 
         public Dictionary<string, int> Revisions { get; }
+        public string BattleSourceRevision { get; }
         public Table<int, MonsterDefinition> Monsters { get; }
         public Table<int, StageDefinition> Stages { get; }
         public Table<string, UpgradeDefinition> Upgrades { get; }
@@ -60,6 +61,8 @@ namespace Game.Core
 
                 _rawJson[name] = asset.text;
             }
+
+            BattleSourceRevision = BattleSourceFingerprint.Compute(_rawJson["Stages"], _rawJson["Monsters"], _rawJson["Combat"]);
 
             var textAsset = Resources.Load<TextAsset>("ClientData/DisplayTexts")
                 ?? throw new InvalidOperationException("Resources/ClientData/DisplayTexts.json을 찾을 수 없습니다");

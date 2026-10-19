@@ -73,6 +73,7 @@ namespace Game.Tests
 
         private sealed class Api : IBattleApi, IBattleProgressApi
         {
+            public string SourceRevision => new string('a', 64);
             public bool LoseAbandon;
             public readonly List<string> Paths = new(), Bodies = new();
             public UniTask<StartBattleResponse> StartBattle(int stageId) => throw new NotSupportedException();

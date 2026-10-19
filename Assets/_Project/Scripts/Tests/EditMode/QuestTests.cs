@@ -108,6 +108,7 @@ namespace Game.Tests
             {
                 battleId = start.battleId,
                 reportId = Guid.NewGuid().ToString("D"),
+                sourceRevision = _data.BattleSourceRevision,
                 killedMonsters = 3,
                 reachedWave = 1,
                 encounteredMonsterIds = new System.Collections.Generic.List<int> { monster },
@@ -125,6 +126,7 @@ namespace Game.Tests
             {
                 battleId = other.battleId,
                 reportId = Guid.NewGuid().ToString("D"),
+                sourceRevision = _data.BattleSourceRevision,
                 killedMonsters = 4,
                 reachedWave = 1,
                 encounteredMonsterIds = new System.Collections.Generic.List<int> { monster },

@@ -45,6 +45,7 @@ namespace Game.Core
             {
                 battleId = checkpoint.BattleId,
                 reportId = System.Guid.NewGuid().ToString("D"),
+                sourceRevision = api.SourceRevision,
                 expectedRevision = state.ProgressRevision,
                 killedMonsters = state.Kills,
                 completedWaves = state.CompletedWaves,
