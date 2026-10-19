@@ -237,13 +237,14 @@ namespace Game.Core
                 message.Damage.CastType != CastType.Area && message.Damage.CastType != CastType.Beam;
             _hitFlash.Flash(impact ? 1f : .22f);
 
-            // 실제로 깎인 체력(남은 체력을 넘는 과잉 피해는 빠진 값)을 머리 위에 띄운다
+            // 최종 피해량을 머리 위에 띄운다. 남은 체력을 넘는 과잉 피해도 포함한다(메시지가 없으면 깎인 체력)
+            int shown = message.DealtDamage > 0 ? message.DealtDamage : damage;
             float jitter = UnityEngine.Random.Range(-DamagePopupJitter, DamagePopupJitter);
             VisualBounds.GetVerticalExtents(transform, transform.position.y, out float top, out float bottom);
             var center = new Vector3(Position.x, (top + bottom) * 0.5f, transform.position.z);
             using (DamagePopupMarker.Auto())
             {
-                DamagePopupPool.Show(damage, new Vector3(Position.x + jitter, top, transform.position.z), gameObject.scene,
+                DamagePopupPool.Show(shown, new Vector3(Position.x + jitter, top, transform.position.z), gameObject.scene,
                     DamagePopupKinds.Of(message.Damage), center);
             }
 

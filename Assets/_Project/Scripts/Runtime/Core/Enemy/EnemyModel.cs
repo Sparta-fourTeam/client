@@ -271,7 +271,7 @@ namespace Game.Core
             Game.Core.Combat.DamageAttribution.Report(hpBefore - Hp);
             using (PublishHpChangedMarker.Auto())
             {
-                _hpChangedPublisher.Publish(new EnemyHpChanged(Id, Hp, MaxHp, info.WithAmount(hpBefore - Hp)));
+                _hpChangedPublisher.Publish(new EnemyHpChanged(Id, Hp, MaxHp, info.WithAmount(hpBefore - Hp), appliedDamage));
             }
 
             if (Hp == 0)

@@ -688,7 +688,8 @@ namespace Game.Tests
 
             Assert.AreEqual(0, enemy.Hp);
             Assert.AreEqual(0, _hpChanged.Published[0].Current); // 음수로 안 나감
-            Assert.AreEqual(10, _hpChanged.Published[0].Damage.Amount, "과잉 피해는 메시지에 포함하지 않는다");
+            Assert.AreEqual(10, _hpChanged.Published[0].Damage.Amount, "과잉 피해는 실제 차감량에 포함하지 않는다");
+            Assert.AreEqual(999, _hpChanged.Published[0].DealtDamage, "데미지 팝업은 과잉 피해를 포함한 최종 피해를 표시한다");
             Assert.IsTrue(enemy.IsDead);
             enemy.TakeDamage(5);
             enemy.TakeDamage(5);
