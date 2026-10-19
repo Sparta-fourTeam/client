@@ -132,11 +132,14 @@ namespace Game.Network
         {
             var receipt = Read(json) as JObject;
             bool dialogue = request.tutorialId.EndsWith(".dialogue", StringComparison.Ordinal);
-            if (receipt == null || receipt.Value<string>("tutorialId") != request.tutorialId
-                || !Boolean(receipt["dialogueOnly"]) || receipt.Value<bool>("dialogueOnly") != dialogue
-                || !Integer(receipt["gold"]) || !Integer(receipt["expBefore"]) || !Integer(receipt["expAfter"])
-                || !Utc(receipt["recordedAt"]))
-            { throw Invalid("tutorialReceipt"); }
+            if (receipt == null) { throw Invalid("tutorialReceipt.body"); }
+            if (receipt.Value<string>("tutorialId") != request.tutorialId) { throw Invalid("tutorialReceipt.tutorialId"); }
+            if (!Boolean(receipt["dialogueOnly"]) || receipt.Value<bool>("dialogueOnly") != dialogue)
+            { throw Invalid("tutorialReceipt.dialogueOnly flag"); }
+            if (!Integer(receipt["gold"])) { throw Invalid("tutorialReceipt.gold"); }
+            if (!Integer(receipt["expBefore"])) { throw Invalid("tutorialReceipt.expBefore"); }
+            if (!Integer(receipt["expAfter"])) { throw Invalid("tutorialReceipt.expAfter"); }
+            if (!Utc(receipt["recordedAt"])) { throw Invalid("tutorialReceipt.recordedAt"); }
             var items = Items(receipt["items"]);
             if (dialogue && (receipt.Value<int>("gold") != 0 || items.Count != 0
                 || receipt.Value<int>("expBefore") != 0 || receipt.Value<int>("expAfter") != 0))
