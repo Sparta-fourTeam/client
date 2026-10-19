@@ -74,7 +74,7 @@ namespace Game.Tests
             _session = new AuthSession();
             _session.Set("guest-access", "guest-refresh");
             _client = new HttpApiClient(new HttpApiConfig("https://example.test", 7f), _transport, _session, tokens: _session);
-            _api = new ServerBackedAccountApi(_client, new LocalAccountApi(_store));
+            _api = new ServerBackedAccountApi(_client, new LocalAccountApi(_store), _session);
         }
 
         [TearDown]
@@ -83,6 +83,113 @@ namespace Game.Tests
             File.SetAttributes(_directory, FileAttributes.Normal);
             _store.Delete();
             Directory.Delete(_directory, true);
+        }
+
+        [Test]
+        public void Profile_UpdatePersistsServerIdentityWithoutReplacingProgress()
+        {
+            var saved = _store.Load();
+            saved.exp = 123;
+            _store.Flush(saved);
+            _transport.Response = new HttpResponseData(200, "{\"userId\":42,\"nickname\":\"서버이름\",\"avatarId\":3}");
+
+            var identity = _api.ChangeAvatar(3).GetAwaiter().GetResult();
+
+            Assert.That(identity.PlayerId, Is.EqualTo("42"));
+            var after = _store.Load();
+            Assert.That(after.avatarId, Is.EqualTo(3));
+            Assert.That(after.nickname, Is.EqualTo("서버이름"));
+            Assert.That(after.exp, Is.EqualTo(123));
+            Assert.That(_transport.Requests[0].Url, Is.EqualTo("https://example.test/api/user/profile"));
+            StringAssert.Contains("\"avatarId\":3", _transport.Requests[0].Body);
+            StringAssert.DoesNotContain("nickname", _transport.Requests[0].Body);
+        }
+
+        [Test]
+        public void Profile_ServerProgressDoesNotRequireLocalSave()
+        {
+            var api = new ServerBackedAccountApi(_client, null, _session);
+            _transport.Response = new HttpResponseData(200, "{\"userId\":42,\"nickname\":\"서버이름\",\"avatarId\":3}");
+            var identity = api.GetProfile().GetAwaiter().GetResult();
+            Assert.That(identity.Nickname, Is.EqualTo("서버이름"));
+            Assert.That(identity.AvatarId, Is.EqualTo(3));
+            Assert.That(File.Exists(_filePath), Is.False);
+        }
+
+        [Test]
+        public void Profile_NewServerLoginDoesNotExposePreviousIdentityWhenRefreshFails()
+        {
+            var data = new GameDataStore();
+            var saved = _store.Load();
+            saved.wallet.gold = 137;
+            saved.exp = 123;
+            _store.Flush(saved);
+            _transport.Response = new HttpResponseData(200,
+                "{\"userId\":42,\"nickname\":\"이전계정\",\"avatarId\":3}");
+            _api.GetProfile().GetAwaiter().GetResult();
+            _session.Clear();
+            _transport.Response = new HttpResponseData(200,
+                "{\"accessToken\":\"account-b\",\"refreshToken\":\"refresh-b\"}");
+            new ServerBackedAuthApi(_client, _session, new LocalAuthApi(_store, data))
+                .Login(LoginMethod.Google, "account-b-id-token").GetAwaiter().GetResult();
+            var profile = new PlayerProfile(data);
+            var account = new AccountService(_api, null, null, null, profile, profiles: _api);
+            _transport.Response = new HttpResponseData(503, "{}");
+            UnityEngine.TestTools.LogAssert.Expect(UnityEngine.LogType.Exception,
+                new System.Text.RegularExpressions.Regex("HTTP_503"));
+            var refresher = new LobbyProfileRefresher(new LocalPlayerApi(_store), profile, account);
+
+            refresher.Start();
+
+            Assert.AreEqual(UniTaskStatus.Succeeded, refresher.WhenLoaded.Status);
+            Assert.AreNotEqual("이전계정", profile.Nickname);
+            Assert.AreNotEqual("42", profile.PlayerId);
+            Assert.AreEqual(0, profile.AvatarId);
+            Assert.AreEqual(137, profile.Gold);
+            Assert.AreEqual(123, profile.Exp);
+            var restarted = new LocalPlayerApi(new LocalSaveStore(_filePath)).GetMe().GetAwaiter().GetResult();
+            Assert.AreNotEqual("이전계정", restarted.nickname, "디스크에도 이전 신원을 남기지 않는다");
+            _transport.Response = new HttpResponseData(200,
+                "{\"userId\":43,\"nickname\":\"현재계정\",\"avatarId\":2}");
+            account.RefreshProfileAsync().GetAwaiter().GetResult();
+            Assert.AreEqual("현재계정", profile.Nickname);
+            Assert.AreEqual("43", profile.PlayerId);
+            Assert.AreEqual(2, profile.AvatarId);
+            Assert.AreEqual(137, profile.Gold);
+        }
+
+        [Test]
+        public void Profile_LateResponseAfterLogoutDoesNotOverwriteCachedIdentity()
+        {
+            var saved = _store.Load();
+            saved.nickname = "현재이름";
+            _store.Flush(saved);
+            var transport = new PendingTransport();
+            var api = new ServerBackedAccountApi(new HttpApiClient(new HttpApiConfig("https://example.test"),
+                transport, _session, tokens: _session), new LocalAccountApi(_store), _session);
+            var pending = api.GetProfile();
+            _session.Clear();
+            transport.Completion.TrySetResult(new HttpResponseData(200,
+                "{\"userId\":42,\"nickname\":\"이전계정\",\"avatarId\":3}"));
+            var error = Assert.Throws<ApiException>(() => pending.GetAwaiter().GetResult());
+            Assert.That(error.Code, Is.EqualTo(HttpErrorMapper.SessionExpired));
+            Assert.That(_store.Load().nickname, Is.EqualTo("현재이름"));
+        }
+
+        [Test]
+        public void Profile_DuplicateNicknameKeepsSavedIdentity()
+        {
+            var saved = _store.Load();
+            saved.nickname = "기존이름";
+            saved.avatarId = 2;
+            _store.Flush(saved);
+            _transport.Response = new HttpResponseData(409, "{}");
+
+            var error = Assert.Throws<ApiException>(() => _api.ChangeNickname("중복이름").GetAwaiter().GetResult());
+
+            Assert.That(error.Code, Is.EqualTo("NICKNAME_DUPLICATED"));
+            Assert.That(_store.Load().nickname, Is.EqualTo("기존이름"));
+            Assert.That(_store.Load().avatarId, Is.EqualTo(2));
         }
 
         [Test(Description = "구글 ID 토큰을 게스트 토큰과 함께 POST /api/auth/social/link로 보내고, 204면 성공한다")]

@@ -7,7 +7,7 @@ using Newtonsoft.Json.Linq;
 namespace Game.Network
 {
     /// <summary>서버의 GET /api/user/me로 플레이어 상태를 받는다 (서버 PR #47).
-    /// 서버에는 닉네임이 없어서, 아직 로컬 저장이 데이터를 맡는 동안은 로컬에 저장된 닉네임을 쓴다.
+    /// 진행 조회에 프로필 API의 최신 닉네임·초상을 합친다.
     /// #78/#79 문자열 튜토리얼과 서버 퀘스트 보드를 복원한다. 부분 응답은 적용하지 않는다.</summary>
     public sealed class HttpPlayerApi : IPlayerApi
     {
@@ -19,6 +19,7 @@ namespace Game.Network
         private readonly GameDataStore _data;
         private readonly HttpBattleSourceApi _source;
         private readonly HttpDataVersionApi _versions;
+        private readonly IProfileApi _profiles;
         private sealed class PlayerLevelsResponse
         { public int? baseExp, stepExp, maxLevel, version; }
 
@@ -31,13 +32,14 @@ namespace Game.Network
 
         /// <summary>실제 앱 경로: 서버 전투 원본과 버전을 먼저 검증하고 서버 계정만 복원한다.</summary>
         public HttpPlayerApi(HttpApiClient client, IAuthTokenStore tokens, GameDataStore data,
-            HttpBattleSourceApi source, HttpDataVersionApi versions)
+            HttpBattleSourceApi source, HttpDataVersionApi versions, IProfileApi profiles = null)
         {
             _client = client ?? throw new ArgumentNullException(nameof(client));
             _tokens = tokens ?? throw new ArgumentNullException(nameof(tokens));
             _data = data ?? throw new ArgumentNullException(nameof(data));
             _source = source ?? throw new ArgumentNullException(nameof(source));
             _versions = versions ?? throw new ArgumentNullException(nameof(versions));
+            _profiles = profiles;
         }
 
         public async UniTask<PlayerSnapshot> GetMe()
@@ -75,6 +77,7 @@ namespace Game.Network
             {
                 var local = await _local.GetMe();
                 snapshot = ServerUserMapper.ToSnapshot(data, local.nickname, local.playerId);
+                snapshot.avatarId = local.avatarId;
             }
             else
             {
@@ -82,6 +85,13 @@ namespace Game.Network
                 snapshot = ServerUserMapper.ToSnapshot(data, "플레이어", subject);
             }
             EnsureSession(generation);
+            if (_profiles != null)
+            {
+                var identity = await _profiles.GetProfile();
+                EnsureSession(generation);
+                snapshot.nickname = identity.Nickname;
+                snapshot.avatarId = identity.AvatarId;
+            }
             return snapshot;
         }
 

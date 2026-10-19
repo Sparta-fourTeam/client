@@ -33,6 +33,7 @@ namespace Game.Editor
 
         internal static List<string> Samples(string id)
         {
+            if (id == "LobbyChat") { return new() { "기본", "이모지" }; }
             if (id is "CardSelect" or "CardSlot") { return new() { "기본", "형태변환" }; }
             if (id == "ConfirmPopup") { return new() { "기본", "게스트 로그인", "구글 로그인", "애플 로그인", "안내", "경고", "입력 확인", "입력 완료" }; }
             if (id == "EliteRoulette") { return new() { "기본", "보상 5장", "긴 설명 4장", "긴 설명 5장" }; }
@@ -700,6 +701,7 @@ namespace Game.Editor
 
         private static void ApplySample(GameObject root, string sample)
         {
+            UiChatPreviewSample.Apply(root, sample);
             UiDialoguePreviewSample.Apply(root);
             UiUpgradeConfirmPreviewSample.Apply(root);
             UiSubmitPreviewSample.Apply(root, sample);

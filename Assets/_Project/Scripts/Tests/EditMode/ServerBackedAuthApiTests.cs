@@ -3,6 +3,7 @@ using System.IO;
 using Game.Core;
 using Game.Network;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
 
 namespace Game.Tests
@@ -53,21 +54,26 @@ namespace Game.Tests
         [Test]
         public void ServerAuthOverride_UsesTheSameAccountForServerProgress()
         {
-            const string authKey = "dev.server_auth";
-            const string progressKey = "dev.server_progress";
-            bool hadAuth = PlayerPrefs.HasKey(authKey);
-            string auth = PlayerPrefs.GetString(authKey);
-            bool hadProgress = PlayerPrefs.HasKey(progressKey);
-            string progress = PlayerPrefs.GetString(progressKey);
+            const string authKey = "dev.server_auth", progressKey = "dev.server_progress";
+            bool hadAuth = PlayerPrefs.HasKey(authKey), hadProgress = PlayerPrefs.HasKey(progressKey);
+            string auth = PlayerPrefs.GetString(authKey), progress = PlayerPrefs.GetString(progressKey);
+            bool hadEditorAuth = EditorPrefs.HasKey(ServerConfig.EditorAuthPreferenceKey);
+            bool editorAuth = EditorPrefs.GetBool(ServerConfig.EditorAuthPreferenceKey);
             try
             {
-                PlayerPrefs.SetString(authKey, "1");
+                PlayerPrefs.SetString(authKey, "0");
+                EditorPrefs.SetBool(ServerConfig.EditorAuthPreferenceKey, true);
                 Assert.That(ServerConfig.UseServerAuth, Is.True);
                 PlayerPrefs.DeleteKey(progressKey);
+#if ACCOUNT_SERVER_PROGRESS
+                Assert.That(ServerConfig.UseServerPlayer, Is.True);
+#else
                 Assert.That(ServerConfig.UseServerPlayer, Is.False);
+#endif
                 PlayerPrefs.SetString(progressKey, "1");
                 Assert.That(ServerConfig.UseServerPlayer, Is.True);
-                PlayerPrefs.SetString(authKey, "0");
+                PlayerPrefs.SetString(authKey, "1");
+                EditorPrefs.SetBool(ServerConfig.EditorAuthPreferenceKey, false);
                 Assert.That(ServerConfig.UseServerAuth, Is.False);
                 Assert.That(ServerConfig.UseServerPlayer, Is.False);
             }
@@ -75,6 +81,8 @@ namespace Game.Tests
             {
                 if (hadAuth) { PlayerPrefs.SetString(authKey, auth); } else { PlayerPrefs.DeleteKey(authKey); }
                 if (hadProgress) { PlayerPrefs.SetString(progressKey, progress); } else { PlayerPrefs.DeleteKey(progressKey); }
+                if (hadEditorAuth) { EditorPrefs.SetBool(ServerConfig.EditorAuthPreferenceKey, editorAuth); }
+                else { EditorPrefs.DeleteKey(ServerConfig.EditorAuthPreferenceKey); }
             }
         }
 

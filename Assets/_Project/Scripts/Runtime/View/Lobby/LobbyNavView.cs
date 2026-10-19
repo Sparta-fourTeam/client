@@ -13,6 +13,7 @@ namespace Game.View
             _skillScreen = registry.Get<SkillScreenView>();
             _shopScreen = registry.Get<ShopScreenView>();
             _homeHeader = registry.Get<LobbyHomeHeaderView>();
+            _chatButton = registry.Get<ChatOpenButton>();
         }
 
         [SerializeField] private Button _inventoryTab, _characterTab, _homeTab, _skillTab, _shopTab;
@@ -22,6 +23,7 @@ namespace Game.View
         private SkillScreenView _skillScreen;
         private ShopScreenView _shopScreen;
         private LobbyHomeHeaderView _homeHeader;
+        private ChatOpenButton _chatButton;
 
         private enum Tab
         {
@@ -73,6 +75,7 @@ namespace Game.View
         private void Select(Tab tab)
         {
             _homeHeader.SetVisible(tab == Tab.Home);
+            if (_chatButton != null) { _chatButton.gameObject.SetActive(tab == Tab.Home); }
             _inventoryScreen.SetVisible(tab == Tab.Inventory);
             _characterScreen.SetVisible(tab == Tab.Character);
             _skillScreen.SetVisible(tab == Tab.Skill);

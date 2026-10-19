@@ -39,6 +39,7 @@ namespace Game.Core
 
         public string PlayerId => _snapshot.playerId ?? string.Empty;
         public string Nickname => _snapshot.nickname ?? string.Empty;
+        public int AvatarId => ProfilePortraits.IsValid(_snapshot.avatarId) ? _snapshot.avatarId : 0;
         public int Gold => _snapshot.gold;
         public int Gems => _snapshot.gems;
         public int Exp => _snapshot.exp;

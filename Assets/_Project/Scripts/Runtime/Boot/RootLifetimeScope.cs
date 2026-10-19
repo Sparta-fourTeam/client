@@ -64,15 +64,17 @@ namespace Game.Boot
             // 계정 연동은 서버 인증을 쓰는 빌드에서만 서버로 보낸다 (서버 로그인으로 받은 토큰이 있어야 하기 때문)
             builder.Register<LocalAccountApi>(Lifetime.Singleton);
             builder.Register(c => serverProgress
-                ? new ServerBackedAccountApi(c.Resolve<HttpApiClient>())
-                : new ServerBackedAccountApi(c.Resolve<HttpApiClient>(), c.Resolve<LocalAccountApi>()), Lifetime.Singleton);
+                ? new ServerBackedAccountApi(c.Resolve<HttpApiClient>(), null, c.Resolve<IAuthTokenStore>())
+                : new ServerBackedAccountApi(c.Resolve<HttpApiClient>(), c.Resolve<LocalAccountApi>(), c.Resolve<IAuthTokenStore>()), Lifetime.Singleton);
             builder.Register<IAccountApi>(c => ServerConfig.UseServerAuth ? c.Resolve<ServerBackedAccountApi>() : c.Resolve<LocalAccountApi>(),
                 Lifetime.Singleton);
+            builder.Register<IProfileApi>(c => ServerConfig.UseServerAuth
+                ? (IProfileApi)c.Resolve<ServerBackedAccountApi>() : c.Resolve<LocalAccountApi>(), Lifetime.Singleton);
             builder.Register<AccountService>(Lifetime.Singleton);
             // 서버 인증 계정은 원본·레벨 테이블과 /me가 모두 검증돼야 게임에 진입한다.
             builder.Register<LocalPlayerApi>(Lifetime.Singleton);
             builder.Register(c => new HttpPlayerApi(c.Resolve<HttpApiClient>(), c.Resolve<IAuthTokenStore>(),
-                c.Resolve<GameDataStore>(), c.Resolve<HttpBattleSourceApi>(), c.Resolve<HttpDataVersionApi>()), Lifetime.Singleton);
+                c.Resolve<GameDataStore>(), c.Resolve<HttpBattleSourceApi>(), c.Resolve<HttpDataVersionApi>(), c.Resolve<IProfileApi>()), Lifetime.Singleton);
             builder.Register<IPlayerApi>(c => serverProgress ? c.Resolve<HttpPlayerApi>() : c.Resolve<LocalPlayerApi>(),
                 Lifetime.Singleton);
             builder.Register<LocalBattleApi>(Lifetime.Singleton).AsSelf().As<ISubmitFaultSwitch>();

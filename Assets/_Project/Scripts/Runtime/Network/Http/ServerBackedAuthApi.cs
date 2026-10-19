@@ -32,7 +32,11 @@ namespace Game.Network
             var response = method == LoginMethod.Guest ? await GuestLoginAsync(accountId) : await SocialLoginAsync(method, accountId);
             _session.Set(response.accessToken, response.refreshToken);
             // 서버 진행 모드에서는 로컬 계정 생성·잔액 시드를 수행하지 않는다.
-            if (_local != null) { await _local.Login(method, accountId); }
+            if (_local != null)
+            {
+                await _local.Login(method, accountId);
+                _local.ClearCachedServerIdentity();
+            }
             return response;
         }
 

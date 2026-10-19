@@ -45,6 +45,9 @@ namespace Game.Tests
             SessionState.SetString(EditorStateKey + ".Scene", AssetDatabase.GetAssetPath(EditorSceneManager.playModeStartScene));
             SessionState.SetBool(EditorStateKey + ".HadPreference", EditorPrefs.HasKey(PlayFromBootKey));
             SessionState.SetBool(EditorStateKey + ".Preference", EditorPrefs.GetBool(PlayFromBootKey, false));
+            SessionState.SetBool(EditorStateKey + ".HadServerAuth", EditorPrefs.HasKey(ServerConfig.EditorAuthPreferenceKey));
+            SessionState.SetBool(EditorStateKey + ".ServerAuth", ServerConfig.UseServerAuth);
+            EditorPrefs.SetBool(ServerConfig.EditorAuthPreferenceKey, false);
             SessionState.SetBool(EditorStateKey, true);
             // PlayFromBootMenu would otherwise restore Boot again after the domain reload.
             EditorPrefs.SetBool(PlayFromBootKey, false);
@@ -63,6 +66,13 @@ namespace Game.Tests
                 EditorPrefs.SetBool(PlayFromBootKey, SessionState.GetBool(EditorStateKey + ".Preference", false));
             }
             else { EditorPrefs.DeleteKey(PlayFromBootKey); }
+            if (SessionState.GetBool(EditorStateKey + ".HadServerAuth", false))
+            {
+                EditorPrefs.SetBool(ServerConfig.EditorAuthPreferenceKey, SessionState.GetBool(EditorStateKey + ".ServerAuth", false));
+            }
+            else { EditorPrefs.DeleteKey(ServerConfig.EditorAuthPreferenceKey); }
+            SessionState.EraseBool(EditorStateKey + ".HadServerAuth");
+            SessionState.EraseBool(EditorStateKey + ".ServerAuth");
             SessionState.EraseString(EditorStateKey + ".Scene");
             SessionState.EraseBool(EditorStateKey + ".HadPreference");
             SessionState.EraseBool(EditorStateKey + ".Preference");
@@ -1301,9 +1311,15 @@ namespace Game.Tests
 
             private static JObject EmptyBoard(string period, string nextResetAt) => new()
             {
-                ["period"] = period, ["periodKey"] = "20261019", ["nextResetAt"] = nextResetAt,
-                ["lastLoginDay"] = JValue.CreateNull(), ["loginCount"] = 0,
-                ["spentEnergy"] = 0, ["points"] = 0, ["quests"] = new JArray(), ["chests"] = new JArray()
+                ["period"] = period,
+                ["periodKey"] = "20261019",
+                ["nextResetAt"] = nextResetAt,
+                ["lastLoginDay"] = JValue.CreateNull(),
+                ["loginCount"] = 0,
+                ["spentEnergy"] = 0,
+                ["points"] = 0,
+                ["quests"] = new JArray(),
+                ["chests"] = new JArray()
             };
 
             private static JObject Packs() => new()
@@ -1355,6 +1371,29 @@ namespace Game.Tests
             {
                 var lobby = Object.FindAnyObjectByType<LobbyLifetimeScope>();
                 var ui = lobby.Container.Resolve<IUiRegistry>();
+                var chat = ui.Get<ChatView>();
+                yield return ClickGameButton(Field<Button>(ui.Get<ChatOpenButton>(), "_button"));
+                Assert.That(Field<GameObject>(chat, "_panel").activeSelf, Is.True);
+                Assert.That(Field<Button>(chat, "_sendButton").interactable, Is.False, "로컬 인증에서는 실제 서버 채팅 전송을 막는다");
+                var retryButton = Field<Button>(chat, "_retryButton");
+                var window = Field<RectTransform>(chat, "_window");
+                var retryBounds = RectTransformUtility.CalculateRelativeRectTransformBounds(window, retryButton.transform);
+                var sendBounds = RectTransformUtility.CalculateRelativeRectTransformBounds(window, Field<Button>(chat, "_sendButton").transform);
+                Assert.That(retryBounds.min.y, Is.GreaterThan(sendBounds.max.y), "재접속과 전송의 클릭 영역을 분리한다");
+                yield return ClickGameButton(retryButton);
+                yield return ClickGameButton(Field<Button>(chat, "_emojiButton"));
+                Assert.That(Field<GameObject>(chat, "_emojiPanel").activeSelf, Is.True);
+                retryBounds = RectTransformUtility.CalculateRelativeRectTransformBounds(window, retryButton.transform);
+                sendBounds = RectTransformUtility.CalculateRelativeRectTransformBounds(window, Field<Button>(chat, "_sendButton").transform);
+                var emojiBounds = RectTransformUtility.CalculateRelativeRectTransformBounds(window, Field<GameObject>(chat, "_emojiPanel").transform);
+                Assert.That(retryBounds.min.y, Is.GreaterThan(sendBounds.max.y));
+                Assert.That(retryBounds.min.y, Is.GreaterThan(emojiBounds.max.y), "이모지 창이 재접속 버튼을 덮지 않는다");
+                yield return ClickGameButton(retryButton);
+                yield return ClickGameButton(Field<Button[]>(chat, "_emojiChoices")[0]);
+                Assert.That(Field<TMP_InputField>(chat, "_input").text, Does.Contain(ChatEmojiPalette.Values[0]));
+                yield return ClickGameButton(Field<Button>(chat, "_closeButton"));
+                Assert.That(Field<GameObject>(chat, "_panel").activeSelf, Is.False);
+
                 var mission = ui.Get<MissionScreenView>();
                 var recovery = ui.Get<EnergyRecoverPopupView>();
                 var recoveryPanel = Field<GameObject>(recovery, "_panel");
@@ -1378,6 +1417,14 @@ namespace Game.Tests
                 {
                     var profile = root.Container.Resolve<PlayerProfile>();
                     string playerId = profile.PlayerId;
+                    var portrait = ui.Get<ProfilePopupView>().GetComponentsInChildren<ProfilePortraitView>(true).Single();
+                    yield return ClickGameButton(Field<Button>(portrait, "_button"));
+                    var picker = ui.Get<ProfilePortraitPickerView>();
+                    Assert.That(Field<GameObject>(picker, "_panel").activeSelf, Is.True);
+                    int avatar = (profile.AvatarId + 1) % ProfilePortraits.Count;
+                    yield return ClickGameButton(Field<Button[]>(picker, "_choices")[avatar]);
+                    yield return WaitFor(() => profile.AvatarId == avatar && !Field<GameObject>(picker, "_panel").activeSelf);
+                    Assert.That(root.Container.Resolve<IProfileApi>().GetProfile().GetAwaiter().GetResult().AvatarId, Is.EqualTo(avatar));
                     var confirm = ui.Get<ConfirmPopupView>();
                     yield return ClickGameButton(Field<Button>(ui.Get<ProfilePopupView>(), "_renameButton"));
                     yield return WaitFor(() => confirm.IsOpen);

@@ -134,6 +134,7 @@ namespace Game.Network
         private void Apply(ServerShopAccount account)
         {
             var snapshot = ServerUserMapper.ToSnapshot(account.User, _profile.Nickname, _profile.PlayerId);
+            snapshot.avatarId = _profile.AvatarId;
             _api.EnsureSession();
             _profile.Apply(snapshot);
             _account = account;
