@@ -29,7 +29,14 @@ namespace Game.Network
         public static bool ResolveServerProgress(bool serverAuth, bool buildEnabled, string preference) =>
             serverAuth && (buildEnabled || preference == "1");
 
+#if UNITY_EDITOR
+        // 에디터 선택은 프로젝트 폴더별로 저장하고 기기용 PlayerPrefs와 분리한다.
+        public static string EditorAuthPreferenceKey => $"ProjectNova.ServerAuth.{Hash128.Compute(Application.dataPath)}";
+
+        public static bool UseServerAuth => UnityEditor.EditorPrefs.GetBool(EditorAuthPreferenceKey, false);
+#else
         public static bool UseServerAuth => ResolveServerAuth(Application.platform, PlayerPrefs.GetString(OverrideKey, string.Empty));
+#endif
 
         /// <summary>개발 override를 우선하고, 없으면 Android에서 서버 인증·계정 API를 선택한다.</summary>
         public static bool ResolveServerAuth(RuntimePlatform platform, string preference)

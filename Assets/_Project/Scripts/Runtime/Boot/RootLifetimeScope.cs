@@ -68,11 +68,13 @@ namespace Game.Boot
                 : new ServerBackedAccountApi(c.Resolve<HttpApiClient>(), c.Resolve<LocalAccountApi>()), Lifetime.Singleton);
             builder.Register<IAccountApi>(c => ServerConfig.UseServerAuth ? c.Resolve<ServerBackedAccountApi>() : c.Resolve<LocalAccountApi>(),
                 Lifetime.Singleton);
+            builder.Register<IProfileApi>(c => ServerConfig.UseServerAuth
+                ? (IProfileApi)c.Resolve<ServerBackedAccountApi>() : c.Resolve<LocalAccountApi>(), Lifetime.Singleton);
             builder.Register<AccountService>(Lifetime.Singleton);
             // 서버 인증 계정은 원본·레벨 테이블과 /me가 모두 검증돼야 게임에 진입한다.
             builder.Register<LocalPlayerApi>(Lifetime.Singleton);
             builder.Register(c => new HttpPlayerApi(c.Resolve<HttpApiClient>(), c.Resolve<IAuthTokenStore>(),
-                c.Resolve<GameDataStore>(), c.Resolve<HttpBattleSourceApi>(), c.Resolve<HttpDataVersionApi>()), Lifetime.Singleton);
+                c.Resolve<GameDataStore>(), c.Resolve<HttpBattleSourceApi>(), c.Resolve<HttpDataVersionApi>(), c.Resolve<IProfileApi>()), Lifetime.Singleton);
             builder.Register<IPlayerApi>(c => serverProgress ? c.Resolve<HttpPlayerApi>() : c.Resolve<LocalPlayerApi>(),
                 Lifetime.Singleton);
             builder.Register<LocalBattleApi>(Lifetime.Singleton).AsSelf().As<ISubmitFaultSwitch>();

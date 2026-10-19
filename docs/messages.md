@@ -35,6 +35,7 @@
 | `StageResult` | 사건 | StageManager |
 | `SubmitFailed` | 사건 | StageManager |
 | `SubmitRejected` | 사건 | StageManager |
+| `ChatChanged` | Buffered | ChatService |
 | `WalletChanged` | Buffered | LobbyModel |
 | `EnergyChanged` | Buffered | EnergyClock |
 | `UpgradeChanged` | 사건 | UpgradeService |
@@ -80,3 +81,7 @@ builder.RegisterBuildCallback(c => GlobalMessagePipe.SetProvider(c.AsServiceProv
 재생 중 `Tools > Project Nova > Playtest`를 연다. 전투 입장, 일시정지·재개·포기, 방벽 파괴, 카드 선택, Local 백엔드의 결과 제출 실패·재시도를 실제 게임 서비스로 실행한다. 에너지 소모와 결과 보상도 실제 로컬 저장에 반영된다.
 
 임의 메시지를 발행하던 Message Debugger는 삭제했다. 표시만 바꾸는 메시지를 직접 보내면 UI와 모델이 서로 다른 상태가 될 수 있다. 구독 현황은 MessagePipe의 Diagnostics 창에서, 메시지의 계약은 EditMode 테스트에서 확인한다. 새 메시지를 추가할 때 디버그 버튼을 함께 만들 필요는 없다.
+
+`ChatChanged`는 로비 채팅의 목록·연결 상태·읽지 않은 개수·접속자 수가 바뀌었음을 알린다. 현재 값은 `ChatService`에서 읽는다. 로비 입장 시 최근 대화를 받은 뒤 구독하고, 로비를 벗어나면 연결을 취소한다. 전송 내용은 서버 브로드캐스트를 받은 시점에만 목록에 추가한다.
+
+접속자 수는 `/topic/chat/presence`의 `{ "onlineCount": 128 }`를 받았을 때만 표시한다. 0명도 유효한 값이며, 수신 전이나 연결 종료 후에는 알 수 없는 상태로 둔다. 접속자 집계 기준은 서버가 정한다.

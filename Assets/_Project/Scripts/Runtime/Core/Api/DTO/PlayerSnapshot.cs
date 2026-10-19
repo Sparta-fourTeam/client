@@ -7,8 +7,9 @@ namespace Game.Core
     [Serializable]
     public class PlayerSnapshot
     {
-        /// <summary>플레이어 닉네임. 프로필에서 선택적으로 변경하며 중복을 허용한다</summary>
+        /// <summary>플레이어 닉네임. 프로필에서 변경하며 서버는 중복을 거절한다</summary>
         public string nickname;
+        public int avatarId;
         /// <summary>공개 표시 ID. 현재는 로컬 세이브 단위이며 로그인 자격 정보로 사용하지 않는다</summary>
         public string playerId;
         public int gold;

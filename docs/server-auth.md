@@ -109,7 +109,9 @@ PR #58은 `GET /api/item`, `GET /api/upgrade`, `POST /api/user/upgrades`도 추�
 
 `UseServerPlayer`는 이 인증 기본값과 별개이며, `dev.server_player`가 문자열 `"1"`일 때만 서버 플레이어 API를 쓴다. 게임 진행 데이터는 기본으로 로컬에 남는다.
 
-`PlayerPrefs`의 `dev.server_auth`에 `"1"`(켬) 또는 `"0"`(끔)을 넣어 기본값을 바꿀 수 있다. 이 override는 개발·릴리스 모두 기본값보다 우선한다. 기존 설치에 `"0"`이 남아 있으면 Android release도 로컬 인증·로컬 계정 삭제를 사용한다. 에디터에서 게스트만 서버로 시험해 보려면 `"1"`로 둔다 (구글은 가짜라 실패한다).
+에디터에서는 **Tools → Project Nova → Server Authentication** 메뉴를 눌러 켜고 끈다. 체크 표시가 있으면 서버 인증을 사용한다. 재생을 중지한 상태에서 변경하고 Boot부터 다시 재생한다. 게스트로 서버 로그인을 시험할 수 있으며 에디터의 가짜 구글 로그인은 서버에서 실패한다. 선택은 프로젝트 폴더별 EditorPrefs에 저장되어 에디터를 다시 열어도 유지되며, 에디터는 `dev.server_auth` PlayerPrefs를 사용하지 않는다.
+
+기기 빌드에서는 `PlayerPrefs`의 `dev.server_auth`에 `"1"`(켬) 또는 `"0"`(끔)을 넣어 기본값을 바꿀 수 있다. 이 override는 개발·릴리스 모두 기본값보다 우선한다. 기존 설치에 `"0"`이 남아 있으면 Android release도 로컬 인증·로컬 계정 삭제를 사용한다.
 
 ## `BackendSettings`와의 차이
 

@@ -2,6 +2,7 @@ using System.IO;
 using Game.Core;
 using Game.Network;
 using Game.View;
+using MessagePipe;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
@@ -15,6 +16,9 @@ namespace Game.Boot
         protected override void Configure(IContainerBuilder builder)
         {
             new UiInstaller(_uiHost).Install(builder);
+            builder.Register<IChatClient, HttpChatClient>(Lifetime.Scoped);
+            builder.RegisterMessageBroker<ChatChanged>(new MessagePipeOptions { InstanceLifetime = InstanceLifetime.Scoped });
+            builder.RegisterEntryPoint<ChatService>().AsSelf();
             builder.Register<IUtcClock, SystemUtcClock>(Lifetime.Singleton);
             builder.RegisterEntryPoint<LobbyProfileRefresher>().AsSelf();
             builder.RegisterEntryPoint<LobbyModel>();

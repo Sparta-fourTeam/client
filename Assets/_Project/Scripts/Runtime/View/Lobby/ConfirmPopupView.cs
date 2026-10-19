@@ -20,6 +20,7 @@ namespace Game.View
         /// <summary>자유 입력의 유효성 검사. RequiredInput이 있으면 기존 삭제 확인처럼 완전 일치를 우선한다</summary>
         public System.Func<string, bool> InputValidator;
         public string InputValue;
+        public string InitialInput;
     }
 
     /// <summary>로비의 공용 확인·안내 팝업. 로그아웃·계정 삭제 확인과 안내 문구에 쓴다.
@@ -73,7 +74,7 @@ namespace Game.View
             bool needsInput = !string.IsNullOrEmpty(request.RequiredInput) || request.InputValidator != null;
             request.InputValue = null;
             _input.gameObject.SetActive(needsInput);
-            _input.SetTextWithoutNotify(string.Empty);
+            _input.SetTextWithoutNotify(request.InitialInput ?? string.Empty);
             ((TMP_Text)_input.placeholder).text = request.InputPlaceholder;
 
             // 경고·입력창이 없으면 창을 줄여 빈 공간을 없앤다

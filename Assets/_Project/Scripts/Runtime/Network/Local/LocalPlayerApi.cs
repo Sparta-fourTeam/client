@@ -19,6 +19,7 @@ namespace Game.Network
         internal static PlayerSnapshot ToSnapshot(LocalSave save) => new()
         {
             nickname = save.nickname,
+            avatarId = save.avatarId,
             playerId = save.playerId,
             gold = save.wallet.gold,
             gems = save.wallet.gems,

@@ -145,3 +145,11 @@ MonoBehaviour:
     Prefab: {fileID: 3468135605265646659, guid: 65f2e79b0c10641c1818656cbf19ac80, type: 3}
     ParentPath: NavUI/Overlays
     SiblingIndex: 7
+  - Id: LobbyChatButton
+    Prefab: {fileID: 4894225978950681413, guid: 7348d36f9dee5474bb62b1b0b234b29b, type: 3}
+    ParentPath: NavUI/SafeArea
+    SiblingIndex: 5
+  - Id: LobbyChat
+    Prefab: {fileID: 4540748754968415365, guid: 87065eab5a08c40cf9dda9aec16050a4, type: 3}
+    ParentPath: NavUI/Popups
+    SiblingIndex: 14

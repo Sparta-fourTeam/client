@@ -13,12 +13,14 @@ namespace Game.Core
     public sealed class LobbyProfileRefresher : IStartable
     {
         private readonly IPlayerApi _playerApi;
+        private readonly AccountService _account;
         private readonly PlayerProfile _profile;
         private readonly UniTaskCompletionSource _loaded = new UniTaskCompletionSource();
 
-        public LobbyProfileRefresher(IPlayerApi playerApi, PlayerProfile profile)
+        public LobbyProfileRefresher(IPlayerApi playerApi, PlayerProfile profile, AccountService account = null)
         {
             _playerApi = playerApi;
+            _account = account;
             _profile = profile;
         }
 
@@ -53,6 +55,7 @@ namespace Game.Core
             {
                 PlayerSnapshot snapshot = await _playerApi.GetMe();
                 _profile.Apply(snapshot);
+                if (_account != null) { await _account.RefreshProfileAsync(); }
                 if (!_hadProfile)
                 {
                     LevelBefore = _profile.Level;

@@ -27,6 +27,7 @@ namespace Game.Core
     public sealed class AccountService
     {
         private readonly IAccountApi _api;
+        private readonly IProfileApi _profiles;
         private readonly IBattleCheckpointStore _checkpoints;
         private readonly IAuthCredentialStore _credentials;
         private readonly ISceneNavigator _nav;
@@ -37,12 +38,13 @@ namespace Game.Core
 
         public AccountService(IAccountApi api, IAuthCredentialStore credentials, ISceneNavigator nav, IReadOnlyList<ISocialSignIn> social,
             PlayerProfile profile = null, IBattleCheckpointStore checkpoints = null,
-            ILoginConsentStore consents = null, IAnalyticsCollectionControl analytics = null)
+            ILoginConsentStore consents = null, IAnalyticsCollectionControl analytics = null, IProfileApi profiles = null)
         {
             _consents = consents;
             _analytics = analytics;
             _checkpoints = checkpoints;
             _api = api;
+            _profiles = profiles;
             _credentials = credentials;
             _nav = nav;
             _social = social ?? Array.Empty<ISocialSignIn>();
@@ -120,6 +122,28 @@ namespace Game.Core
             string saved = await _api.ChangeNickname(nickname);
             var snapshot = _profile.Snapshot();
             snapshot.nickname = saved;
+            _profile.Apply(snapshot);
+        }
+
+        public async UniTask RefreshProfileAsync()
+        {
+            if (_profiles == null || _profile == null || !_profile.IsLoaded) { return; }
+            ApplyIdentity(await _profiles.GetProfile());
+        }
+
+        public async UniTask ChangeAvatarAsync(int avatarId)
+        {
+            if (!ProfilePortraits.IsValid(avatarId)) { throw new ApiException(ApiErrorKind.Rejected, "INVALID_AVATAR"); }
+            if (_profiles == null || _profile == null || !_profile.IsLoaded) { throw new InvalidOperationException("프로필이 준비되지 않았습니다."); }
+            ApplyIdentity(await _profiles.ChangeAvatar(avatarId));
+        }
+
+        private void ApplyIdentity(PlayerIdentity identity)
+        {
+            var snapshot = _profile.Snapshot();
+            snapshot.nickname = identity.Nickname;
+            snapshot.avatarId = identity.AvatarId;
+            snapshot.playerId = identity.PlayerId;
             _profile.Apply(snapshot);
         }
 

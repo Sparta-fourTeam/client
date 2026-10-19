@@ -1,0 +1,116 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Threading;
+using Cysharp.Threading.Tasks;
+using Game.Core;
+using Game.Network;
+using MessagePipe;
+using NUnit.Framework;
+
+namespace Game.Tests
+{
+    public sealed class ChatTests
+    {
+        [Test]
+        public void Frames_PreserveFragmentedUtf8AndReadMultipleFramesWithHeartbeats()
+        {
+            var reader = new StompFrameReader();
+            byte[] bytes = Encoding.UTF8.GetBytes("\nCONNECTED\r\nversion:1.2\r\n\r\n\0\nMESSAGE\ndestination:/topic/chat\ncontent-length:6\n\n안녕\0");
+            for (int i = 0; i < bytes.Length - 1; i++) { reader.Append(new[] { bytes[i] }, 1); }
+            Assert.IsTrue(reader.TryRead(out var connected));
+            Assert.AreEqual("CONNECTED", connected.Command);
+            Assert.IsFalse(reader.TryRead(out _), "NUL 도착 전 메시지를 공개하지 않는다");
+            reader.Append(new byte[] { 0 }, 1);
+            Assert.IsTrue(reader.TryRead(out var message));
+            Assert.AreEqual("안녕", message.Body);
+            Assert.IsFalse(reader.TryRead(out _));
+        }
+
+        [Test]
+        public void Frames_HonorByteLengthIncludingEmbeddedNulAndFirstHeader()
+        {
+            var reader = new StompFrameReader();
+            var bytes = Encoding.UTF8.GetBytes("MESSAGE\nx:a\\cb\nx:ignored\ncontent-length:3\n\na\0b\0");
+            reader.Append(bytes, bytes.Length);
+            Assert.IsTrue(reader.TryRead(out var frame));
+            Assert.AreEqual("a:b", frame.Headers["x"]);
+            Assert.AreEqual("a\0b", frame.Body);
+        }
+
+        [Test]
+        public void Frames_RejectInvalidLengthAndMissingTerminator()
+        {
+            foreach (string frame in new[] { "MESSAGE\ncontent-length:-1\n\na\0", "MESSAGE\ncontent-length:1\n\nab" })
+            {
+                var reader = new StompFrameReader();
+                var bytes = Encoding.UTF8.GetBytes(frame); reader.Append(bytes, bytes.Length);
+                Assert.Throws<FormatException>(() => reader.TryRead(out _));
+            }
+        }
+
+        [Test]
+        public void Recent_UsesAuthenticatedRestAndPreservesServerOrder()
+        {
+            var auth = new AuthSession(); auth.Set("test-access", "test-refresh");
+            var transport = new FakeHttpTransport
+            {
+                Response = new HttpResponseData(200,
+                "[{\"senderId\":4,\"content\":\"먼저\",\"sentAt\":\"2026-10-19T03:54:04.298Z\"},{\"senderId\":5,\"content\":\"다음\",\"sentAt\":\"2026-10-19T03:55:04.298Z\"}]")
+            };
+            var config = new HttpApiConfig("https://example.test");
+            var api = new HttpChatClient(new HttpApiClient(config, transport, auth), config, auth);
+            var recent = api.GetRecentAsync(default).GetAwaiter().GetResult();
+            Assert.AreEqual("https://example.test/api/chat/recent", transport.Requests[0].Url);
+            Assert.AreEqual("Bearer test-access", transport.Requests[0].Headers["Authorization"]);
+            Assert.AreEqual("먼저", recent[0].Content);
+            Assert.AreEqual("다음", recent[1].Content);
+        }
+
+        [Test]
+        public void Chat_ShowsOnlyBroadcastAndCountsUnreadOnlyWhileClosed()
+        {
+            var client = new Client();
+            using var service = new ChatService(client, new Publisher());
+            service.Start();
+            Assert.AreEqual(1, service.Messages.Count);
+            Assert.IsNull(service.OnlineCount);
+            client.Presence(128);
+            Assert.AreEqual(128, service.OnlineCount);
+            client.Presence(0);
+            Assert.AreEqual(0, service.OnlineCount, "0명도 서버가 보낸 실제 상태다");
+            Assert.Zero(service.UnreadCount, "최근 대화는 새 알림에 세지 않는다");
+            Assert.IsFalse(service.SendAsync(" \t").GetAwaiter().GetResult());
+            Assert.IsTrue(service.SendAsync("안녕").GetAwaiter().GetResult());
+            Assert.AreEqual(1, service.Messages.Count, "송신 완료로 메시지를 미리 추가하지 않는다");
+            client.Received(new ChatMessage(4, "안녕", DateTimeOffset.UtcNow));
+            Assert.AreEqual(2, service.Messages.Count);
+            Assert.AreEqual(1, service.UnreadCount);
+            service.SetOpen(true);
+            client.Received(new ChatMessage(5, "반가워", DateTimeOffset.UtcNow));
+            Assert.Zero(service.UnreadCount);
+            service.Dispose();
+            Assert.IsTrue(client.Token.IsCancellationRequested);
+            Assert.IsNull(service.OnlineCount, "연결 종료 후 이전 인원수를 현재 값으로 표시하지 않는다");
+        }
+
+        private sealed class Publisher : IBufferedPublisher<ChatChanged>
+        { public void Publish(ChatChanged message) { } }
+        private sealed class Client : IChatClient
+        {
+            public Action<ChatMessage> Received;
+            public Action<int> Presence;
+            public CancellationToken Token;
+            private readonly UniTaskCompletionSource _disconnected = new();
+            public UniTask<IReadOnlyList<ChatMessage>> GetRecentAsync(CancellationToken token) =>
+                UniTask.FromResult<IReadOnlyList<ChatMessage>>(new[] { new ChatMessage(1, "기존", DateTimeOffset.UtcNow) });
+            public UniTask RunAsync(Action connected, Action<ChatMessage> received, Action<int> presence, CancellationToken token)
+            {
+                Token = token; Received = received; Presence = presence; connected();
+                token.Register(() => _disconnected.TrySetCanceled(token));
+                return _disconnected.Task;
+            }
+            public UniTask SendAsync(string content, CancellationToken token) => UniTask.CompletedTask;
+        }
+    }
+}

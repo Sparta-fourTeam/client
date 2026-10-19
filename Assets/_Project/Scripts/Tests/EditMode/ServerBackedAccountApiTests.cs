@@ -85,6 +85,42 @@ namespace Game.Tests
             Directory.Delete(_directory, true);
         }
 
+        [Test]
+        public void Profile_UpdatePersistsServerIdentityWithoutReplacingProgress()
+        {
+            var saved = _store.Load();
+            saved.exp = 123;
+            _store.Flush(saved);
+            _transport.Response = new HttpResponseData(200, "{\"userId\":42,\"nickname\":\"서버이름\",\"avatarId\":3}");
+
+            var identity = _api.ChangeAvatar(3).GetAwaiter().GetResult();
+
+            Assert.That(identity.PlayerId, Is.EqualTo("42"));
+            var after = _store.Load();
+            Assert.That(after.avatarId, Is.EqualTo(3));
+            Assert.That(after.nickname, Is.EqualTo("서버이름"));
+            Assert.That(after.exp, Is.EqualTo(123));
+            Assert.That(_transport.Requests[0].Url, Is.EqualTo("https://example.test/api/user/profile"));
+            StringAssert.Contains("\"avatarId\":3", _transport.Requests[0].Body);
+            StringAssert.DoesNotContain("nickname", _transport.Requests[0].Body);
+        }
+
+        [Test]
+        public void Profile_DuplicateNicknameKeepsSavedIdentity()
+        {
+            var saved = _store.Load();
+            saved.nickname = "기존이름";
+            saved.avatarId = 2;
+            _store.Flush(saved);
+            _transport.Response = new HttpResponseData(409, "{}");
+
+            var error = Assert.Throws<ApiException>(() => _api.ChangeNickname("중복이름").GetAwaiter().GetResult());
+
+            Assert.That(error.Code, Is.EqualTo("NICKNAME_DUPLICATED"));
+            Assert.That(_store.Load().nickname, Is.EqualTo("기존이름"));
+            Assert.That(_store.Load().avatarId, Is.EqualTo(2));
+        }
+
         [Test(Description = "구글 ID 토큰을 게스트 토큰과 함께 POST /api/auth/social/link로 보내고, 204면 성공한다")]
         public void Link_SendsProviderAndIdTokenWithBearer()
         {

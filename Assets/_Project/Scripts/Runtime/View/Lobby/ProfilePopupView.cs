@@ -70,18 +70,34 @@ namespace Game.View
             _renameButton.interactable = false;
             try
             {
-                var request = new ConfirmRequest
+                string draft = _profile.Nickname;
+                string warning = null;
+                while (this != null)
                 {
-                    Title = "닉네임 변경",
-                    Message = "한글, 영문, 숫자, 밑줄(_)로 2~20자를 입력해 주세요.\n다른 플레이어와 같은 이름을 사용할 수 있습니다.",
-                    ConfirmLabel = "변경",
-                    CancelLabel = "취소",
-                    InputPlaceholder = "새 닉네임",
-                    InputValidator = NicknameRules.IsValid,
-                };
-                if (!await _confirm.ShowAsync(request)) { return; }
-                await _account.ChangeNicknameAsync(request.InputValue);
-                _toast.Show("닉네임을 변경했습니다.");
+                    var request = new ConfirmRequest
+                    {
+                        Title = "닉네임 변경",
+                        Message = "한글, 영문, 숫자, 밑줄(_)로 2~20자를 입력해 주세요.",
+                        Warning = warning,
+                        ConfirmLabel = "변경",
+                        CancelLabel = "취소",
+                        InputPlaceholder = "새 닉네임",
+                        InitialInput = draft,
+                        InputValidator = value => NicknameRules.IsValid(value?.Trim()),
+                    };
+                    if (!await _confirm.ShowAsync(request)) { return; }
+                    draft = request.InputValue.Trim();
+                    try
+                    {
+                        await _account.ChangeNicknameAsync(draft);
+                        _toast.Show("닉네임을 변경했습니다.");
+                        return;
+                    }
+                    catch (ApiException error) when (error.Code == "NICKNAME_DUPLICATED" || error.Code == "HTTP_409")
+                    { warning = "이미 사용 중인 닉네임입니다. 다른 이름을 입력해 주세요."; }
+                    catch (ApiException)
+                    { warning = "저장하지 못했습니다. 연결 상태를 확인하고 다시 시도해 주세요."; }
+                }
             }
             catch (System.OperationCanceledException) { throw; }
             catch (System.Exception ex)
