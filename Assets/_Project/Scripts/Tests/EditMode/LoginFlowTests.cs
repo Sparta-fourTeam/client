@@ -35,7 +35,14 @@ namespace Game.Tests
 
         private sealed class FakePlayerApi : IPlayerApi
         {
-            public UniTask<PlayerSnapshot> GetMe() => UniTask.FromResult(new PlayerSnapshot { gold = 77 });
+            public int Calls;
+            public int FailFirst;
+            public UniTask<PlayerSnapshot> GetMe()
+            {
+                Calls++;
+                if (Calls <= FailFirst) { throw new InvalidOperationException("플레이어 조회 실패 (테스트)"); }
+                return UniTask.FromResult(new PlayerSnapshot { gold = 77 });
+            }
         }
 
         private sealed class MemoryCredentialStore : IAuthCredentialStore
@@ -327,6 +334,23 @@ namespace Game.Tests
 
             Assert.IsNull(_auth.LastAccountId);
             Assert.AreEqual("server-guest-id", _credentials.AccountId);
+        }
+
+        [Test(Description = "신규 게스트 가입 후 상태 조회가 실패해도 같은 인증으로 재조회하고 게스트 ID를 보존한다")]
+        public void NewGuest_ProfileReadRetry_DoesNotSignUpAgain()
+        {
+            _auth.ReturnAccountId = "server-guest-id";
+            var player = new FakePlayerApi { FailFirst = 1 };
+            LogAssert.Expect(LogType.Exception, new Regex("플레이어 조회 실패"));
+
+            new LoginFlow(_auth, player, _profile, _credentials, _prompt,
+                Array.Empty<ISocialSignIn>(), _analytics, _consents).RunAsync().GetAwaiter().GetResult();
+
+            Assert.AreEqual(1, _auth.Calls);
+            Assert.AreEqual(2, player.Calls);
+            Assert.AreEqual("server-guest-id", _credentials.AccountId);
+            Assert.AreEqual(77, _profile.Gold);
+            CollectionAssert.Contains(_prompt.Calls, "retry");
         }
 
         [Test(Description = "로그인창을 기다리는 중에 취소되면(씬 전환 등) 로그인하지 않고 취소를 그대로 전한다")]

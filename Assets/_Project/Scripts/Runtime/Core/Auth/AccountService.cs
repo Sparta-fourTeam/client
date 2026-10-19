@@ -131,25 +131,26 @@ namespace Game.Core
                 await _api.DeleteAccount();
             }
 
-            await ReturnToLoginAsync(clearProfile: IsGuest);
+            await ReturnToLoginAsync();
         }
 
         public async UniTask DeleteAccountAsync()
         {
             await _api.DeleteAccount();
-            await ReturnToLoginAsync(clearProfile: true);
+            await ReturnToLoginAsync();
         }
 
         /// <summary>계정과 진행을 지우지 않고 기존 로그인 방식·게스트 ID로 인증 절차를 다시 밟는다.</summary>
         public UniTask ReauthenticateAsync() => _nav.GoToLoading();
 
-        private UniTask ReturnToLoginAsync(bool clearProfile = false)
+        private UniTask ReturnToLoginAsync()
         {
             _analytics?.SetCollectionAllowed(false);
             _consents?.Clear();
             _checkpoints?.Clear();
             _credentials.Clear();
-            if (clearProfile) { _profile?.Clear(); }
+            // 서버 데이터는 계정에 남아 있어도 이 기기의 화면 캐시는 다음 계정에 노출하면 안 된다.
+            _profile?.Clear();
             return _nav.GoToLoading();
         }
     }

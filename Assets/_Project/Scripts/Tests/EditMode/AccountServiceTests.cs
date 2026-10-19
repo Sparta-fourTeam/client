@@ -122,18 +122,24 @@ namespace Game.Tests
             Assert.AreEqual(1, _nav.LoadingCalls);
         }
 
-        [Test(Description = "연동한 계정이 로그아웃하면 데이터는 남기고 로그인 정보만 비운다")]
+        [Test(Description = "연동한 계정이 로그아웃하면 서버 데이터는 남기고 기기 프로필 캐시는 비운다")]
         public void Logout_Linked_KeepsData()
         {
             _credentials.Save(LoginMethod.Google, "token");
+            var profile = new PlayerProfile(null);
+            profile.Apply(new PlayerSnapshot { gold = 321, exp = 900 });
 
-            Create().LogoutAsync().GetAwaiter().GetResult();
+            new AccountService(_api, new SessionAuthCredentialStore(_credentials, _session), _nav, null, profile)
+                .LogoutAsync().GetAwaiter().GetResult();
 
             Assert.AreEqual(0, _api.Deleted);
             Assert.IsFalse(_credentials.HasCredential);
             Assert.AreEqual(1, _nav.LoadingCalls);
             Assert.IsNull(_session.AccessToken);
             Assert.IsNull(_session.RefreshToken);
+            Assert.IsFalse(profile.IsLoaded);
+            Assert.AreEqual(0, profile.Gold);
+            Assert.AreEqual(0, profile.Exp);
             Assert.IsFalse(_session.GetHeaders().ContainsKey("Authorization"), "로그아웃/삭제 후 서버 인증 헤더가 남으면 안 된다");
         }
 

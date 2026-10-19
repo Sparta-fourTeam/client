@@ -55,7 +55,7 @@ namespace Game.Core
             // 게스트는 저장한 게스트 ID로 다시 로그인한다. 외부 계정은 저장한 값이 오래된 토큰이라 쓰지 않고,
             // 실행할 때마다 외부 계정으로 다시 로그인해 새 토큰을 받는다
             string accountId = method == LoginMethod.Guest ? _credentials.AccountId : null;
-            LoginResponse response;
+            LoginResponse response = null;
             // 저장된 방식으로 바로 들어가는 동안은 계정 선택 없이 로그인을 시도하고, 로그인창에서 사용자가 고른 뒤에는 선택창을 보여 준다
             bool silent = method != null;
 
@@ -65,6 +65,7 @@ namespace Game.Core
                 {
                     method = await _prompt.WaitForSignInAsync(AvailableMethods());
                     accountId = null;
+                    response = null;
                     silent = false;
                     prompted = true;
                 }
@@ -79,10 +80,24 @@ namespace Game.Core
                     }
                 }
 
-                response = await TrySignInAsync(method.Value, accountId);
+                _prompt.ShowSigningIn();
+                if (response == null)
+                {
+                    response = await TryAuthenticateAsync(method.Value, accountId);
+                    // 신규 게스트 가입은 이미 서버에서 확정됐다. 이후 /me만 실패해도
+                    // 같은 게스트를 재조회해야 하므로 발급 ID를 즉시 보존한다.
+                    if (response != null && method == LoginMethod.Guest && !string.IsNullOrEmpty(response.accountId))
+                    {
+                        accountId = response.accountId;
+                        _credentials.Save(LoginMethod.Guest, accountId);
+                    }
+                }
+
                 if (response != null)
                 {
-                    break;
+                    var (loaded, sessionExpired) = await TryLoadProfileAsync();
+                    if (loaded) { break; }
+                    if (sessionExpired) { response = null; }
                 }
 
                 await _prompt.WaitForRetryAsync();
@@ -154,16 +169,12 @@ namespace Game.Core
             }
         }
 
-        /// <summary>로그인하고 플레이어 상태를 프로필에 반영한다. 실패하면 로그만 남기고 null을 돌려준다</summary>
-        private async UniTask<LoginResponse> TrySignInAsync(LoginMethod method, string accountId)
+        /// <summary>인증 성공과 플레이어 조회를 분리해, 조회 실패 재시도가 새 게스트를 만들지 않게 한다.</summary>
+        private async UniTask<LoginResponse> TryAuthenticateAsync(LoginMethod method, string accountId)
         {
-            _prompt.ShowSigningIn();
             try
             {
-                var response = await _auth.Login(method, accountId);
-                var snapshot = await _player.GetMe();
-                _profile.Apply(snapshot);
-                return response;
+                return await _auth.Login(method, accountId);
             }
             catch (OperationCanceledException)
             {
@@ -173,6 +184,21 @@ namespace Game.Core
             {
                 Debug.LogException(ex);
                 return null;
+            }
+        }
+
+        private async UniTask<(bool loaded, bool sessionExpired)> TryLoadProfileAsync()
+        {
+            try
+            {
+                _profile.Apply(await _player.GetMe());
+                return (true, false);
+            }
+            catch (OperationCanceledException) { throw; }
+            catch (Exception ex)
+            {
+                Debug.LogException(ex);
+                return (false, ex is ApiException api && (api.Code == "SESSION_EXPIRED" || api.Code == "HTTP_401"));
             }
         }
     }
