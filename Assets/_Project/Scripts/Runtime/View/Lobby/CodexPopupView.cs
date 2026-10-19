@@ -65,8 +65,10 @@ namespace Game.View
             if (_data == null || _profile == null) { return; }
             var monsters = _data.Monsters.Values.Where(m => m.GetEnemyType() == Grade)
                 .GroupBy(m => CodexFamilyId(m.Id))
-                .OrderBy(group => group.Min(m => m.Hp)).ThenBy(group => group.Key)
-                .SelectMany(group => group.OrderBy(m => m.Hp).ThenBy(m => m.Damage).ThenBy(m => m.Id)).ToList();
+                .OrderBy(group => group.FirstOrDefault(m => m.Id == group.Key)?.Hp ?? group.Min(m => m.Hp))
+                .ThenBy(group => group.Key)
+                .SelectMany(group => group.OrderBy(m => m.Id == group.Key ? 0 : 1)
+                    .ThenBy(m => m.Hp).ThenBy(m => m.Damage).ThenBy(m => m.Id)).ToList();
             int discovered = monsters.Count(m => _profile.IsMonsterRegistered(m.Id));
             _progressText.text = $"발견 {discovered} / {monsters.Count}";
             EmptyLabel.gameObject.SetActive(monsters.Count == 0);
