@@ -296,11 +296,13 @@ namespace Game.Tests
             {
                 _tokens.Set(Token(41), "refresh-a");
                 _api = new HttpShopApi(new HttpApiConfig("https://example.test"), _transport, _tokens);
-                var session = new ServerShopViewSession(_api, new ShopPendingRequestStore(directory, _tokens),
-                    new PlayerProfile(new GameDataStore()));
+                var profile = new PlayerProfile(new GameDataStore());
+                profile.Apply(new PlayerSnapshot { playerId = "41", nickname = "선택한초상", avatarId = 3 });
+                var session = new ServerShopViewSession(_api, new ShopPendingRequestStore(directory, _tokens), profile);
                 _transport.Queued.Enqueue(Ok(Account(40, 12, Daily())));
                 _transport.Queued.Enqueue(Ok(Packs()));
                 session.Restore().GetAwaiter().GetResult();
+                Assert.AreEqual(3, profile.AvatarId, "상점 첫 조회가 선택한 초상을 보존한다");
 
                 // 고정 요청 ID는 실행 시 생성된다. 이 테스트에서는 POST 응답이 원래 키를 되돌려 준다.
                 _transport.OnSend = request => request.Verb == HttpVerb.Post
@@ -321,11 +323,42 @@ namespace Game.Tests
                 Assert.AreEqual(1, _transport.Requests.Count(r => r.Verb == HttpVerb.Post));
                 Assert.IsFalse(session.HasPending);
                 Assert.IsNull(session.GoldPacks);
+                Assert.AreEqual(3, profile.AvatarId, "미확정 거래 복구도 초상을 보존한다");
+                Assert.AreEqual(5, profile.Gems);
 
                 _transport.Queued.Enqueue(Ok(Account(40, 5, Daily(purchased: true))));
                 _transport.Queued.Enqueue(Ok(Packs()));
                 Assert.IsNull(session.Restore().GetAwaiter().GetResult());
                 Assert.IsNotNull(session.GoldPacks);
+            }
+            finally { Directory.Delete(directory, true); }
+        }
+
+        [Test(Description = "정상 구매가 서버 재화를 반영하면서 현재 닉네임과 초상을 보존한다")]
+        public void ViewSession_SuccessfulBuyPreservesPublicIdentity()
+        {
+            string directory = TemporaryDirectory();
+            try
+            {
+                _tokens.Set(Token(41), "refresh-a");
+                _api = new HttpShopApi(new HttpApiConfig("https://example.test"), _transport, _tokens);
+                var profile = new PlayerProfile(new GameDataStore());
+                profile.Apply(new PlayerSnapshot { playerId = "41", nickname = "선택한초상", avatarId = 3 });
+                var session = new ServerShopViewSession(_api, new ShopPendingRequestStore(directory, _tokens), profile);
+                _transport.Queued.Enqueue(Ok(Account(40, 12, Daily())));
+                _transport.Queued.Enqueue(Ok(Packs()));
+                session.Restore().GetAwaiter().GetResult();
+                _transport.OnSend = request => request.Verb == HttpVerb.Post
+                    ? Ok(DailyReceipt(JObject.Parse(request.Body).Value<string>("requestId"), "BUY", 0,
+                        Daily(purchased: true))) : (HttpResponseData?)null;
+                _transport.Queued.Enqueue(Ok(Account(40, 5, Daily(purchased: true))));
+
+                Assert.AreEqual(ShopViewSubmissionStatus.Acknowledged,
+                    session.BuyDaily(session.Account.Daily, 0).GetAwaiter().GetResult().Status);
+                Assert.AreEqual(3, profile.AvatarId);
+                Assert.AreEqual("선택한초상", profile.Nickname);
+                Assert.AreEqual("41", profile.PlayerId);
+                Assert.AreEqual(5, profile.Gems);
             }
             finally { Directory.Delete(directory, true); }
         }

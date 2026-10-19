@@ -7,7 +7,7 @@ using Newtonsoft.Json.Linq;
 namespace Game.Network
 {
     /// <summary>서버의 GET /api/user/me로 플레이어 상태를 받는다 (서버 PR #47).
-    /// 진행 조회에는 캐시된 공개 프로필을 합치고, 로비에서 별도 프로필 API로 최신 닉네임·초상을 받는다.
+    /// 진행 조회에 프로필 API의 최신 닉네임·초상을 합친다.
     /// #78/#79 문자열 튜토리얼과 서버 퀘스트 보드를 복원한다. 부분 응답은 적용하지 않는다.</summary>
     public sealed class HttpPlayerApi : IPlayerApi
     {

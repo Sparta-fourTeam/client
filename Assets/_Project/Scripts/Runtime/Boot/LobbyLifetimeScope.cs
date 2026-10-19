@@ -20,7 +20,10 @@ namespace Game.Boot
             builder.RegisterMessageBroker<ChatChanged>(new MessagePipeOptions { InstanceLifetime = InstanceLifetime.Scoped });
             builder.RegisterEntryPoint<ChatService>().AsSelf();
             builder.Register<IUtcClock, SystemUtcClock>(Lifetime.Singleton);
-            builder.RegisterEntryPoint<LobbyProfileRefresher>().AsSelf();
+            // 서버 진행의 GetMe는 공개 프로필까지 조회한다. 로컬 진행일 때만 별도로 갱신한다.
+            builder.RegisterEntryPoint<LobbyProfileRefresher>()
+                .WithParameter("refreshPublicProfile", !ServerConfig.UseServerProgress)
+                .AsSelf();
             builder.RegisterEntryPoint<LobbyModel>();
             builder.RegisterEntryPoint<EnergyClock>();
             builder.Register<BattleLauncher>(Lifetime.Scoped);

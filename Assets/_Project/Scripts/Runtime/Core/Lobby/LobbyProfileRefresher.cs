@@ -14,13 +14,16 @@ namespace Game.Core
     {
         private readonly IPlayerApi _playerApi;
         private readonly AccountService _account;
+        private readonly bool _refreshPublicProfile;
         private readonly PlayerProfile _profile;
         private readonly UniTaskCompletionSource _loaded = new UniTaskCompletionSource();
 
-        public LobbyProfileRefresher(IPlayerApi playerApi, PlayerProfile profile, AccountService account = null)
+        public LobbyProfileRefresher(IPlayerApi playerApi, PlayerProfile profile, AccountService account = null,
+            bool refreshPublicProfile = true)
         {
             _playerApi = playerApi;
             _account = account;
+            _refreshPublicProfile = refreshPublicProfile;
             _profile = profile;
         }
 
@@ -55,7 +58,7 @@ namespace Game.Core
             {
                 PlayerSnapshot snapshot = await _playerApi.GetMe();
                 _profile.Apply(snapshot);
-                if (_account != null) { await _account.RefreshProfileAsync(); }
+                if (_refreshPublicProfile && _account != null) { await _account.RefreshProfileAsync(); }
                 if (!_hadProfile)
                 {
                     LevelBefore = _profile.Level;
