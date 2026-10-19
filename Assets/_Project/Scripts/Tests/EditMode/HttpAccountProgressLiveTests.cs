@@ -73,7 +73,8 @@ namespace Game.Tests
                 var before = File.ReadAllBytes(path);
                 var otherDevice = new AuthSession();
                 otherDevice.Set(fixture.Value<string>("tokenA"), null);
-                var player = new HttpPlayerApi(new HttpApiClient(config, new UnityWebRequestTransport(), tokens: otherDevice), new LocalPlayerApi(local));
+                var player = new HttpPlayerApi(new HttpApiClient(config, new UnityWebRequestTransport(), tokens: otherDevice),
+                    new LocalPlayerApi(local), otherDevice);
                 var snapshot = await player.GetMe();
                 Assert.AreEqual(34, snapshot.gold);
                 Assert.Contains("intro_fixture", snapshot.tutorials);

@@ -12,21 +12,32 @@ namespace Game.Network
 
         private readonly HttpApiClient _client;
         private readonly LocalPlayerApi _local;
+        private readonly IAuthTokenStore _tokens;
 
-        public HttpPlayerApi(HttpApiClient client, LocalPlayerApi local)
+        public HttpPlayerApi(HttpApiClient client, LocalPlayerApi local, IAuthTokenStore tokens)
         {
-            _client = client;
-            _local = local;
+            _client = client ?? throw new System.ArgumentNullException(nameof(client));
+            _local = local ?? throw new System.ArgumentNullException(nameof(local));
+            _tokens = tokens ?? throw new System.ArgumentNullException(nameof(tokens));
         }
 
         public async UniTask<PlayerSnapshot> GetMe()
         {
+            long generation = _tokens.Generation;
+            EnsureSession(generation);
             var json = await _client.GetJson(MePath);
+            EnsureSession(generation);
             var data = ServerProgressContract.Parse(() => ServerProgressContract.ReadMe(json));
             var local = await _local.GetMe();
             var snapshot = ServerUserMapper.ToSnapshot(data, local.nickname, local.playerId);
-
+            EnsureSession(generation);
             return snapshot;
+        }
+
+        private void EnsureSession(long generation)
+        {
+            if (_tokens.Generation != generation || string.IsNullOrEmpty(_tokens.AccessToken))
+            { throw new ApiException(ApiErrorKind.Rejected, HttpErrorMapper.SessionExpired); }
         }
     }
 }

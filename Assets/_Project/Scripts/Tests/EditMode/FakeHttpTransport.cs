@@ -14,12 +14,14 @@ namespace Game.Tests
         /// <summary>요청 순서대로 돌려줄 응답. 비면 Response를 돌려준다</summary>
         public readonly Queue<HttpResponseData> Queued = new();
         public Exception ToThrow;
+        public Action<HttpRequestData> OnSend;
         public readonly List<HttpRequestData> Requests = new();
         public float LastTimeout;
 
         public UniTask<HttpResponseData> Send(HttpRequestData request, float timeoutSeconds, CancellationToken cancellationToken)
         {
             Requests.Add(request);
+            OnSend?.Invoke(request);
             LastTimeout = timeoutSeconds;
             cancellationToken.ThrowIfCancellationRequested();
             if (ToThrow != null)
