@@ -10,4 +10,10 @@ namespace Game.Core
         /// <summary>이어하지 않는 포기. 마지막 누적 접수와 세션 닫기이며 결과 보상은 없다.</summary>
         UniTask<BattleProgressAck> AbandonProgress(BattleProgressRequest request);
     }
+
+    /// <summary>로컬 검증에 저장 당시 전투 원문이 필요한 구현의 체크포인트 선택 경로.</summary>
+    public interface IBattleCheckpointProgressApi
+    {
+        IBattleProgressApi ForCheckpoint(BattleCheckpoint checkpoint);
+    }
 }

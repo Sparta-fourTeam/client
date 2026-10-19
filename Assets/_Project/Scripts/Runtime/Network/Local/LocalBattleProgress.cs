@@ -7,9 +7,15 @@ using Newtonsoft.Json;
 
 namespace Game.Network
 {
-    public sealed partial class LocalBattleApi
+    public sealed partial class LocalBattleApi : IBattleCheckpointProgressApi
     {
         public string SourceRevision => _data.BattleSourceRevision;
+        public IBattleProgressApi ForCheckpoint(BattleCheckpoint checkpoint)
+        {
+            var data = checkpoint.RestoreBattleData(_data);
+            return ReferenceEquals(data, _data) ? this : new LocalBattleApi(_store, data);
+        }
+
         public async UniTask<BattleProgressAck> AbandonProgress(BattleProgressRequest request)
         {
             var ack = await ReportProgress(request);

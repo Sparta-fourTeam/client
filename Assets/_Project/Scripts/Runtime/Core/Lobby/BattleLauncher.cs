@@ -28,6 +28,7 @@ namespace Game.Core
         public async UniTask Discard(BattleCheckpoint checkpoint)
         {
             if (_battleApi is not IBattleProgressApi api) { return; }
+            if (_battleApi is IBattleCheckpointProgressApi pinned) { api = pinned.ForCheckpoint(checkpoint); }
             var state = checkpoint.Stage;
             if (state.PendingProgress != null && state.PendingProgressAbandon)
             {

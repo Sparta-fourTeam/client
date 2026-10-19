@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using Cysharp.Threading.Tasks;
 using Game.Core;
+using Game.Network;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 
 namespace Game.Tests
@@ -49,6 +51,59 @@ namespace Game.Tests
             new BattleLauncher(api, null, null, null, store).Discard(checkpoint).GetAwaiter().GetResult();
             Assert.AreEqual(checkpoint.Stage.ProgressSourceRevision,
                 store.Load().Stage.PendingProgress.sourceRevision);
+        }
+
+        [TestCase("none")]
+        [TestCase("wave")]
+        [TestCase("abandon")]
+        public void LocalDiscardAfterSourceUpdateUsesPinnedDataAndRetainsReceipts(string pending)
+        {
+            var path = Path.Combine(Path.GetTempPath(), $"discard-source-{Guid.NewGuid()}.json");
+            try
+            {
+                var original = new GameDataStore();
+                var checkpoint = Checkpoint();
+                checkpoint.Stage.Encountered = new List<int> { original.Stages.GetOrThrow(1).Waves[0].Spawns[0].MonsterId };
+                checkpoint.Stage.ProgressSourceRevision = original.BattleSourceRevision;
+                checkpoint.PinBattleData(original);
+                var save = new LocalSaveStore(path);
+                var state = save.Load();
+                state.battles.Add(new BattleRow { battleKey = checkpoint.BattleId, stageId = 1, status = "Issued" });
+                save.Flush(state);
+                if (pending != "none")
+                {
+                    checkpoint.Stage.PendingProgress = new BattleProgressRequest
+                    {
+                        battleId = checkpoint.BattleId,
+                        reportId = Guid.NewGuid().ToString("D"),
+                        sourceRevision = original.BattleSourceRevision,
+                        killedMonsters = pending == "abandon" ? 7 : 3,
+                        reachedWave = 1,
+                        encounteredMonsterIds = new List<int>(checkpoint.Stage.Encountered)
+                    };
+                    checkpoint.Stage.PendingProgressAbandon = pending == "abandon";
+                    if (pending == "abandon")
+                    { new LocalBattleApi(save, original).AbandonProgress(checkpoint.Stage.PendingProgress).GetAwaiter().GetResult(); }
+                }
+                // 실제 재시작처럼 원문/요청을 직렬화해 캐시 없이 복구한다.
+                checkpoint = JsonConvert.DeserializeObject<BattleCheckpoint>(JsonConvert.SerializeObject(checkpoint));
+                string reportId = checkpoint.Stage.PendingProgress?.reportId;
+                var tables = original.CopyTables();
+                var combat = JObject.Parse(tables["Combat"]);
+                combat["BaseTimeScale"] = original.Combat.BaseTimeScale + 0.25f;
+                tables["Combat"] = combat.ToString();
+                var current = new GameDataStore(tables);
+                new BattleLauncher(new LocalBattleApi(save, current), null, null, null, new Store())
+                    .Discard(checkpoint).GetAwaiter().GetResult();
+                var battle = save.Load().battles[0];
+                Assert.AreEqual("Abandoned", battle.status);
+                Assert.AreEqual(7, battle.reportedKills);
+                Assert.AreEqual(pending == "wave" ? 2 : 1, battle.progressReceipts.Count);
+                Assert.AreEqual(original.BattleSourceRevision, battle.progressReceipts[0].ack.sourceRevision);
+                if (reportId != null) { Assert.AreEqual(reportId, battle.progressReceipts[0].request.reportId); }
+                Assert.AreNotEqual(original.BattleSourceRevision, current.BattleSourceRevision);
+            }
+            finally { if (File.Exists(path)) { File.Delete(path); } }
         }
 
         [Test]
