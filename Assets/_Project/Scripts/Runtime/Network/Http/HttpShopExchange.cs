@@ -67,7 +67,6 @@ namespace Game.Network
                         _api.EnsureSession();
                         Status = ShopSubmissionStatus.Acknowledged;
                         _error = null;
-                        _pending?.Complete(_request);
                     }
                     catch (ApiException error)
                     {
@@ -99,6 +98,9 @@ namespace Game.Network
         private async UniTask<ShopReconciliationResult> ReadAccount(CancellationToken cancellationToken)
         {
             var account = await _api.GetAccount(cancellationToken);
+            // POST 확정 뒤 GET이 실패하면 다음 복원에서 같은 키로 영수증을 다시 받을 수 있어야 한다.
+            // 같은 인스턴스에서는 POST 없이 GET만 다시 시도한다.
+            if (Status == ShopSubmissionStatus.Acknowledged) { _pending?.Complete(_request); }
             return new ShopReconciliationResult(Status, _error, _daily, _pack, account);
         }
 

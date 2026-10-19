@@ -952,7 +952,7 @@ namespace Game.Tests
             var shop = ui.Get<ShopScreenView>();
             var daily = shop.GetComponentInChildren<DailyShopView>(true);
             var gold = shop.GetComponentInChildren<GoldShopView>(true);
-            var transport = new ScriptedShopTransport();
+            var transport = new ScriptedShopTransport { FailAccountGets = 1 };
             string directory = Path.Combine(Path.GetTempPath(), "nova-shop-view-" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(directory);
             try
@@ -966,6 +966,7 @@ namespace Game.Tests
                 gold.UseServerShop(first);
                 daily.UseServerShop(first);
                 yield return WaitFor(() => first.Account != null && !first.IsBusy);
+                Assert.That(transport.FailAccountGets, Is.Zero);
                 var card = Field<DailyShopItemView[]>(daily, "_items")[0];
                 Assert.That(Field<TMP_Text>(card, "_name").text, Does.Contain("잉크 x52"));
                 Assert.That(Field<TMP_Text>(card, "_name").text, Does.Contain("잉크펜 x2"));
@@ -1000,6 +1001,12 @@ namespace Game.Tests
                 Assert.That(Field<GameObject>(card, "_soldOut").activeSelf, Is.True);
                 Assert.That(Field<Button>(card, "_buy").interactable, Is.False);
                 Assert.That(Directory.GetFiles(directory, "shop-pending-*.json"), Is.Empty);
+                var popup = ui.Get<RewardPopupView>();
+                Assert.That(Field<GameObject>(popup, "_panel").activeSelf, Is.True);
+                Assert.That(Field<ResultRewardListView>(popup, "_rewards").Cells[0].CountText, Is.EqualTo("x52"));
+                Assert.That(Field<ResultRewardListView>(popup, "_rewards").Cells[1].CountText, Is.EqualTo("x2"));
+                popup.Close();
+                yield return WaitFor(() => !Field<GameObject>(popup, "_panel").activeSelf);
 
                 shop.SelectTab(ShopTab.Gold);
                 yield return WaitFor(() => restarted.Account != null && !restarted.IsBusy);
@@ -1011,7 +1018,6 @@ namespace Game.Tests
                 Assert.That(Field<TMP_Text>(confirm, "_message").text, Does.Contain("37잼"));
                 yield return ClickGameButton(Field<Button>(confirm, "_confirmButton"));
                 yield return WaitFor(() => transport.GoldPackPosts == 1 && restarted.Account?.Gold == 193 && !restarted.IsBusy);
-                var popup = ui.Get<RewardPopupView>();
                 Assert.That(Field<GameObject>(popup, "_panel").activeSelf, Is.True);
                 Assert.That(Field<ResultRewardListView>(popup, "_rewards").Cells[0].CountText, Is.EqualTo("x101"));
                 popup.Close();
@@ -1047,6 +1053,7 @@ namespace Game.Tests
             public int AppliedBuys;
             public int GoldPackPosts;
             public int GoldRerollPosts;
+            public int FailAccountGets;
             private string _buyId;
             private bool _packBought;
             private int _rerolls;
@@ -1056,6 +1063,11 @@ namespace Game.Tests
             {
                 if (request.Url.EndsWith("/api/user/me", StringComparison.Ordinal))
                 {
+                    if (FailAccountGets > 0)
+                    {
+                        FailAccountGets--;
+                        return UniTask.FromResult(new HttpResponseData(500, string.Empty));
+                    }
                     return UniTask.FromResult(Ok(new JObject
                     {
                         ["gold"] = 40 + (AppliedBuys > 0 ? 52 : 0) + (_packBought ? 101 : 0) - _rerolls * 3,

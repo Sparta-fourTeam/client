@@ -136,7 +136,21 @@ namespace Game.View
         {
             if (_refreshing || _server.IsBusy) { return; }
             _refreshing = true;
-            try { await _server.Restore(); }
+            try
+            {
+                var restored = await _server.Restore();
+                if (this != null && restored?.Status == ShopViewSubmissionStatus.Acknowledged && restored.IsPurchase)
+                {
+                    var rewards = new List<ResultRewardItem>();
+                    foreach (var reward in restored.Rewards)
+                    {
+                        var icon = reward.ItemId == ShopRules.CoinReward
+                            ? _itemIcons != null ? _itemIcons.Coin : null : _itemIcons != null ? _itemIcons.Get(reward.ItemId) : null;
+                        rewards.Add(new ResultRewardItem(icon, reward.Count, reward.ItemId));
+                    }
+                    _rewardPopup?.Show(rewards, "물품을 구매했어요.", "구매 완료");
+                }
+            }
             catch (ApiException) { }
             finally { _refreshing = false; if (this != null) { Refresh(); } }
         }

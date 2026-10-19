@@ -20,7 +20,7 @@ namespace Game.Network
         public ShopViewAccount Account { get; private set; }
         public ShopViewCatalog GoldPacks { get; private set; }
         public bool IsBusy => _busy != 0;
-        public bool HasPending => _pending != null && _pending.Status == ShopSubmissionStatus.Unknown;
+        public bool HasPending => _pending != null;
         public event Action Changed;
 
         public ServerShopViewSession(HttpShopApi api, ShopPendingRequestStore pendingStore)
@@ -53,7 +53,7 @@ namespace Game.Network
                 // 영수증만 확인되고 GET이 실패해도 오래된 진열로 새 구매를 시작하지 않는다.
                 _account = null;
                 Account = null;
-                if (_pending?.Status is ShopSubmissionStatus.Acknowledged or ShopSubmissionStatus.Rejected)
+                if (_pending?.Status == ShopSubmissionStatus.Rejected)
                 { _pending = null; }
                 throw;
             }
@@ -79,7 +79,7 @@ namespace Game.Network
             try
             {
                 _pending ??= _pendingStore.Recover(_api);
-                if (_pending == null || _pending.Status != ShopSubmissionStatus.Unknown)
+                if (_pending == null || _pending.Status == ShopSubmissionStatus.Rejected)
                 { throw new InvalidOperationException("미확정 상점 요청이 없습니다"); }
                 return Map(await SubmitPending());
             }
@@ -111,7 +111,7 @@ namespace Game.Network
             {
                 _account = null;
                 Account = null;
-                if (_pending?.Status is ShopSubmissionStatus.Acknowledged or ShopSubmissionStatus.Rejected)
+                if (_pending?.Status == ShopSubmissionStatus.Rejected)
                 { _pending = null; }
                 throw;
             }
@@ -154,7 +154,8 @@ namespace Game.Network
                 ShopSubmissionStatus.Acknowledged => ShopViewSubmissionStatus.Acknowledged,
                 ShopSubmissionStatus.Unknown => ShopViewSubmissionStatus.Unknown,
                 _ => ShopViewSubmissionStatus.Rejected
-            }, result.ErrorCode, rewards);
+            }, result.ErrorCode, rewards,
+                result.GoldPackReceipt != null || result.DailyReceipt?.Operation == "BUY");
         }
 
         private void Enter()

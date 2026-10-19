@@ -109,8 +109,9 @@ namespace Game.View
             if (_profile == null) { return; }
             if (_server != null)
             {
-                if (_server.Account?.Daily != null && DateTimeOffset.UtcNow >= _server.Account.Daily.NextResetAt
-                    && Time.unscaledTime >= _nextServerDayCheck)
+                if (Time.unscaledTime >= _nextServerDayCheck
+                    && (_server.Account == null || _server.Account.Daily == null
+                        || DateTimeOffset.UtcNow >= _server.Account.Daily.NextResetAt))
                 {
                     _nextServerDayCheck = Time.unscaledTime + 10f;
                     RefreshServerAsync().Forget(Debug.LogException);
@@ -303,7 +304,16 @@ namespace Game.View
         {
             if (_refreshingDay || _server.IsBusy) { return; }
             _refreshingDay = true;
-            try { await _server.Restore(); }
+            try
+            {
+                var restored = await _server.Restore();
+                if (this != null && restored?.Status == ShopViewSubmissionStatus.Acknowledged && restored.IsPurchase)
+                {
+                    _rewardPopup?.Show(restored.Rewards.Select(reward =>
+                        new ResultRewardItem(IconOf(reward.ItemId), reward.Count, reward.ItemId)).ToList(),
+                        "물품을 구매했어요.", "구매 완료");
+                }
+            }
             catch (ApiException) { }
             finally { _refreshingDay = false; if (this != null) { Refresh(); UpdateTimer(); } }
         }

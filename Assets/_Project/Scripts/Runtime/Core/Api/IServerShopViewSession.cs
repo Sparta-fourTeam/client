@@ -70,8 +70,10 @@ namespace Game.Core
         public ShopViewSubmissionStatus Status { get; }
         public string ErrorCode { get; }
         public IReadOnlyList<ShopViewReward> Rewards { get; }
-        public ShopViewResult(ShopViewSubmissionStatus status, string errorCode, IReadOnlyList<ShopViewReward> rewards)
-        { Status = status; ErrorCode = errorCode; Rewards = rewards; }
+        public bool IsPurchase { get; }
+        public ShopViewResult(ShopViewSubmissionStatus status, string errorCode,
+            IReadOnlyList<ShopViewReward> rewards, bool isPurchase)
+        { Status = status; ErrorCode = errorCode; Rewards = rewards; IsPurchase = isPurchase; }
     }
 
     /// <summary>서버 상점 화면의 주입 계약. HTTP 구현은 Network에만 둔다.</summary>

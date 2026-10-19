@@ -225,8 +225,8 @@ namespace Game.Tests
             finally { Directory.Delete(directory, true); }
         }
 
-        [Test(Description = "영수증을 받은 뒤 계정 조회가 실패하면 재시작 후 POST를 다시 보내지 않는다")]
-        public void AcknowledgedReceipt_ClearsJournalBeforeAccountRead()
+        [Test(Description = "POST 확정 뒤 계정 조회가 실패하면 영수증을 보존하고 재시작 시 같은 요청 키로 복구한다")]
+        public void AcknowledgedReceipt_KeepsJournalUntilAccountRead()
         {
             string directory = TemporaryDirectory();
             try
@@ -234,13 +234,62 @@ namespace Game.Tests
                 _tokens.Set(Token(41), "refresh-a");
                 _api = new HttpShopApi(new HttpApiConfig("https://example.test"), _transport, _tokens);
                 var journal = new ShopPendingRequestStore(directory, _tokens);
-                var exchange = journal.Begin(_api, ShopExchangeRequest.GoldReroll(State(), "roll-saved"));
-                _transport.Queued.Enqueue(Ok(DailyReceipt("roll-saved", "GOLD_REROLL", null, Daily(reroll: 1))));
+                var exchange = journal.Begin(_api, ShopExchangeRequest.Buy(State(), 0, "buy-saved"));
+                _transport.Queued.Enqueue(Ok(DailyReceipt("buy-saved", "BUY", 0, Daily(purchased: true))));
                 _transport.Queued.Enqueue(new HttpResponseData(500, ""));
                 Assert.Throws<ApiException>(() => exchange.Submit().GetAwaiter().GetResult());
                 Assert.AreEqual(ShopSubmissionStatus.Acknowledged, exchange.Status);
-                Assert.IsNull(journal.Recover(_api));
+                Assert.AreEqual(1, Directory.GetFiles(directory, "shop-pending-*.json").Length);
                 Assert.AreEqual(1, _transport.Requests.Count(r => r.Verb == HttpVerb.Post));
+
+                var restarted = new AuthSession();
+                restarted.Set(Token(41), "refresh-new-device");
+                var api = new HttpShopApi(new HttpApiConfig("https://example.test"), _transport, restarted);
+                var recovered = new ShopPendingRequestStore(directory, restarted).Recover(api);
+                _transport.Queued.Enqueue(Ok(DailyReceipt("buy-saved", "BUY", 0, Daily(purchased: true))));
+                _transport.Queued.Enqueue(Ok(Account(40, 5, Daily(purchased: true))));
+                var result = recovered.Submit().GetAwaiter().GetResult();
+                Assert.AreEqual(ShopSubmissionStatus.Acknowledged, result.Status);
+                Assert.AreEqual(7, result.DailyReceipt.GemsSpent);
+                Assert.IsNull(new ShopPendingRequestStore(directory, restarted).Recover(api));
+                var posts = _transport.Requests.Where(r => r.Verb == HttpVerb.Post).ToArray();
+                Assert.AreEqual(2, posts.Length);
+                Assert.AreEqual(posts[0].Body, posts[1].Body);
+            }
+            finally { Directory.Delete(directory, true); }
+        }
+
+        [Test(Description = "확정된 구매의 계정 조회만 실패하면 새 구매를 막고 GET 재시도로 영수증을 표시할 수 있다")]
+        public void ViewSession_AcknowledgedBuyRetriesAccountAndReturnsReceipt()
+        {
+            string directory = TemporaryDirectory();
+            try
+            {
+                _tokens.Set(Token(41), "refresh-a");
+                _api = new HttpShopApi(new HttpApiConfig("https://example.test"), _transport, _tokens);
+                var session = new ServerShopViewSession(_api, new ShopPendingRequestStore(directory, _tokens));
+                _transport.Queued.Enqueue(Ok(Account(40, 12, Daily())));
+                _transport.Queued.Enqueue(Ok(Packs()));
+                session.Restore().GetAwaiter().GetResult();
+
+                // 고정 요청 ID는 실행 시 생성된다. 이 테스트에서는 POST 응답이 원래 키를 되돌려 준다.
+                _transport.OnSend = request => request.Verb == HttpVerb.Post
+                    ? Ok(DailyReceipt(JObject.Parse(request.Body).Value<string>("requestId"), "BUY", 0,
+                        Daily(purchased: true))) : (HttpResponseData?)null;
+                _transport.Queued.Enqueue(new HttpResponseData(500, ""));
+                Assert.Throws<ApiException>(() => session.BuyDaily(session.Account.Daily, 0).GetAwaiter().GetResult());
+                Assert.IsTrue(session.HasPending);
+                Assert.IsNull(session.Account);
+                Assert.AreEqual(1, Directory.GetFiles(directory, "shop-pending-*.json").Length);
+
+                _transport.Queued.Enqueue(Ok(Account(40, 5, Daily(purchased: true))));
+                _transport.Queued.Enqueue(Ok(Packs()));
+                var restored = session.Restore().GetAwaiter().GetResult();
+                Assert.AreEqual(ShopViewSubmissionStatus.Acknowledged, restored.Status);
+                Assert.IsTrue(restored.IsPurchase);
+                Assert.AreEqual(1, restored.Rewards.Count);
+                Assert.AreEqual(1, _transport.Requests.Count(r => r.Verb == HttpVerb.Post));
+                Assert.IsFalse(session.HasPending);
             }
             finally { Directory.Delete(directory, true); }
         }
