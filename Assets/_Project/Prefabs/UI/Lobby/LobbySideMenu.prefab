@@ -483,8 +483,8 @@ RectTransform:
   - {fileID: 2104136687716092553}
   - {fileID: 3015600709825135200}
   - {fileID: 3241759270564959834}
-  - {fileID: 9207641404716097470}
   - {fileID: 9198623409784411766}
+  - {fileID: 9207641404716097470}
   m_Father: {fileID: 8457293031719000829}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
@@ -2342,11 +2342,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2127939746441597203, guid: dd6ab545b48a2214187120f6f475889e, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 90
+      value: 110
       objectReference: {fileID: 0}
     - target: {fileID: 2127939746441597203, guid: dd6ab545b48a2214187120f6f475889e, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 90
+      value: 110
       objectReference: {fileID: 0}
     - target: {fileID: 2127939746441597203, guid: dd6ab545b48a2214187120f6f475889e, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -2407,7 +2407,7 @@ PrefabInstance:
     - target: {fileID: 7487155567939265332, guid: dd6ab545b48a2214187120f6f475889e, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 641973068, guid: 78bfb232b5dba6643a4b7f03acdd551b, type: 3}
+      objectReference: {fileID: 21300000, guid: 2c8ee295f621fdb4982f22e455f0759e, type: 3}
     - target: {fileID: 7487155567939265332, guid: dd6ab545b48a2214187120f6f475889e, type: 3}
       propertyPath: m_Color.a
       value: 1
@@ -2502,7 +2502,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9028885122233841874, guid: dd6ab545b48a2214187120f6f475889e, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:
@@ -2517,28 +2517,16 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 9028885122233841874, guid: dd6ab545b48a2214187120f6f475889e, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 5089688639495259926}
+      addedObject: {fileID: 3933630659220563890}
     - targetCorrespondingSourceObject: {fileID: 9028885122233841874, guid: dd6ab545b48a2214187120f6f475889e, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 3933630659220563890}
+      addedObject: {fileID: 754147133696296795}
   m_SourcePrefab: {fileID: 100100000, guid: dd6ab545b48a2214187120f6f475889e, type: 3}
 --- !u!1 &2193344759511444798 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 9028885122233841874, guid: dd6ab545b48a2214187120f6f475889e, type: 3}
   m_PrefabInstance: {fileID: 7150968945697773036}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &5089688639495259926
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2193344759511444798}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 98d404df5fdfb2448b538f424d54ed06, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Game.View::Game.View.ComingSoonButton
 --- !u!114 &3933630659220563890
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2554,6 +2542,19 @@ MonoBehaviour:
   m_EffectColor: {r: 0.12156863, g: 0.101960786, b: 0.2, a: 0.3}
   m_EffectDistance: {x: 5, y: -7}
   m_UseGraphicAlpha: 1
+--- !u!114 &754147133696296795
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2193344759511444798}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 36d5e8818d64a6546a2d30e56f0b6c23, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.SideMenuPopupButton
+  _target: 3
 --- !u!224 &9198623409784411766 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 2059635002632602522, guid: dd6ab545b48a2214187120f6f475889e, type: 3}

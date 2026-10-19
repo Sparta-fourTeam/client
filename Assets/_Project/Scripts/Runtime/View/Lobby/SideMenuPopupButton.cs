@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 namespace Game.View
 {
-    /// <summary>로비 오른쪽 메뉴의 친구·퀘스트·우편함 버튼. 누르면 해당 목록 팝업을 연다</summary>
+    /// <summary>로비 오른쪽 메뉴의 친구·퀘스트·우편함·도감 버튼. 누르면 해당 목록 팝업을 연다</summary>
     [RequireComponent(typeof(Button))]
     public sealed class SideMenuPopupButton : MonoBehaviour, IUiBindable
     {
@@ -12,6 +12,7 @@ namespace Game.View
             Friend,
             Quest,
             Mail,
+            Codex,
         }
 
         [SerializeField] private Target _target;
@@ -24,6 +25,7 @@ namespace Game.View
             {
                 Target.Friend => registry.Get<FriendPopupView>(),
                 Target.Quest => registry.Get<QuestPopupView>(),
+                Target.Codex => registry.Get<CodexPopupView>(),
                 _ => registry.Get<MailPopupView>(),
             };
         }
