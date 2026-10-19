@@ -97,9 +97,10 @@ namespace Game.Network
         public int Gold { get; }
         public int Gems { get; }
         public ServerDailyShop Daily { get; }
+        internal ServerUserData User { get; }
 
-        internal ServerShopAccount(int gold, int gems, ServerDailyShop daily)
-        { Gold = gold; Gems = gems; Daily = daily; }
+        internal ServerShopAccount(int gold, int gems, ServerDailyShop daily, ServerUserData user)
+        { Gold = gold; Gems = gems; Daily = daily; User = user; }
     }
 
     public sealed class ServerDailyShopReceipt
@@ -153,7 +154,9 @@ namespace Game.Network
         internal static ServerShopAccount Account(string json)
         {
             var body = Root(json);
-            return new ServerShopAccount(Number(body["gold"]), Number(body["gem"]), DailyObject(Object(body["shop"])));
+            var user = ServerProgressContract.Parse(() => ServerProgressContract.ReadMe(json));
+            return new ServerShopAccount(Number(body["gold"]), Number(body["gem"]),
+                DailyObject(Object(body["shop"])), user);
         }
 
         internal static ServerDailyShop Daily(string json) => DailyObject(Root(json));

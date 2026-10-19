@@ -267,7 +267,8 @@ namespace Game.Tests
             {
                 _tokens.Set(Token(41), "refresh-a");
                 _api = new HttpShopApi(new HttpApiConfig("https://example.test"), _transport, _tokens);
-                var session = new ServerShopViewSession(_api, new ShopPendingRequestStore(directory, _tokens));
+                var session = new ServerShopViewSession(_api, new ShopPendingRequestStore(directory, _tokens),
+                    new PlayerProfile(new GameDataStore()));
                 _transport.Queued.Enqueue(Ok(Account(40, 12, Daily())));
                 _transport.Queued.Enqueue(Ok(Packs()));
                 session.Restore().GetAwaiter().GetResult();
@@ -308,7 +309,8 @@ namespace Game.Tests
             {
                 _tokens.Set(Token(41), "refresh-a");
                 _api = new HttpShopApi(new HttpApiConfig("https://example.test"), _transport, _tokens);
-                var session = new ServerShopViewSession(_api, new ShopPendingRequestStore(directory, _tokens));
+                var session = new ServerShopViewSession(_api, new ShopPendingRequestStore(directory, _tokens),
+                    new PlayerProfile(new GameDataStore()));
                 _transport.Queued.Enqueue(Ok(Account(40, 12, Daily())));
                 _transport.Queued.Enqueue(new HttpResponseData(500, ""));
                 Assert.IsNull(session.Restore().GetAwaiter().GetResult());
@@ -332,7 +334,8 @@ namespace Game.Tests
             {
                 _tokens.Set(Token(41), "refresh-a");
                 _api = new HttpShopApi(new HttpApiConfig("https://example.test"), _transport, _tokens);
-                var session = new ServerShopViewSession(_api, new ShopPendingRequestStore(directory, _tokens));
+                var session = new ServerShopViewSession(_api, new ShopPendingRequestStore(directory, _tokens),
+                    new PlayerProfile(new GameDataStore()));
                 _transport.Queued.Enqueue(Ok(Account(40, 12, Daily())));
                 _transport.OnSend = request =>
                 {
@@ -389,8 +392,14 @@ namespace Game.Tests
 
         private static HttpResponseData Ok(string body) => new(200, body);
 
-        private static string Account(int gold, int gems, string daily) => new JObject
-        { ["gold"] = gold, ["gem"] = gems, ["shop"] = JObject.Parse(daily) }.ToString(Formatting.None);
+        private static string Account(int gold, int gems, string daily)
+        {
+            var account = JObject.Parse(HttpAccountProgressTests.State);
+            account["gold"] = gold;
+            account["gem"] = gems;
+            account["shop"] = JObject.Parse(daily);
+            return account.ToString(Formatting.None);
+        }
 
         private static string Daily(bool purchased = false, int reroll = 0) => new JObject
         {

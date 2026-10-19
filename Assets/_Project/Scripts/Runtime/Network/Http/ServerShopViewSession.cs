@@ -12,6 +12,7 @@ namespace Game.Network
     {
         private readonly HttpShopApi _api;
         private readonly ShopPendingRequestStore _pendingStore;
+        private readonly PlayerProfile _profile;
         private HttpShopExchange _pending;
         private ServerShopAccount _account;
         private ServerGoldPackCatalog _packs;
@@ -23,10 +24,11 @@ namespace Game.Network
         public bool HasPending => _pending != null;
         public event Action Changed;
 
-        public ServerShopViewSession(HttpShopApi api, ShopPendingRequestStore pendingStore)
+        public ServerShopViewSession(HttpShopApi api, ShopPendingRequestStore pendingStore, PlayerProfile profile)
         {
             _api = api ?? throw new ArgumentNullException(nameof(api));
             _pendingStore = pendingStore ?? throw new ArgumentNullException(nameof(pendingStore));
+            _profile = profile ?? throw new ArgumentNullException(nameof(profile));
         }
 
         /// <summary>로그인/화면 재진입 시 저장된 요청부터 재전송하고 현재 계정·카탈로그를 읽는다.</summary>
@@ -131,6 +133,15 @@ namespace Game.Network
 
         private void Apply(ServerShopAccount account)
         {
+            var snapshot = ServerUserMapper.ToSnapshot(account.User, _profile.Nickname, _profile.PlayerId);
+            snapshot.shop = new ShopState
+            {
+                adUsed = account.Daily.AdUsed,
+                goldUsed = account.Daily.GoldUsed,
+                purchased = account.Daily.Purchased.ToList()
+            };
+            _api.EnsureSession();
+            _profile.Apply(snapshot);
             _account = account;
             Account = new ShopViewAccount(account.Gold, account.Gems, Map(account.Daily));
         }

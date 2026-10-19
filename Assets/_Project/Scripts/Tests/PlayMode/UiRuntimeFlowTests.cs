@@ -962,7 +962,8 @@ namespace Game.Tests
                 var firstAuth = new AuthSession();
                 firstAuth.Set(ShopToken(41), null);
                 var firstApi = new HttpShopApi(new HttpApiConfig("https://example.test"), transport, firstAuth);
-                var first = new ServerShopViewSession(firstApi, new ShopPendingRequestStore(directory, firstAuth));
+                var profile = Object.FindAnyObjectByType<LobbyLifetimeScope>().Container.Resolve<PlayerProfile>();
+                var first = new ServerShopViewSession(firstApi, new ShopPendingRequestStore(directory, firstAuth), profile);
                 gold.UseServerShop(first);
                 daily.UseServerShop(first);
                 yield return WaitFor(() => first.Account != null && !first.IsBusy);
@@ -990,7 +991,7 @@ namespace Game.Tests
                 restartedAuth.Set(ShopToken(41), null);
                 var restartedApi = new HttpShopApi(new HttpApiConfig("https://example.test"), transport, restartedAuth);
                 var restarted = new ServerShopViewSession(restartedApi,
-                    new ShopPendingRequestStore(directory, restartedAuth));
+                    new ShopPendingRequestStore(directory, restartedAuth), profile);
                 gold.UseServerShop(restarted);
                 daily.UseServerShop(restarted);
                 yield return WaitFor(() => restarted.Account != null && !restarted.IsBusy && !restarted.HasPending);
@@ -998,6 +999,10 @@ namespace Game.Tests
                 Assert.That(transport.BuyBodies[0], Is.EqualTo(transport.BuyBodies[1]));
                 Assert.That(transport.AppliedBuys, Is.EqualTo(1));
                 Assert.That(restarted.Account.Gems, Is.EqualTo(83));
+                Assert.That(profile.Gems, Is.EqualTo(83));
+                Assert.That(profile.Gold, Is.EqualTo(92));
+                Assert.That(profile.EnergyStored, Is.EqualTo(17));
+                Assert.That(profile.ItemQuantity("book.arrow"), Is.EqualTo(2));
                 Assert.That(Field<GameObject>(card, "_soldOut").activeSelf, Is.True);
                 Assert.That(Field<Button>(card, "_buy").interactable, Is.False);
                 Assert.That(Directory.GetFiles(directory, "shop-pending-*.json"), Is.Empty);
@@ -1018,6 +1023,8 @@ namespace Game.Tests
                 Assert.That(Field<TMP_Text>(confirm, "_message").text, Does.Contain("37잼"));
                 yield return ClickGameButton(Field<Button>(confirm, "_confirmButton"));
                 yield return WaitFor(() => transport.GoldPackPosts == 1 && restarted.Account?.Gold == 193 && !restarted.IsBusy);
+                Assert.That(profile.Gold, Is.EqualTo(193));
+                Assert.That(profile.Gems, Is.EqualTo(46));
                 Assert.That(Field<GameObject>(popup, "_panel").activeSelf, Is.True);
                 Assert.That(Field<ResultRewardListView>(popup, "_rewards").Cells[0].CountText, Is.EqualTo("x101"));
                 popup.Close();
@@ -1030,6 +1037,7 @@ namespace Game.Tests
                 Assert.That(Field<TMP_Text>(confirm, "_message").text, Does.Contain("3 잉크"));
                 yield return ClickGameButton(Field<Button>(confirm, "_confirmButton"));
                 yield return WaitFor(() => transport.GoldRerollPosts == 1 && restarted.Account?.Gold == 190 && !restarted.IsBusy);
+                Assert.That(profile.Gold, Is.EqualTo(190));
                 Assert.That(Field<TMP_Text>(daily, "_goldCount").text, Is.EqualTo("1/2"));
                 Assert.That(Field<GameObject>(card, "_soldOut").activeSelf, Is.False);
             }
@@ -1064,7 +1072,8 @@ namespace Game.Tests
                 var auth = new AuthSession();
                 auth.Set(ShopToken(41), null);
                 var api = new HttpShopApi(new HttpApiConfig("https://example.test"), transport, auth);
-                var session = new ServerShopViewSession(api, new ShopPendingRequestStore(directory, auth));
+                var session = new ServerShopViewSession(api, new ShopPendingRequestStore(directory, auth),
+                    Object.FindAnyObjectByType<LobbyLifetimeScope>().Container.Resolve<PlayerProfile>());
                 daily.UseServerShop(session);
                 yield return WaitFor(() => session.Account != null && !session.IsBusy);
                 var card = Field<DailyShopItemView[]>(daily, "_items")[0];
@@ -1115,6 +1124,19 @@ namespace Game.Tests
                     {
                         ["gold"] = 40 + (AppliedBuys > 0 ? 52 : 0) + (_packBought ? 101 : 0) - _rerolls * 3,
                         ["gem"] = 100 - (AppliedBuys > 0 ? 17 : 0) - (_packBought ? 37 : 0),
+                        ["exp"] = 0,
+                        ["energyStored"] = 15 + (AppliedBuys > 0 ? 2 : 0),
+                        ["energyUpdatedAt"] = "2026-10-19T01:02:03Z",
+                        ["stageProgress"] = new JArray(),
+                        ["upgrades"] = new JArray(),
+                        ["items"] = AppliedBuys > 0
+                            ? new JArray(new JObject { ["itemId"] = "book.arrow", ["quantity"] = 2 })
+                            : new JArray(),
+                        ["codex"] = new JArray(),
+                        ["tutorials"] = new JArray(),
+                        ["tutorialStates"] = new JArray(),
+                        ["quests"] = new JArray(EmptyBoard("DAILY", "2026-10-19T19:00:00Z"),
+                            EmptyBoard("WEEKLY", "2026-10-25T19:00:00Z")),
                         ["shop"] = Day(AppliedBuys > 0 && _rerolls == 0, _rerolls)
                     }));
                 }
@@ -1186,6 +1208,13 @@ namespace Game.Tests
             }
 
             private static HttpResponseData Ok(JObject json) => new(200, json.ToString(Formatting.None));
+
+            private static JObject EmptyBoard(string period, string nextResetAt) => new()
+            {
+                ["period"] = period, ["periodKey"] = "20261019", ["nextResetAt"] = nextResetAt,
+                ["lastLoginDay"] = JValue.CreateNull(), ["loginCount"] = 0,
+                ["spentEnergy"] = 0, ["points"] = 0, ["quests"] = new JArray(), ["chests"] = new JArray()
+            };
 
             private static JObject Packs() => new()
             {
