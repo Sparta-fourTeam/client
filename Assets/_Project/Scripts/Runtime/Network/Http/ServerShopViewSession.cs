@@ -44,8 +44,18 @@ namespace Game.Network
                     if (result.Status != ShopSubmissionStatus.Unknown) { _pending = null; }
                 }
                 else { Apply(await _api.GetAccount()); }
-                _packs = await _api.GetGoldPacks();
-                GoldPacks = Map(_packs);
+                try
+                {
+                    _packs = await _api.GetGoldPacks();
+                    GoldPacks = Map(_packs);
+                }
+                catch (ApiException) when (result?.Status == ShopSubmissionStatus.Acknowledged)
+                {
+                    // 골드팩 목록만 실패해도 확정 영수증은 화면에 전달한다.
+                    // 목록은 사용 불가로 두고 다음 화면 진입·재시도에서 다시 읽는다.
+                    _packs = null;
+                    GoldPacks = null;
+                }
                 return Map(result);
             }
             catch

@@ -110,7 +110,7 @@ namespace Game.View
             if (_server != null)
             {
                 if (Time.unscaledTime >= _nextServerDayCheck
-                    && (_server.Account == null || _server.Account.Daily == null
+                    && (_server.HasPending || _server.Account == null || _server.Account.Daily == null
                         || DateTimeOffset.UtcNow >= _server.Account.Daily.NextResetAt))
                 {
                     _nextServerDayCheck = Time.unscaledTime + 10f;

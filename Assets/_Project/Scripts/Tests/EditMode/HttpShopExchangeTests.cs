@@ -283,13 +283,19 @@ namespace Game.Tests
                 Assert.AreEqual(1, Directory.GetFiles(directory, "shop-pending-*.json").Length);
 
                 _transport.Queued.Enqueue(Ok(Account(40, 5, Daily(purchased: true))));
-                _transport.Queued.Enqueue(Ok(Packs()));
+                _transport.Queued.Enqueue(new HttpResponseData(500, ""));
                 var restored = session.Restore().GetAwaiter().GetResult();
                 Assert.AreEqual(ShopViewSubmissionStatus.Acknowledged, restored.Status);
                 Assert.IsTrue(restored.IsPurchase);
                 Assert.AreEqual(1, restored.Rewards.Count);
                 Assert.AreEqual(1, _transport.Requests.Count(r => r.Verb == HttpVerb.Post));
                 Assert.IsFalse(session.HasPending);
+                Assert.IsNull(session.GoldPacks);
+
+                _transport.Queued.Enqueue(Ok(Account(40, 5, Daily(purchased: true))));
+                _transport.Queued.Enqueue(Ok(Packs()));
+                Assert.IsNull(session.Restore().GetAwaiter().GetResult());
+                Assert.IsNotNull(session.GoldPacks);
             }
             finally { Directory.Delete(directory, true); }
         }

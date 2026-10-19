@@ -1047,6 +1047,49 @@ namespace Game.Tests
             return "header." + payload + ".signature";
         }
 
+        [UnityTest]
+        public IEnumerator ServerShop_PendingBuyRetriesWithoutLeavingDailyTab()
+        {
+            yield return StartFromBoot(UnlockLobbyFeatures);
+            var ui = Object.FindAnyObjectByType<LobbyLifetimeScope>().Container.Resolve<IUiRegistry>();
+            var shop = ui.Get<ShopScreenView>();
+            var daily = shop.GetComponentInChildren<DailyShopView>(true);
+            var transport = new ScriptedShopTransport { FailAccountGets = 1 };
+            string directory = Path.Combine(Path.GetTempPath(), "nova-shop-auto-retry-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(directory);
+            try
+            {
+                shop.SetVisible(true);
+                shop.SelectTab(ShopTab.Daily);
+                var auth = new AuthSession();
+                auth.Set(ShopToken(41), null);
+                var api = new HttpShopApi(new HttpApiConfig("https://example.test"), transport, auth);
+                var session = new ServerShopViewSession(api, new ShopPendingRequestStore(directory, auth));
+                daily.UseServerShop(session);
+                yield return WaitFor(() => session.Account != null && !session.IsBusy);
+                var card = Field<DailyShopItemView[]>(daily, "_items")[0];
+                yield return ClickGameButton(Field<Button>(card, "_buy"));
+                var confirm = ui.Get<ConfirmPopupView>();
+                yield return WaitFor(() => confirm.IsOpen);
+                yield return ClickGameButton(Field<Button>(confirm, "_confirmButton"));
+                yield return WaitFor(() => session.HasPending && !session.IsBusy);
+                Assert.That(Field<Button>(card, "_buy").interactable, Is.False);
+
+                yield return WaitFor(() => !session.HasPending && transport.BuyBodies.Count == 2,
+                    "same-key pending purchase auto-retry");
+                Assert.That(transport.BuyBodies[1], Is.EqualTo(transport.BuyBodies[0]));
+                Assert.That(transport.AppliedBuys, Is.EqualTo(1));
+                Assert.That(Field<GameObject>(card, "_soldOut").activeSelf, Is.True);
+                var popup = ui.Get<RewardPopupView>();
+                Assert.That(Field<ResultRewardListView>(popup, "_rewards").Cells[0].CountText, Is.EqualTo("x52"));
+            }
+            finally
+            {
+                shop.SetVisible(false);
+                Directory.Delete(directory, true);
+            }
+        }
+
         private sealed class ScriptedShopTransport : IHttpTransport
         {
             public readonly List<string> BuyBodies = new();

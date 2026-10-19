@@ -24,6 +24,7 @@ namespace Game.View
         private ConfirmPopupView _confirm;
         private bool _busy;
         private bool _refreshing;
+        private float _nextServerRefresh;
         private IServerShopViewSession _server;
 
         /// <summary>서버 카탈로그를 명시적으로 주입한다. 기본 Local 상점 DI는 그대로 둔다.</summary>
@@ -63,6 +64,14 @@ namespace Game.View
         private void OnDisable()
         {
             if (_server != null) { _server.Changed -= Refresh; }
+        }
+
+        private void Update()
+        {
+            if (_server == null || _profile == null || Time.unscaledTime < _nextServerRefresh
+                || (!_server.HasPending && _server.Account != null && _server.GoldPacks != null)) { return; }
+            _nextServerRefresh = Time.unscaledTime + 10f;
+            RefreshServerAsync().Forget(Debug.LogException);
         }
 
         private void Refresh()
