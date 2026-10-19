@@ -59,7 +59,7 @@ namespace Game.Network
                 string itemId = row.itemId.Value<string>();
                 if (string.IsNullOrWhiteSpace(itemId) || row.quantity < 0 || !itemIds.Add(itemId))
                 {
-                    throw new ApiException(ApiErrorKind.Rejected, HttpErrorMapper.InvalidResponse);
+                    throw ServerProgressContract.Invalid("me.items rule");
                 }
                 snapshot.items.Add(new ItemAmount { itemId = itemId, quantity = row.quantity });
             }
@@ -115,6 +115,6 @@ namespace Game.Network
         private static int ToInt(long value) =>
             value >= int.MinValue && value <= int.MaxValue
                 ? (int)value
-                : throw new ApiException(ApiErrorKind.Rejected, HttpErrorMapper.InvalidResponse);
+                : throw ServerProgressContract.Invalid("me id out of int range");
     }
 }
