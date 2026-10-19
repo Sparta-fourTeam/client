@@ -32,7 +32,9 @@ namespace Game.Tests
             combat["BaseTimeScale"] = data.Combat.BaseTimeScale + 0.25f;
             var transport = Transport(data, data.RawJson("Stages"), combat: combat.ToString());
             var api = new HttpBattleSourceApi(new HttpApiClient(new HttpApiConfig("https://example.test"), transport));
-            var loaded = api.LoadGameData(data).GetAwaiter().GetResult();
+            var ancillary = data.CopyTables();
+            foreach (var name in new[] { "Stages", "Monsters", "Combat" }) { ancillary.Remove(name); }
+            var loaded = api.LoadGameData(ancillary).GetAwaiter().GetResult();
             Assert.AreEqual(data.Combat.BaseTimeScale + 0.25f, loaded.Combat.BaseTimeScale);
             Assert.AreNotEqual(data.BattleSourceRevision, loaded.BattleSourceRevision);
             Assert.AreEqual(combat.ToString(), loaded.RawJson("Combat"));

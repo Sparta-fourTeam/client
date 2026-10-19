@@ -11,7 +11,7 @@ namespace Game.Tests
 {
     public sealed class StageManagerTests
     {
-        private sealed class FakeBattleApi : IBattleApi
+        private class FakeBattleApi : IBattleApi
         {
             public SubmitResultRequest LastRequest;
             public Exception ToThrow;
@@ -42,6 +42,19 @@ namespace Game.Tests
                 return UniTask.FromResult(new SubmitResultResponse
                 { rewardGold = 100, clearRating = req.cleared ? ClearRating : 0 });
             }
+        }
+
+        private sealed class ProgressBattleApi : FakeBattleApi, IBattleProgressApi
+        {
+            public string SourceRevision => new string('b', 64);
+            public readonly List<BattleProgressRequest> Progress = new();
+            public UniTask<BattleProgressAck> ReportProgress(BattleProgressRequest request)
+            {
+                Progress.Add(request);
+                return UniTask.FromResult(new BattleProgressAck
+                { battleId = request.battleId, revision = request.expectedRevision + 1, killedMonsters = request.killedMonsters });
+            }
+            public UniTask<BattleProgressAck> AbandonProgress(BattleProgressRequest request) => ReportProgress(request);
         }
 
         private sealed class RecordingAnalytics : IGameplayAnalytics
@@ -196,6 +209,24 @@ namespace Game.Tests
             Assert.IsTrue(_manager.ApplyRouletteReward(round));
             Assert.IsFalse(_manager.ApplyRouletteReward(round));
             _manager.FinishEliteRoulette();
+        }
+
+        [Test]
+        public void ResumedBattlePinsNewReportsAndSubsequentCheckpointToOriginalSource()
+        {
+            var saved = _manager.CaptureRuntime(_skills);
+            saved.ProgressSourceRevision = new string('a', 64);
+            var api = new ProgressBattleApi();
+            _api = api;
+            _manager.Dispose();
+            _manager = _createManager(null);
+            _manager.PersistProgress = () => true;
+            _manager.Start();
+            _manager.RestoreRuntime(saved, _skills, new GameDataStore());
+            Assert.AreEqual(saved.ProgressSourceRevision, _manager.CaptureRuntime(_skills).ProgressSourceRevision);
+            _stageEnded.Publish(new StageEnded(StageOutcome.Fail));
+            Assert.AreEqual(1, api.Progress.Count);
+            Assert.AreEqual(saved.ProgressSourceRevision, api.Progress[0].sourceRevision);
         }
 
         [Test]

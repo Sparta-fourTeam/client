@@ -22,7 +22,7 @@ namespace Game.Core
                 PendingRequest = _pendingRequest,
                 PendingProgress = _pendingProgress,
                 ProgressRevision = _progressRevision,
-                ProgressSourceRevision = (_battleApi as IBattleProgressApi)?.SourceRevision,
+                ProgressSourceRevision = _progressSourceRevision ?? (_battleApi as IBattleProgressApi)?.SourceRevision,
                 ProgressRequested = _progressRequested,
                 ResultKills = _resultKills,
                 ResultTime = _resultPlayTime
@@ -40,6 +40,7 @@ namespace Game.Core
             _rewardedElites.Clear(); foreach (int id in s.RewardedElites) { _rewardedElites.Add(id); }
             _choices = s.Choices.Select(choice => skills.RestoreChoice(choice, data)).ToList();
             _pendingProgress = s.PendingProgress; _progressRevision = s.ProgressRevision; _progressRequested = s.ProgressRequested;
+            _progressSourceRevision = s.ProgressSourceRevision ?? s.PendingProgress?.sourceRevision;
             _pendingRequest = s.PendingRequest; _resultKills = s.ResultKills; _resultPlayTime = s.ResultTime;
             _stats.Restore(s); _clock.Restore(s); _deck.Restore(s); _rewards?.Restore(s); _roulette?.Restore(s, skills, data);
             Time.timeScale = s.State == StageState.Playing ? _speed : 0f;

@@ -31,7 +31,7 @@ namespace Game.Tests
             Assert.AreEqual("MySQL", fixture.Value<string>("databaseProduct"));
             int stageId = fixture.Value<int>("stageId");
             var local = new GameDataStore();
-            var data = await new HttpBattleSourceApi(client).LoadGameData(local);
+            var data = await new HttpBattleSourceApi(client).LoadGameData(local.CopyTables());
             Assert.AreEqual(fixture.Value<float>("baseTimeScale"), data.Combat.BaseTimeScale);
             Assert.AreNotEqual(local.Combat.BaseTimeScale, data.Combat.BaseTimeScale);
             Assert.AreNotEqual(local.BattleSourceRevision, data.BattleSourceRevision);

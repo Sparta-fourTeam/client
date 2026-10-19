@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
@@ -51,18 +52,16 @@ namespace Game.Network
         }
 
         /// <summary>서버 원문을 실제 모델로 파싱한다. 로컬 전투 JSON과의 수동 동기화는 요구하지 않는다.</summary>
-        public async UniTask<GameDataStore> LoadGameData(GameDataStore ancillaryData,
+        public async UniTask<GameDataStore> LoadGameData(IReadOnlyDictionary<string, string> ancillaryTables,
             CancellationToken cancellationToken = default)
         {
-            if (ancillaryData == null) { throw new ArgumentNullException(nameof(ancillaryData)); }
+            if (ancillaryTables == null) { throw new ArgumentNullException(nameof(ancillaryTables)); }
             var snapshot = await GetSnapshot(cancellationToken);
-            var tables = ancillaryData.CopyTables();
+            var tables = ancillaryTables.ToDictionary(pair => pair.Key, pair => pair.Value);
             tables["Stages"] = snapshot.StagesJson;
             tables["Monsters"] = snapshot.MonstersJson;
             tables["Combat"] = snapshot.CombatJson;
-            var loaded = new GameDataStore(tables);
-            foreach (var pair in ancillaryData.Revisions) { loaded.Revisions[pair.Key] = pair.Value; }
-            return loaded;
+            return new GameDataStore(tables);
         }
     }
 }

@@ -10,6 +10,7 @@ namespace Game.Core
     {
         private BattleProgressRequest _pendingProgress;
         private long _progressRevision;
+        private string _progressSourceRevision;
         private bool _progressRequested;
         private UniTaskCompletionSource _progressFlight;
         private bool _progressDisposed;
@@ -55,7 +56,7 @@ namespace Game.Core
                         {
                             battleId = _battleId,
                             reportId = Guid.NewGuid().ToString("D"),
-                            sourceRevision = ((IBattleProgressApi)_battleApi).SourceRevision,
+                            sourceRevision = _progressSourceRevision ??= ((IBattleProgressApi)_battleApi).SourceRevision,
                             expectedRevision = _progressRevision,
                             killedMonsters = _stats.Kills,
                             completedWaves = _rewards?.CompletedWaves ?? 0,
