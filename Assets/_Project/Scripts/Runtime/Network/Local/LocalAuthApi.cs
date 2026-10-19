@@ -33,5 +33,15 @@ namespace Game.Network
             // TODO(server): 토큰 하드코딩 — 실제 로그인 응답의 accessToken으로 교체
             return UniTask.FromResult(new LoginResponse { accessToken = "local-dev-token" });
         }
+
+        // 기기 진행은 유지하되 이전 서버 계정의 공개 신원은 다음 로그인에 재사용하지 않는다.
+        internal void ClearCachedServerIdentity()
+        {
+            var save = _store.Load();
+            save.nickname = null;
+            save.playerId = null;
+            save.avatarId = 0;
+            _store.Flush(save);
+        }
     }
 }

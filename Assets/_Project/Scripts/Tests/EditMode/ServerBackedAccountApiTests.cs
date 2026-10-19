@@ -117,6 +117,48 @@ namespace Game.Tests
         }
 
         [Test]
+        public void Profile_NewServerLoginDoesNotExposePreviousIdentityWhenRefreshFails()
+        {
+            var data = new GameDataStore();
+            var saved = _store.Load();
+            saved.wallet.gold = 137;
+            saved.exp = 123;
+            _store.Flush(saved);
+            _transport.Response = new HttpResponseData(200,
+                "{\"userId\":42,\"nickname\":\"이전계정\",\"avatarId\":3}");
+            _api.GetProfile().GetAwaiter().GetResult();
+            _session.Clear();
+            _transport.Response = new HttpResponseData(200,
+                "{\"accessToken\":\"account-b\",\"refreshToken\":\"refresh-b\"}");
+            new ServerBackedAuthApi(_client, _session, new LocalAuthApi(_store, data))
+                .Login(LoginMethod.Google, "account-b-id-token").GetAwaiter().GetResult();
+            var profile = new PlayerProfile(data);
+            var account = new AccountService(_api, null, null, null, profile, profiles: _api);
+            _transport.Response = new HttpResponseData(503, "{}");
+            UnityEngine.TestTools.LogAssert.Expect(UnityEngine.LogType.Exception,
+                new System.Text.RegularExpressions.Regex("HTTP_503"));
+            var refresher = new LobbyProfileRefresher(new LocalPlayerApi(_store), profile, account);
+
+            refresher.Start();
+
+            Assert.AreEqual(UniTaskStatus.Succeeded, refresher.WhenLoaded.Status);
+            Assert.AreNotEqual("이전계정", profile.Nickname);
+            Assert.AreNotEqual("42", profile.PlayerId);
+            Assert.AreEqual(0, profile.AvatarId);
+            Assert.AreEqual(137, profile.Gold);
+            Assert.AreEqual(123, profile.Exp);
+            var restarted = new LocalPlayerApi(new LocalSaveStore(_filePath)).GetMe().GetAwaiter().GetResult();
+            Assert.AreNotEqual("이전계정", restarted.nickname, "디스크에도 이전 신원을 남기지 않는다");
+            _transport.Response = new HttpResponseData(200,
+                "{\"userId\":43,\"nickname\":\"현재계정\",\"avatarId\":2}");
+            account.RefreshProfileAsync().GetAwaiter().GetResult();
+            Assert.AreEqual("현재계정", profile.Nickname);
+            Assert.AreEqual("43", profile.PlayerId);
+            Assert.AreEqual(2, profile.AvatarId);
+            Assert.AreEqual(137, profile.Gold);
+        }
+
+        [Test]
         public void Profile_LateResponseAfterLogoutDoesNotOverwriteCachedIdentity()
         {
             var saved = _store.Load();
