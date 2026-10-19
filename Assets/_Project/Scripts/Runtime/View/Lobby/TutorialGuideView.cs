@@ -138,6 +138,16 @@ namespace Game.View
             }
             // 앱을 다시 켠 첫 로비에서만 묻는다. 같은 실행 안의 정상 로비 복귀에는 끼어들지 않는다.
             var checkpoint = _stageContext.BattleId == null ? _checkpoints?.Load() : null;
+            if (checkpoint?.Stage.PendingProgressAbandon == true)
+            {
+                try { await _launcher.Discard(checkpoint); _checkpoints.Clear(); checkpoint = null; }
+                catch (ApiException)
+                {
+                    await _ui.Get<ConfirmPopupView>().ShowAsync(new ConfirmRequest
+                    { Title = "진행 저장", Message = "진행 기록을 저장하지 못했습니다. 연결을 확인한 뒤 다시 시도해 주세요." });
+                    return;
+                }
+            }
             if (checkpoint?.Stage.State == StageState.Submitting)
             {
                 // 이미 끝난 전투의 결과는 새 발급 전에 같은 요청으로 재전송한다.
@@ -154,7 +164,7 @@ namespace Game.View
                     {
                         Title = "이어하기",
                         Message = $"진행 중인 전투가 있습니다. 이어하시겠습니까?\n제 {checkpoint.StageId} 관문 · {checkpoint.Stage.ReachedWave} 웨이브 · {seconds / 60:00}:{seconds % 60:00}",
-                        Warning = "포기하면 이 전투의 진행 기록이 사라집니다.",
+                        Warning = "전투 이어하기 기록은 삭제됩니다. 저장된 퀘스트·도감 진행은 유지됩니다.",
                         ConfirmLabel = "이어하기",
                         CancelLabel = "포기"
                     });
@@ -162,6 +172,13 @@ namespace Game.View
                 catch (OperationCanceledException) { return; }
                 if (this == null) { return; }
                 if (resume) { await _launcher.Resume(checkpoint); return; }
+                try { await _launcher.Discard(checkpoint); }
+                catch (ApiException)
+                {
+                    await _ui.Get<ConfirmPopupView>().ShowAsync(new ConfirmRequest
+                    { Title = "진행 저장", Message = "진행 기록을 저장하지 못했습니다. 연결을 확인한 뒤 다시 시도해 주세요." });
+                    return;
+                }
                 _checkpoints.Clear();
             }
 

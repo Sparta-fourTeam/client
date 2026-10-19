@@ -218,7 +218,7 @@ namespace Game.Tests
             Assert.IsNull(result.Receipt);
         }
 
-        [TestCase("KILL_MONSTERS")]
+        [TestCase("UNSUPPORTED")]
         [TestCase("KillMonsters")]
         public void UnsupportedKillProgressIsNotMappedAsEnergyOrSuccess(string kind)
         {

@@ -118,6 +118,7 @@ namespace Game.Core
 
         public void Dispose()
         {
+            _progressDisposed = true;
             _subscription?.Dispose();
             // Paused/CardSelect 상태로 씬을 벗어나도 timeScale이 0으로 새어나가 다음 씬까지 멈추지 않게 한다
             Time.timeScale = 1f;
@@ -172,6 +173,7 @@ namespace Game.Core
         /// <summary>마지막이 아닌 웨이브가 끝나면 카드 3장을 제시하고 CardSelect로 전환한다. 적 이동·스폰도 timeScale로 함께 멈춘다</summary>
         private void OnWaveCompleted(WaveCompleted e)
         {
+            QueueProgress();
             if (e.IsFinalWave || State is StageState.Starting or StageState.Submitting or StageState.Finished)
             {
                 return;
@@ -325,6 +327,7 @@ namespace Game.Core
                 {
                     try
                     {
+                        if (_battleApi is IBattleProgressApi) { _progressRequested = true; await FlushProgress(); }
                         response = await _battleApi.SubmitResult(request);
                         sent = true;
                     }

@@ -57,6 +57,7 @@ namespace Game.Boot
                     _context.Checkpoint = null;
                     _stage.RestoreRuntime(checkpoint.Stage, _skills, _data);
                 }
+                _stage.PersistProgress = SaveProgressBeforeSend;
                 _ready = true; _untilSave = 1f;
                 QueueCheckpoint();
             }
@@ -81,7 +82,7 @@ namespace Game.Boot
             using var captureSample = CaptureMarker.Auto();
             var state = _stage.CaptureRuntime(_skills);
             _wall.CaptureRuntime(state); _waves.CaptureRuntime(state); _progress.CaptureRuntime(state); _encountered.CaptureRuntime(state);
-            return new BattleCheckpoint
+            var checkpoint = new BattleCheckpoint
             {
                 BattleId = _context.BattleId,
                 StageId = _context.StageId,
@@ -90,6 +91,8 @@ namespace Game.Boot
                 Skills = _skills.CaptureRuntime(),
                 RandomState = JsonUtility.ToJson(UnityEngine.Random.state)
             };
+            checkpoint.PinBattleData(_data);
+            return checkpoint;
         }
         private void QueueCheckpoint()
         {
@@ -97,6 +100,14 @@ namespace Game.Boot
             try { var checkpoint = Capture(); if (checkpoint != null) { _store.QueueSave(checkpoint); } }
             catch (Exception error) when (error is System.IO.IOException or InvalidOperationException)
             { Debug.LogWarning($"[BattleCheckpoint] 전투 저장 실패: {error.Message}"); }
+        }
+        private bool SaveProgressBeforeSend()
+        {
+            var checkpoint = Capture();
+            if (checkpoint == null) { return false; }
+            try { _store.Save(checkpoint); return true; }
+            catch (Exception error) when (error is System.IO.IOException or InvalidOperationException or UnauthorizedAccessException)
+            { return false; }
         }
         public void SaveNow()
         {

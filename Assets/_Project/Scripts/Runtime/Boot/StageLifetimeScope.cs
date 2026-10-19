@@ -2,6 +2,7 @@ using Game.Core;
 using Game.Core.Combat;
 using Game.Core.Defense;
 using Game.Core.Stage;
+using Game.Network;
 using Game.View;
 using UnityEngine;
 using VContainer;
@@ -16,6 +17,24 @@ namespace Game.Boot
 
         protected override void Configure(IContainerBuilder builder)
         {
+            // 재개 전투의 원본만 Stage 범위에 고정하고 Root의 최신 원본은 유지한다.
+            var parentData = Parent.Container.Resolve<GameDataStore>();
+            var restoredData = Parent.Container.Resolve<StageContext>().Checkpoint?.RestoreBattleData(parentData);
+            if (restoredData != null && !ReferenceEquals(restoredData, parentData))
+            {
+                builder.RegisterInstance(restoredData);
+                if (Parent.Container.Resolve<IBattleApi>() is LocalBattleApi local)
+                {
+                    var restoredApi = new LocalBattleApi(Parent.Container.Resolve<LocalSaveStore>(), restoredData)
+                    {
+                        UnlockedSkillIds = local.UnlockedSkillIds,
+                        UnlockedEquipmentIds = local.UnlockedEquipmentIds,
+                        MaterialDistribution = local.MaterialDistribution,
+                        FailNextSubmits = local.FailNextSubmits
+                    };
+                    builder.RegisterInstance(restoredApi).As<IBattleApi>().As<ISubmitFaultSwitch>();
+                }
+            }
             new UiInstaller(_uiHost).Install(builder);
             // 치명타는 스테이지 안에서만 켠다. 확률·배율은 Combat 테이블이 정한다
             builder.RegisterBuildCallback(resolver =>
