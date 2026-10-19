@@ -198,6 +198,32 @@ namespace Game.Tests
             return (save, checkpoints, credentials, state);
         }
 
+        [Test]
+        public void BattleSourceUpdatePreservesCheckpointOutboxAndOriginalRuntimeData()
+        {
+            var (save, checkpoints, credentials, state) = CheckpointSetup();
+            var original = new GameDataStore();
+            state.Stage.ProgressSourceRevision = original.BattleSourceRevision;
+            state.Stage.PendingProgress = new BattleProgressRequest
+            { battleId = state.BattleId, reportId = Guid.NewGuid().ToString("D"), sourceRevision = original.BattleSourceRevision };
+            state.Stage.PendingProgressAbandon = true;
+            checkpoints.Save(state);
+            var tables = original.CopyTables();
+            var combat = Newtonsoft.Json.Linq.JObject.Parse(tables["Combat"]);
+            combat["BaseTimeScale"] = original.Combat.BaseTimeScale + 0.25f;
+            tables["Combat"] = combat.ToString();
+            var current = new GameDataStore(tables);
+            var reopened = new LocalBattleCheckpointStore(save, credentials, new PlayerProfile(current), current);
+            _checkpointStores.Add(reopened);
+            var restored = reopened.Load();
+            Assert.IsNotNull(restored);
+            Assert.AreEqual(state.Stage.PendingProgress.reportId, restored.Stage.PendingProgress.reportId);
+            Assert.IsTrue(restored.Stage.PendingProgressAbandon);
+            Assert.AreEqual(original.BattleSourceRevision, restored.RestoreBattleData(current).BattleSourceRevision);
+            Assert.AreEqual(original.Combat.BaseTimeScale, restored.RestoreBattleData(current).Combat.BaseTimeScale);
+            Assert.IsTrue(File.Exists(save.BattleCheckpointPath));
+        }
+
         [Test(Description = "파일 교체 중 중단·손상에도 이전 완성본으로 돌아가며 좌표와 전투 상태를 보존한다")]
         public void BattleCheckpoint_RoundTripAndCorruptMain_RecoversPreviousCompletedWrite()
         {

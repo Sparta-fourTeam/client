@@ -82,7 +82,7 @@ namespace Game.Boot
             using var captureSample = CaptureMarker.Auto();
             var state = _stage.CaptureRuntime(_skills);
             _wall.CaptureRuntime(state); _waves.CaptureRuntime(state); _progress.CaptureRuntime(state); _encountered.CaptureRuntime(state);
-            return new BattleCheckpoint
+            var checkpoint = new BattleCheckpoint
             {
                 BattleId = _context.BattleId,
                 StageId = _context.StageId,
@@ -91,6 +91,8 @@ namespace Game.Boot
                 Skills = _skills.CaptureRuntime(),
                 RandomState = JsonUtility.ToJson(UnityEngine.Random.state)
             };
+            checkpoint.PinBattleData(_data);
+            return checkpoint;
         }
         private void QueueCheckpoint()
         {
