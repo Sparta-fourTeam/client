@@ -31,6 +31,8 @@ namespace Game.Core
         {
             // 방벽 체력을 value만큼 회복
             ["wallRepair"] = (context, value) => context.Wall.Repair((int)value),
+            // 방벽 최대 체력의 value%를 회복 (소수점은 올림해 최소 1은 회복)
+            ["wallRepairPercent"] = (context, value) => context.Wall.Repair((int)Math.Ceiling(context.Wall.MaxHp * value / 100f)),
         };
 
         public static bool HasCondition(string kind) => kind != null && Conditions.ContainsKey(kind);

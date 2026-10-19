@@ -169,10 +169,10 @@ flowchart TD
 { "Id": "wall_repair",
   "MaxPicks": 999, "Forced": true, "Priority": 0,
   "Condition": { "Kind": "wallHpBelow", "Value": 50 },
-  "Effect":    { "Kind": "wallRepair",  "Value": 20 } }
+  "Effect":    { "Kind": "wallRepairPercent",  "Value": 20 } }
 ```
 
-조건과 효과의 종류는 `GeneralCardRules`에 이름으로 등록한다. 지금은 조건 `wallHpBelow`(방벽 체력이 값% 이하)와 효과 `wallRepair`(방벽 체력 +값)뿐이다. 새 종류는 그 파일에 한 줄 더하고 JSON에서 그 이름을 쓰면 된다. 모든 스킬에 걸치는 효과(전체 공격력 +10% 등)는 스킬 쪽에 "전체 보너스"를 저장하는 곳이 없어 줄 하나로 안 되고, 먼저 `SkillController`에 만들어야 한다.
+조건과 효과의 종류는 `GeneralCardRules`에 이름으로 등록한다. 지금은 조건 `wallHpBelow`(방벽 체력이 값% 이하)와 효과 `wallRepair`(방벽 체력 +값)와 `wallRepairPercent`(방벽 최대 체력의 값%)뿐이다. 새 종류는 그 파일에 한 줄 더하고 JSON에서 그 이름을 쓰면 된다. 모든 스킬에 걸치는 효과(전체 공격력 +10% 등)는 스킬 쪽에 "전체 보너스"를 저장하는 곳이 없어 줄 하나로 안 되고, 먼저 `SkillController`에 만들어야 한다.
 
 ## 6. 이벤트, 반응, 자식 스킬
 
