@@ -198,6 +198,32 @@ namespace Game.Tests
             return (save, checkpoints, credentials, state);
         }
 
+        [Test]
+        public void BattleSourceUpdatePreservesCheckpointOutboxAndOriginalRuntimeData()
+        {
+            var (save, checkpoints, credentials, state) = CheckpointSetup();
+            var original = new GameDataStore();
+            state.Stage.ProgressSourceRevision = original.BattleSourceRevision;
+            state.Stage.PendingProgress = new BattleProgressRequest
+            { battleId = state.BattleId, reportId = Guid.NewGuid().ToString("D"), sourceRevision = original.BattleSourceRevision };
+            state.Stage.PendingProgressAbandon = true;
+            checkpoints.Save(state);
+            var tables = original.CopyTables();
+            var combat = Newtonsoft.Json.Linq.JObject.Parse(tables["Combat"]);
+            combat["BaseTimeScale"] = original.Combat.BaseTimeScale + 0.25f;
+            tables["Combat"] = combat.ToString();
+            var current = new GameDataStore(tables);
+            var reopened = new LocalBattleCheckpointStore(save, credentials, new PlayerProfile(current), current);
+            _checkpointStores.Add(reopened);
+            var restored = reopened.Load();
+            Assert.IsNotNull(restored);
+            Assert.AreEqual(state.Stage.PendingProgress.reportId, restored.Stage.PendingProgress.reportId);
+            Assert.IsTrue(restored.Stage.PendingProgressAbandon);
+            Assert.AreEqual(original.BattleSourceRevision, restored.RestoreBattleData(current).BattleSourceRevision);
+            Assert.AreEqual(original.Combat.BaseTimeScale, restored.RestoreBattleData(current).Combat.BaseTimeScale);
+            Assert.IsTrue(File.Exists(save.BattleCheckpointPath));
+        }
+
         [Test(Description = "파일 교체 중 중단·손상에도 이전 완성본으로 돌아가며 좌표와 전투 상태를 보존한다")]
         public void BattleCheckpoint_RoundTripAndCorruptMain_RecoversPreviousCompletedWrite()
         {
@@ -298,6 +324,33 @@ namespace Game.Tests
             checkpoints.QueueSave(CheckpointAt(template, 30));
             checkpoints.Flush();
             Assert.That(checkpoints.Load().Stage.Clock, Is.EqualTo(30));
+        }
+
+        [Test]
+        public void BattleCheckpoint_DurableWriteFailureBlocksProgressAndRetriesSameAbandon()
+        {
+            var (save, checkpoints, _, state) = CheckpointSetup();
+            state.Stage.Clock = 10;
+            checkpoints.Save(state);
+            string blocked = save.BattleCheckpointPath + ".tmp";
+            Directory.CreateDirectory(blocked);
+            var launcher = new BattleLauncher(new LocalBattleApi(save, new GameDataStore()), null, null, null, checkpoints);
+            try
+            {
+                var error = Assert.Throws<ApiException>(() => launcher.Discard(state).GetAwaiter().GetResult());
+                Assert.AreEqual("PROGRESS_STORAGE_UNAVAILABLE", error.Code);
+                Assert.AreEqual(ApiErrorKind.Transient, error.Kind);
+                var battle = save.Load().battles.Single();
+                Assert.AreEqual("Issued", battle.status);
+                Assert.IsEmpty(battle.progressReceipts);
+                Assert.AreEqual(10, checkpoints.Load().Stage.Clock);
+            }
+            finally { Directory.Delete(blocked); }
+            string reportId = state.Stage.PendingProgress.reportId;
+            launcher.Discard(state).GetAwaiter().GetResult();
+            var completed = save.Load().battles.Single();
+            Assert.AreEqual("Abandoned", completed.status);
+            Assert.AreEqual(reportId, completed.progressReceipts.Single().request.reportId);
         }
 
         [Test(Description = "직렬화 버퍼를 재사용해도 긴 한글/이스케이프 문자열의 잔여 바이트가 다음 저장에 섞이지 않고 스탯을 보존한다")]

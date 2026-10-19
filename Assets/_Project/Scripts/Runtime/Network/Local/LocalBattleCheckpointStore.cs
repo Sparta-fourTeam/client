@@ -42,6 +42,7 @@ namespace Game.Network
             public string Path;
             public long Generation;
             public Envelope Envelope;
+            public GameDataStore Data;
         }
         // 한 워커만 사용한다. 큰 JSON 문자열과 UTF-8 배열을 매번 새로 만들지 않는다.
         private readonly JsonSerializer _writerSerializer;
@@ -70,10 +71,12 @@ namespace Game.Network
         public LocalBattleCheckpointStore(LocalSaveStore save, IAuthCredentialStore credentials, PlayerProfile profile, GameDataStore data)
         {
             _save = save; _credentials = credentials; _profile = profile; _data = data;
-            _content = Hash(Application.version + string.Concat(data.Revisions.Keys.OrderBy(n => n).Select(data.RawJson)));
+            _content = Content(data);
             _writerSerializer = JsonSerializer.Create(Settings);
             _writerSerializer.Converters.Add(new FloatArrayConverter());
         }
+        private string Content(GameDataStore data) => ReferenceEquals(data, _data) && _content != null
+            ? _content : Hash(Application.version + string.Concat(data.Revisions.Keys.OrderBy(n => n).Select(data.RawJson)));
         private string Owner => _credentials.HasCredential
             ? Hash($"{_credentials.Method}|{_credentials.AccountId}|{_profile.Nickname}") : null;
         private static string Hash(string value)
@@ -95,9 +98,13 @@ namespace Game.Network
                 {
                     if (new FileInfo(path).Length > MaximumBytes) { continue; }
                     var envelope = JsonConvert.DeserializeObject<Envelope>(File.ReadAllText(path), Settings);
-                    if (envelope?.Owner == Owner && envelope.Content == _content && Valid(envelope.Checkpoint)) { return envelope.Checkpoint; }
+                    if (envelope?.Owner == Owner && envelope.Checkpoint != null)
+                    {
+                        var data = envelope.Checkpoint.RestoreBattleData(_data);
+                        if (envelope.Content == Content(data) && Valid(envelope.Checkpoint, data)) { return envelope.Checkpoint; }
+                    }
                 }
-                catch (Exception error) when (error is IOException or JsonException or ArgumentException)
+                catch (Exception error) when (error is IOException or JsonException or ArgumentException or InvalidOperationException or KeyNotFoundException)
                 { Debug.LogWarning($"[BattleCheckpoint] 저장 파일을 읽지 못했습니다: {error.GetType().Name}"); }
             }
             Clear();
@@ -106,7 +113,7 @@ namespace Game.Network
         public void Save(BattleCheckpoint checkpoint)
         {
             QueueSave(checkpoint);
-            Flush();
+            Flush(throwOnFailure: true);
         }
 
         // Unity API·계정 상태·저장 경로는 메인 스레드에서 읽는다.
@@ -129,6 +136,8 @@ namespace Game.Network
                 }
                 if (!_battleMatches || (!_battleIssued && checkpoint.Stage?.State != StageState.Submitting)) { return; }
             }
+            checkpoint.PinBattleData(_data);
+            var pinnedData = checkpoint.RestoreBattleData(_data);
             string path = _save.BattleCheckpointPath;
 #if UNITY_IOS && !UNITY_EDITOR
             PrepareIosStorage(path);
@@ -141,7 +150,8 @@ namespace Game.Network
                 {
                     Path = path,
                     Generation = _generation,
-                    Envelope = new Envelope { Owner = owner, Content = _content, Checkpoint = checkpoint }
+                    Data = pinnedData,
+                    Envelope = new Envelope { Owner = owner, Content = Content(pinnedData), Checkpoint = checkpoint }
                 };
                 start = !_writing;
                 if (start) { _writing = true; }
@@ -204,7 +214,7 @@ namespace Game.Network
                 try
                 {
                     using var storeSample = StoreMarker.Auto();
-                    using (ValidateMarker.Auto()) { if (!Valid(request.Envelope.Checkpoint, checkBattle: false)) { continue; } }
+                    using (ValidateMarker.Auto()) { if (!Valid(request.Envelope.Checkpoint, request.Data, checkBattle: false)) { continue; } }
                     ArraySegment<byte> bytes;
                     using (SerializeMarker.Auto()) { bytes = Serialize(request.Envelope); }
                     lock (_fileGate)
@@ -288,17 +298,20 @@ namespace Game.Network
             }
         }
 
-        public void Flush()
+        public void Flush() => Flush(throwOnFailure: false);
+
+        private void Flush(bool throwOnFailure)
         {
             using var waitSample = WaitMarker.Auto();
             lock (_queueGate) { while (_writing) { Monitor.Wait(_queueGate); } }
-            ReportWriteError();
+            ReportWriteError(throwOnFailure);
         }
 
-        private void ReportWriteError()
+        private void ReportWriteError(bool throwOnFailure = false)
         {
             Exception error;
             lock (_queueGate) { error = _writeError; _writeError = null; }
+            if (error != null && throwOnFailure) { throw new IOException("전투 기록을 디스크에 저장하지 못했습니다.", error); }
             if (error != null) { Debug.LogWarning($"[BattleCheckpoint] 전투 저장 실패: {error.Message}"); }
         }
 
@@ -338,11 +351,11 @@ namespace Game.Network
             Flush();
             ReleaseJsonBuffer();
         }
-        private bool Valid(BattleCheckpoint c, bool checkBattle = true)
+        private bool Valid(BattleCheckpoint c, GameDataStore data, bool checkBattle = true)
         {
             if (c?.Version != 1 || string.IsNullOrWhiteSpace(c.BattleId) || c.Stage == null || c.Spawns == null || c.Skills == null
-                || !_data.Stages.Contains(c.StageId) || string.IsNullOrEmpty(c.RandomState)) { return false; }
-            var stage = _data.Stages.GetOrThrow(c.StageId);
+                || !data.Stages.Contains(c.StageId) || string.IsNullOrEmpty(c.RandomState)) { return false; }
+            var stage = data.Stages.GetOrThrow(c.StageId);
             var s = c.Stage;
             if (s.State is StageState.Starting or StageState.Finished || !Enum.IsDefined(typeof(StageState), s.State)
                 || !Finite(s.Clock) || s.Clock < 0 || !Finite(s.Speed) || s.Speed <= 0 || s.WallHp < 0 || s.WallHp > s.WallMaxHp
@@ -358,7 +371,7 @@ namespace Game.Network
             foreach (var enemy in c.Spawns.Enemies)
             {
                 if (enemy == null || enemy.Passives == null || enemy.Id <= 0 || !_validationEnemyIds.Add(enemy.Id)
-                    || !_data.Monsters.Contains(enemy.MonsterId) || enemy.Hp <= 0 || enemy.Status == null
+                    || !data.Monsters.Contains(enemy.MonsterId) || enemy.Hp <= 0 || enemy.Status == null
                     || !Finite(enemy.Position.x) || !Finite(enemy.Position.y)) { return false; }
             }
             int owned = 0;

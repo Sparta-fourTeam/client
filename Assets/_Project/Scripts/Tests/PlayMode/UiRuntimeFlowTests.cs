@@ -91,6 +91,13 @@ namespace Game.Tests
 
         [UnityTest]
         public IEnumerator BattleCheckpoint_LobbyPromptRestoresBattleAndCardSelectionWithoutChargingAgain()
+            => BattleCheckpointRoundTrip(false);
+
+        [UnityTest]
+        public IEnumerator BattleCheckpoint_RestoresPinnedSourceWhileRootUsesNewSource()
+            => BattleCheckpointRoundTrip(true);
+
+        private IEnumerator BattleCheckpointRoundTrip(bool otherSource)
         {
             yield return StartFromBoot(UnlockLobbyFeatures);
             var root = Object.FindAnyObjectByType<RootLifetimeScope>();
@@ -119,6 +126,27 @@ namespace Game.Tests
             driver.SaveNow();
             var saved = checkpoints.Load();
             Assert.That(saved, Is.Not.Null);
+            if (otherSource)
+            {
+                var current = root.Container.Resolve<GameDataStore>();
+                var tables = current.CopyTables();
+                var combat = Newtonsoft.Json.Linq.JObject.Parse(tables["Combat"]);
+                combat["BaseTimeScale"] = current.Combat.BaseTimeScale / 2;
+                tables["Combat"] = combat.ToString();
+                var original = new GameDataStore(tables);
+                saved = new BattleCheckpoint
+                {
+                    BattleId = saved.BattleId,
+                    StageId = saved.StageId,
+                    Stage = saved.Stage,
+                    RandomState = saved.RandomState,
+                    Spawns = saved.Spawns,
+                    Skills = saved.Skills
+                };
+                saved.Stage.ProgressSourceRevision = original.BattleSourceRevision;
+                saved.PinBattleData(original);
+                checkpoints.Save(saved);
+            }
             Assert.That(saved.Skills, Is.Not.Empty);
             Assert.That(saved.Skills.Sum(s => s.Attacks.Count), Is.GreaterThan(0), "진행 중인 공격도 복원 대상으로 검증한다");
             int energy = _store.Load().wallet.energyStored;
@@ -136,6 +164,13 @@ namespace Game.Tests
             stage = Object.FindAnyObjectByType<StageLifetimeScope>();
             manager = stage.Container.Resolve<StageManager>();
             var restored = Object.FindAnyObjectByType<BattleCheckpointDriver>().Capture();
+            Assert.That(stage.Container.Resolve<GameDataStore>().BattleSourceRevision,
+                Is.EqualTo(saved.Stage.ProgressSourceRevision));
+            if (otherSource)
+            {
+                Assert.That(stage.Container.Resolve<GameDataStore>().BattleSourceRevision,
+                    Is.Not.EqualTo(root.Container.Resolve<GameDataStore>().BattleSourceRevision));
+            }
             Assert.That(context.BattleId, Is.EqualTo(battleId));
             Assert.That(_store.Load().wallet.energyStored, Is.EqualTo(energy));
             Assert.That(_store.Load().battles.Count, Is.EqualTo(issued));
@@ -155,10 +190,16 @@ namespace Game.Tests
             Assert.That(restored.Skills.Select(s => s.Attacks.Count), Is.EqualTo(saved.Skills.Select(s => s.Attacks.Count)));
             manager.Resume();
             yield return CompleteEnemiesUntil(stage, () => manager.State == StageState.CardSelect);
+            yield return WaitFor(() => _store.Load().battles.Single(b => b.battleKey == battleId).progressRevision > 0);
             driver = Object.FindAnyObjectByType<BattleCheckpointDriver>();
             driver.SaveNow();
             var selected = checkpoints.Load();
             Assert.That(selected.Stage.Choices, Is.Not.Empty);
+            var accepted = _store.Load().battles.Single(b => b.battleKey == battleId);
+            Assert.That(accepted.reportedKills, Is.EqualTo(selected.Stage.Kills));
+            Assert.That(accepted.progressReceipts.Last().request.sourceRevision, Is.EqualTo(stage.Container.Resolve<GameDataStore>().BattleSourceRevision));
+            Assert.That(selected.Stage.ProgressRevision, Is.EqualTo(accepted.progressRevision));
+            Assert.That(selected.Stage.PendingProgress, Is.Null);
             context.SetBattle(null);
             yield return nav.GoToLobby().ToCoroutine();
             confirm = Object.FindAnyObjectByType<LobbyLifetimeScope>().Container.Resolve<IUiRegistry>().Get<ConfirmPopupView>();
@@ -174,7 +215,7 @@ namespace Game.Tests
             var slots = Field<CardSlotView[]>(stage.Container.Resolve<IUiRegistry>().Get<CardSelectView>(), "_slots");
             yield return ClickGameButton(Field<Button>(slots.First(slot => slot.gameObject.activeSelf), "_button"));
             yield return WaitFor(() => manager.State == StageState.Playing);
-            var fault = root.Container.Resolve<ISubmitFaultSwitch>();
+            var fault = stage.Container.Resolve<ISubmitFaultSwitch>();
             fault.FailNextSubmits = StageManager.AutoRetryCount + 1;
             manager.RetryDelay = TimeSpan.Zero;
             stage.Container.Resolve<Wall>().TakeDamage(int.MaxValue);

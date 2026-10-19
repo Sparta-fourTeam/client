@@ -20,6 +20,10 @@ namespace Game.Core
                 PendingElites = _pendingElites,
                 PendingCards = _pendingCardSelections,
                 PendingRequest = _pendingRequest,
+                PendingProgress = _pendingProgress,
+                ProgressRevision = _progressRevision,
+                ProgressSourceRevision = _progressSourceRevision ?? (_battleApi as IBattleProgressApi)?.SourceRevision,
+                ProgressRequested = _progressRequested,
                 ResultKills = _resultKills,
                 ResultTime = _resultPlayTime
             };
@@ -35,10 +39,13 @@ namespace Game.Core
             _pendingElites = s.PendingElites; _pendingCardSelections = s.PendingCards;
             _rewardedElites.Clear(); foreach (int id in s.RewardedElites) { _rewardedElites.Add(id); }
             _choices = s.Choices.Select(choice => skills.RestoreChoice(choice, data)).ToList();
+            _pendingProgress = s.PendingProgress; _progressRevision = s.ProgressRevision; _progressRequested = s.ProgressRequested;
+            _progressSourceRevision = s.ProgressSourceRevision ?? s.PendingProgress?.sourceRevision;
             _pendingRequest = s.PendingRequest; _resultKills = s.ResultKills; _resultPlayTime = s.ResultTime;
             _stats.Restore(s); _clock.Restore(s); _deck.Restore(s); _rewards?.Restore(s); _roulette?.Restore(s, skills, data);
             Time.timeScale = s.State == StageState.Playing ? _speed : 0f;
             ChangeState(s.State);
+            if ((_pendingProgress != null || _progressRequested) && s.State != StageState.Submitting) { QueueProgress(); }
             if (s.State == StageState.Submitting && _pendingRequest != null) { Submit(AutoRetryCount).Forget(Debug.LogException); }
         }
     }

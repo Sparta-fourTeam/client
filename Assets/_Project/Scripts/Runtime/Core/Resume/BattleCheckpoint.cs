@@ -15,6 +15,31 @@ namespace Game.Core
         public StageRuntimeState Stage;
         public SpawnRuntimeState Spawns;
         public List<SkillRuntimeState> Skills = new();
+        public Dictionary<string, string> BattleTables;
+        [NonSerialized] private GameDataStore _battleData;
+
+        /// <summary>진행 중인 전투가 사용한 원문을 자동 보관한다.</summary>
+        public void PinBattleData(GameDataStore data)
+        {
+            if (BattleTables != null) { return; }
+            BattleTables = new Dictionary<string, string>
+            { ["Stages"] = data.RawJson("Stages"), ["Monsters"] = data.RawJson("Monsters"), ["Combat"] = data.RawJson("Combat") };
+            _battleData = data;
+        }
+
+        /// <summary>현재 전투 외 테이블과 저장 당시 전투 원문으로 같은 실행 모델을 복원한다.</summary>
+        public GameDataStore RestoreBattleData(GameDataStore current)
+        {
+            if (BattleTables == null) { return current; }
+            if (_battleData != null) { return _battleData; }
+            var revision = BattleSourceFingerprint.Compute(BattleTables["Stages"], BattleTables["Monsters"], BattleTables["Combat"]);
+            if (Stage?.ProgressSourceRevision != null && Stage.ProgressSourceRevision != revision)
+            { throw new InvalidOperationException("저장된 전투 원문과 진행 보고 버전이 다릅니다"); }
+            if (revision == current.BattleSourceRevision) { return _battleData = current; }
+            var tables = current.CopyTables();
+            foreach (var name in new[] { "Stages", "Monsters", "Combat" }) { tables[name] = BattleTables[name]; }
+            return _battleData = new GameDataStore(tables);
+        }
     }
 
     public interface IBattleCheckpointStore
@@ -36,6 +61,7 @@ namespace Game.Core
         public float Speed, Clock, PlayTime;
         public int Kills, ReachedWave, WallHp, WallMaxHp, WaveIndex, GaugeKills, CompletedWaves;
         public bool Ended;
+        public string ProgressSourceRevision;
         public List<int> DeadEnemyIds = new(), Encountered = new(), RewardedElites = new();
         public Dictionary<int, long> SkillDamage = new();
         public List<string> BuildLog = new();
@@ -46,6 +72,10 @@ namespace Game.Core
         public List<SavedChoice> RouletteSelected = new();
         public List<WaveRuntimeState> Waves = new();
         public SubmitResultRequest PendingRequest;
+        public BattleProgressRequest PendingProgress;
+        public long ProgressRevision;
+        public bool ProgressRequested;
+        public bool PendingProgressAbandon;
         public int ResultKills;
         public float ResultTime;
     }
