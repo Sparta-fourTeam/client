@@ -64,8 +64,8 @@ namespace Game.Boot
             // 계정 연동은 서버 인증을 쓰는 빌드에서만 서버로 보낸다 (서버 로그인으로 받은 토큰이 있어야 하기 때문)
             builder.Register<LocalAccountApi>(Lifetime.Singleton);
             builder.Register(c => serverProgress
-                ? new ServerBackedAccountApi(c.Resolve<HttpApiClient>())
-                : new ServerBackedAccountApi(c.Resolve<HttpApiClient>(), c.Resolve<LocalAccountApi>()), Lifetime.Singleton);
+                ? new ServerBackedAccountApi(c.Resolve<HttpApiClient>(), null, c.Resolve<IAuthTokenStore>())
+                : new ServerBackedAccountApi(c.Resolve<HttpApiClient>(), c.Resolve<LocalAccountApi>(), c.Resolve<IAuthTokenStore>()), Lifetime.Singleton);
             builder.Register<IAccountApi>(c => ServerConfig.UseServerAuth ? c.Resolve<ServerBackedAccountApi>() : c.Resolve<LocalAccountApi>(),
                 Lifetime.Singleton);
             builder.Register<IProfileApi>(c => ServerConfig.UseServerAuth

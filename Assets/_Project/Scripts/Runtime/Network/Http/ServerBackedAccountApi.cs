@@ -15,11 +15,13 @@ namespace Game.Network
 
         private readonly HttpApiClient _client;
         private readonly LocalAccountApi _local;
+        private readonly IAuthTokenStore _tokens;
 
-        public ServerBackedAccountApi(HttpApiClient client, LocalAccountApi local)
+        public ServerBackedAccountApi(HttpApiClient client, LocalAccountApi local, IAuthTokenStore tokens = null)
         {
             _client = client;
             _local = local;
+            _tokens = tokens;
         }
 
         public ServerBackedAccountApi(HttpApiClient client) : this(client, null) { }
@@ -44,7 +46,9 @@ namespace Game.Network
 
         public async UniTask<PlayerIdentity> GetProfile()
         {
+            long generation = _tokens?.Generation ?? 0;
             var row = await _client.Get<IdentityDto>("api/user/profile", isValid: ValidIdentity);
+            EnsureSession(generation);
             return Cache(row);
         }
 
@@ -56,8 +60,16 @@ namespace Game.Network
 
         private async UniTask<PlayerIdentity> SaveProfile<T>(T request)
         {
+            long generation = _tokens?.Generation ?? 0;
             var row = await _client.Post<T, IdentityDto>("api/user/profile", request, isValid: ValidIdentity);
+            EnsureSession(generation);
             return Cache(row);
+        }
+
+        private void EnsureSession(long generation)
+        {
+            if (_tokens != null && (_tokens.Generation != generation || string.IsNullOrEmpty(_tokens.AccessToken)))
+            { throw new ApiException(ApiErrorKind.Rejected, HttpErrorMapper.SessionExpired); }
         }
 
         private PlayerIdentity Cache(IdentityDto row)

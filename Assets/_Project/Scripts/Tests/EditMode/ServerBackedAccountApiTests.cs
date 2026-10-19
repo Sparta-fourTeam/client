@@ -74,7 +74,7 @@ namespace Game.Tests
             _session = new AuthSession();
             _session.Set("guest-access", "guest-refresh");
             _client = new HttpApiClient(new HttpApiConfig("https://example.test", 7f), _transport, _session, tokens: _session);
-            _api = new ServerBackedAccountApi(_client, new LocalAccountApi(_store));
+            _api = new ServerBackedAccountApi(_client, new LocalAccountApi(_store), _session);
         }
 
         [TearDown]
@@ -103,6 +103,35 @@ namespace Game.Tests
             Assert.That(_transport.Requests[0].Url, Is.EqualTo("https://example.test/api/user/profile"));
             StringAssert.Contains("\"avatarId\":3", _transport.Requests[0].Body);
             StringAssert.DoesNotContain("nickname", _transport.Requests[0].Body);
+        }
+
+        [Test]
+        public void Profile_ServerProgressDoesNotRequireLocalSave()
+        {
+            var api = new ServerBackedAccountApi(_client, null, _session);
+            _transport.Response = new HttpResponseData(200, "{\"userId\":42,\"nickname\":\"서버이름\",\"avatarId\":3}");
+            var identity = api.GetProfile().GetAwaiter().GetResult();
+            Assert.That(identity.Nickname, Is.EqualTo("서버이름"));
+            Assert.That(identity.AvatarId, Is.EqualTo(3));
+            Assert.That(File.Exists(_filePath), Is.False);
+        }
+
+        [Test]
+        public void Profile_LateResponseAfterLogoutDoesNotOverwriteCachedIdentity()
+        {
+            var saved = _store.Load();
+            saved.nickname = "현재이름";
+            _store.Flush(saved);
+            var transport = new PendingTransport();
+            var api = new ServerBackedAccountApi(new HttpApiClient(new HttpApiConfig("https://example.test"),
+                transport, _session, tokens: _session), new LocalAccountApi(_store), _session);
+            var pending = api.GetProfile();
+            _session.Clear();
+            transport.Completion.TrySetResult(new HttpResponseData(200,
+                "{\"userId\":42,\"nickname\":\"이전계정\",\"avatarId\":3}"));
+            var error = Assert.Throws<ApiException>(() => pending.GetAwaiter().GetResult());
+            Assert.That(error.Code, Is.EqualTo(HttpErrorMapper.SessionExpired));
+            Assert.That(_store.Load().nickname, Is.EqualTo("현재이름"));
         }
 
         [Test]

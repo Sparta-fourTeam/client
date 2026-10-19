@@ -65,7 +65,11 @@ namespace Game.Tests
                 EditorPrefs.SetBool(ServerConfig.EditorAuthPreferenceKey, true);
                 Assert.That(ServerConfig.UseServerAuth, Is.True);
                 PlayerPrefs.DeleteKey(progressKey);
+#if ACCOUNT_SERVER_PROGRESS
+                Assert.That(ServerConfig.UseServerPlayer, Is.True);
+#else
                 Assert.That(ServerConfig.UseServerPlayer, Is.False);
+#endif
                 PlayerPrefs.SetString(progressKey, "1");
                 Assert.That(ServerConfig.UseServerPlayer, Is.True);
                 PlayerPrefs.SetString(authKey, "1");
