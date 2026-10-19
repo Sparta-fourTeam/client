@@ -113,7 +113,7 @@ namespace Game.Network
         public void Save(BattleCheckpoint checkpoint)
         {
             QueueSave(checkpoint);
-            Flush();
+            Flush(throwOnFailure: true);
         }
 
         // Unity API·계정 상태·저장 경로는 메인 스레드에서 읽는다.
@@ -298,17 +298,20 @@ namespace Game.Network
             }
         }
 
-        public void Flush()
+        public void Flush() => Flush(throwOnFailure: false);
+
+        private void Flush(bool throwOnFailure)
         {
             using var waitSample = WaitMarker.Auto();
             lock (_queueGate) { while (_writing) { Monitor.Wait(_queueGate); } }
-            ReportWriteError();
+            ReportWriteError(throwOnFailure);
         }
 
-        private void ReportWriteError()
+        private void ReportWriteError(bool throwOnFailure = false)
         {
             Exception error;
             lock (_queueGate) { error = _writeError; _writeError = null; }
+            if (error != null && throwOnFailure) { throw new IOException("전투 기록을 디스크에 저장하지 못했습니다.", error); }
             if (error != null) { Debug.LogWarning($"[BattleCheckpoint] 전투 저장 실패: {error.Message}"); }
         }
 

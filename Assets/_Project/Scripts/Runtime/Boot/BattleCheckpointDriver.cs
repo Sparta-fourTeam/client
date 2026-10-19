@@ -105,8 +105,9 @@ namespace Game.Boot
         {
             var checkpoint = Capture();
             if (checkpoint == null) { return false; }
-            _store.Save(checkpoint);
-            return true;
+            try { _store.Save(checkpoint); return true; }
+            catch (Exception error) when (error is System.IO.IOException or InvalidOperationException or UnauthorizedAccessException)
+            { return false; }
         }
         public void SaveNow()
         {

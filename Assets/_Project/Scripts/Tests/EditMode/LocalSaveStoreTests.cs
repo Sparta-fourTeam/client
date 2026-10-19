@@ -326,6 +326,33 @@ namespace Game.Tests
             Assert.That(checkpoints.Load().Stage.Clock, Is.EqualTo(30));
         }
 
+        [Test]
+        public void BattleCheckpoint_DurableWriteFailureBlocksProgressAndRetriesSameAbandon()
+        {
+            var (save, checkpoints, _, state) = CheckpointSetup();
+            state.Stage.Clock = 10;
+            checkpoints.Save(state);
+            string blocked = save.BattleCheckpointPath + ".tmp";
+            Directory.CreateDirectory(blocked);
+            var launcher = new BattleLauncher(new LocalBattleApi(save, new GameDataStore()), null, null, null, checkpoints);
+            try
+            {
+                var error = Assert.Throws<ApiException>(() => launcher.Discard(state).GetAwaiter().GetResult());
+                Assert.AreEqual("PROGRESS_STORAGE_UNAVAILABLE", error.Code);
+                Assert.AreEqual(ApiErrorKind.Transient, error.Kind);
+                var battle = save.Load().battles.Single();
+                Assert.AreEqual("Issued", battle.status);
+                Assert.IsEmpty(battle.progressReceipts);
+                Assert.AreEqual(10, checkpoints.Load().Stage.Clock);
+            }
+            finally { Directory.Delete(blocked); }
+            string reportId = state.Stage.PendingProgress.reportId;
+            launcher.Discard(state).GetAwaiter().GetResult();
+            var completed = save.Load().battles.Single();
+            Assert.AreEqual("Abandoned", completed.status);
+            Assert.AreEqual(reportId, completed.progressReceipts.Single().request.reportId);
+        }
+
         [Test(Description = "직렬화 버퍼를 재사용해도 긴 한글/이스케이프 문자열의 잔여 바이트가 다음 저장에 섞이지 않고 스탯을 보존한다")]
         public void BattleCheckpoint_ReusedJsonBuffer_LongThenShort_RoundTripsExactPayload()
         {
