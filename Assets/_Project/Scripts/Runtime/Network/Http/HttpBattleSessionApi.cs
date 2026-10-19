@@ -16,7 +16,12 @@ namespace Game.Network
     [Serializable]
     public sealed class BattleStartRequest
     {
-        public readonly string createId = Guid.NewGuid().ToString("D");
+        public readonly string createId;
+        public BattleStartRequest(string createId = null)
+        {
+            if (createId != null && !Guid.TryParse(createId, out _)) { throw new ArgumentException("createId는 UUID여야 합니다", nameof(createId)); }
+            this.createId = createId ?? Guid.NewGuid().ToString("D");
+        }
     }
 
     /// <summary>서버 PR #59의 전투 결과. stageId는 서버 카탈로그의 정수 ID를 사용한다.</summary>

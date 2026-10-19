@@ -15,12 +15,14 @@ namespace Game.Tests
         public readonly Queue<HttpResponseData> Queued = new();
         public Func<HttpRequestData, HttpResponseData?> OnSend;
         public Exception ToThrow;
+        public Action<HttpRequestData> BeforeSend;
         public readonly List<HttpRequestData> Requests = new();
         public float LastTimeout;
 
         public UniTask<HttpResponseData> Send(HttpRequestData request, float timeoutSeconds, CancellationToken cancellationToken)
         {
             Requests.Add(request);
+            BeforeSend?.Invoke(request);
             LastTimeout = timeoutSeconds;
             cancellationToken.ThrowIfCancellationRequested();
             if (ToThrow != null)

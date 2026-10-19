@@ -13,6 +13,7 @@ namespace Game.Tests
         private FakeHttpTransport _transport;
         private HttpPlayerApi _api;
         private LocalSaveStore _store;
+        private AuthSession _tokens;
 
         [SetUp]
         public void SetUp()
@@ -23,8 +24,10 @@ namespace Game.Tests
             save.nickname = "로컬닉네임";
             _store.Flush(save);
             _transport = new FakeHttpTransport();
+            _tokens = new AuthSession();
+            _tokens.Set("account-a", null);
             var client = new HttpApiClient(new HttpApiConfig("https://example.test", 7f), _transport);
-            _api = new HttpPlayerApi(client, new LocalPlayerApi(_store));
+            _api = new HttpPlayerApi(client, new LocalPlayerApi(_store), _tokens);
         }
 
         [TearDown]
@@ -55,6 +58,17 @@ namespace Game.Tests
             var ex = Assert.Throws<ApiException>(() => _api.GetMe().GetAwaiter().GetResult());
 
             Assert.AreEqual("HTTP_401", ex.Code);
+        }
+
+        [Test(Description = "요청 중 계정이 바뀌면 이전 계정의 /me 응답을 프로필에 적용하지 않는다")]
+        public void GetMe_AccountSwitchRejectsOldResponse()
+        {
+            _transport.Response = new HttpResponseData(200, HttpAccountProgressTests.State);
+            _transport.BeforeSend = _ => _tokens.Set("account-b", null);
+
+            var ex = Assert.Throws<ApiException>(() => _api.GetMe().GetAwaiter().GetResult());
+
+            Assert.AreEqual(HttpErrorMapper.SessionExpired, ex.Code);
         }
 
         [TestCase("{}")]

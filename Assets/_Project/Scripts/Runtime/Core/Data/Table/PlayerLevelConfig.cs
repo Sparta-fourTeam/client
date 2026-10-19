@@ -6,17 +6,21 @@ namespace Game.Core
     [Serializable]
     public class PlayerLevelConfig
     {
+        public const int MaxSupportedLevel = 1000;
         public int BaseExp;
         public int StepExp;
         public int MaxLevel;
 
         public PlayerLevelTable ToTable()
         {
-            if (BaseExp <= 0 || StepExp < 0 || MaxLevel < 2)
+            if (BaseExp <= 0 || StepExp < 0 || MaxLevel < 2 || MaxLevel > MaxSupportedLevel)
             {
                 throw new InvalidOperationException("PlayerLevels: BaseExp는 양수, StepExp는 0 이상, MaxLevel은 2 이상이어야 합니다.");
             }
 
+            long count = MaxLevel - 1L;
+            if (count * BaseExp + count * (count - 1) / 2 * StepExp > int.MaxValue)
+            { throw new InvalidOperationException("PlayerLevels: 최고 레벨 누적 경험치가 저장 범위를 초과합니다."); }
             var rows = new PlayerLevelRow[MaxLevel - 1];
             for (int i = 0; i < rows.Length; i++)
             {

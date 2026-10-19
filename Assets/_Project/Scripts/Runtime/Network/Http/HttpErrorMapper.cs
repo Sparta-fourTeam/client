@@ -16,6 +16,15 @@ namespace Game.Network
         /// <summary>재발급이 거절되거나 결과가 불명확해 토큰을 재사용할 수 없으므로 다시 로그인해야 한다. 호출부는 이 코드를 받으면 로그인으로 돌려보낸다</summary>
         public const string SessionExpired = "SESSION_EXPIRED";
 
+        /// <summary>서버가 요청 내용을 확정적으로 거절했을 때만 로컬 재시도 키를 버린다.</summary>
+        public static bool IsDefinitiveRequestRejection(ApiException error)
+        {
+            if (error?.Kind != ApiErrorKind.Rejected || error.Code == null
+                || !error.Code.StartsWith("HTTP_", StringComparison.Ordinal)
+                || !int.TryParse(error.Code.Substring(5), out int status)) { return false; }
+            return status >= 400 && status < 500 && status != 401 && status != 403 && status != 408 && status != 429;
+        }
+
         private const int MaxDetailLength = 200;
 
         /// <summary>성공(2xx)이면 null, 아니면 던질 예외를 돌려준다.

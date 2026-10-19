@@ -17,7 +17,7 @@ using VContainer;
 namespace Game.Network
 {
     /// <summary>기기 전용 전투 저장. 이전 완성본을 남기고 파일을 교체하며 계정·테이블·전투 발급 기록을 확인한다.</summary>
-    public sealed class LocalBattleCheckpointStore : IBattleCheckpointStore, IDisposable
+    public class LocalBattleCheckpointStore : IBattleCheckpointStore, IDisposable
     {
         private static readonly ProfilerMarker WaitMarker = new("BattleCheckpoint.WaitForSave");
         private static readonly ProfilerMarker StoreMarker = new("BattleCheckpoint.Store");
@@ -54,6 +54,10 @@ namespace Game.Network
         private readonly IAuthCredentialStore _credentials;
         private readonly PlayerProfile _profile;
         private readonly GameDataStore _data;
+        private readonly IAuthTokenStore _serverTokens;
+        /// <summary>서버 전투의 완전한 체크포인트가 디스크에서 복원 가능해진 뒤 알린다.</summary>
+        public event Action<string, int> ServerBattleDurable;
+        private long _serverGeneration;
         private readonly string _content;
         private static readonly JsonSerializerSettings Settings = new()
         {
@@ -75,10 +79,29 @@ namespace Game.Network
             _writerSerializer = JsonSerializer.Create(Settings);
             _writerSerializer.Converters.Add(new FloatArrayConverter());
         }
-        private string Content(GameDataStore data) => ReferenceEquals(data, _data) && _content != null
+        protected LocalBattleCheckpointStore(LocalSaveStore save, IAuthCredentialStore credentials, PlayerProfile profile,
+            GameDataStore data, IAuthTokenStore serverTokens) : this(save, credentials, profile, data)
+        { _serverTokens = serverTokens ?? throw new ArgumentNullException(nameof(serverTokens)); }
+
+        /// <summary>서버 start/open이 성공한 전투만 새 체크포인트를 쓸 수 있다.</summary>
+        public void AuthorizeServerBattle(string battleId, int stageId)
+        {
+            if (_serverTokens == null) { throw new InvalidOperationException("서버 저장 모드가 아닙니다"); }
+            if (string.IsNullOrWhiteSpace(battleId) || stageId <= 0 || Owner == null)
+            { throw new InvalidOperationException("인증된 서버 전투가 필요합니다"); }
+            _serverGeneration = _serverTokens.Generation;
+            _authorizedOwner = Owner;
+            _authorizedBattle = battleId;
+            _authorizedStage = stageId;
+            _battleMatches = _battleIssued = true;
+        }
+        private string Content(GameDataStore data) => _serverTokens == null && ReferenceEquals(data, _data) && _content != null
             ? _content : Hash(Application.version + string.Concat(data.Revisions.Keys.OrderBy(n => n).Select(data.RawJson)));
-        private string Owner => _credentials.HasCredential
-            ? Hash($"{_credentials.Method}|{_credentials.AccountId}|{_profile.Nickname}") : null;
+        private string Owner => _serverTokens != null
+            ? string.IsNullOrEmpty(_serverTokens.AccessToken) ? null : Hash("server|" + ServerAccountIdentity.Subject(_serverTokens.AccessToken))
+            : _credentials.HasCredential ? Hash($"{_credentials.Method}|{_credentials.AccountId}|{_profile.Nickname}") : null;
+        private string CheckpointPath => _serverTokens == null ? _save.BattleCheckpointPath
+            : _save.BattleCheckpointPath + ".server-" + UnityEngine.Hash128.Compute(Owner ?? "signed-out");
         private static string Hash(string value)
         {
             using var hash = SHA256.Create();
@@ -89,9 +112,9 @@ namespace Game.Network
             Flush();
             if (Owner == null) { return null; }
 #if UNITY_IOS && !UNITY_EDITOR
-            PrepareIosStorage(_save.BattleCheckpointPath);
+            if (_serverTokens == null) { PrepareIosStorage(CheckpointPath); }
 #endif
-            foreach (string path in new[] { _save.BattleCheckpointPath, _save.BattleCheckpointPath + ".bak" })
+            foreach (string path in new[] { CheckpointPath, CheckpointPath + ".bak" })
             {
                 if (!File.Exists(path)) { continue; }
                 try
@@ -101,7 +124,15 @@ namespace Game.Network
                     if (envelope?.Owner == Owner && envelope.Checkpoint != null)
                     {
                         var data = envelope.Checkpoint.RestoreBattleData(_data);
-                        if (envelope.Content == Content(data) && Valid(envelope.Checkpoint, data)) { return envelope.Checkpoint; }
+                        if (envelope.Content == Content(data) && Valid(envelope.Checkpoint, data))
+                        {
+                            if (_serverTokens != null)
+                            {
+                                AuthorizeServerBattle(envelope.Checkpoint.BattleId, envelope.Checkpoint.StageId);
+                                ServerBattleDurable?.Invoke(envelope.Checkpoint.BattleId, envelope.Checkpoint.StageId);
+                            }
+                            return envelope.Checkpoint;
+                        }
                     }
                 }
                 catch (Exception error) when (error is IOException or JsonException or ArgumentException or InvalidOperationException or KeyNotFoundException)
@@ -112,8 +143,13 @@ namespace Game.Network
         }
         public void Save(BattleCheckpoint checkpoint)
         {
+            lock (_queueGate) { if (_disposed) { throw new IOException("전투 저장소가 닫혔습니다."); } }
+            if (_serverTokens != null && (checkpoint == null || Owner == null || _serverTokens.Generation != _serverGeneration
+                || _authorizedOwner != Owner || _authorizedBattle != checkpoint.BattleId || _authorizedStage != checkpoint.StageId))
+            { throw new IOException("인증된 서버 전투 저장 세션이 없습니다."); }
             QueueSave(checkpoint);
             Flush(throwOnFailure: true);
+            if (_serverTokens != null) { ServerBattleDurable?.Invoke(checkpoint.BattleId, checkpoint.StageId); }
         }
 
         // Unity API·계정 상태·저장 경로는 메인 스레드에서 읽는다.
@@ -124,12 +160,13 @@ namespace Game.Network
             lock (_queueGate) { if (_disposed) { return; } }
             string owner = Owner;
             if (owner == null) { return; }
+            if (_serverTokens != null && _serverTokens.Generation != _serverGeneration) { return; }
             using (ValidateMarker.Auto())
             {
                 // 매초 계정 파일을 다시 읽지 않는다. 결과 반영·삭제·새 전투 발급은 Clear에서 무효화한다.
                 if (_authorizedOwner != owner || _authorizedBattle != checkpoint.BattleId || _authorizedStage != checkpoint.StageId)
                 {
-                    var battle = _save.Load().battles.Find(row => row.battleKey == checkpoint.BattleId);
+                    var battle = _serverTokens == null ? _save.Load().battles.Find(row => row.battleKey == checkpoint.BattleId) : null;
                     _authorizedOwner = owner; _authorizedBattle = checkpoint.BattleId; _authorizedStage = checkpoint.StageId;
                     _battleMatches = battle != null && battle.stageId == checkpoint.StageId;
                     _battleIssued = battle?.status == "Issued";
@@ -138,9 +175,9 @@ namespace Game.Network
             }
             checkpoint.PinBattleData(_data);
             var pinnedData = checkpoint.RestoreBattleData(_data);
-            string path = _save.BattleCheckpointPath;
+            string path = CheckpointPath;
 #if UNITY_IOS && !UNITY_EDITOR
-            PrepareIosStorage(path);
+            if (_serverTokens == null) { PrepareIosStorage(path); }
 #endif
             bool start;
             lock (_queueGate)
@@ -214,7 +251,14 @@ namespace Game.Network
                 try
                 {
                     using var storeSample = StoreMarker.Auto();
-                    using (ValidateMarker.Auto()) { if (!Valid(request.Envelope.Checkpoint, request.Data, checkBattle: false)) { continue; } }
+                    using (ValidateMarker.Auto())
+                    {
+                        if (!Valid(request.Envelope.Checkpoint, request.Data, checkBattle: false))
+                        {
+                            if (_serverTokens != null) { throw new IOException("전투 저장 상태가 유효하지 않습니다."); }
+                            continue;
+                        }
+                    }
                     ArraySegment<byte> bytes;
                     using (SerializeMarker.Auto()) { bytes = Serialize(request.Envelope); }
                     lock (_fileGate)
@@ -317,7 +361,7 @@ namespace Game.Network
 
         public void Clear()
         {
-            string path = _save.BattleCheckpointPath;
+            string path = CheckpointPath;
             lock (_queueGate)
             {
                 _generation++; _pending = null;
@@ -332,8 +376,11 @@ namespace Game.Network
                     {
                         if (File.Exists(path + suffix)) { File.Delete(path + suffix); }
 #if UNITY_IOS && !UNITY_EDITOR
-                        string legacy = _save.LegacyBattleCheckpointPath + suffix;
-                        if (File.Exists(legacy)) { File.Delete(legacy); }
+                        if (_serverTokens == null)
+                        {
+                            string legacy = _save.LegacyBattleCheckpointPath + suffix;
+                            if (File.Exists(legacy)) { File.Delete(legacy); }
+                        }
 #endif
                     }
                     catch (IOException error) { Debug.LogWarning($"[BattleCheckpoint] 저장 파일 정리 실패: {error.Message}"); }
@@ -382,6 +429,7 @@ namespace Game.Network
                 foreach (float value in skill.Config.Stats) { if (!Finite(value)) { return false; } }
             }
             if (!checkBattle) { return true; }
+            if (_serverTokens != null) { return true; }
             var battle = _save.Load().battles.Find(row => row.battleKey == c.BattleId);
             return battle != null && battle.stageId == c.StageId && (battle.status == "Issued" || s.State == StageState.Submitting);
         }
@@ -405,5 +453,12 @@ namespace Game.Network
                 throw new JsonSerializationException("좌표 저장 형식이 다릅니다.");
             }
         }
+    }
+
+    /// <summary>계정 ID별 저장 경로를 쓰는 실제 서버 전투 체크포인트.</summary>
+    public sealed class ServerBattleCheckpointStore : LocalBattleCheckpointStore, IAccountCheckpointRetention
+    {
+        public ServerBattleCheckpointStore(LocalSaveStore save, IAuthCredentialStore credentials, PlayerProfile profile,
+            GameDataStore data, IAuthTokenStore tokens) : base(save, credentials, profile, data, tokens) { }
     }
 }

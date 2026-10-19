@@ -54,6 +54,15 @@ namespace Game.Core
         void Clear();
     }
 
+    /// <summary>계정별 서버 전투 저장은 단순 로그아웃에서 보존하고 재로그인 때 다시 읽는다.</summary>
+    public interface IAccountCheckpointRetention { }
+
+    /// <summary>새 발급 전투의 오래된 체크포인트를 지운 뒤 저장 권한을 고정한다.</summary>
+    public interface IBattleLaunchCheckpointSession
+    {
+        void OnBattleLaunched(string battleId, int stageId);
+    }
+
     [Serializable]
     public sealed class StageRuntimeState
     {

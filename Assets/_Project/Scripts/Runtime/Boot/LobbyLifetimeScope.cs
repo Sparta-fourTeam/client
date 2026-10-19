@@ -1,4 +1,6 @@
+using System.IO;
 using Game.Core;
+using Game.Network;
 using Game.View;
 using UnityEngine;
 using VContainer;
@@ -25,6 +27,16 @@ namespace Game.Boot
             builder.Register<EnergyRecovery>(Lifetime.Scoped);
             // TODO(data): 실제 데이터가 생기면 구현만 교체
             builder.Register<IGrowthCatalog, DummyGrowthCatalog>(Lifetime.Scoped);
+            if (ServerConfig.UseServerProgress && _uiHost != null)
+            {
+                builder.RegisterInstance(_uiHost);
+                builder.Register(c => new HttpShopApi(c.Resolve<HttpApiConfig>(), c.Resolve<IHttpTransport>(),
+                    c.Resolve<IAuthTokenStore>()), Lifetime.Scoped);
+                builder.Register(c => new ShopPendingRequestStore(Path.Combine(Application.persistentDataPath, "ServerPending"),
+                    c.Resolve<IAuthTokenStore>()), Lifetime.Scoped);
+                builder.Register<ServerShopViewSession>(Lifetime.Scoped).AsSelf().As<IServerShopViewSession>();
+                builder.RegisterEntryPoint<ServerShopBinder>();
+            }
         }
     }
 }

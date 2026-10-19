@@ -1,5 +1,8 @@
+using System;
+using System.Text;
 using Cysharp.Threading.Tasks;
 using Game.Core;
+using Newtonsoft.Json.Linq;
 
 namespace Game.Network
 {
@@ -12,21 +15,100 @@ namespace Game.Network
 
         private readonly HttpApiClient _client;
         private readonly LocalPlayerApi _local;
+        private readonly IAuthTokenStore _tokens;
+        private readonly GameDataStore _data;
+        private readonly HttpBattleSourceApi _source;
+        private readonly HttpDataVersionApi _versions;
+        private sealed class PlayerLevelsResponse
+        { public int? baseExp, stepExp, maxLevel, version; }
 
-        public HttpPlayerApi(HttpApiClient client, LocalPlayerApi local)
+        public HttpPlayerApi(HttpApiClient client, LocalPlayerApi local, IAuthTokenStore tokens)
         {
-            _client = client;
-            _local = local;
+            _client = client ?? throw new System.ArgumentNullException(nameof(client));
+            _local = local ?? throw new System.ArgumentNullException(nameof(local));
+            _tokens = tokens ?? throw new System.ArgumentNullException(nameof(tokens));
+        }
+
+        /// <summary>실제 앱 경로: 서버 전투 원본과 버전을 먼저 검증하고 서버 계정만 복원한다.</summary>
+        public HttpPlayerApi(HttpApiClient client, IAuthTokenStore tokens, GameDataStore data,
+            HttpBattleSourceApi source, HttpDataVersionApi versions)
+        {
+            _client = client ?? throw new ArgumentNullException(nameof(client));
+            _tokens = tokens ?? throw new ArgumentNullException(nameof(tokens));
+            _data = data ?? throw new ArgumentNullException(nameof(data));
+            _source = source ?? throw new ArgumentNullException(nameof(source));
+            _versions = versions ?? throw new ArgumentNullException(nameof(versions));
         }
 
         public async UniTask<PlayerSnapshot> GetMe()
         {
+            long generation = _tokens.Generation;
+            EnsureSession(generation);
+            if (_source != null)
+            {
+                _data.InvalidateServerPlayerLevels();
+                // 미게시(503)나 원문 불일치는 로그인 재시도 화면에 남긴다. Local JSON으로 진행하지 않는다.
+                var downloaded = await _source.LoadGameData(_data.CopyTables());
+                EnsureSession(generation);
+                var versions = await _versions.GetVersions();
+                EnsureSession(generation);
+                var levels = await _client.Get<PlayerLevelsResponse>("api/player-levels", isValid: value =>
+                    value.baseExp > 0 && value.stepExp >= 0 && value.maxLevel >= 2
+                    && value.maxLevel <= PlayerLevelConfig.MaxSupportedLevel && value.version > 0);
+                EnsureSession(generation);
+                try
+                {
+                    downloaded.ApplyServerPlayerLevels(new PlayerLevelConfig
+                    { BaseExp = levels.baseExp.Value, StepExp = levels.stepExp.Value, MaxLevel = levels.maxLevel.Value }, levels.version.Value);
+                }
+                catch (Exception error) when (error is InvalidOperationException or OverflowException or ArgumentException)
+                { throw new ApiException(ApiErrorKind.Rejected, HttpErrorMapper.InvalidResponse); }
+                _data.ApplyBattleSource(downloaded, versions);
+                _data.ApplyServerPlayerLevels(new PlayerLevelConfig
+                { BaseExp = levels.baseExp.Value, StepExp = levels.stepExp.Value, MaxLevel = levels.maxLevel.Value }, levels.version.Value);
+            }
             var json = await _client.GetJson(MePath);
+            EnsureSession(generation);
             var data = ServerProgressContract.Parse(() => ServerProgressContract.ReadMe(json));
-            var local = await _local.GetMe();
-            var snapshot = ServerUserMapper.ToSnapshot(data, local.nickname, local.playerId);
-
+            PlayerSnapshot snapshot;
+            if (_source == null)
+            {
+                var local = await _local.GetMe();
+                snapshot = ServerUserMapper.ToSnapshot(data, local.nickname, local.playerId);
+            }
+            else
+            {
+                string subject = ServerAccountIdentity.Subject(_tokens.AccessToken);
+                snapshot = ServerUserMapper.ToSnapshot(data, "플레이어", subject);
+            }
+            EnsureSession(generation);
             return snapshot;
+        }
+
+        private void EnsureSession(long generation)
+        {
+            if (_tokens.Generation != generation || string.IsNullOrEmpty(_tokens.AccessToken))
+            { throw new ApiException(ApiErrorKind.Rejected, HttpErrorMapper.SessionExpired); }
+        }
+    }
+
+    /// <summary>서버 JWT의 subject는 DB 계정 ID다. 로컬 저장 ID나 닉네임을 계정 경계로 쓰지 않는다.</summary>
+    internal static class ServerAccountIdentity
+    {
+        public static string Subject(string accessToken)
+        {
+            try
+            {
+                var parts = accessToken.Split('.');
+                if (parts.Length != 3) { throw new FormatException(); }
+                string encoded = parts[1].Replace('-', '+').Replace('_', '/');
+                encoded = encoded.PadRight((encoded.Length + 3) / 4 * 4, '=');
+                var subject = JObject.Parse(Encoding.UTF8.GetString(Convert.FromBase64String(encoded))).Value<string>("sub");
+                if (!long.TryParse(subject, out long id) || id <= 0) { throw new FormatException(); }
+                return subject;
+            }
+            catch (Exception error) when (error is FormatException or ArgumentException or Newtonsoft.Json.JsonException)
+            { throw new ApiException(ApiErrorKind.Rejected, HttpErrorMapper.InvalidResponse); }
         }
     }
 }
