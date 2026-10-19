@@ -3,6 +3,6 @@
     "Id": "wall_repair",
     "MaxPicks": 999, "Forced": true, "Priority": 0,
     "Condition": { "Kind": "wallHpBelow", "Value": 50 },
-    "Effect": { "Kind": "wallRepair", "Value": 600 }
+    "Effect": { "Kind": "wallRepairPercent", "Value": 20 }
   }
 ]

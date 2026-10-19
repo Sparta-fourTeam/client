@@ -263,7 +263,8 @@ def run_dps_curve(t, cfg, stage, stage_def, waves):
 
 def effective_hp(t, cfg, stage_def):
     p = cfg["progress"]
-    return stage_def.get("WallHp", 3000) + p.get("wallRepairs", 0) * 600
+    wall_hp = stage_def.get("WallHp", 3000)
+    return wall_hp + p.get("wallRepairs", 0) * wall_hp * 0.2
 
 
 def power_curve(t, cfg, stage, stage_def, monsters_for_elite=None):

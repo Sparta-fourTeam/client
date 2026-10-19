@@ -64,8 +64,11 @@ namespace Game.Tests
             int candidateCount, int expectedRewards, int expectedDistinctSlots)
         {
             using var weapon = new TestSkill(701);
-            skills.Candidates = Enumerable.Range(0, candidateCount).Select(i => new UpgradeChoice {
-                skill = weapon, Option = new SkillUpgradeOption { id = "upgrade_" + i } }).ToList();
+            skills.Candidates = Enumerable.Range(0, candidateCount).Select(i => new UpgradeChoice
+            {
+                skill = weapon,
+                Option = new SkillUpgradeOption { id = "upgrade_" + i }
+            }).ToList();
             skills.Candidates.Add(skills.Candidates[0]);
             var session = new EliteRouletteSession(Deck(), new FixedRandom(), 5, 5);
             Assert.IsTrue(session.Start());
@@ -312,6 +315,20 @@ namespace Game.Tests
 
             Assert.AreEqual(50, wall.CurrentHp);
             Assert.AreEqual(1, deck.GetPickCount("repair"));
+        }
+
+        [Test(Description = "비율 수리는 방벽 최대 체력의 값%를 회복한다")]
+        public void TryApply_WallRepairPercent_HealsByMaxHpRatio()
+        {
+            wall.TakeDamage(70);
+            var card = Card("repair", true, condition: "wallHpBelow");
+            card.Effect = new GeneralCardRule { Kind = "wallRepairPercent", Value = 20 };
+            var deck = Deck(card);
+            var choice = deck.Draw(3).Single(c => c.IsGeneral);
+
+            Assert.IsTrue(deck.TryApply(choice));
+
+            Assert.AreEqual(50, wall.CurrentHp);
         }
 
         [Test(Description = "뽑은 뒤 조건이 깨졌으면(이미 회복됨) 적용하지 않고 false를 돌려준다")]
