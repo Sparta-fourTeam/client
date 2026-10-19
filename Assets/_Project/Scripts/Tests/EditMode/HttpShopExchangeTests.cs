@@ -300,6 +300,30 @@ namespace Game.Tests
             finally { Directory.Delete(directory, true); }
         }
 
+        [Test(Description = "골드팩 목록만 실패하면 일일 상점 계정 상태는 유지하고 목록만 재시도한다")]
+        public void ViewSession_PackFailureKeepsDailyAccount()
+        {
+            string directory = TemporaryDirectory();
+            try
+            {
+                _tokens.Set(Token(41), "refresh-a");
+                _api = new HttpShopApi(new HttpApiConfig("https://example.test"), _transport, _tokens);
+                var session = new ServerShopViewSession(_api, new ShopPendingRequestStore(directory, _tokens));
+                _transport.Queued.Enqueue(Ok(Account(40, 12, Daily())));
+                _transport.Queued.Enqueue(new HttpResponseData(500, ""));
+                Assert.IsNull(session.Restore().GetAwaiter().GetResult());
+                Assert.IsNotNull(session.Account);
+                Assert.AreEqual(40, session.Account.Gold);
+                Assert.IsNull(session.GoldPacks);
+
+                _transport.Queued.Enqueue(Ok(Account(40, 12, Daily())));
+                _transport.Queued.Enqueue(Ok(Packs()));
+                Assert.IsNull(session.Restore().GetAwaiter().GetResult());
+                Assert.IsNotNull(session.GoldPacks);
+            }
+            finally { Directory.Delete(directory, true); }
+        }
+
         [Test(Description = "대기 요청을 디스크에 쓸 수 없으면 POST를 보내지 않는다")]
         public void PersistenceFailure_DoesNotSendPurchase()
         {

@@ -49,9 +49,9 @@ namespace Game.Network
                     _packs = await _api.GetGoldPacks();
                     GoldPacks = Map(_packs);
                 }
-                catch (ApiException) when (result?.Status == ShopSubmissionStatus.Acknowledged)
+                catch (ApiException)
                 {
-                    // 골드팩 목록만 실패해도 확정 영수증은 화면에 전달한다.
+                    // 골드팩 목록 장애는 유효한 일일 상점과 확정 영수증을 숨기지 않는다.
                     // 목록은 사용 불가로 두고 다음 화면 진입·재시도에서 다시 읽는다.
                     _packs = null;
                     GoldPacks = null;

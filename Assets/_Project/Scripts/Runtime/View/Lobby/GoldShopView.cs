@@ -15,6 +15,7 @@ namespace Game.View
     {
         [SerializeField] private DailyShopItemView[] _items;
         [SerializeField] private ItemIconTable _itemIcons;
+        [SerializeField] private Sprite _energyIcon;
 
         private PlayerProfile _profile;
         private GameDataStore _data;
@@ -153,8 +154,12 @@ namespace Game.View
                     var rewards = new List<ResultRewardItem>();
                     foreach (var reward in restored.Rewards)
                     {
-                        var icon = reward.ItemId == ShopRules.CoinReward
-                            ? _itemIcons != null ? _itemIcons.Coin : null : _itemIcons != null ? _itemIcons.Get(reward.ItemId) : null;
+                        var icon = reward.ItemId switch
+                        {
+                            ShopRules.CoinReward => _itemIcons != null ? _itemIcons.Coin : null,
+                            ShopRules.EnergyReward => _energyIcon,
+                            _ => _itemIcons != null ? _itemIcons.Get(reward.ItemId) : null
+                        };
                         rewards.Add(new ResultRewardItem(icon, reward.Count, reward.ItemId));
                     }
                     _rewardPopup?.Show(rewards, "물품을 구매했어요.", "구매 완료");
