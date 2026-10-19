@@ -239,14 +239,23 @@ namespace Game.Tests
             Assert.That(restored.Skills.Select(s => s.Attacks.Count), Is.EqualTo(saved.Skills.Select(s => s.Attacks.Count)));
             manager.Resume();
             yield return CompleteEnemiesUntil(stage, () => manager.State == StageState.CardSelect);
-            yield return WaitFor(() => _store.Load().battles.Single(b => b.battleKey == battleId).progressRevision > 0);
             driver = Object.FindAnyObjectByType<BattleCheckpointDriver>();
+            yield return WaitFor(() =>
+            {
+                var state = driver.Capture()?.Stage;
+                return state != null && state.ProgressRevision > 0 && state.PendingProgress == null && !state.ProgressRequested;
+            }, "진행 보고 응답을 체크포인트에 반영");
             driver.SaveNow();
             var selected = checkpoints.Load();
             Assert.That(selected.Stage.Choices, Is.Not.Empty);
             var accepted = _store.Load().battles.Single(b => b.battleKey == battleId);
-            Assert.That(accepted.reportedKills, Is.EqualTo(selected.Stage.Kills));
-            Assert.That(accepted.progressReceipts.Last().request.sourceRevision, Is.EqualTo(stage.Container.Resolve<GameDataStore>().BattleSourceRevision));
+            var receipt = accepted.progressReceipts.Single(r => r.ack.revision == selected.Stage.ProgressRevision);
+            Assert.That(receipt.ack.revision, Is.EqualTo(receipt.request.expectedRevision + 1));
+            Assert.That(receipt.ack.killedMonsters, Is.EqualTo(receipt.request.killedMonsters));
+            Assert.That(accepted.reportedKills, Is.EqualTo(receipt.ack.killedMonsters));
+            Assert.That(selected.Stage.Kills, Is.GreaterThanOrEqualTo(receipt.ack.killedMonsters),
+                "보고 이후 사망 연출 대기 중 발생한 처치는 현재 체크포인트에 더 들어갈 수 있다");
+            Assert.That(receipt.request.sourceRevision, Is.EqualTo(stage.Container.Resolve<GameDataStore>().BattleSourceRevision));
             Assert.That(selected.Stage.ProgressRevision, Is.EqualTo(accepted.progressRevision));
             Assert.That(selected.Stage.PendingProgress, Is.Null);
             context.SetBattle(null);
@@ -261,9 +270,7 @@ namespace Game.Tests
             restored = Object.FindAnyObjectByType<BattleCheckpointDriver>().Capture();
             Assert.That(restored.Stage.Choices.Select(c => (c.SkillId, c.CardId, c.NewWeapon, c.General)),
                 Is.EqualTo(selected.Stage.Choices.Select(c => (c.SkillId, c.CardId, c.NewWeapon, c.General))));
-            var slots = Field<CardSlotView[]>(stage.Container.Resolve<IUiRegistry>().Get<CardSelectView>(), "_slots");
-            yield return ClickGameButton(Field<Button>(slots.First(slot => slot.gameObject.activeSelf), "_button"));
-            yield return WaitFor(() => manager.State == StageState.Playing);
+            yield return PickCardsAndResume(stage);
             var fault = stage.Container.Resolve<ISubmitFaultSwitch>();
             fault.FailNextSubmits = StageManager.AutoRetryCount + 1;
             manager.RetryDelay = TimeSpan.Zero;
@@ -750,7 +757,7 @@ namespace Game.Tests
                 manager.SetSpeed(2f);
                 int priorCards = stats.BuildLog.Count;
                 enemy.TakeDamage(enemy.Model.Hp);
-                Assert.That(manager.State, Is.EqualTo(StageState.EliteRoulette));
+                yield return WaitFor(() => manager.State == StageState.EliteRoulette, "엘리트 사망 연출 뒤 룰렛 표시");
                 Assert.That(Time.timeScale, Is.Zero);
                 var panel = Field<GameObject>(view, "_panel");
                 Assert.That(panel.activeSelf, Is.True);
@@ -1569,9 +1576,8 @@ namespace Game.Tests
             var slots = Field<CardSlotView[]>(cards, "_slots");
             Assert.That(slots.Count(s => s.gameObject.activeSelf), Is.EqualTo(manager.Choices.Count));
             int priorCards = stats.BuildLog.Count;
-            yield return ClickGameButton(Field<Button>(slots.First(s => s.gameObject.activeSelf), "_button"));
-            yield return WaitFor(() => manager.State == StageState.Playing, "카드 선택 후 전투 재개");
-            Assert.That(stats.BuildLog.Count, Is.EqualTo(priorCards + 1));
+            yield return PickCardsAndResume(stage);
+            Assert.That(stats.BuildLog.Count, Is.GreaterThan(priorCards));
             Assert.That(Time.timeScale, Is.EqualTo(stage.Container.Resolve<GameDataStore>().Combat.BaseTimeScale * 2f));
             var wall = stage.Container.Resolve<Wall>();
             wall.TakeDamage(10);
@@ -1626,14 +1632,11 @@ namespace Game.Tests
                 Assert.That(Time.realtimeSinceStartup, Is.LessThan(deadline), "Authored waves did not finish.");
                 if (manager.State == StageState.CardSelect)
                 {
-                    var slots = Field<CardSlotView[]>(ui.Get<CardSelectView>(), "_slots");
-                    yield return ClickGameButton(Field<Button>(slots.First(slot => slot.gameObject.activeSelf), "_button"));
-                    yield return WaitFor(() => manager.State != StageState.CardSelect);
+                    yield return PickCardsAndResume(stage);
                 }
                 else
                 {
-                    AdvanceAndDefeatEnemies(stage);
-                    yield return null;
+                    yield return AdvanceAndDefeatEnemies(stage);
                 }
             }
             yield return WaitFor(() => manager.State == StageState.Finished);
@@ -1905,19 +1908,48 @@ namespace Game.Tests
             while (!condition())
             {
                 Assert.That(Time.realtimeSinceStartup, Is.LessThan(deadline), "Enemy progression did not reach card selection.");
-                AdvanceAndDefeatEnemies(stage);
-                yield return null;
+                yield return AdvanceAndDefeatEnemies(stage);
             }
         }
 
-        private static void AdvanceAndDefeatEnemies(StageLifetimeScope stage)
+        private static IEnumerator AdvanceAndDefeatEnemies(StageLifetimeScope stage)
         {
             // Expedite the real spawn/damage path; never publish synthetic WaveCompleted/StageEnded messages.
+            var manager = stage.Container.Resolve<StageManager>();
+            var rewards = stage.Container.Resolve<StageRewardTracker>();
+            int completed = rewards.CompletedWaves;
             stage.Container.Resolve<EnemySpawner>().Advance(0.35f);
             foreach (var enemy in Object.FindObjectsByType<Enemy>().Where(e => e.gameObject.scene == stage.gameObject.scene && !e.IsDead).ToArray())
             {
+                if (rewards.CompletedWaves != completed || manager.State != StageState.Playing) { break; }
                 enemy.TakeDamage(1000000);
             }
+            if (rewards.CompletedWaves != completed)
+            {
+                // 실제 사망 연출·보상 지연 동안 다음 웨이브까지 강제로 처치하지 않는다.
+                yield return WaitFor(() => manager.State != StageState.Playing, "웨이브 완료 후 카드·룰렛·결과 표시");
+            }
+            else { yield return null; }
+        }
+
+        private static IEnumerator PickCardsAndResume(StageLifetimeScope stage)
+        {
+            var manager = stage.Container.Resolve<StageManager>();
+            var stats = stage.Container.Resolve<BattleStats>();
+            var slots = Field<CardSlotView[]>(stage.Container.Resolve<IUiRegistry>().Get<CardSelectView>(), "_slots");
+            float deadline = Time.realtimeSinceStartup + 20;
+            while (manager.State == StageState.CardSelect)
+            {
+                Assert.That(Time.realtimeSinceStartup, Is.LessThan(deadline), "대기 카드 보상을 모두 처리하지 못했다");
+                var choices = manager.Choices;
+                int priorCards = stats.BuildLog.Count;
+                yield return ClickGameButton(Field<Button>(slots.First(slot => slot.gameObject.activeSelf), "_button"));
+                yield return WaitFor(() => stats.BuildLog.Count > priorCards, "선택 카드 적용");
+                Assert.That(stats.BuildLog.Count, Is.EqualTo(priorCards + 1), "한 번의 클릭은 카드 한 장만 적용한다");
+                yield return WaitFor(() => manager.State != StageState.CardSelect || !ReferenceEquals(choices, manager.Choices),
+                    "다음 카드 보상 또는 전투로 전환");
+            }
+            yield return WaitFor(() => manager.State == StageState.Playing, "대기 카드 처리 후 전투 재개");
         }
 
         private sealed class DelayedPlayerApi : IPlayerApi
