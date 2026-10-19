@@ -32,6 +32,10 @@ namespace Game.Network
                 questChests = new List<string>(),
                 questPeriods = new List<QuestAccountPeriod>(),
             };
+            if (data.shop != null)
+            {
+                snapshot.shop = ServerShopContract.ProfileState(ServerShopContract.Daily(data.shop.ToString()));
+            }
 
             foreach (var row in data.stageProgress ?? new List<ServerStageProgress>())
             {

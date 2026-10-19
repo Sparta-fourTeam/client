@@ -134,12 +134,6 @@ namespace Game.Network
         private void Apply(ServerShopAccount account)
         {
             var snapshot = ServerUserMapper.ToSnapshot(account.User, _profile.Nickname, _profile.PlayerId);
-            snapshot.shop = new ShopState
-            {
-                adUsed = account.Daily.AdUsed,
-                goldUsed = account.Daily.GoldUsed,
-                purchased = account.Daily.Purchased.ToList()
-            };
             _api.EnsureSession();
             _profile.Apply(snapshot);
             _account = account;

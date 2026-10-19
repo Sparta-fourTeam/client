@@ -5,6 +5,7 @@ using System.Text;
 using Cysharp.Threading.Tasks;
 using Game.Core;
 using Game.Network;
+using Game.View;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
@@ -16,6 +17,34 @@ namespace Game.Tests
         private FakeHttpTransport _transport;
         private AuthSession _tokens;
         private HttpShopApi _api;
+
+        [Test(Description = "로비 상점 알림은 서버 무료 진열을 사용하며 로컬 추첨이나 지난 진열을 사용하지 않는다")]
+        public void ServerShopBadge_UsesServerOffers()
+        {
+            var data = new GameDataStore();
+            var profile = new PlayerProfile(data);
+            profile.Apply(new PlayerSnapshot());
+            bool localBadge = LobbyAvailability.HasFreeShopOffer(profile, data);
+            var account = JObject.Parse(Account(40, 5, Daily()));
+            var shop = (JObject)account["shop"];
+            shop["nextResetAt"] = DateTime.UtcNow.AddDays(1).ToString("O");
+            shop["offers"][0]["price"] = localBadge ? 7 : 0;
+            ServerUserData User() => JsonConvert.DeserializeObject<ServerUserData>(account.ToString(Formatting.None),
+                new JsonSerializerSettings { DateParseHandling = DateParseHandling.None });
+            var user = User();
+            profile.Apply(ServerUserMapper.ToSnapshot(user, "n"));
+            Assert.AreEqual(!localBadge, LobbyAvailability.HasFreeShopOffer(profile, data));
+
+            shop["offers"][0]["price"] = 0;
+            shop["purchased"] = new JArray(0);
+            profile.Apply(ServerUserMapper.ToSnapshot(User(), "n"));
+            Assert.IsFalse(LobbyAvailability.HasFreeShopOffer(profile, data));
+
+            shop["purchased"] = new JArray();
+            shop["nextResetAt"] = DateTime.UtcNow.AddMinutes(-1).ToString("O");
+            profile.Apply(ServerUserMapper.ToSnapshot(User(), "n"));
+            Assert.IsFalse(LobbyAvailability.HasFreeShopOffer(profile, data));
+        }
 
         [SetUp]
         public void SetUp()

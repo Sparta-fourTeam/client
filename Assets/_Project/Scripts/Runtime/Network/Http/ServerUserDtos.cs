@@ -29,6 +29,7 @@ namespace Game.Network
         public List<ServerUpgrade> upgrades;
         public List<ServerItem> items;
         public List<ServerCodex> codex;
+        public JToken shop;
         public List<string> tutorials;
         public List<ServerTutorialState> tutorialStates;
         public List<ServerQuestBoard> quests;

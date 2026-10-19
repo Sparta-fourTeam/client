@@ -161,6 +161,16 @@ namespace Game.Network
 
         internal static ServerDailyShop Daily(string json) => DailyObject(Root(json));
 
+        internal static ShopState ProfileState(ServerDailyShop daily) => new()
+        {
+            adUsed = daily.AdUsed,
+            goldUsed = daily.GoldUsed,
+            purchased = daily.Purchased.ToList(),
+            offers = daily.Offers.Select(offer => new ShopOfferPrice
+            { slot = offer.Slot, price = offer.Price }).ToList(),
+            nextResetAt = daily.NextResetAt.ToString("O", CultureInfo.InvariantCulture)
+        };
+
         internal static ServerGoldPackCatalog GoldPacks(string json)
         {
             var body = Root(json);
