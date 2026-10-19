@@ -483,8 +483,8 @@ RectTransform:
   - {fileID: 2104136687716092553}
   - {fileID: 3015600709825135200}
   - {fileID: 3241759270564959834}
-  - {fileID: 9207641404716097470}
   - {fileID: 9198623409784411766}
+  - {fileID: 9207641404716097470}
   m_Father: {fileID: 8457293031719000829}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
@@ -2342,11 +2342,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2127939746441597203, guid: dd6ab545b48a2214187120f6f475889e, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 90
+      value: 110
       objectReference: {fileID: 0}
     - target: {fileID: 2127939746441597203, guid: dd6ab545b48a2214187120f6f475889e, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 90
+      value: 110
       objectReference: {fileID: 0}
     - target: {fileID: 2127939746441597203, guid: dd6ab545b48a2214187120f6f475889e, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -2407,7 +2407,7 @@ PrefabInstance:
     - target: {fileID: 7487155567939265332, guid: dd6ab545b48a2214187120f6f475889e, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 641973068, guid: 78bfb232b5dba6643a4b7f03acdd551b, type: 3}
+      objectReference: {fileID: 21300000, guid: 2c8ee295f621fdb4982f22e455f0759e, type: 3}
     - target: {fileID: 7487155567939265332, guid: dd6ab545b48a2214187120f6f475889e, type: 3}
       propertyPath: m_Color.a
       value: 1
@@ -2502,7 +2502,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9028885122233841874, guid: dd6ab545b48a2214187120f6f475889e, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:
