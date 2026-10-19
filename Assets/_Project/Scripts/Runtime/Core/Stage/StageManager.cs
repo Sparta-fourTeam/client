@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Core.Messages;
 using MessagePipe;
@@ -38,6 +39,8 @@ namespace Game.Core
         private StageState _beforePause;
         private string _battleId;
         private IDisposable _subscription;
+        private readonly CancellationTokenSource _rewardCancel = new();
+        private bool _rewardScheduled;
 
         // 처음 만든 요청을 재시도에도 그대로 쓴다. 결과 화면 표시용 값(kills, playTime)은 서버로 보내지 않고 종료 시점에 고정해 둔다
         private SubmitResultRequest _pendingRequest;
@@ -54,6 +57,9 @@ namespace Game.Core
 
         /// <summary>자동 재시도 사이의 간격. 테스트에서 0으로 줄인다</summary>
         public TimeSpan RetryDelay { get; set; } = TimeSpan.FromSeconds(1);
+
+        /// <summary>웨이브 완료·엘리트 처치 뒤 카드/룰렛을 띄우기까지 기다리는 게임 시간. 사망 연출이 끝나기 전에 멈추지 않게 한다. 테스트에서 0으로 줄인다</summary>
+        public TimeSpan RewardDelay { get; set; } = TimeSpan.FromSeconds(0.5);
 
         /// <summary>CardSelect 상태에서 UI가 표시할 카드 후보</summary>
         public IReadOnlyList<UpgradeChoice> Choices => _choices;
@@ -119,6 +125,7 @@ namespace Game.Core
         public void Dispose()
         {
             _progressDisposed = true;
+            _rewardCancel.Cancel();
             _subscription?.Dispose();
             // Paused/CardSelect 상태로 씬을 벗어나도 timeScale이 0으로 새어나가 다음 씬까지 멈추지 않게 한다
             Time.timeScale = 1f;
@@ -144,8 +151,9 @@ namespace Game.Core
             }
 
             // CardSelect였다면 카드를 고르기 전까지 계속 멈춰있어야 하므로 timeScale은 그대로 0으로 둔다
-            if (_beforePause == StageState.Playing) { ContinueRewards(); }
-            else { ChangeState(_beforePause); }
+            if (_beforePause != StageState.Playing) { ChangeState(_beforePause); }
+            else if (_rewardScheduled) { Time.timeScale = _speed; ChangeState(StageState.Playing); }
+            else { ContinueRewards(); }
         }
 
         public void SetSpeed(float speed)
@@ -180,7 +188,7 @@ namespace Game.Core
             }
 
             _pendingCardSelections++;
-            if (State == StageState.Playing) { ContinueRewards(); }
+            if (State == StageState.Playing) { BeginRewards(); }
         }
 
         public void PickCard(int index)
@@ -218,7 +226,7 @@ namespace Game.Core
                 || State is StageState.Starting or StageState.Submitting or StageState.Finished
                 || !_rewardedElites.Add(message.EnemyId)) { return; }
             _pendingElites++;
-            if (State == StageState.Playing) { ContinueRewards(); }
+            if (State == StageState.Playing) { BeginRewards(); }
         }
 
         public bool ApplyRouletteReward(EliteRouletteRound round)
@@ -232,6 +240,23 @@ namespace Game.Core
         public void FinishEliteRoulette()
         {
             if (State == StageState.EliteRoulette && _roulette.IsComplete) { ContinueRewards(); }
+        }
+
+        /// <summary>마지막 처치의 사망 연출이 보인 뒤에 보상을 띄운다. 그동안 전투는 계속 흐른다</summary>
+        private void BeginRewards()
+        {
+            if (RewardDelay <= TimeSpan.Zero) { ContinueRewards(); return; }
+            if (_rewardScheduled) { return; }
+            _rewardScheduled = true;
+            ShowRewardsAfterDelay().Forget(Debug.LogException);
+        }
+
+        private async UniTask ShowRewardsAfterDelay()
+        {
+            var canceled = await UniTask.Delay(RewardDelay, cancellationToken: _rewardCancel.Token).SuppressCancellationThrow();
+            _rewardScheduled = false;
+            // 지연 중 일시정지·종료됐다면 그 상태가 우선한다 (종료는 대기 보상을 비운다)
+            if (!canceled && State == StageState.Playing) { ContinueRewards(); }
         }
 
         private void ContinueRewards()

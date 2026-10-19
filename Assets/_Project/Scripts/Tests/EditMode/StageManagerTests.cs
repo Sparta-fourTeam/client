@@ -163,7 +163,7 @@ namespace Game.Tests
 
             var deck = new CardDeck(_skills, null, new List<GeneralCardDefinition>(), new UnityRandomProvider());
             _roulette = new EliteRouletteSession(deck, new UnityRandomProvider(), 1, 1);
-            _createManager = combat => new StageManager(
+            _createManager = combat => CreateManager(() => new StageManager(
                 provider.GetRequiredService<IBufferedPublisher<StageStateChanged>>(),
                 provider.GetRequiredService<ISubscriber<StageEnded>>(),
                 provider.GetRequiredService<IPublisher<StageResult>>(),
@@ -175,7 +175,7 @@ namespace Game.Tests
                 deck,
                 provider.GetRequiredService<IPublisher<SubmitRejected>>(),
                 provider.GetRequiredService<IPublisher<SubmitFailed>>(),
-                enemyDied: provider.GetRequiredService<ISubscriber<EnemyDied>>(), roulette: _roulette, analytics: _analytics, combat: combat);
+                enemyDied: provider.GetRequiredService<ISubscriber<EnemyDied>>(), roulette: _roulette, analytics: _analytics, combat: combat));
             _manager = _createManager(null);
             _manager.RetryDelay = TimeSpan.Zero;
             _manager.Start();
@@ -197,6 +197,14 @@ namespace Game.Tests
             Time.timeScale = _timeScale;
         }
 
+        /// <summary>보상 지연은 기존 테스트가 즉시 전환을 가정하므로 0으로 둔다 (지연 동작은 RewardDelay 전용 테스트가 검증)</summary>
+        private static StageManager CreateManager(Func<StageManager> create)
+        {
+            var manager = create();
+            manager.RewardDelay = TimeSpan.Zero;
+            return manager;
+        }
+
         private void FillGauge(bool isFinalWave)
         {
             _waveCompleted.Publish(new WaveCompleted(isFinalWave ? 20 : 1, isFinalWave));
@@ -209,6 +217,18 @@ namespace Game.Tests
             Assert.IsTrue(_manager.ApplyRouletteReward(round));
             Assert.IsFalse(_manager.ApplyRouletteReward(round));
             _manager.FinishEliteRoulette();
+        }
+
+        [Test(Description = "웨이브 완료 직후에는 사망 연출이 보이도록 전투를 멈추지 않고, 지연이 지나기 전까지 카드를 띄우지 않는다")]
+        public void WaveCompleted_WithRewardDelay_KeepsPlayingBeforeCardSelect()
+        {
+            _manager.RewardDelay = TimeSpan.FromSeconds(30);
+            var running = Time.timeScale;
+
+            FillGauge(false);
+
+            Assert.AreEqual(StageState.Playing, _manager.State);
+            Assert.AreEqual(running, Time.timeScale);
         }
 
         [Test]
