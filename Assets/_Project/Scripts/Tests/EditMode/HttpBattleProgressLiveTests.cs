@@ -30,8 +30,11 @@ namespace Game.Tests
             var client = new HttpApiClient(config, transport, tokens: auth);
             Assert.AreEqual("MySQL", fixture.Value<string>("databaseProduct"));
             int stageId = fixture.Value<int>("stageId");
-            var data = new GameDataStore();
-            Assert.AreEqual(data.BattleSourceRevision, await new HttpBattleSourceApi(client).VerifyLocal(data));
+            var local = new GameDataStore();
+            var data = await new HttpBattleSourceApi(client).LoadGameData(local);
+            Assert.AreEqual(fixture.Value<float>("baseTimeScale"), data.Combat.BaseTimeScale);
+            Assert.AreNotEqual(local.Combat.BaseTimeScale, data.Combat.BaseTimeScale);
+            Assert.AreNotEqual(local.BattleSourceRevision, data.BattleSourceRevision);
             var api = new HttpBattleProgressApi(client, stageId, data);
             var request = new BattleProgressRequest
             {

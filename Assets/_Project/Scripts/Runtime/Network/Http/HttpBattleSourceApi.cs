@@ -25,17 +25,22 @@ namespace Game.Network
 
         public async UniTask<BattleSourceSnapshot> GetSnapshot(CancellationToken cancellationToken = default)
         {
-            var meta = await _client.GetJson("api/data/battle-source", cancellationToken);
-            var stages = await _client.GetJson("api/data/stages", cancellationToken);
-            var monsters = await _client.GetJson("api/data/monsters", cancellationToken);
-            var combat = await _client.GetJson("api/data/combat", cancellationToken);
+            var body = await _client.GetJson("api/data/battle-source/snapshot", cancellationToken);
             return ServerProgressContract.Parse(() =>
             {
+                if (ServerProgressContract.Read(body) is not JObject download
+                    || download["manifest"] is not JObject manifest
+                    || download["stagesJson"]?.Type != JTokenType.String
+                    || download["monstersJson"]?.Type != JTokenType.String
+                    || download["combatJson"]?.Type != JTokenType.String)
+                { throw ServerProgressContract.Invalid(); }
+                var stages = download.Value<string>("stagesJson");
+                var monsters = download.Value<string>("monstersJson");
+                var combat = download.Value<string>("combatJson");
                 if (ServerProgressContract.Read(stages) is not JArray || ServerProgressContract.Read(monsters) is not JArray
                     || ServerProgressContract.Read(combat) is not JObject) { throw ServerProgressContract.Invalid(); }
                 var revision = BattleSourceFingerprint.Compute(stages, monsters, combat);
-                if (ServerProgressContract.Read(meta) is not JObject manifest
-                    || manifest["schemaVersion"]?.Type != JTokenType.Integer || manifest.Value<int>("schemaVersion") != 1
+                if (manifest["schemaVersion"]?.Type != JTokenType.Integer || manifest.Value<int>("schemaVersion") != 1
                     || manifest.Value<string>("sourceRevision") != revision || manifest["tables"] is not JObject hashes
                     || hashes.Properties().Count() != 3 || hashes.Value<string>("Stages") != BattleSourceFingerprint.Hash(stages)
                     || hashes.Value<string>("Monsters") != BattleSourceFingerprint.Hash(monsters)
@@ -45,13 +50,19 @@ namespace Game.Network
             });
         }
 
-        public async UniTask<string> VerifyLocal(GameDataStore data, CancellationToken cancellationToken = default)
+        /// <summary>서버 원문을 실제 모델로 파싱한다. 로컬 전투 JSON과의 수동 동기화는 요구하지 않는다.</summary>
+        public async UniTask<GameDataStore> LoadGameData(GameDataStore ancillaryData,
+            CancellationToken cancellationToken = default)
         {
-            if (data == null) { throw new ArgumentNullException(nameof(data)); }
+            if (ancillaryData == null) { throw new ArgumentNullException(nameof(ancillaryData)); }
             var snapshot = await GetSnapshot(cancellationToken);
-            if (snapshot.SourceRevision != data.BattleSourceRevision)
-            { throw new ApiException(ApiErrorKind.Rejected, "BATTLE_SOURCE_MISMATCH"); }
-            return snapshot.SourceRevision;
+            var tables = ancillaryData.CopyTables();
+            tables["Stages"] = snapshot.StagesJson;
+            tables["Monsters"] = snapshot.MonstersJson;
+            tables["Combat"] = snapshot.CombatJson;
+            var loaded = new GameDataStore(tables);
+            foreach (var pair in ancillaryData.Revisions) { loaded.Revisions[pair.Key] = pair.Value; }
+            return loaded;
         }
     }
 }

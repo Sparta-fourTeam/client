@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Game.Core
 {
-    /// <summary>Resources/MockData의 테이블 JSON을 읽어 도메인 모델 테이블로 만든다</summary>
+    /// <summary>공급받은 테이블 원문을 도메인 모델로 만든다. 기본 생성자는 개발·테스트용이다</summary>
     public sealed class GameDataStore
     {
         private static readonly string[] TableNames = { "Monsters", "Stages", "Upgrades", "Energy", "Combat", "GeneralCards", "Skills", "Items", "StageRewards", "RewardRules", "PlayerLevels", "CodexRewards", "Tutorials", "Quests", "Shop" };
@@ -48,18 +48,34 @@ namespace Game.Core
         /// <summary>어떤 스테이지로도 시작하지 않았을 때(Stage 씬을 바로 열었을 때) 쓰는 첫 번째 스테이지의 ID</summary>
         public int FirstStageId { get; }
 
-        public GameDataStore()
+        /// <summary>새 공급자가 전투 외 기존 테이블을 유지하며 새 저장소를 구성할 때 사용한다.</summary>
+        public Dictionary<string, string> CopyTables() => new Dictionary<string, string>(_rawJson);
+
+        private static Dictionary<string, string> LoadLocalTables()
         {
+            var result = new Dictionary<string, string>();
+            foreach (var name in TableNames)
+            {
+                var asset = Resources.Load<TextAsset>($"MockData/{name}")
+                    ?? throw new InvalidOperationException($"Resources/MockData/{name}.json을 찾을 수 없습니다");
+                result[name] = asset.text;
+            }
+            return result;
+        }
+
+        /// <summary>개발·테스트용 로컬 테이블로 구성한다.</summary>
+        public GameDataStore() : this(LoadLocalTables()) { }
+
+        /// <summary>공급받은 원문으로 런타임 테이블을 만든다. 전투 원본은 HTTP 공급자가 덮어쓴다.</summary>
+        public GameDataStore(IReadOnlyDictionary<string, string> tables)
+        {
+            if (tables == null) { throw new ArgumentNullException(nameof(tables)); }
             _rawJson = new Dictionary<string, string>();
             foreach (var name in TableNames)
             {
-                var asset = Resources.Load<TextAsset>($"MockData/{name}");
-                if (asset == null)
-                {
-                    throw new InvalidOperationException($"Resources/MockData/{name}.json을 찾을 수 없습니다");
-                }
-
-                _rawJson[name] = asset.text;
+                if (!tables.TryGetValue(name, out var json) || string.IsNullOrWhiteSpace(json))
+                { throw new InvalidOperationException($"{name} 테이블이 없습니다"); }
+                _rawJson[name] = json;
             }
 
             BattleSourceRevision = BattleSourceFingerprint.Compute(_rawJson["Stages"], _rawJson["Monsters"], _rawJson["Combat"]);

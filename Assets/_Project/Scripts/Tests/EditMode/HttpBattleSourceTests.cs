@@ -9,10 +9,9 @@ namespace Game.Tests
     public sealed class HttpBattleSourceTests
     {
         [Test]
-        public void LoadedSourceMatchesServerResourceFingerprintAndAnyRawChangeChangesIt()
+        public void AnyRawChangeChangesLoadedSourceFingerprint()
         {
             var data = new GameDataStore();
-            Assert.AreEqual("a27121ab0bab7f840408937a12f40ab5f0bee7046387155cc5129cee2ce6e913", data.BattleSourceRevision);
             Assert.AreNotEqual(data.BattleSourceRevision, BattleSourceFingerprint.Compute(data.RawJson("Stages") + "\n", data.RawJson("Monsters"), data.RawJson("Combat")));
         }
 
@@ -26,12 +25,17 @@ namespace Game.Tests
         }
 
         [Test]
-        public void DifferentCompleteServerSnapshotDoesNotMatchLocalLoadedData()
+        public void DifferentServerCombatConfigBecomesActualRuntimeData()
         {
             var data = new GameDataStore();
-            var transport = Transport(data, data.RawJson("Stages") + "\n");
+            var combat = JObject.Parse(data.RawJson("Combat"));
+            combat["BaseTimeScale"] = data.Combat.BaseTimeScale + 0.25f;
+            var transport = Transport(data, data.RawJson("Stages"), combat: combat.ToString());
             var api = new HttpBattleSourceApi(new HttpApiClient(new HttpApiConfig("https://example.test"), transport));
-            Assert.AreEqual("BATTLE_SOURCE_MISMATCH", Assert.Throws<ApiException>(() => api.VerifyLocal(data).GetAwaiter().GetResult()).Code);
+            var loaded = api.LoadGameData(data).GetAwaiter().GetResult();
+            Assert.AreEqual(data.Combat.BaseTimeScale + 0.25f, loaded.Combat.BaseTimeScale);
+            Assert.AreNotEqual(data.BattleSourceRevision, loaded.BattleSourceRevision);
+            Assert.AreEqual(combat.ToString(), loaded.RawJson("Combat"));
         }
 
         [Test]
@@ -51,19 +55,24 @@ namespace Game.Tests
             Assert.AreEqual(1, transport.Requests.Count);
         }
 
-        private static FakeHttpTransport Transport(GameDataStore data, string stages, bool mixed = false)
+        private static FakeHttpTransport Transport(GameDataStore data, string stages, bool mixed = false, string combat = null)
         {
             var monsters = data.RawJson("Monsters");
-            var combat = data.RawJson("Combat");
+            combat ??= data.RawJson("Combat");
             var transport = new FakeHttpTransport();
-            transport.Queued.Enqueue(new HttpResponseData(200, new JObject
+            var manifest = new JObject
             {
                 ["schemaVersion"] = 1,
                 ["sourceRevision"] = BattleSourceFingerprint.Compute(stages, monsters, combat),
                 ["tables"] = new JObject { ["Stages"] = BattleSourceFingerprint.Hash(stages), ["Monsters"] = BattleSourceFingerprint.Hash(monsters), ["Combat"] = BattleSourceFingerprint.Hash(combat) },
+            };
+            transport.Queued.Enqueue(new HttpResponseData(200, new JObject
+            {
+                ["manifest"] = manifest,
+                ["stagesJson"] = stages,
+                ["monstersJson"] = monsters,
+                ["combatJson"] = mixed ? combat + "\n" : combat,
             }.ToString()));
-            foreach (var raw in new[] { stages, monsters, mixed ? combat + "\n" : combat })
-            { transport.Queued.Enqueue(new HttpResponseData(200, raw)); }
             return transport;
         }
     }
