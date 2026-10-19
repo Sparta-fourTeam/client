@@ -70,8 +70,8 @@ namespace Game.Network
                 }
                 catch (ApiException error)
                 {
-                    if (error.Kind == ApiErrorKind.Rejected && error.Code == "HTTP_409")
-                    { ClearPending(); }
+                    if (HttpErrorMapper.IsDefinitiveRequestRejection(error))
+                    { Ensure(generation); ClearPending(); }
                     throw;
                 }
                 Ensure(generation);

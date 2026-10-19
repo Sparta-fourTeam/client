@@ -45,7 +45,7 @@ namespace Game.Boot
             builder.Register(c => serverProgress
                 ? new ServerBackedAuthApi(c.Resolve<HttpApiClient>(), c.Resolve<AuthSession>())
                 : new ServerBackedAuthApi(c.Resolve<HttpApiClient>(), c.Resolve<AuthSession>(), c.Resolve<LocalAuthApi>()), Lifetime.Singleton);
-            builder.Register<IAuthApi>(c => serverProgress ? c.Resolve<ServerBackedAuthApi>() : c.Resolve<LocalAuthApi>(),
+            builder.Register<IAuthApi>(c => ServerConfig.UseServerAuth ? c.Resolve<ServerBackedAuthApi>() : c.Resolve<LocalAuthApi>(),
                 Lifetime.Singleton);
             // 로그인 정보는 백엔드(Local/서버)와 상관없이 기기에 저장한다
             builder.Register<PlayerPrefsAuthCredentialStore>(Lifetime.Singleton);
@@ -66,7 +66,7 @@ namespace Game.Boot
             builder.Register(c => serverProgress
                 ? new ServerBackedAccountApi(c.Resolve<HttpApiClient>())
                 : new ServerBackedAccountApi(c.Resolve<HttpApiClient>(), c.Resolve<LocalAccountApi>()), Lifetime.Singleton);
-            builder.Register<IAccountApi>(c => serverProgress ? c.Resolve<ServerBackedAccountApi>() : c.Resolve<LocalAccountApi>(),
+            builder.Register<IAccountApi>(c => ServerConfig.UseServerAuth ? c.Resolve<ServerBackedAccountApi>() : c.Resolve<LocalAccountApi>(),
                 Lifetime.Singleton);
             builder.Register<AccountService>(Lifetime.Singleton);
             // 서버 인증 계정은 원본·레벨 테이블과 /me가 모두 검증돼야 게임에 진입한다.

@@ -55,6 +55,8 @@ namespace Game.Network
         private readonly PlayerProfile _profile;
         private readonly GameDataStore _data;
         private readonly IAuthTokenStore _serverTokens;
+        /// <summary>서버 전투의 완전한 체크포인트가 디스크에서 복원 가능해진 뒤 알린다.</summary>
+        public event Action<string, int> ServerBattleDurable;
         private long _serverGeneration;
         private readonly string _content;
         private static readonly JsonSerializerSettings Settings = new()
@@ -124,7 +126,11 @@ namespace Game.Network
                         var data = envelope.Checkpoint.RestoreBattleData(_data);
                         if (envelope.Content == Content(data) && Valid(envelope.Checkpoint, data))
                         {
-                            if (_serverTokens != null) { AuthorizeServerBattle(envelope.Checkpoint.BattleId, envelope.Checkpoint.StageId); }
+                            if (_serverTokens != null)
+                            {
+                                AuthorizeServerBattle(envelope.Checkpoint.BattleId, envelope.Checkpoint.StageId);
+                                ServerBattleDurable?.Invoke(envelope.Checkpoint.BattleId, envelope.Checkpoint.StageId);
+                            }
                             return envelope.Checkpoint;
                         }
                     }
@@ -143,6 +149,7 @@ namespace Game.Network
             { throw new IOException("인증된 서버 전투 저장 세션이 없습니다."); }
             QueueSave(checkpoint);
             Flush(throwOnFailure: true);
+            if (_serverTokens != null) { ServerBattleDurable?.Invoke(checkpoint.BattleId, checkpoint.StageId); }
         }
 
         // Unity API·계정 상태·저장 경로는 메인 스레드에서 읽는다.

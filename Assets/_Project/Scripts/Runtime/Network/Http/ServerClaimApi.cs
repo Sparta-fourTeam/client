@@ -71,7 +71,7 @@ namespace Game.Network
                 json = await BoundClient(generation).PostJson("api/user/stage-progress/claim", new
                 { stageId, createId = pending.CreateId, targetRating = pending.TargetRating });
             }
-            catch (ApiException error) when (error.Kind == ApiErrorKind.Rejected && error.Code == "HTTP_409")
+            catch (ApiException error) when (HttpErrorMapper.IsDefinitiveRequestRejection(error))
             { Ensure(generation); Clear("stage"); throw; }
             Ensure(generation);
             ServerProgressContract.Parse(() =>
@@ -145,7 +145,7 @@ namespace Game.Network
                 if (chest) { await api.ClaimChest(request); }
                 else { await api.ClaimQuest(request); }
             }
-            catch (ApiException error) when (error.Kind == ApiErrorKind.Rejected && error.Code == "HTTP_409")
+            catch (ApiException error) when (HttpErrorMapper.IsDefinitiveRequestRejection(error))
             { Ensure(generation); Clear("quest"); throw; }
             Ensure(generation);
             var snapshot = await Current(generation);

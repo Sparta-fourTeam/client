@@ -99,6 +99,20 @@ namespace Game.Tests
             Assert.AreEqual($"HTTP_{status}", ex.Code);
         }
 
+        [TestCase(400, true)]
+        [TestCase(409, true)]
+        [TestCase(422, true)]
+        [TestCase(401, false)]
+        [TestCase(403, false)]
+        [TestCase(408, false)]
+        [TestCase(429, false)]
+        [TestCase(503, false)]
+        public void PendingRequest_OnlyDefinitiveRejectionDiscardsOriginalKey(int status, bool discard)
+        {
+            var error = HttpErrorMapper.Map(new HttpResponseData(status, "{}"));
+            Assert.AreEqual(discard, HttpErrorMapper.IsDefinitiveRequestRejection(error));
+        }
+
         [Test(Description = "서버가 오류 본문에 message를 적어 주면 Detail에 담기고, 코드는 그대로 HTTP_상태코드다")]
         public void ErrorBody_MessageGoesToDetail()
         {

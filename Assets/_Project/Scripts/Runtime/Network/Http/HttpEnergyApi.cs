@@ -81,11 +81,8 @@ namespace Game.Network
                     }
                     catch (ApiException error)
                     {
-                        bool definite = error.Kind == ApiErrorKind.Rejected && error.Code != null
-                            && error.Code.StartsWith("HTTP_", StringComparison.Ordinal)
-                            && int.TryParse(error.Code.Substring(5), out int status)
-                            && status >= 400 && status < 500 && status != 409;
-                        if (definite && !_pending.Ambiguous) { ClearPending(); }
+                        bool definite = HttpErrorMapper.IsDefinitiveRequestRejection(error);
+                        if (definite) { EnsureSession(); ClearPending(); }
                         else if (!definite) { _pending.Ambiguous = true; SavePending(); }
                         throw;
                     }

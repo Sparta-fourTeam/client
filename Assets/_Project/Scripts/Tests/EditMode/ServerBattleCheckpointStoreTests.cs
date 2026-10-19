@@ -32,13 +32,17 @@ namespace Game.Tests
             var save = new LocalSaveStore(_savePath, data);
             var state = State(data);
             using var store = new ServerBattleCheckpointStore(save, null, new PlayerProfile(data), data, tokens);
+            int durable = 0;
+            store.ServerBattleDurable += (battleId, stageId) => durable++;
 
             Assert.Throws<IOException>(() => store.Save(state));
+            Assert.AreEqual(0, durable);
             store.AuthorizeServerBattle(state.BattleId, state.StageId);
             store.Clear(); // BattleLauncher가 이전 전투를 지우면 새 발급 인증도 무효화된다.
             Assert.Throws<IOException>(() => store.Save(state));
             store.AuthorizeServerBattle(state.BattleId, state.StageId);
             Assert.DoesNotThrow(() => store.Save(state)); // 로컬 Issued BattleRow는 없다.
+            Assert.AreEqual(1, durable);
 
             tokens.Set(Token(202), null);
             Assert.IsNull(store.Load());
@@ -48,6 +52,7 @@ namespace Game.Tests
             var restored = store.Load();
             Assert.IsNotNull(restored);
             Assert.AreEqual(state.BattleId, restored.BattleId);
+            Assert.AreEqual(2, durable, "재인증 뒤 복원한 완성본도 보류된 시작 키를 정리할 수 있습니다");
             Assert.DoesNotThrow(() => store.Save(restored));
         }
 

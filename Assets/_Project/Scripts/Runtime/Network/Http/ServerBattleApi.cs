@@ -20,6 +20,8 @@ namespace Game.Network
         private readonly ServerBattleCheckpointStore _checkpoints;
         private IBattleProgressApi _progress;
         private long _progressGeneration = -1;
+        private string _issuedBattleId;
+        private int _issuedStageId;
 
         public ServerBattleApi(HttpApiConfig config, IHttpTransport transport, IAuthTokenStore tokens,
             GameDataStore data, PlayerProfile profile, HttpPlayerApi player, StageContext stage,
@@ -27,6 +29,7 @@ namespace Game.Network
         {
             _config = config; _transport = transport; _tokens = tokens;
             _data = data; _profile = profile; _player = player; _stage = stage; _checkpoints = checkpoints;
+            _checkpoints.ServerBattleDurable += OnBattleDurable;
         }
 
         public string SourceRevision => _progressGeneration == _tokens.Generation && _progress != null
@@ -46,8 +49,7 @@ namespace Game.Network
             var client = BoundClient(generation);
             StartBattleResponse issued;
             try { issued = await new HttpBattleSessionApi(client).StartBattle(new BattleStartRequest(pending.CreateId)); }
-            catch (ApiException error) when (error.Kind == ApiErrorKind.Rejected && error.Code != "HTTP_401"
-                && error.Code != HttpErrorMapper.SessionExpired && error.Code != HttpErrorMapper.InvalidResponse)
+            catch (ApiException error) when (HttpErrorMapper.IsDefinitiveRequestRejection(error))
             {
                 Ensure(generation);
                 PendingStart.Clear(subject);
@@ -57,15 +59,32 @@ namespace Game.Network
             var progress = new HttpBattleProgressApi(client, stageId, _data);
             await progress.Bind(issued.battleId);
             Ensure(generation);
+            if (pending.BattleId != null && pending.BattleId != issued.battleId)
+            { throw new ApiException(ApiErrorKind.Rejected, HttpErrorMapper.InvalidResponse); }
+            pending.BattleId = issued.battleId;
+            pending.Save(subject);
             _progress = new BoundProgress(progress, _tokens, generation);
             _progressGeneration = generation;
-            PendingStart.Clear(subject);
+            _issuedBattleId = issued.battleId;
+            _issuedStageId = stageId;
             return issued;
+        }
+
+        private void OnBattleDurable(string battleId, int stageId)
+        {
+            if (string.IsNullOrEmpty(_tokens.AccessToken)) { return; }
+            string subject = ServerAccountIdentity.Subject(_tokens.AccessToken);
+            PendingStart pending;
+            try { pending = PendingStart.Load(subject); }
+            catch (ApiException) { return; }
+            if (pending?.BattleId == battleId && pending.StageId == stageId)
+            { PendingStart.Clear(subject); }
         }
 
         public void OnBattleLaunched(string battleId, int stageId)
         {
-            if (_progressGeneration != _tokens.Generation || _progress == null)
+            if (_progressGeneration != _tokens.Generation || _progress == null
+                || _issuedBattleId != battleId || _issuedStageId != stageId)
             { throw new ApiException(ApiErrorKind.Rejected, HttpErrorMapper.SessionExpired); }
             _checkpoints.AuthorizeServerBattle(battleId, stageId);
         }
@@ -83,6 +102,7 @@ namespace Game.Network
             var snapshot = await _player.GetMe();
             Ensure(generation);
             _profile.Apply(snapshot);
+            OnBattleDurable(request.battleId, _stage.StageId);
             var items = new List<ItemAmount>();
             foreach (var pair in receipt.Items) { items.Add(new ItemAmount { itemId = pair.Key, quantity = pair.Value }); }
             return new SubmitResultResponse
@@ -104,7 +124,12 @@ namespace Game.Network
         }
 
         public UniTask<BattleProgressAck> ReportProgress(BattleProgressRequest request) => Progress().ReportProgress(request);
-        public UniTask<BattleProgressAck> AbandonProgress(BattleProgressRequest request) => Progress().AbandonProgress(request);
+        public async UniTask<BattleProgressAck> AbandonProgress(BattleProgressRequest request)
+        {
+            var ack = await Progress().AbandonProgress(request);
+            OnBattleDurable(request.battleId, _stage.StageId);
+            return ack;
+        }
 
         private IBattleProgressApi Progress()
         {
@@ -157,7 +182,7 @@ namespace Game.Network
         private sealed class PendingStart
         {
             public int StageId;
-            public string CreateId;
+            public string CreateId, BattleId;
             private static string Key(string subject) => "server.battle.start." + subject;
             public static PendingStart Load(string subject)
             {
@@ -166,7 +191,8 @@ namespace Game.Network
                 try
                 {
                     var pending = JsonConvert.DeserializeObject<PendingStart>(json);
-                    if (pending == null || pending.StageId <= 0 || !Guid.TryParse(pending.CreateId, out _))
+                    if (pending == null || pending.StageId <= 0 || !Guid.TryParse(pending.CreateId, out _)
+                        || pending.BattleId != null && !Guid.TryParse(pending.BattleId, out _))
                     { throw new FormatException(); }
                     return pending;
                 }
