@@ -5,6 +5,7 @@ using System.Text;
 using Cysharp.Threading.Tasks;
 using Game.Core;
 using Game.Network;
+using Game.View;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
@@ -16,6 +17,34 @@ namespace Game.Tests
         private FakeHttpTransport _transport;
         private AuthSession _tokens;
         private HttpShopApi _api;
+
+        [Test(Description = "로비 상점 알림은 서버 무료 진열을 사용하며 로컬 추첨이나 지난 진열을 사용하지 않는다")]
+        public void ServerShopBadge_UsesServerOffers()
+        {
+            var data = new GameDataStore();
+            var profile = new PlayerProfile(data);
+            profile.Apply(new PlayerSnapshot());
+            bool localBadge = LobbyAvailability.HasFreeShopOffer(profile, data);
+            var account = JObject.Parse(Account(40, 5, Daily()));
+            var shop = (JObject)account["shop"];
+            shop["nextResetAt"] = DateTime.UtcNow.AddDays(1).ToString("O");
+            shop["offers"][0]["price"] = localBadge ? 7 : 0;
+            ServerUserData User() => JsonConvert.DeserializeObject<ServerUserData>(account.ToString(Formatting.None),
+                new JsonSerializerSettings { DateParseHandling = DateParseHandling.None });
+            var user = User();
+            profile.Apply(ServerUserMapper.ToSnapshot(user, "n"));
+            Assert.AreEqual(!localBadge, LobbyAvailability.HasFreeShopOffer(profile, data));
+
+            shop["offers"][0]["price"] = 0;
+            shop["purchased"] = new JArray(0);
+            profile.Apply(ServerUserMapper.ToSnapshot(User(), "n"));
+            Assert.IsFalse(LobbyAvailability.HasFreeShopOffer(profile, data));
+
+            shop["purchased"] = new JArray();
+            shop["nextResetAt"] = DateTime.UtcNow.AddMinutes(-1).ToString("O");
+            profile.Apply(ServerUserMapper.ToSnapshot(User(), "n"));
+            Assert.IsFalse(LobbyAvailability.HasFreeShopOffer(profile, data));
+        }
 
         [SetUp]
         public void SetUp()
@@ -225,8 +254,8 @@ namespace Game.Tests
             finally { Directory.Delete(directory, true); }
         }
 
-        [Test(Description = "영수증을 받은 뒤 계정 조회가 실패하면 재시작 후 POST를 다시 보내지 않는다")]
-        public void AcknowledgedReceipt_ClearsJournalBeforeAccountRead()
+        [Test(Description = "POST 확정 뒤 계정 조회가 실패하면 영수증을 보존하고 재시작 시 같은 요청 키로 복구한다")]
+        public void AcknowledgedReceipt_KeepsJournalUntilAccountRead()
         {
             string directory = TemporaryDirectory();
             try
@@ -234,13 +263,120 @@ namespace Game.Tests
                 _tokens.Set(Token(41), "refresh-a");
                 _api = new HttpShopApi(new HttpApiConfig("https://example.test"), _transport, _tokens);
                 var journal = new ShopPendingRequestStore(directory, _tokens);
-                var exchange = journal.Begin(_api, ShopExchangeRequest.GoldReroll(State(), "roll-saved"));
-                _transport.Queued.Enqueue(Ok(DailyReceipt("roll-saved", "GOLD_REROLL", null, Daily(reroll: 1))));
+                var exchange = journal.Begin(_api, ShopExchangeRequest.Buy(State(), 0, "buy-saved"));
+                _transport.Queued.Enqueue(Ok(DailyReceipt("buy-saved", "BUY", 0, Daily(purchased: true))));
                 _transport.Queued.Enqueue(new HttpResponseData(500, ""));
                 Assert.Throws<ApiException>(() => exchange.Submit().GetAwaiter().GetResult());
                 Assert.AreEqual(ShopSubmissionStatus.Acknowledged, exchange.Status);
-                Assert.IsNull(journal.Recover(_api));
+                Assert.AreEqual(1, Directory.GetFiles(directory, "shop-pending-*.json").Length);
                 Assert.AreEqual(1, _transport.Requests.Count(r => r.Verb == HttpVerb.Post));
+
+                var restarted = new AuthSession();
+                restarted.Set(Token(41), "refresh-new-device");
+                var api = new HttpShopApi(new HttpApiConfig("https://example.test"), _transport, restarted);
+                var recovered = new ShopPendingRequestStore(directory, restarted).Recover(api);
+                _transport.Queued.Enqueue(Ok(DailyReceipt("buy-saved", "BUY", 0, Daily(purchased: true))));
+                _transport.Queued.Enqueue(Ok(Account(40, 5, Daily(purchased: true))));
+                var result = recovered.Submit().GetAwaiter().GetResult();
+                Assert.AreEqual(ShopSubmissionStatus.Acknowledged, result.Status);
+                Assert.AreEqual(7, result.DailyReceipt.GemsSpent);
+                Assert.IsNull(new ShopPendingRequestStore(directory, restarted).Recover(api));
+                var posts = _transport.Requests.Where(r => r.Verb == HttpVerb.Post).ToArray();
+                Assert.AreEqual(2, posts.Length);
+                Assert.AreEqual(posts[0].Body, posts[1].Body);
+            }
+            finally { Directory.Delete(directory, true); }
+        }
+
+        [Test(Description = "확정된 구매의 계정 조회만 실패하면 새 구매를 막고 GET 재시도로 영수증을 표시할 수 있다")]
+        public void ViewSession_AcknowledgedBuyRetriesAccountAndReturnsReceipt()
+        {
+            string directory = TemporaryDirectory();
+            try
+            {
+                _tokens.Set(Token(41), "refresh-a");
+                _api = new HttpShopApi(new HttpApiConfig("https://example.test"), _transport, _tokens);
+                var session = new ServerShopViewSession(_api, new ShopPendingRequestStore(directory, _tokens),
+                    new PlayerProfile(new GameDataStore()));
+                _transport.Queued.Enqueue(Ok(Account(40, 12, Daily())));
+                _transport.Queued.Enqueue(Ok(Packs()));
+                session.Restore().GetAwaiter().GetResult();
+
+                // 고정 요청 ID는 실행 시 생성된다. 이 테스트에서는 POST 응답이 원래 키를 되돌려 준다.
+                _transport.OnSend = request => request.Verb == HttpVerb.Post
+                    ? Ok(DailyReceipt(JObject.Parse(request.Body).Value<string>("requestId"), "BUY", 0,
+                        Daily(purchased: true))) : (HttpResponseData?)null;
+                _transport.Queued.Enqueue(new HttpResponseData(500, ""));
+                Assert.Throws<ApiException>(() => session.BuyDaily(session.Account.Daily, 0).GetAwaiter().GetResult());
+                Assert.IsTrue(session.HasPending);
+                Assert.IsNull(session.Account);
+                Assert.AreEqual(1, Directory.GetFiles(directory, "shop-pending-*.json").Length);
+
+                _transport.Queued.Enqueue(Ok(Account(40, 5, Daily(purchased: true))));
+                _transport.Queued.Enqueue(new HttpResponseData(500, ""));
+                var restored = session.Restore().GetAwaiter().GetResult();
+                Assert.AreEqual(ShopViewSubmissionStatus.Acknowledged, restored.Status);
+                Assert.IsTrue(restored.IsPurchase);
+                Assert.AreEqual(1, restored.Rewards.Count);
+                Assert.AreEqual(1, _transport.Requests.Count(r => r.Verb == HttpVerb.Post));
+                Assert.IsFalse(session.HasPending);
+                Assert.IsNull(session.GoldPacks);
+
+                _transport.Queued.Enqueue(Ok(Account(40, 5, Daily(purchased: true))));
+                _transport.Queued.Enqueue(Ok(Packs()));
+                Assert.IsNull(session.Restore().GetAwaiter().GetResult());
+                Assert.IsNotNull(session.GoldPacks);
+            }
+            finally { Directory.Delete(directory, true); }
+        }
+
+        [Test(Description = "골드팩 목록만 실패하면 일일 상점 계정 상태는 유지하고 목록만 재시도한다")]
+        public void ViewSession_PackFailureKeepsDailyAccount()
+        {
+            string directory = TemporaryDirectory();
+            try
+            {
+                _tokens.Set(Token(41), "refresh-a");
+                _api = new HttpShopApi(new HttpApiConfig("https://example.test"), _transport, _tokens);
+                var session = new ServerShopViewSession(_api, new ShopPendingRequestStore(directory, _tokens),
+                    new PlayerProfile(new GameDataStore()));
+                _transport.Queued.Enqueue(Ok(Account(40, 12, Daily())));
+                _transport.Queued.Enqueue(new HttpResponseData(500, ""));
+                Assert.IsNull(session.Restore().GetAwaiter().GetResult());
+                Assert.IsNotNull(session.Account);
+                Assert.AreEqual(40, session.Account.Gold);
+                Assert.IsNull(session.GoldPacks);
+
+                _transport.Queued.Enqueue(Ok(Account(40, 12, Daily())));
+                _transport.Queued.Enqueue(Ok(Packs()));
+                Assert.IsNull(session.Restore().GetAwaiter().GetResult());
+                Assert.IsNotNull(session.GoldPacks);
+            }
+            finally { Directory.Delete(directory, true); }
+        }
+
+        [Test(Description = "골드팩 조회 중 계정이 바뀌면 이전 계정의 일일 상점 상태를 버린다")]
+        public void ViewSession_SessionChangeDuringPackReadClearsAccount()
+        {
+            string directory = TemporaryDirectory();
+            try
+            {
+                _tokens.Set(Token(41), "refresh-a");
+                _api = new HttpShopApi(new HttpApiConfig("https://example.test"), _transport, _tokens);
+                var session = new ServerShopViewSession(_api, new ShopPendingRequestStore(directory, _tokens),
+                    new PlayerProfile(new GameDataStore()));
+                _transport.Queued.Enqueue(Ok(Account(40, 12, Daily())));
+                _transport.OnSend = request =>
+                {
+                    if (!request.Url.EndsWith("/gold-packs", StringComparison.Ordinal)) { return null; }
+                    _tokens.Set(Token(42), "refresh-b");
+                    return Ok(Packs());
+                };
+
+                var error = Assert.Throws<ApiException>(() => session.Restore().GetAwaiter().GetResult());
+                Assert.AreEqual(HttpErrorMapper.SessionExpired, error.Code);
+                Assert.IsNull(session.Account);
+                Assert.IsNull(session.GoldPacks);
             }
             finally { Directory.Delete(directory, true); }
         }
@@ -285,8 +421,14 @@ namespace Game.Tests
 
         private static HttpResponseData Ok(string body) => new(200, body);
 
-        private static string Account(int gold, int gems, string daily) => new JObject
-        { ["gold"] = gold, ["gem"] = gems, ["shop"] = JObject.Parse(daily) }.ToString(Formatting.None);
+        private static string Account(int gold, int gems, string daily)
+        {
+            var account = JObject.Parse(HttpAccountProgressTests.State);
+            account["gold"] = gold;
+            account["gem"] = gems;
+            account["shop"] = JObject.Parse(daily);
+            return account.ToString(Formatting.None);
+        }
 
         private static string Daily(bool purchased = false, int reroll = 0) => new JObject
         {

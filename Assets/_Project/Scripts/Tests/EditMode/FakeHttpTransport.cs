@@ -13,6 +13,7 @@ namespace Game.Tests
 
         /// <summary>요청 순서대로 돌려줄 응답. 비면 Response를 돌려준다</summary>
         public readonly Queue<HttpResponseData> Queued = new();
+        public Func<HttpRequestData, HttpResponseData?> OnSend;
         public Exception ToThrow;
         public Action<HttpRequestData> OnSend;
         public readonly List<HttpRequestData> Requests = new();
@@ -29,7 +30,7 @@ namespace Game.Tests
                 throw ToThrow;
             }
 
-            return UniTask.FromResult(Queued.Count > 0 ? Queued.Dequeue() : Response);
+            return UniTask.FromResult(OnSend?.Invoke(request) ?? (Queued.Count > 0 ? Queued.Dequeue() : Response));
         }
     }
 }
