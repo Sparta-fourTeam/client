@@ -8,12 +8,16 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Boot;
 using Game.Core;
 using Game.Core.Defense;
 using Game.Network;
 using Game.View;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using TMPro;
 using UnityEngine;
@@ -938,6 +942,232 @@ namespace Game.Tests
             Object.Destroy(daily.gameObject);
             yield return null;
             profile.Apply(new LocalPlayerApi(_store).GetMe().GetAwaiter().GetResult());
+        }
+
+        [UnityTest]
+        public IEnumerator ServerShop_RealLobbyCardsReplayLostBuyAndUseServerPackPrice()
+        {
+            yield return StartFromBoot(UnlockLobbyFeatures);
+            var ui = Object.FindAnyObjectByType<LobbyLifetimeScope>().Container.Resolve<IUiRegistry>();
+            var shop = ui.Get<ShopScreenView>();
+            var daily = shop.GetComponentInChildren<DailyShopView>(true);
+            var gold = shop.GetComponentInChildren<GoldShopView>(true);
+            var transport = new ScriptedShopTransport();
+            string directory = Path.Combine(Path.GetTempPath(), "nova-shop-view-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(directory);
+            try
+            {
+                shop.SetVisible(true);
+                shop.SelectTab(ShopTab.Daily);
+                var firstAuth = new AuthSession();
+                firstAuth.Set(ShopToken(41), null);
+                var firstApi = new HttpShopApi(new HttpApiConfig("https://example.test"), transport, firstAuth);
+                var first = new ServerShopViewSession(firstApi, new ShopPendingRequestStore(directory, firstAuth));
+                gold.UseServerShop(first);
+                daily.UseServerShop(first);
+                yield return WaitFor(() => first.Account != null && !first.IsBusy);
+                var card = Field<DailyShopItemView[]>(daily, "_items")[0];
+                Assert.That(Field<TMP_Text>(card, "_name").text, Does.Contain("잉크 x52"));
+                Assert.That(Field<TMP_Text>(card, "_name").text, Does.Contain("잉크펜 x2"));
+                Assert.That(Field<TMP_Text>(card, "_price").text, Is.EqualTo("17"));
+                Assert.That(Field<TMP_Text>(daily, "_goldCount").text, Is.EqualTo("2/2"));
+                Assert.That(Field<Button>(daily, "_adReroll").interactable, Is.False);
+
+                yield return ClickGameButton(Field<Button>(card, "_buy"));
+                var confirm = ui.Get<ConfirmPopupView>();
+                yield return WaitFor(() => confirm.IsOpen);
+                Assert.That(Field<TMP_Text>(confirm, "_message").text, Does.Contain("17잼"));
+                yield return ClickGameButton(Field<Button>(confirm, "_confirmButton"));
+                yield return WaitFor(() => first.HasPending && !first.IsBusy);
+                Assert.That(transport.AppliedBuys, Is.EqualTo(1));
+                Assert.That(transport.BuyBodies.Count, Is.EqualTo(1));
+                Assert.That(Field<Button>(card, "_buy").interactable, Is.False);
+                Assert.That(Field<TMP_Text>(daily, "_goldCount").text, Is.EqualTo("확인 중"));
+
+                // 새 앱 세션에서 같은 계정의 저장된 요청을 복구한다. 새 구매 키는 만들지 않는다.
+                var restartedAuth = new AuthSession();
+                restartedAuth.Set(ShopToken(41), null);
+                var restartedApi = new HttpShopApi(new HttpApiConfig("https://example.test"), transport, restartedAuth);
+                var restarted = new ServerShopViewSession(restartedApi,
+                    new ShopPendingRequestStore(directory, restartedAuth));
+                gold.UseServerShop(restarted);
+                daily.UseServerShop(restarted);
+                yield return WaitFor(() => restarted.Account != null && !restarted.IsBusy && !restarted.HasPending);
+                Assert.That(transport.BuyBodies.Count, Is.EqualTo(2));
+                Assert.That(transport.BuyBodies[0], Is.EqualTo(transport.BuyBodies[1]));
+                Assert.That(transport.AppliedBuys, Is.EqualTo(1));
+                Assert.That(restarted.Account.Gems, Is.EqualTo(83));
+                Assert.That(Field<GameObject>(card, "_soldOut").activeSelf, Is.True);
+                Assert.That(Field<Button>(card, "_buy").interactable, Is.False);
+                Assert.That(Directory.GetFiles(directory, "shop-pending-*.json"), Is.Empty);
+
+                shop.SelectTab(ShopTab.Gold);
+                yield return WaitFor(() => restarted.Account != null && !restarted.IsBusy);
+                var pack = Field<DailyShopItemView[]>(gold, "_items")[0];
+                Assert.That(Field<TMP_Text>(pack, "_price").text, Is.EqualTo("37"));
+                Assert.That(Field<ItemCellView>(pack, "_cell").CountText, Is.EqualTo("x101"));
+                yield return ClickGameButton(Field<Button>(pack, "_buy"));
+                yield return WaitFor(() => confirm.IsOpen);
+                Assert.That(Field<TMP_Text>(confirm, "_message").text, Does.Contain("37잼"));
+                yield return ClickGameButton(Field<Button>(confirm, "_confirmButton"));
+                yield return WaitFor(() => transport.GoldPackPosts == 1 && restarted.Account?.Gold == 193 && !restarted.IsBusy);
+                var popup = ui.Get<RewardPopupView>();
+                Assert.That(Field<GameObject>(popup, "_panel").activeSelf, Is.True);
+                Assert.That(Field<ResultRewardListView>(popup, "_rewards").Cells[0].CountText, Is.EqualTo("x101"));
+                popup.Close();
+                yield return WaitFor(() => !Field<GameObject>(popup, "_panel").activeSelf);
+
+                shop.SelectTab(ShopTab.Daily);
+                yield return WaitFor(() => restarted.Account != null && !restarted.IsBusy);
+                yield return ClickGameButton(Field<Button>(daily, "_goldReroll"));
+                yield return WaitFor(() => confirm.IsOpen);
+                Assert.That(Field<TMP_Text>(confirm, "_message").text, Does.Contain("3 잉크"));
+                yield return ClickGameButton(Field<Button>(confirm, "_confirmButton"));
+                yield return WaitFor(() => transport.GoldRerollPosts == 1 && restarted.Account?.Gold == 190 && !restarted.IsBusy);
+                Assert.That(Field<TMP_Text>(daily, "_goldCount").text, Is.EqualTo("1/2"));
+                Assert.That(Field<GameObject>(card, "_soldOut").activeSelf, Is.False);
+            }
+            finally
+            {
+                shop.SetVisible(false);
+                Directory.Delete(directory, true);
+            }
+        }
+
+        private static string ShopToken(long id)
+        {
+            string payload = Convert.ToBase64String(Encoding.UTF8.GetBytes(new JObject
+            { ["sub"] = id.ToString() }.ToString(Formatting.None))).TrimEnd('=').Replace('+', '-').Replace('/', '_');
+            return "header." + payload + ".signature";
+        }
+
+        private sealed class ScriptedShopTransport : IHttpTransport
+        {
+            public readonly List<string> BuyBodies = new();
+            public int AppliedBuys;
+            public int GoldPackPosts;
+            public int GoldRerollPosts;
+            private string _buyId;
+            private bool _packBought;
+            private int _rerolls;
+
+            public UniTask<HttpResponseData> Send(HttpRequestData request, float timeoutSeconds,
+                CancellationToken cancellationToken)
+            {
+                if (request.Url.EndsWith("/api/user/me", StringComparison.Ordinal))
+                {
+                    return UniTask.FromResult(Ok(new JObject
+                    {
+                        ["gold"] = 40 + (AppliedBuys > 0 ? 52 : 0) + (_packBought ? 101 : 0) - _rerolls * 3,
+                        ["gem"] = 100 - (AppliedBuys > 0 ? 17 : 0) - (_packBought ? 37 : 0),
+                        ["shop"] = Day(AppliedBuys > 0 && _rerolls == 0, _rerolls)
+                    }));
+                }
+                if (request.Url.EndsWith("/api/user/shop/gold-packs", StringComparison.Ordinal))
+                { return UniTask.FromResult(Ok(Packs())); }
+                if (request.Url.EndsWith("/api/user/shop/buy", StringComparison.Ordinal))
+                {
+                    BuyBodies.Add(request.Body);
+                    string key = JObject.Parse(request.Body).Value<string>("requestId");
+                    if (_buyId != null && key != _buyId)
+                    { return UniTask.FromResult(new HttpResponseData(409, string.Empty)); }
+                    _buyId = key;
+                    if (AppliedBuys++ == 0)
+                    { return UniTask.FromResult(HttpResponseData.Failed(HttpFailure.Timeout)); }
+                    AppliedBuys = 1;
+                    return UniTask.FromResult(Ok(new JObject
+                    {
+                        ["requestId"] = key,
+                        ["operation"] = "BUY",
+                        ["dayKey"] = "20261019",
+                        ["requestedReroll"] = 0,
+                        ["slot"] = 0,
+                        ["goldSpent"] = 0,
+                        ["gemsSpent"] = 17,
+                        ["gold"] = 52,
+                        ["energy"] = 2,
+                        ["items"] = new JObject(),
+                        ["stateAfter"] = Day(true),
+                        ["completedAt"] = "2026-10-19T01:02:03Z"
+                    }));
+                }
+                if (request.Url.EndsWith("/api/user/shop/gold-packs/buy", StringComparison.Ordinal))
+                {
+                    GoldPackPosts++;
+                    _packBought = true;
+                    return UniTask.FromResult(Ok(new JObject
+                    {
+                        ["requestId"] = JObject.Parse(request.Body).Value<string>("requestId"),
+                        ["configVersion"] = 3,
+                        ["index"] = 0,
+                        ["gold"] = 101,
+                        ["gemsSpent"] = 37,
+                        ["gemGoldRate"] = 11,
+                        ["discountPercent"] = 7,
+                        ["completedAt"] = "2026-10-19T01:02:04Z"
+                    }));
+                }
+                if (request.Url.EndsWith("/api/user/shop/reroll", StringComparison.Ordinal))
+                {
+                    GoldRerollPosts++;
+                    _rerolls = 1;
+                    return UniTask.FromResult(Ok(new JObject
+                    {
+                        ["requestId"] = JObject.Parse(request.Body).Value<string>("requestId"),
+                        ["operation"] = "GOLD_REROLL",
+                        ["dayKey"] = "20261019",
+                        ["requestedReroll"] = 0,
+                        ["slot"] = JValue.CreateNull(),
+                        ["goldSpent"] = 3,
+                        ["gemsSpent"] = 0,
+                        ["gold"] = 0,
+                        ["energy"] = 0,
+                        ["items"] = new JObject(),
+                        ["stateAfter"] = Day(false, 1),
+                        ["completedAt"] = "2026-10-19T01:02:05Z"
+                    }));
+                }
+                return UniTask.FromResult(new HttpResponseData(404, string.Empty));
+            }
+
+            private static HttpResponseData Ok(JObject json) => new(200, json.ToString(Formatting.None));
+
+            private static JObject Packs() => new()
+            {
+                ["available"] = true,
+                ["version"] = 3,
+                ["gemGoldRate"] = 11,
+                ["packs"] = new JArray(new JObject
+                { ["index"] = 0, ["gold"] = 101, ["discountPercent"] = 7, ["gemPrice"] = 37 })
+            };
+
+            private static JObject Day(bool purchased, int reroll = 0) => new()
+            {
+                ["available"] = true,
+                ["dayKey"] = "20261019",
+                ["nextResetAt"] = "2026-10-19T19:00:00Z",
+                ["configVersion"] = 2,
+                ["rerollIndex"] = reroll,
+                ["goldUsed"] = reroll,
+                ["goldLeft"] = 2 - reroll,
+                ["goldRerollCost"] = 3,
+                ["adUsed"] = 0,
+                ["adAvailable"] = false,
+                ["purchased"] = purchased ? new JArray(0) : new JArray(),
+                ["offers"] = new JArray(new JObject
+                {
+                    ["slot"] = 0,
+                    ["discountPercent"] = 30,
+                    ["price"] = 17,
+                    ["offer"] = new JObject
+                    {
+                        ["id"] = "offer.server",
+                        ["gold"] = 52,
+                        ["energy"] = 2,
+                        ["items"] = new JObject()
+                    }
+                })
+            };
         }
 
         [UnityTest]
