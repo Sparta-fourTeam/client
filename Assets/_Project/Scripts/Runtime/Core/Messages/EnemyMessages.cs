@@ -28,14 +28,18 @@ namespace Game.Core.Messages
         /// <summary>실제 HP 차감량과 피해 출처. 회복 또는 기존 생성자는 기본값이다.</summary>
         public DamageInfo Damage { get; }
 
+        /// <summary>저항·취약을 반영한 최종 피해량. 남은 HP를 넘는 과잉 피해도 포함하며 데미지 팝업이 표시한다. 0이면 <see cref="Damage"/>의 차감량을 쓴다.</summary>
+        public int DealtDamage { get; }
+
         public EnemyHpChanged(int enemyId, int current, int max) : this(enemyId, current, max, default) { }
 
-        public EnemyHpChanged(int enemyId, int current, int max, DamageInfo damage)
+        public EnemyHpChanged(int enemyId, int current, int max, DamageInfo damage, int dealtDamage = 0)
         {
             EnemyId = enemyId;
             Current = current;
             Max = max;
             Damage = damage;
+            DealtDamage = dealtDamage;
         }
     }
 
