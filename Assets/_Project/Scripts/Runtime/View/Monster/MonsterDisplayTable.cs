@@ -15,6 +15,8 @@ namespace Game.View
             [Tooltip("Monsters 테이블의 행 ID")] public int monsterId;
             public string displayName;
             public Sprite icon;
+            [Tooltip("미니 몬스터 등 도감 목록과 발견 수 집계에서 제외할 대상")]
+            public bool hideInCodex;
         }
 
         [SerializeField] private MonsterEntry[] _monsters = Array.Empty<MonsterEntry>();

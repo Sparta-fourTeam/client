@@ -1,5 +1,4 @@
 using System;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,23 +10,17 @@ namespace Game.View
         [SerializeField] private Button _button;
         [SerializeField] private Image _icon;
         [SerializeField] private GameObject _unknown;
-        [SerializeField] private TMP_Text _name, _status;
-        [SerializeField] private GameObject _claimBadge;
 
         public int MonsterId { get; private set; }
         public bool IsDiscovered { get; private set; }
-        public string DisplayName => _name.text;
 
-        public void Bind(int monsterId, Sprite icon, string name, bool discovered, bool canClaim, Action onClick)
+        public void Bind(int monsterId, Sprite icon, bool discovered, Action onClick)
         {
             MonsterId = monsterId;
             IsDiscovered = discovered;
             _icon.sprite = discovered ? icon : null;
             _icon.enabled = discovered && icon != null;
             _unknown.SetActive(!discovered);
-            _name.text = discovered ? name : "???";
-            _status.text = !discovered ? "미발견" : canClaim ? "보상 받기" : "발견 완료";
-            _claimBadge.SetActive(discovered && canClaim);
             _button.interactable = discovered;
             _button.onClick.RemoveAllListeners();
             if (discovered) { _button.onClick.AddListener(() => onClick?.Invoke()); }
