@@ -82,7 +82,8 @@ namespace Game.View
                 if (_display != null) { _display.TryGetMonster(id, out entry); }
                 var item = new StageMonsterItem(entry?.icon, entry?.displayName ?? $"#{id}", monsters[i].IsBoss, id);
                 _slots[i].Bind(id, item.Icon, known,
-                    () => DetailContent.ShowMonster(_detail, _data, _display, item));
+                    () => DetailContent.ShowMonster(_detail, _data, _display, item),
+                    CodexFamilyId(id) != id ? 0.65f : 1f);
             }
         }
 

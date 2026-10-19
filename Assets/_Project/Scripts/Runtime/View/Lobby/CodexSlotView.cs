@@ -14,11 +14,12 @@ namespace Game.View
         public int MonsterId { get; private set; }
         public bool IsDiscovered { get; private set; }
 
-        public void Bind(int monsterId, Sprite icon, bool discovered, Action onClick)
+        public void Bind(int monsterId, Sprite icon, bool discovered, Action onClick, float iconScale = 1f)
         {
             MonsterId = monsterId;
             IsDiscovered = discovered;
             _icon.sprite = discovered ? icon : null;
+            _icon.rectTransform.localScale = Vector3.one * iconScale;
             _icon.enabled = discovered && icon != null;
             _unknown.SetActive(!discovered);
             _button.interactable = discovered;
