@@ -15,11 +15,19 @@ namespace Game.Network
         private const string OverrideKey = "dev.server_auth";
         private const string ProgressOverrideKey = "dev.server_progress";
 
-        // 서버 인증을 쓰는 앱은 진행도 같은 계정의 서버에서 읽는다. 에디터는 인증을
-        // 명시적으로 켰을 때만 통합 경로를 시험한다. 서버 원본 미게시/장애 시 진입이 실패한다.
-        public static bool UseServerProgress => UseServerAuth
-            && PlayerPrefs.GetString(ProgressOverrideKey, string.Empty) == "1";
+        // 배포 준비가 끝난 별도 빌드는 ACCOUNT_SERVER_PROGRESS define으로 활성화한다.
+        // 개발 중에는 PlayerPrefs opt-in을 쓴다. 서버 원본 미게시/장애 시 진입이 실패한다.
+#if ACCOUNT_SERVER_PROGRESS
+        private const bool BuildServerProgress = true;
+#else
+        private const bool BuildServerProgress = false;
+#endif
+        public static bool UseServerProgress => ResolveServerProgress(UseServerAuth, BuildServerProgress,
+            PlayerPrefs.GetString(ProgressOverrideKey, string.Empty));
         public static bool UseServerPlayer => UseServerProgress;
+
+        public static bool ResolveServerProgress(bool serverAuth, bool buildEnabled, string preference) =>
+            serverAuth && (buildEnabled || preference == "1");
 
         public static bool UseServerAuth => ResolveServerAuth(Application.platform, PlayerPrefs.GetString(OverrideKey, string.Empty));
 

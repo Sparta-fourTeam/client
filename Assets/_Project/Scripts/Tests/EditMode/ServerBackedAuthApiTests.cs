@@ -78,6 +78,14 @@ namespace Game.Tests
             }
         }
 
+        [Test]
+        public void ServerProgressBuildDefine_RequiresServerAuthentication()
+        {
+            Assert.IsFalse(ServerConfig.ResolveServerProgress(false, true, "1"));
+            Assert.IsTrue(ServerConfig.ResolveServerProgress(true, true, string.Empty));
+            Assert.IsFalse(ServerConfig.ResolveServerProgress(true, false, string.Empty));
+        }
+
         [Test(Description = "구글은 provider GOOGLE과 ID 토큰을 소셜 로그인 경로로 보내고, 받은 토큰을 세션에 담는다")]
         public void Google_PostsIdTokenAndStoresTokens()
         {
