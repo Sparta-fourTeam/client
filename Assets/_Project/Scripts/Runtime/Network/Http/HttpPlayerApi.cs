@@ -64,25 +64,25 @@ namespace Game.Network
                     { BaseExp = levels.baseExp.Value, StepExp = levels.stepExp.Value, MaxLevel = levels.maxLevel.Value }, levels.version.Value);
                 }
                 catch (Exception error) when (error is InvalidOperationException or OverflowException or ArgumentException)
-                { throw new ApiException(ApiErrorKind.Rejected, HttpErrorMapper.InvalidResponse); }
+                { throw ServerProgressContract.Invalid("GET api/player-levels apply"); }
                 _data.ApplyBattleSource(downloaded, versions);
                 _data.ApplyServerPlayerLevels(new PlayerLevelConfig
                 { BaseExp = levels.baseExp.Value, StepExp = levels.stepExp.Value, MaxLevel = levels.maxLevel.Value }, levels.version.Value);
             }
             var json = await _client.GetJson(MePath);
             EnsureSession(generation);
-            var data = ServerProgressContract.Parse(() => ServerProgressContract.ReadMe(json));
+            var data = WithMePath(() => ServerProgressContract.Parse(() => ServerProgressContract.ReadMe(json)));
             PlayerSnapshot snapshot;
             if (_source == null)
             {
                 var local = await _local.GetMe();
-                snapshot = ServerUserMapper.ToSnapshot(data, local.nickname, local.playerId);
+                snapshot = WithMePath(() => ServerUserMapper.ToSnapshot(data, local.nickname, local.playerId));
                 snapshot.avatarId = local.avatarId;
             }
             else
             {
                 string subject = ServerAccountIdentity.Subject(_tokens.AccessToken);
-                snapshot = ServerUserMapper.ToSnapshot(data, "플레이어", subject);
+                snapshot = WithMePath(() => ServerUserMapper.ToSnapshot(data, "플레이어", subject));
             }
             EnsureSession(generation);
             if (_profiles != null)
@@ -93,6 +93,14 @@ namespace Game.Network
                 snapshot.avatarId = identity.AvatarId;
             }
             return snapshot;
+        }
+
+        // INVALID_RESPONSE에 요청 경로를 붙여 진단 로그에서 어느 응답이 문제인지 보이게 한다 (값은 제외)
+        private static T WithMePath<T>(Func<T> read)
+        {
+            try { return read(); }
+            catch (ApiException error) when (error.Code == HttpErrorMapper.InvalidResponse)
+            { throw new ApiException(error.Kind, error.Code, $"GET {MePath} {error.Detail}"); }
         }
 
         private void EnsureSession(long generation)
@@ -118,7 +126,7 @@ namespace Game.Network
                 return subject;
             }
             catch (Exception error) when (error is FormatException or ArgumentException or Newtonsoft.Json.JsonException)
-            { throw new ApiException(ApiErrorKind.Rejected, HttpErrorMapper.InvalidResponse); }
+            { throw ServerProgressContract.Invalid("access token subject"); }
         }
     }
 }

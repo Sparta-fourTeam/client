@@ -16,11 +16,12 @@ namespace Game.Network
         internal static T Parse<T>(Func<T> parse)
         {
             try { return parse(); }
-            catch (JsonException) { throw Invalid(); }
-            catch (ArgumentException) { throw Invalid(); }
-            catch (InvalidCastException) { throw Invalid(); }
-            catch (FormatException) { throw Invalid(); }
-            catch (OverflowException) { throw Invalid(); }
+            // 예외 형식 이름만 남긴다. 메시지에는 응답 값이 섞일 수 있어 쓰지 않는다
+            catch (JsonException) { throw Invalid("parse JsonException"); }
+            catch (ArgumentException) { throw Invalid("parse ArgumentException"); }
+            catch (InvalidCastException) { throw Invalid("parse InvalidCastException"); }
+            catch (FormatException) { throw Invalid("parse FormatException"); }
+            catch (OverflowException) { throw Invalid("parse OverflowException"); }
         }
 
         internal static JToken Read(string json)
@@ -31,28 +32,33 @@ namespace Game.Network
                 { DateParseHandling = DateParseHandling.None };
                 var token = JToken.Load(reader, new JsonLoadSettings
                 { DuplicatePropertyNameHandling = DuplicatePropertyNameHandling.Error });
-                if (reader.Read()) { throw Invalid(); }
+                if (reader.Read()) { throw Invalid("json trailing content"); }
                 return token;
             }
-            catch (JsonException) { throw Invalid(); }
+            catch (JsonException) { throw Invalid("json syntax"); }
         }
 
         internal static ServerUserData ReadMe(string json)
         {
             var state = Read(json) as JObject;
-            if (state == null || !Integer(state["gold"])
-                || !(state.Property("gem") == null ? Integer(state["jem"]) : Integer(state["gem"]))
-                || !(Null(state["exp"]) || Integer(state["exp"]))
-                || !Integer(state["energyStored"]) || !EnergyTime(state["energyUpdatedAt"])
-                || state["tutorials"] is not JArray
-                || !Rows(state["stageProgress"], "stageId", row => Integer(row["stageId"], int.MinValue)
-                    && Integer(row["clearRating"], 0, 3) && Integer(row["claimedRating"], 0, row.Value<int>("clearRating")))
-                || !Rows(state["upgrades"], "upgradeId", row => Text(row["upgradeId"])
-                    && (Null(row["level"]) || Integer(row["level"])))
-                || !ItemRows(state["items"])
-                || !Rows(state["codex"], "monsterId", row => Integer(row["monsterId"], 1)
+            if (state == null) { throw Invalid("me: not an object"); }
+            // 어느 필드가 계약에서 벗어났는지 로그로 알 수 있도록 필드별로 나눠 검사한다 (값은 남기지 않는다)
+            if (!Integer(state["gold"])) { throw Invalid("me.gold"); }
+            if (!(state.Property("gem") == null ? Integer(state["jem"]) : Integer(state["gem"]))) { throw Invalid("me.gem"); }
+            if (!(Null(state["exp"]) || Integer(state["exp"]))) { throw Invalid("me.exp"); }
+            if (!Integer(state["energyStored"])) { throw Invalid("me.energyStored"); }
+            if (!EnergyTime(state["energyUpdatedAt"])) { throw Invalid("me.energyUpdatedAt"); }
+            if (state["tutorials"] is not JArray) { throw Invalid("me.tutorials"); }
+            if (!Rows(state["stageProgress"], "stageId", row => Integer(row["stageId"], int.MinValue)
+                    && Integer(row["clearRating"], 0, 3) && Integer(row["claimedRating"], 0, row.Value<int>("clearRating"))))
+            { throw Invalid("me.stageProgress"); }
+            if (!Rows(state["upgrades"], "upgradeId", row => Text(row["upgradeId"])
+                    && (Null(row["level"]) || Integer(row["level"]))))
+            { throw Invalid("me.upgrades"); }
+            if (!ItemRows(state["items"])) { throw Invalid("me.items"); }
+            if (!Rows(state["codex"], "monsterId", row => Integer(row["monsterId"], 1)
                     && Boolean(row["claimed"])))
-            { throw Invalid(); }
+            { throw Invalid("me.codex"); }
             ValidateTutorials(state["tutorials"], state["tutorialStates"]);
             ValidateBoards(state["quests"]);
             return state.ToObject<ServerUserData>();
@@ -79,11 +85,11 @@ namespace Game.Network
                 && row.Value<bool>("completed") == row.Value<bool>("rewardClaimed")
                 && FlagTime(row, "dialogueSeen", "dialogueSeenAt") && FlagTime(row, "completed", "completedAt")
                 && (row.Value<bool>("dialogueSeen") || row.Value<bool>("completed"))))
-            { throw Invalid(); }
+            { throw Invalid("tutorialStates"); }
             if (ids == null) { return; }
             if (ids is not JArray list || !list.All(id => TutorialId(id, true))
                 || list.Select(id => id.Value<string>()).Distinct(StringComparer.Ordinal).Count() != list.Count)
-            { throw Invalid(); }
+            { throw Invalid("tutorials"); }
             var expected = new HashSet<string>(StringComparer.Ordinal);
             foreach (var state in (JArray)states)
             {
@@ -91,7 +97,7 @@ namespace Game.Network
                 if (state.Value<bool>("dialogueSeen")) { expected.Add(id + ".dialogue"); }
                 if (state.Value<bool>("completed")) { expected.Add(id); }
             }
-            if (!expected.SetEquals(list.Select(id => id.Value<string>()))) { throw Invalid(); }
+            if (!expected.SetEquals(list.Select(id => id.Value<string>()))) { throw Invalid("tutorials vs tutorialStates mismatch"); }
         }
 
         internal static void ValidateBoards(JToken boards)
@@ -101,7 +107,7 @@ namespace Game.Network
                     && Utc(board["nextResetAt"]) && (Null(board["lastLoginDay"]) || DayToken(board["lastLoginDay"]))
                     && Integer(board["loginCount"], 0, board.Value<string>("period") == "DAILY" ? 1 : 7)
                     && Integer(board["spentEnergy"]) && Integer(board["points"], 0, long.MaxValue)))
-            { throw Invalid(); }
+            { throw Invalid("quests.board"); }
             var usedIds = new HashSet<string>(StringComparer.Ordinal);
             foreach (var board in array.Cast<JObject>())
             {
@@ -115,10 +121,10 @@ namespace Game.Network
                         && Integer(row["points"], 1) && Boolean(row["claimed"])
                         && FlagTime(row, "claimed", "claimedAt")
                         && (!row.Value<bool>("claimed") || row.Value<int>("points") <= board.Value<long>("points"))))
-                { throw Invalid(); }
+                { throw Invalid("quests.board.quests/chests"); }
                 long points = ((JArray)board["quests"]).Where(row => row.Value<bool>("claimed"))
                     .Sum(row => (long)row.Value<int>("points"));
-                if (points != board.Value<long>("points")) { throw Invalid(); }
+                if (points != board.Value<long>("points")) { throw Invalid("quests.board.points mismatch"); }
             }
         }
 
@@ -130,11 +136,11 @@ namespace Game.Network
                 || !Boolean(receipt["dialogueOnly"]) || receipt.Value<bool>("dialogueOnly") != dialogue
                 || !Integer(receipt["gold"]) || !Integer(receipt["expBefore"]) || !Integer(receipt["expAfter"])
                 || !Utc(receipt["recordedAt"]))
-            { throw Invalid(); }
+            { throw Invalid("tutorialReceipt"); }
             var items = Items(receipt["items"]);
             if (dialogue && (receipt.Value<int>("gold") != 0 || items.Count != 0
                 || receipt.Value<int>("expBefore") != 0 || receipt.Value<int>("expAfter") != 0))
-            { throw Invalid(); }
+            { throw Invalid("tutorialReceipt.dialogueOnly"); }
             return new TutorialCompletionReceipt(request.tutorialId, dialogue, receipt.Value<int>("gold"), items,
                 receipt.Value<int>("expBefore"), receipt.Value<int>("expAfter"), receipt.Value<string>("recordedAt"));
         }
@@ -149,9 +155,9 @@ namespace Game.Network
                 || !Integer(receipt["gold"], 0, chest ? int.MaxValue : 0)
                 || !Integer(receipt["energy"], 0, chest ? int.MaxValue : 0)
                 || !Integer(receipt["gems"], 0, chest ? int.MaxValue : 0) || !Utc(receipt["claimedAt"]))
-            { throw Invalid(); }
+            { throw Invalid("questReceipt"); }
             var items = Items(receipt["items"]);
-            if (!chest && items.Count != 0) { throw Invalid(); }
+            if (!chest && items.Count != 0) { throw Invalid("questReceipt.items"); }
             return new QuestClaimReceipt(request, chest, receipt.Value<int>("points"), receipt.Value<int>("gold"),
                 receipt.Value<int>("energy"), receipt.Value<int>("gems"), items, receipt.Value<string>("claimedAt"));
         }
@@ -159,7 +165,7 @@ namespace Game.Network
         private static Dictionary<string, int> Items(JToken token)
         {
             if (token is not JObject rows || rows.Properties().Any(p => string.IsNullOrWhiteSpace(p.Name) || !Integer(p.Value, 1)))
-            { throw Invalid(); }
+            { throw Invalid("items"); }
             return rows.Properties().ToDictionary(p => p.Name, p => p.Value.Value<int>(), StringComparer.Ordinal);
         }
 
@@ -191,6 +197,7 @@ namespace Game.Network
         private static bool Rows(JToken token, string key, Func<JObject, bool> valid) => token is JArray rows
             && rows.All(row => row is JObject value && valid(value))
             && rows.Select(row => row[key].ToString()).Distinct(StringComparer.Ordinal).Count() == rows.Count;
-        internal static ApiException Invalid() => new(ApiErrorKind.Rejected, HttpErrorMapper.InvalidResponse);
+        /// <summary>detail에는 필드·규칙 이름만 적는다. 응답 값·ID·수량은 넣지 않는다</summary>
+        internal static ApiException Invalid(string detail = null) => new(ApiErrorKind.Rejected, HttpErrorMapper.InvalidResponse, detail);
     }
 }

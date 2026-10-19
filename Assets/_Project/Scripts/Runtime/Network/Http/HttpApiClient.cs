@@ -77,7 +77,7 @@ namespace Game.Network
             Func<TResponse, bool> isValid = null)
         {
             var body = await Execute(HttpVerb.Get, path, null, cancellationToken);
-            return Deserialize(body, isValid);
+            return Deserialize(body, isValid, Describe(HttpVerb.Get, path));
         }
 
         /// <summary>날짜 문자열·필드 존재 여부를 직접 검증해야 하는 Network 내부 독자용 원문.
@@ -93,7 +93,7 @@ namespace Game.Network
             CancellationToken cancellationToken = default, Func<TResponse, bool> isValid = null)
         {
             var body = await Execute(HttpVerb.Post, path, JsonConvert.SerializeObject(request), cancellationToken);
-            return Deserialize(body, isValid);
+            return Deserialize(body, isValid, Describe(HttpVerb.Post, path));
         }
 
         /// <summary>응답 본문이 없는 요청 (2xx만 오면 성공)</summary>
@@ -118,7 +118,7 @@ namespace Game.Network
             var error = HttpErrorMapper.Map(response, _errorCodeReader);
             if (error == null)
             {
-                ValidateStatus(response, expectedStatusCode);
+                ValidateStatus(verb, path, response, expectedStatusCode);
                 return response.Body;
             }
 
@@ -140,15 +140,16 @@ namespace Game.Network
                 throw error;
             }
 
-            ValidateStatus(response, expectedStatusCode);
+            ValidateStatus(verb, path, response, expectedStatusCode);
             return response.Body;
         }
 
-        private static void ValidateStatus(HttpResponseData response, int? expectedStatusCode)
+        private static void ValidateStatus(HttpVerb verb, string path, HttpResponseData response, int? expectedStatusCode)
         {
             if (expectedStatusCode.HasValue && response.StatusCode != expectedStatusCode.Value)
             {
-                throw new ApiException(ApiErrorKind.Rejected, HttpErrorMapper.InvalidResponse);
+                throw new ApiException(ApiErrorKind.Rejected, HttpErrorMapper.InvalidResponse,
+                    $"{Describe(verb, path)} status {response.StatusCode}");
             }
         }
 
@@ -260,11 +261,18 @@ namespace Game.Network
             return _tokens.TryRefresh(generation, tokens.accessToken, tokens.refreshToken);
         }
 
-        private static T Deserialize<T>(string json, Func<T, bool> isValid)
+        /// <summary>진단 로그용 요청 식별자. 쿼리 문자열은 값이 섞일 수 있어 뺀다</summary>
+        private static string Describe(HttpVerb verb, string path)
+        {
+            int query = path?.IndexOf('?') ?? -1;
+            return $"{verb.ToString().ToUpperInvariant()} {(query >= 0 ? path.Substring(0, query) : path)}";
+        }
+
+        private static T Deserialize<T>(string json, Func<T, bool> isValid, string request)
         {
             if (string.IsNullOrWhiteSpace(json))
             {
-                throw new ApiException(ApiErrorKind.Rejected, HttpErrorMapper.InvalidResponse);
+                throw new ApiException(ApiErrorKind.Rejected, HttpErrorMapper.InvalidResponse, $"{request} empty body");
             }
 
             T value;
@@ -275,12 +283,13 @@ namespace Game.Network
             catch (JsonException)
             {
                 // 성공 응답인데 형식이 계약과 다르면 다시 보내도 같은 결과일 가능성이 크다
-                throw new ApiException(ApiErrorKind.Rejected, HttpErrorMapper.InvalidResponse);
+                throw new ApiException(ApiErrorKind.Rejected, HttpErrorMapper.InvalidResponse, $"{request} json format");
             }
 
             if (value == null || (isValid != null && !isValid(value)))
             {
-                throw new ApiException(ApiErrorKind.Rejected, HttpErrorMapper.InvalidResponse);
+                throw new ApiException(ApiErrorKind.Rejected, HttpErrorMapper.InvalidResponse,
+                    value == null ? $"{request} null body" : $"{request} isValid rule");
             }
 
             return value;
