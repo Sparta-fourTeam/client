@@ -90,6 +90,55 @@ namespace Game.Tests
             (T)target.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(target);
 
         [UnityTest]
+        public IEnumerator CodexPopup_FiltersGradesHidesUnknownAndReusesRegistrationReward()
+        {
+            int knownId = 0;
+            yield return StartFromBoot(save =>
+            {
+                UnlockLobbyFeatures(save);
+                var data = new GameDataStore();
+                knownId = data.Monsters.Values.First(m => m.GetEnemyType() == EnemyType.Normal).Id;
+                save.codex = new List<CodexRow> { new() { monsterId = knownId } };
+            });
+            var lobby = Object.FindAnyObjectByType<LobbyLifetimeScope>();
+            var ui = lobby.Container.Resolve<IUiRegistry>();
+            var profile = lobby.Container.Resolve<PlayerProfile>();
+            var data = lobby.Container.Resolve<GameDataStore>();
+            var codex = ui.Get<CodexPopupView>();
+            var open = ui.GetAll<SideMenuPopupButton>().Single(b =>
+                Field<SideMenuPopupButton.Target>(b, "_target") == SideMenuPopupButton.Target.Codex);
+            yield return ClickGameButton(open.GetComponent<Button>());
+            yield return WaitFor(() => codex.IsOpen);
+            var detail = ui.Get<DetailPopupView>();
+            var unknown = codex.VisibleSlots.First(s => !s.IsDiscovered);
+            Assert.That(unknown.DisplayName, Is.EqualTo("???"));
+            Assert.That(unknown.GetComponent<Button>().interactable, Is.False);
+            // 미발견 칸에 실제 이름·이미지나 상세 진입 경로를 남기지 않는다.
+            Assert.That(Field<UnityEngine.UI.Image>(unknown, "_icon").sprite, Is.Null);
+            unknown.GetComponent<Button>().onClick.Invoke();
+            Assert.That(detail.IsShown, Is.False);
+            var tabs = codex.GetComponentsInChildren<Button>(true).Where(b => b.name.StartsWith("Tab")).OrderBy(b => b.name).ToArray();
+            for (int i = 1; i < 3; i++)
+            {
+                yield return ClickGameButton(tabs[i]);
+                Assert.That(codex.VisibleSlots.Select(s => s.MonsterId), Is.EquivalentTo(
+                    data.Monsters.Values.Where(m => m.GetEnemyType() == (EnemyType)i).Select(m => m.Id)));
+            }
+            yield return ClickGameButton(tabs[0]);
+            var known = codex.VisibleSlots.Single(s => s.MonsterId == knownId);
+            yield return ClickGameButton(known.GetComponent<Button>());
+            Assert.That(detail.IsShown, Is.True);
+            yield return ClaimMonsterAndCloseReward(ui, profile);
+            Assert.That(Field<GameObject>(known, "_claimBadge").activeSelf, Is.False);
+            detail.Hide();
+            yield return ClickGameButton(codex.GetComponentsInChildren<Button>(true).Single(b => b.name == "CloseButton"));
+            yield return WaitFor(() => !codex.IsOpen);
+            yield return ClickGameButton(open.GetComponent<Button>());
+            Assert.That(codex.Grade, Is.EqualTo(EnemyType.Normal));
+            Assert.That(codex.VisibleSlots.Select(s => s.MonsterId).Distinct().Count(), Is.EqualTo(codex.VisibleSlots.Count));
+        }
+
+        [UnityTest]
         public IEnumerator BattleCheckpoint_LobbyPromptRestoresBattleAndCardSelectionWithoutChargingAgain()
             => BattleCheckpointRoundTrip(false);
 
