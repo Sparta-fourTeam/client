@@ -21,6 +21,7 @@ namespace Game.View
         private PlayerProfile _profile;
         private GameDataStore _data;
         private IUpgradeApi _api;
+        private IUpgradeRecovery _recovery;
         private IAudioService _audio;
         private UpgradePurchasePlan _plan;
         private string _name;
@@ -29,11 +30,12 @@ namespace Game.View
         public void BindUi(IUiRegistry registry) => _toast = registry.Get<ComingSoonToastView>();
         public bool IsBusy => _busy;
         public bool IsOpen => _visible;
+        public bool HasPendingRecovery => _recovery?.HasPendingPurchase == true;
         public RectTransform ConfirmButton => (RectTransform)_confirmButton.transform;
 
         [Inject]
         public void Construct(PlayerProfile profile, GameDataStore data, IUpgradeApi api, IAudioService audio = null)
-        { _profile = profile; _data = data; _api = api; _audio = audio; }
+        { _profile = profile; _data = data; _api = api; _recovery = api as IUpgradeRecovery; _audio = audio; }
 
         protected override void InitializeView()
         {
@@ -45,13 +47,25 @@ namespace Game.View
 
         public void Show(string name, string id, bool all)
         {
-            if (_busy || string.IsNullOrEmpty(id))
+            if (_busy || (!HasPendingRecovery && string.IsNullOrEmpty(id)))
             {
                 return;
             }
 
+            if (HasPendingRecovery)
+            {
+                id = _recovery.PendingUpgradeId;
+                name = id;
+                all = false;
+            }
+            else if (_recovery != null && all)
+            {
+                all = false; // 서버 구매 한 건의 영수증과 새 견적을 섞지 않는다.
+            }
+
             _name = name; _all = all; _visible = true;
-            Present(UpgradePurchasePlan.Create(_profile, _data, id, all));
+            Present(UpgradePurchasePlan.Create(_profile, _data, id, all),
+                HasPendingRecovery ? "미확정 강화가 있습니다. 확인을 누르면 같은 구매를 복구합니다." : null);
             PopupPanel.Set(_panel, _transition, true);
             PopupPanel.FitContent(_scroll, 560f, 1040f);
             _scroll.verticalNormalizedPosition = 1f;
@@ -77,7 +91,7 @@ namespace Game.View
         private void SetButtons()
         {
             _closeButton.interactable = _cancelButton.interactable = !_busy;
-            _confirmButton.interactable = !_busy && _plan.Count > 0;
+            _confirmButton.interactable = !_busy && (_plan.Count > 0 || HasPendingRecovery);
         }
 
         private void Close()
@@ -93,8 +107,14 @@ namespace Game.View
 
         private async UniTask ConfirmAsync()
         {
-            if (_busy || !_visible || !_panel.activeSelf || _plan.Count == 0)
+            if (_busy || !_visible || !_panel.activeSelf || (_plan.Count == 0 && !HasPendingRecovery))
             {
+                return;
+            }
+
+            if (_recovery != null)
+            {
+                await ConfirmServerAsync();
                 return;
             }
 
@@ -165,6 +185,41 @@ namespace Game.View
                 {
                     SetButtons();
                 }
+            }
+        }
+
+        private async UniTask ConfirmServerAsync()
+        {
+            if (!HasPendingRecovery)
+            {
+                var current = UpgradePurchasePlan.Create(_profile, _data, _plan.UpgradeId, false);
+                if (!_plan.SameQuote(current))
+                { Present(current, "상태가 변경됐습니다. 새 비용을 확인해 주세요."); return; }
+            }
+            _busy = true; SetButtons();
+            try
+            {
+                var snapshot = HasPendingRecovery ? await _recovery.RecoverPurchase()
+                    : await _api.Purchase(_plan.UpgradeId, Guid.NewGuid().ToString("N"));
+                _profile.Apply(snapshot);
+                if (this == null) { return; }
+                _audio?.PlaySfx(SoundIds.Upgrade);
+                _visible = false;
+                PopupPanel.Set(_panel, _transition, false);
+                _toast?.Show("강화 결과와 현재 서버 상태를 확인했습니다.", 1f);
+            }
+            catch (Exception error)
+            {
+                if (this == null) { return; }
+                string status = HasPendingRecovery
+                    ? "구매 결과가 미확정입니다. 확인을 눌러 같은 요청을 복구해 주세요."
+                    : error is ApiException api ? $"강화 요청 실패: {api.Code}" : error.Message;
+                Present(UpgradePurchasePlan.Create(_profile, _data, _plan.UpgradeId, false), status);
+            }
+            finally
+            {
+                _busy = false;
+                if (this != null) { SetButtons(); }
             }
         }
 

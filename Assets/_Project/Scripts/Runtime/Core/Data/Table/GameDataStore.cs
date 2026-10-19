@@ -15,17 +15,30 @@ namespace Game.Core
         private readonly Dictionary<string, int> _skillUnlockLevels;
 
         public Dictionary<string, int> Revisions { get; }
-        public string BattleSourceRevision { get; }
-        public Table<int, MonsterDefinition> Monsters { get; }
-        public Table<int, StageDefinition> Stages { get; }
+        public string BattleSourceRevision { get; private set; }
+        public Table<int, MonsterDefinition> Monsters { get; private set; }
+        public Table<int, StageDefinition> Stages { get; private set; }
         public Table<string, UpgradeDefinition> Upgrades { get; }
         public Table<string, ItemDefinition> Items { get; }
-        public Table<int, StageRewardBalance> StageRewards { get; }
+        public Table<int, StageRewardBalance> StageRewards { get; private set; }
         public RewardRulesConfig RewardRules { get; private set; }
         public EnergyConfig Energy { get; }
         public ShopConfig Shop { get; }
-        public CombatConfig Combat { get; }
-        public PlayerLevelTable PlayerLevels { get; }
+        public CombatConfig Combat { get; private set; }
+        public PlayerLevelTable PlayerLevels { get; private set; }
+        public bool HasServerPlayerLevels { get; private set; }
+
+        public void InvalidateServerPlayerLevels() => HasServerPlayerLevels = false;
+
+        public void ApplyServerPlayerLevels(PlayerLevelConfig config, int version)
+        {
+            if (config == null || version < 1) { throw new ArgumentException("서버 PlayerLevels가 필요합니다"); }
+            var table = config.ToTable();
+            PlayerLevels = table;
+            _rawJson["PlayerLevels"] = JsonConvert.SerializeObject(config);
+            Revisions["PlayerLevels"] = version;
+            HasServerPlayerLevels = true;
+        }
 
         /// <summary>튜토리얼 정의. 표의 순서가 진행 우선순위다 (TutorialProgress)</summary>
         public IReadOnlyList<TutorialDefinition> Tutorials { get; }
@@ -34,7 +47,7 @@ namespace Game.Core
         public TutorialPresentationTable TutorialPresentations { get; }
 
         /// <summary>스테이지 클리어로 열리는 로비 기능 (클라이언트 전용, ClientData/FeatureUnlocks.json)</summary>
-        public FeatureUnlockTable FeatureUnlocks { get; }
+        public FeatureUnlockTable FeatureUnlocks { get; private set; }
 
         /// <summary>도감 등록 보상 골드. 몬스터마다가 아니라 등급별이다</summary>
         public IReadOnlyDictionary<EnemyType, int> CodexRewardGold { get; }
@@ -46,10 +59,32 @@ namespace Game.Core
         public IReadOnlyList<GeneralCardDefinition> GeneralCards { get; }
 
         /// <summary>어떤 스테이지로도 시작하지 않았을 때(Stage 씬을 바로 열었을 때) 쓰는 첫 번째 스테이지의 ID</summary>
-        public int FirstStageId { get; }
+        public int FirstStageId { get; private set; }
 
         /// <summary>새 공급자가 전투 외 기존 테이블을 유지하며 새 저장소를 구성할 때 사용한다.</summary>
         public Dictionary<string, string> CopyTables() => new Dictionary<string, string>(_rawJson);
+
+        /// <summary>다운로드한 전투 원본이 모두 검증된 뒤 Root의 동일 인스턴스에 원자적으로 반영한다.
+        /// 이미 생성된 PlayerProfile과 새 Lobby/Stage Scope가 같은 서버 원본을 보게 한다.</summary>
+        public void ApplyBattleSource(GameDataStore downloaded, DataVersions versions)
+        {
+            if (downloaded == null || versions?.revisions == null)
+            { throw new ArgumentException("검증된 전투 원본과 테이블 버전이 필요합니다"); }
+            if (versions.revisions.Values.Any(revision => revision <= 0))
+            { throw new InvalidOperationException("서버 테이블 버전이 잘못되었습니다"); }
+            _rawJson["Stages"] = downloaded.RawJson("Stages");
+            _rawJson["Monsters"] = downloaded.RawJson("Monsters");
+            _rawJson["Combat"] = downloaded.RawJson("Combat");
+            Monsters = downloaded.Monsters;
+            Stages = downloaded.Stages;
+            Combat = downloaded.Combat;
+            StageRewards = downloaded.StageRewards;
+            FeatureUnlocks = downloaded.FeatureUnlocks;
+            FirstStageId = downloaded.FirstStageId;
+            BattleSourceRevision = downloaded.BattleSourceRevision;
+            foreach (var pair in versions.revisions)
+            { if (Revisions.ContainsKey(pair.Key)) { Revisions[pair.Key] = pair.Value; } }
+        }
 
         private static Dictionary<string, string> LoadLocalTables()
         {

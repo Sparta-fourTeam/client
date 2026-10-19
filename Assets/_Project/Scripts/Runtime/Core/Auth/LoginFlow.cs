@@ -19,12 +19,15 @@ namespace Game.Core
         private readonly IReadOnlyList<ISocialSignIn> _social;
         private readonly IAnalyticsCollectionControl _analytics;
         private readonly ILoginConsentStore _consents;
+        private readonly IAccountPendingRecovery _pending;
 
         public LoginFlow(IAuthApi auth, IPlayerApi player, PlayerProfile profile, IAuthCredentialStore credentials, ILoginPrompt prompt,
-            IReadOnlyList<ISocialSignIn> social, IAnalyticsCollectionControl analytics = null, ILoginConsentStore consents = null)
+            IReadOnlyList<ISocialSignIn> social, IAnalyticsCollectionControl analytics = null, ILoginConsentStore consents = null,
+            IAccountPendingRecovery pending = null)
         {
             _analytics = analytics;
             _consents = consents;
+            _pending = pending;
             _auth = auth;
             _player = player;
             _profile = profile;
@@ -192,6 +195,7 @@ namespace Game.Core
             try
             {
                 _profile.Apply(await _player.GetMe());
+                if (_pending != null) { await _pending.Recover(); }
                 return (true, false);
             }
             catch (OperationCanceledException) { throw; }

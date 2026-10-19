@@ -4,7 +4,7 @@ namespace Game.Network
 {
     /// <summary>서버 주소와 서버 인증을 쓸지 정한다.
     /// Android는 개발·릴리스 모두 서버 인증을 쓴다. 에디터는 가짜 구글 로그인이라 기본으로 끈다.
-    /// 개발 override는 플랫폼 기본값보다 우선하며, 서버 플레이어 API 선택과는 별개다.</summary>
+    /// 개발 override는 플랫폼 기본값보다 우선한다. 서버 진행 연결은 별도 opt-in이다.</summary>
     public static class ServerConfig
     {
         /// <summary>서버 주소. 요청 경로가 api/로 시작하므로 끝에 /api나 /auth를 붙이지 않는다
@@ -13,12 +13,13 @@ namespace Game.Network
 
         // 개발 중에 켜고 끄는 값. "1"이면 켜고 "0"이면 끈다. 없으면 아래 기본 규칙을 따른다
         private const string OverrideKey = "dev.server_auth";
+        private const string ProgressOverrideKey = "dev.server_progress";
 
-        // 플레이어 상태를 서버(GET /api/user/me)에서 받을지. 서버 PR #47이 배포되기 전에는 요청이 실패하므로 기본은 끔이고,
-        // 개발 중에 PlayerPrefs의 dev.server_player를 "1"로 두어야 켠다
-        private const string PlayerOverrideKey = "dev.server_player";
-
-        public static bool UseServerPlayer => PlayerPrefs.GetString(PlayerOverrideKey, string.Empty) == "1";
+        // 서버 인증을 쓰는 앱은 진행도 같은 계정의 서버에서 읽는다. 에디터는 인증을
+        // 명시적으로 켰을 때만 통합 경로를 시험한다. 서버 원본 미게시/장애 시 진입이 실패한다.
+        public static bool UseServerProgress => UseServerAuth
+            && PlayerPrefs.GetString(ProgressOverrideKey, string.Empty) == "1";
+        public static bool UseServerPlayer => UseServerProgress;
 
         public static bool UseServerAuth => ResolveServerAuth(Application.platform, PlayerPrefs.GetString(OverrideKey, string.Empty));
 

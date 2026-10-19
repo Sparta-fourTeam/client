@@ -64,7 +64,7 @@ namespace Game.Tests
         public void GetMe_AccountSwitchRejectsOldResponse()
         {
             _transport.Response = new HttpResponseData(200, HttpAccountProgressTests.State);
-            _transport.OnSend = _ => _tokens.Set("account-b", null);
+            _transport.BeforeSend = _ => _tokens.Set("account-b", null);
 
             var ex = Assert.Throws<ApiException>(() => _api.GetMe().GetAwaiter().GetResult());
 

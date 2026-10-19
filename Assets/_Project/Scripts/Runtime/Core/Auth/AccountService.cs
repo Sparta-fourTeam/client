@@ -126,28 +126,29 @@ namespace Game.Core
         /// <summary>로그아웃한다. 게스트면 계정 데이터도 지운다</summary>
         public async UniTask LogoutAsync()
         {
+            bool deleted = IsGuest;
             if (IsGuest)
             {
                 await _api.DeleteAccount();
             }
 
-            await ReturnToLoginAsync();
+            await ReturnToLoginAsync(deleted);
         }
 
         public async UniTask DeleteAccountAsync()
         {
             await _api.DeleteAccount();
-            await ReturnToLoginAsync();
+            await ReturnToLoginAsync(true);
         }
 
         /// <summary>계정과 진행을 지우지 않고 기존 로그인 방식·게스트 ID로 인증 절차를 다시 밟는다.</summary>
         public UniTask ReauthenticateAsync() => _nav.GoToLoading();
 
-        private UniTask ReturnToLoginAsync()
+        private UniTask ReturnToLoginAsync(bool deleted)
         {
             _analytics?.SetCollectionAllowed(false);
             _consents?.Clear();
-            _checkpoints?.Clear();
+            if (deleted || _checkpoints is not IAccountCheckpointRetention) { _checkpoints?.Clear(); }
             _credentials.Clear();
             // 서버 데이터는 계정에 남아 있어도 이 기기의 화면 캐시는 다음 계정에 노출하면 안 된다.
             _profile?.Clear();

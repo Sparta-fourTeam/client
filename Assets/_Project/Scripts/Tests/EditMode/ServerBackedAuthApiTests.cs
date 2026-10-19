@@ -51,24 +51,30 @@ namespace Game.Tests
         }
 
         [Test]
-        public void ServerAuthOverride_DoesNotEnableServerPlayerApi()
+        public void ServerAuthOverride_UsesTheSameAccountForServerProgress()
         {
-            const string authKey = "dev.server_auth", playerKey = "dev.server_player";
-            bool hadAuth = PlayerPrefs.HasKey(authKey), hadPlayer = PlayerPrefs.HasKey(playerKey);
-            string auth = PlayerPrefs.GetString(authKey), player = PlayerPrefs.GetString(playerKey);
+            const string authKey = "dev.server_auth";
+            const string progressKey = "dev.server_progress";
+            bool hadAuth = PlayerPrefs.HasKey(authKey);
+            string auth = PlayerPrefs.GetString(authKey);
+            bool hadProgress = PlayerPrefs.HasKey(progressKey);
+            string progress = PlayerPrefs.GetString(progressKey);
             try
             {
                 PlayerPrefs.SetString(authKey, "1");
-                PlayerPrefs.DeleteKey(playerKey);
                 Assert.That(ServerConfig.UseServerAuth, Is.True);
+                PlayerPrefs.DeleteKey(progressKey);
                 Assert.That(ServerConfig.UseServerPlayer, Is.False);
+                PlayerPrefs.SetString(progressKey, "1");
+                Assert.That(ServerConfig.UseServerPlayer, Is.True);
                 PlayerPrefs.SetString(authKey, "0");
                 Assert.That(ServerConfig.UseServerAuth, Is.False);
+                Assert.That(ServerConfig.UseServerPlayer, Is.False);
             }
             finally
             {
                 if (hadAuth) { PlayerPrefs.SetString(authKey, auth); } else { PlayerPrefs.DeleteKey(authKey); }
-                if (hadPlayer) { PlayerPrefs.SetString(playerKey, player); } else { PlayerPrefs.DeleteKey(playerKey); }
+                if (hadProgress) { PlayerPrefs.SetString(progressKey, progress); } else { PlayerPrefs.DeleteKey(progressKey); }
             }
         }
 

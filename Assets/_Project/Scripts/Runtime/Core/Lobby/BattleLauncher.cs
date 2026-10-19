@@ -91,6 +91,8 @@ namespace Game.Core
             }
 
             _checkpoints?.Clear();
+            if (_battleApi is IBattleLaunchCheckpointSession session)
+            { session.OnBattleLaunched(response.battleId, stageId); }
             _stageContext.SetBattle(response.battleId);
             await _nav.GoToStage(stageId);
             return true;

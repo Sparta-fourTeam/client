@@ -22,24 +22,27 @@ namespace Game.Network
             _local = local;
         }
 
+        public ServerBackedAccountApi(HttpApiClient client) : this(client, null) { }
+
         public async UniTask DeleteAccount()
         {
             await _client.Delete("api/auth/me");
             // 서버 삭제는 확정됐다. 로컬 삭제 실패는 저장소의 재시도 기록으로 복구하고,
             // AccountService의 인증·프로필 초기화와 로그인 전환은 계속 마친다.
-            try { await _local.DeleteAccount(); }
+            try { if (_local != null) { await _local.DeleteAccount(); } }
             catch (IOException) { }
             catch (UnauthorizedAccessException) { }
         }
 
-        // 서버에 닉네임 계약이 생기기 전까지 로컬에만 저장한다. 임의의 서버 API를 호출하지 않는다.
-        public UniTask<string> ChangeNickname(string nickname) => _local.ChangeNickname(nickname);
+        // 서버에는 닉네임 저장 계약이 없다. 기기 로컬 값을 서버 계정의 이름처럼 표시하지 않는다.
+        public UniTask<string> ChangeNickname(string nickname) => _local == null
+            ? throw new ApiException(ApiErrorKind.Rejected, "NICKNAME_UNAVAILABLE") : _local.ChangeNickname(nickname);
 
         public async UniTask LinkAccount(LoginMethod method, string accountId)
         {
             // accountId는 외부 로그인으로 받은 ID 토큰이다. 서버가 검증한다
             await _client.Post(LinkPath, new SocialLoginRequest { provider = ServerBackedAuthApi.ProviderOf(method), idToken = accountId });
-            await _local.LinkAccount(method, accountId);
+            if (_local != null) { await _local.LinkAccount(method, accountId); }
         }
     }
 }
