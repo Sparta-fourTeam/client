@@ -15,6 +15,8 @@ namespace Game.View
             [Tooltip("Monsters 테이블의 행 ID")] public int monsterId;
             public string displayName;
             public Sprite icon;
+            [Tooltip("도감에서 함께 배치할 계열의 대표 몬스터 ID. 0이면 자신의 ID를 사용한다.")]
+            public int codexFamilyId;
         }
 
         [SerializeField] private MonsterEntry[] _monsters = Array.Empty<MonsterEntry>();

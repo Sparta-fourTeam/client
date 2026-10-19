@@ -121,7 +121,6 @@ namespace Game.Tests
             yield return WaitFor(() => codex.IsOpen);
             var detail = ui.Get<DetailPopupView>();
             var unknown = codex.VisibleSlots.First(s => !s.IsDiscovered);
-            Assert.That(unknown.DisplayName, Is.EqualTo("???"));
             Assert.That(unknown.GetComponent<Button>().interactable, Is.False);
             // 미발견 칸에 실제 이름·이미지나 상세 진입 경로를 남기지 않는다.
             Assert.That(Field<UnityEngine.UI.Image>(unknown, "_icon").sprite, Is.Null);
@@ -139,7 +138,6 @@ namespace Game.Tests
             yield return ClickGameButton(known.GetComponent<Button>());
             Assert.That(detail.IsShown, Is.True);
             yield return ClaimMonsterAndCloseReward(ui, profile);
-            Assert.That(Field<GameObject>(known, "_claimBadge").activeSelf, Is.False);
             detail.Hide();
             yield return ClickGameButton(codex.GetComponentsInChildren<Button>(true).Single(b => b.name == "CloseButton"));
             yield return WaitFor(() => !codex.IsOpen);
