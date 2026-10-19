@@ -49,7 +49,7 @@ namespace Game.Network
                     _packs = await _api.GetGoldPacks();
                     GoldPacks = Map(_packs);
                 }
-                catch (ApiException)
+                catch (ApiException error) when (error.Code != HttpErrorMapper.SessionExpired && error.Code != "HTTP_401")
                 {
                     // 골드팩 목록 장애는 유효한 일일 상점과 확정 영수증을 숨기지 않는다.
                     // 목록은 사용 불가로 두고 다음 화면 진입·재시도에서 다시 읽는다.
@@ -63,6 +63,8 @@ namespace Game.Network
                 // 영수증만 확인되고 GET이 실패해도 오래된 진열로 새 구매를 시작하지 않는다.
                 _account = null;
                 Account = null;
+                _packs = null;
+                GoldPacks = null;
                 if (_pending?.Status == ShopSubmissionStatus.Rejected)
                 { _pending = null; }
                 throw;

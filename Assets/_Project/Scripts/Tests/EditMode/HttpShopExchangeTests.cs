@@ -324,6 +324,31 @@ namespace Game.Tests
             finally { Directory.Delete(directory, true); }
         }
 
+        [Test(Description = "골드팩 조회 중 계정이 바뀌면 이전 계정의 일일 상점 상태를 버린다")]
+        public void ViewSession_SessionChangeDuringPackReadClearsAccount()
+        {
+            string directory = TemporaryDirectory();
+            try
+            {
+                _tokens.Set(Token(41), "refresh-a");
+                _api = new HttpShopApi(new HttpApiConfig("https://example.test"), _transport, _tokens);
+                var session = new ServerShopViewSession(_api, new ShopPendingRequestStore(directory, _tokens));
+                _transport.Queued.Enqueue(Ok(Account(40, 12, Daily())));
+                _transport.OnSend = request =>
+                {
+                    if (!request.Url.EndsWith("/gold-packs", StringComparison.Ordinal)) { return null; }
+                    _tokens.Set(Token(42), "refresh-b");
+                    return Ok(Packs());
+                };
+
+                var error = Assert.Throws<ApiException>(() => session.Restore().GetAwaiter().GetResult());
+                Assert.AreEqual(HttpErrorMapper.SessionExpired, error.Code);
+                Assert.IsNull(session.Account);
+                Assert.IsNull(session.GoldPacks);
+            }
+            finally { Directory.Delete(directory, true); }
+        }
+
         [Test(Description = "대기 요청을 디스크에 쓸 수 없으면 POST를 보내지 않는다")]
         public void PersistenceFailure_DoesNotSendPurchase()
         {
