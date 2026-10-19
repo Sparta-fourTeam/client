@@ -171,13 +171,13 @@ namespace Game.Tests
                 return UniTask.FromResult<IReadOnlyList<ChatMessage>>(new[] { new ChatMessage(1, "기존", DateTimeOffset.UtcNow) });
             }
             public void Disconnect() => _disconnected.TrySetResult();
-            public UniTask RunAsync(Action connected, Action<ChatMessage> received, Action<int> presence, CancellationToken token)
+            public async UniTask RunAsync(Action connected, Action<ChatMessage> received, Action<int> presence, CancellationToken token)
             {
                 var disconnected = _disconnected = new UniTaskCompletionSource();
                 Token = token; Received = received; Presence = presence; Connected = connected;
                 token.Register(() => disconnected.TrySetCanceled(token));
                 if (!DelayConnected) { connected(); }
-                return disconnected.Task;
+                await disconnected.Task;
             }
             public UniTask SendAsync(string content, CancellationToken token) => UniTask.CompletedTask;
         }

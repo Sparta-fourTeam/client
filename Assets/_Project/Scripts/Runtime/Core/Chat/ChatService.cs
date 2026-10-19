@@ -72,7 +72,7 @@ namespace Game.Core
                     if (count < 0 || _disposed) { return; }
                     OnlineCount = count;
                     Notify();
-                }, attempt.Token).Preserve();
+                }, attempt.Token).ToAsyncLazy().Task;
                 started = true;
                 if (await UniTask.WhenAny(subscribed.Task, running) == 1)
                 { throw new InvalidOperationException("Chat disconnected before subscription."); }
