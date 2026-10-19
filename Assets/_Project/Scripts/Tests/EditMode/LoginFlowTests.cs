@@ -37,9 +37,11 @@ namespace Game.Tests
         {
             public int Calls;
             public int FailFirst;
+            public Exception FirstError;
             public UniTask<PlayerSnapshot> GetMe()
             {
                 Calls++;
+                if (Calls == 1 && FirstError != null) { throw FirstError; }
                 if (Calls <= FailFirst) { throw new InvalidOperationException("플레이어 조회 실패 (테스트)"); }
                 return UniTask.FromResult(new PlayerSnapshot { gold = 77 });
             }
@@ -351,6 +353,23 @@ namespace Game.Tests
             Assert.AreEqual("server-guest-id", _credentials.AccountId);
             Assert.AreEqual(77, _profile.Gold);
             CollectionAssert.Contains(_prompt.Calls, "retry");
+        }
+
+        [Test(Description = "신규 게스트의 세션이 만료돼도 발급받은 ID로 다시 인증한다")]
+        public void NewGuest_SessionExpired_ReloginsWithIssuedId()
+        {
+            _auth.ReturnAccountId = "server-guest-id";
+            var player = new FakePlayerApi
+            { FirstError = new ApiException(ApiErrorKind.Rejected, "SESSION_EXPIRED") };
+            LogAssert.Expect(LogType.Exception, new Regex("SESSION_EXPIRED"));
+
+            new LoginFlow(_auth, player, _profile, _credentials, _prompt,
+                Array.Empty<ISocialSignIn>(), _analytics, _consents).RunAsync().GetAwaiter().GetResult();
+
+            Assert.AreEqual(2, _auth.Calls);
+            Assert.AreEqual("server-guest-id", _auth.LastAccountId);
+            Assert.AreEqual("server-guest-id", _credentials.AccountId);
+            Assert.AreEqual(77, _profile.Gold);
         }
 
         [Test(Description = "로그인창을 기다리는 중에 취소되면(씬 전환 등) 로그인하지 않고 취소를 그대로 전한다")]
