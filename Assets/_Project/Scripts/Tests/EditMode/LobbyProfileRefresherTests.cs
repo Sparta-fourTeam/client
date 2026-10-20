@@ -71,6 +71,23 @@ namespace Game.Tests
             Assert.AreEqual(UniTaskStatus.Succeeded, _refresher.WhenLoaded.Status);
         }
 
+        [Test(Description = "서버 전투는 결과를 받을 때 프로필이 먼저 바뀌므로, 전투 시작 때 남긴 전투 전 기록으로 스테이지 클리어를 비교한다")]
+        public void Start_WithPreBattleRecord_ComparesAgainstStateBeforeBattle()
+        {
+            var stages = new StageContext();
+            stages.PreBattle = new PreBattleState { Level = 1, ClearedStages = new HashSet<int>() };
+            var cleared = Snapshot(gold: 100, energy: 50, stages: 1);
+            cleared.stageProgress[0].clearRating = 1;
+            _profile.Apply(cleared);
+            _api.Response = cleared;
+            _refresher = new LobbyProfileRefresher(_api, _profile, stageContext: stages);
+
+            _refresher.Start();
+
+            Assert.IsFalse(_refresher.WasStageCleared(1), "전투 전에는 깨지 않았으므로 스테이지 클리어 해금 연출 대상이다");
+            Assert.IsNull(stages.PreBattle, "가져간 전투 전 기록은 다음 로비 진입에 남지 않는다");
+        }
+
         [Test(Description = "조회에 실패해도 WhenLoaded는 끝나 입력이 영원히 막히지 않고, 프로필은 그대로 둔다")]
         public void Start_WhenGetMeFails_CompletesAndKeepsProfile()
         {

@@ -1,3 +1,4 @@
+using System.Linq;
 using Cysharp.Threading.Tasks;
 using Game.Core.Messages;
 using MessagePipe;
@@ -14,14 +15,28 @@ namespace Game.Core
         private readonly StageContext _stageContext;
         private readonly ISceneNavigator _nav;
         private readonly IPublisher<StartFailed> _startFailed;
+        private readonly PlayerProfile _profile;
 
-        public BattleLauncher(IBattleApi battleApi, StageContext stageContext, ISceneNavigator nav, IPublisher<StartFailed> startFailed, IBattleCheckpointStore checkpoints = null)
+        public BattleLauncher(IBattleApi battleApi, StageContext stageContext, ISceneNavigator nav, IPublisher<StartFailed> startFailed, IBattleCheckpointStore checkpoints = null,
+            PlayerProfile profile = null)
         {
             _checkpoints = checkpoints;
             _battleApi = battleApi;
             _stageContext = stageContext;
             _nav = nav;
             _startFailed = startFailed;
+            _profile = profile;
+        }
+
+        // 서버 전투는 결과를 받을 때 프로필을 먼저 바꾸므로, 전투를 시작하는 시점의 레벨·클리어 기록을 남겨 둔다 (LobbyProfileRefresher)
+        private void CapturePreBattle()
+        {
+            if (_profile == null || !_profile.IsLoaded) { return; }
+            _stageContext.PreBattle = new PreBattleState
+            {
+                Level = _profile.Level,
+                ClearedStages = _profile.Snapshot().stageProgress.Where(row => row.IsCleared).Select(row => row.stageId).ToHashSet(),
+            };
         }
 
         /// <summary>저장된 마지막 누적 진행을 접수한 뒤 이어하기를 포기한다. 재시도할 요청은 먼저 로컬에 확정한다.</summary>
@@ -73,6 +88,7 @@ namespace Game.Core
             if (checkpoint == null) { throw new System.ArgumentNullException(nameof(checkpoint)); }
             _stageContext.SetBattle(checkpoint.BattleId);
             _stageContext.Checkpoint = checkpoint;
+            CapturePreBattle();
             return _nav.GoToStage(checkpoint.StageId);
         }
 
@@ -94,6 +110,7 @@ namespace Game.Core
             if (_battleApi is IBattleLaunchCheckpointSession session)
             { session.OnBattleLaunched(response.battleId, stageId); }
             _stageContext.SetBattle(response.battleId);
+            CapturePreBattle();
             await _nav.GoToStage(stageId);
             return true;
         }
