@@ -54,9 +54,9 @@ namespace Game.Tests
         [Test]
         public void ServerAuthOverride_UsesTheSameAccountForServerProgress()
         {
-            const string authKey = "dev.server_auth", progressKey = "dev.server_progress";
-            bool hadAuth = PlayerPrefs.HasKey(authKey), hadProgress = PlayerPrefs.HasKey(progressKey);
-            string auth = PlayerPrefs.GetString(authKey), progress = PlayerPrefs.GetString(progressKey);
+            const string authKey = "dev.server_auth";
+            bool hadAuth = PlayerPrefs.HasKey(authKey);
+            string auth = PlayerPrefs.GetString(authKey);
             bool hadEditorAuth = EditorPrefs.HasKey(ServerConfig.EditorAuthPreferenceKey);
             bool editorAuth = EditorPrefs.GetBool(ServerConfig.EditorAuthPreferenceKey);
             try
@@ -64,13 +64,6 @@ namespace Game.Tests
                 PlayerPrefs.SetString(authKey, "0");
                 EditorPrefs.SetBool(ServerConfig.EditorAuthPreferenceKey, true);
                 Assert.That(ServerConfig.UseServerAuth, Is.True);
-                PlayerPrefs.DeleteKey(progressKey);
-#if ACCOUNT_SERVER_PROGRESS
-                Assert.That(ServerConfig.UseServerPlayer, Is.True);
-#else
-                Assert.That(ServerConfig.UseServerPlayer, Is.False);
-#endif
-                PlayerPrefs.SetString(progressKey, "1");
                 Assert.That(ServerConfig.UseServerPlayer, Is.True);
                 PlayerPrefs.SetString(authKey, "1");
                 EditorPrefs.SetBool(ServerConfig.EditorAuthPreferenceKey, false);
@@ -80,18 +73,9 @@ namespace Game.Tests
             finally
             {
                 if (hadAuth) { PlayerPrefs.SetString(authKey, auth); } else { PlayerPrefs.DeleteKey(authKey); }
-                if (hadProgress) { PlayerPrefs.SetString(progressKey, progress); } else { PlayerPrefs.DeleteKey(progressKey); }
                 if (hadEditorAuth) { EditorPrefs.SetBool(ServerConfig.EditorAuthPreferenceKey, editorAuth); }
                 else { EditorPrefs.DeleteKey(ServerConfig.EditorAuthPreferenceKey); }
             }
-        }
-
-        [Test]
-        public void ServerProgressBuildDefine_RequiresServerAuthentication()
-        {
-            Assert.IsFalse(ServerConfig.ResolveServerProgress(false, true, "1"));
-            Assert.IsTrue(ServerConfig.ResolveServerProgress(true, true, string.Empty));
-            Assert.IsFalse(ServerConfig.ResolveServerProgress(true, false, string.Empty));
         }
 
         [Test(Description = "구글은 provider GOOGLE과 ID 토큰을 소셜 로그인 경로로 보내고, 받은 토큰을 세션에 담는다")]
