@@ -46,6 +46,20 @@ namespace Game.Tests
                 return Inner.Purchase(id, key);
             }
         }
+        // 서버 구매 API처럼 복구 계약을 가진 대역
+        private sealed class ServerSpyApi : IUpgradeApi, IUpgradeRecovery
+        {
+            public LocalUpgradeApi Inner;
+            public int Calls;
+            public bool HasPendingPurchase => false;
+            public string PendingUpgradeId => null;
+            public UniTask<PlayerSnapshot> RecoverPurchase() => throw new InvalidOperationException();
+            public UniTask<PlayerSnapshot> Purchase(string id, string key)
+            {
+                Calls++;
+                return Inner.Purchase(id, key);
+            }
+        }
         [SetUp]
         public void SetUp()
         {
@@ -130,6 +144,18 @@ namespace Game.Tests
             Assert.That(_profile.UpgradeLevel(Id), Is.EqualTo(2));
             Assert.That(_profile.Gold, Is.EqualTo(gold - plan.CoinCost));
             Assert.That(_profile.ItemQuantity(plan.MaterialItemId), Is.EqualTo(material - plan.MaterialCost));
+        }
+        [Test(Description = "서버 구매 API로도 일괄 강화는 견적한 모든 레벨을 한 건씩 구매한다. 한 건만 사고 끝나지 않는다")]
+        public void ServerBatchPurchasesEveryQuotedLevelOneRequestEach()
+        {
+            var server = new ServerSpyApi { Inner = new LocalUpgradeApi(_store, _data) };
+            CreatePopup();
+            _view.Construct(_profile, _data, server);
+            _view.Show("후드", Id, true); Confirm();
+            // 픽스처의 골드와 재료는 정확히 2레벨 분량이다
+            Assert.That(server.Calls, Is.EqualTo(2));
+            Assert.That(_profile.UpgradeLevel(Id), Is.EqualTo(2));
+            Assert.That(_view.IsOpen, Is.False);
         }
         [Test]
         public void ChangedQuoteRequiresAnotherConfirmationWithoutSpending()
