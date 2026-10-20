@@ -221,7 +221,7 @@ namespace Game.View
                 _audio?.PlaySfx(SoundIds.Upgrade);
                 _visible = false;
                 PopupPanel.Set(_panel, _transition, false);
-                _toast?.Show(_all ? $"<color=#FFCF5B>{_name} Lv.{_profile.UpgradeLevel(approved.UpgradeId)} 강화 완료!</color>"
+                _toast?.Show(_all && !recovering ? $"<color=#FFCF5B>{_name} Lv.{_profile.UpgradeLevel(approved.UpgradeId)} 강화 완료!</color>"
                     : "강화 결과와 현재 서버 상태를 확인했습니다.", 1f);
             }
             catch (Exception error)
@@ -230,6 +230,8 @@ namespace Game.View
                 string status = HasPendingRecovery
                     ? "구매 결과가 미확정입니다. 확인을 눌러 같은 요청을 복구해 주세요."
                     : error is ApiException api ? $"{(completed > 0 ? $"{completed}회 강화 완료. " : string.Empty)}강화 요청 실패: {api.Code}" : error.Message;
+                // 미확정 구매는 한 건씩 복구하므로 이후 견적과 제목도 한 건 기준으로 맞춘다
+                if (HasPendingRecovery) { _all = false; }
                 Present(UpgradePurchasePlan.Create(_profile, _data, _plan.UpgradeId, _all), status);
             }
             finally

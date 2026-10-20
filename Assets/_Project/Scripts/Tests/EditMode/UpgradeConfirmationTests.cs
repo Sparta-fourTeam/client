@@ -151,10 +151,10 @@ namespace Game.Tests
             var server = new ServerSpyApi { Inner = new LocalUpgradeApi(_store, _data) };
             CreatePopup();
             _view.Construct(_profile, _data, server);
-            var plan = UpgradePurchasePlan.Create(_profile, _data, Id, true);
             _view.Show("후드", Id, true); Confirm();
-            Assert.That(server.Calls, Is.EqualTo(plan.Count));
-            Assert.That(_profile.UpgradeLevel(Id), Is.EqualTo(plan.EndLevel));
+            // 픽스처의 골드와 재료는 정확히 2레벨 분량이다
+            Assert.That(server.Calls, Is.EqualTo(2));
+            Assert.That(_profile.UpgradeLevel(Id), Is.EqualTo(2));
             Assert.That(_view.IsOpen, Is.False);
         }
         [Test]
