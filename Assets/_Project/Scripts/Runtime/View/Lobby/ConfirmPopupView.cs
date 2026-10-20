@@ -35,10 +35,13 @@ namespace Game.View
         [SerializeField] private TMP_Text _cancelLabel, _confirmLabel;
 
         private const float PlainHeight = 420f, WarningHeight = 500f, InputHeight = 600f;
+        // 메시지가 기본 칸보다 길면 그만큼 창을 키운다. 이 높이를 넘는 글은 말줄임으로 자른다
+        private const float MessageMaxHeight = 900f;
 
         private UniTaskCompletionSource<bool> _result;
         private ConfirmRequest _request;
         private float _confirmX;
+        private float _messageBaseHeight, _warningGap;
 
         public bool IsOpen => _panel.activeSelf;
 
@@ -50,6 +53,10 @@ namespace Game.View
             _confirmButton.onClick.AddListener(() => Finish(true));
             _input.onValueChanged.AddListener(_ => RefreshConfirm());
             _confirmX = ((RectTransform)_confirmButton.transform).anchoredPosition.x;
+            var messageRect = _message.rectTransform;
+            _messageBaseHeight = messageRect.sizeDelta.y;
+            _warningGap = -_warning.rectTransform.anchoredPosition.y + messageRect.anchoredPosition.y - _messageBaseHeight;
+            _message.overflowMode = TextOverflowModes.Ellipsis;
         }
 
         public UniTask<bool> ShowAsync(ConfirmRequest request)
@@ -77,9 +84,17 @@ namespace Game.View
             _input.SetTextWithoutNotify(request.InitialInput ?? string.Empty);
             ((TMP_Text)_input.placeholder).text = request.InputPlaceholder;
 
+            // 긴 메시지는 칸을 키우고 그 아래 경고를 밀어 내린다. 짧으면 기본 칸 그대로라 창 높이가 변하지 않는다
+            var messageRect = _message.rectTransform;
+            float messageHeight = Mathf.Clamp(_message.GetPreferredValues(request.Message ?? string.Empty, messageRect.rect.width, 0f).y,
+                _messageBaseHeight, MessageMaxHeight);
+            messageRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, messageHeight);
+            _warning.rectTransform.anchoredPosition = new Vector2(_warning.rectTransform.anchoredPosition.x,
+                messageRect.anchoredPosition.y - messageHeight - _warningGap);
+
             // 경고·입력창이 없으면 창을 줄여 빈 공간을 없앤다
             var window = (RectTransform)_confirmButton.transform.parent;
-            float height = needsInput ? InputHeight : _warning.gameObject.activeSelf ? WarningHeight : PlainHeight;
+            float height = (needsInput ? InputHeight : _warning.gameObject.activeSelf ? WarningHeight : PlainHeight) + (messageHeight - _messageBaseHeight);
             window.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
 
             RefreshConfirm();
