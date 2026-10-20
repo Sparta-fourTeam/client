@@ -15,7 +15,8 @@ namespace Game.View
     /// 들어오면 완료 조건을 채운 튜토리얼을 완료하고 레벨업 팝업을 띄운다. 진행 중인 전투 튜토리얼이 남았으면(전투 발급 실패 등) 그 스테이지로 다시 보낸다.
     /// 그다음 진행 중인 가이드 튜토리얼(Tutorials.json)이 있으면 Script 템플릿(LobbyTutorialScripts)의 단계를 하나씩 강조하고,
     /// 완료 조건을 채우면 완료를 저장한 뒤 다음 가이드로 넘어간다.
-    /// 강조하는 동안 강조한 버튼 외의 화면을 반투명 검정으로 덮고 터치를 막는다. 강조한 버튼 둘레로 펄스 링이 퍼진다</summary>
+    /// 강조하는 동안 강조한 버튼 외의 화면을 반투명 검정으로 덮고 터치를 막는다. 강조한 버튼 둘레로 펄스 링이 퍼진다.
+    /// 로비에 들어와 강조가 시작되기 전과 가이드를 완료하고 다음으로 넘어가는 동안에는 투명 판으로 화면 전체의 터치를 막는다</summary>
     public sealed class TutorialGuideView : HudView, IUiBindable
     {
         public void BindUi(IUiRegistry registry)
@@ -73,6 +74,7 @@ namespace Game.View
         private string _shownLine;
         private TutorialDefinition _guide;
         private IReadOnlyList<TutorialStep> _steps;
+        private GameObject _inputGuard;
 
         [Inject]
         public void Construct(LobbyArrival arrival, PlayerProfile profile, GameDataStore data, BattleLauncher launcher,
@@ -119,7 +121,49 @@ namespace Game.View
             }
         }
 
-        private void Start() => RunAsync().Forget(Debug.LogException);
+        private void Start() => RunGuardedAsync().Forget(Debug.LogException);
+
+        // 로비에 들어와 가이드가 강조를 시작하기 전까지는 다른 UI(임무 버튼 등)가 눌리지 않게 투명 판으로 막는다. 어떻게 끝나도 푼다
+        private async UniTask RunGuardedAsync()
+        {
+            SetInputGuard(true);
+            try
+            {
+                await RunAsync();
+            }
+            finally
+            {
+                if (this != null)
+                {
+                    SetInputGuard(false);
+                }
+            }
+        }
+
+        // 강조 가림판(_root)과 별개로 화면 전체를 덮는 투명 판. 가이드가 강조 중일 때는 _root의 가림판이 막으므로 끈다
+        private void SetInputGuard(bool on)
+        {
+            if (_inputGuard == null)
+            {
+                if (!on)
+                {
+                    return;
+                }
+
+                _inputGuard = new GameObject("InputGuard", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+                var rect = (RectTransform)_inputGuard.transform;
+                rect.SetParent(transform, false);
+                rect.anchorMin = Vector2.zero;
+                rect.anchorMax = Vector2.one;
+                rect.offsetMin = Vector2.zero;
+                rect.offsetMax = Vector2.zero;
+                var image = _inputGuard.GetComponent<Image>();
+                image.color = Color.clear;
+                image.raycastTarget = true;
+            }
+
+            _inputGuard.SetActive(on);
+        }
 
         private async UniTask RunAsync()
         {
@@ -133,7 +177,7 @@ namespace Game.View
             {
                 string message = _stageContext.ResumeError;
                 _stageContext.ResumeError = null;
-                await _ui.Get<ConfirmPopupView>().ShowAsync(new ConfirmRequest { Title = "이어하기", Message = message });
+                await ConfirmAsync(new ConfirmRequest { Title = "이어하기", Message = message });
                 if (this == null) { return; }
             }
             // 앱을 다시 켠 첫 로비에서만 묻는다. 같은 실행 안의 정상 로비 복귀에는 끼어들지 않는다.
@@ -143,7 +187,7 @@ namespace Game.View
                 try { await _launcher.Discard(checkpoint); _checkpoints.Clear(); checkpoint = null; }
                 catch (ApiException)
                 {
-                    await _ui.Get<ConfirmPopupView>().ShowAsync(new ConfirmRequest
+                    await ConfirmAsync(new ConfirmRequest
                     { Title = "진행 저장", Message = "진행 기록을 저장하지 못했습니다. 연결을 확인한 뒤 다시 시도해 주세요." });
                     return;
                 }
@@ -160,7 +204,7 @@ namespace Game.View
                 bool resume;
                 try
                 {
-                    resume = await _ui.Get<ConfirmPopupView>().ShowAsync(new ConfirmRequest
+                    resume = await ConfirmAsync(new ConfirmRequest
                     {
                         Title = "이어하기",
                         Message = $"진행 중인 전투가 있습니다. 이어하시겠습니까?\n제 {checkpoint.StageId} 관문 · {checkpoint.Stage.ReachedWave} 웨이브 · {seconds / 60:00}:{seconds % 60:00}",
@@ -175,7 +219,7 @@ namespace Game.View
                 try { await _launcher.Discard(checkpoint); }
                 catch (ApiException)
                 {
-                    await _ui.Get<ConfirmPopupView>().ShowAsync(new ConfirmRequest
+                    await ConfirmAsync(new ConfirmRequest
                     { Title = "진행 저장", Message = "진행 기록을 저장하지 못했습니다. 연결을 확인한 뒤 다시 시도해 주세요." });
                     return;
                 }
@@ -218,7 +262,7 @@ namespace Game.View
             {
                 try
                 {
-                    await _levelUp.ShowAsync(news);
+                    await AboveGuardAsync(_levelUp.ShowAsync(news));
                 }
                 catch (OperationCanceledException)
                 {
@@ -243,7 +287,7 @@ namespace Game.View
 
                 try
                 {
-                    await _contentUnlock.ShowAsync(featureLock.ContentName, featureLock.ContentIcon);
+                    await AboveGuardAsync(_contentUnlock.ShowAsync(featureLock.ContentName, featureLock.ContentIcon));
                 }
                 catch (OperationCanceledException)
                 {
@@ -290,8 +334,42 @@ namespace Game.View
                 return;
             }
 
-            await _dialogue.PlayAsync(lines);
+            await AboveGuardAsync(_dialogue.PlayAsync(lines));
             await _arrival.CompleteAsync(seenId);
+        }
+
+        // 레벨업 팝업·해금 화면·대사 장면은 이 가이드보다 아래에 그려진다. 이들이 열려 있는 동안은 투명 판을 걷어 눌릴 수 있게 하고, 끝나면 다시 막는다.
+        // popup은 호출하는 같은 프레임에 시작되므로 판을 걷기 전에 한 프레임이 지나지 않는다
+        private async UniTask AboveGuardAsync(UniTask popup)
+        {
+            SetInputGuard(false);
+            try
+            {
+                await popup;
+            }
+            finally
+            {
+                if (this != null)
+                {
+                    SetInputGuard(true);
+                }
+            }
+        }
+
+        private async UniTask<bool> ConfirmAsync(ConfirmRequest request)
+        {
+            SetInputGuard(false);
+            try
+            {
+                return await _ui.Get<ConfirmPopupView>().ShowAsync(request);
+            }
+            finally
+            {
+                if (this != null)
+                {
+                    SetInputGuard(true);
+                }
+            }
         }
 
         private void OnProfileChanged(PlayerProfile _) => RefreshGuide();
@@ -329,25 +407,37 @@ namespace Game.View
         {
             _completing = true;
             Point(null, null);
-            var response = await _arrival.CompleteAsync(tutorialId);
-            if (this == null)
+            // 완료 저장과 다음 가이드의 도입 대사 전까지 다른 UI가 눌리지 않게 막는다
+            SetInputGuard(true);
+            try
             {
-                return;
-            }
+                var response = await _arrival.CompleteAsync(tutorialId);
+                if (this == null)
+                {
+                    return;
+                }
 
-            // 먼저 진행하던 가이드를 끝내 새 가이드로 넘어가는 경우에도 도입 대사를 보여 준다.
-            var next = TutorialProgress.ActiveGuide(_data.Tutorials, TutorialFacts.From(_profile));
-            if (response != null && next != null)
+                // 먼저 진행하던 가이드를 끝내 새 가이드로 넘어가는 경우에도 도입 대사를 보여 준다.
+                var next = TutorialProgress.ActiveGuide(_data.Tutorials, TutorialFacts.From(_profile));
+                if (response != null && next != null)
+                {
+                    try { await PlayDialogueOnceAsync(next); }
+                    catch (OperationCanceledException) { return; }
+                    if (this == null) { return; }
+                }
+
+                _completing = false;
+                _guide = null;
+                _steps = null;
+                RefreshGuide();
+            }
+            finally
             {
-                try { await PlayDialogueOnceAsync(next); }
-                catch (OperationCanceledException) { return; }
-                if (this == null) { return; }
+                if (this != null)
+                {
+                    SetInputGuard(false);
+                }
             }
-
-            _completing = false;
-            _guide = null;
-            _steps = null;
-            RefreshGuide();
         }
 
         private void LateUpdate()
