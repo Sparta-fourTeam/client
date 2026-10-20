@@ -139,7 +139,7 @@ namespace Game.View
             _expText.text = _profile.IsMaxLevel
                 ? "MAX"
                 : $"({CurrencyFormat.Format(_profile.ExpIntoLevel)}/{CurrencyFormat.Format(_profile.ExpRequiredForNext)})";
-            _stageText.text = $"제 {_profile.HighestUnlockedStage}임무";
+            _stageText.text = $"제 {_profile.HighestUnlockedStage}관문";
 
             var equips = _catalog.Equips;
             for (int i = 0; i < _equipSlots.Length; i++)

@@ -167,7 +167,7 @@ namespace Game.View
                 var snapshot = await _stageApi.ClaimRatingReward(stageId);
                 var rows = RewardRows.Gained(_itemIcons, _data, before, snapshot);
                 _profile.Apply(snapshot);
-                if (this != null) { _rewardPopup.Show(rows, $"제 {stageId} 임무의 미수령 보상을 모두 받았어요."); }
+                if (this != null) { _rewardPopup.Show(rows, $"제 {stageId} 관문의 미수령 보상을 모두 받았어요."); }
             }
             catch (ApiException error)
             {
@@ -216,7 +216,7 @@ namespace Game.View
             _launching = false;
             _panel.SetActive(true);
             Refresh();
-            _card.Status = "임무에 입장하지 못했어요. 다시 시도하세요.";
+            _card.Status = "관문에 입장하지 못했어요. 다시 시도하세요.";
             Debug.LogException(error);
         }
 
