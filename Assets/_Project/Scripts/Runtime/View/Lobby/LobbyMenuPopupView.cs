@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using Game.Core;
+using MessagePipe;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -15,6 +16,7 @@ namespace Game.View
         {
             _settings = registry.Get<SettingsPopupView>();
             _confirm = registry.Get<ConfirmPopupView>();
+            _noticeList = registry.Get<NoticeListPopupView>();
         }
 
         [Inject]
@@ -22,6 +24,14 @@ namespace Game.View
         {
             _account = account;
             _profile = profile;
+        }
+
+        [Inject]
+        public void ConstructNotices(NoticeService notices, IBufferedSubscriber<NoticeChanged> noticeChanged)
+        {
+            _notices = notices;
+            Track(noticeChanged.Subscribe(_ => RefreshNoticeBadge()));
+            RefreshNoticeBadge();
         }
 
         [SerializeField] private GameObject _panel;
@@ -34,7 +44,12 @@ namespace Game.View
         [SerializeField] private Button _logoutButton, _deleteAccountButton;
         [Tooltip("게스트 계정에만 보인다")]
         [SerializeField] private Button _linkAccountButton;
+        [SerializeField] private Button _noticeButton;
+        [Tooltip("읽지 않은 공지가 있을 때만 켠다")]
+        [SerializeField] private GameObject _noticeBadge;
 
+        private NoticeListPopupView _noticeList;
+        private NoticeService _notices;
         private SettingsPopupView _settings;
         private ConfirmPopupView _confirm;
         private AccountService _account;
@@ -52,6 +67,11 @@ namespace Game.View
             {
                 Close();
                 _settings.Open();
+            });
+            _noticeButton.onClick.AddListener(() =>
+            {
+                Close();
+                _noticeList.Open();
             });
             BindDocument(_privacyButton, ExternalLinks.PrivacyPolicy);
             BindDocument(_termsButton, ExternalLinks.TermsOfUse);
@@ -100,6 +120,15 @@ namespace Game.View
         {
             try { await flow(); }
             finally { SetBusy(false); }
+        }
+
+        // 읽지 않은 공지가 있으면 메뉴의 공지사항 버튼에 빨간 점을 켠다
+        private void RefreshNoticeBadge()
+        {
+            if (_noticeBadge != null && _notices != null)
+            {
+                _noticeBadge.SetActive(_notices.UnreadCount > 0);
+            }
         }
 
         private void SetBusy(bool busy)

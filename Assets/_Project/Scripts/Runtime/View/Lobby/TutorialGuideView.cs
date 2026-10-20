@@ -74,6 +74,9 @@ namespace Game.View
         private TutorialDefinition _guide;
         private IReadOnlyList<TutorialStep> _steps;
 
+        /// <summary>로비 진입 처리가 끝났고 진행 중인 가이드가 없다. 공지 팝업처럼 가이드를 끊으면 안 되는 연출이 띄워도 되는 때</summary>
+        public bool IsIdle => _ready && _guide == null && !_completing;
+
         [Inject]
         public void Construct(LobbyArrival arrival, PlayerProfile profile, GameDataStore data, BattleLauncher launcher,
             StageContext stageContext, IBattleCheckpointStore checkpoints = null)

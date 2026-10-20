@@ -157,3 +157,11 @@ MonoBehaviour:
     Prefab: {fileID: 4749452753821982801, guid: 363bf2955f693e249ad6b90b7db0987d, type: 3}
     ParentPath: NavUI/Popups
     SiblingIndex: 15
+  - Id: NoticeListPopup
+    Prefab: {fileID: 8124884503545775979, guid: c38509553c3820a4088a9e206039498d, type: 3}
+    ParentPath: NavUI/Popups
+    SiblingIndex: 16
+  - Id: NoticePresenter
+    Prefab: {fileID: 2892381264045516121, guid: b75b37ff15238ba49bc7a6263a840ad6, type: 3}
+    ParentPath: NavUI/Popups
+    SiblingIndex: 17

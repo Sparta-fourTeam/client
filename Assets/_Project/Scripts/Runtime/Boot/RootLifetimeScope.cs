@@ -1,3 +1,4 @@
+using System.IO;
 using Game.Core;
 using Game.Network;
 using Game.View;
@@ -115,6 +116,12 @@ namespace Game.Boot
             builder.Register<ISettingsStore, PlayerPrefsSettingsStore>(Lifetime.Singleton);
             builder.Register<GameSettings>(Lifetime.Singleton);
             builder.RegisterEntryPoint<GameSettingsApplier>();
+
+            // 공지는 SSE로 받아 기기에 저장한다. 전투 중에 온 공지도 받으려고 로비가 아니라 Root에서 연결을 유지한다
+            builder.Register<INoticeClient, HttpNoticeClient>(Lifetime.Singleton);
+            builder.Register<INoticeStore>(_ => new NoticeFileStore(Path.Combine(Application.persistentDataPath, "notices.json")), Lifetime.Singleton);
+            builder.RegisterMessageBroker<NoticeChanged>(new MessagePipeOptions { InstanceLifetime = InstanceLifetime.Singleton });
+            builder.RegisterEntryPoint<NoticeService>().AsSelf();
 
             builder.Register<StageContext>(Lifetime.Singleton);
             builder.RegisterInstance<ITransitionCurtain>(curtain);

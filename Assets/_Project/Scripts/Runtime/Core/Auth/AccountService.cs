@@ -165,6 +165,10 @@ namespace Game.Core
             await ReturnToLoginAsync(true);
         }
 
+        /// <summary>다른 기기에서 로그인해 이 세션이 서버에서 끊겼다. 서버를 부르지 않고(토큰이 이미 무효다) 이 기기의 로그인 정보를 지워 로그인 화면으로 보낸다.
+        /// 게스트는 로그인 정보를 지우면 계정을 잃으므로 같은 게스트로 다시 인증한다</summary>
+        public UniTask ForceLogoutAsync() => IsGuest ? ReauthenticateAsync() : ReturnToLoginAsync(false);
+
         /// <summary>계정과 진행을 지우지 않고 기존 로그인 방식·게스트 ID로 인증 절차를 다시 밟는다.</summary>
         public UniTask ReauthenticateAsync() => _nav.GoToLoading();
 
