@@ -23,10 +23,12 @@ namespace Game.View
         private RewardPopupView _rewardPopup;
         private DetailPopupView _detail;
         private ConfirmPopupView _confirm;
+        private ComingSoonToastView _toast;
         private bool _busy;
 
         public void BindUi(IUiRegistry registry)
         {
+            _toast = registry.Get<ComingSoonToastView>();
             _rewardPopup = registry.Get<RewardPopupView>();
             _confirm = registry.Get<ConfirmPopupView>();
             _detail = registry.Get<DetailPopupView>();
@@ -94,6 +96,8 @@ namespace Game.View
             catch (ApiException rejected)
             {
                 Debug.LogWarning($"잼 묶음 구매가 거절됐다: {rejected.Code}");
+                // 서버 진행에서는 결제가 아직 없어 구매가 항상 거절된다. 눌러도 아무 반응이 없어 보이지 않게 알린다
+                _toast?.Show("잼 구매는 아직 준비 중이에요");
             }
             finally
             {
