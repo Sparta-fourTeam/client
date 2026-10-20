@@ -115,6 +115,8 @@ namespace Game.Network
     {
         public static string Subject(string accessToken)
         {
+            if (string.IsNullOrEmpty(accessToken))
+            { throw new ApiException(ApiErrorKind.Rejected, HttpErrorMapper.SessionExpired); }
             try
             {
                 var parts = accessToken.Split('.');
