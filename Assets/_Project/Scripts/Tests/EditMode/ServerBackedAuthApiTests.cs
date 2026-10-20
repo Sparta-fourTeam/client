@@ -59,8 +59,11 @@ namespace Game.Tests
             string auth = PlayerPrefs.GetString(authKey), progress = PlayerPrefs.GetString(progressKey);
             bool hadEditorAuth = EditorPrefs.HasKey(ServerConfig.EditorAuthPreferenceKey);
             bool editorAuth = EditorPrefs.GetBool(ServerConfig.EditorAuthPreferenceKey);
+            bool hadEditorProgress = EditorPrefs.HasKey(ServerConfig.EditorProgressPreferenceKey);
+            bool editorProgress = EditorPrefs.GetBool(ServerConfig.EditorProgressPreferenceKey);
             try
             {
+                EditorPrefs.SetBool(ServerConfig.EditorProgressPreferenceKey, false);
                 PlayerPrefs.SetString(authKey, "0");
                 EditorPrefs.SetBool(ServerConfig.EditorAuthPreferenceKey, true);
                 Assert.That(ServerConfig.UseServerAuth, Is.True);
@@ -83,6 +86,8 @@ namespace Game.Tests
                 if (hadProgress) { PlayerPrefs.SetString(progressKey, progress); } else { PlayerPrefs.DeleteKey(progressKey); }
                 if (hadEditorAuth) { EditorPrefs.SetBool(ServerConfig.EditorAuthPreferenceKey, editorAuth); }
                 else { EditorPrefs.DeleteKey(ServerConfig.EditorAuthPreferenceKey); }
+                if (hadEditorProgress) { EditorPrefs.SetBool(ServerConfig.EditorProgressPreferenceKey, editorProgress); }
+                else { EditorPrefs.DeleteKey(ServerConfig.EditorProgressPreferenceKey); }
             }
         }
 

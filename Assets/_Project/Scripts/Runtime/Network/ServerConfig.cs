@@ -22,8 +22,19 @@ namespace Game.Network
 #else
         private const bool BuildServerProgress = false;
 #endif
-        public static bool UseServerProgress => ResolveServerProgress(UseServerAuth, BuildServerProgress,
-            PlayerPrefs.GetString(ProgressOverrideKey, string.Empty));
+        public static bool UseServerProgress => ResolveServerProgress(UseServerAuth, BuildServerProgress, ProgressPreference);
+
+        // 에디터는 심볼을 붙이지 않아도 메뉴(EditorPrefs)로 켠다. 기기는 PlayerPrefs opt-in을 쓴다
+        private static string ProgressPreference
+        {
+            get
+            {
+#if UNITY_EDITOR
+                if (UnityEditor.EditorPrefs.GetBool(EditorProgressPreferenceKey, false)) { return "1"; }
+#endif
+                return PlayerPrefs.GetString(ProgressOverrideKey, string.Empty);
+            }
+        }
         public static bool UseServerPlayer => UseServerProgress;
 
         public static bool ResolveServerProgress(bool serverAuth, bool buildEnabled, string preference) =>
@@ -32,6 +43,7 @@ namespace Game.Network
 #if UNITY_EDITOR
         // 에디터 선택은 프로젝트 폴더별로 저장하고 기기용 PlayerPrefs와 분리한다.
         public static string EditorAuthPreferenceKey => $"ProjectNova.ServerAuth.{Hash128.Compute(Application.dataPath)}";
+        public static string EditorProgressPreferenceKey => $"ProjectNova.ServerProgress.{Hash128.Compute(Application.dataPath)}";
 
         public static bool UseServerAuth => UnityEditor.EditorPrefs.GetBool(EditorAuthPreferenceKey, false);
 #else
