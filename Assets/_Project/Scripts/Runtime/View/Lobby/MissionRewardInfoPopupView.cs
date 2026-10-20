@@ -27,10 +27,10 @@ namespace Game.View
         public void Show(GameDataStore data, int stageId, int rating, bool claimed)
         {
             var stage = data.Stages.GetOrThrow(stageId);
-            _title.text = rating == 1 ? "관문 클리어" : $"방벽 체력 {(rating == 2 ? 50 : 100)}%";
-            string condition = rating == 1 ? "관문을 클리어하면 받을 수 있어요."
+            _title.text = rating == 1 ? "임무 클리어" : $"방벽 체력 {(rating == 2 ? 50 : 100)}%";
+            string condition = rating == 1 ? "임무를 클리어하면 받을 수 있어요."
                 : $"방벽 체력을 {(rating == 2 ? 50 : 100)}% 이상 남기고 클리어하세요.";
-            _description.text = claimed ? $"제 {stageId} 관문 · 이미 수령한 보상이에요." : $"제 {stageId} 관문 · {condition}";
+            _description.text = claimed ? $"제 {stageId} 임무 · 이미 수령한 보상이에요." : $"제 {stageId} 임무 · {condition}";
             var items = stage.RatingItemRewards != null && stage.RatingItemRewards.Count >= rating
                 ? stage.RatingItemRewards[rating - 1] : null;
             Open(RewardRows.Build(_itemIcons, data, stage.RatingRewards[rating - 1], 0, items ?? new List<ItemAmount>()));
