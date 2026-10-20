@@ -143,6 +143,24 @@ namespace Game.Tests
             Assert.IsFalse(_session.GetHeaders().ContainsKey("Authorization"), "로그아웃/삭제 후 서버 인증 헤더가 남으면 안 된다");
         }
 
+        [Test(Description = "다른 기기 로그인으로 끊긴 세션은 서버를 부르지 않고, 소셜은 로그인 정보를 지워 로그인창으로, 게스트는 계정을 잃지 않게 유지한다")]
+        public void ForceLogout_ClearsLinkedLoginButKeepsGuestAccount_WithoutCallingServer()
+        {
+            _credentials.Save(LoginMethod.Google, "token");
+            var linked = new AccountService(_api, new SessionAuthCredentialStore(_credentials, _session), _nav, null);
+            linked.ForceLogoutAsync().GetAwaiter().GetResult();
+            Assert.IsFalse(_credentials.HasCredential, "소셜 계정은 로그인 정보를 지워 로그인창이 뜨게 한다");
+            Assert.IsNull(_session.AccessToken);
+            Assert.AreEqual(1, _nav.LoadingCalls);
+
+            _credentials.Save(LoginMethod.Guest, "guest-1");
+            var guest = new AccountService(_api, new SessionAuthCredentialStore(_credentials, _session), _nav, null);
+            guest.ForceLogoutAsync().GetAwaiter().GetResult();
+            Assert.AreEqual("guest-1", _credentials.AccountId, "게스트 ID를 지우면 계정을 잃는다");
+            Assert.AreEqual(2, _nav.LoadingCalls);
+            Assert.AreEqual(0, _api.Deleted, "이미 무효한 세션으로 계정 삭제 같은 서버 호출을 하지 않는다");
+        }
+
         [Test(Description = "계정 삭제는 로그인 방식과 상관없이 데이터를 지우고 Loading으로 돌아간다")]
         public void DeleteAccount_Linked_DeletesData()
         {

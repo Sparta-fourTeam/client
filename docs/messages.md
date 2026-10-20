@@ -36,6 +36,7 @@
 | `SubmitFailed` | 사건 | StageManager |
 | `SubmitRejected` | 사건 | StageManager |
 | `ChatChanged` | Buffered | ChatService |
+| `NoticeChanged` | Buffered | NoticeService |
 | `WalletChanged` | Buffered | LobbyModel |
 | `EnergyChanged` | Buffered | EnergyClock |
 | `UpgradeChanged` | 사건 | UpgradeService |
@@ -83,5 +84,7 @@ builder.RegisterBuildCallback(c => GlobalMessagePipe.SetProvider(c.AsServiceProv
 임의 메시지를 발행하던 Message Debugger는 삭제했다. 표시만 바꾸는 메시지를 직접 보내면 UI와 모델이 서로 다른 상태가 될 수 있다. 구독 현황은 MessagePipe의 Diagnostics 창에서, 메시지의 계약은 EditMode 테스트에서 확인한다. 새 메시지를 추가할 때 디버그 버튼을 함께 만들 필요는 없다.
 
 `ChatChanged`는 로비 채팅의 목록·연결 상태·읽지 않은 개수·접속자 수가 바뀌었음을 알린다. 현재 값은 `ChatService`에서 읽는다. 로비 입장 시 채팅·presence 구독을 먼저 보내고, 서버 #92가 구독 등록 뒤 보낸 첫 presence로 구독을 확인한 다음 최근 대화를 조회한다. 그 사이 수신한 방송을 버퍼에 두고 서버 발신자·본문·전송 시각으로 최근 대화와 중복을 조정한다. 이력과 방송 병합이 끝난 뒤 전송을 허용하며, 로비를 벗어나거나 이력 조회에 실패하면 연결을 취소한다. 전송 내용은 서버 브로드캐스트를 받은 시점에만 목록에 추가한다.
+
+`NoticeChanged`는 받은 공지 목록이나 읽음 상태가 바뀌었음을 알린다. 현재 값은 `NoticeService`에서 읽는다. 서버 공지는 SSE(`GET /api/notifications/subscribe`)의 `notice` 이벤트(`id`, `title`, `content`, `createdAt`)만 받으며 `connect`·`ping`은 연결 확인과 하트비트로만 쓴다. `forceLogout`은 다른 기기 로그인으로 이 세션이 끊겼다는 알림이라 공지 목록에는 저장하지 않고 `NoticeService.ForceLogoutPending`으로 남긴다. 로비의 `NoticePresenterView`가 이를 먼저 처리해 "다른 기기에서 로그인되었습니다." 팝업을 띄우고 `AccountService.ForceLogoutAsync`로 로그인 화면에 보낸다(서버 호출 없이 이 기기의 로그인 정보만 지운다. 게스트는 계정을 잃지 않게 같은 게스트로 다시 인증한다). 요청은 새 세션으로 연결되거나 로그아웃돼 있으면 해제된다. 전투 중에 온 공지도 받으려고 `NoticeService`는 로비가 아니라 Root에 두고, 최근 50개를 기기에 저장한다. 같은 `id`는 한 번만 담고, 끊기면 지수 백오프로 다시 연결하며 서버 로그인 전에는 연결하지 않는다. `NoticePresenterView`가 읽지 않은 공지를 오래된 것부터 로비에서 하나씩 팝업(확인창 재사용)으로 띄우고, 튜토리얼 가이드와 레벨업·해금·대사 장면이 끝난 뒤에만 띄운다.
 
 접속자 수는 `/topic/chat/presence`의 `{ "onlineCount": 128 }`를 받았을 때만 표시한다. 0명도 유효한 값이며, 수신 전이나 연결 종료 후에는 알 수 없는 상태로 둔다. 접속자 집계 기준은 서버가 정한다.
