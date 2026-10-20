@@ -210,7 +210,7 @@ namespace Game.View
                     resume = await ConfirmAsync(new ConfirmRequest
                     {
                         Title = "이어하기",
-                        Message = $"진행 중인 전투가 있습니다. 이어하시겠습니까?\n제 {checkpoint.StageId} 임무 · {checkpoint.Stage.ReachedWave} 웨이브 · {seconds / 60:00}:{seconds % 60:00}",
+                        Message = $"진행 중인 전투가 있습니다. 이어하시겠습니까?\n제 {checkpoint.StageId} 관문 · {checkpoint.Stage.ReachedWave} 웨이브 · {seconds / 60:00}:{seconds % 60:00}",
                         Warning = "전투 이어하기 기록은 삭제됩니다. 저장된 퀘스트·도감 진행은 유지됩니다.",
                         ConfirmLabel = "이어하기",
                         CancelLabel = "포기"

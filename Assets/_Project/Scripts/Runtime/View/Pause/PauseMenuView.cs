@@ -85,7 +85,7 @@ namespace Game.View
         {
             if (_titleText != null)
             {
-                _titleText.text = $"제 {_data.StageOrFirst(_stageContext.StageId).Id} 임무";
+                _titleText.text = $"제 {_data.StageOrFirst(_stageContext.StageId).Id} 관문";
             }
         }
 

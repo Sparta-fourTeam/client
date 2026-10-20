@@ -39,7 +39,7 @@ namespace Game.View
 
         public void ShowDetails(GameDataStore data, int stageId)
         {
-            _title.text = $"제 {stageId} 임무";
+            _title.text = $"제 {stageId} 관문";
             if (_description != null) { _description.text = "등장 요마와 클리어 시 획득할 수 있는 보상을 확인하세요."; }
             _data = data;
             ShowBonuses(data.Stages.GetOrThrow(stageId));
