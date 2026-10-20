@@ -24,6 +24,7 @@ namespace Game.View
             _levelUp = registry.Get<LevelUpPopupView>();
             _dialogue = registry.Get<DialogueView>();
             _contentUnlock = registry.Get<ContentUnlockView>();
+            _confirm = registry.Get<ConfirmPopupView>();
         }
 
         [SerializeField] private GameObject _root;
@@ -57,6 +58,7 @@ namespace Game.View
         private LevelUpPopupView _levelUp;
         private DialogueView _dialogue;
         private ContentUnlockView _contentUnlock;
+        private ConfirmPopupView _confirm;
         private LobbyArrival _arrival;
         private PlayerProfile _profile;
         private GameDataStore _data;
@@ -65,6 +67,8 @@ namespace Game.View
         private IBattleCheckpointStore _checkpoints;
         private bool _ready;
         private bool _completing;
+        private bool _guarding;
+        private bool _guardOn;
         private CanvasGroup _rootGroup;
         private Material _spotlightMaterial;
         private Tween _fade;
@@ -121,7 +125,21 @@ namespace Game.View
 
         private void Start() => RunAsync().Forget(Debug.LogException);
 
+        // 로비에 들어온 순간부터 가이드가 강조를 시작하기 전까지(서버 대기·팝업 사이·해금 연출·도입 대사) 로비 버튼을 막는다. 끝나는 모든 경로에서 푼다
         private async UniTask RunAsync()
+        {
+            _guarding = true;
+            try
+            {
+                await RunLobbyArrivalAsync();
+            }
+            finally
+            {
+                _guarding = false;
+            }
+        }
+
+        private async UniTask RunLobbyArrivalAsync()
         {
             var news = await _arrival.CollectAsync();
             if (this == null)
@@ -354,7 +372,14 @@ namespace Game.View
         {
             if (_steps == null || _completing)
             {
-                if (_root.activeSelf)
+                // 강조할 대상이 없는 동안에도 로비 진입·가이드 전환 구간이면 투명 가림판으로 다른 버튼을 막는다.
+                // 팝업과 대사 화면이 열려 있는 동안은 그 화면이 눌려야 하므로 가림판을 거둔다
+                bool guard = (_guarding || _completing) && !AnyPopupOpen();
+                if (guard)
+                {
+                    Guard();
+                }
+                else if (_root.activeSelf)
                 {
                     Point(null, null);
                 }
@@ -377,11 +402,35 @@ namespace Game.View
             Point(_steps[index].Target(), lines[Mathf.Min(index, lines.Count - 1)]);
         }
 
+        private bool AnyPopupOpen() =>
+            (_levelUp != null && _levelUp.IsOpen) || (_dialogue != null && _dialogue.IsOpen)
+            || (_contentUnlock != null && _contentUnlock.IsOpen) || (_confirm != null && _confirm.IsOpen);
+
+        // 보이지 않는 판으로 화면 전체의 터치를 막는다. 강조 표시(Point)는 이 상태에서 다시 부드럽게 나타난다
+        private void Guard()
+        {
+            if (_guardOn && _root.activeSelf)
+            {
+                return;
+            }
+
+            _fade?.Kill();
+            _guardOn = true;
+            _holeShown = false;
+            _shownLine = null;
+            _blocker.Target = null;
+            _root.SetActive(true);
+            _rootGroup.alpha = 0f;
+        }
+
         // target 위에 표시를 띄우고 그 버튼만 누를 수 있게 한다. target이 null이면 가린 것을 모두 거둔다
         private void Point(RectTransform target, string line)
         {
             bool shown = target != null;
-            if (shown != _root.activeSelf)
+            // 투명 가림판이 켜져 있던 상태에서 강조가 시작되면 처음 나타나는 것처럼 판을 부드럽게 드러낸다
+            bool revealFromGuard = shown && _guardOn;
+            _guardOn = false;
+            if (shown != _root.activeSelf || revealFromGuard)
             {
                 _fade?.Kill();
                 if (shown)
