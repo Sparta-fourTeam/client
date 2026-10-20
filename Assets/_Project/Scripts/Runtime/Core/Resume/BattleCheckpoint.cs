@@ -16,6 +16,8 @@ namespace Game.Core
         public SpawnRuntimeState Spawns;
         public List<SkillRuntimeState> Skills = new();
         public Dictionary<string, string> BattleTables;
+        /// <summary>전투를 시작할 때의 레벨·클리어 기록. 이어하기 때 결과가 이미 프로필에 반영됐어도 원래 기준을 쓰게 한다 (LobbyProfileRefresher)</summary>
+        public PreBattleState PreBattle;
         [NonSerialized] private GameDataStore _battleData;
 
         /// <summary>진행 중인 전투가 사용한 원문을 자동 보관한다.</summary>

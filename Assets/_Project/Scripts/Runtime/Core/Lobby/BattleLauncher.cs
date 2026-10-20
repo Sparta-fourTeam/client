@@ -29,13 +29,13 @@ namespace Game.Core
         }
 
         // 서버 전투는 결과를 받을 때 프로필을 먼저 바꾸므로, 전투를 시작하는 시점의 레벨·클리어 기록을 남겨 둔다 (LobbyProfileRefresher)
-        private void CapturePreBattle()
+        private PreBattleState ReadPreBattle()
         {
-            if (_profile == null || !_profile.IsLoaded) { return; }
-            _stageContext.PreBattle = new PreBattleState
+            if (_profile == null || !_profile.IsLoaded) { return null; }
+            return new PreBattleState
             {
                 Level = _profile.Level,
-                ClearedStages = _profile.Snapshot().stageProgress.Where(row => row.IsCleared).Select(row => row.stageId).ToHashSet(),
+                ClearedStages = _profile.Snapshot().stageProgress.Where(row => row.IsCleared).Select(row => row.stageId).ToList(),
             };
         }
 
@@ -88,7 +88,8 @@ namespace Game.Core
             if (checkpoint == null) { throw new System.ArgumentNullException(nameof(checkpoint)); }
             _stageContext.SetBattle(checkpoint.BattleId);
             _stageContext.Checkpoint = checkpoint;
-            CapturePreBattle();
+            // 이어하기는 저장된 원래 기준을 쓴다. 결과 재전송 중에는 프로필이 이미 전투 결과를 반영했을 수 있다
+            _stageContext.PreBattle = checkpoint.PreBattle ?? ReadPreBattle();
             return _nav.GoToStage(checkpoint.StageId);
         }
 
@@ -110,7 +111,7 @@ namespace Game.Core
             if (_battleApi is IBattleLaunchCheckpointSession session)
             { session.OnBattleLaunched(response.battleId, stageId); }
             _stageContext.SetBattle(response.battleId);
-            CapturePreBattle();
+            _stageContext.PreBattle = ReadPreBattle();
             await _nav.GoToStage(stageId);
             return true;
         }
