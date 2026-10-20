@@ -16,15 +16,17 @@ namespace Game.Core
         private readonly AccountService _account;
         private readonly bool _refreshPublicProfile;
         private readonly PlayerProfile _profile;
+        private readonly StageContext _stageContext;
         private readonly UniTaskCompletionSource _loaded = new UniTaskCompletionSource();
 
         public LobbyProfileRefresher(IPlayerApi playerApi, PlayerProfile profile, AccountService account = null,
-            bool refreshPublicProfile = true)
+            bool refreshPublicProfile = true, StageContext stageContext = null)
         {
             _playerApi = playerApi;
             _account = account;
             _refreshPublicProfile = refreshPublicProfile;
             _profile = profile;
+            _stageContext = stageContext;
         }
 
         /// <summary>조회가 끝나면(실패 포함) 완료된다. 미션 입장처럼 최신 상태가 필요한 입력은 이걸 기다린다</summary>
@@ -49,6 +51,14 @@ namespace Game.Core
             _hadProfile = _profile.IsLoaded;
             LevelBefore = _profile.Level;
             _clearedBefore = ClearedNow();
+            // 전투 결과가 프로필에 먼저 반영됐을 수 있으므로(서버 전투) 전투를 시작할 때 남긴 값이 있으면 그것을 전투 전 기록으로 쓴다
+            var preBattle = _stageContext?.TakePreBattle();
+            if (preBattle != null)
+            {
+                LevelBefore = preBattle.Level;
+                _clearedBefore = preBattle.ClearedStages;
+            }
+
             RefreshAsync().Forget(Debug.LogException);
         }
 
