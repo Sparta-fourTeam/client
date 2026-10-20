@@ -39,6 +39,8 @@ namespace Game.Network
         {
             if (!_profile.IsLoaded || !_data.HasServerPlayerLevels || !_data.Stages.Contains(stageId))
             { throw new ApiException(ApiErrorKind.Rejected, "BATTLE_SOURCE_UNAVAILABLE"); }
+            if (string.IsNullOrEmpty(_tokens.AccessToken))
+            { throw new ApiException(ApiErrorKind.Rejected, HttpErrorMapper.SessionExpired); }
             long generation = _tokens.Generation;
             string subject = ServerAccountIdentity.Subject(_tokens.AccessToken);
             var pending = PendingStart.Load(subject);
