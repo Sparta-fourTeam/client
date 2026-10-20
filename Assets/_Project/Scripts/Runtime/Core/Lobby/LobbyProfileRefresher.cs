@@ -56,7 +56,7 @@ namespace Game.Core
             if (preBattle != null)
             {
                 LevelBefore = preBattle.Level;
-                _clearedBefore = preBattle.ClearedStages;
+                _clearedBefore = preBattle.ClearedStages.ToHashSet();
             }
 
             RefreshAsync().Forget(Debug.LogException);

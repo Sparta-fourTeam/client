@@ -75,7 +75,7 @@ namespace Game.Tests
         public void Start_WithPreBattleRecord_ComparesAgainstStateBeforeBattle()
         {
             var stages = new StageContext();
-            stages.PreBattle = new PreBattleState { Level = 1, ClearedStages = new HashSet<int>() };
+            stages.PreBattle = new PreBattleState { Level = 1, ClearedStages = new List<int>() };
             var cleared = Snapshot(gold: 100, energy: 50, stages: 1);
             cleared.stageProgress[0].clearRating = 1;
             _profile.Apply(cleared);

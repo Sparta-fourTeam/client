@@ -89,7 +89,8 @@ namespace Game.Boot
                 Stage = state,
                 Spawns = _enemies.CaptureRuntime(),
                 Skills = _skills.CaptureRuntime(),
-                RandomState = JsonUtility.ToJson(UnityEngine.Random.state)
+                RandomState = JsonUtility.ToJson(UnityEngine.Random.state),
+                PreBattle = _context.PreBattle,
             };
             checkpoint.PinBattleData(_data);
             return checkpoint;

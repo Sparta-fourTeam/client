@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace Game.Core
@@ -34,10 +35,12 @@ namespace Game.Core
 
 namespace Game.Core
 {
-    /// <summary>전투 전 플레이어의 레벨과 깬 스테이지. 전투에서 돌아온 로비가 레벨업 팝업과 해금 연출을 전투 전과 비교할 때 쓴다</summary>
+    /// <summary>전투 전 플레이어의 레벨과 깬 스테이지. 전투에서 돌아온 로비가 레벨업 팝업과 해금 연출을 전투 전과 비교할 때 쓴다.
+    /// 전투 체크포인트에도 함께 저장해 이어하기·결과 재전송 뒤에도 같은 기준을 쓴다</summary>
+    [Serializable]
     public sealed class PreBattleState
     {
         public int Level;
-        public HashSet<int> ClearedStages = new();
+        public List<int> ClearedStages = new();
     }
 }
