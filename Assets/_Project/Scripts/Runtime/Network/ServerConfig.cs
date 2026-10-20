@@ -4,7 +4,7 @@ namespace Game.Network
 {
     /// <summary>서버 주소와 서버 인증을 쓸지 정한다.
     /// Android는 개발·릴리스 모두 서버 인증을 쓴다. 에디터는 가짜 구글 로그인이라 기본으로 끈다.
-    /// 개발 override는 플랫폼 기본값보다 우선한다. 서버 진행 연결은 별도 opt-in이다.</summary>
+    /// 개발 override는 플랫폼 기본값보다 우선한다. 서버 진행은 서버 인증과 함께 켜진다.</summary>
     public static class ServerConfig
     {
         /// <summary>서버 주소. 요청 경로가 api/로 시작하므로 끝에 /api나 /auth를 붙이지 않는다
@@ -13,21 +13,10 @@ namespace Game.Network
 
         // 개발 중에 켜고 끄는 값. "1"이면 켜고 "0"이면 끈다. 없으면 아래 기본 규칙을 따른다
         private const string OverrideKey = "dev.server_auth";
-        private const string ProgressOverrideKey = "dev.server_progress";
 
-        // 배포 준비가 끝난 별도 빌드는 ACCOUNT_SERVER_PROGRESS define으로 활성화한다.
-        // 개발 중에는 PlayerPrefs opt-in을 쓴다. 서버 원본 미게시/장애 시 진입이 실패한다.
-#if ACCOUNT_SERVER_PROGRESS
-        private const bool BuildServerProgress = true;
-#else
-        private const bool BuildServerProgress = false;
-#endif
-        public static bool UseServerProgress => ResolveServerProgress(UseServerAuth, BuildServerProgress,
-            PlayerPrefs.GetString(ProgressOverrideKey, string.Empty));
+        // 서버 인증을 쓰면 진행 데이터도 서버가 맡는다. 서버 원본 미게시/장애 시 진입이 실패한다.
+        public static bool UseServerProgress => UseServerAuth;
         public static bool UseServerPlayer => UseServerProgress;
-
-        public static bool ResolveServerProgress(bool serverAuth, bool buildEnabled, string preference) =>
-            serverAuth && (buildEnabled || preference == "1");
 
 #if UNITY_EDITOR
         // 에디터 선택은 프로젝트 폴더별로 저장하고 기기용 PlayerPrefs와 분리한다.

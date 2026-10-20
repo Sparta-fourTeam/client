@@ -107,7 +107,7 @@ PR #58은 `GET /api/item`, `GET /api/upgrade`, `POST /api/user/upgrades`도 추�
 | 에디터 | 끔 | 가짜 구글 로그인의 토큰은 서버가 검증하지 못한다 |
 | Android 릴리스 빌드 | 켬 | 비공개 테스트와 일반 출시도 서버 로그인·계정 삭제를 사용한다 |
 
-`UseServerPlayer`는 `UseServerProgress`와 같은 값이다. 서버 인증이 켜진 상태에서 `dev.server_progress`가 문자열 `"1"`이거나 빌드에 `ACCOUNT_SERVER_PROGRESS`가 정의되면 서버 진행 API를 사용한다. 인증만 켠 에디터에서는 진행 데이터를 로컬에 유지할 수 있다.
+`UseServerPlayer`와 `UseServerProgress`는 `UseServerAuth`와 같은 값이다. 서버 인증이 켜지면 진행 데이터도 서버 진행 API를 사용한다. 서버 인증이 꺼진 에디터에서는 진행 데이터를 로컬에 유지한다.
 
 에디터에서는 **Tools → Project Nova → Server Authentication** 메뉴를 눌러 켜고 끈다. 체크 표시가 있으면 서버 인증을 사용한다. 재생을 중지한 상태에서 변경하고 Boot부터 다시 재생한다. 게스트로 서버 로그인을 시험할 수 있으며 에디터의 가짜 구글 로그인은 서버에서 실패한다. 선택은 프로젝트 폴더별 EditorPrefs에 저장되어 에디터를 다시 열어도 유지되며, 에디터는 `dev.server_auth` PlayerPrefs를 사용하지 않는다.
 
