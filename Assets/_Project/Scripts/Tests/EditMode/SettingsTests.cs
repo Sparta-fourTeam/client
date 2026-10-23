@@ -167,6 +167,25 @@ namespace Game.Tests
             Assert.AreEqual(GameLanguage.English, new GameSettings(store, GameLanguage.Japanese).Language, "저장값이 기본 언어보다 우선");
         }
 
+        [TestCase(false)]
+        [TestCase(true)]
+        public void GameSettings_ExplicitDefaultLanguageSurvivesSystemLanguageChange(bool invalidSavedLanguage)
+        {
+            var store = new MemorySettingsStore();
+            if (invalidSavedLanguage) { store.Values[GameSettings.LanguageKey] = -1; }
+            var settings = new GameSettings(store, GameLanguage.Japanese);
+            int changes = 0;
+            settings.Changed += () => changes++;
+
+            settings.SetLanguage(GameLanguage.Japanese);
+            settings.SetLanguage(GameLanguage.Japanese);
+
+            Assert.AreEqual((int)GameLanguage.Japanese, store.Values[GameSettings.LanguageKey]);
+            Assert.AreEqual(GameLanguage.Japanese, new GameSettings(store, GameLanguage.English).Language,
+                "시스템 언어가 달라져도 명시적으로 고른 언어는 유지한다");
+            Assert.AreEqual(0, changes, "현재 언어가 같으면 화면 변경을 알리지 않는다");
+        }
+
         [Test(Description = "로케일이 바뀌면 라벨을 새 문구로 다시 계산하지만, 그 사이 다른 코드가 직접 쓴 문구는 덮어쓰지 않고 바인딩을 푼다")]
         public void LocalizedLabel_DoesNotOverwriteTextWrittenByOtherCode()
         {

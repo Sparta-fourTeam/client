@@ -57,6 +57,7 @@ namespace Game.Core
         public const string LanguageKey = "settings.language";
 
         private readonly ISettingsStore _store;
+        private bool _hasSavedLanguage;
 
         public event Action Changed;
 
@@ -69,8 +70,8 @@ namespace Game.Core
             AutoEnterHighestStage = GetBool(AutoEnterKey, false);
             FrameRate = _store.TryGet(FrameRateKey, out int rate) && Enum.IsDefined(typeof(FrameRateMode), rate)
                 ? (FrameRateMode)rate : FrameRateMode.High;
-            Language = _store.TryGet(LanguageKey, out int language) && Enum.IsDefined(typeof(GameLanguage), language)
-                ? (GameLanguage)language : defaultLanguage;
+            _hasSavedLanguage = _store.TryGet(LanguageKey, out int language) && Enum.IsDefined(typeof(GameLanguage), language);
+            Language = _hasSavedLanguage ? (GameLanguage)language : defaultLanguage;
         }
 
         public bool DamageIndication { get; private set; }
@@ -110,12 +111,15 @@ namespace Game.Core
             Changed?.Invoke();
         }
 
+        /// <summary>선택한 언어를 저장한다. 기본 언어와 같은 명시적 선택도 다음 실행에 유지한다</summary>
         public void SetLanguage(GameLanguage language)
         {
-            if (Language == language) { return; }
+            bool changed = Language != language;
+            if (!changed && _hasSavedLanguage) { return; }
             Language = language;
             _store.Set(LanguageKey, (int)language);
-            Changed?.Invoke();
+            _hasSavedLanguage = true;
+            if (changed) { Changed?.Invoke(); }
         }
 
         private void SaveBool(string key, bool value)
