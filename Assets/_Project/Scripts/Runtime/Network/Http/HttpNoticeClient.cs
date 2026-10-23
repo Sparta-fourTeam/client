@@ -42,6 +42,7 @@ namespace Game.Network
             long generation = _auth.Generation;
             using var http = new HttpClient { Timeout = Timeout.InfiniteTimeSpan };
             using var request = new HttpRequestMessage(HttpMethod.Get, $"{_config.BaseUrl}/api/notifications/subscribe");
+            foreach (var header in GameClientIdentity.Headers()) { request.Headers.TryAddWithoutValidation(header.Key, header.Value); }
             request.Headers.Accept.ParseAdd("text/event-stream");
             request.Headers.CacheControl = new System.Net.Http.Headers.CacheControlHeaderValue { NoCache = true };
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _auth.AccessToken);

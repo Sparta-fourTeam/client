@@ -20,11 +20,13 @@ namespace Game.Core
         private readonly IAnalyticsCollectionControl _analytics;
         private readonly ILoginConsentStore _consents;
         private readonly IAccountPendingRecovery _pending;
+        private readonly IClientAccessGuard _access;
 
         public LoginFlow(IAuthApi auth, IPlayerApi player, PlayerProfile profile, IAuthCredentialStore credentials, ILoginPrompt prompt,
             IReadOnlyList<ISocialSignIn> social, IAnalyticsCollectionControl analytics = null, ILoginConsentStore consents = null,
-            IAccountPendingRecovery pending = null)
+            IAccountPendingRecovery pending = null, IClientAccessGuard access = null)
         {
+            _access = access;
             _analytics = analytics;
             _consents = consents;
             _pending = pending;
@@ -75,6 +77,7 @@ namespace Game.Core
 
                 if (method != LoginMethod.Guest && accountId == null)
                 {
+                    if (_access != null) { await _access.EnsureAllowed(ClientAccessPurpose.Login); }
                     accountId = await SocialSignInAsync(method.Value, silent);
                     if (accountId == null)
                     {
@@ -177,6 +180,8 @@ namespace Game.Core
         {
             try
             {
+                // 선택창이 열린 뒤 복귀/정책 변경이 일어나도 인증 요청 전에 새 허가를 기다린다.
+                if (_access != null) { await _access.EnsureAllowed(ClientAccessPurpose.Login); }
                 return await _auth.Login(method, accountId);
             }
             catch (OperationCanceledException)

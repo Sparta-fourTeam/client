@@ -27,6 +27,16 @@ namespace Game.Network
 
         private const int MaxDetailLength = 200;
 
+        private static string ReadPolicyCode(string body)
+        {
+            try
+            {
+                string code = JObject.Parse(body ?? "").Value<string>("code");
+                return code is "MAINTENANCE" or "DRAINING" or "CLIENT_UPDATE_REQUIRED" ? code : null;
+            }
+            catch (JsonException) { return null; }
+        }
+
         /// <summary>성공(2xx)이면 null, 아니면 던질 예외를 돌려준다.
         /// errorCodeReader는 응답 본문에서 서버의 오류 코드를 읽는 지점이다. 코드를 못 읽으면 HTTP_상태코드를 쓴다</summary>
         public static ApiException Map(HttpResponseData response, Func<int, string, string> errorCodeReader = null)
@@ -45,6 +55,9 @@ namespace Game.Network
                 return null;
             }
 
+            string policyCode = ReadPolicyCode(response.Body);
+            if (policyCode != null)
+            { return new ApiException(ApiErrorKind.Transient, policyCode, ReadDetail(response.Body)); }
             var code = errorCodeReader?.Invoke(status, response.Body);
             if (string.IsNullOrEmpty(code))
             {

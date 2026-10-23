@@ -13,6 +13,25 @@ namespace Game.Tests
     public sealed class BattleLauncherProgressTests
     {
         [Test]
+        public void PolicyRejectionDoesNotClearExistingBattleOrPendingProgress()
+        {
+            var checkpoint = Checkpoint();
+            checkpoint.Stage.PendingProgress = new BattleProgressRequest { battleId = checkpoint.BattleId, reportId = "keep" };
+            var store = new Store(); store.Save(checkpoint);
+            using var launcher = new BattleLauncher(new Api(), null, null, null, store, access: new DeniedAccess());
+            Assert.Throws<ApiException>(() => launcher.Resume(checkpoint).GetAwaiter().GetResult());
+            Assert.Throws<ApiException>(() => launcher.Launch(1).GetAwaiter().GetResult());
+            Assert.AreEqual("keep", store.Load().Stage.PendingProgress.reportId);
+            Assert.AreEqual(checkpoint.BattleId, store.Load().BattleId);
+        }
+
+        private sealed class DeniedAccess : IClientAccessGuard
+        {
+            public UniTask EnsureAllowed(ClientAccessPurpose purpose, System.Threading.CancellationToken cancellationToken = default)
+            { throw new ApiException(ApiErrorKind.Transient, "MAINTENANCE"); }
+        }
+
+        [Test]
         public void LostAbandonAckRestoresIdenticalTerminalRequestAfterRestart()
         {
             var store = new Store();

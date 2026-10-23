@@ -9,6 +9,8 @@ namespace Game.View
     /// RequiredInput이 있으면 입력창이 나타나고, 입력이 그 값과 같아야 확인을 누를 수 있다</summary>
     public sealed class ConfirmRequest
     {
+        public bool CannotDismiss;
+        public bool ConfirmEnabled = true;
         public string Title;
         public string Message;
         /// <summary>메시지 아래 빨간 글씨 경고. 없으면 숨긴다</summary>
@@ -61,10 +63,13 @@ namespace Game.View
 
         public UniTask<bool> ShowAsync(ConfirmRequest request)
         {
+            if (_result != null && _request?.CannotDismiss == true)
+            { return UniTask.FromResult(false); }
             // 이미 떠 있으면 앞의 요청은 취소로 끝낸다
             _result?.TrySetResult(false);
             _result = new UniTaskCompletionSource<bool>();
             _request = request;
+            _closeButton.gameObject.SetActive(!request.CannotDismiss);
 
             _title.text = request.Title;
             _message.text = request.Message;
@@ -109,13 +114,20 @@ namespace Game.View
                 return;
             }
 
-            _confirmButton.interactable = !string.IsNullOrEmpty(_request.RequiredInput)
+            _confirmButton.interactable = _request.ConfirmEnabled && (!string.IsNullOrEmpty(_request.RequiredInput)
                 ? _input.text == _request.RequiredInput
-                : _request.InputValidator?.Invoke(_input.text) ?? true;
+                : _request.InputValidator?.Invoke(_input.text) ?? true);
         }
 
-        private void Finish(bool confirmed)
+        /// <summary>같은 요청의 취소·foreground 재검사만 닫는다. 이미 바뀐 팝업은 건드리지 않는다.</summary>
+        public void Cancel(ConfirmRequest request)
         {
+            if (ReferenceEquals(_request, request)) { Finish(false, true); }
+        }
+
+        private void Finish(bool confirmed, bool force = false)
+        {
+            if (!confirmed && !force && _request?.CannotDismiss == true) { return; }
             if (confirmed && !_confirmButton.interactable) { return; }
             if (confirmed) { _request.InputValue = _input.text; }
             var result = _result;
