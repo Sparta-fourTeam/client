@@ -664,6 +664,1223 @@ MonoBehaviour:
     m_Localized: WAVE
     m_Metadata:
       m_Items: []
+  - m_Id: 39957451235328
+    m_Localized: Player {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789760
+    m_Localized: '{0} online'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789761
+    m_Localized: Checking online count
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789762
+    m_Localized: Found {0} / {1}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789763
+    m_Localized: '+{0}%
+
+      Bonus'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789764
+    m_Localized: '{0}%
+
+      Off'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789765
+    m_Localized: Free
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789766
+    m_Localized: '{0} Gems'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789767
+    m_Localized: Buy
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789768
+    m_Localized: 'Buy {0}
+
+      for {1}?'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789769
+    m_Localized: Purchase complete.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789770
+    m_Localized: Purchased
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789771
+    m_Localized: You bought Ink.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789772
+    m_Localized: You bought Gems.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789773
+    m_Localized: Not enough Gems.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789774
+    m_Localized: Reset Daily Shop
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789775
+    m_Localized: Gem purchases are coming soon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789776
+    m_Localized: Spend {0} Ink to reset the shop?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789777
+    m_Localized: Resetting also restocks sold-out items.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789778
+    m_Localized: Not enough Ink.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789779
+    m_Localized: '{0}h {1}m'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789780
+    m_Localized: Checking
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789781
+    m_Localized: Remaining {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789782
+    m_Localized: Lv.{0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789783
+    m_Localized: Lv.{0}/{1}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789784
+    m_Localized: Unlocks at Player Level {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789785
+    m_Localized: Clear Stage {0} to unlock
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789786
+    m_Localized: Skip Dialogue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789787
+    m_Localized: Skip the rest of the dialogue?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789788
+    m_Localized: Skip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789789
+    m_Localized: AUTO ON
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789790
+    m_Localized: AUTO OFF
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789791
+    m_Localized: Ink Pen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789792
+    m_Localized: Ink Pen x{0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789793
+    m_Localized: Buy Energy
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789794
+    m_Localized: Checking count
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789795
+    m_Localized: Resets in {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789796
+    m_Localized: Checking the result of the same purchase
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789797
+    m_Localized: Please check the purchase info again
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789798
+    m_Localized: Check Result
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789799
+    m_Localized: Check Info
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789800
+    m_Localized: Gem {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789801
+    m_Localized: 'Owned: {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789802
+    m_Localized: Level Up!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789803
+    m_Localized: Rewards Earned
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789804
+    m_Localized: New Weapon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789805
+    m_Localized: New Gear
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789806
+    m_Localized: Barrier HP {0}%
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789807
+    m_Localized: Clear the stage to earn this.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789808
+    m_Localized: Clear the stage with at least {0}% Barrier HP left.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789809
+    m_Localized: "Stage {0} \xB7 You've already claimed this reward."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789810
+    m_Localized: "Stage {0} \xB7 {1}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789811
+    m_Localized: Stage {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789812
+    m_Localized: Check out the Yokai you'll face and the rewards for clearing.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789813
+    m_Localized: Up to {0} obtainable
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789814
+    m_Localized: Claimed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789815
+    m_Localized: Claim
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789816
+    m_Localized: Not Yet
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789817
+    m_Localized: You claimed all unclaimed rewards for Stage {0}.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789818
+    m_Localized: This reward has already been claimed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789819
+    m_Localized: Couldn't claim the reward. Tap the chest area to try again.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789820
+    m_Localized: Couldn't enter the stage. Please try again.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789821
+    m_Localized: You were logged in on another device.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789822
+    m_Localized: Change Nickname
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789823
+    m_Localized: 'Enter 2-20 characters: Korean, English letters, numbers, or underscores (_).'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789824
+    m_Localized: New nickname
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789825
+    m_Localized: Nickname changed.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789826
+    m_Localized: That nickname is already taken. Please enter a different one.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789827
+    m_Localized: Couldn't save. Check your connection and try again.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789828
+    m_Localized: Couldn't save your nickname. Please try again.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789829
+    m_Localized: Stage {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789830
+    m_Localized: Choose a portrait to use.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789831
+    m_Localized: "Saving\u2026"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789832
+    m_Localized: Couldn't save. Please choose again.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789833
+    m_Localized: Done
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789834
+    m_Localized: Claim
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789835
+    m_Localized: In Progress
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789836
+    m_Localized: Log in
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789837
+    m_Localized: Use {0} Ink Pens
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789838
+    m_Localized: Defeat {0} Yokai
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789839
+    m_Localized: You claimed the quest reward.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789840
+    m_Localized: Quest Complete
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789841
+    m_Localized: "{0} Quest \xB7 You've already claimed this reward."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789842
+    m_Localized: "{0} Quest \xB7 Collect {1} points to claim this."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789843
+    m_Localized: Treasure Chest {0} pts
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789844
+    m_Localized: You claimed the treasure chest reward.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789845
+    m_Localized: Treasure Chest Rewards
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789846
+    m_Localized: 'The email screen will open.
+
+      If it doesn''t, the inquiry form has been copied.
+
+      Please paste it into an email and send it to {0}.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789847
+    m_Localized: Are you sure you want to log out?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789848
+    m_Localized: If you're playing as a guest, all data will be deleted and cannot be recovered.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789849
+    m_Localized: Delete your account?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789850
+    m_Localized: Your account and progress data will be deleted immediately and cannot be recovered. Even if you sign up again with the same Google account, you'll start from scratch.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789851
+    m_Localized: 'All progress data will be deleted with no recovery grace period.
+
+      To delete, enter the nickname below.
+
+
+      <noparse>{0}</noparse>'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789852
+    m_Localized: Enter your nickname
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789853
+    m_Localized: "Deleting\u2026"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789854
+    m_Localized: Couldn't confirm that {0} finished. Please check your login info and try again.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789855
+    m_Localized: Couldn't confirm that {0} finished. Check your connection and try again. If the problem continues, please contact us.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789856
+    m_Localized: Couldn't complete the account action. Please restart the app and check again. If the problem continues, please contact us.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789857
+    m_Localized: '{0}: Action Needed'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789858
+    m_Localized: Log In Again
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789859
+    m_Localized: Your account has been linked.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789860
+    m_Localized: This account is already linked.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789861
+    m_Localized: There are no accounts available to link yet. Coming soon.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789862
+    m_Localized: This account is already linked, or the Google account is linked to a different account.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789863
+    m_Localized: Couldn't link your account. Please try again in a moment.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789864
+    m_Localized: Couldn't finish linking your account. Please log in again with your existing account, then link it.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789865
+    m_Localized: Notice
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789866
+    m_Localized: Elite Reward  {0} / {1}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957484789867
+    m_Localized: Upgrade Complete
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984064
+    m_Localized: Next spawn {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984065
+    m_Localized: Stage {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984066
+    m_Localized: Stage {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984067
+    m_Localized: Claiming rewards...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984068
+    m_Localized: Tap the chest area to claim all rewards
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984069
+    m_Localized: All rewards claimed. Tap the chest to see details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984070
+    m_Localized: Clear the previous stage to unlock
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984071
+    m_Localized: Tap the chest to see the conditions and rewards
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984072
+    m_Localized: 'Secured so far: {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984073
+    m_Localized: 'Earned: {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984074
+    m_Localized: Growth Tips
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984075
+    m_Localized: Defense Successful!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984076
+    m_Localized: Defense Failed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984077
+    m_Localized: Battle Over
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984078
+    m_Localized: 'You defeated the last enemy.
+
+      Check out your rewards!'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984079
+    m_Localized: 'That''s it for this run.
+
+      Check your secured rewards and get ready to try again.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984080
+    m_Localized: Wrapping up the results of this run.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984081
+    m_Localized: 'Kills
+
+      {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984082
+    m_Localized: 'Wave Reached
+
+      {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984083
+    m_Localized: 'Play Time
+
+      {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984084
+    m_Localized: How was that? Piece of cake!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984085
+    m_Localized: First clear! Check out the new weapon in the lobby!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984086
+    m_Localized: 'You can still claim the rewards you secured.
+
+      Power up and try again!'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984087
+    m_Localized: Lv. {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984088
+    m_Localized: Lv.{0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984089
+    m_Localized: MAX
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984090
+    m_Localized: Unlocks at Lv. {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984091
+    m_Localized: 'Battle info is invalid or expired,
+
+      so the result couldn''t be saved.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984092
+    m_Localized: Couldn't save the result.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984093
+    m_Localized: 'Couldn''t save the result.
+
+      ({0})'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984094
+    m_Localized: 'A network or server problem
+
+      prevented sending the result.
+
+      Want to try again?'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984095
+    m_Localized: 'An unexpected problem
+
+      prevented sending the result.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984096
+    m_Localized: Please choose a sign-in method
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984097
+    m_Localized: Signing in...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984098
+    m_Localized: 'Sign-in failed.
+
+      Please try again in a moment.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984099
+    m_Localized: '{0} (Coming Soon)'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984100
+    m_Localized: Guest accounts may lose their data if you delete the app or switch devices.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984101
+    m_Localized: Sign In
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984102
+    m_Localized: Google Sign-In
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984103
+    m_Localized: Sign in with your Google account?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984104
+    m_Localized: Apple Sign-In
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984105
+    m_Localized: Sign in with your Apple account?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984106
+    m_Localized: Guest Sign-In
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984107
+    m_Localized: Sign in as a guest?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984108
+    m_Localized: Game Terms of Service
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984109
+    m_Localized: Game Usage Analytics (Optional)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984110
+    m_Localized: Agree to All
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984111
+    m_Localized: Save Choices
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984112
+    m_Localized: Continue with Selected
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984113
+    m_Localized: Overseas Transfer of Analytics Data (Optional)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984114
+    m_Localized: Agree to Overseas Transfer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984115
+    m_Localized: Agree to Analytics
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984116
+    m_Localized: Couldn't restore your battle record. Please start a new battle from the lobby.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984117
+    m_Localized: Resume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984118
+    m_Localized: Give Up
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984119
+    m_Localized: "You have a battle in progress. Resume it?\nStage {0} \xB7 Wave {1} \xB7 {2}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984120
+    m_Localized: The battle resume record will be deleted. Saved quest and codex progress is kept.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984121
+    m_Localized: Save Progress
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984122
+    m_Localized: Couldn't save your progress. Check your connection and try again.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984123
+    m_Localized: New Version Available
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984124
+    m_Localized: 'A new version has been released.
+
+      Update from the store?'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984125
+    m_Localized: Update
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984126
+    m_Localized: Later
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984127
+    m_Localized: There's an unconfirmed upgrade. Tap OK to recover the same purchase.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984128
+    m_Localized: Confirm Upgrade
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984129
+    m_Localized: "{0}\nLv.{1} \u2192 Lv.{2} \xB7 {3} upgrade(s)\nSpend the resources below to upgrade?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984130
+    m_Localized: Can't upgrade right now. Check your resources and max level.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984131
+    m_Localized: "Your resources or level have changed. Check the updated cost and tap OK again.\n{0} \xB7 Lv.{1} \u2192 Lv.{2} \xB7 {3}x"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984132
+    m_Localized: "Upgrading {0} \xB7 {1}/{2}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984133
+    m_Localized: Your resources or level changed during the upgrade.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984134
+    m_Localized: The upgrade result doesn't match the expected level. Please check the latest state.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984135
+    m_Localized: <color=#FFCF5B>{0} upgraded to Lv.{1}!</color>
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984136
+    m_Localized: Couldn't complete the upgrade request.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984137
+    m_Localized: "{0} upgrade(s) done. {1}\nCheck the remaining upgrades and cost, then try again.\nLv.{2} \u2192 Lv.{3} \xB7 {4}x"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984138
+    m_Localized: The state has changed. Please check the new cost.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984139
+    m_Localized: Upgrade result and current server state confirmed.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984140
+    m_Localized: The purchase result is unconfirmed. Tap OK to recover the same request.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984141
+    m_Localized: '{0} upgrade(s) done. '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984142
+    m_Localized: '{0}Upgrade request failed: {1}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984143
+    m_Localized: Yokai HP increases by {0}%
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984144
+    m_Localized: Yokai attack power increases by {0}%
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984145
+    m_Localized: Yokai move speed increases by {0}%
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984146
+    m_Localized: Go Upgrade
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984147
+    m_Localized: '{0} Odds'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984148
+    m_Localized: At your current level, spellbooks for unlocked skills all have the same chance to drop.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984149
+    m_Localized: At your current level, enchant scrolls for unlocked gear all have the same chance to drop.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984150
+    m_Localized: You got your Codex registration reward.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984151
+    m_Localized: You got your reward.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984152
+    m_Localized: Reward Obtained
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984153
+    m_Localized: EXP
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984154
+    m_Localized: 3-Star Bonus EXP
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984155
+    m_Localized: Random Spellbook
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984156
+    m_Localized: Random Enchant Scroll
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984157
+    m_Localized: You will receive a spellbook for one of your unlocked skills.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984158
+    m_Localized: You will receive an enchant scroll for one of your unlocked gear pieces.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984159
+    m_Localized: Currency used to upgrade skills and gear.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984160
+    m_Localized: Currency used to buy items in the shop.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984161
+    m_Localized: Ink Pens used to enter a Stage.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984162
+    m_Localized: 'Collect it to raise your player level.
+
+      Leveling up unlocks new skills and gear.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984163
+    m_Localized: 'Extra EXP earned by clearing with 3 stars.
+
+      It is already included in the total EXP granted.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984164
+    m_Localized: A chest full of gems.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984165
+    m_Localized: 'A spellbook used to upgrade skills.
+
+      Use it on the Skill screen.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984166
+    m_Localized: 'A scroll used to upgrade gear.
+
+      Use it on the Character screen.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984167
+    m_Localized: An item in storage.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984168
+    m_Localized: Ranged attack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984169
+    m_Localized: Melee attack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984170
+    m_Localized: '{0}-hit combo'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984171
+    m_Localized: '{0} attack'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984172
+    m_Localized: '{0} has no effect'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984173
+    m_Localized: Weak to {0} (+{1}%)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984174
+    m_Localized: Resists {0} (-{1}%)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984175
+    m_Localized: Blocks direct projectile damage and cannot be pierced
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984176
+    m_Localized: No special abilities.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984177
+    m_Localized: Summons {2} {1} every {0}s
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984178
+    m_Localized: (max {0})
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984179
+    m_Localized: Splits into {1} {0} when defeated
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984180
+    m_Localized: Immune to {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984181
+    m_Localized: knockback distance
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984182
+    m_Localized: burn duration
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984183
+    m_Localized: No {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984184
+    m_Localized: '{0} decreases by {2}%'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984185
+    m_Localized: '{0} increases by {2}%'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984186
+    m_Localized: When hit, has a {0}% chance to raise a barrier that blocks {1} attacks
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984187
+    m_Localized: Starts with a barrier that blocks {0} attacks
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984188
+    m_Localized: ({0}s)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984189
+    m_Localized: Immune to {0} while the barrier is up
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984190
+    m_Localized: Has a {0}% chance to dodge attacks
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984191
+    m_Localized: Every {0}s, speeds up {2}x for {1}s
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984192
+    m_Localized: When HP drops to {0}% or below, for {1}s
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984193
+    m_Localized: When HP drops to {0}% or below, restores {2}% of max HP for {1}s
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984194
+    m_Localized: When HP drops to {0}% or below, takes no damage for {1}s
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984195
+    m_Localized: When HP drops to {0}% or below, restores {2}% of max HP and takes no damage for {1}s
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984196
+    m_Localized: Restores {0}% of max HP when hit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984197
+    m_Localized: When hit, has a {2}% chance to restore {0}% of max HP
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984198
+    m_Localized: When hit by {1} attacks, restores {0}% of max HP
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984199
+    m_Localized: When hit by {1} attacks, has a {2}% chance to restore {0}% of max HP
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984200
+    m_Localized: Neutral
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984201
+    m_Localized: Fire
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984202
+    m_Localized: Ice
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984203
+    m_Localized: Wind
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984204
+    m_Localized: Lightning
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984205
+    m_Localized: Earth
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984206
+    m_Localized: Projectile
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984207
+    m_Localized: Instant
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984208
+    m_Localized: Area
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984209
+    m_Localized: Beam
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984210
+    m_Localized: Chain
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984211
+    m_Localized: status effects
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984212
+    m_Localized: all status effects
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984213
+    m_Localized: Stun
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984214
+    m_Localized: Burn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984215
+    m_Localized: Paralysis
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984216
+    m_Localized: Freeze
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984217
+    m_Localized: Slow
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984218
+    m_Localized: Frostbite
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984219
+    m_Localized: Vulnerability
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984220
+    m_Localized: "Getting ready to connect\u2026"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984221
+    m_Localized: "Connecting to chat\u2026"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984222
+    m_Localized: "Loading recent messages\u2026"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984223
+    m_Localized: Connected live
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984224
+    m_Localized: Disconnected. Please reconnect.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984225
+    m_Localized: Chat is available after logging in to the server.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984226
+    m_Localized: Couldn't connect to chat. Please reconnect.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984227
+    m_Localized: Couldn't confirm the message was sent. Check the chat and try again.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957488984228
+    m_Localized: '[Skill Power] Skill Damage'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957493178368
+    m_Localized: Skill Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957493178369
+    m_Localized: Gear Level
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957493178370
+    m_Localized: Hood
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957493178371
+    m_Localized: Robe
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957493178372
+    m_Localized: Boots
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957493178373
+    m_Localized: Weapon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957493178374
+    m_Localized: Bone Ring
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957493178375
+    m_Localized: Skull Necklace
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957493178376
+    m_Localized: Seal
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957493178377
+    m_Localized: Character
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957493178378
+    m_Localized: Necromancer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957493178379
+    m_Localized: Attack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957493178380
+    m_Localized: Cooldown
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957493178381
+    m_Localized: '{0}s'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957493178382
+    m_Localized: '[{0} Upgrade] Choices unlocked'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957493178383
+    m_Localized: New upgrade choice unlocked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957493178384
+    m_Localized: Upgrade choice becomes (+)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39957493178385
+    m_Localized: '{0} attack +8%'
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []
