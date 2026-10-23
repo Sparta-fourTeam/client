@@ -240,7 +240,7 @@ jobs:
           aab = files[0]
           tool = str(pathlib.Path(os.environ['RUNNER_TEMP']) / 'bundletool.jar')
           def run(args):
-              return subprocess.check_output(args, text=True, stderr=subprocess.STDOUT)
+              return subprocess.check_output(args, text=True, stderr=subprocess.PIPE)
           run(['java', '-jar', tool, 'validate', '--bundle=' + str(aab)])
           manifest = ET.fromstring(run(['java', '-jar', tool, 'dump', 'manifest', '--bundle=' + str(aab), '--module=base']))
           config = json.loads(run(['java', '-jar', tool, 'dump', 'config', '--bundle=' + str(aab)]))
