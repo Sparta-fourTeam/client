@@ -1767,6 +1767,13 @@ namespace Game.Tests
                 Assert.That(KoreanLeft(), Is.Empty, button.transform.name + " 화면에 한글이 남았다");
             }
 
+            // 잠깐 떠서 위 측정에 잡히지 않는 기본 토스트도 새 언어로 나와야 한다
+            var toast = Object.FindAnyObjectByType<ComingSoonToastView>(FindObjectsInactive.Include);
+            Assert.That(toast, Is.Not.Null);
+            toast.Show();
+            for (int i = 0; i < 10; i++) { yield return null; }
+            Assert.That(KoreanLeft(), Is.Empty, "토스트에 한글이 남았다");
+
             settings.SetLanguage(GameLanguage.Korean);
             yield return WaitFor(() => SelectedLocaleCode() == "ko");
         }

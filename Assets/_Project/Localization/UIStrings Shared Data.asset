@@ -2355,6 +2355,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items:
       - rid: 3518544387129213056
+  - m_Id: 68986795450368
+    m_Key: toast.comingSoon
+    m_Metadata:
+      m_Items:
+      - rid: 3518544387129213061
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
@@ -4238,3 +4243,7 @@ MonoBehaviour:
       type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
       data:
         m_CommentText: "\uD558\uB2E8 \uB0B4\uBE44\uAC8C\uC774\uC158 \uC0C1\uC810 \uD0ED"
+    - rid: 3518544387129213061
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\uC900\uBE44 \uC911\uC778 \uAE30\uB2A5\uC744 \uB20C\uB800\uC744 \uB54C \uB728\uB294 \uAE30\uBCF8 \uD1A0\uC2A4\uD2B8 \uBB38\uAD6C"

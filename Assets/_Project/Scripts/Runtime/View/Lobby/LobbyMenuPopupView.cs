@@ -73,21 +73,26 @@ namespace Game.View
                 Close();
                 _noticeList.Open();
             });
-            BindDocument(_privacyButton, ExternalLinks.PrivacyPolicy);
-            BindDocument(_termsButton, ExternalLinks.TermsOfUse);
+            BindDocument(_privacyButton, ExternalLinks.PrivacyPolicy, "menu.privacyPolicy");
+            BindDocument(_termsButton, ExternalLinks.TermsOfUse, "menu.terms");
             _supportButton.onClick.AddListener(() => RunAsync(ContactAsync));
             _logoutButton.onClick.AddListener(() => RunAsync(LogoutAsync));
             _deleteAccountButton.onClick.AddListener(() => RunAsync(DeleteAccountAsync));
             _linkAccountButton.onClick.AddListener(() => RunAsync(LinkAccountAsync));
         }
 
-        private static void BindDocument(Button button, string url)
+        private static void BindDocument(Button button, string url, string labelKey)
         {
             bool available = System.Uri.TryCreate(url, System.UriKind.Absolute, out var uri) &&
                 uri.Scheme == System.Uri.UriSchemeHttps && uri.Host != "example.com";
             button.interactable = available;
-            if (available) { button.onClick.AddListener(() => Application.OpenURL(url)); }
-            else { button.GetComponentInChildren<TMP_Text>(true).text += $" ({L10n.Get("common.comingSoon")})"; }
+            var label = button.GetComponentInChildren<TMP_Text>(true);
+            if (available)
+            {
+                button.onClick.AddListener(() => Application.OpenURL(url));
+                label.SetL10n(labelKey);
+            }
+            else { label.SetL10n(() => $"{L10n.Get(labelKey)} ({L10n.Get("common.comingSoon")})"); }
         }
 
         // 문의 내용을 클립보드에 복사한 뒤 메일 작성 화면을 연다. 메일 앱이 없어 열리지 않아도 붙여 넣어 보낼 수 있다

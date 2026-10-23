@@ -31,7 +31,7 @@ namespace Game.View
         [SerializeField] private ServiceConsentView _serviceConsent;
 
         private ConfirmPopupView _confirm;
-        private readonly Dictionary<Button, string> _labels = new();
+        private readonly Dictionary<Button, string> _labelKeys = new();
         private UniTaskCompletionSource<LoginMethod> _pending;
 
         protected override void InitializeView()
@@ -83,9 +83,16 @@ namespace Game.View
             _panel.SetActive(false);
         }
 
+        private static string LabelKey(LoginMethod method) => method switch
+        {
+            LoginMethod.Google => "login.google",
+            LoginMethod.Apple => "login.apple",
+            _ => "login.guest",
+        };
+
         private void Bind(Button button, LoginMethod method)
         {
-            _labels[button] = button.GetComponentInChildren<TMP_Text>(true).text;
+            _labelKeys[button] = LabelKey(method);
             button.onClick.AddListener(() => ConfirmAsync(method).Forget());
         }
 
@@ -135,8 +142,9 @@ namespace Game.View
             bool on = Contains(available, method);
             button.interactable = on;
             var label = button.GetComponentInChildren<TMP_Text>(true);
-            if (on) { label.text = _labels[button]; }
-            else { label.SetL10n("login.unavailable", _labels[button]); }
+            string key = _labelKeys[button];
+            if (on) { label.SetL10n(key); }
+            else { label.SetL10n(() => L10n.Get("login.unavailable", L10n.Get(key))); }
         }
 
         private static bool Contains(IReadOnlyCollection<LoginMethod> methods, LoginMethod method)

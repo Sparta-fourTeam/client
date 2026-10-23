@@ -1,4 +1,5 @@
 using DG.Tweening;
+using Game.Core;
 using TMPro;
 using UnityEngine;
 
@@ -16,12 +17,10 @@ namespace Game.View
         private CanvasGroup _group;
         private Vector2 _home;
         private Vector3 _scale;
-        private string _defaultMessage;
 
         private void Awake()
         {
             _panel.SetActive(false);
-            _defaultMessage = _message != null ? _message.text : null;
             PrepareAnimation();
         }
 
@@ -37,7 +36,7 @@ namespace Game.View
             _group.blocksRaycasts = false;
         }
 
-        public void Show() => Show(_defaultMessage);
+        public void Show() => Show(L10n.Get("toast.comingSoon"));
         public void Show(string message) => Show(message, _duration);
 
         public void Show(string message, float duration)
