@@ -517,4 +517,26 @@ namespace Game.Tests
             Assert.IsNull(menu.GetComponent<ComingSoonButton>());
         }
     }
+
+    /// <summary>EditMode 테스트 전체가 개발 기기에 저장된 언어나 시스템 언어에 흔들리지 않게 로케일을 한국어로 고정한다.
+    /// 시작 로케일이 저장값·시스템 언어를 따르므로, 한국어 문구를 단언하는 테스트는 이 고정에 기댄다</summary>
+    [SetUpFixture]
+    public sealed class LocalizationTestSetup
+    {
+        private UnityEngine.Localization.Locale _previous;
+
+        [OneTimeSetUp]
+        public void PinKorean()
+        {
+            LocalizationSettings.InitializationOperation.WaitForCompletion();
+            _previous = LocalizationSettings.SelectedLocale;
+            LocalizationSettings.SelectedLocale = LocalizationSettings.AvailableLocales.GetLocale("ko");
+        }
+
+        [OneTimeTearDown]
+        public void Restore()
+        {
+            if (_previous != null) { LocalizationSettings.SelectedLocale = _previous; }
+        }
+    }
 }
