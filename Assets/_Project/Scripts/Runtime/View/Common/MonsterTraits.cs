@@ -13,14 +13,14 @@ namespace Game.View
         {
             string grade = monster.GetEnemyType() switch
             {
-                EnemyType.Boss => "보스",
-                EnemyType.Elite => "엘리트",
-                _ => "일반",
+                EnemyType.Boss => L10n.Get("codex.tab.boss"),
+                EnemyType.Elite => L10n.Get("codex.tab.elite"),
+                _ => L10n.Get("codex.tab.normal"),
             };
-            string attack = monster.GetAttackType() == AttackType.Ranged ? "원거리 공격" : "근접 공격";
+            string attack = L10n.Get(monster.GetAttackType() == AttackType.Ranged ? "monster.attackRanged" : "monster.attackMelee");
             if (monster.BurstCount > 1)
             {
-                attack += $" {monster.BurstCount}연타";
+                attack += " " + L10n.Get("monster.burstSuffix", monster.BurstCount.ToString());
             }
 
             return $"{grade} · {attack}";
@@ -32,17 +32,17 @@ namespace Game.View
             var lines = new List<string>();
             foreach (var pair in monster.Resists ?? new Dictionary<string, float>())
             {
-                lines.Add(Resist(ElementName(pair.Key) + " 공격", pair.Value));
+                lines.Add(Resist(L10n.Get("monster.attackLabel", ElementName(pair.Key)), pair.Value));
             }
 
             foreach (var pair in monster.CastResists ?? new Dictionary<string, float>())
             {
-                lines.Add(Resist(CastName(pair.Key) + " 공격", pair.Value));
+                lines.Add(Resist(L10n.Get("monster.attackLabel", CastName(pair.Key)), pair.Value));
             }
 
             if (monster.BlocksProjectile)
             {
-                lines.Add("투사체의 직접 피해를 막고 관통시키지 않아요");
+                lines.Add(L10n.Get("monster.blocksProjectile"));
             }
 
             foreach (var passive in monster.Passives ?? new List<PassiveDefinition>())
@@ -61,13 +61,13 @@ namespace Game.View
         public static string Description(MonsterDefinition monster, Func<int, string> nameOf)
         {
             var lines = Lines(monster, nameOf);
-            return lines.Count == 0 ? "특별한 능력이 없어요." : "· " + string.Join("\n· ", lines);
+            return lines.Count == 0 ? L10n.Get("monster.noAbility") : "· " + string.Join("\n· ", lines);
         }
 
         private static string Resist(string what, float value)
         {
-            if (value <= -1f) { return $"{what}{IGa(what)} 통하지 않아요"; }
-            return value > 0f ? $"{what}에 약해요 (+{Percent(value)}%)" : $"{what}에 강해요 (-{Percent(-value)}%)";
+            if (value <= -1f) { return L10n.Get("monster.resistImmune", what, IGa(what)); }
+            return value > 0f ? L10n.Get("monster.resistWeak", what, Percent(value)) : L10n.Get("monster.resistStrong", what, Percent(-value));
         }
 
         private static string Passive(PassiveDefinition p, Func<int, string> nameOf)
@@ -77,35 +77,40 @@ namespace Game.View
                 case PassiveKind.Spawn:
                     string name = nameOf?.Invoke(p.MonsterId) ?? $"#{p.MonsterId}";
                     return p.Trigger == "Interval"
-                        ? $"{Number(p.Interval)}초마다 {name} {p.Count}마리를 불러요" + (p.MaxTotal > 0 ? $" (최대 {p.MaxTotal}마리)" : string.Empty)
-                        : $"쓰러지면 {name} {p.Count}마리로 나뉘어요";
+                        ? L10n.Get("monster.spawnInterval", Number(p.Interval), name, p.Count.ToString())
+                            + (p.MaxTotal > 0 ? " " + L10n.Get("monster.spawnMax", p.MaxTotal.ToString()) : string.Empty)
+                        : L10n.Get("monster.spawnOnDeath", name, p.Count.ToString());
                 case PassiveKind.Immunity:
-                    return $"{Statuses(p.Statuses)}에 걸리지 않아요";
+                    return L10n.Get("monster.immune", Statuses(p.Statuses));
                 case PassiveKind.Modifier:
-                    string target = p.Target == "KnockbackDistance" ? "밀려나는 거리" : p.Target == "BurnDuration" ? "점화 지속시간" : p.Target;
+                    string target = p.Target == "KnockbackDistance" ? L10n.Get("monster.targetKnockback")
+                        : p.Target == "BurnDuration" ? L10n.Get("monster.targetBurnDuration") : p.Target;
                     float m = p.Multiplier ?? 1f;
-                    if (m <= 0f) { return $"{target}{IGa(target)} 없어요"; }
-                    return m < 1f ? $"{target}{IGa(target)} {Percent(1f - m)}% 줄어요" : $"{target}{IGa(target)} {Percent(m - 1f)}% 늘어요";
+                    if (m <= 0f) { return L10n.Get("monster.modNone", target, IGa(target)); }
+                    return m < 1f ? L10n.Get("monster.modDecrease", target, IGa(target), Percent(1f - m))
+                        : L10n.Get("monster.modIncrease", target, IGa(target), Percent(m - 1f));
                 case PassiveKind.Shield:
                     string shield = p.Trigger == "OnHit"
-                        ? $"맞으면 {Percent(p.Chance)}% 확률로 공격 {p.Hits}번을 막는 방어막을 펼쳐요"
-                        : $"처음부터 공격 {p.Hits}번을 막는 방어막이 있어요";
-                    if (p.Duration > 0f) { shield += $" ({Number(p.Duration)}초)"; }
-                    if (p.Statuses != null && p.Statuses.Length > 0) { shield += $"\n  방어막이 있는 동안 {Statuses(p.Statuses)}에 걸리지 않아요"; }
+                        ? L10n.Get("monster.shieldOnHit", Percent(p.Chance), p.Hits.ToString())
+                        : L10n.Get("monster.shieldStart", p.Hits.ToString());
+                    if (p.Duration > 0f) { shield += " " + L10n.Get("monster.shieldDuration", Number(p.Duration)); }
+                    if (p.Statuses != null && p.Statuses.Length > 0) { shield += "\n  " + L10n.Get("monster.shieldImmune", Statuses(p.Statuses)); }
                     return shield;
                 case PassiveKind.Evade:
-                    return $"{Percent(p.Chance)}% 확률로 공격을 피해요";
+                    return L10n.Get("monster.evade", Percent(p.Chance));
                 case PassiveKind.SpeedBoost:
-                    return $"{Number(p.Interval)}초마다 {Number(p.Duration)}초 동안 {Number(p.SpeedMultiplier)}배 빨라져요";
+                    return L10n.Get("monster.speedBoost", Number(p.Interval), Number(p.Duration), Number(p.SpeedMultiplier));
                 case PassiveKind.LowHp:
-                    string low = $"체력이 {Percent(p.HpRatio)}% 이하가 되면 {Number(p.Duration)}초 동안";
-                    if (p.HealRatio > 0f) { low += $" 최대 체력의 {Percent(p.HealRatio)}%를 회복해요"; }
-                    if (p.Invulnerable) { low += " 피해를 받지 않아요"; }
-                    return low;
+                    bool heals = p.HealRatio > 0f;
+                    string lowKey = heals ? (p.Invulnerable ? "monster.lowHpHealInvuln" : "monster.lowHpHeal")
+                        : p.Invulnerable ? "monster.lowHpInvuln" : "monster.lowHpOnly";
+                    return L10n.Get(lowKey, Percent(p.HpRatio), Number(p.Duration), Percent(p.HealRatio));
                 case PassiveKind.HealOnHit:
-                    string by = string.IsNullOrEmpty(p.Element) ? string.Empty : $"{ElementName(p.Element)} 공격에 ";
-                    string chance = p.Chance < 1f ? $"{Percent(p.Chance)}% 확률로 " : string.Empty;
-                    return $"{by}맞으면 {chance}최대 체력의 {Percent(p.HealRatio)}%를 회복해요";
+                    bool hasElement = !string.IsNullOrEmpty(p.Element);
+                    bool hasChance = p.Chance < 1f;
+                    string healKey = hasElement ? (hasChance ? "monster.healOnHitElementChance" : "monster.healOnHitElement")
+                        : hasChance ? "monster.healOnHitChance" : "monster.healOnHit";
+                    return L10n.Get(healKey, Percent(p.HealRatio), hasElement ? ElementName(p.Element) : string.Empty, Percent(p.Chance));
                 default:
                     return null;
             }
@@ -113,41 +118,41 @@ namespace Game.View
 
         public static string ElementName(string element) => element switch
         {
-            "Neutral" => "무속성",
-            "Fire" => "화속성",
-            "Ice" => "빙속성",
-            "Wind" => "풍속성",
-            "Lightning" => "뇌속성",
-            "Earth" => "토속성",
+            "Neutral" => L10n.Get("element.neutral"),
+            "Fire" => L10n.Get("element.fire"),
+            "Ice" => L10n.Get("element.ice"),
+            "Wind" => L10n.Get("element.wind"),
+            "Lightning" => L10n.Get("element.lightning"),
+            "Earth" => L10n.Get("element.earth"),
             _ => element,
         };
 
         private static string CastName(string cast) => cast switch
         {
-            "Projectile" => "투사체",
-            "Instant" => "즉발",
-            "Area" => "범위",
-            "Beam" => "광선",
-            "Chain" => "연쇄",
+            "Projectile" => L10n.Get("cast.projectile"),
+            "Instant" => L10n.Get("cast.instant"),
+            "Area" => L10n.Get("cast.area"),
+            "Beam" => L10n.Get("cast.beam"),
+            "Chain" => L10n.Get("cast.chain"),
             _ => cast,
         };
 
         private static string Statuses(string[] statuses)
         {
-            if (statuses == null || statuses.Length == 0) { return "상태이상"; }
+            if (statuses == null || statuses.Length == 0) { return L10n.Get("status.generic"); }
             var names = new List<string>();
             foreach (var status in statuses)
             {
                 names.Add(status switch
                 {
-                    "AllDebuffs" => "모든 상태이상",
-                    "Stun" => "기절",
-                    "Burn" => "점화",
-                    "Paralysis" => "마비",
-                    "Freeze" => "빙결",
-                    "Slow" => "둔화",
-                    "Frostbite" => "동상",
-                    "Vulnerability" => "취약",
+                    "AllDebuffs" => L10n.Get("status.all"),
+                    "Stun" => L10n.Get("status.stun"),
+                    "Burn" => L10n.Get("status.burn"),
+                    "Paralysis" => L10n.Get("status.paralysis"),
+                    "Freeze" => L10n.Get("status.freeze"),
+                    "Slow" => L10n.Get("status.slow"),
+                    "Frostbite" => L10n.Get("status.frostbite"),
+                    "Vulnerability" => L10n.Get("status.vulnerability"),
                     _ => status,
                 });
             }

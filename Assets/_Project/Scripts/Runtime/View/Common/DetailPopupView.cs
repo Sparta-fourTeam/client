@@ -14,7 +14,6 @@ namespace Game.View
     /// 누르면 그 자리에서 보상을 받는다 (도감 화면이 아니어도 받을 수 있다)</summary>
     public sealed class DetailPopupView : HudView, IUiBindable
     {
-        public const string DefaultGoLabel = "강화하러 가기";
 
         [SerializeField] private GameObject _panel;
         [SerializeField] private PointerClickRelay _background;
@@ -80,7 +79,7 @@ namespace Game.View
         }
 
         /// <param name="onGo">아래 버튼을 누르면 부른다. null이면 버튼을 숨긴다</param>
-        public void Show(Sprite icon, string title, string subtitle, string description, Action onGo = null, string goLabel = DefaultGoLabel)
+        public void Show(Sprite icon, string title, string subtitle, string description, Action onGo = null, string goLabel = null)
         {
             _icon.sprite = icon;
             _icon.enabled = icon != null;
@@ -89,7 +88,7 @@ namespace Game.View
             _descText.text = description;
             _onGo = onGo;
             _goButton.gameObject.SetActive(onGo != null);
-            _goLabel.text = goLabel;
+            _goLabel.text = goLabel ?? L10n.Get("detail.goUpgrade");
             SetClaimVisible(false);
             SetOddsVisible(false);
             _panel.SetActive(true);
@@ -129,8 +128,8 @@ namespace Game.View
                     ItemInfo.NameOf(odd.ItemId, _data), RandomRewardOdds.Percent(odd.Probability)));
             }
 
-            string what = _data.RewardRules.Items[itemId].Kind == "SkillMaterial" ? "열린 스킬의 마법북" : "열린 장비의 인챈트 주문서";
-            _oddsPopup.Show($"{ItemInfo.RewardNameOf(itemId, _data)} 확률", $"현재 레벨에서 {what}이 같은 확률로 나와요.", rows);
+            string description = L10n.Get(_data.RewardRules.Items[itemId].Kind == "SkillMaterial" ? "detail.oddsDescSkill" : "detail.oddsDescEquip");
+            _oddsPopup.Show(L10n.Get("detail.oddsTitle", ItemInfo.RewardNameOf(itemId, _data)), description, rows);
         }
 
         private void SetClaimVisible(bool visible)
@@ -161,7 +160,7 @@ namespace Game.View
                 if (this != null)
                 {
                     SetClaimVisible(false);
-                    _rewardPopup.Show(rows, "도감 등록 보상을 받았어요.");
+                    _rewardPopup.Show(rows, L10n.Get("detail.codexRewardClaimed"));
                 }
             }
             catch (ApiException error)

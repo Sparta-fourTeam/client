@@ -14,20 +14,20 @@ namespace Game.Core
         private const int NoUpgradeMaxLevel = 1;
 
         // 장비 칸 순서(오른쪽 2열 6칸 → 왼쪽 1칸)와 표시 이름. 이름은 클라이언트 표시용이다
-        private static readonly (string upgradeId, string name)[] EquipSlots =
+        private static readonly (string upgradeId, string nameKey)[] EquipSlots =
         {
-            ("equipment.hat", "후드"), ("equipment.top", "로브"), ("equipment.shoes", "장화"), ("equipment.weapon", "무기"),
-            ("equipment.ring", "뼈 반지"), ("equipment.tie", "해골 목걸이"), ("equipment.employee_id", "인장"),
+            ("equipment.hat", "equipSlot.hood"), ("equipment.top", "equipSlot.robe"), ("equipment.shoes", "equipSlot.boots"), ("equipment.weapon", "equipSlot.weapon"),
+            ("equipment.ring", "equipSlot.boneRing"), ("equipment.tie", "equipSlot.skullNecklace"), ("equipment.employee_id", "equipSlot.seal"),
         };
 
         private readonly PlayerProfile _profile;
         private readonly GameDataStore _data;
         private readonly List<SkillData> _skillRows; // Skills의 칸과 같은 순서의 스킬 정의 (능력치 계산용)
 
-        public CharacterInfo Character { get; } = new CharacterInfo
+        public CharacterInfo Character => new CharacterInfo
         {
-            Name = "캐릭터",
-            Rank = "네크로맨서", // TODO(data): 임시 직급 이름. 캐릭터 데이터가 생기면 교체
+            Name = L10n.Get("character.defaultName"),
+            Rank = L10n.Get("character.defaultRank"), // TODO(data): 임시 직급 이름. 캐릭터 데이터가 생기면 교체
             Power = 120,
         };
 
@@ -90,7 +90,7 @@ namespace Game.Core
             var list = new List<EquipInfo>();
             for (int i = 0; i < EquipSlots.Length; i++)
             {
-                var (upgradeId, name) = EquipSlots[i];
+                var (upgradeId, nameKey) = EquipSlots[i];
                 var def = _data.Upgrades.GetOrThrow(upgradeId);
                 int level = _profile.UpgradeLevel(upgradeId);
                 bool isMax = level >= def.MaxLevel;
@@ -106,13 +106,13 @@ namespace Game.Core
                         isMax ? null : EquipEffectText.Value(effect, next)));
                 }
 
-                stats.Add(new StatLine("장비 레벨", level.ToString(), isMax ? null : next.ToString()));
+                stats.Add(new StatLine(L10n.Get("equip.statLevel"), level.ToString(), isMax ? null : next.ToString()));
 
                 list.Add(new EquipInfo
                 {
                     Slot = i,
                     UpgradeId = upgradeId,
-                    Name = name,
+                    Name = L10n.Get(nameKey),
                     Level = level,
                     MaxLevel = def.MaxLevel,
                     UnlockLevel = def.UnlockLevel,
@@ -184,8 +184,9 @@ namespace Game.Core
             float cooldownDown = next.Cooldown - current.Cooldown;
             return new[]
             {
-                new StatLine("공격력", $"{current.Damage:0.#}", increase: damageUp > 0.001f ? $"+{damageUp:0.#}" : null),
-                new StatLine("쿨타임", $"{current.Cooldown:0.##}초", increase: cooldownDown < -0.001f ? $"{cooldownDown:0.##}초" : null),
+                new StatLine(L10n.Get("skillStat.damage"), $"{current.Damage:0.#}", increase: damageUp > 0.001f ? $"+{damageUp:0.#}" : null),
+                new StatLine(L10n.Get("skillStat.cooldown"), L10n.Get("skillStat.seconds", $"{current.Cooldown:0.##}"),
+                    increase: cooldownDown < -0.001f ? L10n.Get("skillStat.seconds", $"{cooldownDown:0.##}") : null),
             };
         }
 
@@ -206,10 +207,10 @@ namespace Game.Core
             {
                 string text = level switch
                 {
-                    1 => $"[{skillName} 강화] 선택지 잠금해제",
-                    5 or 13 or 21 => "새 강화 선택지 잠금해제",
-                    9 or 17 => "강화 선택지가 (+)로 바뀝니다",
-                    _ => $"{skillName} 공격력 +8%",
+                    1 => L10n.Get("skillReward.unlockChoices", skillName),
+                    5 or 13 or 21 => L10n.Get("skillReward.newChoice"),
+                    9 or 17 => L10n.Get("skillReward.choiceUpgraded"),
+                    _ => L10n.Get("skillReward.damageBonus", skillName),
                 };
                 list.Add(new LevelReward { Level = level, Text = text });
             }
