@@ -64,7 +64,9 @@ namespace Game.View
             ApplyDefaultReference();
             CaptureOriginal();
             // 문구가 먼저 바뀐 뒤 글리프 없는 폰트로 한 번 그려지지 않도록 폰트는 로케일 변경 시점에 동기로 불러온다(WebGL 미지원)
+#if !UNITY_WEBGL
             AssetReference.WaitForCompletion = true;
+#endif
         }
 
         // 기반 클래스의 OnEnable이 변경 핸들러를 등록하면서 곧바로 UpdateAsset을 부를 수 있으므로 그 전에 원본을 저장한다
