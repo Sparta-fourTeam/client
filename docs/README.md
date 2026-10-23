@@ -8,6 +8,7 @@
 | [messages.md](messages.md) | 메시지 규칙과 목록 |
 | [flows.md](flows.md) | 스테이지 생명주기, 실패와 복구, 스킬 선택, 상태 머신 |
 | [conventions.md](conventions.md) | 코딩 규칙 |
+| [localization.md](localization.md) | 다국어 구성, 문구·키 추가 절차, 번역하지 않는 것, 폰트 교체와 알려진 한계 |
 | [skills.md](skills.md) | 스킬 시스템 구조, 데이터 형식, 스킬·카드 추가 절차 |
 | [enemy.md](enemy.md) | 몬스터 구조, 데이터 흐름, 새 몬스터 추가 절차, `Monsters.json` 필드와 패시브 목록 |
 | [enemy-design.md](enemy-design.md) | Enemy 구조 설계: 기본 규칙과 시스템 경계, 피해 파이프라인, 패시브, 작업 순서 |
