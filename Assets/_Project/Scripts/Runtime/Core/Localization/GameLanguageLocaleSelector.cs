@@ -1,5 +1,4 @@
 using System;
-using UnityEngine;
 using UnityEngine.Localization;
 using UnityEngine.Localization.Settings;
 
@@ -14,11 +13,7 @@ namespace Game.Core
         /// <summary>저장된 언어 또는 시스템 언어에 해당하는 로케일. 찾지 못하면 null을 돌려 다음 선택기로 넘긴다</summary>
         public Locale GetStartupLocale(ILocalesProvider availableLocales)
         {
-            GameLanguage language = PlayerPrefs.HasKey(GameSettings.LanguageKey)
-                && Enum.IsDefined(typeof(GameLanguage), PlayerPrefs.GetInt(GameSettings.LanguageKey))
-                ? (GameLanguage)PlayerPrefs.GetInt(GameSettings.LanguageKey)
-                : GameLanguageLocale.FromSystemLanguage(Application.systemLanguage);
-            return availableLocales.GetLocale(new LocaleIdentifier(GameLanguageLocale.Code(language)));
+            return availableLocales.GetLocale(new LocaleIdentifier(GameLanguageLocale.StartupCode()));
         }
     }
 }

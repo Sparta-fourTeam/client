@@ -1,0 +1,632 @@
+{
+  "skills": {
+    "1": {
+      "name": "Arrow",
+      "desc": "Fires arrows at the nearest enemy. Upgrades increase arrow count and piercing."
+    },
+    "2": {
+      "name": "Fireball",
+      "desc": "Hurls a fireball at an enemy; the explosion also hits nearby enemies."
+    },
+    "3": {
+      "name": "Lightning",
+      "desc": "Strikes an enemy and its surroundings instantly, briefly paralyzing them."
+    },
+    "4": {
+      "name": "Frost Crystal",
+      "desc": "Fires a piercing frost crystal that briefly freezes enemies."
+    },
+    "5": {
+      "name": "Rolling Log",
+      "desc": "A log rolls out in front of the Barrier, piercing and knocking back enemies."
+    },
+    "6": {
+      "name": "Frost Zone",
+      "desc": "Creates a frost zone on enemies, dealing damage over time and slowing movement."
+    },
+    "7": {
+      "name": "Storm Cloud",
+      "desc": "An electric cloud follows enemies, dealing damage over time and pulling in nearby enemies."
+    },
+    "8": {
+      "name": "Ice Shard"
+    },
+    "9": {
+      "name": "Frost Crystal"
+    },
+    "10": {
+      "name": "Arrow Shard"
+    },
+    "11": {
+      "name": "Flame Shard"
+    },
+    "12": {
+      "name": "Lightning Orb"
+    },
+    "13": {
+      "name": "Energy Beam",
+      "desc": "Fires a beam at the nearest enemy, repeatedly hitting enemies in a line."
+    },
+    "14": {
+      "name": "Aux Energy Beam"
+    },
+    "15": {
+      "name": "Chain Lightning",
+      "desc": "Lightning bounces between nearby enemies, hitting multiple targets."
+    },
+    "16": {
+      "name": "Focus Beam",
+      "desc": "Focuses a beam on the nearest enemy, hitting it continuously."
+    },
+    "17": {
+      "name": "Focus Arrow"
+    }
+  },
+  "cards": {
+    "1": {
+      "name": "Arrow Volley",
+      "desc": "Shots +1 / Damage -30%"
+    },
+    "2": {
+      "name": "Arrow Boost",
+      "desc": "Damage +60%"
+    },
+    "3": {
+      "name": "Arrow Haste",
+      "desc": "Damage +25% / Throw Speed +25%"
+    },
+    "4": {
+      "name": "Rapid Arrows",
+      "desc": "Casts +1 / Damage -30%"
+    },
+    "5": {
+      "name": "Arrow Training",
+      "desc": "Cooldown -10%"
+    },
+    "6": {
+      "name": "Arrow Storm",
+      "desc": "Cooldown -40%"
+    },
+    "7": {
+      "name": "Pierce Boost",
+      "desc": "Damage +30% / Pierce +1"
+    },
+    "8": {
+      "name": "Explosive Arrow",
+      "desc": "Adds Explosion"
+    },
+    "9": {
+      "name": "Blast Boost",
+      "desc": "Explosion Damage +80%"
+    },
+    "10": {
+      "name": "Blast Spread",
+      "desc": "Explosion Area +80%"
+    },
+    "11": {
+      "name": "Impact Arrow",
+      "desc": "Knockback +15%"
+    },
+    "12": {
+      "name": "Spread Arrow",
+      "desc": "Fires 2 Sub-Arrows on hit"
+    },
+    "13": {
+      "name": "Arrow Barrage",
+      "desc": "Fires 4 extra Sub-Arrows on hit"
+    },
+    "14": {
+      "name": "Sub-Arrow Boost",
+      "desc": "Sub-Arrow Damage +100%"
+    },
+    "15": {
+      "name": "Arrow Amplify",
+      "desc": "Arrow/Sub-Arrow Damage +100%"
+    },
+    "16": {
+      "name": "Thunder Arrow",
+      "desc": "Adds Paralysis / Throw Speed +100%"
+    },
+    "17": {
+      "name": "Swift Throw",
+      "desc": "Damage -10% / Cooldown -20%"
+    },
+    "18": {
+      "name": "Lightning Rod",
+      "desc": "1 small bolt on main hit"
+    },
+    "19": {
+      "name": "Sub Lightning Rod",
+      "desc": "1 small bolt on sub hit"
+    },
+    "20": {
+      "name": "Extra Blast",
+      "desc": "Adds Sub-Arrow Explosion"
+    },
+    "21": {
+      "name": "Flame Arrow",
+      "desc": "Adds Ignite (6s)"
+    },
+    "22": {
+      "name": "Neutral Amp · Ⅰ",
+      "desc": "Arrow and Energy Beam Damage +50%"
+    },
+    "23": {
+      "name": "Neutral Amp · Ⅱ",
+      "desc": "Arrow and Focus Ray Damage +50%"
+    },
+    "24": {
+      "name": "Chain Fireball",
+      "desc": "Extra Casts +1"
+    },
+    "25": {
+      "name": "Chain Fireball Ⅱ",
+      "desc": "Extra Casts +2 / Damage -30%"
+    },
+    "26": {
+      "name": "Blast Boost",
+      "desc": "Explosion Damage +80%"
+    },
+    "27": {
+      "name": "Explosive Fireball",
+      "desc": "Explosion Area +80%"
+    },
+    "28": {
+      "name": "Fireball Ignite",
+      "desc": "Adds Ignite (6s)"
+    },
+    "29": {
+      "name": "Hellfire",
+      "desc": "Ignite ticks deal extra 3% Max HP damage"
+    },
+    "30": {
+      "name": "Spreading Flames",
+      "desc": "Explodes when ignited target dies"
+    },
+    "31": {
+      "name": "Impact Boost",
+      "desc": "Impact Damage +80%"
+    },
+    "32": {
+      "name": "Fireball Training",
+      "desc": "Damage +20% / Cooldown -10%"
+    },
+    "33": {
+      "name": "Sparks",
+      "desc": "Casts 3 Sparks after explosion"
+    },
+    "34": {
+      "name": "Phoenix Flame",
+      "desc": "Transforms into Phoenix Flame / Pierce +2"
+    },
+    "35": {
+      "name": "Bolt Amplify",
+      "desc": "Damage +80%"
+    },
+    "36": {
+      "name": "Chain Bolt",
+      "desc": "Casts +1 / Damage -20%"
+    },
+    "37": {
+      "name": "Magnetic Storm",
+      "desc": "Magnetic Storm"
+    },
+    "38": {
+      "name": "Storm Amplify",
+      "desc": "Explosion Damage +80%"
+    },
+    "39": {
+      "name": "Storm Expand",
+      "desc": "Explosion Area +80%"
+    },
+    "40": {
+      "name": "High-Voltage Bolt",
+      "desc": "Damage +30% / Paralysis Duration +1.5s"
+    },
+    "41": {
+      "name": "Electron Split",
+      "desc": "Fires 6 Lightning Orbs around the target"
+    },
+    "42": {
+      "name": "High-Voltage Particle",
+      "desc": "Lightning Orb Damage +40% / Paralysis 0.5s"
+    },
+    "43": {
+      "name": "Thunder Judgment",
+      "desc": "Damage +150% / Casts 1 small bolt on kill"
+    },
+    "44": {
+      "name": "Storm Fury",
+      "desc": "Upgrades to Storm Fury / Damage +200%"
+    },
+    "45": {
+      "name": "Electromagnetic Field",
+      "desc": "Creates a field / Move Speed -25% inside"
+    },
+    "46": {
+      "name": "Stable Field",
+      "desc": "Field Damage +50 / Duration +2s"
+    },
+    "47": {
+      "name": "High-Voltage Field",
+      "desc": "Field Damage +400%"
+    },
+    "48": {
+      "name": "Lightning Amp",
+      "desc": "Bolt and Chain Lightning Damage +80%"
+    },
+    "49": {
+      "name": "Lightning Mastery",
+      "desc": "Bolt and Chain Lightning Cooldown -20%"
+    },
+    "50": {
+      "name": "Frost Shard Barrage",
+      "desc": "Extra Casts +1 / Damage -20%"
+    },
+    "51": {
+      "name": "Frost Shard Amp",
+      "desc": "Damage +60%"
+    },
+    "52": {
+      "name": "Extreme Frost Shard",
+      "desc": "Damage +30% / Freeze 2s"
+    },
+    "53": {
+      "name": "Piercing Frost Shard",
+      "desc": "Damage +30% / Pierce +2"
+    },
+    "54": {
+      "name": "Heavy Frost Shard",
+      "desc": "Damage +50% / Flight Speed -30% / Pierce +1"
+    },
+    "55": {
+      "name": "Frost Shard Volley",
+      "desc": "Shots +1 / Damage -40%"
+    },
+    "56": {
+      "name": "Frost Shard Split",
+      "desc": "Splits into 3 small Frost Shards on hit"
+    },
+    "57": {
+      "name": "Ice Shard Amp",
+      "desc": "Small Frost Shard Damage +80%"
+    },
+    "58": {
+      "name": "Frost Shard Impact",
+      "desc": "Knockback +200% / Pierce +2"
+    },
+    "59": {
+      "name": "Piercing Cold",
+      "desc": "Frostbite 10s / Stacks up to 5"
+    },
+    "60": {
+      "name": "Seeping Cold",
+      "desc": "Adds Frostbite to small Frost Shards"
+    },
+    "61": {
+      "name": "Triple Frost Shard",
+      "desc": "Splits Triangle→Normal→Small Frost Shard / Keeps upgrades"
+    },
+    "62": {
+      "name": "Ice Mastery",
+      "desc": "Frost Zone and Frost Shard Cooldown -25%"
+    },
+    "63": {
+      "name": "Tree Root Amp",
+      "desc": "Damage +60%"
+    },
+    "64": {
+      "name": "Root Barrage",
+      "desc": "Casts +1 / Damage -20%"
+    },
+    "65": {
+      "name": "Size Up",
+      "desc": "Size +60%"
+    },
+    "66": {
+      "name": "Speed Up",
+      "desc": "Roll Speed +40% / Cooldown -25%"
+    },
+    "67": {
+      "name": "Impact Root",
+      "desc": "Knockback +75% / 10% chance to Stun for 1s"
+    },
+    "68": {
+      "name": "Heavy Weight",
+      "desc": "Slow Duration +4s"
+    },
+    "69": {
+      "name": "Fester Wound",
+      "desc": "Hit enemies take +20% damage (6s)"
+    },
+    "70": {
+      "name": "Giant Root",
+      "desc": "Damage, Size, Knockback +60%"
+    },
+    "71": {
+      "name": "Burning Root",
+      "desc": "Becomes Burning Root / Ignite on direct hit"
+    },
+    "72": {
+      "name": "Reserve Root",
+      "desc": "Near Barrier: 3 extra Casts at 0.1s intervals (10s cooldown)"
+    },
+    "73": {
+      "name": "Chain Frost Burst",
+      "desc": "Casts +1 / Damage -30%"
+    },
+    "74": {
+      "name": "Frost Amp",
+      "desc": "Damage +60%"
+    },
+    "75": {
+      "name": "Extreme Frost",
+      "desc": "Damage +30% / Freeze 2s"
+    },
+    "76": {
+      "name": "Freeze Core",
+      "desc": "1 extra center hit"
+    },
+    "77": {
+      "name": "Absolute Zero",
+      "desc": "Center Freeze Duration x2"
+    },
+    "78": {
+      "name": "Frost Expansion",
+      "desc": "Area +100%"
+    },
+    "79": {
+      "name": "Crystal Burst",
+      "desc": "On end, splits into 2 Small Frost Shards"
+    },
+    "80": {
+      "name": "Ice Mastery",
+      "desc": "Frost Zone and Frost Shard Cooldown -25%"
+    },
+    "81": {
+      "name": "Biting Frost",
+      "desc": "While frozen, 1% Max HP damage per second"
+    },
+    "82": {
+      "name": "Cloud Expansion",
+      "desc": "Area +50%"
+    },
+    "83": {
+      "name": "Cloud Duration",
+      "desc": "Duration +60%"
+    },
+    "84": {
+      "name": "Cloud Speedup",
+      "desc": "Damage +40% / Move Speed +20%"
+    },
+    "85": {
+      "name": "Cloud Amp",
+      "desc": "Damage +60%"
+    },
+    "86": {
+      "name": "High-Voltage Cloud",
+      "desc": "Paralysis Duration +2s"
+    },
+    "87": {
+      "name": "Magnetic Cloud",
+      "desc": "Damage +40% / Pull Force +20% (temp)"
+    },
+    "88": {
+      "name": "Singularity",
+      "desc": "On end, creates 1 Black Hole",
+      "disabledReason": "The Black Hole's behavior and values are not in the source text"
+    },
+    "89": {
+      "name": "Cloud Split",
+      "desc": "On end, splits into 2",
+      "disabledReason": "The split cloud's duration, re-splitting and damage rules are not in the source. Casting itself as its own child would loop, so a separate child skill is needed"
+    },
+    "90": {
+      "name": "Lightning Rod",
+      "desc": "5% chance to cast Lightning Bolt on hit"
+    },
+    "91": {
+      "name": "Storm Singularity",
+      "desc": "1 nearby Yokai takes extra electric attack",
+      "disabledReason": "Chain Lightning is implemented. When the extra electric attack triggers, its damage multiplier and target selection are undecided, so wiring up the effect is on hold"
+    },
+    "92": {
+      "name": "Beam Overload",
+      "desc": "Hits +100% / Cooldown +50%"
+    },
+    "93": {
+      "name": "Energy Beam Amp",
+      "desc": "Damage +60%"
+    },
+    "94": {
+      "name": "Stable Beam",
+      "desc": "Hits +5"
+    },
+    "95": {
+      "name": "Splitting Beam",
+      "desc": "Damage Taken +25% / 5s (no stacking)"
+    },
+    "96": {
+      "name": "Dazzling Beam",
+      "desc": "5% chance to Stun for 1s"
+    },
+    "97": {
+      "name": "Weakening Beam",
+      "desc": "On hit, Move Speed -80% for 1s"
+    },
+    "98": {
+      "name": "Ultimate: Energy Burst",
+      "desc": "One-time / Damage scales with Energy Beam permanent level",
+      "disabledReason": "The Ultimate's Damage multiplier, one-time reset scope and permanent-level link rules are not in the source"
+    },
+    "99": {
+      "name": "Energy Beam Spread",
+      "desc": "Area +150%"
+    },
+    "100": {
+      "name": "Beam Fire",
+      "desc": "On cast, casts a Sub Beam"
+    },
+    "101": {
+      "name": "Positron Cannon",
+      "desc": "Converts Energy Beam into Positron Cannon",
+      "disabledReason": "Post-conversion damage, area and duration details are not in the source"
+    },
+    "102": {
+      "name": "Beam Barrage",
+      "desc": "Fires multiple Energy Beams across the field (Damage -50% each)",
+      "disabledReason": "The number and placement of beams are not in the source"
+    },
+    "103": {
+      "name": "Neutral Amp I",
+      "desc": "Arrow and Energy Beam Damage +50%"
+    },
+    "104": {
+      "name": "Freezing Beam",
+      "desc": "Freeze +0.5s"
+    },
+    "105": {
+      "name": "Neutral Amp III",
+      "desc": "Energy Beam and Focus Beam Damage +60%"
+    },
+    "106": {
+      "name": "Cross Lightning+",
+      "desc": "Casts +1"
+    },
+    "107": {
+      "name": "Lightning Chain",
+      "desc": "Damage +30% / Bounces +2"
+    },
+    "108": {
+      "name": "High-Voltage Shock",
+      "desc": "Damage +30% / Paralysis 1s"
+    },
+    "109": {
+      "name": "Lightning Amp",
+      "desc": "Damage +60%"
+    },
+    "110": {
+      "name": "Ion Blast",
+      "desc": "Explosion damage on each bounce"
+    },
+    "111": {
+      "name": "Resonant Shock",
+      "desc": "Hitting a paralyzed target zaps a random target in a small area",
+      "disabledReason": "The source wording is unclear and has no area or damage values"
+    },
+    "112": {
+      "name": "Ion Spread",
+      "desc": "Explosion Area +100%"
+    },
+    "113": {
+      "name": "Ion Voltage",
+      "desc": "Explosion Damage +40% / Paralysis +1s",
+      "disabledReason": "The rule for applying Paralysis to explosions is not in the source"
+    },
+    "114": {
+      "name": "Conduction",
+      "desc": "Damage -60% / Damages Yokai along the path"
+    },
+    "115": {
+      "name": "Lightning Attune Amp",
+      "desc": "Lightning Bolt and Chain Lightning Damage +80%"
+    },
+    "116": {
+      "name": "Lightning Mastery",
+      "desc": "Lightning Bolt and Chain Lightning Cooldown -20%"
+    },
+    "117": {
+      "name": "Focus",
+      "desc": "Main Target Damage +100%"
+    },
+    "118": {
+      "name": "Continuous Beam",
+      "desc": "Hits +15"
+    },
+    "119": {
+      "name": "Focus Amp",
+      "desc": "Damage +60%"
+    },
+    "120": {
+      "name": "Focus Blast",
+      "desc": "Explosion damage around Main Target"
+    },
+    "121": {
+      "name": "Refocus",
+      "desc": "Attacking Main Target steadily raises Damage (max +150%)"
+    },
+    "122": {
+      "name": "Focus Refraction",
+      "desc": "Refraction +1"
+    },
+    "123": {
+      "name": "Focus Arrow",
+      "desc": "On cast, fires an extra Focus Arrow (Arrow Volley effect applies)"
+    },
+    "124": {
+      "name": "Ultimate: Focus Fire",
+      "desc": "One-time / Damage scales with Focus Beam permanent level",
+      "disabledReason": "The character who uses the Ultimate (the source writes both Mayoneko Akane and Kuroneko Akane), the one-time rule and the Damage multiplier are not in the source"
+    },
+    "125": {
+      "name": "Neutral Amp II",
+      "desc": "Arrow and Focus Beam Damage +50%"
+    },
+    "126": {
+      "name": "Neutral Amp III",
+      "desc": "Energy Beam and Focus Beam Damage +60%"
+    }
+  },
+  "variants": {
+    "1#9": {
+      "name": "Arrow Volley (+)",
+      "desc": "Shots +1"
+    },
+    "4#17": {
+      "name": "Rapid Arrow (+)",
+      "desc": "Casts +1 / Attack +10%"
+    },
+    "25#9": {
+      "name": "Rapid Fireball (+)Ⅱ",
+      "desc": "Extra casts +2"
+    },
+    "36#9": {
+      "name": "Rapid Lightning (+)",
+      "desc": "Casts +1"
+    },
+    "50#5": {
+      "name": "Rapid Frost Crystal (+)",
+      "desc": "Extra casts +1"
+    },
+    "64#5": {
+      "name": "Rapid Log+",
+      "desc": "Extra casts +1"
+    }
+  },
+  "items": {
+    "book.arrow": "Arrow Spellbook",
+    "book.fireball": "Fireball Spellbook",
+    "book.lightning": "Lightning Spellbook",
+    "book.frost_crystal": "Frost Crystal Spellbook",
+    "book.log": "Rolling Log Spellbook",
+    "book.cold_zone": "Frost Zone Spellbook",
+    "book.lightning_cloud": "Storm Cloud Spellbook",
+    "book.energy_beam": "Energy Beam Spellbook",
+    "book.chain_lightning": "Chain Lightning Spellbook",
+    "book.focus_beam": "Focus Beam Spellbook",
+    "book.hat": "Hood Enchant Scroll",
+    "book.top": "Robe Enchant Scroll",
+    "book.shoes": "Boots Enchant Scroll",
+    "book.weapon": "Weapon Enchant Scroll",
+    "book.ring": "Bone Ring Enchant Scroll",
+    "book.tie": "Skull Necklace Enchant Scroll",
+    "book.employee_id": "Seal Enchant Scroll",
+    "chest.gem": "Gem Chest"
+  },
+  "generalCards": {
+    "wall_repair": {
+      "name": "Barrier Repair",
+      "desc": "Barrier HP +20%"
+    }
+  }
+}

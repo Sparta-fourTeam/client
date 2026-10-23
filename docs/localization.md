@@ -27,12 +27,13 @@ Unity Localization 패키지로 ko, en, ja, zh-Hans를 지원한다. 문구의 �
 ## 번역하지 않는 것
 
 - 로그, 데이터 검증 예외 등 개발자용 문구
-- 서버나 JSON이 내려주는 값(스킬 이름, 닉네임 등)
+- 서버가 내려주는 값(닉네임 등). 스킬·카드·아이템 이름·설명과 튜토리얼 대사는 클라이언트 JSON 파일로 번역한다(아래 "알아 둘 점")
 - 문의 메일 본문. 운영팀이 한국어로 읽는다
 - 언어 이름(`한국어`, `English`, `日本語`, `简体中文`). 현재 로케일과 무관하게 항상 같은 글자로 보여야 해서 전용 폰트 `LanguageNamesSdf`(JP/SC 폴백)를 쓴다
 
 ## 알아 둘 점
 
+- 게임 콘텐츠 표시 문구(스킬·카드·아이템·일반 카드 이름·설명, 튜토리얼 대사)는 `UIStrings`가 아니라 `Resources/ClientData/DisplayTexts.<코드>.json`, `TutorialPresentations.<코드>.json`(코드는 en, ja, zh-Hans)에 둔다. 접미사 없는 파일이 ko 원본이고, 번역 파일에는 같은 키와 구조를 쓴다. 항목이나 값이 비었거나 파일이 없으면 ko 값을 쓴다. 튜토리얼의 `Speaker`는 초상 매칭용 식별자라 번역하지 않는다. `GameDataStore`가 시작 로케일로 로드하고, 로케일이 바뀌면 `DisplayTextLocalizer`가 `ApplyDisplayLocale`로 이미 만든 객체의 문구를 제자리에서 갱신한다.
 - 코드가 한 번 써 넣은 문구(`label.text = L10n.Get(...)`)는 로케일을 바꿔도 다시 계산되지 않는다. 그래서 로비에서 언어를 바꾸면 `GameSettingsApplier`가 로케일을 적용한 뒤 `GoToLobby()`로 로비 씬을 다시 로드해 UI를 새 언어로 만든다. 전투 중에는 재로드하지 않고 다음 씬 진입 때 새 언어가 적용된다.
 - ja, zh-Hans 폰트는 Noto Sans(OFL) 원본이다. 파일이 커서 빌드 크기가 늘고, 대용량 파일 검사에서 `ttf|otf`를 제외했다.
 - 에디터에서는 `LocalizedFont`가 동작하지 않는다. ja, zh-Hans 표시는 플레이 모드에서 확인한다.

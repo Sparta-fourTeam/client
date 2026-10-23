@@ -1,0 +1,111 @@
+[
+  {
+    "Id": "intro_battle",
+    "Dialogue": [
+      {
+        "Speaker": "끄적이",
+        "Side": "right",
+        "Text": "Hmm...? Where am I?"
+      },
+      {
+        "Speaker": "???",
+        "Side": "left",
+        "Text": "Oho! You've finally opened your eyes!"
+      },
+      {
+        "Speaker": "끄적이",
+        "Side": "right",
+        "Text": "Eek! Who are you?! ...More importantly, who am I?"
+      },
+      {
+        "Speaker": "슥삭 선생",
+        "Side": "left",
+        "Text": "Hohoho! You're a Doodle, freshly born!"
+      },
+      {
+        "Speaker": "끄적이",
+        "Side": "right",
+        "Text": "Huh?! I'm a Doodle?!"
+      },
+      {
+        "Speaker": "슥삭 선생",
+        "Side": "left",
+        "Text": "I'll explain later! A bunch of rascals are rushing this way right now!"
+      },
+      {
+        "Speaker": "끄적이",
+        "Side": "right",
+        "Text": "What?! Already?!"
+      },
+      {
+        "Speaker": "슥삭 선생",
+        "Side": "left",
+        "Text": "Now then, first things first. Go guard that wall!"
+      }
+    ]
+  },
+  {
+    "Id": "log_upgrade",
+    "Script": "skillUpgrade",
+    "Lines": [
+      "Want to power up your Skill with the materials you got?\nTap the Skill tab below!",
+      "Tap the arrow!",
+      "You can upgrade with the materials you got.\nTap the Upgrade button!",
+      "Tap OK to upgrade!"
+    ],
+    "Dialogue": [
+      {
+        "Speaker": "슥삭 선생",
+        "Side": "left",
+        "Text": "Oho! Not bad for someone just drawn!"
+      },
+      {
+        "Speaker": "끄적이",
+        "Side": "right",
+        "Text": "Whew...! I never thought I'd go through this right after being born!"
+      },
+      {
+        "Speaker": "슥삭 선생",
+        "Side": "left",
+        "Text": "Hohoho! To survive in this world, you'll need to get stronger."
+      },
+      {
+        "Speaker": "끄적이",
+        "Side": "right",
+        "Text": "I can get stronger?"
+      },
+      {
+        "Speaker": "슥삭 선생",
+        "Side": "left",
+        "Text": "Of course! Use the materials you got to power yourself up!"
+      }
+    ]
+  },
+  {
+    "Id": "equipment_upgrade",
+    "Script": "equipmentUpgrade",
+    "Lines": [
+      "Now let's fix up your gear!\nTap the Character tab below!",
+      "Tap the hood!",
+      "You can upgrade the hood with the materials you received.\nTap the Upgrade button!",
+      "Tap OK to upgrade your gear!"
+    ],
+    "Dialogue": [
+      {
+        "Speaker": "슥삭 선생",
+        "Side": "left",
+        "Text": "Oho! You protected the second gate safely too!"
+      },
+      {
+        "Speaker": "끄적이",
+        "Side": "right",
+        "Text": "Whew...! It's getting pretty tough, isn't it?"
+      },
+      {
+        "Speaker": "슥삭 선생",
+        "Side": "left",
+        "Text": "This time I'll help you tune up your gear. Open the Character screen!"
+      }
+    ]
+  }
+]

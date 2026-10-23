@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
+using UnityEngine;
 
 namespace Game.Core
 {
@@ -59,6 +61,46 @@ namespace Game.Core
                     throw new InvalidOperationException($"TutorialPresentations {tutorial.Id}: 가이드 튜토리얼은 Script와 Lines가 필요합니다");
                 }
             }
+        }
+
+        /// <summary>로케일의 표시 문구로 Lines·Dialogue Text를 제자리에서 바꾼다(객체 참조 유지). 표에 없는 Id와 구조(Speaker·Side·개수)는 건드리지 않는다</summary>
+        public void ApplyTexts(IEnumerable<TutorialPresentation> localized)
+        {
+            foreach (var source in localized ?? Enumerable.Empty<TutorialPresentation>())
+            {
+                if (source == null || !_map.TryGetValue(source.Id ?? "", out var row)) { continue; }
+                for (int i = 0; i < row.Lines.Count && i < source.Lines.Count; i++) { row.Lines[i] = source.Lines[i]; }
+                for (int i = 0; i < row.Dialogue.Count && i < source.Dialogue.Count; i++) { row.Dialogue[i].Text = source.Dialogue[i].Text; }
+            }
+        }
+
+        /// <summary>로케일의 튜토리얼 연출 목록. ko 원본을 바탕으로 번역 파일(TutorialPresentations.&lt;코드&gt;.json)의 비어 있지 않은 Lines·Dialogue Text를 같은 순번에 덮어쓴다.
+        /// 파일이나 항목이 없으면 ko 값을 쓴다</summary>
+        public static List<TutorialPresentation> Load(string localeCode)
+        {
+            var asset = Resources.Load<TextAsset>("ClientData/TutorialPresentations")
+                ?? throw new InvalidOperationException("Resources/ClientData/TutorialPresentations.json을 찾을 수 없습니다");
+            var rows = JsonConvert.DeserializeObject<List<TutorialPresentation>>(asset.text);
+            if (string.IsNullOrEmpty(localeCode) || localeCode == DisplayTexts.BaseLocale) { return rows; }
+
+            var translated = Resources.Load<TextAsset>($"ClientData/TutorialPresentations.{localeCode}");
+            var overlay = translated == null ? null : JsonConvert.DeserializeObject<List<TutorialPresentation>>(translated.text);
+            foreach (var source in overlay ?? new List<TutorialPresentation>())
+            {
+                var row = source == null ? null : rows.Find(r => r.Id == source.Id);
+                if (row == null) { continue; }
+                for (int i = 0; i < row.Lines.Count && source.Lines != null && i < source.Lines.Count; i++)
+                {
+                    if (!string.IsNullOrWhiteSpace(source.Lines[i])) { row.Lines[i] = source.Lines[i]; }
+                }
+
+                for (int i = 0; i < row.Dialogue.Count && source.Dialogue != null && i < source.Dialogue.Count; i++)
+                {
+                    if (source.Dialogue[i] != null && !string.IsNullOrWhiteSpace(source.Dialogue[i].Text)) { row.Dialogue[i].Text = source.Dialogue[i].Text; }
+                }
+            }
+
+            return rows;
         }
 
         public TutorialPresentation For(string tutorialId) =>

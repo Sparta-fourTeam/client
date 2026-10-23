@@ -20,7 +20,9 @@ namespace Game.Boot
             bool serverProgress = ServerConfig.UseServerProgress;
 
             builder.Register<ILoginConsentStore>(_ => new PlayerPrefsLoginConsentStore(), Lifetime.Singleton);
-            builder.Register<GameDataStore>(Lifetime.Singleton);
+            // 표시 문구는 시작 로케일(저장된 언어 또는 시스템 언어)로 로드한다. 이후 변경은 DisplayTextLocalizer가 반영한다
+            builder.Register(_ => new GameDataStore(GameLanguageLocale.StartupCode()), Lifetime.Singleton);
+            builder.RegisterEntryPoint<DisplayTextLocalizer>();
             builder.Register(c => serverProgress
                 ? new LocalSaveStore(LocalSavePath.Current, c.Resolve<GameDataStore>())
                 : new LocalSaveStore(c.Resolve<GameDataStore>()), Lifetime.Singleton);

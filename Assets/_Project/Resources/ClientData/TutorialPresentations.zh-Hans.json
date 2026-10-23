@@ -1,0 +1,111 @@
+[
+  {
+    "Id": "intro_battle",
+    "Dialogue": [
+      {
+        "Speaker": "끄적이",
+        "Side": "right",
+        "Text": "唔嗯……？ 这是哪儿？"
+      },
+      {
+        "Speaker": "???",
+        "Side": "left",
+        "Text": "哦吼！ 你终于睁开眼睛啦！"
+      },
+      {
+        "Speaker": "끄적이",
+        "Side": "right",
+        "Text": "呀！ 您是谁?! ……比起这个，我又是谁？"
+      },
+      {
+        "Speaker": "슥삭 선생",
+        "Side": "left",
+        "Text": "呵呵！ 你是刚刚诞生的涂鸦哦！"
+      },
+      {
+        "Speaker": "끄적이",
+        "Side": "right",
+        "Text": "诶?! 我是涂鸦?!"
+      },
+      {
+        "Speaker": "슥삭 선생",
+        "Side": "left",
+        "Text": "详细的以后再说！ 那些家伙正朝这里涌过来啦！"
+      },
+      {
+        "Speaker": "끄적이",
+        "Side": "right",
+        "Text": "什么?! 这么快?!"
+      },
+      {
+        "Speaker": "슥삭 선생",
+        "Side": "left",
+        "Text": "来，先去守住那面墙吧！"
+      }
+    ]
+  },
+  {
+    "Id": "log_upgrade",
+    "Script": "skillUpgrade",
+    "Lines": [
+      "用获得的材料强化技能吧？\n点一下下面的技能标签！",
+      "点一下箭头！",
+      "可以用获得的材料强化。\n点强化按钮吧！",
+      "点确定就会强化！"
+    ],
+    "Dialogue": [
+      {
+        "Speaker": "슥삭 선생",
+        "Side": "left",
+        "Text": "哦吼！ 对刚画出来的家伙来说，相当不错嘛！"
+      },
+      {
+        "Speaker": "끄적이",
+        "Side": "right",
+        "Text": "呼啊……！ 没想到一出生就遇上这种事！"
+      },
+      {
+        "Speaker": "슥삭 선생",
+        "Side": "left",
+        "Text": "呵呵！ 想在这个世界活下去，就得变得更强。"
+      },
+      {
+        "Speaker": "끄적이",
+        "Side": "right",
+        "Text": "我还能变得更强吗？"
+      },
+      {
+        "Speaker": "슥삭 선생",
+        "Side": "left",
+        "Text": "当然！ 用获得的材料强化你的力量吧！"
+      }
+    ]
+  },
+  {
+    "Id": "equipment_upgrade",
+    "Script": "equipmentUpgrade",
+    "Lines": [
+      "这次来整理一下装备吧！\n点一下下面的角色标签！",
+      "点一下兜帽！",
+      "可以用收到的材料强化兜帽。\n点强化按钮吧！",
+      "点确定装备就会被强化！"
+    ],
+    "Dialogue": [
+      {
+        "Speaker": "슥삭 선생",
+        "Side": "left",
+        "Text": "哦吼！ 第二道关卡也平安守住了呢！"
+      },
+      {
+        "Speaker": "끄적이",
+        "Side": "right",
+        "Text": "呼啊……！ 越来越不好对付了呢？"
+      },
+      {
+        "Speaker": "슥삭 선생",
+        "Side": "left",
+        "Text": "这次我来帮你整修装备。打开角色界面吧！"
+      }
+    ]
+  }
+]

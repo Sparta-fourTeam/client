@@ -45,6 +45,23 @@ namespace Game.Tests
             Assert.AreEqual(originalDamage, store.LoadSkills()[0].baseStats.cast.baseDamage);
         }
 
+        [Test(Description = "표시 문구 로케일을 바꿔도 이미 받은 스킬 객체가 제자리에서 갱신되고, 번역 파일이 없거나 ko로 돌아오면 ko 값을 쓴다")]
+        public void ApplyDisplayLocale_UpdatesInPlaceWithKoFallback()
+        {
+            var store = new GameDataStore();
+            var skill = store.LoadSkills()[0];
+            string ko = skill.name;
+
+            store.ApplyDisplayLocale("en");
+            Assert.IsFalse(string.IsNullOrWhiteSpace(skill.name));
+
+            Assert.DoesNotThrow(() => store.ApplyDisplayLocale("xx"));
+            Assert.AreEqual(ko, skill.name);
+
+            store.ApplyDisplayLocale("ko");
+            Assert.AreEqual(ko, skill.name);
+        }
+
         private sealed class NumericCardState : IUpgradeState
         {
             public readonly Dictionary<int, int> Levels = new();
