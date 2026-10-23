@@ -16,6 +16,12 @@ namespace Game.Network
             // SendWebRequest()를 부르는 순간 전송이 시작되므로, 이미 취소된 요청은 서버에 닿기 전에 여기서 끝낸다
             cancellationToken.ThrowIfCancellationRequested();
 
+#if NOVA_POLICY_LOCAL && NOVA_POLICY_QA && !UNITY_EDITOR
+            if (!Uri.TryCreate(request.Url, UriKind.Absolute, out var qaUri) || qaUri.Scheme != "http"
+                || qaUri.Host != "127.0.0.1" || qaUri.Port != 18080)
+            { throw new InvalidOperationException("Local QA transport only accepts the dedicated loopback endpoint."); }
+            Debug.Log($"QA_HTTP_BEGIN {request.Verb} {qaUri.AbsolutePath}");
+#endif
             using var web = new UnityWebRequest(request.Url, request.Verb.ToString().ToUpperInvariant());
             web.downloadHandler = new DownloadHandlerBuffer();
             web.timeout = Mathf.CeilToInt(timeoutSeconds);
@@ -44,6 +50,9 @@ namespace Game.Network
                 // 실패 종류는 아래에서 web.result로 가른다
             }
 
+#if NOVA_POLICY_LOCAL && NOVA_POLICY_QA && !UNITY_EDITOR
+            Debug.Log($"QA_HTTP_END {request.Verb} {qaUri.AbsolutePath} status={web.responseCode} result={web.result}");
+#endif
             switch (web.result)
             {
                 case UnityWebRequest.Result.Success:

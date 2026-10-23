@@ -156,7 +156,9 @@ namespace Game.Network
         private UniTask<HttpResponseData> Send(HttpVerb verb, string path, string jsonBody, CancellationToken cancellationToken)
         {
             var url = $"{_config.BaseUrl}/{path.TrimStart('/')}";
-            return _transport.Send(new HttpRequestData(verb, url, _auth.GetHeaders(), jsonBody), _config.TimeoutSeconds, cancellationToken);
+            var headers = GameClientIdentity.Headers();
+            foreach (var header in _auth.GetHeaders()) { headers[header.Key] = header.Value; }
+            return _transport.Send(new HttpRequestData(verb, url, headers, jsonBody), _config.TimeoutSeconds, cancellationToken);
         }
 
         // 로그인한 상태로 보낸 요청이 401을 받았을 때만 토큰 만료로 본다. 로그인·재발급 요청의 401은 자격 증명이 틀린 것이다
@@ -230,13 +232,14 @@ namespace Game.Network
             // 재발급 요청에는 만료된 액세스 토큰을 붙이지 않는다
             var url = $"{_config.BaseUrl}/{RefreshPath}";
             var body = JsonConvert.SerializeObject(new RefreshRequest { refreshToken = refreshToken });
-            var response = await _transport.Send(new HttpRequestData(HttpVerb.Post, url, new Dictionary<string, string>(), body),
+            var response = await _transport.Send(new HttpRequestData(HttpVerb.Post, url, GameClientIdentity.Headers(), body),
                 _config.TimeoutSeconds, cancellationToken);
 
             if (_tokens.Generation != generation) { return false; }
             ApiException error = HttpErrorMapper.Map(response, _errorCodeReader);
             if (error != null)
             {
+                if (error.Code is "MAINTENANCE" or "DRAINING" or "CLIENT_UPDATE_REQUIRED") { throw error; }
                 // 재발급 거절뿐 아니라 응답 유실·시간 초과·서버 오류도 토큰이 소비됐을 수 있다.
                 // 서버의 재발급은 멱등하지 않으므로 같은 토큰을 다시 보내지 않고 로그인부터 시작한다.
                 _tokens.TryClear(generation);

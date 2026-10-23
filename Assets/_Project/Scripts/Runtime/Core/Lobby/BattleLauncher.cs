@@ -8,7 +8,7 @@ namespace Game.Core
     /// <summary>전투를 먼저 발급받고, 성공했을 때만 Stage로 전환한다.
     /// 로비 외에 튜토리얼에서도 쓴다(로딩·로비 → 튜토리얼 전투).
     /// 거절되면 씬 전환 없이 StartFailed만 발행한다 — 이전엔 반대로 Stage로 넘어갔다가 거절돼서 되돌아왔다</summary>
-    public sealed class BattleLauncher
+    public sealed class BattleLauncher : System.IDisposable
     {
         private readonly IBattleApi _battleApi;
         private readonly IBattleCheckpointStore _checkpoints;
@@ -16,9 +16,11 @@ namespace Game.Core
         private readonly ISceneNavigator _nav;
         private readonly IPublisher<StartFailed> _startFailed;
         private readonly PlayerProfile _profile;
+        private readonly IClientAccessGuard _access;
+        private readonly System.Threading.CancellationTokenSource _lifetime = new();
 
         public BattleLauncher(IBattleApi battleApi, StageContext stageContext, ISceneNavigator nav, IPublisher<StartFailed> startFailed, IBattleCheckpointStore checkpoints = null,
-            PlayerProfile profile = null)
+            PlayerProfile profile = null, IClientAccessGuard access = null)
         {
             _checkpoints = checkpoints;
             _battleApi = battleApi;
@@ -26,7 +28,10 @@ namespace Game.Core
             _nav = nav;
             _startFailed = startFailed;
             _profile = profile;
+            _access = access;
         }
+
+        public void Dispose() { _lifetime.Cancel(); _lifetime.Dispose(); }
 
         // 서버 전투는 결과를 받을 때 프로필을 먼저 바꾸므로, 전투를 시작하는 시점의 레벨·클리어 기록을 남겨 둔다 (LobbyProfileRefresher)
         private PreBattleState ReadPreBattle()
@@ -83,19 +88,23 @@ namespace Game.Core
         }
 
         /// <summary>기기에 저장된 같은 전투를 재개한다. 새 전투 발급이나 에너지 차감은 하지 않는다.</summary>
-        public UniTask Resume(BattleCheckpoint checkpoint)
+        public async UniTask Resume(BattleCheckpoint checkpoint)
         {
             if (checkpoint == null) { throw new System.ArgumentNullException(nameof(checkpoint)); }
+            if (_access != null) { await _access.EnsureAllowed(ClientAccessPurpose.Resume, _lifetime.Token); }
+            _lifetime.Token.ThrowIfCancellationRequested();
             _stageContext.SetBattle(checkpoint.BattleId);
             _stageContext.Checkpoint = checkpoint;
             // 이어하기는 저장된 원래 기준을 쓴다. 결과 재전송 중에는 프로필이 이미 전투 결과를 반영했을 수 있다
             _stageContext.PreBattle = checkpoint.PreBattle ?? ReadPreBattle();
-            return _nav.GoToStage(checkpoint.StageId);
+            await _nav.GoToStage(checkpoint.StageId);
         }
 
         /// <summary>발급에 성공해 Stage로 넘어갔으면 true, 거절돼 그대로 남았으면 false</summary>
         public async UniTask<bool> Launch(int stageId)
         {
+            if (_access != null) { await _access.EnsureAllowed(ClientAccessPurpose.NewBattle, _lifetime.Token); }
+            _lifetime.Token.ThrowIfCancellationRequested();
             StartBattleResponse response;
             try
             {

@@ -384,6 +384,36 @@ namespace Game.Tests
 
         [TestCase(false)]
         [TestCase(true)]
+        public async System.Threading.Tasks.Task SelectedGuestCannotAuthenticateUntilPolicyCheckCompletes(bool cancel)
+        {
+            var access = new PendingAccess();
+            var flow = new LoginFlow(_auth, new FakePlayerApi(), _profile, _credentials, _prompt,
+                Array.Empty<ISocialSignIn>(), _analytics, _consents, access: access);
+            var task = flow.RunAsync().AsTask();
+            Assert.AreEqual(0, _auth.Calls); Assert.IsFalse(_credentials.HasCredential);
+            if (cancel)
+            {
+                access.Reply.TrySetCanceled();
+                try { await task; Assert.Fail("Cancelled policy must not authenticate."); }
+                catch (OperationCanceledException) { }
+                Assert.AreEqual(0, _auth.Calls); Assert.IsFalse(_credentials.HasCredential);
+            }
+            else
+            {
+                access.Reply.TrySetResult(); await task;
+                Assert.AreEqual(1, _auth.Calls);
+            }
+        }
+
+        private sealed class PendingAccess : IClientAccessGuard
+        {
+            public readonly UniTaskCompletionSource Reply = new();
+            public UniTask EnsureAllowed(ClientAccessPurpose purpose, System.Threading.CancellationToken cancellationToken = default)
+            { return Reply.Task; }
+        }
+
+        [TestCase(false)]
+        [TestCase(true)]
         public void ServiceConsentRejected_DoesNotAuthenticateOrChangeCredentials(bool savedGoogle)
         {
             if (savedGoogle) { _credentials.Save(LoginMethod.Google, AuthCredentials.SocialAccountId); }

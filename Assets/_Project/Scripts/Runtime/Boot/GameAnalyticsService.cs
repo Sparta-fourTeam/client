@@ -14,7 +14,7 @@ namespace Game.Boot
         public void SetCollectionAllowed(bool allowed)
         {
             _ready = false;
-#if !UNITY_EDITOR
+#if !UNITY_EDITOR && !NOVA_POLICY_QA
             if (!allowed)
             {
                 // 이미 시작한 SDK의 이벤트 제출·로컬 캐시를 중지한다. SDK 전체 해제를 뜻하지 않는다.
@@ -29,7 +29,7 @@ namespace Game.Boot
         private void Initialize()
         {
             // 에디터 플레이·테스트·샌드박스는 운영 통계에 넣지 않는다.
-#if !UNITY_EDITOR
+#if !UNITY_EDITOR && !NOVA_POLICY_QA
             TrySend(() =>
             {
                 var settings = Resources.Load<GameAnalyticsSDK.Setup.Settings>("GameAnalytics/Settings");
