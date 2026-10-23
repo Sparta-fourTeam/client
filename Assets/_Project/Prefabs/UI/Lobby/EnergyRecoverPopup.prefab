@@ -86,6 +86,7 @@ GameObject:
   - component: {fileID: 308661036237229797}
   - component: {fileID: 927487432380236514}
   - component: {fileID: 2057354385365536315}
+  - component: {fileID: 5254716655910951829}
   m_Layer: 5
   m_Name: TitleText
   m_TagString: Untagged
@@ -212,6 +213,26 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &5254716655910951829
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1141638993201948131}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d81b4c207ea7245e4b7595e50957af2a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.LocalizedFont
+  m_LocalizedAssetReference:
+    m_TableReference:
+      m_TableCollectionName: GameAssets
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: UIFont
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
 --- !u!1 &1560749588790333830
 GameObject:
   m_ObjectHideFlags: 0
@@ -398,6 +419,7 @@ GameObject:
   - component: {fileID: 8270250307002218665}
   - component: {fileID: 1720294061171966888}
   - component: {fileID: 6188391400805483732}
+  - component: {fileID: 3703098293515715469}
   m_Layer: 5
   m_Name: TitleText
   m_TagString: Untagged
@@ -524,6 +546,26 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &3703098293515715469
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1631751621964617774}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d81b4c207ea7245e4b7595e50957af2a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.LocalizedFont
+  m_LocalizedAssetReference:
+    m_TableReference:
+      m_TableCollectionName: GameAssets
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: UIFont
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
 --- !u!1 &1676342449427376020
 GameObject:
   m_ObjectHideFlags: 0
@@ -983,6 +1025,7 @@ GameObject:
   - component: {fileID: 5345079851852253554}
   - component: {fileID: 3352674508608298475}
   - component: {fileID: 7773035381957525935}
+  - component: {fileID: 3814058825220077700}
   m_Layer: 5
   m_Name: Label
   m_TagString: Untagged
@@ -1109,6 +1152,26 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &3814058825220077700
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2564948486159296937}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d81b4c207ea7245e4b7595e50957af2a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.LocalizedFont
+  m_LocalizedAssetReference:
+    m_TableReference:
+      m_TableCollectionName: GameAssets
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: UIFont
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
 --- !u!1 &2742571856842712912
 GameObject:
   m_ObjectHideFlags: 0
@@ -1120,6 +1183,7 @@ GameObject:
   - component: {fileID: 3119663030549397341}
   - component: {fileID: 4040057169648904098}
   - component: {fileID: 4912496214804645064}
+  - component: {fileID: 289752011222053324}
   m_Layer: 5
   m_Name: DescText
   m_TagString: Untagged
@@ -1246,6 +1310,26 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &289752011222053324
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2742571856842712912}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d81b4c207ea7245e4b7595e50957af2a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.LocalizedFont
+  m_LocalizedAssetReference:
+    m_TableReference:
+      m_TableCollectionName: GameAssets
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: UIFont
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
 --- !u!1 &2888745107766860816
 GameObject:
   m_ObjectHideFlags: 0
@@ -2347,6 +2431,7 @@ GameObject:
   - component: {fileID: 5237674210220937441}
   - component: {fileID: 3661027230014148983}
   - component: {fileID: 5888994426308435316}
+  - component: {fileID: 1870006073036102782}
   m_Layer: 5
   m_Name: RemainingText
   m_TagString: Untagged
@@ -2473,6 +2558,26 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &1870006073036102782
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7937654914285828095}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d81b4c207ea7245e4b7595e50957af2a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.LocalizedFont
+  m_LocalizedAssetReference:
+    m_TableReference:
+      m_TableCollectionName: GameAssets
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: UIFont
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
 --- !u!1 &8455421546545961555
 GameObject:
   m_ObjectHideFlags: 0
@@ -2705,6 +2810,7 @@ GameObject:
   - component: {fileID: 7357390480617235749}
   - component: {fileID: 5953032135610996326}
   - component: {fileID: 6926659676738588586}
+  - component: {fileID: 2790697138352006003}
   m_Layer: 5
   m_Name: RemainingText
   m_TagString: Untagged
@@ -2831,6 +2937,26 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &2790697138352006003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8719988801238718437}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d81b4c207ea7245e4b7595e50957af2a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.LocalizedFont
+  m_LocalizedAssetReference:
+    m_TableReference:
+      m_TableCollectionName: GameAssets
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: UIFont
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
 --- !u!1 &8826421946718846161
 GameObject:
   m_ObjectHideFlags: 0

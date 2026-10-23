@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 91000202}
   - component: {fileID: 91000203}
   - component: {fileID: 91000204}
+  - component: {fileID: 60689190149633585}
   m_Layer: 0
   m_Name: SpawnCountdownText
   m_TagString: Untagged
@@ -137,6 +138,26 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &60689190149633585
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 91000201}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d81b4c207ea7245e4b7595e50957af2a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.LocalizedFont
+  m_LocalizedAssetReference:
+    m_TableReference:
+      m_TableCollectionName: GameAssets
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: UIFont
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
 --- !u!1 &945814767292613480
 GameObject:
   m_ObjectHideFlags: 0
@@ -223,6 +244,7 @@ GameObject:
   - component: {fileID: 1736932387871681863}
   - component: {fileID: 9187944541053225293}
   - component: {fileID: 1672440838887796704}
+  - component: {fileID: 8100907335736961184}
   m_Layer: 5
   m_Name: HpText
   m_TagString: Untagged
@@ -349,6 +371,26 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &8100907335736961184
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1289989505372012475}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d81b4c207ea7245e4b7595e50957af2a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.LocalizedFont
+  m_LocalizedAssetReference:
+    m_TableReference:
+      m_TableCollectionName: GameAssets
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: UIFont
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
 --- !u!1 &1421113916836024648
 GameObject:
   m_ObjectHideFlags: 0
@@ -530,6 +572,7 @@ GameObject:
   - component: {fileID: 8165481929328373802}
   - component: {fileID: 5144051450194148309}
   - component: {fileID: 6845450314958732127}
+  - component: {fileID: 7909544625764523192}
   m_Layer: 0
   m_Name: StageLabel
   m_TagString: Untagged
@@ -669,6 +712,26 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Game.View::Game.View.StageLabelHudView
   _label: {fileID: 5144051450194148309}
+--- !u!114 &7909544625764523192
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1536688393069657273}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d81b4c207ea7245e4b7595e50957af2a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.LocalizedFont
+  m_LocalizedAssetReference:
+    m_TableReference:
+      m_TableCollectionName: GameAssets
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: UIFont
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
 --- !u!1 &1570572278044081622
 GameObject:
   m_ObjectHideFlags: 0
@@ -1274,6 +1337,7 @@ GameObject:
   - component: {fileID: 2898917795932169272}
   - component: {fileID: 7299175618132815863}
   - component: {fileID: 4541783940417888786}
+  - component: {fileID: 2377687483246621372}
   m_Layer: 0
   m_Name: Timer
   m_TagString: Untagged
@@ -1414,6 +1478,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: Game.View::Game.View.TimerHudView
   _timeText: {fileID: 7299175618132815863}
   _spawnText: {fileID: 91000204}
+--- !u!114 &2377687483246621372
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3884446295731453920}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d81b4c207ea7245e4b7595e50957af2a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.LocalizedFont
+  m_LocalizedAssetReference:
+    m_TableReference:
+      m_TableCollectionName: GameAssets
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: UIFont
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
 --- !u!1 &3935146995919790036
 GameObject:
   m_ObjectHideFlags: 0
@@ -2598,6 +2682,7 @@ GameObject:
   - component: {fileID: 5068699427622817576}
   - component: {fileID: 5442945253271519299}
   - component: {fileID: 5373648341148473479}
+  - component: {fileID: 9163649213905549854}
   m_Layer: 5
   m_Name: Wave_Value
   m_TagString: Untagged
@@ -2724,6 +2809,26 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &9163649213905549854
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8768891688080176714}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d81b4c207ea7245e4b7595e50957af2a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.LocalizedFont
+  m_LocalizedAssetReference:
+    m_TableReference:
+      m_TableCollectionName: GameAssets
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: UIFont
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
 --- !u!1001 &5550573473041076375
 PrefabInstance:
   m_ObjectHideFlags: 0
