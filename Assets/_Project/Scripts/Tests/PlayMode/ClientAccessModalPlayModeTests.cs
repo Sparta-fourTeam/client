@@ -23,6 +23,42 @@ namespace Game.Tests
 
 #if UNITY_EDITOR
         [UnityTest]
+        public IEnumerator ResumeChoiceSurvivesLookupFailureMaintenanceAndRapidRechecks()
+        {
+            _instance = UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(
+                "Assets/_Project/Prefabs/UI/Loading/LoadingConfirmPopup.prefab"));
+            var popup = _instance.GetComponent<ConfirmPopupView>(); popup.Initialize();
+            var resume = popup.ShowAsync(new ConfirmRequest
+            { Title = "이어하기", ConfirmLabel = "이어하기", CancelLabel = "포기" }).AsTask();
+            var lookup = new UniTaskCompletionSource<ClientAccessPolicy>();
+            var client = new Client { Pending = lookup };
+            var guard = new ClientAccessGuard(client, new ClientAccessPrompt(), new NoAdvisory());
+            var task = guard.EnsureAllowed(ClientAccessPurpose.Login).AsTask();
+            yield return null;
+            Assert.IsFalse(resume.IsCompleted);
+            lookup.TrySetException(new ApiException(ApiErrorKind.Transient, "TIMEOUT"));
+            yield return Until(() => ((Button)new SerializedObject(popup).FindProperty("_confirmButton")
+                .objectReferenceValue).interactable);
+            Assert.IsFalse(task.IsCompleted); Assert.IsFalse(resume.IsCompleted);
+            client.Pending = null;
+            ((Button)new SerializedObject(popup).FindProperty("_confirmButton").objectReferenceValue).onClick.Invoke();
+            yield return null; // Retry now reads actual maintenance from the synthetic provider.
+            for (int i = 0; i < 3; i++)
+            {
+                guard.Recheck(); yield return null;
+                Assert.IsFalse(task.IsCompleted); Assert.IsFalse(resume.IsCompleted);
+            }
+            client.Mode = "DRAINING"; guard.Recheck(); yield return null;
+            Assert.IsFalse(task.IsCompleted); Assert.IsFalse(resume.IsCompleted);
+            client.Mode = null; client.Normal = true; guard.Recheck();
+            yield return Until(() => task.IsCompleted);
+            Assert.IsFalse(task.IsFaulted); Assert.IsFalse(resume.IsCompleted);
+            ((Button)new SerializedObject(popup).FindProperty("_confirmButton").objectReferenceValue).onClick.Invoke();
+            yield return Until(() => resume.IsCompleted);
+            Assert.IsTrue(resume.Result);
+        }
+
+        [UnityTest]
         public IEnumerator PendingLookupBlocksAllButtonsAndSupersededReplyAcrossRealFrames()
         {
             _instance = UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(
@@ -118,6 +154,7 @@ namespace Game.Tests
         private sealed class Client : IClientPolicyClient
         {
             public bool Normal; public int Reads;
+            public string Mode;
             public UniTaskCompletionSource<ClientAccessPolicy> Pending;
             public ClientBuild Build => new ClientBuild("android", "10");
             public UniTask<ClientAccessPolicy> Fetch(CancellationToken cancellationToken)
@@ -129,7 +166,7 @@ namespace Game.Tests
                     schemaVersion = 1,
                     revision = "test",
                     enforcementEnabled = true,
-                    mode = Normal ? "NORMAL" : "MAINTENANCE",
+                    mode = Mode ?? (Normal ? "NORMAL" : "MAINTENANCE"),
                     message = "test",
                     retryAfterSeconds = 30,
                     platforms = new Dictionary<string, ClientPlatformPolicy>

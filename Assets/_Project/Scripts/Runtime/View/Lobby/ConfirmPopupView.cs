@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using TMPro;
 using UnityEngine;
@@ -42,6 +43,7 @@ namespace Game.View
 
         private UniTaskCompletionSource<bool> _result;
         private ConfirmRequest _request;
+        private readonly LinkedList<(ConfirmRequest request, UniTaskCompletionSource<bool> result, string input)> _deferred = new();
         private float _confirmX;
         private float _messageBaseHeight, _warningGap;
 
@@ -63,11 +65,26 @@ namespace Game.View
 
         public UniTask<bool> ShowAsync(ConfirmRequest request)
         {
+            var result = new UniTaskCompletionSource<bool>();
             if (_result != null && _request?.CannotDismiss == true)
-            { return UniTask.FromResult(false); }
-            // 이미 떠 있으면 앞의 요청은 취소로 끝낸다
-            _result?.TrySetResult(false);
-            _result = new UniTaskCompletionSource<bool>();
+            {
+                // 정책 확인 중에 열린 일반 선택도 사용자 취소로 바꾸지 않는다.
+                _deferred.AddLast((request, result, request.InitialInput));
+                return result.Task;
+            }
+            if (_result != null && request.CannotDismiss)
+            {
+                // 점검/조회 모달은 기존 이어하기·입력 응답을 완료하지 않고 잠시 보류한다.
+                _deferred.AddFirst((_request, _result, _input.text));
+            }
+            else { _result?.TrySetResult(false); }
+            Present(request, result, request.InitialInput);
+            return result.Task;
+        }
+
+        private void Present(ConfirmRequest request, UniTaskCompletionSource<bool> result, string input)
+        {
+            _result = result;
             _request = request;
             _closeButton.gameObject.SetActive(!request.CannotDismiss);
 
@@ -86,7 +103,7 @@ namespace Game.View
             bool needsInput = !string.IsNullOrEmpty(request.RequiredInput) || request.InputValidator != null;
             request.InputValue = null;
             _input.gameObject.SetActive(needsInput);
-            _input.SetTextWithoutNotify(request.InitialInput ?? string.Empty);
+            _input.SetTextWithoutNotify(input ?? string.Empty);
             ((TMP_Text)_input.placeholder).text = request.InputPlaceholder;
 
             // 긴 메시지는 칸을 키우고 그 아래 경고를 밀어 내린다. 짧으면 기본 칸 그대로라 창 높이가 변하지 않는다
@@ -104,7 +121,6 @@ namespace Game.View
 
             RefreshConfirm();
             PopupPanel.Set(_panel, _transition, true);
-            return _result.Task;
         }
 
         private void RefreshConfirm()
@@ -122,17 +138,34 @@ namespace Game.View
         /// <summary>같은 요청의 취소·foreground 재검사만 닫는다. 이미 바뀐 팝업은 건드리지 않는다.</summary>
         public void Cancel(ConfirmRequest request)
         {
-            if (ReferenceEquals(_request, request)) { Finish(false, true); }
+            if (ReferenceEquals(_request, request)) { Finish(false, true); return; }
+            for (var node = _deferred.First; node != null; node = node.Next)
+            {
+                if (!ReferenceEquals(node.Value.request, request)) { continue; }
+                var result = node.Value.result;
+                _deferred.Remove(node);
+                // 사라진 소유자의 보류 창을 복원하거나 사용자 포기로 해석하지 않는다.
+                result.TrySetCanceled();
+                return;
+            }
         }
 
         private void Finish(bool confirmed, bool force = false)
         {
+            if (_result == null || _request == null) { return; }
             if (!confirmed && !force && _request?.CannotDismiss == true) { return; }
             if (confirmed && !_confirmButton.interactable) { return; }
             if (confirmed) { _request.InputValue = _input.text; }
             var result = _result;
             _result = null;
-            PopupPanel.Set(_panel, _transition, false);
+            _request = null;
+            if (_deferred.First != null)
+            {
+                var previous = _deferred.First.Value;
+                _deferred.RemoveFirst();
+                Present(previous.request, previous.result, previous.input);
+            }
+            else { PopupPanel.Set(_panel, _transition, false); }
             // 대기자가 동기적으로 다음 확인창을 열어도 새 완료소스를 지우지 않는다
             result?.TrySetResult(confirmed);
         }

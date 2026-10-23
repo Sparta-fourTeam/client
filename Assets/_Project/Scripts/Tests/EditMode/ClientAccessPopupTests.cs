@@ -46,18 +46,51 @@ namespace Game.Tests
             foreach (var button in _instance.GetComponentsInChildren<Button>(true))
             { if (button.name != "ConfirmButton") { button.onClick.Invoke(); } }
             Assert.IsFalse(pending.IsCompleted);
-            Assert.IsFalse(_view.ShowAsync(new ConfirmRequest { Title = "other" }).GetAwaiter().GetResult());
+            var other = _view.ShowAsync(new ConfirmRequest { Title = "other" }).AsTask();
+            Assert.IsFalse(other.IsCompleted);
             Assert.IsFalse(pending.IsCompleted);
             _view.Cancel(request); Assert.IsTrue(pending.IsCompleted);
+            Assert.IsFalse(other.IsCompleted);
+            var close = (Button)new SerializedObject(_view).FindProperty("_closeButton").objectReferenceValue;
+            close.onClick.Invoke(); Assert.IsFalse(other.Result);
+        }
+
+        [TestCase(true)]
+        [TestCase(false)]
+        public void PolicyLookupPreservesResumeChoiceUntilTheUserActuallyAnswers(bool resume)
+        {
+            var original = _view.ShowAsync(new ConfirmRequest
+            { Title = "이어하기", ConfirmLabel = "이어하기", CancelLabel = "포기" }).AsTask();
+            var checking = new ConfirmRequest { Title = "checking", CannotDismiss = true, ConfirmEnabled = false };
+            _view.ShowAsync(checking).Forget();
+            Assert.IsFalse(original.IsCompleted, "A policy lookup must not synthesize a forfeit answer.");
+            _view.Cancel(checking);
+            Assert.IsFalse(original.IsCompleted);
+            var field = resume ? "_confirmButton" : "_cancelButton";
+            ((Button)new SerializedObject(_view).FindProperty(field).objectReferenceValue).onClick.Invoke();
+            Assert.IsTrue(original.IsCompleted); Assert.AreEqual(resume, original.Result);
+        }
+
+        [Test]
+        public void PolicyLookupPreservesTypedConfirmationInput()
+        {
+            var original = _view.ShowAsync(new ConfirmRequest { Title = "ordinary", RequiredInput = "keep" }).AsTask();
+            var input = (TMPro.TMP_InputField)new SerializedObject(_view).FindProperty("_input").objectReferenceValue;
+            input.text = "keep";
+            var checking = new ConfirmRequest { CannotDismiss = true, ConfirmEnabled = false };
+            _view.ShowAsync(checking).Forget(); _view.Cancel(checking);
+            Assert.IsFalse(original.IsCompleted); Assert.AreEqual("keep", input.text);
         }
 
         [Test]
         public void CancellingAnOldRequestCannotDismissNewerModal()
         {
-            var old = new ConfirmRequest { Title = "old" }; _view.ShowAsync(old).Forget();
+            var old = new ConfirmRequest { Title = "old" }; var original = _view.ShowAsync(old).AsTask();
             var next = new ConfirmRequest { Title = "new", CannotDismiss = true };
             var pending = _view.ShowAsync(next).AsTask();
             _view.Cancel(old); Assert.IsFalse(pending.IsCompleted);
+            Assert.IsTrue(original.IsFaulted);
+            Assert.That(original.Exception.InnerException, Is.InstanceOf<System.OperationCanceledException>());
             _view.Cancel(next); Assert.IsTrue(pending.IsCompleted);
         }
     }
