@@ -8,14 +8,14 @@ namespace Game.Network
     public static class ServerConfig
     {
         /// <summary>서버 주소. 요청 경로가 api/로 시작하므로 끝에 /api나 /auth를 붙이지 않는다
-        /// (https://doodle-defense.duckdns.org/auth는 웹사이트 화면이다)</summary>
+        /// (https://doodledefense.duckdns.org/auth는 웹사이트 화면이다)</summary>
 #if NOVA_POLICY_LOCAL && NOVA_POLICY_QA && !UNITY_EDITOR
         public const string BaseUrl = "http://127.0.0.1:18080";
 #elif NOVA_POLICY_QA && !UNITY_EDITOR
         // 전용 APK의 실수로 인한 운영 쓰기를 막는다. 외부 서버/터널은 사용하지 않는다.
         public const string BaseUrl = "https://127.0.0.1:9";
 #else
-        public const string BaseUrl = "https://doodle-defense.duckdns.org";
+        public const string BaseUrl = "https://doodledefense.duckdns.org";
 #endif
 
         // 개발 중에 켜고 끄는 값. "1"이면 켜고 "0"이면 끈다. 없으면 아래 기본 규칙을 따른다

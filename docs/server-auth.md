@@ -6,7 +6,7 @@
 
 | 항목 | 값 |
 | --- | --- |
-| 주소 | `https://doodle-defense.duckdns.org` (`ServerConfig.BaseUrl`, 정식 HTTPS 인증서). 요청 경로가 `api/`로 시작하므로 주소에 `/api`를 붙이지 않는다. 이 도메인의 `/auth`는 웹사이트 화면이라 API 주소가 아니다 |
+| 주소 | `https://doodledefense.duckdns.org` (`ServerConfig.BaseUrl`, 정식 HTTPS 인증서). 요청 경로가 `api/`로 시작하므로 주소에 `/api`를 붙이지 않는다. 이 도메인의 `/auth`는 웹사이트 화면이라 API 주소가 아니다 |
 | 게스트 가입 | `POST /api/auth/guest/signup` → `{ guestId, tokens }` |
 | 게스트 로그인 | `POST /api/auth/guest/login` `{ guestId }` → `{ accessToken, refreshToken }` |
 | 소셜 로그인 | `POST /api/auth/social/login` `{ provider: GOOGLE \| APPLE, idToken }` → `{ accessToken, refreshToken }`. 처음 로그인하면 서버가 가입시킨다 |
