@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Game.Core;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -52,7 +53,7 @@ namespace Game.View
                     _rows[i].Icon.sprite = rows[i].Icon;
                 }
 
-                _rows[i].Level.text = $"Lv. {rows[i].Level}";
+                _rows[i].Level.text = L10n.Get("label.level", rows[i].Level);
                 _rows[i].Damage.text = rows[i].Damage.ToString("N0");
             }
 

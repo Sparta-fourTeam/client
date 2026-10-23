@@ -77,7 +77,7 @@ namespace Game.View
             _panel.SetActive(true);
             if (_pin != null) { _pin.DOKill(); _pin.localRotation = Quaternion.identity; }
             _skipButton.interactable = true;
-            _skipButtonLabel.text = "스킵";
+            _skipButtonLabel.text = L10n.Get("common.skip");
             _shownCards = 0;
             for (int i = 0; i < _rewardCards.Length; i++)
             {
@@ -103,7 +103,7 @@ namespace Game.View
                 ShowCompletion(run);
                 return;
             }
-            _heading.text = $"엘리트 보상  {session.CompletedRolls + 1} / {session.CardCount}";
+            _heading.text = L10n.Get("elite.reward", session.CompletedRolls + 1, session.CardCount);
             _animation = PlaySpin(round.WinnerIndex, () => Reveal(run, round));
         }
 
@@ -292,14 +292,14 @@ namespace Game.View
 
         private void ShowCompletion(int run)
         {
-            _heading.text = "강화 완료";
+            _heading.text = L10n.Get("elite.done");
             _skipButton.interactable = false;
             // 마지막 카드까지 펼쳐진 뒤에만 확인을 허용한다. 결과는 확인할 때까지 유지한다.
             _animation = DOVirtual.DelayedCall(0.2f, () =>
             {
                 if (!Current(run)) { return; }
                 _awaitingConfirmation = true;
-                _skipButtonLabel.text = "확인";
+                _skipButtonLabel.text = L10n.Get("common.ok");
                 _skipButton.interactable = true;
             }, ignoreTimeScale: true).SetLink(gameObject);
         }

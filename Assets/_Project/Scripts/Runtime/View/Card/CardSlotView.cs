@@ -246,7 +246,7 @@ namespace Game.View
             {
                 _iconImage.enabled = true;
                 _titleText.text = choice.newSkillData.name;
-                _levelText.text = "NEW";
+                _levelText.text = L10n.Get("label.new");
                 _descText.text = choice.newSkillData.desc ?? string.Empty;
             }
             else

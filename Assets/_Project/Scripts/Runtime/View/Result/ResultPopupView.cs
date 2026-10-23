@@ -56,8 +56,6 @@ namespace Game.View
         [SerializeField] private ResultDamageListView _damageList;
         [SerializeField] private SkillAssetTable _skillAssets;
 
-        private const string ClearBubble = "어때요? 이 정도쯤이야!";
-
         private StageContext _stageContext;
         private ISceneNavigator _navigator;
         private GameDataStore _data;
@@ -115,7 +113,7 @@ namespace Game.View
                 _tipButton.onClick.AddListener(() => { if (_tip != null) { _tip.Show(); } });
                 _tipButton.interactable = true;
                 var label = _tipButton.GetComponentInChildren<TMP_Text>(true);
-                if (label != null) { label.text = "성장 팁"; }
+                if (label != null) { label.text = L10n.Get("result.tipButton"); }
                 _tipButton.gameObject.SetActive(false);
             }
             CreateOutcomePanel();
@@ -159,11 +157,11 @@ namespace Game.View
             _reveal?.Kill();
             if (!_outcomePanel.activeSelf) { _outcomeShownAt = Time.realtimeSinceStartup; }
             _lobbyButton.interactable = false;
-            _outcomeTitle.text = cleared == true ? "방어 성공!" : cleared == false ? "방어 실패" : "전투 종료";
+            _outcomeTitle.text = cleared == true ? L10n.Get("result.cleared") : cleared == false ? L10n.Get("result.failed") : L10n.Get("result.ended");
             _outcomeTitle.color = cleared == true ? new Color32(255, 207, 91, 255) : Color.white;
-            _outcomeDescription.text = cleared == true ? "마지막 적을 쓰러뜨렸어요.\n획득한 보상을 확인해요."
-                : cleared == false ? "이번 도전은 여기까지예요.\n확보한 보상을 확인하고 다시 준비해요."
-                : "이번 도전의 결과를 정리하고 있어요.";
+            _outcomeDescription.text = cleared == true ? L10n.Get("result.cleared.desc")
+                : cleared == false ? L10n.Get("result.failed.desc")
+                : L10n.Get("result.ended.desc");
             _outcomePanel.SetActive(true);
             _outcomePanel.transform.SetAsLastSibling();
         }
@@ -179,22 +177,22 @@ namespace Game.View
         {
             _hasResult = true;
             ShowOutcome(result.Cleared);
-            _titleText.text = result.Cleared ? "방어 성공!" : "방어 실패";
+            _titleText.text = result.Cleared ? L10n.Get("result.cleared") : L10n.Get("result.failed");
             var ribbon = result.Cleared ? _clearRibbon : _failRibbon;
             if (_titleRibbon != null)
             {
                 if (ribbon != null) { _titleRibbon.sprite = ribbon; }
                 _titleRibbon.color = result.Cleared ? _clearRibbonColor : _failRibbonColor;
             }
-            _stageText.text = _stageContext.StageId > 0 ? $"Stage {_stageContext.StageId}" : "-";
-            _killsText.text = $"처치\n{result.Kills}";
-            _waveText.text = result.ReachedWave > 0 ? $"도달 웨이브\n{result.ReachedWave}" : "도달 웨이브\n-";
-            _timeText.text = $"플레이 시간\n{FormatTime(result.PlayTime)}";
+            _stageText.text = _stageContext.StageId > 0 ? L10n.Get("hud.stage", _stageContext.StageId) : "-";
+            _killsText.text = L10n.Get("result.kills", result.Kills);
+            _waveText.text = L10n.Get("result.reachedWave", result.ReachedWave > 0 ? result.ReachedWave.ToString() : "-");
+            _timeText.text = L10n.Get("result.playTime", FormatTime(result.PlayTime));
             _bubbleText.text = result.Cleared
-                ? (_firstStageClear ? "첫 클리어! 로비에서 새 무기를 확인해 봐요!" : ClearBubble)
-                : "확보한 보상은 받을 수 있어요.\n강화한 뒤 다시 도전해 봐요!";
+                ? (_firstStageClear ? L10n.Get("result.bubble.firstClear") : L10n.Get("result.bubble.clear"))
+                : L10n.Get("result.bubble.failed");
             var rewards = RewardRows.Build(_itemIcons, _data, result.RewardGold, result.RewardExp, result.RewardItems, result.RewardBonusExp);
-            _rewardList.Show(rewards, i => DetailContent.ShowReward(_detail, _data, rewards[i], "획득 {0}개"));
+            _rewardList.Show(rewards, i => DetailContent.ShowReward(_detail, _data, rewards[i], L10n.Get("result.rewardCount", "{0}")));
             _starsView.Show(result.Cleared, result.ClearRating);
             if (_damageList != null)
             {
@@ -202,7 +200,7 @@ namespace Game.View
                     status => _skillAssets != null ? _skillAssets.GetHudIcon(status.Id) : null));
             }
             var lobbyLabel = _lobbyButton.GetComponentInChildren<TMP_Text>(true);
-            if (lobbyLabel != null) { lobbyLabel.text = "로비로"; }
+            if (lobbyLabel != null) { lobbyLabel.text = L10n.Get("common.toLobby"); }
             if (_tip != null) { _tip.Hide(); }
             if (_tipButton != null) { _tipButton.gameObject.SetActive(!result.Cleared && _tip != null); }
             float remaining = Mathf.Max(0f, OutcomeHoldSeconds - (Time.realtimeSinceStartup - _outcomeShownAt));

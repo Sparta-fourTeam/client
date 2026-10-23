@@ -49,7 +49,7 @@ namespace Game.View
                 _icon.sprite = icon;
                 _icon.enabled = icon != null;
             }
-            _levelText.text = $"Lv.{info.Level}";
+            _levelText.text = L10n.Get("label.levelCompact", info.Level);
             var levelMaterial = info.Level > 0 ? _learnedLevelMaterial : _idleLevelMaterial;
             if (levelMaterial != null) { _levelText.fontSharedMaterial = levelMaterial; }
             var levelBadgeSprite = info.Level > 0 ? _learnedLevelBadge : _idleLevelBadge;
@@ -65,7 +65,7 @@ namespace Game.View
                 if (ring != null) { _elementRing.sprite = ring; }
             }
             _lock.SetActive(!info.IsUnlocked);
-            _lockLabel.text = $"레벨 {info.UnlockLevel}에 해금";
+            _lockLabel.text = L10n.Get("skill.unlockAt", info.UnlockLevel);
             _onClick = onClick;
         }
 

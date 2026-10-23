@@ -21,7 +21,7 @@ namespace Game.View
 
         private void Start()
         {
-            _label.text = _stage != null ? $"Stage {_stage.Id}" : string.Empty;
+            _label.text = _stage != null ? L10n.Get("hud.stage", _stage.Id) : string.Empty;
         }
     }
 }

@@ -180,7 +180,7 @@ namespace Game.View
             {
                 string message = _stageContext.ResumeError;
                 _stageContext.ResumeError = null;
-                await ConfirmAsync(new ConfirmRequest { Title = "이어하기", Message = message });
+                await ConfirmAsync(new ConfirmRequest { Title = L10n.Get("battle.resume"), Message = message });
                 if (this == null) { return; }
             }
             // 앱을 다시 켠 첫 로비에서만 묻는다. 같은 실행 안의 정상 로비 복귀에는 끼어들지 않는다.
@@ -191,7 +191,7 @@ namespace Game.View
                 catch (ApiException)
                 {
                     await ConfirmAsync(new ConfirmRequest
-                    { Title = "진행 저장", Message = "진행 기록을 저장하지 못했습니다. 연결을 확인한 뒤 다시 시도해 주세요." });
+                    { Title = L10n.Get("battle.saveFailed.title"), Message = L10n.Get("battle.saveFailed.message") });
                     return;
                 }
             }
@@ -209,11 +209,11 @@ namespace Game.View
                 {
                     resume = await ConfirmAsync(new ConfirmRequest
                     {
-                        Title = "이어하기",
-                        Message = $"진행 중인 전투가 있습니다. 이어하시겠습니까?\n제 {checkpoint.StageId} 관문 · {checkpoint.Stage.ReachedWave} 웨이브 · {seconds / 60:00}:{seconds % 60:00}",
-                        Warning = "전투 이어하기 기록은 삭제됩니다. 저장된 퀘스트·도감 진행은 유지됩니다.",
-                        ConfirmLabel = "이어하기",
-                        CancelLabel = "포기"
+                        Title = L10n.Get("battle.resume"),
+                        Message = L10n.Get("battle.resume.message", checkpoint.StageId, checkpoint.Stage.ReachedWave, $"{seconds / 60:00}:{seconds % 60:00}"),
+                        Warning = L10n.Get("battle.resume.warning"),
+                        ConfirmLabel = L10n.Get("battle.resume"),
+                        CancelLabel = L10n.Get("battle.discard")
                     });
                 }
                 catch (OperationCanceledException) { return; }
@@ -223,7 +223,7 @@ namespace Game.View
                 catch (ApiException)
                 {
                     await ConfirmAsync(new ConfirmRequest
-                    { Title = "진행 저장", Message = "진행 기록을 저장하지 못했습니다. 연결을 확인한 뒤 다시 시도해 주세요." });
+                    { Title = L10n.Get("battle.saveFailed.title"), Message = L10n.Get("battle.saveFailed.message") });
                     return;
                 }
                 _checkpoints.Clear();

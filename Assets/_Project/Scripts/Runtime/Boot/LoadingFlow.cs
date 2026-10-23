@@ -97,10 +97,10 @@ namespace Game.Boot
 
             bool confirmed = await _confirm.ShowAsync(new ConfirmRequest
             {
-                Title = "새 버전 안내",
-                Message = "새로운 버전이 출시되었습니다.\n스토어에서 업데이트할까요?",
-                ConfirmLabel = "업데이트",
-                CancelLabel = "나중에",
+                Title = L10n.Get("update.title"),
+                Message = L10n.Get("update.message"),
+                ConfirmLabel = L10n.Get("update.confirm"),
+                CancelLabel = L10n.Get("update.later"),
             }).AttachExternalCancellation(cancellationToken);
             if (confirmed)
             {

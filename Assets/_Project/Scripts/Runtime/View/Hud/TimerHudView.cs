@@ -38,7 +38,7 @@ namespace Game.View
                 if (countdown != _shownCountdown)
                 {
                     _shownCountdown = countdown;
-                    _spawnText.text = countdown > 0 ? $"다음 소환 {countdown}" : string.Empty;
+                    _spawnText.text = countdown > 0 ? L10n.Get("hud.nextSpawn", countdown) : string.Empty;
                     _spawnText.gameObject.SetActive(countdown > 0);
                 }
             }

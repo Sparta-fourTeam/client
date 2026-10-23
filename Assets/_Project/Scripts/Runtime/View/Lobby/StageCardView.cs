@@ -35,7 +35,7 @@ namespace Game.View
             int rating = profile.ClearRating(stageId);
             int claimed = profile.ClaimedRating(stageId);
 
-            _stageText.text = $"제 {stageId} 관문";
+            _stageText.text = L10n.Get("stage.title", stageId);
             _lockOverlay.SetActive(!unlocked);
             _infoButton.interactable = !busy;
             for (int i = 0; i < _rewardNodes.Length; i++)
@@ -48,11 +48,11 @@ namespace Game.View
             _rewardAreaButton.gameObject.SetActive(available);
             _rewardAreaButton.interactable = !busy;
             _rewardBadge.SetActive(available);
-            _rewardStatus.text = claiming ? "보상을 받는 중이에요..."
-                : available ? "상자 영역을 눌러 보상을 모두 받으세요"
-                : claimed >= 3 ? "모든 보상을 받았어요. 상자를 눌러 정보를 확인하세요"
-                : !unlocked ? "이전 관문을 클리어하면 열려요"
-                : "상자를 눌러 달성 조건과 보상을 확인하세요";
+            _rewardStatus.text = claiming ? L10n.Get("stage.reward.claiming")
+                : available ? L10n.Get("stage.reward.available")
+                : claimed >= 3 ? L10n.Get("stage.reward.allClaimed")
+                : !unlocked ? L10n.Get("stage.reward.locked")
+                : L10n.Get("stage.reward.default");
         }
     }
 }
