@@ -263,7 +263,7 @@ namespace Game.View
 
         public void Open()
         {
-            _versionText.text = $"Version {Application.version}";
+            _versionText.text = L10n.Get("lobbyMenu.version", Application.version);
             RefreshAccountButtons();
             PopupPanel.Set(_panel, _transition, true);
         }

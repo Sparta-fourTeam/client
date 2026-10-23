@@ -4861,9 +4861,9 @@ MonoBehaviour:
   - {fileID: 6011319326722266280}
   - {fileID: 4795837010964978591}
   _emptyMessages:
-  - "\uC9C4\uD589 \uC911\uC778 \uC77C\uC77C \uD018\uC2A4\uD2B8\uAC00 \uC5C6\uC5B4\uC694"
-  - "\uC9C4\uD589 \uC911\uC778 \uC8FC\uAC04 \uD018\uC2A4\uD2B8\uAC00 \uC5C6\uC5B4\uC694"
-  - "\uB2EC\uC131\uD560 \uC5C5\uC801\uC774 \uC5C6\uC5B4\uC694"
+  - quest.daily.empty
+  - quest.weekly.empty
+  - quest.achievement.empty
   _emptyText: {fileID: 3828468646125484662}
   _disabledButtons: []
   _tabBadges:

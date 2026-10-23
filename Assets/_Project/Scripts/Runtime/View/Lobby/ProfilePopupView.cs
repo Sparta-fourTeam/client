@@ -129,7 +129,7 @@ namespace Game.View
 
         private void Refresh()
         {
-            _idText.text = $"ID: {_profile.PlayerId}";
+            _idText.text = L10n.Get("profile.playerId", _profile.PlayerId);
             _copyIdButton.interactable = !string.IsNullOrEmpty(_profile.PlayerId);
             _renameButton.interactable = !_renaming && _account != null && _profile.IsLoaded;
             _nameText.richText = false;
@@ -137,7 +137,7 @@ namespace Game.View
             _levelText.text = $"Lv.{_profile.Level}";
             _expFill.fillAmount = _profile.LevelProgress;
             _expText.text = _profile.IsMaxLevel
-                ? "MAX"
+                ? L10n.Get("label.max")
                 : $"({CurrencyFormat.Format(_profile.ExpIntoLevel)}/{CurrencyFormat.Format(_profile.ExpRequiredForNext)})";
             _stageText.text = L10n.Get("profile.stageValue", _profile.HighestUnlockedStage.ToString());
 

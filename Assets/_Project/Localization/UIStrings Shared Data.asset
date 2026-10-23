@@ -2245,6 +2245,116 @@ MonoBehaviour:
     m_Metadata:
       m_Items:
       - rid: 3518544383432196907
+  - m_Id: 60613551185920
+    m_Key: friend.requestsEmpty
+    m_Metadata:
+      m_Items:
+      - rid: 3518544387129213035
+  - m_Id: 60613584740352
+    m_Key: friend.findComingSoon
+    m_Metadata:
+      m_Items:
+      - rid: 3518544387129213036
+  - m_Id: 60613584740353
+    m_Key: notice.empty
+    m_Metadata:
+      m_Items:
+      - rid: 3518544387129213037
+  - m_Id: 60613584740354
+    m_Key: quest.weekly.empty
+    m_Metadata:
+      m_Items:
+      - rid: 3518544387129213038
+  - m_Id: 60613584740355
+    m_Key: quest.achievement.empty
+    m_Metadata:
+      m_Items:
+      - rid: 3518544387129213039
+  - m_Id: 60613584740356
+    m_Key: dialogue.speaker.master
+    m_Metadata:
+      m_Items:
+      - rid: 3518544387129213040
+  - m_Id: 60613584740357
+    m_Key: dialogue.speaker.doodle
+    m_Metadata:
+      m_Items:
+      - rid: 3518544387129213041
+  - m_Id: 60613584740358
+    m_Key: monster.name.slime
+    m_Metadata:
+      m_Items:
+      - rid: 3518544387129213042
+  - m_Id: 60613584740359
+    m_Key: monster.name.bat
+    m_Metadata:
+      m_Items:
+      - rid: 3518544387129213043
+  - m_Id: 60613584740360
+    m_Key: monster.name.slimeSmall
+    m_Metadata:
+      m_Items:
+      - rid: 3518544387129213044
+  - m_Id: 60613584740361
+    m_Key: monster.name.hornYokai
+    m_Metadata:
+      m_Items:
+      - rid: 3518544387129213045
+  - m_Id: 60613584740362
+    m_Key: monster.name.spider
+    m_Metadata:
+      m_Items:
+      - rid: 3518544387129213046
+  - m_Id: 60613584740363
+    m_Key: monster.name.spiderSmall
+    m_Metadata:
+      m_Items:
+      - rid: 3518544387129213047
+  - m_Id: 60613584740364
+    m_Key: monster.name.armorCrab
+    m_Metadata:
+      m_Items:
+      - rid: 3518544387129213048
+  - m_Id: 60613584740365
+    m_Key: monster.name.brainSpider
+    m_Metadata:
+      m_Items:
+      - rid: 3518544387129213049
+  - m_Id: 60613584740366
+    m_Key: monster.name.eyeJellyfish
+    m_Metadata:
+      m_Items:
+      - rid: 3518544387129213050
+  - m_Id: 60613584740367
+    m_Key: monster.name.ghost
+    m_Metadata:
+      m_Items:
+      - rid: 3518544387129213051
+  - m_Id: 60613584740368
+    m_Key: monster.name.golem
+    m_Metadata:
+      m_Items:
+      - rid: 3518544387129213052
+  - m_Id: 60613584740369
+    m_Key: monster.name.skeleton
+    m_Metadata:
+      m_Items:
+      - rid: 3518544387129213053
+  - m_Id: 60613584740370
+    m_Key: lobbyMenu.version
+    m_Metadata:
+      m_Items:
+      - rid: 3518544387129213054
+  - m_Id: 60613584740371
+    m_Key: profile.playerId
+    m_Metadata:
+      m_Items:
+      - rid: 3518544387129213055
+  - m_Id: 60613584740372
+    m_Key: nav.shop
+    m_Metadata:
+      m_Items:
+      - rid: 3518544387129213056
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
@@ -4040,3 +4150,91 @@ MonoBehaviour:
       type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
       data:
         m_CommentText: "\uC2A4\uD0AC \uC601\uAD6C \uB808\uBCA8 \uBCF4\uC0C1 \uBB38\uAD6C. {0}=\uC2A4\uD0AC \uC774\uB984"
+    - rid: 3518544387129213035
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\uCE5C\uAD6C \uD31D\uC5C5 \uBC1B\uC740 \uC694\uCCAD \uD0ED\uC758 \uBE48 \uBAA9\uB85D \uBB38\uAD6C"
+    - rid: 3518544387129213036
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\uCE5C\uAD6C \uD31D\uC5C5 \uCE5C\uAD6C \uCC3E\uAE30 \uD0ED \uC548\uB0B4 \uBB38\uAD6C"
+    - rid: 3518544387129213037
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\uACF5\uC9C0 \uBAA9\uB85D \uD31D\uC5C5\uC758 \uBE48 \uBAA9\uB85D \uBB38\uAD6C"
+    - rid: 3518544387129213038
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\uD018\uC2A4\uD2B8 \uD31D\uC5C5 \uC8FC\uAC04 \uD0ED\uC758 \uBE48 \uBAA9\uB85D \uBB38\uAD6C"
+    - rid: 3518544387129213039
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\uD018\uC2A4\uD2B8 \uD31D\uC5C5 \uC5C5\uC801 \uD0ED\uC758 \uBE48 \uBAA9\uB85D \uBB38\uAD6C"
+    - rid: 3518544387129213040
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\uB300\uC0AC \uD654\uBA74 \uD654\uC790 \uC774\uB984. \uC2A5\uC0AD(\uC2A4\uC73D \uBCA0\uB294 \uC18C\uB9AC)\uC5D0\uC11C \uB534 \uC2A4\uC2B9 \uCE90\uB9AD\uD130"
+    - rid: 3518544387129213041
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\uB300\uC0AC \uD654\uBA74 \uD654\uC790 \uC774\uB984. \uB099\uC11C\uD558\uB294 \uACE0\uC591\uC774 \uCE90\uB9AD\uD130"
+    - rid: 3518544387129213042
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\uBAAC\uC2A4\uD130 \uD45C\uC2DC \uC774\uB984"
+    - rid: 3518544387129213043
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\uBAAC\uC2A4\uD130 \uD45C\uC2DC \uC774\uB984"
+    - rid: 3518544387129213044
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\uBAAC\uC2A4\uD130 \uD45C\uC2DC \uC774\uB984(\uBD84\uC5F4\uCCB4)"
+    - rid: 3518544387129213045
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\uBAAC\uC2A4\uD130 \uD45C\uC2DC \uC774\uB984"
+    - rid: 3518544387129213046
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\uBAAC\uC2A4\uD130 \uD45C\uC2DC \uC774\uB984"
+    - rid: 3518544387129213047
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\uBAAC\uC2A4\uD130 \uD45C\uC2DC \uC774\uB984(\uC18C\uD658\uCCB4)"
+    - rid: 3518544387129213048
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\uBAAC\uC2A4\uD130 \uD45C\uC2DC \uC774\uB984"
+    - rid: 3518544387129213049
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\uBAAC\uC2A4\uD130 \uD45C\uC2DC \uC774\uB984"
+    - rid: 3518544387129213050
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\uBAAC\uC2A4\uD130 \uD45C\uC2DC \uC774\uB984"
+    - rid: 3518544387129213051
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\uBAAC\uC2A4\uD130 \uD45C\uC2DC \uC774\uB984"
+    - rid: 3518544387129213052
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\uBAAC\uC2A4\uD130 \uD45C\uC2DC \uC774\uB984"
+    - rid: 3518544387129213053
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\uBAAC\uC2A4\uD130 \uD45C\uC2DC \uC774\uB984"
+    - rid: 3518544387129213054
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\uB85C\uBE44 \uBA54\uB274 \uD31D\uC5C5 \uC571 \uBC84\uC804. {0}=\uBC84\uC804 \uBB38\uC790\uC5F4. ko\uB294 \uAE30\uC874 \uC601\uC5B4 \uD45C\uAE30 \uC720\uC9C0"
+    - rid: 3518544387129213055
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\uD504\uB85C\uD544 \uD31D\uC5C5 \uD50C\uB808\uC774\uC5B4 ID. {0}=ID. ko\uB294 \uAE30\uC874 \uC601\uC5B4 \uD45C\uAE30 \uC720\uC9C0"
+    - rid: 3518544387129213056
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\uD558\uB2E8 \uB0B4\uBE44\uAC8C\uC774\uC158 \uC0C1\uC810 \uD0ED"

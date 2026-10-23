@@ -15,7 +15,7 @@ namespace Game.View
 
             var monster = data.Monsters.GetOrThrow(item.MonsterId);
             detail.Show(item.Icon, item.Name, MonsterTraits.Subtitle(monster),
-                MonsterTraits.Description(monster, id => display != null && display.TryGetMonster(id, out var entry) ? entry.displayName : $"#{id}"));
+                MonsterTraits.Description(monster, id => display != null && display.TryGetMonster(id, out var entry) ? entry.LocalizedName : $"#{id}"));
             detail.OfferMonsterReward(item.MonsterId);
         }
 

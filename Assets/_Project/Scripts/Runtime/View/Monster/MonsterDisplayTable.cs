@@ -1,4 +1,5 @@
 using System;
+using Game.Core;
 using UnityEngine;
 
 namespace Game.View
@@ -13,8 +14,10 @@ namespace Game.View
         public sealed class MonsterEntry
         {
             [Tooltip("Monsters 테이블의 행 ID")] public int monsterId;
-            public string displayName;
+            [Tooltip("UIStrings 키(monster.name.*). 비어 있으면 이름 없음")] public string displayName;
             public Sprite icon;
+            /// <summary>화면에 보일 이름. displayName을 UIStrings 키로 읽는다</summary>
+            public string LocalizedName => string.IsNullOrEmpty(displayName) ? displayName : L10n.Get(displayName);
             [Tooltip("미니 몬스터 등 도감 목록과 발견 수 집계에서 제외할 대상")]
             public bool hideInCodex;
         }

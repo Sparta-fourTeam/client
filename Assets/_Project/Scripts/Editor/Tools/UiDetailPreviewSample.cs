@@ -20,8 +20,8 @@ namespace Game.Editor
                 var display = AssetDatabase.LoadAssetAtPath<MonsterDisplayTable>("Assets/_Project/Data/MonsterDisplayTable.asset");
                 if (!display.TryGetMonster(1, out var entry)) { return; }
                 var monster = data.Monsters.GetOrThrow(entry.monsterId);
-                view.Show(entry.icon, entry.displayName, MonsterTraits.Subtitle(monster),
-                    MonsterTraits.Description(monster, id => display.TryGetMonster(id, out var child) ? child.displayName : $"#{id}"));
+                view.Show(entry.icon, entry.LocalizedName, MonsterTraits.Subtitle(monster),
+                    MonsterTraits.Description(monster, id => display.TryGetMonster(id, out var child) ? child.LocalizedName : $"#{id}"));
                 var so = new SerializedObject(view);
                 ((Button)so.FindProperty("_claimButton").objectReferenceValue).gameObject.SetActive(true);
                 ((GameObject)so.FindProperty("_claimBadge").objectReferenceValue)?.SetActive(true);

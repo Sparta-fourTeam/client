@@ -102,6 +102,9 @@ namespace Game.View
             {
                 _purchaseButton.interactable = !_busy;
                 if (_purchaseLabel != null) { _purchaseLabel.text = L10n.Get("energy.recover.gem"); }
+                if (_description != null) { _description.text = L10n.Get("energy.recover.desc"); }
+                if (_purchaseRemaining != null) { _purchaseRemaining.text = L10n.Get("energy.recover.remaining"); }
+                if (_adRemaining != null && _adRemaining.TryGetComponent<TMP_Text>(out var adRemainingText)) { adRemainingText.text = L10n.Get("energy.recover.remaining"); }
                 return;
             }
             var state = _energyRecovery.PurchaseState;

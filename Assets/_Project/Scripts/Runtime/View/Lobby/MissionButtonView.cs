@@ -51,7 +51,7 @@ namespace Game.View
                 return;
             }
 
-            _stageText.text = $"Stage {message.HighestUnlockedStage}";
+            _stageText.text = L10n.Get("hud.stage", message.HighestUnlockedStage);
         }
     }
 }

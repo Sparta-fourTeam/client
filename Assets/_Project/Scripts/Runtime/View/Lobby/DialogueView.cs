@@ -5,6 +5,7 @@ using DG.Tweening;
 using Game.Core;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Localization.Settings;
 using UnityEngine.UI;
 
 namespace Game.View
@@ -19,6 +20,7 @@ namespace Game.View
         [Serializable]
         private struct Portrait
         {
+            [Tooltip("UIStrings 키(dialogue.speaker.*). 대사 데이터의 화자 이름(한국어 원문)과 이 키의 ko 값이 같으면 이 초상을 쓴다")]
             public string Speaker;
             public Sprite Sprite;
             public Color Tint;
@@ -210,7 +212,7 @@ namespace Game.View
                     .SetEase(Ease.OutCubic).SetUpdate(true).SetLink(gameObject);
             }
 
-            _nameText.text = line.Speaker;
+            _nameText.text = SpeakerName(line.Speaker);
             float tagX = line.IsRight ? _nameTagInset : -_nameTagInset;
             _nameTag.anchoredPosition = new Vector2(tagX, _nameTag.anchoredPosition.y);
             _nameTag.pivot = new Vector2(line.IsRight ? 1f : 0f, _nameTag.pivot.y);
@@ -236,13 +238,32 @@ namespace Game.View
             image.color = Color.white;
             foreach (var portrait in _portraits ?? Array.Empty<Portrait>())
             {
-                if (portrait.Speaker == speaker)
+                if (IsSpeaker(portrait.Speaker, speaker))
                 {
                     image.sprite = portrait.Sprite;
                     image.color = portrait.Tint.a > 0f ? portrait.Tint : Color.white;
                     return;
                 }
             }
+        }
+
+        /// <summary>초상에 적힌 화자 키가 대사 데이터의 화자(한국어 원문)와 같은 인물인지 본다. 현재 언어와 무관하게 ko 값으로 비교한다</summary>
+        private static bool IsSpeaker(string portraitKey, string speaker)
+        {
+            if (string.IsNullOrEmpty(portraitKey)) { return false; }
+            if (portraitKey == speaker) { return true; }
+            var ko = LocalizationSettings.AvailableLocales.GetLocale("ko");
+            return ko != null && LocalizationSettings.StringDatabase.GetLocalizedString(L10n.UITable, portraitKey, ko) == speaker;
+        }
+
+        /// <summary>대사 데이터의 화자 이름을 현재 언어의 이름으로 바꾼다. 등록된 초상이 없으면 데이터 값을 그대로 쓴다</summary>
+        private string SpeakerName(string speaker)
+        {
+            foreach (var portrait in _portraits ?? Array.Empty<Portrait>())
+            {
+                if (IsSpeaker(portrait.Speaker, speaker)) { return L10n.Get(portrait.Speaker); }
+            }
+            return speaker;
         }
 
         private void OnTap()

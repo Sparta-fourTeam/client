@@ -53,7 +53,7 @@ namespace Game.View
             if (_nicknameText != null) { _nicknameText.text = _profile.Nickname; }
             SetProgress(_profile.LevelProgress);
             _expText.text = _profile.IsMaxLevel
-                ? "MAX"
+                ? L10n.Get("label.max")
                 : $"{CurrencyFormat.Format(_profile.ExpIntoLevel)} / {CurrencyFormat.Format(_profile.ExpRequiredForNext)}";
         }
     }

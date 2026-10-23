@@ -76,7 +76,7 @@ namespace Game.View
                 bool known = _profile.IsMonsterRegistered(id);
                 MonsterDisplayTable.MonsterEntry entry = null;
                 if (_display != null) { _display.TryGetMonster(id, out entry); }
-                var item = new StageMonsterItem(entry?.icon, entry?.displayName ?? $"#{id}", monsters[i].IsBoss, id);
+                var item = new StageMonsterItem(entry?.icon, entry?.LocalizedName ?? $"#{id}", monsters[i].IsBoss, id);
                 _slots[i].Bind(id, item.Icon, known,
                     () => DetailContent.ShowMonster(_detail, _data, _display, item));
             }
