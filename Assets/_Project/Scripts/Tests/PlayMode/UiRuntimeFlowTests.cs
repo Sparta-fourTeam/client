@@ -492,6 +492,88 @@ namespace Game.Tests
         }
 
         [UnityTest]
+        public IEnumerator AllAuthoredWavesClearAndPersistProgress()
+        {
+            // 마지막 웨이브 승리 → 결과창 → 진행 저장(영수증·스테이지 클리어·다음 스테이지 해금) → 로비 복귀
+            yield return StartFromBoot();
+            yield return Object.FindAnyObjectByType<LobbyLifetimeScope>().Container.Resolve<BattleLauncher>().Launch(1).ToCoroutine();
+            yield return WaitFor(() => SceneManager.GetActiveScene().name == "Stage");
+            yield return null;
+            var stage = Object.FindAnyObjectByType<StageLifetimeScope>();
+            var manager = stage.Container.Resolve<StageManager>();
+            var ui = stage.Container.Resolve<IUiRegistry>();
+            float deadline = Time.realtimeSinceStartup + 180;
+            while (manager.State is StageState.Playing or StageState.CardSelect)
+            {
+                Assert.That(Time.realtimeSinceStartup, Is.LessThan(deadline), "Authored waves did not finish.");
+                if (manager.State == StageState.CardSelect) { yield return PickCardsAndResume(stage); }
+                else { yield return AdvanceAndDefeatEnemies(stage); }
+            }
+            yield return WaitFor(() => manager.State == StageState.Finished);
+            var result = ui.Get<ResultPopupView>();
+            Assert.That(Field<TMP_Text>(result, "_titleText").text, Is.EqualTo("방어 성공!"));
+            yield return WaitFor(() => Field<Button>(result, "_lobbyButton").interactable);
+            Assert.That(new LocalSaveStore(_savePath).Load().battles, Is.Not.Empty);
+            Assert.That(stage.Container.Resolve<BattleStats>().ReachedWave, Is.EqualTo(stage.Container.Resolve<StageDefinition>().Waves.Count));
+            yield return ClickGameButton(Field<Button>(result, "_lobbyButton"));
+            yield return WaitFor(() => SceneManager.GetActiveScene().name == "Lobby");
+            yield return null;
+            var profile = Object.FindAnyObjectByType<LobbyLifetimeScope>().Container.Resolve<PlayerProfile>();
+            Assert.That(profile.IsStageCleared(1), Is.True);
+            Assert.That(profile.HighestUnlockedStage, Is.GreaterThanOrEqualTo(2));
+            Assert.That(Time.timeScale, Is.EqualTo(1));
+        }
+
+        [UnityTest]
+        public IEnumerator Tutorial_AfterBattleTutorialClear_ShowsLevelUpThenGuidesOnlyThroughUpgrade()
+        {
+            // 전투 튜토리얼 스테이지를 깬 직후 로비: 레벨업 팝업 → 기능 해금 → 대사 → 가이드 → 첫 강화 저장.
+            // 가진 코인이 없어도 튜토리얼 보상 코인으로 안내한 첫 강화를 할 수 있어야 한다
+            var root = VContainer.Unity.VContainerSettings.Instance.GetOrCreateRootLifetimeScopeInstance() as RootLifetimeScope;
+            var data = root.Container.Resolve<GameDataStore>();
+            var intro = data.Tutorials.First(t => t.IsBattle);
+            var guideTutorial = data.Tutorials.First(t => t.IsGuide && t.Start?.Kind == TutorialCondition.FeatureUnlocked
+                && data.FeatureUnlocks.RequiredStage(t.Start.Feature) == intro.Complete.StageId);
+            string upgradeId = guideTutorial.Complete.UpgradeId;
+            int tutorialLevel = intro.Rewards.Single(r => r.Kind == TutorialReward.SetLevel).Level;
+            yield return StartFromBoot(save =>
+            {
+                save.tutorials = new List<string>();
+                save.stageProgress.Find(p => p.stageId == intro.StageId).clearRating = 1;
+                save.wallet.gold = 0;
+            });
+            var lobby = Object.FindAnyObjectByType<LobbyLifetimeScope>();
+            var profile = lobby.Container.Resolve<PlayerProfile>();
+            var ui = lobby.Container.Resolve<IUiRegistry>();
+            var levelUp = ui.Get<LevelUpPopupView>();
+            yield return WaitFor(() => levelUp.IsOpen);
+            Assert.That(profile.Level, Is.EqualTo(tutorialLevel));
+            var tapArea = Field<Button>(levelUp, "_confirmButton");
+            if (levelUp.IsPlaying) { yield return ClickGameButton(tapArea); }   // 첫 탭은 연출만 건너뛴다
+            yield return ClickGameButton(tapArea);
+            Assert.That(ui.GetAll<FeatureLockView>().Single(view => Field<string>(view, "_feature") == guideTutorial.Start.Feature).IsLocked, Is.False);
+            var dialogue = ui.Get<DialogueView>();
+            yield return WaitFor(() => dialogue.IsOpen);
+            var confirm = ui.Get<ConfirmPopupView>();
+            yield return ClickGameButton(Field<Button>(dialogue, "_skipButton"));
+            yield return WaitFor(() => confirm.IsOpen);
+            yield return ClickGameButton(Field<Button>(confirm, "_confirmButton"));
+            yield return WaitFor(() => !dialogue.IsOpen);
+            var guide = ui.Get<TutorialGuideView>();
+            var nav = ui.Get<LobbyNavView>();
+            yield return WaitFor(() => Field<GameObject>(guide, "_root").activeSelf);
+            yield return ClickGameButton(Field<Button>(nav, "_skillTab"));
+            var slot = ui.Get<SkillScreenView>().SlotOf(upgradeId).GetComponent<SkillListSlotView>();
+            yield return ClickGameButton(Field<Button>(slot, "_button"));
+            yield return ClickGameButton(Field<Button>(ui.Get<SkillUpgradePopupView>(), "_upgradeButton"));
+            yield return ClickGameButton(Field<Button>(ui.Get<UpgradeConfirmPopupView>(), "_confirmButton"));
+            yield return WaitFor(() => profile.IsTutorialDone(guideTutorial.Id));
+            Assert.That(profile.UpgradeLevel(upgradeId), Is.EqualTo(1));
+            Assert.That(Field<GameObject>(guide, "_root").activeSelf, Is.False);
+            LogAssert.NoUnexpectedReceived();
+        }
+
+        [UnityTest]
         public IEnumerator Boot_InEnglishNeverShowsKoreanWhileCurtainIsOpen()
         {
             // 영어로 부팅했을 때 커튼이 화면을 가리지 않는 프레임마다 활성 라벨에 한글이 없다.
