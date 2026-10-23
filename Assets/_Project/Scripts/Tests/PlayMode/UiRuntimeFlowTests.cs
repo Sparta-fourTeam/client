@@ -1716,16 +1716,71 @@ namespace Game.Tests
             Assert.That(Object.FindObjectsByType<UiHost>().Length, Is.EqualTo(1));
         }
 
+        [UnityTest]
+        public IEnumerator Language_ChangeUpdatesVisibleTextInPlaceWithoutReload()
+        {
+            // 언어를 바꿔도 씬을 다시 로드하지 않고, 화면에 보이는 문구가 모두 새 언어로 바뀐다(한글이 남지 않는다)
+            yield return StartFromBoot();
+            var settings = Object.FindAnyObjectByType<RootLifetimeScope>().Container.Resolve<GameSettings>();
+            var host = Object.FindAnyObjectByType<UiHost>();
+            var hangul = new System.Text.RegularExpressions.Regex("[\\uAC00-\\uD7A3]");
+
+            System.Collections.Generic.List<UnityEngine.UI.Button> NavButtons()
+            {
+                var found = new System.Collections.Generic.List<UnityEngine.UI.Button>();
+                foreach (var button in Object.FindObjectsByType<UnityEngine.UI.Button>(FindObjectsInactive.Exclude))
+                {
+                    // 잠긴 탭을 덮는 자물쇠 판은 누를 때마다 일시적인 토스트를 새로 띄우므로 제외한다
+                    if (button.name.Contains("Lock")) { continue; }
+                    for (var tr = button.transform; tr != null; tr = tr.parent)
+                    {
+                        if (tr.name == "LobbyBottomNav") { found.Add(button); break; }
+                    }
+                }
+                return found;
+            }
+
+            string KoreanLeft()
+            {
+                var left = new System.Collections.Generic.List<string>();
+                foreach (var label in Object.FindObjectsByType<TMP_Text>(FindObjectsInactive.Exclude))
+                {
+                    // 언어 이름은 현재 언어와 무관하게 자기 글자로 보여야 한다
+                    if (!label.gameObject.activeInHierarchy || label.text == "한국어" || !hangul.IsMatch(label.text)) { continue; }
+                    left.Add(label.name + ": " + label.text);
+                }
+                return string.Join(", ", left);
+            }
+
+            // 한국어로 각 화면을 한 번씩 그려 두고(상시 떠 있는 라벨이 한국어로 채워진다) 영어로 바꾼다
+            foreach (var button in NavButtons()) { button.onClick.Invoke(); for (int i = 0; i < 15; i++) { yield return null; } }
+            settings.SetLanguage(GameLanguage.English);
+            yield return WaitFor(() => SelectedLocaleCode() == "en");
+            for (int i = 0; i < 30; i++) { yield return null; }
+            Assert.That(Object.FindAnyObjectByType<UiHost>(), Is.SameAs(host), "씬을 다시 로드하지 않는다");
+            Assert.That(KoreanLeft(), Is.Empty, "로비에 한글이 남았다");
+
+            foreach (var button in NavButtons())
+            {
+                button.onClick.Invoke();
+                for (int i = 0; i < 15; i++) { yield return null; }
+                Assert.That(KoreanLeft(), Is.Empty, button.transform.name + " 화면에 한글이 남았다");
+            }
+
+            settings.SetLanguage(GameLanguage.Korean);
+            yield return WaitFor(() => SelectedLocaleCode() == "ko");
+        }
+
         private static string SelectedLocaleCode()
             => UnityEngine.Localization.Settings.LocalizationSettings.SelectedLocale?.Identifier.Code;
 
         // seed가 없으면 튜토리얼을 마친 계정으로 시작한다. 튜토리얼 중인 새 계정은 로비 대신 1스테이지로 들어간다
         private IEnumerator StartFromBoot(Action<LocalSave> seed = null, string expectedScene = "Lobby", bool allowAnalytics = false)
         {
-            // 개발 기기에 저장된 언어가 화면 문구를 바꾸므로 기본(한국어)으로 고정한다
+            // 개발 기기에 저장된 언어나 시스템 언어가 화면 문구를 바꾸므로 한국어를 명시해 고정한다
             _hadLanguagePreference = PlayerPrefs.HasKey("settings.language");
             _languagePreference = PlayerPrefs.GetInt("settings.language");
-            PlayerPrefs.DeleteKey("settings.language");
+            PlayerPrefs.SetInt("settings.language", (int)GameLanguage.Korean);
             _restoreLanguagePreference = true;
             // 도메인 리로드 없이 이어지는 재생이나 앞선 테스트가 남긴 로케일이 새지 않게 한국어로 확정한다
             UnityEngine.Localization.Settings.LocalizationSettings.InitializationOperation.WaitForCompletion();
@@ -1739,6 +1794,9 @@ namespace Game.Tests
             PlayerPrefs.DeleteKey("mission_selected_stage");
             var root = VContainer.Unity.VContainerSettings.Instance.GetOrCreateRootLifetimeScopeInstance() as RootLifetimeScope;
             Assert.That(root, Is.Not.Null);
+            // 루트가 저장값을 심기 전에 만들어졌을 수 있어 시스템 언어(기본값)가 새지 않게 한국어를 직접 적용한다
+            var languageSettings = root.Container.Resolve<GameSettings>();
+            if (languageSettings.Language != GameLanguage.Korean) { languageSettings.SetLanguage(GameLanguage.Korean); }
             _store = root.Container.Resolve<LocalSaveStore>();
             _originalSavePath = (string)StorePath.GetValue(_store);
             _savePath = Path.Combine(Path.GetTempPath(), "nova-ui-" + Guid.NewGuid().ToString("N") + ".json");
