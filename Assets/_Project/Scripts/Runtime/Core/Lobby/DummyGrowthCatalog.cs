@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
 
 namespace Game.Core
 {
@@ -46,23 +47,46 @@ namespace Game.Core
             _data = data;
             // 습득 카드로 나오는 스킬만 칸을 가진다(다른 스킬이 시전하는 자식 스킬은 제외). 해금 레벨 순서로 놓는다.
             // 스킬 정의는 읽을 때마다 파싱·검증하므로 한 번만 읽어 둔다
-            _skillRows = data.LoadSkills()
-                .Where(s => !s.childOnly)
-                .OrderBy(s => s.unlockLevel)
-                .ThenBy(s => s.id)
-                .ToList();
+            // GameDataStore가 추적하는 원래 목록을 보존해 GC 이후에도 표시 문구 갱신을 받는다.
+            _skillRows = data.LoadSkills();
+            _skillRows.RemoveAll(skill => skill.childOnly);
+            _skillRows.Sort((left, right) =>
+            {
+                int unlock = left.unlockLevel.CompareTo(right.unlockLevel);
+                return unlock != 0 ? unlock : left.id.CompareTo(right.id);
+            });
 
             Skills = CreateSkills();
             RefreshSkills();
             _profile.Changed += OnProfileChanged;
+            LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
         }
 
         public void Dispose()
         {
             _profile.Changed -= OnProfileChanged;
+            LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
         }
 
         private void OnProfileChanged(PlayerProfile _) => RefreshSkills();
+
+        private void OnLocaleChanged(Locale locale)
+        {
+            if (locale == null) { return; }
+            // 구독 순서와 무관하게 원본 표시 문구를 먼저 갱신한다. 같은 로케일 적용은 아무것도 하지 않는다.
+            _data.ApplyDisplayLocale(locale.Identifier.Code);
+            for (int i = 0; i < Skills.Count; i++)
+            {
+                var skill = Skills[i];
+                skill.Name = _skillRows[i].name;
+                skill.Description = _skillRows[i].desc ?? string.Empty;
+                if (skill.UpgradeId != null)
+                {
+                    skill.LevelRewards = CreateRewards(skill.Name, _data.Upgrades.GetOrThrow(skill.UpgradeId).MaxLevel);
+                }
+            }
+            RefreshSkills();
+        }
 
         // 스킬 칸의 해금은 플레이어 레벨로 정한다(캐릭터에는 레벨이 없다). 강화 데이터가 있는 스킬은 레벨·비용·능력치도 다시 계산한다.
         // 장비 칸은 Equips를 읽을 때마다 계산한다
