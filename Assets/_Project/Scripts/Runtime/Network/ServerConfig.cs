@@ -9,7 +9,14 @@ namespace Game.Network
     {
         /// <summary>서버 주소. 요청 경로가 api/로 시작하므로 끝에 /api나 /auth를 붙이지 않는다
         /// (https://doodle-defense.duckdns.org/auth는 웹사이트 화면이다)</summary>
+#if NOVA_POLICY_LOCAL && NOVA_POLICY_QA && !UNITY_EDITOR
+        public const string BaseUrl = "http://127.0.0.1:18080";
+#elif NOVA_POLICY_QA && !UNITY_EDITOR
+        // 전용 APK의 실수로 인한 운영 쓰기를 막는다. 외부 서버/터널은 사용하지 않는다.
+        public const string BaseUrl = "https://127.0.0.1:9";
+#else
         public const string BaseUrl = "https://doodle-defense.duckdns.org";
+#endif
 
         // 개발 중에 켜고 끄는 값. "1"이면 켜고 "0"이면 끈다. 없으면 아래 기본 규칙을 따른다
         private const string OverrideKey = "dev.server_auth";
@@ -18,7 +25,19 @@ namespace Game.Network
         public static bool UseServerProgress => UseServerAuth;
         public static bool UseServerPlayer => UseServerProgress;
 
+        // 공개 운영 정책은 기기의 인증 backend/개발 override와 독립적이다.
 #if UNITY_EDITOR
+        public static bool UseClientPolicy => UseServerAuth;
+#else
+        public static bool UseClientPolicy => ResolveClientPolicy(Application.platform);
+#endif
+
+        public static bool ResolveClientPolicy(RuntimePlatform platform) =>
+            platform == RuntimePlatform.Android || platform == RuntimePlatform.IPhonePlayer;
+
+#if NOVA_POLICY_QA && !UNITY_EDITOR
+        public static bool UseServerAuth => true;
+#elif UNITY_EDITOR
         // 에디터 선택은 프로젝트 폴더별로 저장하고 기기용 PlayerPrefs와 분리한다.
         public static string EditorAuthPreferenceKey => $"ProjectNova.ServerAuth.{Hash128.Compute(Application.dataPath)}";
 

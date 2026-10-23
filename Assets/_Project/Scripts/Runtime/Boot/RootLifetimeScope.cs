@@ -38,7 +38,21 @@ namespace Game.Boot
             // Android는 기존 서버 인증을 유지한다. 진행 연결은 별도 개발 opt-in에서만 사용한다.
             builder.RegisterInstance(new HttpApiConfig(ServerConfig.BaseUrl));
             builder.Register<IHttpTransport, UnityWebRequestTransport>(Lifetime.Singleton);
+#if NOVA_POLICY_LOCAL && NOVA_POLICY_QA && !UNITY_EDITOR
+            builder.Register<ClientPolicyQaClient>(Lifetime.Singleton).As<IAppUpdateChecker>();
+            builder.Register<IClientPolicyClient>(c => new HttpClientPolicyClient(c.Resolve<HttpApiConfig>(),
+                c.Resolve<IHttpTransport>(), ServerConfig.UseClientPolicy), Lifetime.Singleton);
+#elif NOVA_POLICY_QA && !UNITY_EDITOR
+            builder.Register<ClientPolicyQaClient>(Lifetime.Singleton).As<IClientPolicyClient>().As<IAppUpdateChecker>();
+#else
             builder.Register<IAppUpdateChecker, StoreAppUpdateChecker>(Lifetime.Singleton);
+            builder.Register<IClientPolicyClient>(c => new HttpClientPolicyClient(c.Resolve<HttpApiConfig>(),
+                c.Resolve<IHttpTransport>(), ServerConfig.UseClientPolicy), Lifetime.Singleton);
+#endif
+            builder.Register<IClientAccessPrompt, ClientAccessPrompt>(Lifetime.Singleton);
+            builder.Register<ClientAccessGuard>(Lifetime.Singleton).AsSelf().As<IClientAccessGuard>();
+            builder.RegisterBuildCallback(c => gameObject.AddComponent<ClientPolicyForeground>().Initialize(
+                c.Resolve<ClientAccessGuard>()));
             builder.Register<AuthSession>(Lifetime.Singleton).AsSelf().As<IAuthHeaderProvider>().As<IAuthTokenStore>();
             builder.Register(c => new HttpApiClient(c.Resolve<HttpApiConfig>(), c.Resolve<IHttpTransport>(), c.Resolve<IAuthHeaderProvider>(), tokens: c.Resolve<IAuthTokenStore>()),
                 Lifetime.Singleton);

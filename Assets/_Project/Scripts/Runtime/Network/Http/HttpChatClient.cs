@@ -50,6 +50,7 @@ namespace Game.Network
                 Query = string.Empty,
             }.Uri;
             using var socket = new ClientWebSocket();
+            foreach (var header in GameClientIdentity.Headers()) { socket.Options.SetRequestHeader(header.Key, header.Value); }
             socket.Options.SetRequestHeader("Authorization", $"Bearer {_auth.AccessToken}");
             socket.Options.AddSubProtocol("v12.stomp");
             socket.Options.AddSubProtocol("v11.stomp");

@@ -2360,6 +2360,61 @@ MonoBehaviour:
     m_Metadata:
       m_Items:
       - rid: 3518544387129213061
+  - m_Id: 146788446101504
+    m_Key: access.checkingTitle
+    m_Metadata:
+      m_Items:
+      - rid: 3518544393429581824
+  - m_Id: 146788479655936
+    m_Key: access.checkingMessage
+    m_Metadata:
+      m_Items:
+      - rid: 3518544393429581825
+  - m_Id: 146788479655937
+    m_Key: access.checkingConfirm
+    m_Metadata:
+      m_Items:
+      - rid: 3518544393429581826
+  - m_Id: 146788479655938
+    m_Key: access.advisoryTitle
+    m_Metadata:
+      m_Items:
+      - rid: 3518544393429581827
+  - m_Id: 146788479655939
+    m_Key: access.requiredTitle
+    m_Metadata:
+      m_Items:
+      - rid: 3518544393429581828
+  - m_Id: 146788479655940
+    m_Key: access.unavailableTitle
+    m_Metadata:
+      m_Items:
+      - rid: 3518544393429581829
+  - m_Id: 146788479655941
+    m_Key: access.maintenanceTitle
+    m_Metadata:
+      m_Items:
+      - rid: 3518544393429581830
+  - m_Id: 146788479655942
+    m_Key: access.updateMessage
+    m_Metadata:
+      m_Items:
+      - rid: 3518544393429581831
+  - m_Id: 146788479655943
+    m_Key: access.maintenanceMessage
+    m_Metadata:
+      m_Items:
+      - rid: 3518544393429581832
+  - m_Id: 146788479655944
+    m_Key: access.retry
+    m_Metadata:
+      m_Items:
+      - rid: 3518544393429581833
+  - m_Id: 146788479655945
+    m_Key: access.estimatedEnd
+    m_Metadata:
+      m_Items:
+      - rid: 3518544393429581834
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
@@ -4247,3 +4302,47 @@ MonoBehaviour:
       type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
       data:
         m_CommentText: "\uC900\uBE44 \uC911\uC778 \uAE30\uB2A5\uC744 \uB20C\uB800\uC744 \uB54C \uB728\uB294 \uAE30\uBCF8 \uD1A0\uC2A4\uD2B8 \uBB38\uAD6C"
+    - rid: 3518544393429581824
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\uB85C\uADF8\uC778\xB7\uC7AC\uC9C4\uC785 \uC815\uCC45 \uD31D\uC5C5. access.checkingTitle"
+    - rid: 3518544393429581825
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\uB85C\uADF8\uC778\xB7\uC7AC\uC9C4\uC785 \uC815\uCC45 \uD31D\uC5C5. access.checkingMessage"
+    - rid: 3518544393429581826
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\uB85C\uADF8\uC778\xB7\uC7AC\uC9C4\uC785 \uC815\uCC45 \uD31D\uC5C5. access.checkingConfirm"
+    - rid: 3518544393429581827
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\uB85C\uADF8\uC778\xB7\uC7AC\uC9C4\uC785 \uC815\uCC45 \uD31D\uC5C5. access.advisoryTitle"
+    - rid: 3518544393429581828
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\uB85C\uADF8\uC778\xB7\uC7AC\uC9C4\uC785 \uC815\uCC45 \uD31D\uC5C5. access.requiredTitle"
+    - rid: 3518544393429581829
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\uB85C\uADF8\uC778\xB7\uC7AC\uC9C4\uC785 \uC815\uCC45 \uD31D\uC5C5. access.unavailableTitle"
+    - rid: 3518544393429581830
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\uB85C\uADF8\uC778\xB7\uC7AC\uC9C4\uC785 \uC815\uCC45 \uD31D\uC5C5. access.maintenanceTitle"
+    - rid: 3518544393429581831
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\uB85C\uADF8\uC778\xB7\uC7AC\uC9C4\uC785 \uC815\uCC45 \uD31D\uC5C5. access.updateMessage"
+    - rid: 3518544393429581832
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\uB85C\uADF8\uC778\xB7\uC7AC\uC9C4\uC785 \uC815\uCC45 \uD31D\uC5C5. access.maintenanceMessage"
+    - rid: 3518544393429581833
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\uB85C\uADF8\uC778\xB7\uC7AC\uC9C4\uC785 \uC815\uCC45 \uD31D\uC5C5. access.retry"
+    - rid: 3518544393429581834
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\uB85C\uADF8\uC778\xB7\uC7AC\uC9C4\uC785 \uC815\uCC45 \uD31D\uC5C5. access.estimatedEnd; {0}\uC740 \uC11C\uBC84\uAC00 \uB0B4\uB824\uC900 \uC608\uC0C1 \uC885\uB8CC \uC2DC\uAC01"
