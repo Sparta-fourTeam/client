@@ -14,7 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
   m_GroupName: Localization-Assets-Korean
   m_GUID: 4bdd7702d49d34ccb824db4f4b7c4408
-  m_SerializeEntries: []
+  m_SerializeEntries:
+  - m_GUID: e5de63c3aa164b28a56343214cde32d3
+    m_Address: DoodleDefenseLoadingLogo_v1
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-ko
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 1
   m_Settings: {fileID: 11400000, guid: 02893584ee0004665b357bae07188804, type: 2}
   m_SchemaSet:

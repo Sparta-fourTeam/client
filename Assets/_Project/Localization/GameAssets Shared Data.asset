@@ -19,9 +19,14 @@ MonoBehaviour:
     m_Key: UIFont
     m_Metadata:
       m_Items: []
+  - m_Id: 79549663535104
+    m_Key: TitleLogo
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items:
     - rid: 3518544383432196244
+    - rid: 3518544389500305426
   m_KeyGenerator:
     rid: 3518544383432196243
   references:
@@ -40,3 +45,14 @@ MonoBehaviour:
           - ja
           - zh-Hans
         m_TypeString: TMPro.TMP_FontAsset, Unity.TextMeshPro, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    - rid: 3518544389500305426
+      type: {class: AssetTypeMetadata, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_Entries:
+        - m_KeyId: 79549663535104
+          m_TableCodes:
+          - ko
+          - en
+          - ja
+          - zh-Hans
+        m_TypeString: UnityEngine.Sprite, UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null

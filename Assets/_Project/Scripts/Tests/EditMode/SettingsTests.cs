@@ -516,6 +516,21 @@ namespace Game.Tests
             Assert.IsNotNull(menu.GetComponent<LobbyMenuOpenButton>());
             Assert.IsNull(menu.GetComponent<ComingSoonButton>());
         }
+
+        [Test(Description = "시작 로고는 모든 로케일에 스프라이트가 등록돼 있고 서로 다르다 (빠지면 한국어 로고가 그대로 나온다)")]
+        public void TitleLogo_HasDistinctSpriteForEveryLocale()
+        {
+            var sprites = new HashSet<Sprite>();
+            foreach (var code in new[] { "ko", "en", "ja", "zh-Hans" })
+            {
+                var locale = LocalizationSettings.AvailableLocales.GetLocale(code);
+                var sprite = LocalizationSettings.AssetDatabase.GetLocalizedAsset<Sprite>("GameAssets", "TitleLogo", locale);
+                Assert.That(sprite, Is.Not.Null, code + " 로고가 비어 있다");
+                sprites.Add(sprite);
+            }
+
+            Assert.That(sprites.Count, Is.EqualTo(4), "언어마다 다른 로고여야 한다");
+        }
     }
 
     /// <summary>EditMode 테스트 전체가 개발 기기에 저장된 언어나 시스템 언어에 흔들리지 않게 로케일을 한국어로 고정한다.

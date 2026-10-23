@@ -10,6 +10,7 @@ Unity Localization 패키지로 ko, en, ja, zh-Hans를 지원한다. 문구의 �
 | 폰트 테이블 | `Localization/GameAssets_*.asset`의 `UIFont` | ja는 `NotoSansJPSdf`, zh-Hans는 `NotoSansSCSdf`. ko, en은 비워 두어 라벨의 원래 폰트를 쓴다 |
 | 조회 헬퍼 | `Game.Core.L10n` | `L10n.Get(key)`, `L10n.Get(key, args)`. 인자 자리는 `{0}`, `{1}` |
 | 정적 라벨 | 프리팹의 `LocalizeStringEvent` | 코드가 값을 쓰지 않는 라벨의 문구를 키로 연결한다 |
+| 시작 로고 | `GameAssets`의 `TitleLogo` + `Game.View.LocalizedSpriteImage` | 로고 `Image`에 붙어 로케일별 스프라이트(`DoodleDefenseLoadingLogo_<코드>.png`)로 바꾼다. ko가 원본이고, 없으면 원래 스프라이트를 쓴다. 영어·일본어·중국어 로고는 원본을 스타일 참조로 이미지 생성(Codex)한 뒤 마젠타 배경을 알파로 따서 넣었다 |
 | 폰트 교체 | `Game.View.LocalizedFont` | UI 라벨에 붙어 ja, zh-Hans에서 폰트를 바꾸고 원래 머티리얼의 외곽선 설정을 옮긴다 |
 | 언어 선택 | 설정 팝업의 드롭다운 | `GameSettings.Language`를 저장하면 `GameSettingsApplier`가 `SelectedLocale`에 반영한다. 첫 실행(저장값 없음)은 시스템 언어를 따른다 |
 

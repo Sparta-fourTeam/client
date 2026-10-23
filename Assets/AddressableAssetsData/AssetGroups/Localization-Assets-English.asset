@@ -14,7 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
   m_GroupName: Localization-Assets-English
   m_GUID: e6b83590adddc4b46ac4ff8935b5ce37
-  m_SerializeEntries: []
+  m_SerializeEntries:
+  - m_GUID: cb887e553d0a24b749c93d184421ff02
+    m_Address: DoodleDefenseLoadingLogo_en
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-en
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 1
   m_Settings: {fileID: 11400000, guid: 02893584ee0004665b357bae07188804, type: 2}
   m_SchemaSet:
