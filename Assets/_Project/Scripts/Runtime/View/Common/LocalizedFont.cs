@@ -37,9 +37,15 @@ namespace Game.View
         // (폰트, 원래 머티리얼) 쌍마다 한 번만 만든 머티리얼
         private static readonly Dictionary<(TMP_FontAsset, Material), Material> MaterialCache = new();
 
+        // 자동 축소 하한. 원래 글자 크기에 대한 비율
+        private const float MinSizeRatio = 0.55f;
+
         private TMP_Text _label;
         private TMP_FontAsset _originalFont;
         private Material _originalMaterial;
+        private FontStyles _originalStyle;
+        private bool _originalAutoSize;
+        private float _originalSize, _originalSizeMin, _originalSizeMax;
         private bool _captured;
 
         /// <summary>항목이 비어 있으면 기본 테이블/키로 채운다. 에디터에서 컴포넌트를 붙일 때 호출된다.</summary>
@@ -94,6 +100,16 @@ namespace Game.View
 
             _label.font = font;
             _label.fontSharedMaterial = GetMaterial(font, _originalMaterial);
+            // Noto는 Regular 굵기라 게임 폰트보다 가늘어 보이므로 굵게 맞춘다
+            _label.fontStyle = _originalStyle | FontStyles.Bold;
+            // 언어마다 글자 폭이 달라 버튼 밖으로 넘치기 쉬우므로 원래 크기를 최대로 자동 축소한다
+            if (!_originalAutoSize)
+            {
+                _label.fontSize = _originalSize;
+                _label.fontSizeMax = _originalSize;
+                _label.fontSizeMin = _originalSize * MinSizeRatio;
+                _label.enableAutoSizing = true;
+            }
             _label.SetAllDirty();
         }
 
@@ -123,6 +139,11 @@ namespace Game.View
 
             _originalFont = _label.font;
             _originalMaterial = _label.fontSharedMaterial;
+            _originalStyle = _label.fontStyle;
+            _originalAutoSize = _label.enableAutoSizing;
+            _originalSize = _label.fontSize;
+            _originalSizeMin = _label.fontSizeMin;
+            _originalSizeMax = _label.fontSizeMax;
             _captured = true;
         }
 
@@ -138,6 +159,11 @@ namespace Game.View
                 _label.fontSharedMaterial = _originalMaterial;
             }
 
+            _label.fontStyle = _originalStyle;
+            _label.enableAutoSizing = _originalAutoSize;
+            _label.fontSize = _originalSize;
+            _label.fontSizeMin = _originalSizeMin;
+            _label.fontSizeMax = _originalSizeMax;
             _label.SetAllDirty();
         }
 
