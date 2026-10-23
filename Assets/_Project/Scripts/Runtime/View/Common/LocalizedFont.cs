@@ -102,8 +102,6 @@ namespace Game.View
 
             _label.font = font;
             _label.fontSharedMaterial = GetMaterial(font, _originalMaterial);
-            // Noto는 Regular 굵기라 게임 폰트보다 가늘어 보이므로 굵게 맞춘다
-            _label.fontStyle = _originalStyle | FontStyles.Bold;
             // 언어마다 글자 폭이 달라 버튼 밖으로 넘치기 쉬우므로 원래 크기를 최대로 자동 축소한다
             if (!_originalAutoSize)
             {
