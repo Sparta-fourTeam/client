@@ -167,14 +167,14 @@ namespace Game.View
                 var snapshot = await _stageApi.ClaimRatingReward(stageId);
                 var rows = RewardRows.Gained(_itemIcons, _data, before, snapshot);
                 _profile.Apply(snapshot);
-                if (this != null) { _rewardPopup.Show(rows, $"제 {stageId} 관문의 미수령 보상을 모두 받았어요."); }
+                if (this != null) { _rewardPopup.Show(rows, L10n.Get("mission.claimedAll", stageId.ToString())); }
             }
             catch (ApiException error)
             {
                 if (this != null)
                 {
-                    _card.Status = error.Code == "NO_REWARD" ? "이미 수령한 보상이에요"
-                        : "보상을 받지 못했어요. 상자 영역을 눌러 다시 시도하세요.";
+                    _card.Status = error.Code == "NO_REWARD" ? L10n.Get("mission.alreadyClaimed")
+                        : L10n.Get("mission.claimFailed");
                 }
             }
             finally
@@ -216,7 +216,7 @@ namespace Game.View
             _launching = false;
             _panel.SetActive(true);
             Refresh();
-            _card.Status = "관문에 입장하지 못했어요. 다시 시도하세요.";
+            _card.Status = L10n.Get("mission.enterFailed");
             Debug.LogException(error);
         }
 

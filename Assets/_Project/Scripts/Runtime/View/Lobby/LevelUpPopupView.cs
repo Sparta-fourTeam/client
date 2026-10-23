@@ -91,7 +91,7 @@ namespace Game.View
             var rewards = new List<(Sprite icon, string text)>();
             if (news.RewardGold > 0)
             {
-                rewards.Add((_itemIcons != null ? _itemIcons.Coin : null, $"잉크\n<color=#FFD35A>×{news.RewardGold}</color>"));
+                rewards.Add((_itemIcons != null ? _itemIcons.Coin : null, $"{L10n.Get("currency.ink")}\n<color=#FFD35A>×{news.RewardGold}</color>"));
             }
 
             foreach (var item in news.RewardItems)
@@ -104,7 +104,7 @@ namespace Game.View
             Fill(_rewardCards, _rewardLine, rewards);
             _unlockSection.SetActive(unlocks.Count > 0);
             _rewardSection.SetActive(rewards.Count > 0);
-            _title.text = news.LeveledUp ? "레벨 업!" : "보상 획득";
+            _title.text = news.LeveledUp ? L10n.Get("levelUp.title") : L10n.Get("levelUp.rewardTitle");
             _closed = new UniTaskCompletionSource();
             PopupPanel.Set(_panel, _transition, true);
             Play(news, unlocks.Count, rewards.Count);
@@ -315,8 +315,8 @@ namespace Game.View
 
         private static string TextOf(UnlockNotice unlock) => unlock.Kind switch
         {
-            UnlockKind.Weapon => $"{unlock.Name}\n<color=#FFD35A>새 무기</color>",
-            UnlockKind.Equipment => $"{unlock.Name}\n<color=#FFD35A>새 장비</color>",
+            UnlockKind.Weapon => $"{unlock.Name}\n<color=#FFD35A>{L10n.Get("levelUp.newWeapon")}</color>",
+            UnlockKind.Equipment => $"{unlock.Name}\n<color=#FFD35A>{L10n.Get("levelUp.newEquipment")}</color>",
             _ => unlock.Name,
         };
 

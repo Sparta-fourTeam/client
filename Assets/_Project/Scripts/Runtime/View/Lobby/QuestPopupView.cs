@@ -213,7 +213,7 @@ namespace Game.View
             if (await RunAsync(() => _api.ClaimQuest(quest.Id)))
             {
                 _rewardPopup.Show(new List<ResultRewardItem> { new(_pointsIcon, quest.Points, PointsId) },
-                    "퀘스트 보상을 받았어요.", "퀘스트 완료");
+                    L10n.Get("quest.claimedMessage"), L10n.Get("quest.claimedTitle"));
             }
         }
 
@@ -232,7 +232,7 @@ namespace Game.View
             if (points > 0)
             {
                 _rewardPopup.Show(new List<ResultRewardItem> { new(_pointsIcon, points, PointsId) },
-                    "퀘스트 보상을 받았어요.", "퀘스트 완료");
+                    L10n.Get("quest.claimedMessage"), L10n.Get("quest.claimedTitle"));
             }
         }
 
@@ -249,11 +249,11 @@ namespace Game.View
             }
 
             var chest = board.Chests[index];
-            string name = board.Period == QuestPeriod.Daily ? "일일" : "주간";
+            string name = board.Period == QuestPeriod.Daily ? L10n.Get("quest.daily") : L10n.Get("quest.weekly");
             string description = _profile.IsQuestChestClaimed(chest.Id)
-                ? $"{name} 퀘스트 · 이미 수령한 보상이에요."
-                : $"{name} 퀘스트 · 점수 {chest.Points}점을 모으면 받을 수 있어요.";
-            _chestInfoPopup?.Show($"보물상자 {chest.Points}점", description, ChestRewards(chest.Gold, chest.Energy, chest.Gems));
+                ? L10n.Get("quest.chestClaimed", name)
+                : L10n.Get("quest.chestHint", name, chest.Points.ToString());
+            _chestInfoPopup?.Show(L10n.Get("quest.chestTitle", chest.Points.ToString()), description, ChestRewards(chest.Gold, chest.Energy, chest.Gems));
         }
 
         private List<ResultRewardItem> ChestRewards(int gold, int energy, int gems)
@@ -281,7 +281,7 @@ namespace Game.View
             }
 
             var rewards = ChestRewards(gold, energy, gems);
-            if (rewards.Count > 0) { _rewardPopup.Show(rewards, "보물상자 보상을 받았어요.", "보물상자 보상"); }
+            if (rewards.Count > 0) { _rewardPopup.Show(rewards, L10n.Get("quest.chestClaimedMessage"), L10n.Get("quest.chestRewardTitle")); }
         }
 
         /// <summary>수령 요청 하나를 보내고 응답을 프로필에 반영한다. 거절되면 서버 기준 상태로 다시 그린다. 성공하면 true</summary>

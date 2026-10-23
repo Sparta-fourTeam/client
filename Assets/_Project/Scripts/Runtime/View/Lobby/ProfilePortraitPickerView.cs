@@ -33,7 +33,7 @@ namespace Game.View
         }
         public void Open()
         {
-            _status.text = "사용할 초상을 선택해 주세요.";
+            _status.text = L10n.Get("profile.portraitPrompt");
             _panel.SetActive(true);
             Refresh();
         }
@@ -49,7 +49,7 @@ namespace Game.View
         {
             if (_busy || _account == null || _profile?.IsLoaded != true) { return; }
             _busy = true;
-            _status.text = "저장 중…";
+            _status.text = L10n.Get("profile.saving");
             Refresh();
             try
             {
@@ -58,7 +58,7 @@ namespace Game.View
             }
             catch (Exception)
             {
-                if (this != null) { _status.text = "저장하지 못했습니다. 다시 선택해 주세요."; }
+                if (this != null) { _status.text = L10n.Get("profile.portraitSaveFailed"); }
             }
             finally
             {

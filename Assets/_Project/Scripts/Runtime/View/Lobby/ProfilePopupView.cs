@@ -76,12 +76,12 @@ namespace Game.View
                 {
                     var request = new ConfirmRequest
                     {
-                        Title = "닉네임 변경",
-                        Message = "한글, 영문, 숫자, 밑줄(_)로 2~20자를 입력해 주세요.",
+                        Title = L10n.Get("profile.renameTitle"),
+                        Message = L10n.Get("profile.renameRule"),
                         Warning = warning,
-                        ConfirmLabel = "변경",
-                        CancelLabel = "취소",
-                        InputPlaceholder = "새 닉네임",
+                        ConfirmLabel = L10n.Get("common.change"),
+                        CancelLabel = L10n.Get("common.cancel"),
+                        InputPlaceholder = L10n.Get("profile.renamePlaceholder"),
                         InitialInput = draft,
                         InputValidator = value => NicknameRules.IsValid(value?.Trim()),
                     };
@@ -90,20 +90,20 @@ namespace Game.View
                     try
                     {
                         await _account.ChangeNicknameAsync(draft);
-                        _toast.Show("닉네임을 변경했습니다.");
+                        _toast.Show(L10n.Get("profile.renamed"));
                         return;
                     }
                     catch (ApiException error) when (error.Code == "NICKNAME_DUPLICATED" || error.Code == "HTTP_409")
-                    { warning = "이미 사용 중인 닉네임입니다. 다른 이름을 입력해 주세요."; }
+                    { warning = L10n.Get("profile.nameDuplicated"); }
                     catch (ApiException)
-                    { warning = "저장하지 못했습니다. 연결 상태를 확인하고 다시 시도해 주세요."; }
+                    { warning = L10n.Get("profile.saveFailedRetry"); }
                 }
             }
             catch (System.OperationCanceledException) { throw; }
             catch (System.Exception ex)
             {
                 Debug.LogException(ex);
-                _toast.Show("닉네임을 저장하지 못했습니다. 다시 시도해 주세요.");
+                _toast.Show(L10n.Get("profile.renameFailed"));
             }
             finally
             {
@@ -139,7 +139,7 @@ namespace Game.View
             _expText.text = _profile.IsMaxLevel
                 ? "MAX"
                 : $"({CurrencyFormat.Format(_profile.ExpIntoLevel)}/{CurrencyFormat.Format(_profile.ExpRequiredForNext)})";
-            _stageText.text = $"제 {_profile.HighestUnlockedStage}관문";
+            _stageText.text = L10n.Get("profile.stageValue", _profile.HighestUnlockedStage.ToString());
 
             var equips = _catalog.Equips;
             for (int i = 0; i < _equipSlots.Length; i++)

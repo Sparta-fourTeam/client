@@ -1,3 +1,4 @@
+using Game.Core;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -18,7 +19,7 @@ namespace Game.View
             _title.text = title;
             _progress.text = $"({count:N0}/{target:N0})";
             _points.text = points.ToString();
-            _buttonLabel.text = claimed ? "완료" : complete ? "받기" : "미완료";
+            _buttonLabel.text = claimed ? L10n.Get("questRow.done") : complete ? L10n.Get("questRow.claim") : L10n.Get("questRow.incomplete");
             _button.interactable = complete && !claimed;
         }
     }
