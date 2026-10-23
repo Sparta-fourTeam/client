@@ -1,4 +1,5 @@
 """Offline regressions for direct-tag provenance, required CI and safe code reuse."""
+import ast
 import copy
 import importlib.util
 import io
@@ -7,8 +8,10 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+import textwrap
 import unittest
 from unittest.mock import patch
+import xml.etree.ElementTree as ET
 import zipfile
 import test_android_tag_release as fixtures
 
@@ -263,6 +266,37 @@ else: print(json.dumps(row))
         before = (folder / 'output').read_text()
         self.assertNotEqual(run_cli().returncode, 0)
         self.assertEqual((folder / 'output').read_text(), before)
+
+
+class BundleToolOutputTests(unittest.TestCase):
+    def setUp(self):
+        workflow = SCRIPT.parent.parent / 'workflows' / 'deploy-google-play.yml'
+        block = workflow.read_text().split('      - name: Validate actual AAB and record evidence\n', 1)[1]
+        block = block.split('      - name:', 1)[0]
+        program = block.split("          python3 - <<'PY'\n", 1)[1].rsplit('          PY', 1)[0]
+        tree = ast.parse(textwrap.dedent(program))
+        helper = next(node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == 'run')
+        namespace = {'subprocess': subprocess}
+        exec(compile(ast.Module(body=[helper], type_ignores=[]), str(workflow), 'exec'), namespace)
+        self.run_tool = namespace['run']
+
+    def test_jvm_diagnostics_do_not_corrupt_manifest_or_config_output(self):
+        for payload, parse in [('<manifest package="com.example.fixture" />', ET.fromstring),
+                               ('{"optimizations": {}}', json.loads)]:
+            with self.subTest(payload=payload):
+                command = [sys.executable, '-c',
+                           'import sys; sys.stderr.write("WARNING: JVM startup diagnostic\\n"); '
+                           'sys.stderr.flush(); sys.stdout.write(sys.argv[1])', payload]
+                output = self.run_tool(command)
+                self.assertEqual(output, payload)
+                parse(output)
+        with self.assertRaises(ET.ParseError):
+            ET.fromstring(self.run_tool([sys.executable, '-c', 'print("invalid XML")']))
+
+    def test_failed_tool_remains_a_hard_validation_failure(self):
+        with self.assertRaises(subprocess.CalledProcessError) as error:
+            self.run_tool([sys.executable, '-c', 'import sys; sys.exit(7)'])
+        self.assertEqual(error.exception.returncode, 7)
 
 
 if __name__ == '__main__':
