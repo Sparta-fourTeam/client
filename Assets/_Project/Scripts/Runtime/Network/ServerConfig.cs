@@ -25,6 +25,16 @@ namespace Game.Network
         public static bool UseServerProgress => UseServerAuth;
         public static bool UseServerPlayer => UseServerProgress;
 
+        // 공개 운영 정책은 기기의 인증 backend/개발 override와 독립적이다.
+#if UNITY_EDITOR
+        public static bool UseClientPolicy => UseServerAuth;
+#else
+        public static bool UseClientPolicy => ResolveClientPolicy(Application.platform);
+#endif
+
+        public static bool ResolveClientPolicy(RuntimePlatform platform) =>
+            platform == RuntimePlatform.Android || platform == RuntimePlatform.IPhonePlayer;
+
 #if NOVA_POLICY_QA && !UNITY_EDITOR
         public static bool UseServerAuth => true;
 #elif UNITY_EDITOR

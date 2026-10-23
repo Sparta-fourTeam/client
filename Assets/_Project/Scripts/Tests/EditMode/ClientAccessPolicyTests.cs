@@ -11,6 +11,28 @@ namespace Game.Tests
 {
     public sealed class ClientAccessPolicyTests
     {
+        [TestCase(UnityEngine.RuntimePlatform.IPhonePlayer, "")]
+        [TestCase(UnityEngine.RuntimePlatform.IPhonePlayer, "0")]
+        [TestCase(UnityEngine.RuntimePlatform.Android, "0")]
+        public void DevicePolicyStillFetchesMaintenanceWhenServerAuthenticationIsDisabled(UnityEngine.RuntimePlatform platform, string preference)
+        {
+            Assert.IsFalse(ServerConfig.ResolveServerAuth(platform, preference));
+            var transport = new FakeHttpTransport
+            {
+                Response = new HttpResponseData(200, "{\"schemaVersion\":1,\"revision\":\"maintenance\",\"mode\":\"MAINTENANCE\",\"message\":\"test\",\"enforcementEnabled\":true,\"allowLegacy\":true,\"retryAfterSeconds\":30,\"platforms\":{}}")
+            };
+            var client = new HttpClientPolicyClient(new HttpApiConfig("https://example.test"), transport,
+                ServerConfig.ResolveClientPolicy(platform));
+            var policy = client.Fetch(default).GetAwaiter().GetResult();
+            var platformKey = platform == UnityEngine.RuntimePlatform.IPhonePlayer ? "ios" : "android";
+            Assert.AreEqual(1, transport.Requests.Count);
+            Assert.AreEqual(ClientAccessState.Maintenance, policy.Evaluate(new ClientBuild(platformKey, "10"), ClientAccessPurpose.Login).State);
+            policy.mode = "NORMAL";
+            policy.platforms[platformKey] = new ClientPlatformPolicy
+            { minimumBuild = "11", recommendedBuild = "11", storeUrl = platformKey == "ios" ? "https://apps.apple.com/app/id-test" : "https://play.google.com/store/apps/details?id=test" };
+            Assert.AreEqual(ClientAccessState.UpdateRequired, policy.Evaluate(new ClientBuild(platformKey, "10"), ClientAccessPurpose.Login).State);
+        }
+
         [TestCase("1", "1.0", 0)]
         [TestCase("1.10", "1.9", 1)]
         [TestCase("9", "10", -1)]

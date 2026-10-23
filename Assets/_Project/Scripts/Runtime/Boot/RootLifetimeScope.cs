@@ -39,13 +39,13 @@ namespace Game.Boot
 #if NOVA_POLICY_LOCAL && NOVA_POLICY_QA && !UNITY_EDITOR
             builder.Register<ClientPolicyQaClient>(Lifetime.Singleton).As<IAppUpdateChecker>();
             builder.Register<IClientPolicyClient>(c => new HttpClientPolicyClient(c.Resolve<HttpApiConfig>(),
-                c.Resolve<IHttpTransport>(), ServerConfig.UseServerAuth), Lifetime.Singleton);
+                c.Resolve<IHttpTransport>(), ServerConfig.UseClientPolicy), Lifetime.Singleton);
 #elif NOVA_POLICY_QA && !UNITY_EDITOR
             builder.Register<ClientPolicyQaClient>(Lifetime.Singleton).As<IClientPolicyClient>().As<IAppUpdateChecker>();
 #else
             builder.Register<IAppUpdateChecker, StoreAppUpdateChecker>(Lifetime.Singleton);
             builder.Register<IClientPolicyClient>(c => new HttpClientPolicyClient(c.Resolve<HttpApiConfig>(),
-                c.Resolve<IHttpTransport>(), ServerConfig.UseServerAuth), Lifetime.Singleton);
+                c.Resolve<IHttpTransport>(), ServerConfig.UseClientPolicy), Lifetime.Singleton);
 #endif
             builder.Register<IClientAccessPrompt, ClientAccessPrompt>(Lifetime.Singleton);
             builder.Register<ClientAccessGuard>(Lifetime.Singleton).AsSelf().As<IClientAccessGuard>();
