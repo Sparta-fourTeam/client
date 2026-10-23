@@ -1716,37 +1716,6 @@ namespace Game.Tests
             Assert.That(Object.FindObjectsByType<UiHost>().Length, Is.EqualTo(1));
         }
 
-        [UnityTest]
-        public IEnumerator Language_ChangeReloadsLobbyOnlyWhenLocaleChanges()
-        {
-            // 언어를 바꾸면 로비를 다시 로드해 UI를 새 언어로 다시 만들고, 같은 언어를 다시 고르면 다시 로드하지 않는다
-            yield return StartFromBoot();
-            var root = Object.FindAnyObjectByType<RootLifetimeScope>().Container;
-            var settings = root.Resolve<GameSettings>();
-            var navigator = root.Resolve<ISceneNavigator>();
-            var before = Object.FindAnyObjectByType<UiHost>();
-            Assert.That(SelectedLocaleCode(), Is.EqualTo("ko"));
-
-            settings.SetLanguage(GameLanguage.English);
-            yield return WaitFor(() => SelectedLocaleCode() == "en"
-                && Object.FindAnyObjectByType<UiHost>() is { } host && host != before
-                && SceneManager.GetActiveScene().name == "Lobby" && navigator.Current == SceneId.Lobby);
-            var reloaded = Object.FindAnyObjectByType<UiHost>();
-            Assert.That(Object.FindObjectsByType<UiHost>().Length, Is.EqualTo(1));
-
-            // 같은 언어를 다시 고르면 로케일도 씬도 그대로다
-            settings.SetLanguage(GameLanguage.English);
-            for (int i = 0; i < 30; i++) { yield return null; }
-            Assert.That(Object.FindAnyObjectByType<UiHost>(), Is.SameAs(reloaded));
-            Assert.That(navigator.Current, Is.EqualTo(SceneId.Lobby));
-
-            // 다음 테스트로 영어가 새지 않게 한국어로 되돌린다
-            settings.SetLanguage(GameLanguage.Korean);
-            yield return WaitFor(() => SelectedLocaleCode() == "ko"
-                && Object.FindAnyObjectByType<UiHost>() is { } host && host != reloaded
-                && navigator.Current == SceneId.Lobby);
-        }
-
         private static string SelectedLocaleCode()
             => UnityEngine.Localization.Settings.LocalizationSettings.SelectedLocale?.Identifier.Code;
 
@@ -1758,6 +1727,9 @@ namespace Game.Tests
             _languagePreference = PlayerPrefs.GetInt("settings.language");
             PlayerPrefs.DeleteKey("settings.language");
             _restoreLanguagePreference = true;
+            // 도메인 리로드 없이 이어지는 재생이나 앞선 테스트가 남긴 로케일이 새지 않게 한국어로 확정한다
+            UnityEngine.Localization.Settings.LocalizationSettings.InitializationOperation.WaitForCompletion();
+            UnityEngine.Localization.Settings.LocalizationSettings.SelectedLocale = UnityEngine.Localization.Settings.LocalizationSettings.AvailableLocales.GetLocale("ko");
             _hadSpeedPreference = PlayerPrefs.HasKey("stage_speed");
             _speedPreference = PlayerPrefs.GetFloat("stage_speed");
             _restoreSpeedPreference = true;

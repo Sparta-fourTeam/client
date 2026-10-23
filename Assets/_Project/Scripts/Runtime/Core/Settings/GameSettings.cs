@@ -53,13 +53,15 @@ namespace Game.Core
         private const string DebuffKey = "settings.debuff_effects";
         private const string FrameRateKey = "settings.frame_rate";
         private const string AutoEnterKey = "settings.auto_enter_highest_stage";
-        private const string LanguageKey = "settings.language";
+        /// <summary>언어 저장 키. 시작 로케일 선택기(GameLanguageLocaleSelector)도 같은 키를 읽는다</summary>
+        public const string LanguageKey = "settings.language";
 
         private readonly ISettingsStore _store;
 
         public event Action Changed;
 
-        public GameSettings(ISettingsStore store)
+        /// <param name="defaultLanguage">저장된 언어가 없을 때 쓸 언어. 사용자가 고르기 전에는 저장하지 않는다</param>
+        public GameSettings(ISettingsStore store, GameLanguage defaultLanguage = GameLanguage.Korean)
         {
             _store = store;
             DamageIndication = GetBool(DamageKey, true);
@@ -68,7 +70,7 @@ namespace Game.Core
             FrameRate = _store.TryGet(FrameRateKey, out int rate) && Enum.IsDefined(typeof(FrameRateMode), rate)
                 ? (FrameRateMode)rate : FrameRateMode.High;
             Language = _store.TryGet(LanguageKey, out int language) && Enum.IsDefined(typeof(GameLanguage), language)
-                ? (GameLanguage)language : GameLanguage.Korean;
+                ? (GameLanguage)language : defaultLanguage;
         }
 
         public bool DamageIndication { get; private set; }

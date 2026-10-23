@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: LocalizationSettings
   m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Settings.LocalizationSettings
   m_StartupSelectors:
+  - rid: 3518544387129213057
   - rid: 3518544383432196242
   m_AvailableLocales:
     rid: 3518544383432196220
@@ -196,3 +197,6 @@ MonoBehaviour:
       data:
         m_LocaleId:
           m_Code: ko
+    - rid: 3518544387129213057
+      type: {class: GameLanguageLocaleSelector, ns: Game.Core, asm: Game.Core}
+      data: 

@@ -114,7 +114,9 @@ namespace Game.Boot
             builder.RegisterBuildCallback(c => c.Inject(ButtonPressFeedback.EnsureInstance()));
             // 데미지 표시·프레임레이트 같은 나머지 기기 설정도 기기에 저장하고 시작할 때와 바뀔 때 적용한다
             builder.Register<ISettingsStore, PlayerPrefsSettingsStore>(Lifetime.Singleton);
-            builder.Register<GameSettings>(Lifetime.Singleton);
+            // 저장된 언어가 없으면 시스템 언어를 따른다. 사용자가 고르기 전에는 저장하지 않는다
+            builder.Register(c => new GameSettings(c.Resolve<ISettingsStore>(), GameLanguageLocale.FromSystemLanguage(Application.systemLanguage)),
+                Lifetime.Singleton);
             builder.RegisterEntryPoint<GameSettingsApplier>();
 
             // 공지는 SSE로 받아 기기에 저장한다. 전투 중에 온 공지도 받으려고 로비가 아니라 Root에서 연결을 유지한다

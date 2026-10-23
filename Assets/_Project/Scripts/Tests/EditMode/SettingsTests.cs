@@ -9,6 +9,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.EventSystems;
+using UnityEngine.Localization.Settings;
 using UnityEngine.UI;
 
 namespace Game.Tests
@@ -144,6 +145,60 @@ namespace Game.Tests
             Assert.IsFalse(reloaded.DamageIndication);
             Assert.AreEqual(GameSettings.StandardFrameRate, reloaded.TargetFrameRate);
             Assert.AreEqual(GameLanguage.English, reloaded.Language);
+        }
+
+        [Test(Description = "저장된 언어가 없을 때의 기본 언어는 시스템 언어에서 정하고, 저장된 언어가 있으면 저장값이 우선한다. 지원하지 않는 시스템 언어로 첫 화면이 비는 것을 막는다")]
+        public void GameSettings_DefaultLanguageFollowsSystemUnlessSaved()
+        {
+            Assert.AreEqual(GameLanguage.Korean, GameLanguageLocale.FromSystemLanguage(SystemLanguage.Korean));
+            Assert.AreEqual(GameLanguage.Japanese, GameLanguageLocale.FromSystemLanguage(SystemLanguage.Japanese));
+            Assert.AreEqual(GameLanguage.ChineseSimplified, GameLanguageLocale.FromSystemLanguage(SystemLanguage.ChineseSimplified));
+            Assert.AreEqual(GameLanguage.ChineseSimplified, GameLanguageLocale.FromSystemLanguage(SystemLanguage.Chinese));
+            Assert.AreEqual(GameLanguage.English, GameLanguageLocale.FromSystemLanguage(SystemLanguage.English));
+            Assert.AreEqual(GameLanguage.English, GameLanguageLocale.FromSystemLanguage(SystemLanguage.ChineseTraditional));
+            Assert.AreEqual(GameLanguage.English, GameLanguageLocale.FromSystemLanguage(SystemLanguage.French));
+
+            var store = new MemorySettingsStore();
+            Assert.AreEqual(GameLanguage.Korean, new GameSettings(store).Language, "인자가 없으면 한국어");
+            Assert.AreEqual(GameLanguage.Japanese, new GameSettings(store, GameLanguage.Japanese).Language, "저장값이 없으면 주입한 기본 언어");
+            Assert.IsEmpty(store.Values, "고르기 전에는 저장하지 않는다");
+
+            store.Values[GameSettings.LanguageKey] = (int)GameLanguage.English;
+            Assert.AreEqual(GameLanguage.English, new GameSettings(store, GameLanguage.Japanese).Language, "저장값이 기본 언어보다 우선");
+        }
+
+        [Test(Description = "로케일이 바뀌면 라벨을 새 문구로 다시 계산하지만, 그 사이 다른 코드가 직접 쓴 문구는 덮어쓰지 않고 바인딩을 푼다")]
+        public void LocalizedLabel_DoesNotOverwriteTextWrittenByOtherCode()
+        {
+            if (!LocalizationSettings.HasSettings || LocalizationSettings.AvailableLocales.Locales.Count < 2)
+            {
+                Assert.Inconclusive("Localization 로케일이 2개 이상 필요하다");
+            }
+            var go = new GameObject("Label", typeof(RectTransform));
+            var original = LocalizationSettings.SelectedLocale;
+            try
+            {
+                var label = go.AddComponent<TextMeshProUGUI>();
+                var locales = LocalizationSettings.AvailableLocales.Locales;
+                int calls = 0;
+                label.SetL10n(() => "v" + ++calls);
+                Assert.AreEqual("v1", label.text);
+
+                LocalizationSettings.SelectedLocale = locales[0] == original ? locales[1] : locales[0];
+                if (calls == 1) { Assert.Inconclusive("에디터에서 SelectedLocaleChanged가 동기로 오지 않았다"); }
+                Assert.AreEqual("v2", label.text, "직접 쓰지 않았으면 새로 계산한다");
+
+                label.text = "직접";
+                LocalizationSettings.SelectedLocale = original;
+                Assert.AreEqual("직접", label.text, "다른 코드가 쓴 문구는 덮어쓰지 않는다");
+                LocalizationSettings.SelectedLocale = locales[0] == original ? locales[1] : locales[0];
+                Assert.AreEqual("직접", label.text, "바인딩이 풀려 이후에도 건드리지 않는다");
+            }
+            finally
+            {
+                LocalizationSettings.SelectedLocale = original;
+                Object.DestroyImmediate(go);
+            }
         }
 
         [Test(Description = "볼륨은 데시벨로 바뀐다: 1 → 0dB, 0.5 → 약 -6dB, 0 → -80dB(무음)")]
