@@ -27,7 +27,6 @@ namespace Game.View
         private TMP_Text _purchaseRemaining, _description;
         private GameObject _adRemaining;
         private TMP_Text _purchaseLabel;
-        private string _localLabel;
 
         [Inject]
         public void Construct(EnergyRecovery energyRecovery, PlayerProfile profile, ISubscriber<LobbyRequestFailed> requestFailed)
@@ -40,7 +39,6 @@ namespace Game.View
         {
             _panel.SetActive(false);
             _purchaseLabel = _purchaseButton.GetComponentInChildren<TMP_Text>(true);
-            _localLabel = _purchaseLabel != null ? _purchaseLabel.text : null;
             _purchaseRemaining = _purchaseTitle.transform.parent.Find("RemainingText")?.GetComponent<TMP_Text>();
             _adRemaining = _adTitle.transform.parent.Find("RemainingText")?.gameObject;
             _description = _panel.transform.Find("Window/DescText")?.GetComponent<TMP_Text>();
@@ -103,7 +101,7 @@ namespace Game.View
             if (!_energyRecovery.UsesServerPurchase)
             {
                 _purchaseButton.interactable = !_busy;
-                if (_purchaseLabel != null) { _purchaseLabel.text = _localLabel; }
+                if (_purchaseLabel != null) { _purchaseLabel.text = L10n.Get("energy.recover.gem"); }
                 return;
             }
             var state = _energyRecovery.PurchaseState;
