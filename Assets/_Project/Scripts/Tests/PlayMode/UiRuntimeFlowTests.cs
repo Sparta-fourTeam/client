@@ -1716,6 +1716,40 @@ namespace Game.Tests
             Assert.That(Object.FindObjectsByType<UiHost>().Length, Is.EqualTo(1));
         }
 
+        [UnityTest]
+        public IEnumerator Language_ChangeReloadsLobbyOnlyWhenLocaleChanges()
+        {
+            // 언어를 바꾸면 로비를 다시 로드해 UI를 새 언어로 다시 만들고, 같은 언어를 다시 고르면 다시 로드하지 않는다
+            yield return StartFromBoot();
+            var root = Object.FindAnyObjectByType<RootLifetimeScope>().Container;
+            var settings = root.Resolve<GameSettings>();
+            var navigator = root.Resolve<ISceneNavigator>();
+            var before = Object.FindAnyObjectByType<UiHost>();
+            Assert.That(SelectedLocaleCode(), Is.EqualTo("ko"));
+
+            settings.SetLanguage(GameLanguage.English);
+            yield return WaitFor(() => SelectedLocaleCode() == "en"
+                && Object.FindAnyObjectByType<UiHost>() is { } host && host != before
+                && SceneManager.GetActiveScene().name == "Lobby" && navigator.Current == SceneId.Lobby);
+            var reloaded = Object.FindAnyObjectByType<UiHost>();
+            Assert.That(Object.FindObjectsByType<UiHost>().Length, Is.EqualTo(1));
+
+            // 같은 언어를 다시 고르면 로케일도 씬도 그대로다
+            settings.SetLanguage(GameLanguage.English);
+            for (int i = 0; i < 30; i++) { yield return null; }
+            Assert.That(Object.FindAnyObjectByType<UiHost>(), Is.SameAs(reloaded));
+            Assert.That(navigator.Current, Is.EqualTo(SceneId.Lobby));
+
+            // 다음 테스트로 영어가 새지 않게 한국어로 되돌린다
+            settings.SetLanguage(GameLanguage.Korean);
+            yield return WaitFor(() => SelectedLocaleCode() == "ko"
+                && Object.FindAnyObjectByType<UiHost>() is { } host && host != reloaded
+                && navigator.Current == SceneId.Lobby);
+        }
+
+        private static string SelectedLocaleCode()
+            => UnityEngine.Localization.Settings.LocalizationSettings.SelectedLocale?.Identifier.Code;
+
         // seed가 없으면 튜토리얼을 마친 계정으로 시작한다. 튜토리얼 중인 새 계정은 로비 대신 1스테이지로 들어간다
         private IEnumerator StartFromBoot(Action<LocalSave> seed = null, string expectedScene = "Lobby", bool allowAnalytics = false)
         {

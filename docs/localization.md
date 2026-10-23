@@ -11,7 +11,7 @@ Unity Localization 패키지로 ko, en, ja, zh-Hans를 지원한다. 문구의 �
 | 조회 헬퍼 | `Game.Core.L10n` | `L10n.Get(key)`, `L10n.Get(key, args)`. 인자 자리는 `{0}`, `{1}` |
 | 정적 라벨 | 프리팹의 `LocalizeStringEvent` | 코드가 값을 쓰지 않는 라벨의 문구를 키로 연결한다 |
 | 폰트 교체 | `Game.View.LocalizedFont` | UI 라벨에 붙어 ja, zh-Hans에서 폰트를 바꾸고 원래 머티리얼의 외곽선 설정을 옮긴다 |
-| 언어 선택 | 설정 팝업의 드롭다운 | `GameSettings.Language`를 저장하면 `GameSettingsApplier`가 `SelectedLocale`에 반영한다 |
+| 언어 선택 | 설정 팝업의 드롭다운 | `GameSettings.Language`를 저장하면 `GameSettingsApplier`가 `SelectedLocale`에 반영하고, 로비라면 씬을 다시 로드한다 |
 
 로케일은 `LocalizationSettings.SelectedLocale`로만 바꾼다. 별도의 현재 언어 상태를 만들지 않는다.
 
@@ -33,7 +33,7 @@ Unity Localization 패키지로 ko, en, ja, zh-Hans를 지원한다. 문구의 �
 
 ## 알아 둘 점
 
-- 코드가 한 번 써 넣은 문구(`label.text = L10n.Get(...)`)는 로케일을 바꿔도 그 화면이 다시 그려질 때까지 이전 언어로 남는다. 열 때마다 다시 계산하는 화면은 문제없다.
+- 코드가 한 번 써 넣은 문구(`label.text = L10n.Get(...)`)는 로케일을 바꿔도 다시 계산되지 않는다. 그래서 로비에서 언어를 바꾸면 `GameSettingsApplier`가 로케일을 적용한 뒤 `GoToLobby()`로 로비 씬을 다시 로드해 UI를 새 언어로 만든다. 전투 중에는 재로드하지 않고 다음 씬 진입 때 새 언어가 적용된다.
 - ja, zh-Hans 폰트는 Noto Sans(OFL) 원본이다. 파일이 커서 빌드 크기가 늘고, 대용량 파일 검사에서 `ttf|otf`를 제외했다.
 - 에디터에서는 `LocalizedFont`가 동작하지 않는다. ja, zh-Hans 표시는 플레이 모드에서 확인한다.
 - 개발 기기에 저장된 언어(PlayerPrefs `settings.language`)가 화면 문구를 바꾼다. PlayMode UI 테스트는 시작할 때 이 값을 지워 한국어로 고정하고 끝나면 복원한다.
