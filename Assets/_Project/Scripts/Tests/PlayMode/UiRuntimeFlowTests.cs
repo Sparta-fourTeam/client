@@ -511,8 +511,6 @@ namespace Game.Tests
             string upgradeId = guideTutorial.Complete.UpgradeId;
             var upgrade = data.Upgrades.GetOrThrow(upgradeId);
             int tutorialLevel = intro.Rewards.Single(r => r.Kind == TutorialReward.SetLevel).Level;
-            // 레벨업으로 열린 무기와 강화 안내 대상(받은 재료)은 다른 스킬일 수 있다
-            string weapon = data.LoadSkills().Single(skill => !skill.childOnly && skill.unlockLevel == tutorialLevel).name;
             yield return StartFromBoot(save =>
             {
                 save.tutorials = new List<string>();
@@ -520,6 +518,8 @@ namespace Game.Tests
                 save.wallet.gold = 0;
             });
             var lobby = Object.FindAnyObjectByType<LobbyLifetimeScope>();
+            // 레벨업으로 열린 무기와 강화 안내 대상(받은 재료)은 다른 스킬일 수 있다. 표시 이름은 언어를 고정한 뒤의 데이터에서 읽는다
+            string weapon = lobby.Container.Resolve<GameDataStore>().LoadSkills().Single(skill => !skill.childOnly && skill.unlockLevel == tutorialLevel).name;
             var profile = lobby.Container.Resolve<PlayerProfile>();
             var ui = lobby.Container.Resolve<IUiRegistry>();
             var levelUp = ui.Get<LevelUpPopupView>();
@@ -1781,7 +1781,9 @@ namespace Game.Tests
         [UnityTest]
         public IEnumerator Boot_InEnglishNeverShowsKoreanWhileCurtainIsOpen()
         {
-            // 영어로 부팅했을 때 커튼이 화면을 가리지 않는 프레임마다 활성 라벨에 한글이 없다(프리팹의 한국어가 테이블 로드 전에 그려지는 틈 회귀 방지)
+            // 영어로 부팅했을 때 커튼이 화면을 가리지 않는 프레임마다 활성 라벨에 한글이 없다.
+            // 주의: 에디터에서는 번들·테이블 로드가 빨라 Preload·동기 초기화를 빼도 통과한다(측정으로 확인). 실제 기기의 로드 대기 틈을 증명하지는 못하고,
+            // 부팅 직후 한국어가 노출되는 다른 회귀(프리팹 기본 문구를 읽어 쓰는 코드, 키가 빠진 문구 등)를 막는다
             var hangul = new System.Text.RegularExpressions.Regex("[\\uAC00-\\uD7A3]");
             var frames = 0;
             void CheckFrame()
