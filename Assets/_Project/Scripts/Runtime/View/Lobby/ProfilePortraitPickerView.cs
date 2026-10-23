@@ -33,7 +33,7 @@ namespace Game.View
         }
         public void Open()
         {
-            _status.text = L10n.Get("profile.portraitPrompt");
+            _status.SetL10n("profile.portraitPrompt");
             _panel.SetActive(true);
             Refresh();
         }
@@ -49,7 +49,7 @@ namespace Game.View
         {
             if (_busy || _account == null || _profile?.IsLoaded != true) { return; }
             _busy = true;
-            _status.text = L10n.Get("profile.saving");
+            _status.SetL10n("profile.saving");
             Refresh();
             try
             {
@@ -58,7 +58,7 @@ namespace Game.View
             }
             catch (Exception)
             {
-                if (this != null) { _status.text = L10n.Get("profile.portraitSaveFailed"); }
+                if (this != null) { _status.SetL10n("profile.portraitSaveFailed"); }
             }
             finally
             {

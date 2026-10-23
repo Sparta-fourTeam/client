@@ -156,10 +156,11 @@ namespace Game.View
         private void Refresh()
         {
             if (_chat == null) { return; }
-            _status.text = _chat.Status;
+            _status.SetL10n(_chat.StatusKey);
             _status.gameObject.SetActive(!_chat.IsConnected);
-            _presence.text = _chat.OnlineCount.HasValue ? L10n.Get("chat.online", _chat.OnlineCount.Value.ToString("N0"))
-                : _chat.IsConnected ? L10n.Get("chat.checking") : "";
+            if (_chat.OnlineCount.HasValue) { _presence.SetL10n("chat.online", _chat.OnlineCount.Value.ToString("N0")); }
+            else if (_chat.IsConnected) { _presence.SetL10n("chat.checking"); }
+            else { _presence.text = ""; }
             _retryButton.gameObject.SetActive(!_chat.IsConnected);
             RefreshSend();
             if (!_panel.activeSelf) { return; }

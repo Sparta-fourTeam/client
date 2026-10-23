@@ -35,7 +35,7 @@ namespace Game.View
             int rating = profile.ClearRating(stageId);
             int claimed = profile.ClaimedRating(stageId);
 
-            _stageText.text = L10n.Get("stage.title", stageId);
+            _stageText.SetL10n("stage.title", stageId);
             _lockOverlay.SetActive(!unlocked);
             _infoButton.interactable = !busy;
             for (int i = 0; i < _rewardNodes.Length; i++)
@@ -48,11 +48,11 @@ namespace Game.View
             _rewardAreaButton.gameObject.SetActive(available);
             _rewardAreaButton.interactable = !busy;
             _rewardBadge.SetActive(available);
-            _rewardStatus.text = claiming ? L10n.Get("stage.reward.claiming")
+            _rewardStatus.SetL10n(() => claiming ? L10n.Get("stage.reward.claiming")
                 : available ? L10n.Get("stage.reward.available")
                 : claimed >= 3 ? L10n.Get("stage.reward.allClaimed")
                 : !unlocked ? L10n.Get("stage.reward.locked")
-                : L10n.Get("stage.reward.default");
+                : L10n.Get("stage.reward.default"));
         }
     }
 }

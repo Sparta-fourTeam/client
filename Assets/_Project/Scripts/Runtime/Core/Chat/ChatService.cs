@@ -23,12 +23,14 @@ namespace Game.Core
         public bool IsConnected { get; private set; }
         public int UnreadCount { get; private set; }
         public int? OnlineCount { get; private set; }
-        public string Status { get; private set; }
+        /// <summary>현재 상태 문구의 UIStrings 키. 문구는 읽을 때 현재 로케일로 만들어 언어를 바꿔도 낡지 않는다</summary>
+        public string StatusKey { get; private set; }
+        public string Status => L10n.Get(StatusKey);
 
         public ChatService(IChatClient client, IBufferedPublisher<ChatChanged> changed)
         {
             _token = _lifetime.Token;
-            Status = L10n.Get("chat.statusReady");
+            StatusKey = "chat.statusReady";
             _client = client;
             _changed = changed;
         }
@@ -43,7 +45,7 @@ namespace Game.Core
         {
             _running = true;
             OnlineCount = null;
-            Status = L10n.Get("chat.statusConnecting");
+            StatusKey = "chat.statusConnecting";
             Notify();
             using var attempt = CancellationTokenSource.CreateLinkedTokenSource(_token);
             UniTask running = default;
@@ -77,7 +79,7 @@ namespace Game.Core
                 started = true;
                 if (await UniTask.WhenAny(subscribed.Task, running) == 1)
                 { throw new InvalidOperationException("Chat disconnected before subscription."); }
-                Status = L10n.Get("chat.statusLoading");
+                StatusKey = "chat.statusLoading";
                 Notify();
                 var history = _client.GetRecentAsync(attempt.Token).Preserve();
                 if (await UniTask.WhenAny(history.AsUniTask(), running) == 1)
@@ -97,14 +99,14 @@ namespace Game.Core
                 _messages.Clear();
                 _messages.AddRange(ordered);
                 IsConnected = true;
-                Status = L10n.Get("chat.statusLive");
+                StatusKey = "chat.statusLive";
                 Notify();
                 await running;
-                Status = L10n.Get("chat.statusDisconnected");
+                StatusKey = "chat.statusDisconnected";
             }
             catch (OperationCanceledException) when (_lifetime.IsCancellationRequested) { }
-            catch (NotSupportedException) { Status = L10n.Get("chat.statusLoginRequired"); }
-            catch (Exception) { Status = L10n.Get("chat.statusFailed"); }
+            catch (NotSupportedException) { StatusKey = "chat.statusLoginRequired"; }
+            catch (Exception) { StatusKey = "chat.statusFailed"; }
             finally
             {
                 attempt.Cancel();
@@ -148,7 +150,7 @@ namespace Game.Core
             catch (OperationCanceledException) when (_lifetime.IsCancellationRequested) { return false; }
             catch (Exception)
             {
-                Status = L10n.Get("chat.statusSendFailed");
+                StatusKey = "chat.statusSendFailed";
                 Notify();
                 return false;
             }

@@ -72,7 +72,8 @@ namespace Game.View
             _message.text = request.Message;
             _warning.gameObject.SetActive(!string.IsNullOrEmpty(request.Warning));
             _warning.text = request.Warning;
-            _confirmLabel.text = string.IsNullOrEmpty(request.ConfirmLabel) ? L10n.Get("common.ok") : request.ConfirmLabel;
+            if (string.IsNullOrEmpty(request.ConfirmLabel)) { _confirmLabel.SetL10n("common.ok"); }
+            else { _confirmLabel.text = request.ConfirmLabel; }
 
             bool single = string.IsNullOrEmpty(request.CancelLabel);
             _cancelButton.gameObject.SetActive(!single);

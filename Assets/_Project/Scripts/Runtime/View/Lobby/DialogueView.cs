@@ -124,7 +124,7 @@ namespace Game.View
 
             if (_autoLabel != null)
             {
-                _autoLabel.text = L10n.Get(_auto ? "dialogue.autoOn" : "dialogue.autoOff");
+                _autoLabel.SetL10n(_auto ? "dialogue.autoOn" : "dialogue.autoOff");
             }
         }
 
@@ -212,7 +212,8 @@ namespace Game.View
                     .SetEase(Ease.OutCubic).SetUpdate(true).SetLink(gameObject);
             }
 
-            _nameText.text = SpeakerName(line.Speaker);
+            string speaker = line.Speaker;
+            _nameText.SetL10n(() => SpeakerName(speaker));
             float tagX = line.IsRight ? _nameTagInset : -_nameTagInset;
             _nameTag.anchoredPosition = new Vector2(tagX, _nameTag.anchoredPosition.y);
             _nameTag.pivot = new Vector2(line.IsRight ? 1f : 0f, _nameTag.pivot.y);

@@ -88,7 +88,8 @@ namespace Game.View
             _descText.text = description;
             _onGo = onGo;
             _goButton.gameObject.SetActive(onGo != null);
-            _goLabel.text = goLabel ?? L10n.Get("detail.goUpgrade");
+            if (goLabel != null) { _goLabel.text = goLabel; }
+            else { _goLabel.SetL10n("detail.goUpgrade"); }
             SetClaimVisible(false);
             SetOddsVisible(false);
             _panel.SetActive(true);

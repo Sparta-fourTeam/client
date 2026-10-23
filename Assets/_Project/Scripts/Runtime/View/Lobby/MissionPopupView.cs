@@ -39,8 +39,8 @@ namespace Game.View
 
         public void ShowDetails(GameDataStore data, int stageId)
         {
-            _title.text = L10n.Get("mission.stageTitle", stageId.ToString());
-            if (_description != null) { _description.text = L10n.Get("mission.detailsHint"); }
+            _title.SetL10n("mission.stageTitle", stageId.ToString());
+            if (_description != null) { _description.SetL10n("mission.detailsHint"); }
             _data = data;
             ShowBonuses(data.Stages.GetOrThrow(stageId));
             var monsters = MonsterRows.Build(_monsterDisplay, data, stageId);
@@ -61,17 +61,17 @@ namespace Game.View
                 return;
             }
 
-            var lines = new System.Collections.Generic.List<string>();
+            var bonuses = new System.Collections.Generic.List<(MonsterStat Stat, int Percent)>();
             foreach (var bonus in stage.MonsterBonuses ?? new System.Collections.Generic.List<MonsterBonus>())
             {
-                lines.Add(MonsterBonusText.Line(bonus.GetStat(), bonus.Percent));
+                bonuses.Add((bonus.GetStat(), bonus.Percent));
             }
 
-            _bonus.SetActive(lines.Count > 0);
-            _bonusText.text = string.Join("\n", lines);
+            _bonus.SetActive(bonuses.Count > 0);
+            _bonusText.SetL10n(() => string.Join("\n", bonuses.ConvertAll(b => MonsterBonusText.Line(b.Stat, b.Percent))));
             if (_bonus.TryGetComponent<LayoutElement>(out var layout))
             {
-                layout.preferredHeight = layout.minHeight = lines.Count * BonusLineHeight + BonusPadding;
+                layout.preferredHeight = layout.minHeight = bonuses.Count * BonusLineHeight + BonusPadding;
             }
         }
 

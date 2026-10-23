@@ -129,17 +129,17 @@ namespace Game.View
 
         private void Refresh()
         {
-            _idText.text = L10n.Get("profile.playerId", _profile.PlayerId);
+            _idText.SetL10n("profile.playerId", _profile.PlayerId);
             _copyIdButton.interactable = !string.IsNullOrEmpty(_profile.PlayerId);
             _renameButton.interactable = !_renaming && _account != null && _profile.IsLoaded;
             _nameText.richText = false;
             _nameText.text = _profile.Nickname;
             _levelText.text = $"Lv.{_profile.Level}";
             _expFill.fillAmount = _profile.LevelProgress;
-            _expText.text = _profile.IsMaxLevel
-                ? L10n.Get("label.max")
-                : $"({CurrencyFormat.Format(_profile.ExpIntoLevel)}/{CurrencyFormat.Format(_profile.ExpRequiredForNext)})";
-            _stageText.text = L10n.Get("profile.stageValue", _profile.HighestUnlockedStage.ToString());
+            bool isMaxLevel = _profile.IsMaxLevel;
+            string expInto = CurrencyFormat.Format(_profile.ExpIntoLevel), expNeeded = CurrencyFormat.Format(_profile.ExpRequiredForNext);
+            _expText.SetL10n(() => isMaxLevel ? L10n.Get("label.max") : $"({expInto}/{expNeeded})");
+            _stageText.SetL10n("profile.stageValue", _profile.HighestUnlockedStage.ToString());
 
             var equips = _catalog.Equips;
             for (int i = 0; i < _equipSlots.Length; i++)
@@ -150,7 +150,7 @@ namespace Game.View
                     _equipNames[i].gameObject.SetActive(has);
                     if (has)
                     {
-                        _equipNames[i].text = equips[i].Name;
+                        _equipNames[i].SetL10n(equips[i].NameKey);
                     }
                 }
 

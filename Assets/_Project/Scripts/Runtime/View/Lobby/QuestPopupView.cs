@@ -148,7 +148,7 @@ namespace Game.View
                 int index = order[position];
                 var quest = board.Quests[index];
                 var row = _rows[index];
-                row.Show(QuestText.Title(quest), _profile.QuestCount(quest.Id), quest.Target, quest.Points, _profile.IsQuestClaimed(quest.Id));
+                row.Show(() => QuestText.Title(quest), _profile.QuestCount(quest.Id), quest.Target, quest.Points, _profile.IsQuestClaimed(quest.Id));
                 row.Button.interactable &= !_busy;
                 row.transform.SetSiblingIndex(position);
             }

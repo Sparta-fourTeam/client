@@ -63,7 +63,8 @@ namespace Game.View
                 _tabSelected[i].SetActive(i == index);
             }
 
-            _emptyText.text = index < _emptyMessages.Length ? L10n.Get(_emptyMessages[index]) : "";
+            if (index < _emptyMessages.Length) { _emptyText.SetL10n(_emptyMessages[index]); }
+            else { _emptyText.text = ""; }
             OnTabSelected(index);
         }
 

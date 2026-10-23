@@ -36,7 +36,7 @@ namespace Game.View
             _glow.gameObject.SetActive(available);
             ApplyGlowSettings();
             _button.interactable = !busy;
-            _stateText.text = claimed ? L10n.Get("missionNode.claimed") : available ? L10n.Get("missionNode.claim") : L10n.Get("missionNode.locked");
+            _stateText.SetL10n(() => claimed ? L10n.Get("missionNode.claimed") : available ? L10n.Get("missionNode.claim") : L10n.Get("missionNode.locked"));
             _stateText.color = claimed ? new Color32(23, 180, 136, 255)
                 : available ? new Color32(31, 26, 51, 255) : new Color32(122, 115, 153, 255);
             _chest.rectTransform.localScale = Vector3.one;

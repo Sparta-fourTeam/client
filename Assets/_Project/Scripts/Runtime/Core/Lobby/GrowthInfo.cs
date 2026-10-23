@@ -80,6 +80,9 @@ namespace Game.Core
         /// <summary>강화 API에 넘기는 업그레이드 ID (예: equipment.hat)</summary>
         public string UpgradeId;
         public string Name;
+
+        /// <summary>Name을 만든 UIStrings 키. 라벨은 이 키로 연결해 언어를 바꿀 때 다시 계산한다</summary>
+        public string NameKey;
         public int Level;
         public int MaxLevel;
 

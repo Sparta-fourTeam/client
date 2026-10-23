@@ -113,6 +113,7 @@ namespace Game.Core
                     Slot = i,
                     UpgradeId = upgradeId,
                     Name = L10n.Get(nameKey),
+                    NameKey = nameKey,
                     Level = level,
                     MaxLevel = def.MaxLevel,
                     UnlockLevel = def.UnlockLevel,

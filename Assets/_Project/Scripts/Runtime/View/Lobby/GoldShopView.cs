@@ -87,7 +87,7 @@ namespace Game.View
 
                 int index = i;
                 var pack = config.GoldPacks[i];
-                _items[i].Bind(L10n.Get("currency.ink"), _itemIcons != null ? _itemIcons.Coin : null, pack.Gold, ShopRules.GoldPackPrice(config, pack),
+                _items[i].Bind(() => L10n.Get("currency.ink"), _itemIcons != null ? _itemIcons.Coin : null, pack.Gold, ShopRules.GoldPackPrice(config, pack),
                     pack.DiscountPercent, false, !_busy, () => BuyAsync(index).Forget(Debug.LogException),
                     () => _detail?.Show(_itemIcons != null ? _itemIcons.Coin : null, L10n.Get("currency.ink"), $"x{pack.Gold:N0}", ItemInfo.DescriptionOf(RewardRows.CoinId)));
             }
@@ -181,7 +181,7 @@ namespace Game.View
                 if (!exists) { continue; }
                 int index = i;
                 var pack = catalog.Packs[i];
-                _items[i].Bind(L10n.Get("currency.ink"), _itemIcons != null ? _itemIcons.Coin : null, pack.Gold,
+                _items[i].Bind(() => L10n.Get("currency.ink"), _itemIcons != null ? _itemIcons.Coin : null, pack.Gold,
                     pack.GemPrice, pack.DiscountPercent, false,
                     !_busy && !_server.IsBusy && !_server.HasPending,
                     () => BuyAsync(index).Forget(Debug.LogException),

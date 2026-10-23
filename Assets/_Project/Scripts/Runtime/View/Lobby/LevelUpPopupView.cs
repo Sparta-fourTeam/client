@@ -104,7 +104,8 @@ namespace Game.View
             Fill(_rewardCards, _rewardLine, rewards);
             _unlockSection.SetActive(unlocks.Count > 0);
             _rewardSection.SetActive(rewards.Count > 0);
-            _title.text = news.LeveledUp ? L10n.Get("levelUp.title") : L10n.Get("levelUp.rewardTitle");
+            bool leveledUp = news.LeveledUp;
+            _title.SetL10n(() => leveledUp ? L10n.Get("levelUp.title") : L10n.Get("levelUp.rewardTitle"));
             _closed = new UniTaskCompletionSource();
             PopupPanel.Set(_panel, _transition, true);
             Play(news, unlocks.Count, rewards.Count);

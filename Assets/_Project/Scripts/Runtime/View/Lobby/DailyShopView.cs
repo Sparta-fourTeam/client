@@ -269,8 +269,9 @@ namespace Game.View
             {
                 int slot = i;
                 var offer = _offers[i];
+                string reward = offer.Reward;
                 bool canBuy = !_busy;
-                _items[i].Bind(NameOf(offer.Reward), IconOf(offer.Reward), offer.Count, offer.Price, offer.DiscountPercent,
+                _items[i].Bind(() => NameOf(reward), IconOf(offer.Reward), offer.Count, offer.Price, offer.DiscountPercent,
                     _profile.IsShopSlotSold(i), canBuy, () => BuyAsync(slot).Forget(Debug.LogException),
                     () => _detail?.Show(IconOf(offer.Reward), NameOf(offer.Reward), $"x{offer.Count:N0}", ItemInfo.DescriptionOf(offer.Reward)));
             }
@@ -291,14 +292,15 @@ namespace Game.View
                 ? _server.Account.Daily.NextResetAt.UtcDateTime - utcNow : GameDay.NextResetUtc(utcNow) - utcNow;
             if (_server != null && _server.Account?.Daily == null)
             {
-                _timer.text = L10n.Get("common.checking");
+                // 매 프레임 불리므로 한 번만 연결한다. 이후 분 표시로 돌아올 때 다시 쓰이도록 센티널을 둔다
+                if (_shownMinute != int.MinValue) { _shownMinute = int.MinValue; _timer.SetL10n("common.checking"); }
                 return;
             }
             if (remain < TimeSpan.Zero) { remain = TimeSpan.Zero; }
             int minute = (int)remain.TotalMinutes;
             if (minute == _shownMinute) { return; }
             _shownMinute = minute;
-            _timer.text = L10n.Get("dailyShop.timeLeft", minute / 60, (minute % 60).ToString("D2"));
+            _timer.SetL10n("dailyShop.timeLeft", minute / 60, (minute % 60).ToString("D2"));
         }
 
         private async UniTask RefreshServerAsync()
@@ -332,20 +334,22 @@ namespace Game.View
                 int slot = i;
                 var offer = daily.Offers[i];
                 var rewards = offer.Rewards;
-                string name = rewards.Count == 1 ? NameOf(rewards[0].ItemId)
-                    : string.Join(" · ", rewards.Select(reward => $"{NameOf(reward.ItemId)} x{reward.Count:N0}"));
+                var rewardIds = rewards.Select(reward => reward.ItemId).ToArray();
+                var rewardCounts = rewards.Select(reward => reward.Count).ToArray();
+                Func<string> name = () => rewardIds.Length == 1 ? NameOf(rewardIds[0])
+                    : string.Join(" · ", rewardIds.Select((id, k) => $"{NameOf(id)} x{rewardCounts[k]:N0}"));
                 string count = rewards.Count == 1 ? $"x{rewards[0].Count:N0}" : string.Empty;
                 Sprite icon = rewards.Count > 0 ? IconOf(rewards[0].ItemId) : null;
                 bool sold = daily.Purchased.Contains(slot);
                 _items[i].BindServer(name, icon, count, offer.Price, offer.DiscountPercent,
                     sold, !_busy && !_server.IsBusy && !_server.HasPending, () => BuyAsync(slot).Forget(Debug.LogException),
-                    () => _detail?.Show(icon, name, count, string.Join("\n", rewards.Select(reward =>
+                    () => _detail?.Show(icon, name(), count, string.Join("\n", rewards.Select(reward =>
                         $"{NameOf(reward.ItemId)} x{reward.Count:N0}"))));
             }
             _adCount.text = "0/0";
             _adReroll.interactable = false;
-            _goldCount.text = _server.HasPending ? L10n.Get("common.checking") : ready
-                ? $"{daily.GoldLeft}/{daily.GoldLeft + daily.GoldUsed}" : "0/0";
+            if (_server.HasPending) { _goldCount.SetL10n("common.checking"); }
+            else { _goldCount.text = ready ? $"{daily.GoldLeft}/{daily.GoldLeft + daily.GoldUsed}" : "0/0"; }
             _goldCost.text = ready ? daily.GoldRerollCost.ToString("N0") : "0";
             _goldReroll.interactable = ready && daily.GoldLeft > 0 && !_busy && !_server.IsBusy && !_server.HasPending;
             _shownMinute = -1;

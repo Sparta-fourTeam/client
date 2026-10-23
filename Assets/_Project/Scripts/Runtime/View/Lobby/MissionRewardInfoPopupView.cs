@@ -27,10 +27,13 @@ namespace Game.View
         public void Show(GameDataStore data, int stageId, int rating, bool claimed)
         {
             var stage = data.Stages.GetOrThrow(stageId);
-            _title.text = rating == 1 ? L10n.Get("mission.stageClear") : L10n.Get("missionReward.barrierHp", (rating == 2 ? 50 : 100).ToString());
-            string condition = rating == 1 ? L10n.Get("missionReward.conditionClear")
-                : L10n.Get("missionReward.conditionBarrier", (rating == 2 ? 50 : 100).ToString());
-            _description.text = claimed ? L10n.Get("missionReward.claimedDesc", stageId.ToString()) : L10n.Get("missionReward.conditionDesc", stageId.ToString(), condition);
+            _title.SetL10n(() => rating == 1 ? L10n.Get("mission.stageClear") : L10n.Get("missionReward.barrierHp", (rating == 2 ? 50 : 100).ToString()));
+            _description.SetL10n(() =>
+            {
+                string condition = rating == 1 ? L10n.Get("missionReward.conditionClear")
+                    : L10n.Get("missionReward.conditionBarrier", (rating == 2 ? 50 : 100).ToString());
+                return claimed ? L10n.Get("missionReward.claimedDesc", stageId.ToString()) : L10n.Get("missionReward.conditionDesc", stageId.ToString(), condition);
+            });
             var items = stage.RatingItemRewards != null && stage.RatingItemRewards.Count >= rating
                 ? stage.RatingItemRewards[rating - 1] : null;
             Open(RewardRows.Build(_itemIcons, data, stage.RatingRewards[rating - 1], 0, items ?? new List<ItemAmount>()));

@@ -78,7 +78,7 @@ namespace Game.View
             bool isMax = info.IsMaxLevel;
 
             _nameText.text = info.Name;
-            _currentLevelText.text = L10n.Get("common.levelRange", info.Level, info.MaxLevel);
+            _currentLevelText.SetL10n("common.levelRange", info.Level, info.MaxLevel);
             BindRows(_currentRows, info.Stats, next: false);
             if (_icons != null)
             {
@@ -101,7 +101,7 @@ namespace Game.View
                 return;
             }
 
-            _nextLevelText.text = L10n.Get("common.levelRange", info.Level + 1, info.MaxLevel);
+            _nextLevelText.SetL10n("common.levelRange", info.Level + 1, info.MaxLevel);
             BindRows(_nextRows, info.Stats, next: true);
 
             _coinText.text = CostFormat.HaveNeed(_profile.Gold, info.CoinCost);

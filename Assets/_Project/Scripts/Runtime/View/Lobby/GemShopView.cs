@@ -61,7 +61,7 @@ namespace Game.View
 
                 int index = i;
                 var pack = packs[i];
-                _items[i].BindCash(L10n.Get("currency.gem"), _gemIcon, pack.Gems, PriceLabel(pack), pack.BonusPercent, !_busy, () => BuyAsync(index).Forget(Debug.LogException),
+                _items[i].BindCash(() => L10n.Get("currency.gem"), _gemIcon, pack.Gems, PriceLabel(pack), pack.BonusPercent, !_busy, () => BuyAsync(index).Forget(Debug.LogException),
                     () => _detail?.Show(_gemIcon, L10n.Get("currency.gem"), $"x{pack.Gems:N0}", ItemInfo.DescriptionOf(RewardRows.GemId)));
             }
         }

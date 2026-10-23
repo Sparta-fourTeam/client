@@ -70,10 +70,21 @@ namespace Game.View
         private void Present(UpgradePurchasePlan plan, string status = null)
         {
             _plan = plan;
-            _title.text = _all ? L10n.Get("skill.levelUpAll") : L10n.Get("upgrade.confirm.title");
-            _description.text = status ?? (plan.Count > 0
-                ? L10n.Get("upgrade.confirm.plan", _name, plan.StartLevel, plan.EndLevel, plan.Count)
-                : L10n.Get("upgrade.confirm.unavailable"));
+            bool all = _all;
+            _title.SetL10n(() => all ? L10n.Get("skill.levelUpAll") : L10n.Get("upgrade.confirm.title"));
+            if (status != null)
+            {
+                // 호출자가 미리 만든 문구(오류 사유 포함)라 로케일을 따라가지 않는다
+                _description.text = status;
+            }
+            else
+            {
+                string name = _name;
+                int count = plan.Count, startLevel = plan.StartLevel, endLevel = plan.EndLevel;
+                _description.SetL10n(() => count > 0
+                    ? L10n.Get("upgrade.confirm.plan", name, startLevel, endLevel, count)
+                    : L10n.Get("upgrade.confirm.unavailable"));
+            }
             var items = new List<ItemAmount>();
             if (plan.MaterialCost > 0)
             {
@@ -122,7 +133,7 @@ namespace Game.View
             }
             var approved = _plan;
             _busy = true; SetButtons();
-            _description.text = L10n.Get("upgrade.confirm.progress", _name, 0, approved.Count);
+            _description.SetL10n("upgrade.confirm.progress", _name, 0, approved.Count);
             int completed = 0, spentCoins = 0, spentMaterials = 0;
             try
             {
@@ -153,7 +164,7 @@ namespace Game.View
                         throw new InvalidOperationException(L10n.Get("upgrade.confirm.levelMismatch"));
                     }
 
-                    _description.text = L10n.Get("upgrade.confirm.progress", _name, completed, approved.Count);
+                    _description.SetL10n("upgrade.confirm.progress", _name, completed, approved.Count);
                 }
                 if (this != null)
                 {
@@ -206,7 +217,7 @@ namespace Game.View
                     for (int i = 0; i < approved.Count; i++)
                     {
                         if (this == null) { return; }
-                        if (_all) { _description.text = L10n.Get("upgrade.confirm.progress", _name, completed, approved.Count); }
+                        if (_all) { _description.SetL10n("upgrade.confirm.progress", _name, completed, approved.Count); }
                         _profile.Apply(await _api.Purchase(approved.UpgradeId, Guid.NewGuid().ToString("N")));
                         completed++;
                         if (this == null) { return; }

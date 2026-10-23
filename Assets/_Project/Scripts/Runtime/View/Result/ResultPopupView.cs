@@ -113,7 +113,7 @@ namespace Game.View
                 _tipButton.onClick.AddListener(() => { if (_tip != null) { _tip.Show(); } });
                 _tipButton.interactable = true;
                 var label = _tipButton.GetComponentInChildren<TMP_Text>(true);
-                if (label != null) { label.text = L10n.Get("result.tipButton"); }
+                if (label != null) { label.SetL10n("result.tipButton"); }
                 _tipButton.gameObject.SetActive(false);
             }
             CreateOutcomePanel();
@@ -157,11 +157,11 @@ namespace Game.View
             _reveal?.Kill();
             if (!_outcomePanel.activeSelf) { _outcomeShownAt = Time.realtimeSinceStartup; }
             _lobbyButton.interactable = false;
-            _outcomeTitle.text = cleared == true ? L10n.Get("result.cleared") : cleared == false ? L10n.Get("result.failed") : L10n.Get("result.ended");
+            _outcomeTitle.SetL10n(() => cleared == true ? L10n.Get("result.cleared") : cleared == false ? L10n.Get("result.failed") : L10n.Get("result.ended"));
             _outcomeTitle.color = cleared == true ? new Color32(255, 207, 91, 255) : Color.white;
-            _outcomeDescription.text = cleared == true ? L10n.Get("result.cleared.desc")
+            _outcomeDescription.SetL10n(() => cleared == true ? L10n.Get("result.cleared.desc")
                 : cleared == false ? L10n.Get("result.failed.desc")
-                : L10n.Get("result.ended.desc");
+                : L10n.Get("result.ended.desc"));
             _outcomePanel.SetActive(true);
             _outcomePanel.transform.SetAsLastSibling();
         }
@@ -177,20 +177,23 @@ namespace Game.View
         {
             _hasResult = true;
             ShowOutcome(result.Cleared);
-            _titleText.text = result.Cleared ? L10n.Get("result.cleared") : L10n.Get("result.failed");
+            bool cleared = result.Cleared;
+            _titleText.SetL10n(() => cleared ? L10n.Get("result.cleared") : L10n.Get("result.failed"));
             var ribbon = result.Cleared ? _clearRibbon : _failRibbon;
             if (_titleRibbon != null)
             {
                 if (ribbon != null) { _titleRibbon.sprite = ribbon; }
                 _titleRibbon.color = result.Cleared ? _clearRibbonColor : _failRibbonColor;
             }
-            _stageText.text = _stageContext.StageId > 0 ? L10n.Get("hud.stage", _stageContext.StageId) : "-";
-            _killsText.text = L10n.Get("result.kills", result.Kills);
-            _waveText.text = L10n.Get("result.reachedWave", result.ReachedWave > 0 ? result.ReachedWave.ToString() : "-");
-            _timeText.text = L10n.Get("result.playTime", FormatTime(result.PlayTime));
-            _bubbleText.text = result.Cleared
-                ? (_firstStageClear ? L10n.Get("result.bubble.firstClear") : L10n.Get("result.bubble.clear"))
-                : L10n.Get("result.bubble.failed");
+            if (_stageContext.StageId > 0) { _stageText.SetL10n("hud.stage", _stageContext.StageId); }
+            else { _stageText.text = "-"; }
+            _killsText.SetL10n("result.kills", result.Kills);
+            _waveText.SetL10n("result.reachedWave", result.ReachedWave > 0 ? result.ReachedWave.ToString() : "-");
+            _timeText.SetL10n("result.playTime", FormatTime(result.PlayTime));
+            bool firstClear = _firstStageClear;
+            _bubbleText.SetL10n(() => cleared
+                ? (firstClear ? L10n.Get("result.bubble.firstClear") : L10n.Get("result.bubble.clear"))
+                : L10n.Get("result.bubble.failed"));
             var rewards = RewardRows.Build(_itemIcons, _data, result.RewardGold, result.RewardExp, result.RewardItems, result.RewardBonusExp);
             _rewardList.Show(rewards, i => DetailContent.ShowReward(_detail, _data, rewards[i], L10n.Get("result.rewardCount", "{0}")));
             _starsView.Show(result.Cleared, result.ClearRating);
@@ -200,7 +203,7 @@ namespace Game.View
                     status => _skillAssets != null ? _skillAssets.GetHudIcon(status.Id) : null));
             }
             var lobbyLabel = _lobbyButton.GetComponentInChildren<TMP_Text>(true);
-            if (lobbyLabel != null) { lobbyLabel.text = L10n.Get("common.toLobby"); }
+            if (lobbyLabel != null) { lobbyLabel.SetL10n("common.toLobby"); }
             if (_tip != null) { _tip.Hide(); }
             if (_tipButton != null) { _tipButton.gameObject.SetActive(!result.Cleared && _tip != null); }
             float remaining = Mathf.Max(0f, OutcomeHoldSeconds - (Time.realtimeSinceStartup - _outcomeShownAt));

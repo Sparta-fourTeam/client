@@ -13,13 +13,13 @@ namespace Game.View
 
         public Button Button => _button;
 
-        public void Show(string title, int count, int target, int points, bool claimed)
+        public void Show(System.Func<string> title, int count, int target, int points, bool claimed)
         {
             bool complete = count >= target;
-            _title.text = title;
+            _title.SetL10n(title);
             _progress.text = $"({count:N0}/{target:N0})";
             _points.text = points.ToString();
-            _buttonLabel.text = claimed ? L10n.Get("questRow.done") : complete ? L10n.Get("questRow.claim") : L10n.Get("questRow.incomplete");
+            _buttonLabel.SetL10n(() => claimed ? L10n.Get("questRow.done") : complete ? L10n.Get("questRow.claim") : L10n.Get("questRow.incomplete"));
             _button.interactable = complete && !claimed;
         }
     }

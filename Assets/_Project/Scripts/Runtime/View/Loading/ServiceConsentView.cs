@@ -99,9 +99,10 @@ namespace Game.View
             _backButton.gameObject.SetActive(terms);
             _declineButton.gameObject.SetActive(!terms);
             _individualButton.gameObject.SetActive(!terms);
-            _title.text = terms ? L10n.Get("consent.terms.title") : L10n.Get("consent.analytics.title");
-            _startLabel.text = terms ? L10n.Get("common.ok") : L10n.Get("consent.agreeAll");
-            _individualLabel.text = _editing ? L10n.Get("consent.saveChoice") : L10n.Get("consent.continueChoice");
+            _title.SetL10n(() => terms ? L10n.Get("consent.terms.title") : L10n.Get("consent.analytics.title"));
+            _startLabel.SetL10n(() => terms ? L10n.Get("common.ok") : L10n.Get("consent.agreeAll"));
+            bool editing = _editing;
+            _individualLabel.SetL10n(() => editing ? L10n.Get("consent.saveChoice") : L10n.Get("consent.continueChoice"));
             var startRect = (RectTransform)_startButton.transform;
             startRect.anchoredPosition = new Vector2(terms ? 0 : 215, startRect.anchoredPosition.y);
             startRect.sizeDelta = new Vector2(terms ? 620 : 400, startRect.sizeDelta.y);
@@ -127,10 +128,10 @@ namespace Game.View
         private void ShowDetails(bool transfer, bool requesting)
         {
             _requestedChoice = requesting ? transfer ? _transferToggle : _analyticsToggle : null;
-            _detailTitle.text = transfer ? L10n.Get("consent.transfer.title") : L10n.Get("consent.analytics.title");
+            _detailTitle.SetL10n(() => transfer ? L10n.Get("consent.transfer.title") : L10n.Get("consent.analytics.title"));
             _analyticsNotice.gameObject.SetActive(true);
             _transferNotice.gameObject.SetActive(transfer);
-            _detailAcceptLabel.text = requesting ? transfer ? L10n.Get("consent.transfer.accept") : L10n.Get("consent.analytics.accept") : L10n.Get("common.ok");
+            _detailAcceptLabel.SetL10n(() => requesting ? transfer ? L10n.Get("consent.transfer.accept") : L10n.Get("consent.analytics.accept") : L10n.Get("common.ok"));
             _detailCancel.gameObject.SetActive(requesting);
             _detailsPanel.SetActive(true);
             Canvas.ForceUpdateCanvases();

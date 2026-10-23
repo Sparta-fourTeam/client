@@ -85,7 +85,7 @@ namespace Game.View
         {
             if (_titleText != null)
             {
-                _titleText.text = L10n.Get("stage.title", _data.StageOrFirst(_stageContext.StageId).Id);
+                _titleText.SetL10n("stage.title", _data.StageOrFirst(_stageContext.StageId).Id);
             }
         }
 

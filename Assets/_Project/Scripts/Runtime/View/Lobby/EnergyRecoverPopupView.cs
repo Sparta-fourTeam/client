@@ -50,8 +50,8 @@ namespace Game.View
         {
             _version++;
             _expiredRefreshAttempt = null;
-            _adTitle.text = L10n.Get("energy.recover.inkPenAmount", _profile.EnergyConfig.AdRecoverAmount);
-            _purchaseTitle.text = L10n.Get("energy.recover.inkPenAmount", _profile.EnergyConfig.PurchaseRecoverAmount);
+            _adTitle.SetL10n("energy.recover.inkPenAmount", _profile.EnergyConfig.AdRecoverAmount);
+            _purchaseTitle.SetL10n("energy.recover.inkPenAmount", _profile.EnergyConfig.PurchaseRecoverAmount);
             PopupPanel.Set(_panel, _transition, true);
             if (_energyRecovery.UsesServerPurchase) { RefreshAsync(_version).Forget(); }
             else { Render(); }
@@ -101,10 +101,10 @@ namespace Game.View
             if (!_energyRecovery.UsesServerPurchase)
             {
                 _purchaseButton.interactable = !_busy;
-                if (_purchaseLabel != null) { _purchaseLabel.text = L10n.Get("energy.recover.gem"); }
-                if (_description != null) { _description.text = L10n.Get("energy.recover.desc"); }
-                if (_purchaseRemaining != null) { _purchaseRemaining.text = L10n.Get("energy.recover.remaining"); }
-                if (_adRemaining != null && _adRemaining.TryGetComponent<TMP_Text>(out var adRemainingText)) { adRemainingText.text = L10n.Get("energy.recover.remaining"); }
+                if (_purchaseLabel != null) { _purchaseLabel.SetL10n("energy.recover.gem"); }
+                if (_description != null) { _description.SetL10n("energy.recover.desc"); }
+                if (_purchaseRemaining != null) { _purchaseRemaining.SetL10n("energy.recover.remaining"); }
+                if (_adRemaining != null && _adRemaining.TryGetComponent<TMP_Text>(out var adRemainingText)) { adRemainingText.SetL10n("energy.recover.remaining"); }
                 return;
             }
             var state = _energyRecovery.PurchaseState;

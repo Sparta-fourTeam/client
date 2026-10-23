@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Game.Core;
@@ -54,7 +55,7 @@ namespace Game.View
 
         public UniTask<LoginMethod> WaitForSignInAsync(IReadOnlyCollection<LoginMethod> available)
         {
-            Show(SignInMessage, methods: true, retry: false);
+            Show(() => SignInMessage, methods: true, retry: false);
             SetAvailable(_guestButton, LoginMethod.Guest, available);
             SetAvailable(_googleButton, LoginMethod.Google, available);
             SetAvailable(_appleButton, LoginMethod.Apple, available);
@@ -63,7 +64,7 @@ namespace Game.View
 
         public UniTask WaitForRetryAsync()
         {
-            Show(FailedMessage, methods: false, retry: true);
+            Show(() => FailedMessage, methods: false, retry: true);
             return Wait().AsUniTask();
         }
 
@@ -73,7 +74,7 @@ namespace Game.View
         {
             if (_panel.activeSelf)
             {
-                Show(SigningInMessage, methods: false, retry: false);
+                Show(() => SigningInMessage, methods: false, retry: false);
             }
         }
 
@@ -133,7 +134,9 @@ namespace Game.View
         {
             bool on = Contains(available, method);
             button.interactable = on;
-            button.GetComponentInChildren<TMP_Text>(true).text = on ? _labels[button] : L10n.Get("login.unavailable", _labels[button]);
+            var label = button.GetComponentInChildren<TMP_Text>(true);
+            if (on) { label.text = _labels[button]; }
+            else { label.SetL10n("login.unavailable", _labels[button]); }
         }
 
         private static bool Contains(IReadOnlyCollection<LoginMethod> methods, LoginMethod method)
@@ -155,10 +158,10 @@ namespace Game.View
             return _pending.Task;
         }
 
-        private void Show(string message, bool methods, bool retry)
+        private void Show(Func<string> message, bool methods, bool retry)
         {
             _panel.SetActive(true);
-            _messageText.text = message;
+            _messageText.SetL10n(message);
             _methods.SetActive(methods);
             _retryButton.gameObject.SetActive(retry);
         }
