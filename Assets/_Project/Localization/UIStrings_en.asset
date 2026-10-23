@@ -17,7 +17,625 @@ MonoBehaviour:
   m_SharedData: {fileID: 11400000, guid: b92f8a3a70a7d4161bac9a7c69df7dc7, type: 2}
   m_Metadata:
     m_Items: []
-  m_TableData: []
+  m_TableData:
+  - m_Id: 37050140057600
+    m_Localized: Place
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050177806336
+    m_Localized: Close
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050177806337
+    m_Localized: Codex Rewards
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050177806338
+    m_Localized: Odds
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050177806339
+    m_Localized: Locked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050177806340
+    m_Localized: Work
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050177806341
+    m_Localized: Yokai Appearing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050177806342
+    m_Localized: Mission Rewards
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050177806343
+    m_Localized: OK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050177806344
+    m_Localized: Menu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050177806345
+    m_Localized: How about that? Piece of cake!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050177806346
+    m_Localized: 'Sign in with Apple
+
+'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050177806347
+    m_Localized: 'Sign in with Google
+
+'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050177806348
+    m_Localized: Start as Guest
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050177806349
+    m_Localized: Try Again
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050177806350
+    m_Localized: 'Analytics starts only if you agree to both options.
+
+      You can play without selecting, and your choice is saved.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050177806351
+    m_Localized: (Optional) I agree to the collection and use of game usage analytics
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050177806352
+    m_Localized: (Optional) I agree to the transfer of analytics data overseas
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050177806353
+    m_Localized: View Details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050177806354
+    m_Localized: 'The privacy policy describes how data is handled.
+
+      Continuation of test progress and transfer to the official service is not guaranteed,
+
+      and there is no grace period for recovery after account deletion.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050177806355
+    m_Localized: Full Terms of Service
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050177806356
+    m_Localized: Privacy Policy
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050177806357
+    m_Localized: I Agree
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050177806358
+    m_Localized: Back
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050177806359
+    m_Localized: Don't Agree
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050177806360
+    m_Localized: 'Processor: GameAnalytics
+
+      Items: analytics identifier, device/app/session/country info,
+
+      battle result, wave, time, kills, skill damage, card choices
+
+      Purpose: usage status and balance improvement
+
+      Retention: raw/annotated 1 month / Player Warehouse 1 year /
+
+      Player Lookup for retention 18 months'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050177806361
+    m_Localized: 'Recipient: GameAnalytics ApS and affiliates (USA)
+
+      Contact: privacy@gameanalytics.com
+
+      Transfer: SDK network transmission during gameplay
+
+      Items, purpose, retention: same as the analytics items above'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050177806362
+    m_Localized: "Analytics starts only if you agree to both options.\nYou can play without selecting, and your choice is saved.\nYou can change it in Settings \u2192 Privacy Choices.\nUnity diagnostics are separate from this choice.\nStopping events is not the same as ending all SDK communication.\nFully quit and relaunch to apply a new choice."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050177806363
+    m_Localized: Not Agreed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050177806364
+    m_Localized: Touch the screen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050177806365
+    m_Localized: Costume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050177806366
+    m_Localized: Limit Break
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050177806367
+    m_Localized: Info
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050177806368
+    m_Localized: Upgrade All Gear
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050177806369
+    m_Localized: Merge All Shards
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050177806370
+    m_Localized: Edit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050177806371
+    m_Localized: Filter
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050177806372
+    m_Localized: Character
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050177806373
+    m_Localized: Companions
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050177806374
+    m_Localized: Yokai Codex
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000640
+    m_Localized: Normal
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000641
+    m_Localized: Elite
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000642
+    m_Localized: Boss
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000643
+    m_Localized: This category is not ready yet.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000644
+    m_Localized: New Content Unlocked!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000645
+    m_Localized: Tap to continue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000646
+    m_Localized: You can recover Ink Pens with gems
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000647
+    m_Localized: 'Watch Ad
+
+      (Coming soon)'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000648
+    m_Localized: Remaining 6/6
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000649
+    m_Localized: Gem 60
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000650
+    m_Localized: Recover Ink Pens
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000651
+    m_Localized: Max Level
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000652
+    m_Localized: Gear Upgrade
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000653
+    m_Localized: Friends
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000654
+    m_Localized: Friend List
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000655
+    m_Localized: Requests
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000656
+    m_Localized: Find Friends
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000657
+    m_Localized: You don't have any friends yet
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000658
+    m_Localized: Add Friend
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000659
+    m_Localized: Inventory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000660
+    m_Localized: All
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000661
+    m_Localized: Skill Materials
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000662
+    m_Localized: Gear Materials
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000663
+    m_Localized: Misc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000664
+    m_Localized: New Feature Unlocked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000665
+    m_Localized: Reward
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000666
+    m_Localized: Home
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000667
+    m_Localized: All Chat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000668
+    m_Localized: Reconnect
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000669
+    m_Localized: Type a message...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000670
+    m_Localized: Send
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000671
+    m_Localized: Event
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000672
+    m_Localized: Notices
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000673
+    m_Localized: Settings
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000674
+    m_Localized: Privacy Policy
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000675
+    m_Localized: Terms of Service
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000676
+    m_Localized: Contact Us
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000677
+    m_Localized: Delete Account
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000678
+    m_Localized: Link Account
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000679
+    m_Localized: Log Out
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000680
+    m_Localized: Mission
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000681
+    m_Localized: Mailbox
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000682
+    m_Localized: Codex
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000683
+    m_Localized: Daily Draw
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000684
+    m_Localized: No mail received
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000685
+    m_Localized: Claim All
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000686
+    m_Localized: Max Obtainable
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000687
+    m_Localized: Chest Reward
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000688
+    m_Localized: Low-Rank Mission
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000689
+    m_Localized: Stage Clear
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000690
+    m_Localized: Barrier HP 50%
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000691
+    m_Localized: Barrier HP 100%
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000692
+    m_Localized: Enter
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000693
+    m_Localized: Mark All Read
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000694
+    m_Localized: Copy
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000695
+    m_Localized: Gear
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000696
+    m_Localized: Current Stage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000697
+    m_Localized: Profile
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000698
+    m_Localized: Choose Portrait
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000699
+    m_Localized: Selected
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000700
+    m_Localized: Quests
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000701
+    m_Localized: Daily
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000702
+    m_Localized: Weekly
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000703
+    m_Localized: Achievements
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000704
+    m_Localized: No daily quests in progress
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000705
+    m_Localized: Sound
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000706
+    m_Localized: Music
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000707
+    m_Localized: Sound Effects
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000708
+    m_Localized: Game
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000709
+    m_Localized: Show Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000710
+    m_Localized: Debuff Effects
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000711
+    m_Localized: Auto-select Highest Stage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000712
+    m_Localized: Frame Rate
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000713
+    m_Localized: High (60)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000714
+    m_Localized: Standard (30)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000715
+    m_Localized: Language
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000716
+    m_Localized: Privacy Choices
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000717
+    m_Localized: Change
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000718
+    m_Localized: Daily Shop
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000719
+    m_Localized: Reset
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000720
+    m_Localized: Coming Soon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000721
+    m_Localized: Draw
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000722
+    m_Localized: Gem
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000723
+    m_Localized: Ink
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000724
+    m_Localized: Skill
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000725
+    m_Localized: Technique
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000726
+    m_Localized: Workshop
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000727
+    m_Localized: Security
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000728
+    m_Localized: Level Up
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000729
+    m_Localized: Level Up All
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000730
+    m_Localized: Guide
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050182000731
+    m_Localized: Cost
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050186194944
+    m_Localized: Cancel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050186194945
+    m_Localized: The winning upgrade is applied automatically
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050186194946
+    m_Localized: Skip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050186194947
+    m_Localized: Resume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050186194948
+    m_Localized: Give Up
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050186194949
+    m_Localized: Obtainable
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050186194950
+    m_Localized: Skill Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050186194951
+    m_Localized: 2x Reward! (5/5)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050186194952
+    m_Localized: TIP for growth!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050186194953
+    m_Localized: If a stage is too tough, try the following!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050186194954
+    m_Localized: 'Retry the
+
+      previous stage'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050186194955
+    m_Localized: Skill Level Up
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050186194956
+    m_Localized: To Lobby
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050186194957
+    m_Localized: Failed to Save Result
+    m_Metadata:
+      m_Items: []
+  - m_Id: 37050186194958
+    m_Localized: Sending result...
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []
