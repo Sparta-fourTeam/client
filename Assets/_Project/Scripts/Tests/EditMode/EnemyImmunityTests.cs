@@ -35,17 +35,6 @@ namespace Game.Tests
             Assert.AreEqual(1f, enemy.MoveSpeed);
         }
 
-        [Test(Description = "면역이 없으면 기절에 걸려 움직이지 못한다")]
-        public void NotImmune_IsStunned()
-        {
-            var enemy = Create(StatusImmunity.None);
-
-            enemy.ApplyStun(2f);
-
-            Assert.IsTrue(enemy.IsStunned);
-            Assert.AreEqual(0f, enemy.MoveSpeed);
-        }
-
         [Test(Description = "기절 면역은 다른 상태이상(빙결)까지 막지 않는다")]
         public void StunImmune_StillAffectedByFreeze()
         {

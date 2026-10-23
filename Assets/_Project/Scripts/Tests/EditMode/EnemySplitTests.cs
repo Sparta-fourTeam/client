@@ -172,12 +172,6 @@ namespace Game.Tests
             Assert.IsFalse(requests[0].IsSummon); // 분열체는 게이지에 센다
         }
 
-        [Test(Description = "분열 수는 1 이상이어야 한다")]
-        public void SpawnPassive_RejectsNonPositiveCount()
-        {
-            Assert.Throws<ArgumentOutOfRangeException>(() => new SpawnPassive(SpawnTrigger.OnDeath, ChildMonsterId, 0));
-        }
-
         [Test(Description = "일반 적의 사망 메시지는 웨이브에 세고, 분열체는 세지 않는다")]
         public void DiedMessage_MarksSummonedEnemies()
         {

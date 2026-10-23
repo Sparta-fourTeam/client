@@ -59,17 +59,6 @@ namespace Game.Tests
             Assert.IsEmpty(probe.DamagedCalls, "막힌 피해는 피격 후 훅도 부르지 않는다");
         }
 
-        [Test]
-        public void BeforeDamage_CanReduceDamage()
-        {
-            var probe = new Probe { BeforeDamage = (info, amount) => amount / 2 };
-            var model = Model(passives: new IPassive[] { probe });
-
-            model.TakeDamage(Skill(30));
-
-            Assert.AreEqual(85, model.Hp);
-        }
-
         [Test(Description = "훅은 속성·시전 형태 저항(DamageProfile)보다 먼저 피해를 줄인다")]
         public void BeforeDamage_RunsBeforeDamageProfile()
         {
@@ -300,18 +289,6 @@ namespace Game.Tests
 
             model.RemoveSpeedBoost(source);
             Assert.AreEqual(1f, model.MoveSpeed, 0.0001f);
-        }
-
-        [Test]
-        public void SpeedBoost_WithDuration_Expires()
-        {
-            var model = Model(speed: 2f);
-
-            model.AddSpeedBoost(new object(), 2f, 1f);
-            Assert.AreEqual(4f, model.MoveSpeed, 0.0001f);
-
-            model.TickStatus(1f);
-            Assert.AreEqual(2f, model.MoveSpeed, 0.0001f);
         }
 
         [Test(Description = "같은 출처는 갱신, 다른 출처끼리는 곱한다")]

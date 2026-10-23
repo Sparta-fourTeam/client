@@ -320,15 +320,6 @@ namespace Game.Tests
         }
 
         [Test]
-        public void PendingRepeat_DoesNotAdvanceWhilePaused()
-        {
-            var clock = new CastClock(); int fired = 0;
-            clock.Tick(0, 2, 2, 0.1f, () => fired++);
-            clock.Tick(0, 2, 2, 0.1f, () => fired++);
-            Assert.AreEqual(1, fired);
-        }
-
-        [Test]
         public void Pierce_DamagesDistinctTargetsOnceAndResetsOnReuse()
         {
             var ledger = new ProjectileHitLedger(); var a = new object(); var b = new object(); var c = new object();

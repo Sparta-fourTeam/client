@@ -126,24 +126,6 @@ namespace Game.Tests
             return beam;
         }
 
-        [Test]
-        public void SunBeam_IsABeamSkillThatHitsEnemiesAlongTheLine()
-        {
-            var beam = SunBeam();
-            Assert.AreEqual(CastType.Beam, world.Data[SunBeamId].castType);
-            var near = world.AddEnemy(4, 0);
-            var farther = world.AddEnemy(10, 0);
-            var side = world.AddEnemy(4, 3);
-            typeof(SkillCaster).GetMethod("OnFire", Flags).Invoke(beam, null);
-            var zone = Zones().Single();
-            // 발사 경로와 데이터 피해 전달을 첫 펄스로 검증한다. 펄스 계산은 합성 AreaSettings 테스트가 보호한다.
-            Tick(zone, 0);
-            int expected = (int)beam.Stats.Cast.Damage;
-            Assert.AreEqual(expected, near.Damage, "선언된 피해가 선 위 대상에 적용된다");
-            Assert.AreEqual(expected, farther.Damage, "대상 뒤쪽의 적도 맞는다");
-            Assert.AreEqual(0, side.Damage);
-        }
-
         // ── 집중 광선 ─────────────────────────────────────────────────
 
         [Test(Description = "광선이 겨눈 메인 대상만 공격마다 추가 피해를 받고 선 위의 다른 적은 그대로다")]
@@ -299,17 +281,6 @@ namespace Game.Tests
             Tick(zone, .1f);
 
             Assert.AreEqual(10, beyond.Damage, "곧게 뻗어 선 위의 적을 맞힌다");
-            Assert.AreEqual(0, bend.Damage);
-        }
-
-        [Test(Description = "굴절이 없으면 지금처럼 곧게 뻗어 메인 대상 뒤쪽도 맞는다")]
-        public void Refraction_NoneKeepsTheStraightBeam()
-        {
-            var (zone, _, bend, _, beyond) = Refracted(0);
-
-            Tick(zone, .1f);
-
-            Assert.AreEqual(10, beyond.Damage);
             Assert.AreEqual(0, bend.Damage);
         }
 

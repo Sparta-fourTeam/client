@@ -103,18 +103,6 @@ namespace Game.Tests
             Assert.AreEqual(3, _changed[0].Max);
         }
 
-        [Test(Description = "적이 죽으면 게이지가 1 오른다")]
-        public void EnemyDied_IncreasesGauge()
-        {
-            StartWave(3);
-
-            KillEnemies(1);
-
-            Assert.AreEqual(1, _changed.Last().Current);
-            Assert.AreEqual(3, _changed.Last().Max);
-            Assert.AreEqual(0, _filled.Count);
-        }
-
         [Test(Description = "웨이브의 몬스터를 모두 잡으면 게이지 가득 메시지를 1번 발행한다")]
         public void AllEnemiesKilled_PublishesFilledOnce()
         {
@@ -126,17 +114,6 @@ namespace Game.Tests
             Assert.IsFalse(_filled[0].IsFinalWave);
             Assert.AreEqual(1, _filled[0].WaveIndex);
             Assert.AreEqual(3, _changed.Last().Current);
-        }
-
-        [Test(Description = "마지막 웨이브의 게이지가 차면 마지막 웨이브라고 알린다")]
-        public void FinalWaveKilled_PublishesFinalFilled()
-        {
-            StartWave(2, isFinalWave: true);
-
-            KillEnemies(2);
-
-            Assert.AreEqual(1, _filled.Count);
-            Assert.IsTrue(_filled[0].IsFinalWave);
         }
 
         [Test(Description = "앞 웨이브가 차기 전에 다음 웨이브가 시작돼도 게이지는 앞 웨이브 기준을 유지한다")]

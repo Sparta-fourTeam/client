@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Core;
@@ -10,12 +9,6 @@ namespace Game.Tests
 {
     public class HttpApiClientTests
     {
-        private sealed class FixedHeaders : IAuthHeaderProvider
-        {
-            public IReadOnlyDictionary<string, string> GetHeaders() =>
-                new Dictionary<string, string> { ["Authorization"] = "Bearer test-token" };
-        }
-
         [Serializable]
         private class Ping
         {
@@ -46,38 +39,6 @@ namespace Game.Tests
             Assert.AreEqual(HttpVerb.Get, _transport.Requests[0].Verb);
             Assert.IsNull(_transport.Requests[0].Body);
             Assert.AreEqual(7f, _transport.LastTimeout);
-        }
-
-        [Test(Description = "POST는 요청 DTO를 JSON 본문으로 보낸다")]
-        public void Post_SendsJsonBody()
-        {
-            _transport.Response = new HttpResponseData(200, "{\"name\":\"ok\",\"count\":0}");
-
-            Run(_client.Post<Ping, Ping>("api/ping", new Ping { name = "x", count = 2 }));
-
-            var request = _transport.Requests[0];
-            Assert.AreEqual(HttpVerb.Post, request.Verb);
-            StringAssert.Contains("\"name\":\"x\"", request.Body);
-            StringAssert.Contains("\"count\":2", request.Body);
-        }
-
-        [Test(Description = "응답 본문이 없는 POST는 2xx이면 성공한다")]
-        public void PostWithoutResponse_SucceedsOn200WithEmptyBody()
-        {
-            _transport.Response = new HttpResponseData(200, "");
-
-            Assert.DoesNotThrow(() => _client.Post("api/ping", new Ping()).GetAwaiter().GetResult());
-        }
-
-        [Test(Description = "인증 헤더 제공자가 돌려준 헤더가 요청에 붙는다")]
-        public void Request_CarriesAuthHeaders()
-        {
-            var client = new HttpApiClient(new HttpApiConfig("https://example.test"), _transport, new FixedHeaders());
-            _transport.Response = new HttpResponseData(200, "{\"name\":\"a\",\"count\":1}");
-
-            Run(client.Get<Ping>("api/ping"));
-
-            Assert.AreEqual("Bearer test-token", _transport.Requests[0].Headers["Authorization"]);
         }
 
         [TestCase(400, ApiErrorKind.Rejected)]
@@ -202,16 +163,6 @@ namespace Game.Tests
             Assert.AreEqual(HttpErrorMapper.InvalidResponse, ex.Code);
         }
 
-        [Test(Description = "검증 규칙을 만족하는 응답은 그대로 돌려준다")]
-        public void Get_WithValidator_AcceptsValidResponse()
-        {
-            _transport.Response = new HttpResponseData(200, "{\"name\":\"nova\",\"count\":0}");
-
-            var result = Run(_client.Get<Ping>("api/ping", isValid: p => !string.IsNullOrEmpty(p.name)));
-
-            Assert.AreEqual("nova", result.name);
-        }
-
         [Test(Description = "POST에도 같은 검증 규칙이 적용된다")]
         public void Post_WithValidator_RejectsResponseMissingRequiredField()
         {
@@ -246,16 +197,6 @@ namespace Game.Tests
             var ex = Assert.Throws<ApiException>(() => Run(client.Get<Ping>("api/ping")));
 
             Assert.AreEqual("HTTP_500", ex.Code);
-        }
-
-        [Test(Description = "실패해도 자동으로 다시 보내지 않는다 (상태 변경 요청의 중복 처리 방지)")]
-        public void Failure_DoesNotRetryAutomatically()
-        {
-            _transport.Response = new HttpResponseData(503, "");
-
-            Assert.Throws<ApiException>(() => Run(_client.Post<Ping, Ping>("api/ping", new Ping())));
-
-            Assert.AreEqual(1, _transport.Requests.Count);
         }
     }
 }

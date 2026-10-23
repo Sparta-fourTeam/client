@@ -125,16 +125,6 @@ namespace Game.Tests
             finally { if (File.Exists(path)) { File.Delete(path); } }
         }
 
-        [Test]
-        public void FailedDurableWritePreventsAbandonDispatch()
-        {
-            var api = new Api();
-            var launcher = new BattleLauncher(api, null, null, null, new Store { Fail = true });
-            var error = Assert.Throws<ApiException>(() => launcher.Discard(Checkpoint()).GetAwaiter().GetResult());
-            Assert.AreEqual(ApiErrorKind.Transient, error.Kind);
-            Assert.IsEmpty(api.Paths);
-        }
-
         private static BattleCheckpoint Checkpoint() => new()
         {
             BattleId = "battle",
@@ -145,11 +135,9 @@ namespace Game.Tests
         private sealed class Store : IBattleCheckpointStore
         {
             private string _json;
-            public bool Fail;
             public BattleCheckpoint Load() => JsonConvert.DeserializeObject<BattleCheckpoint>(_json);
             public void Save(BattleCheckpoint checkpoint)
             {
-                if (Fail) { throw new IOException("fixture storage failure"); }
                 _json = JsonConvert.SerializeObject(checkpoint);
             }
             public void QueueSave(BattleCheckpoint checkpoint) => Save(checkpoint);

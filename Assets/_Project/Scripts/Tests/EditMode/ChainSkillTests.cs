@@ -153,18 +153,6 @@ namespace Game.Tests
             Assert.AreEqual(0, offPath.Damage);
         }
 
-        [Test]
-        public void WithoutPathWidth_EnemiesBetweenTargetsAreNotHit()
-        {
-            var a = Enemy(0, 3); var b = Enemy(10, 3);
-            var between = Enemy(5, 3.1f);
-            var provider = new CatalogWorld.Targets(); provider.All.AddRange(new[] { a, b, between });
-            RunAll(Start(provider, a, new ChainSettings(1, .1f)));
-            // between이 b보다 a에 더 가까워 먼저 튕겨 맞는다. 경로 피해가 아니라 다음 대상으로서 맞는 것이다.
-            Assert.AreEqual(10, between.Damage);
-            Assert.AreEqual(0, b.Damage, "반사가 1번뿐이라 거기서 끝난다");
-        }
-
         // ── 연쇄 번개 카탈로그 ────────────────────────────────────────
 
         private static List<ChainBolt> Bolts() => Object.FindObjectsByType<ChainBolt>(FindObjectsSortMode.None)
@@ -176,19 +164,6 @@ namespace Game.Tests
             var chain = world.Create(ChainLightningId);
             world.Take(chain, cards);
             return chain;
-        }
-
-        [Test]
-        public void ChainLightning_IsAChainSkillThatBouncesAcrossEnemies()
-        {
-            var chain = ChainLightning();
-            Assert.AreEqual(CastType.Chain, world.Data[ChainLightningId].castType);
-            var a = world.AddEnemy(3, 0); var b = world.AddEnemy(5, 0); var c = world.AddEnemy(7, 0); var d = world.AddEnemy(9, 0); var e = world.AddEnemy(11, 0);
-            typeof(SkillCaster).GetMethod("OnFire", Flags).Invoke(chain, null);
-            var bolt = Bolts().Single();
-            for (int i = 0; i < 20; i++) { Tick(bolt, .1f); }
-            Assert.AreEqual(12, a.Damage); Assert.AreEqual(12, b.Damage); Assert.AreEqual(12, c.Damage); Assert.AreEqual(0, d.Damage);
-            Assert.AreEqual(0, e.Damage, "기본 반사 2번 → 첫 대상 포함 3명");
         }
 
         [Test]

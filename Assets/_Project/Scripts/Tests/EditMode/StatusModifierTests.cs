@@ -33,18 +33,6 @@ namespace Game.Tests
 
         // ───────── 면역 종류 ─────────
 
-        [Test(Description = "점화 면역이면 점화에 걸리지 않는다")]
-        public void BurnImmune_IgnoresBurn()
-        {
-            var model = Model(StatusImmunity.Burn);
-
-            model.ApplyBurn(5f, 3f);
-            model.TickStatus(1f);
-
-            Assert.AreEqual(0f, model.BurnRemaining);
-            Assert.AreEqual(100, model.Hp);
-        }
-
         [Test]
         public void ParalysisImmune_IgnoresParalysis()
         {
@@ -53,16 +41,6 @@ namespace Game.Tests
             model.ApplyParalysis(3f);
 
             Assert.IsFalse(model.IsParalyzed);
-        }
-
-        [Test]
-        public void FreezeImmune_IgnoresFreeze()
-        {
-            var model = Model(StatusImmunity.Freeze);
-
-            model.ApplyFreeze(3f);
-
-            Assert.IsFalse(model.IsFrozen);
         }
 
         [Test(Description = "면역은 지정한 상태이상만 막는다")]

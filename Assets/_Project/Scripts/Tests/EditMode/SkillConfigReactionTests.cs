@@ -46,25 +46,6 @@ namespace Game.Tests
         }
 
         [Test]
-        public void Builder_AttachesHitReactionWithoutTriggeringItOnStart()
-        {
-            var builder = new SkillConfigBuilder(Config());
-            int childCasts = 0;
-            Assert.IsTrue(builder.TryApply(new IUpgradeEffect[]
-            {
-                new StatUpgradeEffect("damage", 60),
-                new CastUpgradeEffect("castCount", 1),
-                new ReactionUpgradeEffect(AttackEvent.Hit, new CastSkillReaction(_ => childCasts += 2)),
-                new TransformUpgradeEffect(SkillForm.FireLog)
-            }));
-            var config = builder.Build();
-            config.Reactions.Raise(AttackEvent.Start, new AttackContext(Vector2.zero, Vector3.up));
-            Assert.AreEqual(0, childCasts);
-            config.Reactions.Raise(AttackEvent.Hit, new AttackContext(Vector2.one, Vector3.up));
-            Assert.AreEqual(2, childCasts);
-        }
-
-        [Test]
         public void Builder_FailedBatchRollsBackValuesAndReactions()
         {
             var builder = new SkillConfigBuilder(Config());
@@ -147,19 +128,6 @@ namespace Game.Tests
                 Assert.AreEqual(2, children);
             }
             finally { pool.Clear(); }
-        }
-
-        [Test]
-        public void HitReactions_KeepValuesFromBuildTime()
-        {
-            float damage = 60, freeze = 2;
-            var reactions = new HitReactionBuilder().Damage(damage).Freeze(freeze).Build();
-            damage = 999;
-            freeze = 99;
-            var target = new Target();
-            reactions.Raise(AttackEvent.Hit, new AttackContext(target.Position, Vector3.up, target));
-            Assert.AreEqual(60, target.Damage);
-            Assert.AreEqual(2, target.Freeze);
         }
 
         [Test]

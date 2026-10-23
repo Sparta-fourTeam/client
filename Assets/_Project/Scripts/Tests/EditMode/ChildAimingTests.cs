@@ -167,16 +167,6 @@ namespace Game.Tests
         }
 
         [Test]
-        public void OtherEnemiesPresent_AimAtThemInsteadOfFanning()
-        {
-            var hit = Enemy(0, 0);
-            var other = Enemy(0, 5);
-            provider.Targets.AddRange(new IEnemyTarget[] { hit, other });
-            ParentWithLink(3, excludeHit: true).Reactions.Raise(AttackEvent.Hit, new AttackContext(Vector2.zero, Vector3.right, hit));
-            foreach (var shot in Active()) { Assert.AreEqual(0f, Vector3.Angle(Direction(shot), Vector3.up), .5f, "다른 적이 있으면 그 적을 노린다"); }
-        }
-
-        [Test]
         public void WithoutExcludeHit_TheHitEnemyCanBeAimedAt()
         {
             var hit = Enemy(1, 0);

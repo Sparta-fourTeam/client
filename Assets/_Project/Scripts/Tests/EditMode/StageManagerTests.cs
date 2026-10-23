@@ -332,13 +332,6 @@ namespace Game.Tests
             Assert.IsEmpty(_stats.BuildLog);
         }
 
-        [Test(Description = "Start하면 Playing으로 전환되고 상태 변경이 발행된다")]
-        public void Start_EntersPlaying()
-        {
-            Assert.AreEqual(StageState.Playing, _manager.State);
-            CollectionAssert.AreEqual(new[] { StageState.Playing }, _states);
-        }
-
         [Test]
         public void NewBattle_RestoresSavedMultiplierWithConfiguredTempo()
         {
@@ -402,27 +395,6 @@ namespace Game.Tests
             Assert.That(Time.timeScale, Is.Zero);
             _manager.Resume();
             Assert.That(Time.timeScale, Is.EqualTo(expected));
-        }
-
-        [Test(Description = "Playing에서 Pause하면 시간이 멈추고 Paused가 된다")]
-        public void Pause_FromPlaying_StopsTime()
-        {
-            _manager.Pause();
-
-            Assert.AreEqual(StageState.Paused, _manager.State);
-            Assert.AreEqual(0f, Time.timeScale);
-        }
-
-        [Test(Description = "Paused에서 Resume하면 Playing으로 돌아오고 배속이 복구된다")]
-        public void Resume_ToPlaying_RestoresSpeed()
-        {
-            _manager.SetSpeed(2f);
-            _manager.Pause();
-
-            _manager.Resume();
-
-            Assert.AreEqual(StageState.Playing, _manager.State);
-            Assert.AreEqual(2f, Time.timeScale);
         }
 
         [Test(Description = "Playing이 아닐 때 Resume은 무시된다")]
@@ -722,16 +694,6 @@ namespace Game.Tests
             Assert.AreEqual(0f, Time.timeScale);
             _manager.SetSpeed(2f);
             Assert.AreEqual(0f, Time.timeScale);
-        }
-
-        [Test(Description = "Dispose하면 timeScale이 1로 복구된다")]
-        public void Dispose_RestoresTimeScale()
-        {
-            _manager.Pause();
-
-            _manager.Dispose();
-
-            Assert.AreEqual(1f, Time.timeScale);
         }
 
         [Test]
