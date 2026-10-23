@@ -1813,8 +1813,12 @@ namespace Game.Tests
             GameLanguage language = GameLanguage.Korean, Action onFrame = null, bool coldLocalization = false)
         {
             // 개발 기기에 저장된 언어나 시스템 언어가 화면 문구를 바꾸므로 언어(기본 한국어)를 명시해 고정한다
-            _hadLanguagePreference = PlayerPrefs.HasKey("settings.language");
-            _languagePreference = PlayerPrefs.GetInt("settings.language");
+            // 한 테스트에서 다시 부팅해도 원래 값은 처음 한 번만 저장한다. 다시 읽으면 앞서 고정한 값이 원래 값으로 복원된다
+            if (!_restoreLanguagePreference)
+            {
+                _hadLanguagePreference = PlayerPrefs.HasKey("settings.language");
+                _languagePreference = PlayerPrefs.GetInt("settings.language");
+            }
             PlayerPrefs.SetInt("settings.language", (int)language);
             _restoreLanguagePreference = true;
             if (coldLocalization)
