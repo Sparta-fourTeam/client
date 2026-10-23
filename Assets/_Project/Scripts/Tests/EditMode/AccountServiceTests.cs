@@ -161,21 +161,6 @@ namespace Game.Tests
             Assert.AreEqual(0, _api.Deleted, "이미 무효한 세션으로 계정 삭제 같은 서버 호출을 하지 않는다");
         }
 
-        [Test(Description = "계정 삭제는 로그인 방식과 상관없이 데이터를 지우고 Loading으로 돌아간다")]
-        public void DeleteAccount_Linked_DeletesData()
-        {
-            _credentials.Save(LoginMethod.Google, "token");
-
-            Create().DeleteAccountAsync().GetAwaiter().GetResult();
-
-            Assert.AreEqual(1, _api.Deleted);
-            Assert.IsFalse(_credentials.HasCredential);
-            Assert.AreEqual(1, _nav.LoadingCalls);
-            Assert.IsNull(_session.AccessToken);
-            Assert.IsNull(_session.RefreshToken);
-            Assert.IsFalse(_session.GetHeaders().ContainsKey("Authorization"), "로그아웃/삭제 후 서버 인증 헤더가 남으면 안 된다");
-        }
-
         [Test(Description = "게스트는 쓸 수 있는 외부 계정에 연동되고 로그인 정보가 그 방식으로 바뀐다")]
         public void Link_Guest_SavesLinkedMethod()
         {

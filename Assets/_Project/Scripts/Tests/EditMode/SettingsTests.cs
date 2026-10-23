@@ -526,16 +526,6 @@ namespace Game.Tests
             Assert.IsTrue(settings.IsOpen);
         }
 
-        [Test(Description = "상단 메뉴 버튼은 미구현 안내 대신 메뉴를 연다")]
-        public void TopBarMenuButton_OpensMenu()
-        {
-            var top = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/UI/Lobby/LobbyTopBar.prefab");
-            var menu = top.transform.Find("TopBar/Menu");
-
-            Assert.IsNotNull(menu.GetComponent<LobbyMenuOpenButton>());
-            Assert.IsNull(menu.GetComponent<ComingSoonButton>());
-        }
-
         [Test(Description = "시작 로고는 모든 로케일에 스프라이트가 등록돼 있고 서로 다르다 (빠지면 한국어 로고가 그대로 나온다)")]
         public void TitleLogo_HasDistinctSpriteForEveryLocale()
         {

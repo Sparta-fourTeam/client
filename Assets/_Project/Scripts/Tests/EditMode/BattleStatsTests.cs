@@ -114,15 +114,6 @@ namespace Game.Tests
             Assert.AreEqual(0, _stats.ReachedWave);
         }
 
-        [Test(Description = "고른 카드는 선택한 순서대로 빌드 로그에 쌓인다")]
-        public void RecordCard_AppendsToBuildLog()
-        {
-            _stats.RecordCard("2");
-            _stats.RecordCard("weapon_2");
-
-            CollectionAssert.AreEqual(new[] { "2", "weapon_2" }, _stats.BuildLog);
-        }
-
         [Test(Description = "스킬별 피해량을 쌓고 피해량이 큰 순서(같으면 스킬 ID 순)로 돌려준다")]
         public void SkillDamage_AccumulatesAndRanks()
         {

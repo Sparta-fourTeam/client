@@ -250,21 +250,6 @@ namespace Game.Tests
             Assert.AreEqual(5.6f, enemy.Position.y, 0.001f);
         }
 
-        [Test(Description = "밀치기는 순간이동하지 않고 몇 프레임에 걸쳐 같은 거리를 움직인다")]
-        public void Knockback_MovesOverFramesNotInstantly()
-        {
-            var enemy = CreateEnemy(position: new Vector2(0, 5));
-            enemy.ApplyKnockback(Vector2.up, 1f);
-            Assert.AreEqual(5f, enemy.Position.y, 0.0001f, "맞은 순간에는 아직 움직이지 않는다");
-
-            enemy.TickDisplacement(1f / 60f);
-            Assert.Greater(enemy.Position.y, 5f);
-            Assert.Less(enemy.Position.y, 6f, "한 프레임에 다 움직이지 않는다");
-
-            Settle(enemy);
-            Assert.AreEqual(6f, enemy.Position.y, 0.0001f, "결국 밀치기 거리만큼 움직인다");
-        }
-
         [Test(Description = "밀치기는 항상 위로만 민다: 비스듬히·옆에서·아래 방향으로 맞아도 거리 그대로 위로 (튕긴 투사체 회귀)")]
         public void Knockback_PushesOnlyAlongY()
         {

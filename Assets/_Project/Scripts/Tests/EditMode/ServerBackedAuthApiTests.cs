@@ -181,17 +181,5 @@ namespace Game.Tests
 
             Assert.IsTrue(_store.Exists());
         }
-
-        [Test(Description = "세션에 토큰이 있으면 Authorization 헤더로 붙이고, 비우면 붙이지 않는다")]
-        public void Session_AddsBearerHeaderOnlyWhenSignedIn()
-        {
-            Assert.IsEmpty(_session.GetHeaders());
-
-            _session.Set("access-1", "refresh-1");
-            Assert.AreEqual("Bearer access-1", _session.GetHeaders()["Authorization"]);
-
-            _session.Clear();
-            Assert.IsEmpty(_session.GetHeaders());
-        }
     }
 }

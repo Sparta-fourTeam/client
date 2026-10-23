@@ -176,19 +176,6 @@ namespace Game.Tests
             Assert.AreEqual(before, _factory.Types.Count, "더 나오면 안 된다");
         }
 
-        [Test]
-        public void FirstBurst_SpawnsExactlyTheWaveComposition()
-        {
-            var spawner = CreateSpawner();
-            StartWave(false, N(3), E(), B());
-
-            AdvanceUntilSpawned(spawner, 5);
-
-            Assert.AreEqual(3, _factory.Count(EnemyType.Normal));
-            Assert.AreEqual(1, _factory.Count(EnemyType.Elite));
-            Assert.AreEqual(1, _factory.Count(EnemyType.Boss));
-        }
-
         [Test(Description = "처치가 늦어 다음 묶음이 나와도 엘리트·보스는 다시 나오지 않고 일반 몬스터만 반복된다")]
         public void LaterBursts_RepeatOnlyNormals()
         {

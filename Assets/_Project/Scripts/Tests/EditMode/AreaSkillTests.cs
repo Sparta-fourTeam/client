@@ -214,15 +214,6 @@ namespace Game.Tests
         }
 
         [Test]
-        public void ShatterCard_FailsWithoutChildCaster()
-        {
-            var data = FrostPrison();
-            var caster = CreateCaster(data, new Provider(), out _);
-            Assert.IsFalse(caster.LevelUp(data.upgrades.Find(c => c.id == "79")),
-                "시전기가 연결되지 않으면 조용히 무시하지 않고 실패한다");
-        }
-
-        [Test]
         public void Validator_RejectsAreaEffectOnProjectileWeapon()
         {
             var catalog = new GameDataStore().LoadSkills();

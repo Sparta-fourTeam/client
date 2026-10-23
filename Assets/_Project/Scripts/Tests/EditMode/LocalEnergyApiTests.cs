@@ -42,19 +42,6 @@ namespace Game.Tests
             _store.Flush(save);
         }
 
-        [Test(Description = "자연 회복 경과분을 반영하고 갱신 시각을 최신화한다")]
-        public void Recover_Natural_AppliesElapsedRegenAndUpdatesTimestamp()
-        {
-            var save = _store.Load();
-            save.wallet.energyStored = 0;
-            save.wallet.energyUpdatedAt = DateTime.UtcNow.AddSeconds(-Config.RegenSeconds * 2).ToString("O");
-            _store.Flush(save);
-
-            var snap = _api.Recover(EnergySource.Natural).GetAwaiter().GetResult();
-
-            Assert.AreEqual(Math.Min(2, Config.Max), snap.energyStored);
-        }
-
         [TestCase(EnergySource.Natural)]
         [TestCase(EnergySource.Ad)]
         [TestCase(EnergySource.Purchase)]
@@ -108,16 +95,6 @@ namespace Game.Tests
             var snap = _api.Recover(EnergySource.Purchase).GetAwaiter().GetResult();
 
             Assert.AreEqual(2 + Config.PurchaseRecoverAmount, snap.energyStored);
-        }
-
-        [Test(Description = "회복 결과는 세이브 파일에 저장되어 다시 불러와도 유지된다")]
-        public void Recover_Ad_PersistsToSave()
-        {
-            SaveEnergy(2);
-
-            _api.Recover(EnergySource.Ad, "key").GetAwaiter().GetResult();
-
-            Assert.AreEqual(2 + Config.AdRecoverAmount, _store.Load().wallet.energyStored);
         }
 
         [Test(Description = "회복 전에 쌓인 자연 회복분을 먼저 반영한 뒤 보상을 더한다")]

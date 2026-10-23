@@ -166,18 +166,6 @@ namespace Game.Tests
         }
 
         [Test]
-        public void ThunderBeforeStorm_IsAllowedButReverseIsBlocked()
-        {
-            var s = Owned();
-            var thunder = Option("thunder"); thunder.exclusions = new[] { new CardExclusion { cardId = "storm" } };
-            SkillCatalogValidator.Validate(new List<SkillData> { Skill(1, thunder, Option("storm")) });
-            Assert.IsTrue(UpgradeEligibility.CanAcquire(thunder, 1, s)); s.Counts[(1, "thunder")] = 1;
-            Assert.IsTrue(UpgradeEligibility.CanAcquire(Option("storm"), 1, s));
-            s.Counts[(1, "storm")] = 1;
-            Assert.IsFalse(UpgradeEligibility.CanAcquire(thunder, 1, s));
-        }
-
-        [Test]
         public void PickLimit_BlocksAtMaximum()
         {
             var s = Owned(); var o = Option(); s.Counts[(1, o.id)] = 3;

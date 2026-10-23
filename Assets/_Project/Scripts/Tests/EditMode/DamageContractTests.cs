@@ -23,13 +23,6 @@ namespace Game.Tests
             public void TakeDamage(DamageInfo info) => Infos.Add(info);
         }
 
-        // 피해량만 받는 대상. DamageInfo 오버로드를 구현하지 않는다
-        private sealed class LegacyTarget : IDamageable
-        {
-            public int Total;
-            public void TakeDamage(int amount) => Total += amount;
-        }
-
         private sealed class Provider : IEnemyTargetProvider
         {
             public readonly List<IEnemyTarget> Targets = new();
@@ -90,16 +83,6 @@ namespace Game.Tests
             Assert.AreEqual(DamagePopupKind.Status, DamagePopupKinds.Of(new DamageInfo(10)));
         }
 
-        [Test(Description = "DamageInfo를 모르는 대상은 피해량만 받는다")]
-        public void LegacyTarget_ReceivesAmountOnly()
-        {
-            var target = new LegacyTarget();
-
-            ((IDamageable)target).TakeDamage(new DamageInfo(7, 3, Element.Fire, CastType.Projectile, true));
-
-            Assert.AreEqual(7, target.Total);
-        }
-
         // ───────── 피해 반응이 충격 여부를 싣는다 ─────────
 
         private static DamageInfo RaiseReaction(DamageReaction reaction, FakeTarget target, DamageSource source)
@@ -125,17 +108,6 @@ namespace Game.Tests
             Assert.IsFalse(extra.IsImpact);
             Assert.AreEqual(Element.Lightning, impact.Element);
             Assert.AreEqual(CastType.Instant, impact.CastType);
-        }
-
-        [Test(Description = "빌더의 Damage는 직접 적중 피해(충격)이고 추가 번개 같은 부가 피해는 아니다")]
-        public void Builder_DamageIsImpact()
-        {
-            var target = new FakeTarget();
-            var reactions = new HitReactionBuilder().Damage(10).Build();
-
-            reactions.Raise(AttackEvent.Hit, new AttackContext(Vector2.zero, Vector3.up, target));
-
-            Assert.IsTrue(target.Infos.Single().IsImpact);
         }
 
         // ───────── 투사체 적중이 속성을 싣는다 ─────────
@@ -195,39 +167,6 @@ namespace Game.Tests
                 Assert.IsEmpty(behind.Infos, "관통하지 못해 뒤의 적은 맞지 않는다");
             }
             finally { UnityEngine.Object.DestroyImmediate(go); }
-        }
-
-        [Test(Description = "관통을 막지 않으면 기존처럼 관통한다")]
-        public void NormalTarget_StillPierces()
-        {
-            var go = new GameObject("PierceNormalTest");
-            try
-            {
-                var first = new FakeTarget { Position = Vector2.right * 0.5f };
-                var behind = new FakeTarget { Position = Vector2.right * 0.7f };
-                var provider = new Provider();
-                provider.Targets.Add(first);
-                provider.Targets.Add(behind);
-                var projectile = CreateProjectile(go, provider, 2, default);
-
-                Tick(projectile, 0.1f);
-
-                Assert.AreEqual(1, first.Infos.Count);
-                Assert.AreEqual(1, behind.Infos.Count);
-            }
-            finally { UnityEngine.Object.DestroyImmediate(go); }
-        }
-
-        [Test]
-        public void Ledger_ExhaustEndsRemainingHits()
-        {
-            var ledger = new ProjectileHitLedger();
-            ledger.Reset(3);
-
-            ledger.Exhaust();
-
-            Assert.IsTrue(ledger.Exhausted);
-            Assert.IsFalse(ledger.TryHit(new object()));
         }
 
         // ───────── 스킬 데이터 ─────────

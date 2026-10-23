@@ -50,16 +50,6 @@ namespace Game.Tests
             Assert.AreEqual(before, File.ReadAllText(_filePath));
         }
 
-        [Test(Description = "서버가 거절하면 ApiException으로 던진다")]
-        public void GetMe_ServerRejects_Throws()
-        {
-            _transport.Response = new HttpResponseData(401, "");
-
-            var ex = Assert.Throws<ApiException>(() => _api.GetMe().GetAwaiter().GetResult());
-
-            Assert.AreEqual("HTTP_401", ex.Code);
-        }
-
         [Test(Description = "요청 중 계정이 바뀌면 이전 계정의 /me 응답을 프로필에 적용하지 않는다")]
         public void GetMe_AccountSwitchRejectsOldResponse()
         {

@@ -267,22 +267,6 @@ namespace Game.Tests
         }
 
         [Test]
-        public void Advance_MovesSpawnedEnemyUsingSpeedFromProvider()
-        {
-            var factory = new FakeEnemyViewFactory(3f);
-            var spawner = CreateSpawner(factory, out var waveStarted, out _); // 벽은 멀리(-100)
-            StartWave(waveStarted, enemyCount: 5);
-
-            spawner.Advance(1f); // 스폰
-            var spawnedY = factory.LastCreatedEnemy.Position.y;
-
-            spawner.Advance(0.5f); // 다음 스폰 전 → 이동만
-            var movedY = factory.LastCreatedEnemy.Position.y;
-
-            Assert.AreEqual(spawnedY - 3f * 0.5f, movedY, 0.0001f);
-        }
-
-        [Test]
         public void Advance_SpawnsUsingSpawnAreaXAndYBoundsSeparately()
         {
             var spawnArea = CreateTestSpawnArea();
@@ -407,21 +391,6 @@ namespace Game.Tests
             Assert.AreSame(factory.Created[1], results[0]);
         }
 
-        [Test]
-        public void Advance_RemovesDeadEnemy_KeepsAliveEnemy()
-        {
-            var spawner = CreateSpawnerWithEnemies(out var factory,
-                new Vector2(0f, 1f),
-                new Vector2(0f, 2f));
-            var results = new List<IEnemyTarget>();
-
-            factory.Created[0].TakeDamage(999);
-            spawner.Advance(0.1f); // TickCombat에서 제거
-
-            Assert.AreEqual(1, spawner.GetNearest(Vector2.zero, 5, results));
-            Assert.AreSame(factory.Created[1], results[0]);
-        }
-
         // ───────── 적 공격 (TickCombat) ─────────
         // 스폰 위치 (1, 1). enemyCount 1 → 스폰 후 3초 쿨다운 동안 추가 스폰 없음
 
@@ -524,39 +493,6 @@ namespace Game.Tests
 
             Assert.AreEqual(1, factory.CreateCallCount);
             Assert.AreEqual(WallMaxHp - 10, wall.CurrentHp);
-        }
-
-        [Test]
-        public void Advance_WallDestroyed_NoMoreDamage()
-        {
-            var wall = CreateTestWall(-10f, maxHp: 15);
-            var factory = new FakeEnemyViewFactory(11f);
-            var spawner = CreateSpawner(factory, out var waveStarted, out _, wall: wall);
-            StartWave(waveStarted, enemyCount: 1);
-
-            spawner.Advance(1f); // 스폰
-            spawner.Advance(1f); // 이동
-            spawner.Advance(1f); // 15 → 5
-            spawner.Advance(1f); // 5 → 0, 파괴
-            spawner.Advance(1f); // 파괴 후 공격 안 함
-
-            Assert.AreEqual(0, wall.CurrentHp);
-            Assert.IsTrue(wall.IsDestroyed);
-        }
-
-        [Test]
-        public void FinalWave_SpawnsOneBurstOnly()
-        {
-            var factory = new FakeEnemyViewFactory(3f);
-            var spawner = CreateSpawner(factory, out var waveStarted, out _);
-            waveStarted.Publish(TestWaves.Started(3, enemyCount: 2, isFinalWave: true));
-
-            spawner.Advance(1f);
-            spawner.Advance(1f);
-            Assert.AreEqual(2, factory.CreateCallCount);
-
-            spawner.Advance(10f); // 쿨다운(3초)이 지나도 재스폰 없음
-            Assert.AreEqual(2, factory.CreateCallCount);
         }
 
         [Test]

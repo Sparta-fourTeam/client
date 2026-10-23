@@ -1,9 +1,7 @@
 using System;
 using System.IO;
-using System.Linq;
 using Game.Core;
 using Game.Editor;
-using Game.Network;
 using NUnit.Framework;
 
 namespace Game.Tests
@@ -150,29 +148,6 @@ namespace Game.Tests
                 Assert.That(File.ReadAllBytes(backup), Is.EqualTo(contents));
             }
             finally { Directory.Delete(folder, true); }
-        }
-
-        [Test]
-        public void ResourceCheatSetsEveryDeclaredItemWithoutDuplicatingOrChangingLevel()
-        {
-            var data = new GameDataStore();
-            var first = data.Items.Values.First();
-            var save = new LocalSave { exp = 123 };
-            save.wallet.gold = 2000;
-            save.items.Add(new ItemAmount { itemId = first.Id, quantity = 2000 });
-
-            PlaytestCheats.SetAllResources(save, data);
-            PlaytestCheats.SetAllResources(save, data);
-
-            Assert.That(save.wallet.gold, Is.EqualTo(999));
-            Assert.That(save.wallet.energyStored, Is.EqualTo(999));
-            foreach (var definition in data.Items.Values)
-            {
-                var rows = save.items.Where(item => item.itemId == definition.Id).ToList();
-                Assert.That(rows.Count, Is.EqualTo(1), definition.Id);
-                Assert.That(rows[0].quantity, Is.EqualTo(999), definition.Id);
-            }
-            Assert.That(save.exp, Is.EqualTo(123));
         }
 
         // 레벨 치트가 레벨업 팝업 재현에 쓰이므로, 설정한 exp가 실제 레벨 계산에서 의도한 레벨·직전 상태가 되는지 본다

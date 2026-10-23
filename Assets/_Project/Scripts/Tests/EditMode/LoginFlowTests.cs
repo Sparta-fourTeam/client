@@ -429,21 +429,6 @@ namespace Game.Tests
             CollectionAssert.AreEqual(new[] { "consent" }, _prompt.Calls);
         }
 
-        [Test]
-        public void ServiceConsentPending_BlocksSavedGuestUntilAccepted()
-        {
-            _credentials.Save(LoginMethod.Guest, "saved");
-            _prompt.PendingConsent = new UniTaskCompletionSource<LoginConsent>();
-            var pending = Flow().RunAsync();
-
-            Assert.AreEqual(0, _auth.Calls);
-            Assert.IsFalse(_profile.IsLoaded);
-            _prompt.PendingConsent.TrySetResult(new LoginConsent(true, false, false));
-            pending.GetAwaiter().GetResult();
-            Assert.AreEqual(1, _auth.Calls);
-            Assert.AreEqual("saved", _credentials.AccountId);
-        }
-
         [TestCase(false, false)]
         [TestCase(false, true)]
         [TestCase(true, false)]

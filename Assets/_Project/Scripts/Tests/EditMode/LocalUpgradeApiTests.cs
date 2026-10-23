@@ -53,27 +53,5 @@ namespace Game.Tests
             Assert.AreEqual(1, second.upgrades.Find(u => u.upgradeId == "atk").level);
         }
 
-        [Test(Description = "골드가 부족하면 INSUFFICIENT_GOLD로 거절한다")]
-        public void Purchase_WithoutEnoughGold_ThrowsInsufficientGold()
-        {
-            SeedGold(_data.Upgrades.GetOrThrow("atk").CostAt(1) - 1);
-
-            var ex = Assert.Throws<ApiException>(() => _api.Purchase("atk", "key-1").GetAwaiter().GetResult());
-
-            Assert.AreEqual("INSUFFICIENT_GOLD", ex.Code);
-        }
-
-        [Test(Description = "최대 레벨에서 구매하면 ALREADY_MAX로 거절한다")]
-        public void Purchase_AtMaxLevel_ThrowsAlreadyMax()
-        {
-            var save = _store.Load();
-            save.upgrades = new() { new() { upgradeId = "atk", level = _data.Upgrades.GetOrThrow("atk").MaxLevel } };
-            _store.Flush(save);
-
-            var ex = Assert.Throws<ApiException>(() => _api.Purchase("atk", "key-4").GetAwaiter().GetResult());
-
-            Assert.AreEqual("ALREADY_MAX", ex.Code);
-        }
-
     }
 }

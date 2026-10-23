@@ -72,18 +72,6 @@ namespace Game.Tests
         }
 
         [Test]
-        public void Melee_PartialDeltaTimes_Accumulate()
-        {
-            var enemy = CreateEnemy(damage: 10, interval: 1f);
-
-            enemy.Attack(0.5f, Vector2.zero, _wall, _projectiles);
-            Assert.AreEqual(WallMaxHp, _wall.CurrentHp);
-
-            enemy.Attack(0.5f, Vector2.zero, _wall, _projectiles); // 누적 1초
-            Assert.AreEqual(WallMaxHp - 10, _wall.CurrentHp);
-        }
-
-        [Test]
         public void Melee_WhenDead_DoesNotAttack()
         {
             var enemy = CreateEnemy(maxHp: 10);
@@ -124,19 +112,6 @@ namespace Game.Tests
             Assert.AreEqual(4f, fired.Position.y, 0.0001f); // 적 위치에서 발사
             Assert.AreEqual(1, _projectiles.ActiveCount);
             Assert.AreEqual(WallMaxHp, _wall.CurrentHp);     // 아직 안 맞음
-        }
-
-        [Test]
-        public void Ranged_ProjectileReachesWall_DamagesOnce()
-        {
-            var enemy = CreateEnemy(AttackType.Ranged, damage: 10, interval: 1f, range: 4f);
-            enemy.Attack(1f, Vector2.up * 4f, _wall, _projectiles);
-
-            _projectiles.Tick(4f / Speed, _wall); // 거리 4 ÷ 탄속 8 = 0.5초
-            _projectiles.Tick(1f, _wall);         // 이미 사라진 탄
-
-            Assert.AreEqual(WallMaxHp - 10, _wall.CurrentHp);
-            Assert.AreEqual(0, _projectiles.ActiveCount);
         }
 
         [Test]

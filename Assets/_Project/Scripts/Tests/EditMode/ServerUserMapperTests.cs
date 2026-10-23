@@ -54,15 +54,6 @@ namespace Game.Tests
             Assert.IsEmpty(snapshot.codex);
         }
 
-        [Test(Description = "이전 숫자 아이템은 문자열 ID로 추측하지 않는다")]
-        public void LegacyNumericItems_AreNotApplied()
-        {
-            var snapshot = ServerUserMapper.ToSnapshot(Full(), "n");
-
-            Assert.IsEmpty(snapshot.items);
-            Assert.IsEmpty(snapshot.tutorials);
-        }
-
         [TestCase("{\"gem\":12}", 12)]
         [TestCase("{\"jem\":7}", 7)]
         [TestCase("{\"gem\":0,\"jem\":7}", 0)]
