@@ -404,45 +404,28 @@ namespace Game.Tests
             return (menu, confirm, api, nav);
         }
 
-        [Test(Description = "언어 선택 즉시 열려 있는 설정 표시가 바뀌고, 취소·재열기·반복 선택도 저장값과 일치한다")]
-        public void SettingsPopup_LanguageSelectionRefreshesOpenLabel()
+        [Test(Description = "설정의 언어 드롭다운은 저장된 언어를 보여 주고, 선택하면 저장되며 설정 팝업은 열린 채 유지된다. Dispose 뒤에는 외부 변경을 따라가지 않는다")]
+        public void SettingsPopup_LanguageDropdownSavesSelection()
         {
             var store = new MemorySettingsStore();
             var game = new GameSettings(store);
             var settings = Spawn<SettingsPopupView>("SettingsPopup");
-            var language = Spawn<LanguagePopupView>("LanguagePopup");
             settings.Construct(new SoundSettings(new MemoryStore()), game);
-            language.Construct(game);
-            typeof(SettingsPopupView).GetField("_language", Flags).SetValue(settings, language);
-            var label = Field<TMP_Text>(settings, "_languageLabel");
-            var options = Field<Toggle[]>(language, "_options");
-            var open = Field<Button>(settings, "_languageButton");
+            var dropdown = Field<TMP_Dropdown>(settings, "_languageDropdown");
             settings.Open();
-            Assert.AreEqual("한국어", label.text);
-            open.onClick.Invoke();
-            options[1].isOn = true;
-            Assert.IsTrue(settings.IsOpen);
-            Assert.IsFalse(Field<PopupTransition>(language, "_transition").IsShown);
-            Assert.AreEqual("English", label.text);
-            Assert.AreEqual(GameLanguage.English, new GameSettings(store).Language);
+            Assert.AreEqual((int)GameLanguage.Korean, dropdown.value);
 
-            open.onClick.Invoke();
-            Assert.IsTrue(options[1].isOn);
-            Field<Button>(language, "_closeButton").onClick.Invoke();
-            Assert.AreEqual("English", label.text);
-            Assert.AreEqual(GameLanguage.English, game.Language);
-            open.onClick.Invoke();
-            options[0].isOn = true;
-            Assert.AreEqual("한국어", label.text);
-            settings.Close();
-            settings.Open();
-            open.onClick.Invoke();
-            options[1].isOn = true;
-            Assert.AreEqual("English", label.text);
+            foreach (var language in new[] { GameLanguage.English, GameLanguage.Japanese, GameLanguage.ChineseSimplified })
+            {
+                dropdown.value = (int)language;
+                Assert.IsTrue(settings.IsOpen);
+                Assert.AreEqual(language, game.Language);
+                Assert.AreEqual(language, new GameSettings(store).Language);
+            }
 
             settings.Dispose();
             game.SetLanguage(GameLanguage.Korean);
-            Assert.AreEqual("English", label.text, "Dispose 뒤에는 변경 구독이 남지 않는다");
+            Assert.AreEqual((int)GameLanguage.ChineseSimplified, dropdown.value, "Dispose 뒤에는 변경 구독이 남지 않는다");
         }
 
         [Test(Description = "메뉴 바깥을 누르면 닫히고, 설정을 누르면 메뉴가 닫히고 설정 팝업이 열린다")]

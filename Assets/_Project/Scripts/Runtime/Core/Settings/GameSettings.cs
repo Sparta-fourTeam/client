@@ -9,11 +9,14 @@ namespace Game.Core
         Standard,
     }
 
-    /// <summary>언어 선택지. 실제 문구 번역은 로컬라이징(#193)에서 붙이고, 지금은 선택값만 저장한다. 다른 언어는 나중에 값을 뒤에 추가한다</summary>
+    /// <summary>언어 선택지. 선택값은 이 enum으로 저장하고, 문구 번역은 Localization 패키지가 맡는다(로케일 코드는 GameLanguageLocale).
+    /// 저장된 정수값과 호환되도록 기존 값은 바꾸지 않고 다른 언어는 값을 뒤에 추가한다</summary>
     public enum GameLanguage
     {
         Korean,
         English,
+        Japanese,
+        ChineseSimplified,
     }
 
     /// <summary>정수 설정을 기기에 남기는 저장소. 테스트에서는 메모리 구현으로 바꾼다</summary>

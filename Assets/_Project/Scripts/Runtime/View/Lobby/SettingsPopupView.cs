@@ -9,10 +9,8 @@ namespace Game.View
 {
     /// <summary>설정 팝업. 음악·효과음 볼륨을 슬라이더(0~100%)로 조절하고, 데미지 표시·디버프 이펙트·프레임레이트·최고 스테이지 자동 선택·언어를 고른다.
     /// 값은 바로 적용·저장된다(SoundSettings, GameSettings)</summary>
-    public sealed class SettingsPopupView : HudView, IUiBindable
+    public sealed class SettingsPopupView : HudView
     {
-        public void BindUi(IUiRegistry registry) => _language = registry.Get<LanguagePopupView>();
-
         [SerializeField] private GameObject _panel;
         [SerializeField] private PopupTransition _transition;
         [SerializeField] private Button _closeButton;
@@ -26,8 +24,10 @@ namespace Game.View
         [Header("기기 설정")]
         [SerializeField] private Toggle _damageToggle, _debuffToggle, _autoEnterToggle;
         [SerializeField] private Toggle _frameHighToggle, _frameStandardToggle;
-        [SerializeField] private Button _languageButton;
-        [SerializeField] private TMP_Text _languageLabel;
+        [SerializeField] private TMP_Dropdown _languageDropdown;
+
+        // GameLanguage 순서와 같다. 언어 자기 이름이라 번역하지 않는다
+        private static readonly string[] LanguageNames = { "한국어", "English", "日本語", "简体中文" };
 
         [SerializeField] private Button _privacyChoicesButton;
         [SerializeField] private ServiceConsentView _serviceConsentPrefab;
@@ -38,7 +38,6 @@ namespace Game.View
 
         private SoundSettings _settings;
         private GameSettings _game;
-        private LanguagePopupView _language;
 
         public bool IsOpen => _panel.activeSelf;
 
@@ -74,7 +73,9 @@ namespace Game.View
             _autoEnterToggle.onValueChanged.AddListener(on => _game.SetAutoEnterHighestStage(on));
             _frameHighToggle.onValueChanged.AddListener(on => { if (on) { _game.SetFrameRate(FrameRateMode.High); } });
             _frameStandardToggle.onValueChanged.AddListener(on => { if (on) { _game.SetFrameRate(FrameRateMode.Standard); } });
-            _languageButton.onClick.AddListener(() => _language.Open());
+            _languageDropdown.ClearOptions();
+            _languageDropdown.AddOptions(new System.Collections.Generic.List<string>(LanguageNames));
+            _languageDropdown.onValueChanged.AddListener(value => _game.SetLanguage((GameLanguage)value));
             for (int i = 0; i < _sliders.Length && i < Channels.Length; i++)
             {
                 int index = i;
@@ -126,7 +127,7 @@ namespace Game.View
 
         private void RefreshLanguage()
         {
-            _languageLabel.text = LanguagePopupView.NativeName(_game.Language);
+            _languageDropdown.SetValueWithoutNotify((int)_game.Language);
         }
 
         private void OnSlider(int index, float value)

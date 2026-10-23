@@ -85,7 +85,6 @@ namespace Game.Editor
             ["QuestPopup"] = "final/fin_quest_popup.png",
             ["LobbyMenuPopup"] = "final/fin_menu_popup.png",
             ["SettingsPopup"] = "final2/rr_settings_popup.png",
-            ["LanguagePopup"] = "final/fin_language_popup.png",
             ["DialogueScene"] = "final2/rr_dialogue.png",
             ["TutorialGuide"] = "final2/rr_tutorial_guide.png",
             ["LevelUpPopup"] = "final2/rr_level_up.png",
