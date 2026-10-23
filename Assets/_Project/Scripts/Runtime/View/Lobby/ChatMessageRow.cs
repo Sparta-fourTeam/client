@@ -17,7 +17,7 @@ namespace Game.View
         public void Bind(ChatMessage message)
         {
             _sender.richText = false;
-            _sender.text = string.IsNullOrWhiteSpace(message.Nickname) ? $"플레이어 {message.SenderId}" : message.Nickname;
+            _sender.text = string.IsNullOrWhiteSpace(message.Nickname) ? L10n.Get("chat.defaultSender", message.SenderId) : message.Nickname;
             _body.richText = false;
             if (_textFontSize <= 0) { _textFontSize = _body.fontSize; }
             string content = message.Content.Trim();

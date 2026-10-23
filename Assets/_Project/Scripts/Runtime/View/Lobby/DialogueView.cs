@@ -87,10 +87,10 @@ namespace Game.View
             {
                 bool skip = _confirm == null || await _confirm.ShowAsync(new ConfirmRequest
                 {
-                    Title = "대화 건너뛰기",
-                    Message = "남은 대화를 건너뛸까요?",
-                    ConfirmLabel = "건너뛰기",
-                    CancelLabel = "취소",
+                    Title = L10n.Get("dialogue.skipTitle"),
+                    Message = L10n.Get("dialogue.skipMessage"),
+                    ConfirmLabel = L10n.Get("dialogue.skipConfirm"),
+                    CancelLabel = L10n.Get("common.cancel"),
                 });
                 if (skip && this != null && _root.activeSelf)
                 {
@@ -122,7 +122,7 @@ namespace Game.View
 
             if (_autoLabel != null)
             {
-                _autoLabel.text = _auto ? "AUTO ON" : "AUTO OFF";
+                _autoLabel.text = L10n.Get(_auto ? "dialogue.autoOn" : "dialogue.autoOff");
             }
         }
 

@@ -152,17 +152,18 @@ namespace Game.View
             var config = _data.Shop;
             var state = _profile.Shop;
             int left = ShopRules.GoldLeft(config, state);
-            string question = $"{config.GoldRerollCost:N0} 잉크를 사용해 상점을 초기화할까요?";
+            string question = L10n.Get("dailyShop.resetQuestion", config.GoldRerollCost.ToString("N0"));
+            string remainingText = L10n.Get("common.remainingCount", $"{left}/{config.GoldRerollsPerDay}");
 
             // 골드가 모자라도 누를 수 있다. 서버가 거절하면 그때 모자라다고 알려 준다
             _busy = true;
             Refresh();
             bool confirmed = _confirm == null || await _confirm.ShowAsync(new ConfirmRequest
             {
-                Title = "일일상점 초기화",
-                Message = $"{question}\n남은 횟수 {left}/{config.GoldRerollsPerDay}\n초기화하면 품절된 상품도 새로 채워져요.",
-                ConfirmLabel = "초기화",
-                CancelLabel = "취소",
+                Title = L10n.Get("shop.dailyReset"),
+                Message = question + "\n" + remainingText + "\n" + L10n.Get("dailyShop.resetNote"),
+                ConfirmLabel = L10n.Get("shop.reset"),
+                CancelLabel = L10n.Get("common.cancel"),
             });
             _busy = false;
             if (!confirmed)
@@ -174,7 +175,7 @@ namespace Game.View
             string error = await RunAsync(() => _api.Reroll(ShopRerollKind.Gold, Guid.NewGuid().ToString("N")));
             if (error == "INSUFFICIENT_GOLD" && _confirm != null)
             {
-                await _confirm.ShowAsync(new ConfirmRequest { Title = "일일상점 초기화", Message = "잉크가 부족해요." });
+                await _confirm.ShowAsync(new ConfirmRequest { Title = L10n.Get("shop.dailyReset"), Message = L10n.Get("dailyShop.notEnoughInk") });
             }
         }
 
@@ -184,16 +185,16 @@ namespace Game.View
             if (_busy || _offers == null || slot >= _offers.Count) { return; }
 
             var offer = _offers[slot];
-            string price = offer.Price > 0 ? $"{offer.Price:N0}잼" : "무료";
+            string price = offer.Price > 0 ? L10n.Get("shop.gemPrice", offer.Price.ToString("N0")) : L10n.Get("shop.free");
             // 잼이 모자라도 누를 수 있다. 서버가 거절하면 그때 모자라다고 알려 준다. 무료 물품은 묻지 않고 바로 받는다
             _busy = true;
             Refresh();
             bool confirmed = offer.Price <= 0 || _confirm == null || await _confirm.ShowAsync(new ConfirmRequest
             {
-                Title = "구매",
-                Message = $"{NameOf(offer.Reward)} x{offer.Count:N0}을(를)\n{price}에 구매할까요?",
-                ConfirmLabel = "구매",
-                CancelLabel = "취소",
+                Title = L10n.Get("shop.buy"),
+                Message = L10n.Get("shop.buyConfirm", $"{NameOf(offer.Reward)} x{offer.Count:N0}", price),
+                ConfirmLabel = L10n.Get("shop.buy"),
+                CancelLabel = L10n.Get("common.cancel"),
             });
             _busy = false;
             if (!confirmed)
@@ -206,11 +207,11 @@ namespace Game.View
             if (error == null)
             {
                 _rewardPopup?.Show(new List<ResultRewardItem> { new(IconOf(offer.Reward), offer.Count, offer.Reward) },
-                    "물품을 구매했어요.", "구매 완료");
+                    L10n.Get("shop.purchased"), L10n.Get("shop.purchaseDone"));
             }
             else if (error == "INSUFFICIENT_GEMS" && _confirm != null)
             {
-                await _confirm.ShowAsync(new ConfirmRequest { Title = "구매", Message = "잼이 부족해요." });
+                await _confirm.ShowAsync(new ConfirmRequest { Title = L10n.Get("shop.buy"), Message = L10n.Get("shop.notEnoughGems") });
             }
         }
 
@@ -239,8 +240,8 @@ namespace Game.View
 
         private string NameOf(string reward) => reward switch
         {
-            ShopRules.CoinReward => "잉크",
-            ShopRules.EnergyReward => "잉크펜",
+            ShopRules.CoinReward => L10n.Get("currency.ink"),
+            ShopRules.EnergyReward => L10n.Get("currency.inkPen"),
             _ => ItemInfo.NameOf(reward, _data),
         };
 
@@ -290,14 +291,14 @@ namespace Game.View
                 ? _server.Account.Daily.NextResetAt.UtcDateTime - utcNow : GameDay.NextResetUtc(utcNow) - utcNow;
             if (_server != null && _server.Account?.Daily == null)
             {
-                _timer.text = "확인 중";
+                _timer.text = L10n.Get("common.checking");
                 return;
             }
             if (remain < TimeSpan.Zero) { remain = TimeSpan.Zero; }
             int minute = (int)remain.TotalMinutes;
             if (minute == _shownMinute) { return; }
             _shownMinute = minute;
-            _timer.text = $"{minute / 60}시간 {minute % 60:D2}분";
+            _timer.text = L10n.Get("dailyShop.timeLeft", minute / 60, (minute % 60).ToString("D2"));
         }
 
         private async UniTask RefreshServerAsync()
@@ -311,7 +312,7 @@ namespace Game.View
                 {
                     _rewardPopup?.Show(restored.Rewards.Select(reward =>
                         new ResultRewardItem(IconOf(reward.ItemId), reward.Count, reward.ItemId)).ToList(),
-                        "물품을 구매했어요.", "구매 완료");
+                        L10n.Get("shop.purchased"), L10n.Get("shop.purchaseDone"));
                 }
             }
             catch (ApiException) { }
@@ -343,7 +344,7 @@ namespace Game.View
             }
             _adCount.text = "0/0";
             _adReroll.interactable = false;
-            _goldCount.text = _server.HasPending ? "확인 중" : ready
+            _goldCount.text = _server.HasPending ? L10n.Get("common.checking") : ready
                 ? $"{daily.GoldLeft}/{daily.GoldLeft + daily.GoldUsed}" : "0/0";
             _goldCost.text = ready ? daily.GoldRerollCost.ToString("N0") : "0";
             _goldReroll.interactable = ready && daily.GoldLeft > 0 && !_busy && !_server.IsBusy && !_server.HasPending;
@@ -362,17 +363,17 @@ namespace Game.View
             {
                 confirmed = _confirm == null || await _confirm.ShowAsync(new ConfirmRequest
                 {
-                    Title = "일일상점 초기화",
-                    Message = $"{quoted.GoldRerollCost:N0} 잉크를 사용해 상점을 초기화할까요?\n남은 횟수 {quoted.GoldLeft}",
-                    ConfirmLabel = "초기화",
-                    CancelLabel = "취소"
+                    Title = L10n.Get("shop.dailyReset"),
+                    Message = L10n.Get("dailyShop.resetQuestion", quoted.GoldRerollCost.ToString("N0")) + "\n" + L10n.Get("common.remainingCount", quoted.GoldLeft),
+                    ConfirmLabel = L10n.Get("shop.reset"),
+                    CancelLabel = L10n.Get("common.cancel")
                 });
             }
             finally { _busy = false; if (this != null) { Refresh(); } }
             if (!confirmed) { return; }
             var result = await RunServerAsync(() => _server.GoldReroll(quoted));
             if (result?.ErrorCode == "INSUFFICIENT_GOLD" && _confirm != null)
-            { await _confirm.ShowAsync(new ConfirmRequest { Title = "일일상점 초기화", Message = "잉크가 부족해요." }); }
+            { await _confirm.ShowAsync(new ConfirmRequest { Title = L10n.Get("shop.dailyReset"), Message = L10n.Get("dailyShop.notEnoughInk") }); }
         }
 
         private async UniTask BuyServerAsync(int slot)
@@ -390,10 +391,10 @@ namespace Game.View
             {
                 confirmed = offer.Price <= 0 || _confirm == null || await _confirm.ShowAsync(new ConfirmRequest
                 {
-                    Title = "구매",
-                    Message = $"{name}을(를)\n{offer.Price:N0}잼에 구매할까요?",
-                    ConfirmLabel = "구매",
-                    CancelLabel = "취소"
+                    Title = L10n.Get("shop.buy"),
+                    Message = L10n.Get("shop.buyConfirm", name, L10n.Get("shop.gemPrice", offer.Price.ToString("N0"))),
+                    ConfirmLabel = L10n.Get("shop.buy"),
+                    CancelLabel = L10n.Get("common.cancel")
                 });
             }
             finally { _busy = false; if (this != null) { Refresh(); } }
@@ -403,10 +404,10 @@ namespace Game.View
             {
                 var items = result.Rewards.Select(reward =>
                     new ResultRewardItem(IconOf(reward.ItemId), reward.Count, reward.ItemId)).ToList();
-                _rewardPopup?.Show(items, "물품을 구매했어요.", "구매 완료");
+                _rewardPopup?.Show(items, L10n.Get("shop.purchased"), L10n.Get("shop.purchaseDone"));
             }
             else if (result?.ErrorCode == "INSUFFICIENT_GEMS" && _confirm != null)
-            { await _confirm.ShowAsync(new ConfirmRequest { Title = "구매", Message = "잼이 부족해요." }); }
+            { await _confirm.ShowAsync(new ConfirmRequest { Title = L10n.Get("shop.buy"), Message = L10n.Get("shop.notEnoughGems") }); }
         }
 
         private async UniTask<ShopViewResult> RunServerAsync(Func<UniTask<ShopViewResult>> request)

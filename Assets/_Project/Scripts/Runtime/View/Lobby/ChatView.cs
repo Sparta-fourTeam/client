@@ -158,8 +158,8 @@ namespace Game.View
             if (_chat == null) { return; }
             _status.text = _chat.Status;
             _status.gameObject.SetActive(!_chat.IsConnected);
-            _presence.text = _chat.OnlineCount.HasValue ? $"접속자 {_chat.OnlineCount.Value:N0}명"
-                : _chat.IsConnected ? "접속자 확인 중" : "";
+            _presence.text = _chat.OnlineCount.HasValue ? L10n.Get("chat.online", _chat.OnlineCount.Value.ToString("N0"))
+                : _chat.IsConnected ? L10n.Get("chat.checking") : "";
             _retryButton.gameObject.SetActive(!_chat.IsConnected);
             RefreshSend();
             if (!_panel.activeSelf) { return; }

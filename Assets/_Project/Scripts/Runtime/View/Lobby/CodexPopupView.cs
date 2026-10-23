@@ -66,7 +66,7 @@ namespace Game.View
             var monsters = _data.Monsters.Values.Where(m => m.GetEnemyType() == Grade && !IsHidden(m.Id))
                 .OrderBy(m => m.Hp).ThenBy(m => m.Damage).ThenBy(m => m.Id).ToList();
             int discovered = monsters.Count(m => _profile.IsMonsterRegistered(m.Id));
-            _progressText.text = $"발견 {discovered} / {monsters.Count}";
+            _progressText.text = L10n.Get("codex.progress", discovered, monsters.Count);
             EmptyLabel.gameObject.SetActive(monsters.Count == 0);
             while (_slots.Count < monsters.Count) { _slots.Add(Instantiate(_slotTemplate, _grid, false)); }
             for (int i = 0; i < _slots.Count; i++)

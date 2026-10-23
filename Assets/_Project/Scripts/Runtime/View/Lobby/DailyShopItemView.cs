@@ -1,4 +1,5 @@
 using System;
+using Game.Core;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -26,7 +27,7 @@ namespace Game.View
         {
             Bind(itemName, icon, count, 0, 0, false, canBuy, onBuy, onInfo);
             _discountBadge.SetActive(bonusPercent > 0);
-            _discountLabel.text = $"+{bonusPercent}%\n보너스";
+            _discountLabel.text = L10n.Get("dailyShop.bonusBadge", bonusPercent);
             _gemIcon.SetActive(false);
             _price.text = priceLabel;
             SetFreeBadge(false);
@@ -46,9 +47,9 @@ namespace Game.View
             _name.text = itemName;
             _cell.Show(icon, countLabel, onInfo);
             _discountBadge.SetActive(discountPercent > 0);
-            _discountLabel.text = $"{discountPercent}%\n할인";
+            _discountLabel.text = L10n.Get("dailyShop.discountBadge", discountPercent);
             _gemIcon.SetActive(price > 0);
-            _price.text = price > 0 ? price.ToString("N0") : "무료";
+            _price.text = price > 0 ? price.ToString("N0") : L10n.Get("shop.free");
             _soldOut.SetActive(soldOut);
             SetFreeBadge(price <= 0 && !soldOut);
             _buy.interactable = !soldOut && canBuy;

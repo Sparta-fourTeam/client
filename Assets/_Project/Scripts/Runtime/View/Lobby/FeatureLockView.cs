@@ -52,7 +52,7 @@ namespace Game.View
 
         private void Awake()
         {
-            _lock.onClick.AddListener(() => _toast?.Show($"{_data.FeatureUnlocks.RequiredStage(_feature)}스테이지를 클리어하면 열려요"));
+            _lock.onClick.AddListener(() => _toast?.Show(L10n.Get("feature.lockedToast", _data.FeatureUnlocks.RequiredStage(_feature))));
             Refresh();
         }
 
