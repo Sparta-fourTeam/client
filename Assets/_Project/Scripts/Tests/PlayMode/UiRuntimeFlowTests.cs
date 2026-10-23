@@ -93,6 +93,8 @@ namespace Game.Tests
         private LoginMethod _credentialMethod;
         private string _credentialAccountId;
         private bool _restoreConsentPreference, _hadConsentPreference;
+        private bool _restoreLanguagePreference, _hadLanguagePreference;
+        private int _languagePreference;
         private string _consentPreference;
         private ILoginConsentStore _consents;
         private static readonly FieldInfo StorePath = typeof(LocalSaveStore).GetField("_filePath", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -1717,6 +1719,11 @@ namespace Game.Tests
         // seed가 없으면 튜토리얼을 마친 계정으로 시작한다. 튜토리얼 중인 새 계정은 로비 대신 1스테이지로 들어간다
         private IEnumerator StartFromBoot(Action<LocalSave> seed = null, string expectedScene = "Lobby", bool allowAnalytics = false)
         {
+            // 개발 기기에 저장된 언어가 화면 문구를 바꾸므로 기본(한국어)으로 고정한다
+            _hadLanguagePreference = PlayerPrefs.HasKey("settings.language");
+            _languagePreference = PlayerPrefs.GetInt("settings.language");
+            PlayerPrefs.DeleteKey("settings.language");
+            _restoreLanguagePreference = true;
             _hadSpeedPreference = PlayerPrefs.HasKey("stage_speed");
             _speedPreference = PlayerPrefs.GetFloat("stage_speed");
             _restoreSpeedPreference = true;
@@ -1822,6 +1829,13 @@ namespace Game.Tests
             {
                 foreach (string suffix in new[] { ".battle", ".battle.bak", ".battle.tmp" })
                 { if (File.Exists(_savePath + suffix)) { File.Delete(_savePath + suffix); } }
+            }
+            if (_restoreLanguagePreference)
+            {
+                if (_hadLanguagePreference) { PlayerPrefs.SetInt("settings.language", _languagePreference); }
+                else { PlayerPrefs.DeleteKey("settings.language"); }
+                PlayerPrefs.Save();
+                _restoreLanguagePreference = false;
             }
             if (_restoreConsentPreference)
             {
