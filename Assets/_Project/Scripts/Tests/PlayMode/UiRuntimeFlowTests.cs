@@ -451,6 +451,47 @@ namespace Game.Tests
         }
 
         [UnityTest]
+        public IEnumerator Tutorial_NewAccountSkipsIntroInLobbyEntersTutorialStageAndReturnsAfterDefeatWithoutRelaunch()
+        {
+            // 새 계정: 로비 도입 대사 → SKIP 확인창(취소하면 유지, 확인하면 진행) → 튜토리얼 스테이지.
+            // 패배하면 결과창으로 로비에 돌아오고, 로비는 튜토리얼 전투를 다시 시작하지 않는다
+            yield return StartFromBoot(save => save.tutorials = new List<string>());
+            var dialogue = Object.FindAnyObjectByType<DialogueView>();
+            yield return WaitFor(() => dialogue.IsOpen);
+            var confirm = Object.FindAnyObjectByType<LobbyLifetimeScope>().Container.Resolve<IUiRegistry>().Get<ConfirmPopupView>();
+            yield return ClickGameButton(Field<Button>(dialogue, "_skipButton"));
+            yield return WaitFor(() => confirm.IsOpen);
+            yield return ClickGameButton(Field<Button>(confirm, "_cancelButton"));
+            yield return WaitFor(() => !Field<GameObject>(confirm, "_panel").activeSelf);
+            Assert.That(dialogue.IsOpen, Is.True);
+
+            yield return ClickGameButton(Field<Button>(dialogue, "_skipButton"));
+            yield return WaitFor(() => confirm.IsOpen);
+            yield return ClickGameButton(Field<Button>(confirm, "_confirmButton"));
+            yield return WaitFor(() => SceneManager.GetActiveScene().name == "Stage");
+            var root = Object.FindAnyObjectByType<RootLifetimeScope>().Container;
+            var tutorial = root.Resolve<GameDataStore>().Tutorials.First(t => t.IsBattle);
+            Assert.That(root.Resolve<StageContext>().StageId, Is.EqualTo(tutorial.StageId));
+
+            yield return null;
+            var stage = Object.FindAnyObjectByType<StageLifetimeScope>();
+            var wall = stage.Container.Resolve<Wall>();
+            wall.TakeDamage(wall.CurrentHp);
+            yield return WaitFor(() => stage.Container.Resolve<StageManager>().State == StageState.Finished);
+            var result = stage.Container.Resolve<IUiRegistry>().Get<ResultPopupView>();
+            yield return WaitFor(() => Field<Button>(result, "_lobbyButton").interactable);
+            Field<ResultTipView>(result, "_tip").OnPointerClick(new PointerEventData(EventSystem.current));
+            yield return ClickGameButton(Field<Button>(result, "_lobbyButton"));
+            yield return WaitFor(() => SceneManager.GetActiveScene().name == "Lobby");
+            var ui = Object.FindAnyObjectByType<LobbyLifetimeScope>().Container.Resolve<IUiRegistry>();
+            yield return WaitFor(() => Field<bool>(ui.Get<TutorialGuideView>(), "_ready"));
+            for (int i = 0; i < 30; i++) { yield return null; }
+            Assert.That(SceneManager.GetActiveScene().name, Is.EqualTo("Lobby"));
+            Assert.That(ui.Get<DialogueView>().IsOpen, Is.False);
+            Assert.That(root.Resolve<PlayerProfile>().IsTutorialDone(tutorial.Id), Is.False);
+        }
+
+        [UnityTest]
         public IEnumerator Boot_InEnglishNeverShowsKoreanWhileCurtainIsOpen()
         {
             // 영어로 부팅했을 때 커튼이 화면을 가리지 않는 프레임마다 활성 라벨에 한글이 없다.
