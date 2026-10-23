@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Game.Core;
@@ -15,11 +16,11 @@ namespace Game.View
     {
         public void BindUi(IUiRegistry registry) => _confirm = registry.Get<ConfirmPopupView>();
 
-        private const string SignInMessage = "로그인 방식을 선택해 주세요";
-        private const string SigningInMessage = "로그인 중...";
-        private const string FailedMessage = "로그인에 실패했습니다.\n잠시 후 다시 시도해 주세요.";
-        private const string UnavailableSuffix = " (준비 중)";
-        private const string GuestWarning = "게스트 계정은 앱을 삭제하거나 기기를 바꾸면 데이터가 사라질 수 있어요.";
+        // 로케일이 바뀔 수 있어 상수 대신 호출 시점에 조회한다
+        private static string SignInMessage => L10n.Get("login.chooseMethod");
+        private static string SigningInMessage => L10n.Get("login.signingIn");
+        private static string FailedMessage => L10n.Get("login.failed");
+        private static string GuestWarning => L10n.Get("login.guestWarning");
 
         [SerializeField] private GameObject _panel;
         [SerializeField] private GameObject _methods;   // 로그인 방식 버튼 묶음
@@ -30,7 +31,7 @@ namespace Game.View
         [SerializeField] private ServiceConsentView _serviceConsent;
 
         private ConfirmPopupView _confirm;
-        private readonly Dictionary<Button, string> _labels = new();
+        private readonly Dictionary<Button, string> _labelKeys = new();
         private UniTaskCompletionSource<LoginMethod> _pending;
 
         protected override void InitializeView()
@@ -54,7 +55,7 @@ namespace Game.View
 
         public UniTask<LoginMethod> WaitForSignInAsync(IReadOnlyCollection<LoginMethod> available)
         {
-            Show(SignInMessage, methods: true, retry: false);
+            Show(() => SignInMessage, methods: true, retry: false);
             SetAvailable(_guestButton, LoginMethod.Guest, available);
             SetAvailable(_googleButton, LoginMethod.Google, available);
             SetAvailable(_appleButton, LoginMethod.Apple, available);
@@ -63,7 +64,7 @@ namespace Game.View
 
         public UniTask WaitForRetryAsync()
         {
-            Show(FailedMessage, methods: false, retry: true);
+            Show(() => FailedMessage, methods: false, retry: true);
             return Wait().AsUniTask();
         }
 
@@ -73,7 +74,7 @@ namespace Game.View
         {
             if (_panel.activeSelf)
             {
-                Show(SigningInMessage, methods: false, retry: false);
+                Show(() => SigningInMessage, methods: false, retry: false);
             }
         }
 
@@ -82,9 +83,16 @@ namespace Game.View
             _panel.SetActive(false);
         }
 
+        private static string LabelKey(LoginMethod method) => method switch
+        {
+            LoginMethod.Google => "login.google",
+            LoginMethod.Apple => "login.apple",
+            _ => "login.guest",
+        };
+
         private void Bind(Button button, LoginMethod method)
         {
-            _labels[button] = button.GetComponentInChildren<TMP_Text>(true).text;
+            _labelKeys[button] = LabelKey(method);
             button.onClick.AddListener(() => ConfirmAsync(method).Forget());
         }
 
@@ -107,25 +115,25 @@ namespace Game.View
         {
             LoginMethod.Google => new ConfirmRequest
             {
-                Title = "구글 로그인",
-                Message = "구글 계정으로 로그인할까요?",
-                ConfirmLabel = "로그인",
-                CancelLabel = "취소",
+                Title = L10n.Get("login.google.title"),
+                Message = L10n.Get("login.google.message"),
+                ConfirmLabel = L10n.Get("login.confirm"),
+                CancelLabel = L10n.Get("common.cancel"),
             },
             LoginMethod.Apple => new ConfirmRequest
             {
-                Title = "애플 로그인",
-                Message = "애플 계정으로 로그인할까요?",
-                ConfirmLabel = "로그인",
-                CancelLabel = "취소",
+                Title = L10n.Get("login.apple.title"),
+                Message = L10n.Get("login.apple.message"),
+                ConfirmLabel = L10n.Get("login.confirm"),
+                CancelLabel = L10n.Get("common.cancel"),
             },
             _ => new ConfirmRequest
             {
-                Title = "게스트 로그인",
-                Message = "게스트로 로그인할까요?",
+                Title = L10n.Get("login.guest.title"),
+                Message = L10n.Get("login.guest.message"),
                 Warning = GuestWarning,
-                ConfirmLabel = "로그인",
-                CancelLabel = "취소",
+                ConfirmLabel = L10n.Get("login.confirm"),
+                CancelLabel = L10n.Get("common.cancel"),
             },
         };
 
@@ -133,7 +141,10 @@ namespace Game.View
         {
             bool on = Contains(available, method);
             button.interactable = on;
-            button.GetComponentInChildren<TMP_Text>(true).text = on ? _labels[button] : _labels[button] + UnavailableSuffix;
+            var label = button.GetComponentInChildren<TMP_Text>(true);
+            string key = _labelKeys[button];
+            if (on) { label.SetL10n(key); }
+            else { label.SetL10n(() => L10n.Get("login.unavailable", L10n.Get(key))); }
         }
 
         private static bool Contains(IReadOnlyCollection<LoginMethod> methods, LoginMethod method)
@@ -155,10 +166,10 @@ namespace Game.View
             return _pending.Task;
         }
 
-        private void Show(string message, bool methods, bool retry)
+        private void Show(Func<string> message, bool methods, bool retry)
         {
             _panel.SetActive(true);
-            _messageText.text = message;
+            _messageText.SetL10n(message);
             _methods.SetActive(methods);
             _retryButton.gameObject.SetActive(retry);
         }

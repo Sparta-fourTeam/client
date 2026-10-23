@@ -60,10 +60,12 @@ namespace Game.View
         private void OnDestroy() => KillTweens();
 
         /// <summary>보상 목록을 표시하고, 목록 크기에 맞춘 전체 화면 등장 연출을 시작한다</summary>
-        public void Show(IReadOnlyList<ResultRewardItem> rewards, string description = "보상을 받았어요.", string title = "보상 획득")
+        public void Show(IReadOnlyList<ResultRewardItem> rewards, string description = null, string title = null)
         {
-            _title.text = title;
-            _description.text = description;
+            if (title != null) { _title.text = title; }
+            else { _title.SetL10n("reward.popupTitle"); }
+            if (description != null) { _description.text = description; }
+            else { _description.SetL10n("reward.popupDesc"); }
             _rewards.Show(rewards);
             PopupPanel.Set(_panel, _transition, true);
             FitRewards(rewards.Count);

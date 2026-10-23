@@ -219,7 +219,6 @@ namespace Game.Editor
             "SkillUpgradePopup" => new[] { "SkillScreen" },
             "DetailPopup" or "RewardOddsPopup" or "RewardPopup" => new[] { "InventoryScreen" },
             "MissionDetailsPopup" or "MissionRewardInfoPopup" or "EnergyRecoverPopup" => new[] { "MissionScreen" },
-            "LanguagePopup" => new[] { "SettingsPopup" },
             _ => Array.Empty<string>()
         };
 

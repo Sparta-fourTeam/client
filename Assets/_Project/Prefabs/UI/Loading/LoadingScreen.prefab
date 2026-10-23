@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 9176840011804894101}
   - component: {fileID: 996734922889315489}
   - component: {fileID: 901053495783342383}
+  - component: {fileID: 3578493373334720109}
   m_Layer: 5
   m_Name: BuildVersion
   m_TagString: Untagged
@@ -150,6 +151,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 40d564d2b82624d56b0e1ab4aadfa93c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Game.View::Game.View.BuildVersionLabel
+--- !u!114 &3578493373334720109
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 194592735267866326}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d81b4c207ea7245e4b7595e50957af2a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.LocalizedFont
+  m_LocalizedAssetReference:
+    m_TableReference:
+      m_TableCollectionName: GameAssets
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: UIFont
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
 --- !u!1 &490957806612242906
 GameObject:
   m_ObjectHideFlags: 0
@@ -237,6 +258,7 @@ GameObject:
   - component: {fileID: 8010584406471889003}
   - component: {fileID: 2940858894444324126}
   - component: {fileID: 7817504867080869984}
+  - component: {fileID: 8984215428524193980}
   m_Layer: 5
   m_Name: GameTitle
   m_TagString: Untagged
@@ -320,6 +342,27 @@ MonoBehaviour:
   _breathScale: 0.035
   _breathSeconds: 1.4
   _introSeconds: 0.7
+--- !u!114 &8984215428524193980
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1847694468750044345}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7b224a795765540efab5a9605f724786, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.LocalizedSpriteImage
+  m_LocalizedAssetReference:
+    m_TableReference:
+      m_TableCollectionName: GameAssets
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: TitleLogo
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+  _entry: TitleLogo
 --- !u!1 &2066102679246873739
 GameObject:
   m_ObjectHideFlags: 0

@@ -27,9 +27,9 @@ namespace Game.View
             if (_checkingPopup == null) { throw new InvalidOperationException("Client policy popup is unavailable."); }
             _checkingRequest = new ConfirmRequest
             {
-                Title = "서버 상태 확인 중",
-                Message = "서버 상태를 확인하고 있습니다. 잠시만 기다려 주세요.",
-                ConfirmLabel = "확인 중",
+                Title = L10n.Get("access.checkingTitle"),
+                Message = L10n.Get("access.checkingMessage"),
+                ConfirmLabel = L10n.Get("access.checkingConfirm"),
                 CannotDismiss = true,
                 ConfirmEnabled = false,
             };
@@ -46,18 +46,18 @@ namespace Game.View
             {
                 Title = decision.State switch
                 {
-                    ClientAccessState.Advisory => "새 버전 안내",
-                    ClientAccessState.UpdateRequired => "업데이트가 필요합니다",
-                    ClientAccessState.Unavailable => "상태 확인 실패",
-                    _ => "서버 점검 안내",
+                    ClientAccessState.Advisory => L10n.Get("access.advisoryTitle"),
+                    ClientAccessState.UpdateRequired => L10n.Get("access.requiredTitle"),
+                    ClientAccessState.Unavailable => L10n.Get("access.unavailableTitle"),
+                    _ => L10n.Get("access.maintenanceTitle"),
                 },
                 Message = !string.IsNullOrWhiteSpace(decision.Message) ? decision.Message
-                    : update ? "새로운 버전으로 업데이트해 주세요." : "서버 점검 중입니다. 잠시 후 다시 확인해 주세요.",
-                ConfirmLabel = update && !string.IsNullOrEmpty(decision.StoreUrl) ? "업데이트" : "다시 확인",
-                CancelLabel = decision.Blocking ? null : "나중에",
+                    : update ? L10n.Get("access.updateMessage") : L10n.Get("access.maintenanceMessage"),
+                ConfirmLabel = update && !string.IsNullOrEmpty(decision.StoreUrl) ? L10n.Get("update.confirm") : L10n.Get("access.retry"),
+                CancelLabel = decision.Blocking ? null : L10n.Get("update.later"),
                 CannotDismiss = decision.Blocking,
             };
-            if (!string.IsNullOrEmpty(decision.EstimatedEnd)) { request.Message += "\n예상 종료: " + decision.EstimatedEnd; }
+            if (!string.IsNullOrEmpty(decision.EstimatedEnd)) { request.Message += "\n" + L10n.Get("access.estimatedEnd", decision.EstimatedEnd); }
             _request = request;
             var popup = _popup;
             using var lifetime = CancellationTokenSource.CreateLinkedTokenSource(

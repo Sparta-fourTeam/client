@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
 
 namespace Game.Core
 {
@@ -14,20 +15,20 @@ namespace Game.Core
         private const int NoUpgradeMaxLevel = 1;
 
         // 장비 칸 순서(오른쪽 2열 6칸 → 왼쪽 1칸)와 표시 이름. 이름은 클라이언트 표시용이다
-        private static readonly (string upgradeId, string name)[] EquipSlots =
+        private static readonly (string upgradeId, string nameKey)[] EquipSlots =
         {
-            ("equipment.hat", "후드"), ("equipment.top", "로브"), ("equipment.shoes", "장화"), ("equipment.weapon", "무기"),
-            ("equipment.ring", "뼈 반지"), ("equipment.tie", "해골 목걸이"), ("equipment.employee_id", "인장"),
+            ("equipment.hat", "equipSlot.hood"), ("equipment.top", "equipSlot.robe"), ("equipment.shoes", "equipSlot.boots"), ("equipment.weapon", "equipSlot.weapon"),
+            ("equipment.ring", "equipSlot.boneRing"), ("equipment.tie", "equipSlot.skullNecklace"), ("equipment.employee_id", "equipSlot.seal"),
         };
 
         private readonly PlayerProfile _profile;
         private readonly GameDataStore _data;
         private readonly List<SkillData> _skillRows; // Skills의 칸과 같은 순서의 스킬 정의 (능력치 계산용)
 
-        public CharacterInfo Character { get; } = new CharacterInfo
+        public CharacterInfo Character => new CharacterInfo
         {
-            Name = "캐릭터",
-            Rank = "네크로맨서", // TODO(data): 임시 직급 이름. 캐릭터 데이터가 생기면 교체
+            Name = L10n.Get("character.defaultName"),
+            Rank = L10n.Get("character.defaultRank"), // TODO(data): 임시 직급 이름. 캐릭터 데이터가 생기면 교체
             Power = 120,
         };
 
@@ -46,23 +47,46 @@ namespace Game.Core
             _data = data;
             // 습득 카드로 나오는 스킬만 칸을 가진다(다른 스킬이 시전하는 자식 스킬은 제외). 해금 레벨 순서로 놓는다.
             // 스킬 정의는 읽을 때마다 파싱·검증하므로 한 번만 읽어 둔다
-            _skillRows = data.LoadSkills()
-                .Where(s => !s.childOnly)
-                .OrderBy(s => s.unlockLevel)
-                .ThenBy(s => s.id)
-                .ToList();
+            // GameDataStore가 추적하는 원래 목록을 보존해 GC 이후에도 표시 문구 갱신을 받는다.
+            _skillRows = data.LoadSkills();
+            _skillRows.RemoveAll(skill => skill.childOnly);
+            _skillRows.Sort((left, right) =>
+            {
+                int unlock = left.unlockLevel.CompareTo(right.unlockLevel);
+                return unlock != 0 ? unlock : left.id.CompareTo(right.id);
+            });
 
             Skills = CreateSkills();
             RefreshSkills();
             _profile.Changed += OnProfileChanged;
+            LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
         }
 
         public void Dispose()
         {
             _profile.Changed -= OnProfileChanged;
+            LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
         }
 
         private void OnProfileChanged(PlayerProfile _) => RefreshSkills();
+
+        private void OnLocaleChanged(Locale locale)
+        {
+            if (locale == null) { return; }
+            // 구독 순서와 무관하게 원본 표시 문구를 먼저 갱신한다. 같은 로케일 적용은 아무것도 하지 않는다.
+            _data.ApplyDisplayLocale(locale.Identifier.Code);
+            for (int i = 0; i < Skills.Count; i++)
+            {
+                var skill = Skills[i];
+                skill.Name = _skillRows[i].name;
+                skill.Description = _skillRows[i].desc ?? string.Empty;
+                if (skill.UpgradeId != null)
+                {
+                    skill.LevelRewards = CreateRewards(skill.Name, _data.Upgrades.GetOrThrow(skill.UpgradeId).MaxLevel);
+                }
+            }
+            RefreshSkills();
+        }
 
         // 스킬 칸의 해금은 플레이어 레벨로 정한다(캐릭터에는 레벨이 없다). 강화 데이터가 있는 스킬은 레벨·비용·능력치도 다시 계산한다.
         // 장비 칸은 Equips를 읽을 때마다 계산한다
@@ -90,7 +114,7 @@ namespace Game.Core
             var list = new List<EquipInfo>();
             for (int i = 0; i < EquipSlots.Length; i++)
             {
-                var (upgradeId, name) = EquipSlots[i];
+                var (upgradeId, nameKey) = EquipSlots[i];
                 var def = _data.Upgrades.GetOrThrow(upgradeId);
                 int level = _profile.UpgradeLevel(upgradeId);
                 bool isMax = level >= def.MaxLevel;
@@ -106,13 +130,14 @@ namespace Game.Core
                         isMax ? null : EquipEffectText.Value(effect, next)));
                 }
 
-                stats.Add(new StatLine("장비 레벨", level.ToString(), isMax ? null : next.ToString()));
+                stats.Add(new StatLine(L10n.Get("equip.statLevel"), level.ToString(), isMax ? null : next.ToString()));
 
                 list.Add(new EquipInfo
                 {
                     Slot = i,
                     UpgradeId = upgradeId,
-                    Name = name,
+                    Name = L10n.Get(nameKey),
+                    NameKey = nameKey,
                     Level = level,
                     MaxLevel = def.MaxLevel,
                     UnlockLevel = def.UnlockLevel,
@@ -184,8 +209,9 @@ namespace Game.Core
             float cooldownDown = next.Cooldown - current.Cooldown;
             return new[]
             {
-                new StatLine("공격력", $"{current.Damage:0.#}", increase: damageUp > 0.001f ? $"+{damageUp:0.#}" : null),
-                new StatLine("쿨타임", $"{current.Cooldown:0.##}초", increase: cooldownDown < -0.001f ? $"{cooldownDown:0.##}초" : null),
+                new StatLine(L10n.Get("skillStat.damage"), $"{current.Damage:0.#}", increase: damageUp > 0.001f ? $"+{damageUp:0.#}" : null),
+                new StatLine(L10n.Get("skillStat.cooldown"), L10n.Get("skillStat.seconds", $"{current.Cooldown:0.##}"),
+                    increase: cooldownDown < -0.001f ? L10n.Get("skillStat.seconds", $"{cooldownDown:0.##}") : null),
             };
         }
 
@@ -206,10 +232,10 @@ namespace Game.Core
             {
                 string text = level switch
                 {
-                    1 => $"[{skillName} 강화] 선택지 잠금해제",
-                    5 or 13 or 21 => "새 강화 선택지 잠금해제",
-                    9 or 17 => "강화 선택지가 (+)로 바뀝니다",
-                    _ => $"{skillName} 공격력 +8%",
+                    1 => L10n.Get("skillReward.unlockChoices", skillName),
+                    5 or 13 or 21 => L10n.Get("skillReward.newChoice"),
+                    9 or 17 => L10n.Get("skillReward.choiceUpgraded"),
+                    _ => L10n.Get("skillReward.damageBonus", skillName),
                 };
                 list.Add(new LevelReward { Level = level, Text = text });
             }

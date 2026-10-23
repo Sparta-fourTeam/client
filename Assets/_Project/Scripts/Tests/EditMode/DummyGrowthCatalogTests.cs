@@ -1,6 +1,7 @@
 using System.Linq;
 using Game.Core;
 using NUnit.Framework;
+using UnityEngine.Localization.Settings;
 
 namespace Game.Tests
 {
@@ -44,6 +45,37 @@ namespace Game.Tests
             _catalog.Dispose();
             _profile.Apply(new PlayerSnapshot { exp = ExpFor(locked.UnlockLevel) });
             Assert.IsFalse(locked.IsUnlocked, "종료된 카탈로그는 새 프로필을 따라가지 않는다");
+        }
+
+        [Test(Description = "언어 전환 때 보관 중인 스킬 객체의 이름·설명·능력치·보상이 갱신되고 수치는 유지된다. 종료 후에는 구독이 남지 않는다")]
+        public void LocaleChangeRefreshesCachedSkillPresentationInPlace()
+        {
+            var original = LocalizationSettings.SelectedLocale;
+            var skills = _catalog.Skills;
+            var skill = skills.First(s => s.UpgradeId != null && s.LevelRewards.Count > 0);
+            string name = skill.Name, description = skill.Description;
+            string stat = skill.Stats[0].Label, reward = skill.LevelRewards[0].Text;
+            var progression = (skill.Level, skill.MaxLevel, skill.CoinCost, skill.MaterialCost, skill.IsUnlocked);
+            string damage = skill.Stats[0].Current;
+            System.GC.Collect(); // 원래 반환 목록이 임시 LINQ 목록으로 대체돼 회수되는 회귀도 확인한다.
+            try
+            {
+                LocalizationSettings.SelectedLocale = LocalizationSettings.AvailableLocales.GetLocale("en");
+                Assert.That(_catalog.Skills, Is.SameAs(skills));
+                Assert.That(skills.First(s => s.Id == skill.Id), Is.SameAs(skill));
+                Assert.That(skill.Name, Is.Not.EqualTo(name));
+                Assert.That(skill.Description, Is.Not.EqualTo(description));
+                Assert.That(skill.Stats[0].Label, Is.Not.EqualTo(stat));
+                Assert.That(skill.LevelRewards[0].Text, Is.Not.EqualTo(reward));
+                Assert.AreEqual(progression, (skill.Level, skill.MaxLevel, skill.CoinCost, skill.MaterialCost, skill.IsUnlocked));
+                Assert.AreEqual(damage, skill.Stats[0].Current);
+
+                string englishName = skill.Name;
+                _catalog.Dispose();
+                LocalizationSettings.SelectedLocale = original;
+                Assert.AreEqual(englishName, skill.Name, "종료한 카탈로그는 언어 변경을 따라가지 않는다");
+            }
+            finally { LocalizationSettings.SelectedLocale = original; }
         }
 
         private void AssertUnlocks()

@@ -1,3 +1,4 @@
+using Game.Core;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -62,7 +63,8 @@ namespace Game.View
                 _tabSelected[i].SetActive(i == index);
             }
 
-            _emptyText.text = index < _emptyMessages.Length ? _emptyMessages[index] : "";
+            if (index < _emptyMessages.Length) { _emptyText.SetL10n(_emptyMessages[index]); }
+            else { _emptyText.text = ""; }
             OnTabSelected(index);
         }
 

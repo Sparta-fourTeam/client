@@ -85,7 +85,7 @@ namespace Game.View
         {
             if (_titleText != null)
             {
-                _titleText.text = $"제 {_data.StageOrFirst(_stageContext.StageId).Id} 관문";
+                _titleText.SetL10n("stage.title", _data.StageOrFirst(_stageContext.StageId).Id);
             }
         }
 
@@ -111,7 +111,7 @@ namespace Game.View
 
             var secured = _rewards.Rewards;
             var rewards = RewardRows.Build(_itemIcons, _data, secured.Coin, secured.Exp, secured.Items, preview: true);
-            _obtainableList.Show(rewards, i => DetailContent.ShowReward(_detail, _data, rewards[i], "지금까지 확보 {0}개"));
+            _obtainableList.Show(rewards, i => DetailContent.ShowReward(_detail, _data, rewards[i], L10n.Get("pause.obtainedCount", "{0}")));
         }
     }
 }

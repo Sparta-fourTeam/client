@@ -9,11 +9,14 @@ namespace Game.Core
         Standard,
     }
 
-    /// <summary>언어 선택지. 실제 문구 번역은 로컬라이징(#193)에서 붙이고, 지금은 선택값만 저장한다. 다른 언어는 나중에 값을 뒤에 추가한다</summary>
+    /// <summary>언어 선택지. 선택값은 이 enum으로 저장하고, 문구 번역은 Localization 패키지가 맡는다(로케일 코드는 GameLanguageLocale).
+    /// 저장된 정수값과 호환되도록 기존 값은 바꾸지 않고 다른 언어는 값을 뒤에 추가한다</summary>
     public enum GameLanguage
     {
         Korean,
         English,
+        Japanese,
+        ChineseSimplified,
     }
 
     /// <summary>정수 설정을 기기에 남기는 저장소. 테스트에서는 메모리 구현으로 바꾼다</summary>
@@ -50,13 +53,16 @@ namespace Game.Core
         private const string DebuffKey = "settings.debuff_effects";
         private const string FrameRateKey = "settings.frame_rate";
         private const string AutoEnterKey = "settings.auto_enter_highest_stage";
-        private const string LanguageKey = "settings.language";
+        /// <summary>언어 저장 키. 시작 로케일 선택기(GameLanguageLocaleSelector)도 같은 키를 읽는다</summary>
+        public const string LanguageKey = "settings.language";
 
         private readonly ISettingsStore _store;
+        private bool _hasSavedLanguage;
 
         public event Action Changed;
 
-        public GameSettings(ISettingsStore store)
+        /// <param name="defaultLanguage">저장된 언어가 없을 때 쓸 언어. 사용자가 고르기 전에는 저장하지 않는다</param>
+        public GameSettings(ISettingsStore store, GameLanguage defaultLanguage = GameLanguage.Korean)
         {
             _store = store;
             DamageIndication = GetBool(DamageKey, true);
@@ -64,8 +70,8 @@ namespace Game.Core
             AutoEnterHighestStage = GetBool(AutoEnterKey, false);
             FrameRate = _store.TryGet(FrameRateKey, out int rate) && Enum.IsDefined(typeof(FrameRateMode), rate)
                 ? (FrameRateMode)rate : FrameRateMode.High;
-            Language = _store.TryGet(LanguageKey, out int language) && Enum.IsDefined(typeof(GameLanguage), language)
-                ? (GameLanguage)language : GameLanguage.Korean;
+            _hasSavedLanguage = _store.TryGet(LanguageKey, out int language) && Enum.IsDefined(typeof(GameLanguage), language);
+            Language = _hasSavedLanguage ? (GameLanguage)language : defaultLanguage;
         }
 
         public bool DamageIndication { get; private set; }
@@ -105,12 +111,15 @@ namespace Game.Core
             Changed?.Invoke();
         }
 
+        /// <summary>선택한 언어를 저장한다. 기본 언어와 같은 명시적 선택도 다음 실행에 유지한다</summary>
         public void SetLanguage(GameLanguage language)
         {
-            if (Language == language) { return; }
+            bool changed = Language != language;
+            if (!changed && _hasSavedLanguage) { return; }
             Language = language;
             _store.Set(LanguageKey, (int)language);
-            Changed?.Invoke();
+            _hasSavedLanguage = true;
+            if (changed) { Changed?.Invoke(); }
         }
 
         private void SaveBool(string key, bool value)

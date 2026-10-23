@@ -1,6 +1,7 @@
 using Cysharp.Threading.Tasks;
 using Game.Core;
 using Game.View;
+using UnityEngine.Localization.Settings;
 using UnityEngine.SceneManagement;
 using VContainer.Unity;
 
@@ -82,6 +83,15 @@ namespace Game.Boot
                 {
                     await _curtain.Open();
                     throw;
+                }
+
+                // 방어선: 초기화(와 Preload 테이블 로드)가 덜 끝났다면 커튼 뒤에서 기다려, 열리는 첫 프레임에 프리팹의 한국어가 보이지 않게 한다.
+                // 핸들을 들고 있지 않고 매번 다시 읽는다: 로케일이 바뀔 때 Localization이 초기화 핸들을 해제한다
+                if (LocalizationSettings.HasSettings && !LocalizationSettings.InitializationOperation.IsDone)
+                {
+                    await UniTask.WaitUntil(() => LocalizationSettings.InitializationOperation.IsDone);
+                    // LocalizeStringEvent의 갱신이 반영되도록 한 프레임 양보한다
+                    await UniTask.Yield();
                 }
 
                 await _curtain.Open();

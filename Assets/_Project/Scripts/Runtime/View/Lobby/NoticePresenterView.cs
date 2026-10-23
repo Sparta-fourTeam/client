@@ -75,7 +75,7 @@ namespace Game.View
             {
                 _notices.ConsumeForceLogout();
                 // 닫는 방법과 상관없이 로그아웃한다
-                await _confirm.ShowAsync(new ConfirmRequest { Title = "로그아웃", Message = "다른 기기에서 로그인되었습니다." });
+                await _confirm.ShowAsync(new ConfirmRequest { Title = L10n.Get("menu.logout"), Message = L10n.Get("notice.forceLogout") });
                 await _account.ForceLogoutAsync();
             }
             finally

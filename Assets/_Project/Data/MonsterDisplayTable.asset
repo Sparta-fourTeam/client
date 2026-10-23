@@ -14,86 +14,86 @@ MonoBehaviour:
   m_EditorClassIdentifier: Game.View::Game.View.MonsterDisplayTable
   _monsters:
   - monsterId: 1
-    displayName: "\uC2AC\uB77C\uC784"
+    displayName: monster.name.slime
     icon: {fileID: 21300000, guid: f6fc5bd0511be024bada5d137fa4efd1, type: 3}
     hideInCodex: 0
   - monsterId: 2
-    displayName: "\uBC15\uC950"
+    displayName: monster.name.bat
     icon: {fileID: 21300000, guid: 51c038e916aa24042b97fb808c9b9dfb, type: 3}
     hideInCodex: 0
   - monsterId: 3
-    displayName: "\uC791\uC740 \uC2AC\uB77C\uC784"
+    displayName: monster.name.slimeSmall
     icon: {fileID: 21300000, guid: f6fc5bd0511be024bada5d137fa4efd1, type: 3}
     hideInCodex: 1
   - monsterId: 4
-    displayName: "\uBFD4 \uC694\uB9C8"
+    displayName: monster.name.hornYokai
     icon: {fileID: 21300000, guid: 4dce97bca4a8f024bb9c7fb5d7a62304, type: 3}
     hideInCodex: 0
   - monsterId: 5
-    displayName: "\uAC70\uBBF8"
+    displayName: monster.name.spider
     icon: {fileID: 21300000, guid: 9d1dfabb9b3efd04d94dfce666331341, type: 3}
     hideInCodex: 0
   - monsterId: 6
-    displayName: "\uC791\uC740 \uAC70\uBBF8"
+    displayName: monster.name.spiderSmall
     icon: {fileID: 21300000, guid: 9d1dfabb9b3efd04d94dfce666331341, type: 3}
     hideInCodex: 1
   - monsterId: 11
-    displayName: "\uC2AC\uB77C\uC784"
+    displayName: monster.name.slime
     icon: {fileID: -8215510745074873636, guid: 38e7a13c9ba4b614eaa5372079d4b154, type: 3}
     hideInCodex: 0
   - monsterId: 12
-    displayName: "\uBC15\uC950"
+    displayName: monster.name.bat
     icon: {fileID: 1289800932146914806, guid: 38e7a13c9ba4b614eaa5372079d4b154, type: 3}
     hideInCodex: 0
   - monsterId: 13
-    displayName: "\uBFD4 \uC694\uB9C8"
+    displayName: monster.name.hornYokai
     icon: {fileID: 21300000, guid: 4dce97bca4a8f024bb9c7fb5d7a62304, type: 3}
     hideInCodex: 0
   - monsterId: 14
-    displayName: "\uAC70\uBBF8"
+    displayName: monster.name.spider
     icon: {fileID: 21300000, guid: 9d1dfabb9b3efd04d94dfce666331341, type: 3}
     hideInCodex: 0
   - monsterId: 15
-    displayName: "\uAC11\uC637 \uAC8C"
+    displayName: monster.name.armorCrab
     icon: {fileID: 21300000, guid: eb0f05d433819c142bcb40491231eab5, type: 3}
     hideInCodex: 0
   - monsterId: 16
-    displayName: "\uB1CC \uAC70\uBBF8"
+    displayName: monster.name.brainSpider
     icon: {fileID: 21300000, guid: a29d45d8a945d634dba0ba48996afbdf, type: 3}
     hideInCodex: 0
   - monsterId: 17
-    displayName: "\uB208 \uD574\uD30C\uB9AC"
+    displayName: monster.name.eyeJellyfish
     icon: {fileID: 21300000, guid: ec87a51f42a40764a98ff1f5d66e9e48, type: 3}
     hideInCodex: 0
   - monsterId: 18
-    displayName: "\uC720\uB839"
+    displayName: monster.name.ghost
     icon: {fileID: 21300000, guid: 1eb3fe2cd5db2504686ca4ee20453a61, type: 3}
     hideInCodex: 0
   - monsterId: 19
-    displayName: "\uACE8\uB818"
+    displayName: monster.name.golem
     icon: {fileID: 21300000, guid: 8b6da33f4d0876d4ca8d82b075ef3814, type: 3}
     hideInCodex: 0
   - monsterId: 21
-    displayName: "\uAC11\uC637 \uAC8C"
+    displayName: monster.name.armorCrab
     icon: {fileID: 21300000, guid: eb0f05d433819c142bcb40491231eab5, type: 3}
     hideInCodex: 0
   - monsterId: 22
-    displayName: "\uB1CC \uAC70\uBBF8"
+    displayName: monster.name.brainSpider
     icon: {fileID: 21300000, guid: a29d45d8a945d634dba0ba48996afbdf, type: 3}
     hideInCodex: 0
   - monsterId: 23
-    displayName: "\uB208 \uD574\uD30C\uB9AC"
+    displayName: monster.name.eyeJellyfish
     icon: {fileID: 21300000, guid: ec87a51f42a40764a98ff1f5d66e9e48, type: 3}
     hideInCodex: 0
   - monsterId: 24
-    displayName: "\uC720\uB839"
+    displayName: monster.name.ghost
     icon: {fileID: 21300000, guid: 1eb3fe2cd5db2504686ca4ee20453a61, type: 3}
     hideInCodex: 0
   - monsterId: 25
-    displayName: "\uACE8\uB818"
+    displayName: monster.name.golem
     icon: {fileID: 21300000, guid: 8b6da33f4d0876d4ca8d82b075ef3814, type: 3}
     hideInCodex: 0
   - monsterId: 100
-    displayName: "\uD574\uACE8"
+    displayName: monster.name.skeleton
     icon: {fileID: 21300000, guid: 317d60322d7f2ca4ca6884267bc563d7, type: 3}
     hideInCodex: 0

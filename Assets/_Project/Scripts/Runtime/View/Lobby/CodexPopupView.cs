@@ -66,7 +66,7 @@ namespace Game.View
             var monsters = _data.Monsters.Values.Where(m => m.GetEnemyType() == Grade && !IsHidden(m.Id))
                 .OrderBy(m => m.Hp).ThenBy(m => m.Damage).ThenBy(m => m.Id).ToList();
             int discovered = monsters.Count(m => _profile.IsMonsterRegistered(m.Id));
-            _progressText.text = $"발견 {discovered} / {monsters.Count}";
+            _progressText.SetL10n("codex.progress", discovered, monsters.Count);
             EmptyLabel.gameObject.SetActive(monsters.Count == 0);
             while (_slots.Count < monsters.Count) { _slots.Add(Instantiate(_slotTemplate, _grid, false)); }
             for (int i = 0; i < _slots.Count; i++)
@@ -76,7 +76,7 @@ namespace Game.View
                 bool known = _profile.IsMonsterRegistered(id);
                 MonsterDisplayTable.MonsterEntry entry = null;
                 if (_display != null) { _display.TryGetMonster(id, out entry); }
-                var item = new StageMonsterItem(entry?.icon, entry?.displayName ?? $"#{id}", monsters[i].IsBoss, id);
+                var item = new StageMonsterItem(entry?.icon, entry?.LocalizedName ?? $"#{id}", monsters[i].IsBoss, id);
                 _slots[i].Bind(id, item.Icon, known,
                     () => DetailContent.ShowMonster(_detail, _data, _display, item));
             }

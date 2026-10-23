@@ -72,7 +72,6 @@ namespace Game.Editor
             ["ConfirmPopup"] = "확인 팝업",
             ["ContentUnlock"] = "콘텐츠 해금",
             ["DialogueScene"] = "대화 장면",
-            ["LanguagePopup"] = "언어 선택",
             ["LevelUpBurst"] = "레벨 업 연출",
             ["LevelUpPopup"] = "레벨 업",
             ["TutorialGuide"] = "튜토리얼 안내",

@@ -21,7 +21,8 @@ namespace Game.View
 
         private void Start()
         {
-            _label.text = _stage != null ? $"Stage {_stage.Id}" : string.Empty;
+            if (_stage != null) { _label.SetL10n("hud.stage", _stage.Id); }
+            else { _label.text = string.Empty; }
         }
     }
 }

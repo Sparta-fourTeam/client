@@ -23,7 +23,7 @@ repos:
 
       - id: check-added-large-files
         args: [--maxkb=5000]
-        exclude: \.(png|jpg|jpeg|fbx|wav|mp3|unity|asset|meta)$
+        exclude: \.(png|jpg|jpeg|fbx|wav|mp3|ttf|otf|unity|asset|meta)$
 
   - repo: https://github.com/compilerla/conventional-pre-commit
     rev: v3.4.0

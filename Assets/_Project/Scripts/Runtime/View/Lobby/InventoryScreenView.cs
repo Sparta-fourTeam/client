@@ -161,7 +161,7 @@ namespace Game.View
                 InventoryCategory.EquipmentMaterial when _nav != null => _nav.OpenCharacter,
                 _ => null,
             };
-            _detail.Show(IconOf(item), item.Name, $"보유 {CurrencyFormat.Format(item.Quantity)}개", ItemInfo.DescriptionOf(item.ItemId), go);
+            _detail.Show(IconOf(item), item.Name, L10n.Get("inventory.owned", CurrencyFormat.Format(item.Quantity)), ItemInfo.DescriptionOf(item.ItemId), go);
         }
     }
 }

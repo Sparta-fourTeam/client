@@ -27,7 +27,6 @@ namespace Game.View
         private TMP_Text _purchaseRemaining, _description;
         private GameObject _adRemaining;
         private TMP_Text _purchaseLabel;
-        private string _localLabel;
 
         [Inject]
         public void Construct(EnergyRecovery energyRecovery, PlayerProfile profile, ISubscriber<LobbyRequestFailed> requestFailed)
@@ -40,7 +39,6 @@ namespace Game.View
         {
             _panel.SetActive(false);
             _purchaseLabel = _purchaseButton.GetComponentInChildren<TMP_Text>(true);
-            _localLabel = _purchaseLabel != null ? _purchaseLabel.text : null;
             _purchaseRemaining = _purchaseTitle.transform.parent.Find("RemainingText")?.GetComponent<TMP_Text>();
             _adRemaining = _adTitle.transform.parent.Find("RemainingText")?.gameObject;
             _description = _panel.transform.Find("Window/DescText")?.GetComponent<TMP_Text>();
@@ -52,8 +50,8 @@ namespace Game.View
         {
             _version++;
             _expiredRefreshAttempt = null;
-            _adTitle.text = $"잉크펜 x{_profile.EnergyConfig.AdRecoverAmount}";
-            _purchaseTitle.text = $"잉크펜 x{_profile.EnergyConfig.PurchaseRecoverAmount}";
+            _adTitle.SetL10n("energy.recover.inkPenAmount", _profile.EnergyConfig.AdRecoverAmount);
+            _purchaseTitle.SetL10n("energy.recover.inkPenAmount", _profile.EnergyConfig.PurchaseRecoverAmount);
             PopupPanel.Set(_panel, _transition, true);
             if (_energyRecovery.UsesServerPurchase) { RefreshAsync(_version).Forget(); }
             else { Render(); }
@@ -103,23 +101,26 @@ namespace Game.View
             if (!_energyRecovery.UsesServerPurchase)
             {
                 _purchaseButton.interactable = !_busy;
-                if (_purchaseLabel != null) { _purchaseLabel.text = _localLabel; }
+                if (_purchaseLabel != null) { _purchaseLabel.SetL10n("energy.recover.gem"); }
+                if (_description != null) { _description.SetL10n("energy.recover.desc"); }
+                if (_purchaseRemaining != null) { _purchaseRemaining.SetL10n("energy.recover.remaining"); }
+                if (_adRemaining != null && _adRemaining.TryGetComponent<TMP_Text>(out var adRemainingText)) { adRemainingText.SetL10n("energy.recover.remaining"); }
                 return;
             }
             var state = _energyRecovery.PurchaseState;
             bool pending = _energyRecovery.HasPendingPurchase;
             _purchaseButton.interactable = !_busy && (pending || state == null
                 || state.RemainingSeconds <= 0 || state.RemainingPurchases > 0 && _profile.Gems >= state.GemCost);
-            _purchaseTitle.text = state != null ? $"잉크펜 x{state.EnergyGranted}" : "에너지 구매";
+            _purchaseTitle.text = state != null ? L10n.Get("energy.recover.inkPenAmount", state.EnergyGranted) : L10n.Get("energy.recover.purchaseTitle");
             if (_adRemaining != null) { _adRemaining.SetActive(false); }
             if (_purchaseRemaining != null)
-            { _purchaseRemaining.text = state != null ? $"남은 횟수 {state.RemainingPurchases}/{state.DailyLimit}" : "횟수 확인 중"; }
+            { _purchaseRemaining.text = state != null ? L10n.Get("common.remainingCount", $"{state.RemainingPurchases}/{state.DailyLimit}") : L10n.Get("energy.recover.checkingCount"); }
             var remaining = TimeSpan.FromSeconds(Math.Ceiling(state?.RemainingSeconds ?? 0));
             string countdown = $"{(int)remaining.TotalHours:00}:{remaining.Minutes:00}:{remaining.Seconds:00}";
             if (_description != null)
-            { _description.text = state != null ? $"초기화까지 {countdown}" : pending ? "같은 구매 결과를 확인합니다" : "구매 정보를 다시 확인해 주세요"; }
-            string label = _busy ? "확인 중" : pending ? "결과 확인" : state == null || state.RemainingSeconds <= 0 ? "정보 확인"
-                : $"젬 {state.GemCost}";
+            { _description.text = state != null ? L10n.Get("energy.recover.resetIn", countdown) : pending ? L10n.Get("energy.recover.confirmingSame") : L10n.Get("energy.recover.recheck"); }
+            string label = _busy ? L10n.Get("common.checking") : pending ? L10n.Get("energy.recover.checkResult") : state == null || state.RemainingSeconds <= 0 ? L10n.Get("energy.recover.checkInfo")
+                : L10n.Get("energy.recover.gemCost", state.GemCost);
             if (_purchaseLabel != null) { _purchaseLabel.text = label; }
         }
         protected override void DisposeView() { _version++; }

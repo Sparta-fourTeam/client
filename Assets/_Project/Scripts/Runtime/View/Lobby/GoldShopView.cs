@@ -87,9 +87,9 @@ namespace Game.View
 
                 int index = i;
                 var pack = config.GoldPacks[i];
-                _items[i].Bind("잉크", _itemIcons != null ? _itemIcons.Coin : null, pack.Gold, ShopRules.GoldPackPrice(config, pack),
+                _items[i].Bind(() => L10n.Get("currency.ink"), _itemIcons != null ? _itemIcons.Coin : null, pack.Gold, ShopRules.GoldPackPrice(config, pack),
                     pack.DiscountPercent, false, !_busy, () => BuyAsync(index).Forget(Debug.LogException),
-                    () => _detail?.Show(_itemIcons != null ? _itemIcons.Coin : null, "잉크", $"x{pack.Gold:N0}", ItemInfo.DescriptionOf(RewardRows.CoinId)));
+                    () => _detail?.Show(_itemIcons != null ? _itemIcons.Coin : null, L10n.Get("currency.ink"), $"x{pack.Gold:N0}", ItemInfo.DescriptionOf(RewardRows.CoinId)));
             }
         }
 
@@ -104,10 +104,10 @@ namespace Game.View
             Refresh();
             bool confirmed = _confirm == null || await _confirm.ShowAsync(new ConfirmRequest
             {
-                Title = "구매",
-                Message = $"잉크 x{pack.Gold:N0}을(를)\n{price:N0}잼에 구매할까요?",
-                ConfirmLabel = "구매",
-                CancelLabel = "취소",
+                Title = L10n.Get("shop.buy"),
+                Message = L10n.Get("shop.buyConfirm", $"{L10n.Get("currency.ink")} x{pack.Gold:N0}", L10n.Get("shop.gemPrice", price.ToString("N0"))),
+                ConfirmLabel = L10n.Get("shop.buy"),
+                CancelLabel = L10n.Get("common.cancel"),
             });
             if (!confirmed)
             {
@@ -134,11 +134,11 @@ namespace Game.View
             if (error == null)
             {
                 _rewardPopup?.Show(new List<ResultRewardItem> { new(_itemIcons != null ? _itemIcons.Coin : null, pack.Gold, RewardRows.CoinId) },
-                    "잉크를 구매했어요.", "구매 완료");
+                    L10n.Get("shop.inkPurchased"), L10n.Get("shop.purchaseDone"));
             }
             else if (error == "INSUFFICIENT_GEMS" && _confirm != null)
             {
-                await _confirm.ShowAsync(new ConfirmRequest { Title = "구매", Message = "잼이 부족해요." });
+                await _confirm.ShowAsync(new ConfirmRequest { Title = L10n.Get("shop.buy"), Message = L10n.Get("shop.notEnoughGems") });
             }
         }
 
@@ -162,7 +162,7 @@ namespace Game.View
                         };
                         rewards.Add(new ResultRewardItem(icon, reward.Count, reward.ItemId));
                     }
-                    _rewardPopup?.Show(rewards, "물품을 구매했어요.", "구매 완료");
+                    _rewardPopup?.Show(rewards, L10n.Get("shop.purchased"), L10n.Get("shop.purchaseDone"));
                 }
             }
             catch (ApiException) { }
@@ -181,11 +181,11 @@ namespace Game.View
                 if (!exists) { continue; }
                 int index = i;
                 var pack = catalog.Packs[i];
-                _items[i].Bind("잉크", _itemIcons != null ? _itemIcons.Coin : null, pack.Gold,
+                _items[i].Bind(() => L10n.Get("currency.ink"), _itemIcons != null ? _itemIcons.Coin : null, pack.Gold,
                     pack.GemPrice, pack.DiscountPercent, false,
                     !_busy && !_server.IsBusy && !_server.HasPending,
                     () => BuyAsync(index).Forget(Debug.LogException),
-                    () => _detail?.Show(_itemIcons != null ? _itemIcons.Coin : null, "잉크",
+                    () => _detail?.Show(_itemIcons != null ? _itemIcons.Coin : null, L10n.Get("currency.ink"),
                         $"x{pack.Gold:N0}", ItemInfo.DescriptionOf(RewardRows.CoinId)));
             }
         }
@@ -203,10 +203,10 @@ namespace Game.View
             {
                 confirmed = _confirm == null || await _confirm.ShowAsync(new ConfirmRequest
                 {
-                    Title = "구매",
-                    Message = $"잉크 x{pack.Gold:N0}을(를)\n{pack.GemPrice:N0}잼에 구매할까요?",
-                    ConfirmLabel = "구매",
-                    CancelLabel = "취소"
+                    Title = L10n.Get("shop.buy"),
+                    Message = L10n.Get("shop.buyConfirm", $"{L10n.Get("currency.ink")} x{pack.Gold:N0}", L10n.Get("shop.gemPrice", pack.GemPrice.ToString("N0"))),
+                    ConfirmLabel = L10n.Get("shop.buy"),
+                    CancelLabel = L10n.Get("common.cancel")
                 });
             }
             finally { _busy = false; if (this != null) { Refresh(); } }
@@ -223,10 +223,10 @@ namespace Game.View
             {
                 _rewardPopup?.Show(new List<ResultRewardItem>
                 { new(_itemIcons != null ? _itemIcons.Coin : null, result.Rewards[0].Count, RewardRows.CoinId) },
-                    "잉크를 구매했어요.", "구매 완료");
+                    L10n.Get("shop.inkPurchased"), L10n.Get("shop.purchaseDone"));
             }
             else if (result?.ErrorCode == "INSUFFICIENT_GEMS" && _confirm != null)
-            { await _confirm.ShowAsync(new ConfirmRequest { Title = "구매", Message = "잼이 부족해요." }); }
+            { await _confirm.ShowAsync(new ConfirmRequest { Title = L10n.Get("shop.buy"), Message = L10n.Get("shop.notEnoughGems") }); }
         }
     }
 }

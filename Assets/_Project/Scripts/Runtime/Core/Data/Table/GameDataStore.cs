@@ -11,7 +11,12 @@ namespace Game.Core
     {
         private static readonly string[] TableNames = { "Monsters", "Stages", "Upgrades", "Energy", "Combat", "GeneralCards", "Skills", "Items", "StageRewards", "RewardRules", "PlayerLevels", "CodexRewards", "Tutorials", "Quests", "Shop" };
         private readonly Dictionary<string, string> _rawJson;
-        private readonly DisplayTexts _texts;
+        private DisplayTexts _texts;
+        private string _displayLocale;
+        private readonly Dictionary<string, DisplayTexts> _textCache = new();
+        private readonly Dictionary<string, List<TutorialPresentation>> _presentationCache = new();
+        // LoadSkills가 내준 목록. 로케일이 바뀌면 이 객체들의 이름·설명을 제자리에서 갱신한다(해제된 것은 건너뛴다)
+        private readonly List<WeakReference<List<SkillData>>> _issuedSkills = new();
         private readonly Dictionary<string, int> _skillUnlockLevels;
 
         public Dictionary<string, int> Revisions { get; }
@@ -102,8 +107,12 @@ namespace Game.Core
         [VContainer.Inject]
         public GameDataStore() : this(LoadLocalTables()) { }
 
-        /// <summary>공급받은 원문으로 런타임 테이블을 만든다. 전투 원본은 HTTP 공급자가 덮어쓴다.</summary>
-        public GameDataStore(IReadOnlyDictionary<string, string> tables)
+        /// <summary>로컬 테이블에 표시 문구 로케일을 지정해 구성한다(Root가 시작 로케일로 만든다)</summary>
+        public GameDataStore(string displayLocale) : this(LoadLocalTables(), displayLocale) { }
+
+        /// <summary>공급받은 원문으로 런타임 테이블을 만든다. 전투 원본은 HTTP 공급자가 덮어쓴다.
+        /// displayLocale은 표시 문구의 로케일이고 기본 ko라 기기 언어와 무관하게 동작한다</summary>
+        public GameDataStore(IReadOnlyDictionary<string, string> tables, string displayLocale = DisplayTexts.BaseLocale)
         {
             if (tables == null) { throw new ArgumentNullException(nameof(tables)); }
             _rawJson = new Dictionary<string, string>();
@@ -116,9 +125,8 @@ namespace Game.Core
 
             BattleSourceRevision = BattleSourceFingerprint.Compute(_rawJson["Stages"], _rawJson["Monsters"], _rawJson["Combat"]);
 
-            var textAsset = Resources.Load<TextAsset>("ClientData/DisplayTexts")
-                ?? throw new InvalidOperationException("Resources/ClientData/DisplayTexts.json을 찾을 수 없습니다");
-            _texts = JsonConvert.DeserializeObject<DisplayTexts>(textAsset.text);
+            _displayLocale = string.IsNullOrEmpty(displayLocale) ? DisplayTexts.BaseLocale : displayLocale;
+            _texts = LoadTexts(_displayLocale);
 
             var monsters = ParseIndexed<int, MonsterDefinition>("Monsters", d => d.Id);
             foreach (var monster in monsters.Values)
@@ -205,10 +213,7 @@ namespace Game.Core
             }
 
             Tutorials = tutorials;
-            var presentationAsset = Resources.Load<TextAsset>("ClientData/TutorialPresentations")
-                ?? throw new InvalidOperationException("Resources/ClientData/TutorialPresentations.json을 찾을 수 없습니다");
-            TutorialPresentations = new TutorialPresentationTable(
-                JsonConvert.DeserializeObject<List<TutorialPresentation>>(presentationAsset.text), tutorials);
+            TutorialPresentations = new TutorialPresentationTable(LoadPresentations(_displayLocale), tutorials);
 
             var codexRewards = ParseIndexed<EnemyType, CodexRewardRow>("CodexRewards", d => d.GetGrade());
             foreach (var row in codexRewards.Values) { row.Validate(); }
@@ -298,6 +303,41 @@ namespace Game.Core
 
         public string RawJson(string name) => _rawJson[name];
 
+        // 로케일별 캐시에는 ko 폴백이 합쳐진 결과를 둔다. 캐시의 표는 읽기만 하고 객체에는 문자열을 복사해 넣는다
+        private DisplayTexts LoadTexts(string locale)
+        {
+            if (!_textCache.TryGetValue(locale, out var texts)) { _textCache[locale] = texts = DisplayTexts.Load(locale); }
+            return texts;
+        }
+
+        private List<TutorialPresentation> LoadPresentations(string locale)
+        {
+            if (!_presentationCache.TryGetValue(locale, out var rows)) { _presentationCache[locale] = rows = TutorialPresentationTable.Load(locale); }
+            // 표가 행 객체를 그대로 쥐므로 호출마다 사본을 준다(캐시 객체를 갱신 대상과 공유하지 않는다)
+            return JsonConvert.DeserializeObject<List<TutorialPresentation>>(JsonConvert.SerializeObject(rows));
+        }
+
+        /// <summary>표시 문구(스킬·카드·아이템 이름·설명, 튜토리얼 대사)를 로케일로 다시 적용한다. 이미 만들어진 객체를 제자리에서 갱신하고
+        /// 숫자·식별자는 건드리지 않는다. 번역 파일이 없거나 항목이 비면 ko 값을 쓴다. 같은 로케일이면 아무것도 하지 않는다</summary>
+        public void ApplyDisplayLocale(string localeCode)
+        {
+            string locale = string.IsNullOrEmpty(localeCode) ? DisplayTexts.BaseLocale : localeCode;
+            if (locale == _displayLocale) { return; }
+
+            var texts = LoadTexts(locale);
+            var presentations = LoadPresentations(locale);
+            _texts = texts;
+            _displayLocale = locale;
+            texts.ApplyTo(Items.Values);
+            texts.ApplyTo(GeneralCards);
+            TutorialPresentations.ApplyTexts(presentations);
+            _issuedSkills.RemoveAll(r => !r.TryGetTarget(out _));
+            foreach (var reference in _issuedSkills)
+            {
+                if (reference.TryGetTarget(out var skills)) { texts.ApplyTo(skills); }
+            }
+        }
+
         /// <summary>장비 재료의 대상은 Upgrades.MaterialItemId에서 역으로 찾는다. 한 재료가 여러 장비에 연결되면 로드를 거절한다.</summary>
         public static void ResolveEquipmentMaterialTargets(IEnumerable<UpgradeDefinition> upgrades, IReadOnlyDictionary<string, ItemDefinition> items)
         {
@@ -383,7 +423,13 @@ namespace Game.Core
         public int UnlockLevelOf(UpgradeDefinition def) => UpgradeUnlockRule.LevelOf(def, _skillUnlockLevels);
 
         /// <summary>스킬 정의 목록. 호출마다 새 객체를 만들고 카탈로그 검증을 통과해야 돌려준다</summary>
-        public List<SkillData> LoadSkills() => ParseSkills(_rawJson["Skills"], _texts);
+        public List<SkillData> LoadSkills()
+        {
+            var skills = ParseSkills(_rawJson["Skills"], _texts);
+            _issuedSkills.RemoveAll(r => !r.TryGetTarget(out _));
+            _issuedSkills.Add(new WeakReference<List<SkillData>>(skills));
+            return skills;
+        }
 
         /// <summary>texts가 있으면 검증 전에 이름·설명을 채운다(검증이 카드·변형 이름을 본다)</summary>
         public static List<SkillData> ParseSkills(string json, DisplayTexts texts = null)

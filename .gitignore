@@ -81,11 +81,16 @@ InitTestScene*.unity*
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
 
 # ----- Addressables -----
+# Relocated settings still cause Addressables to generate its default editor profile cache.
+/[Aa]ssets/AddressableAssetsData.meta
+/[Aa]ssets/AddressableAssetsData/ProfileDataSourceSettings.asset*
 /ServerData
 /[Aa]ssets/StreamingAssets/aa*
 /[Aa]ssets/AddressableAssetsData/link.xml*
+/[Aa]ssets/_Project/AddressableAssetsData/link.xml*
 /[Aa]ssets/Addressables_Temp*
 /[Aa]ssets/AddressableAssetsData/*/*.bin*
+/[Aa]ssets/_Project/AddressableAssetsData/*/*.bin*
 
 # ----- Visual Scripting -----
 /[Aa]ssets/Unity.VisualScripting.Generated/VisualScripting.Flow/UnitOptions.db

@@ -156,10 +156,11 @@ namespace Game.View
         private void Refresh()
         {
             if (_chat == null) { return; }
-            _status.text = _chat.Status;
+            _status.SetL10n(_chat.StatusKey);
             _status.gameObject.SetActive(!_chat.IsConnected);
-            _presence.text = _chat.OnlineCount.HasValue ? $"접속자 {_chat.OnlineCount.Value:N0}명"
-                : _chat.IsConnected ? "접속자 확인 중" : "";
+            if (_chat.OnlineCount.HasValue) { _presence.SetL10n("chat.online", _chat.OnlineCount.Value.ToString("N0")); }
+            else if (_chat.IsConnected) { _presence.SetL10n("chat.checking"); }
+            else { _presence.text = ""; }
             _retryButton.gameObject.SetActive(!_chat.IsConnected);
             RefreshSend();
             if (!_panel.activeSelf) { return; }

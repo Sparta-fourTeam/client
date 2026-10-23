@@ -39,15 +39,15 @@ namespace Game.View
 
         public void ShowDetails(GameDataStore data, int stageId)
         {
-            _title.text = $"제 {stageId} 관문";
-            if (_description != null) { _description.text = "등장 요마와 클리어 시 획득할 수 있는 보상을 확인하세요."; }
+            _title.SetL10n("mission.stageTitle", stageId.ToString());
+            if (_description != null) { _description.SetL10n("mission.detailsHint"); }
             _data = data;
             ShowBonuses(data.Stages.GetOrThrow(stageId));
             var monsters = MonsterRows.Build(_monsterDisplay, data, stageId);
             _monsters.Show(monsters, i => DetailContent.ShowMonster(_detail, _data, _monsterDisplay, monsters[i]));
             var maximum = StageRewardRules.Maximum(data.StageRewards.GetOrThrow(stageId));
             var rewards = RewardRows.Build(_itemIcons, data, maximum.Coin, maximum.Exp, maximum.Items, maximum.BonusExp, preview: true);
-            _rewards.Show(rewards, i => DetailContent.ShowReward(_detail, _data, rewards[i], "최대 {0}개 획득"));
+            _rewards.Show(rewards, i => DetailContent.ShowReward(_detail, _data, rewards[i], L10n.Get("mission.maxGain", "{0}")));
             Show();
         }
 
@@ -61,17 +61,17 @@ namespace Game.View
                 return;
             }
 
-            var lines = new System.Collections.Generic.List<string>();
+            var bonuses = new System.Collections.Generic.List<(MonsterStat Stat, int Percent)>();
             foreach (var bonus in stage.MonsterBonuses ?? new System.Collections.Generic.List<MonsterBonus>())
             {
-                lines.Add(MonsterBonusText.Line(bonus.GetStat(), bonus.Percent));
+                bonuses.Add((bonus.GetStat(), bonus.Percent));
             }
 
-            _bonus.SetActive(lines.Count > 0);
-            _bonusText.text = string.Join("\n", lines);
+            _bonus.SetActive(bonuses.Count > 0);
+            _bonusText.SetL10n(() => string.Join("\n", bonuses.ConvertAll(b => MonsterBonusText.Line(b.Stat, b.Percent))));
             if (_bonus.TryGetComponent<LayoutElement>(out var layout))
             {
-                layout.preferredHeight = layout.minHeight = lines.Count * BonusLineHeight + BonusPadding;
+                layout.preferredHeight = layout.minHeight = bonuses.Count * BonusLineHeight + BonusPadding;
             }
         }
 

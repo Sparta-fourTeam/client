@@ -93,6 +93,8 @@ namespace Game.Tests
         private LoginMethod _credentialMethod;
         private string _credentialAccountId;
         private bool _restoreConsentPreference, _hadConsentPreference;
+        private bool _restoreLanguagePreference, _hadLanguagePreference;
+        private int _languagePreference;
         private string _consentPreference;
         private ILoginConsentStore _consents;
         private static readonly FieldInfo StorePath = typeof(LocalSaveStore).GetField("_filePath", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -509,8 +511,6 @@ namespace Game.Tests
             string upgradeId = guideTutorial.Complete.UpgradeId;
             var upgrade = data.Upgrades.GetOrThrow(upgradeId);
             int tutorialLevel = intro.Rewards.Single(r => r.Kind == TutorialReward.SetLevel).Level;
-            // 레벨업으로 열린 무기와 강화 안내 대상(받은 재료)은 다른 스킬일 수 있다
-            string weapon = data.LoadSkills().Single(skill => !skill.childOnly && skill.unlockLevel == tutorialLevel).name;
             yield return StartFromBoot(save =>
             {
                 save.tutorials = new List<string>();
@@ -518,6 +518,8 @@ namespace Game.Tests
                 save.wallet.gold = 0;
             });
             var lobby = Object.FindAnyObjectByType<LobbyLifetimeScope>();
+            // 레벨업으로 열린 무기와 강화 안내 대상(받은 재료)은 다른 스킬일 수 있다. 표시 이름은 언어를 고정한 뒤의 데이터에서 읽는다
+            string weapon = lobby.Container.Resolve<GameDataStore>().LoadSkills().Single(skill => !skill.childOnly && skill.unlockLevel == tutorialLevel).name;
             var profile = lobby.Container.Resolve<PlayerProfile>();
             var ui = lobby.Container.Resolve<IUiRegistry>();
             var levelUp = ui.Get<LevelUpPopupView>();
@@ -1714,9 +1716,163 @@ namespace Game.Tests
             Assert.That(Object.FindObjectsByType<UiHost>().Length, Is.EqualTo(1));
         }
 
-        // seed가 없으면 튜토리얼을 마친 계정으로 시작한다. 튜토리얼 중인 새 계정은 로비 대신 1스테이지로 들어간다
-        private IEnumerator StartFromBoot(Action<LocalSave> seed = null, string expectedScene = "Lobby", bool allowAnalytics = false)
+        [UnityTest]
+        public IEnumerator Language_SelectingDisplayedFallbackPersistsExplicitChoice()
         {
+            yield return StartFromBoot();
+            var store = new LanguageSelectionStore();
+            var settings = new GameSettings(store, GameLanguage.Japanese);
+            var canvas = new GameObject("LanguageSelectionCanvas", typeof(RectTransform), typeof(Canvas));
+            try
+            {
+                var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/UI/Lobby/SettingsPopup.prefab");
+                var instance = Object.Instantiate(prefab, canvas.transform);
+                var view = instance.GetComponent<SettingsPopupView>();
+                view.Construct(Object.FindAnyObjectByType<RootLifetimeScope>().Container.Resolve<SoundSettings>(), settings);
+                view.Initialize();
+                view.Open();
+                yield return null; // 활성화된 TMP 드롭다운의 Start가 실행된 뒤 실제 선택 목록을 연다.
+                var dropdown = Field<TMP_Dropdown>(view, "_languageDropdown");
+                dropdown.Show();
+                yield return WaitFor(() => dropdown.GetComponentsInChildren<UnityEngine.UI.Toggle>().Any());
+                Assert.IsFalse(store.Values.ContainsKey(GameSettings.LanguageKey), "선택지를 열기만 하면 기본값을 저장하지 않는다");
+                var selected = dropdown.GetComponentsInChildren<UnityEngine.UI.Toggle>().Single(toggle => toggle.isOn);
+                ExecuteEvents.Execute(selected.gameObject, new PointerEventData(EventSystem.current)
+                { button = PointerEventData.InputButton.Left }, ExecuteEvents.pointerClickHandler);
+                yield return null;
+                Assert.AreEqual((int)GameLanguage.Japanese, store.Values[GameSettings.LanguageKey]);
+                Assert.AreEqual(GameLanguage.Japanese, new GameSettings(store, GameLanguage.English).Language,
+                    "같은 항목을 명시적으로 누른 뒤에는 시스템 언어가 달라져도 선택을 유지한다");
+            }
+            finally { Object.Destroy(canvas); }
+            yield return null;
+        }
+
+        private sealed class LanguageSelectionStore : ISettingsStore
+        {
+            public readonly Dictionary<string, int> Values = new();
+            public bool TryGet(string key, out int value) => Values.TryGetValue(key, out value);
+            public void Set(string key, int value) => Values[key] = value;
+        }
+
+        [UnityTest]
+        public IEnumerator Language_ChangeUpdatesVisibleTextInPlaceWithoutReload()
+        {
+            // 언어를 바꿔도 씬을 다시 로드하지 않고, 화면에 보이는 문구가 모두 새 언어로 바뀐다(한글이 남지 않는다)
+            yield return StartFromBoot();
+            var settings = Object.FindAnyObjectByType<RootLifetimeScope>().Container.Resolve<GameSettings>();
+            var host = Object.FindAnyObjectByType<UiHost>();
+            var hangul = new System.Text.RegularExpressions.Regex("[\\uAC00-\\uD7A3]");
+
+            System.Collections.Generic.List<UnityEngine.UI.Button> NavButtons()
+            {
+                var found = new System.Collections.Generic.List<UnityEngine.UI.Button>();
+                foreach (var button in Object.FindObjectsByType<UnityEngine.UI.Button>(FindObjectsInactive.Exclude))
+                {
+                    // 잠긴 탭을 덮는 자물쇠 판은 누를 때마다 일시적인 토스트를 새로 띄우므로 제외한다
+                    if (button.name.Contains("Lock")) { continue; }
+                    for (var tr = button.transform; tr != null; tr = tr.parent)
+                    {
+                        if (tr.name == "LobbyBottomNav") { found.Add(button); break; }
+                    }
+                }
+                return found;
+            }
+
+            string KoreanLeft()
+            {
+                var left = new System.Collections.Generic.List<string>();
+                foreach (var label in Object.FindObjectsByType<TMP_Text>(FindObjectsInactive.Exclude))
+                {
+                    // 언어 이름은 현재 언어와 무관하게 자기 글자로 보여야 한다
+                    if (!label.gameObject.activeInHierarchy || label.text == "한국어" || !hangul.IsMatch(label.text)) { continue; }
+                    left.Add(label.name + ": " + label.text);
+                }
+                return string.Join(", ", left);
+            }
+
+            // 한국어로 각 화면을 한 번씩 그려 두고(상시 떠 있는 라벨이 한국어로 채워진다) 영어로 바꾼다
+            foreach (var button in NavButtons()) { button.onClick.Invoke(); for (int i = 0; i < 15; i++) { yield return null; } }
+            settings.SetLanguage(GameLanguage.English);
+            yield return WaitFor(() => SelectedLocaleCode() == "en");
+            for (int i = 0; i < 30; i++) { yield return null; }
+            Assert.That(Object.FindAnyObjectByType<UiHost>(), Is.SameAs(host), "씬을 다시 로드하지 않는다");
+            Assert.That(KoreanLeft(), Is.Empty, "로비에 한글이 남았다");
+
+            foreach (var button in NavButtons())
+            {
+                button.onClick.Invoke();
+                for (int i = 0; i < 15; i++) { yield return null; }
+                Assert.That(KoreanLeft(), Is.Empty, button.transform.name + " 화면에 한글이 남았다");
+            }
+
+            // 잠깐 떠서 위 측정에 잡히지 않는 기본 토스트도 새 언어로 나와야 한다
+            var toast = Object.FindAnyObjectByType<ComingSoonToastView>(FindObjectsInactive.Include);
+            Assert.That(toast, Is.Not.Null);
+            toast.Show();
+            for (int i = 0; i < 10; i++) { yield return null; }
+            Assert.That(KoreanLeft(), Is.Empty, "토스트에 한글이 남았다");
+
+            settings.SetLanguage(GameLanguage.Korean);
+            yield return WaitFor(() => SelectedLocaleCode() == "ko");
+        }
+
+        [UnityTest]
+        public IEnumerator Boot_InEnglishNeverShowsKoreanWhileCurtainIsOpen()
+        {
+            // 영어로 부팅했을 때 커튼이 화면을 가리지 않는 프레임마다 활성 라벨에 한글이 없다.
+            // 주의: 에디터에서는 번들·테이블 로드가 빨라 Preload·동기 초기화를 빼도 통과한다(측정으로 확인). 실제 기기의 로드 대기 틈을 증명하지는 못하고,
+            // 부팅 직후 한국어가 노출되는 다른 회귀(프리팹 기본 문구를 읽어 쓰는 코드, 키가 빠진 문구 등)를 막는다
+            var hangul = new System.Text.RegularExpressions.Regex("[\\uAC00-\\uD7A3]");
+            var frames = 0;
+            void CheckFrame()
+            {
+                var curtain = Object.FindAnyObjectByType<TransitionCurtain>(FindObjectsInactive.Include);
+                if (curtain != null && curtain.Coverage >= 0.5f) { return; }
+                frames++;
+                var left = new List<string>();
+                foreach (var label in Object.FindObjectsByType<TMP_Text>(FindObjectsInactive.Exclude))
+                {
+                    // 언어 이름은 현재 언어와 무관하게 자기 글자로 보여야 한다
+                    if (!label.gameObject.activeInHierarchy || label.text == "한국어" || !hangul.IsMatch(label.text)) { continue; }
+                    left.Add(label.name + ": " + label.text);
+                }
+                Assert.That(left, Is.Empty, $"커튼이 열린 프레임 {Time.frameCount}(씬 {SceneManager.GetActiveScene().name})에 한글이 보였다: " + string.Join(", ", left));
+            }
+
+            yield return StartFromBoot(language: GameLanguage.English, onFrame: CheckFrame, coldLocalization: true);
+            Assert.That(frames, Is.GreaterThan(0), "검사가 한 프레임도 실행되지 않았다");
+        }
+
+        private static string SelectedLocaleCode()
+            => UnityEngine.Localization.Settings.LocalizationSettings.SelectedLocale?.Identifier.Code;
+
+        // seed가 없으면 튜토리얼을 마친 계정으로 시작한다. 튜토리얼 중인 새 계정은 로비 대신 1스테이지로 들어간다
+        private IEnumerator StartFromBoot(Action<LocalSave> seed = null, string expectedScene = "Lobby", bool allowAnalytics = false,
+            GameLanguage language = GameLanguage.Korean, Action onFrame = null, bool coldLocalization = false)
+        {
+            // 개발 기기에 저장된 언어나 시스템 언어가 화면 문구를 바꾸므로 언어(기본 한국어)를 명시해 고정한다
+            // 한 테스트에서 다시 부팅해도 원래 값은 처음 한 번만 저장한다. 다시 읽으면 앞서 고정한 값이 원래 값으로 복원된다
+            if (!_restoreLanguagePreference)
+            {
+                _hadLanguagePreference = PlayerPrefs.HasKey("settings.language");
+                _languagePreference = PlayerPrefs.GetInt("settings.language");
+            }
+            PlayerPrefs.SetInt("settings.language", (int)language);
+            _restoreLanguagePreference = true;
+            if (coldLocalization)
+            {
+                // 앱을 처음 켠 상태를 재현한다: Localization 상태를 비우고 실제 부팅 훅을 부른 뒤, 로케일은 시작 선택기(저장된 언어)가 고르게 둔다
+                UnityEngine.Localization.Settings.LocalizationSettings.Instance.ResetState();
+                typeof(Game.Boot.BootFlow).Assembly.GetType("Game.Boot.LocalizationBoot")
+                    .GetMethod("Initialize", BindingFlags.NonPublic | BindingFlags.Static).Invoke(null, null);
+            }
+            else
+            {
+                // 도메인 리로드 없이 이어지는 재생이나 앞선 테스트가 남긴 로케일이 새지 않게 지정한 언어로 확정한다
+                UnityEngine.Localization.Settings.LocalizationSettings.InitializationOperation.WaitForCompletion();
+                UnityEngine.Localization.Settings.LocalizationSettings.SelectedLocale = UnityEngine.Localization.Settings.LocalizationSettings.AvailableLocales.GetLocale(GameLanguageLocale.Code(language));
+            }
             _hadSpeedPreference = PlayerPrefs.HasKey("stage_speed");
             _speedPreference = PlayerPrefs.GetFloat("stage_speed");
             _restoreSpeedPreference = true;
@@ -1726,6 +1882,9 @@ namespace Game.Tests
             PlayerPrefs.DeleteKey("mission_selected_stage");
             var root = VContainer.Unity.VContainerSettings.Instance.GetOrCreateRootLifetimeScopeInstance() as RootLifetimeScope;
             Assert.That(root, Is.Not.Null);
+            // 루트가 저장값을 심기 전에 만들어졌을 수 있어 시스템 언어(기본값)가 새지 않게 지정한 언어를 직접 적용한다
+            var languageSettings = root.Container.Resolve<GameSettings>();
+            if (languageSettings.Language != language) { languageSettings.SetLanguage(language); }
             _store = root.Container.Resolve<LocalSaveStore>();
             _originalSavePath = (string)StorePath.GetValue(_store);
             _savePath = Path.Combine(Path.GetTempPath(), "nova-ui-" + Guid.NewGuid().ToString("N") + ".json");
@@ -1751,26 +1910,27 @@ namespace Game.Tests
             var navigator = root.Container.Resolve<ISceneNavigator>();
             var boot = new BootFlow(navigator);
             SceneManager.LoadSceneAsync("Boot");
-            yield return WaitFor(() => SceneManager.GetActiveScene().name == "Boot");
+            yield return WaitFor(() => SceneManager.GetActiveScene().name == "Boot", onFrame: onFrame);
             boot.Start();
-            yield return AcceptServiceConditions(allowAnalytics);
-            yield return WaitFor(() => SceneManager.GetActiveScene().name == "Loading" && LoginPanelShown());
+            yield return AcceptServiceConditions(allowAnalytics, onFrame);
+            yield return WaitFor(() => SceneManager.GetActiveScene().name == "Loading" && LoginPanelShown(), onFrame: onFrame);
             var login = Object.FindAnyObjectByType<LoginView>();
             yield return ClickGameButton(Field<Button>(login, "_guestButton"));
             var confirm = Field<ConfirmPopupView>(login, "_confirm");
-            yield return WaitFor(() => confirm.IsOpen);
+            yield return WaitFor(() => confirm.IsOpen, onFrame: onFrame);
             yield return ClickGameButton(Field<Button>(confirm, "_confirmButton"));
-            yield return WaitFor(() => SceneManager.GetActiveScene().name == expectedScene && navigator.Current.ToString() == expectedScene);
+            yield return WaitFor(() => SceneManager.GetActiveScene().name == expectedScene && navigator.Current.ToString() == expectedScene, onFrame: onFrame);
             yield return null;
         }
 
-        private static IEnumerator AcceptServiceConditions(bool allowAnalytics = false)
+        private static IEnumerator AcceptServiceConditions(bool allowAnalytics = false, Action onFrame = null)
         {
-            yield return WaitFor(() => SceneManager.GetActiveScene().name == "Loading" && Object.FindAnyObjectByType<ServiceConsentView>() != null);
+            yield return WaitFor(() => SceneManager.GetActiveScene().name == "Loading" && Object.FindAnyObjectByType<ServiceConsentView>() != null, onFrame: onFrame);
             var view = Object.FindAnyObjectByType<ServiceConsentView>();
             Assert.That(Field<UnityEngine.UI.Toggle>(view, "_analyticsToggle").isOn, Is.False);
             Assert.That(Field<UnityEngine.UI.Toggle>(view, "_transferToggle").isOn, Is.False);
-            Assert.That(Field<TMP_Text>(view, "_startLabel").text, Is.EqualTo("전체 동의"));
+            // 한국어로 부팅한 흐름에서만 문구를 단언한다(다른 언어로 부팅하는 테스트도 이 헬퍼를 쓴다)
+            if (SelectedLocaleCode() == "ko") { Assert.That(Field<TMP_Text>(view, "_startLabel").text, Is.EqualTo("전체 동의")); }
             Assert.That(view.GetComponentsInChildren<TMP_Text>(true).Any(t => t.text.Contains("14")), Is.False);
             yield return ClickGameButton(Field<Button>(view, allowAnalytics ? "_startButton" : "_declineButton"));
             Assert.That(Field<UnityEngine.UI.Toggle>(view, "_analyticsToggle").isOn, Is.EqualTo(allowAnalytics));
@@ -1822,6 +1982,13 @@ namespace Game.Tests
             {
                 foreach (string suffix in new[] { ".battle", ".battle.bak", ".battle.tmp" })
                 { if (File.Exists(_savePath + suffix)) { File.Delete(_savePath + suffix); } }
+            }
+            if (_restoreLanguagePreference)
+            {
+                if (_hadLanguagePreference) { PlayerPrefs.SetInt("settings.language", _languagePreference); }
+                else { PlayerPrefs.DeleteKey("settings.language"); }
+                PlayerPrefs.Save();
+                _restoreLanguagePreference = false;
             }
             if (_restoreConsentPreference)
             {
@@ -2010,11 +2177,12 @@ namespace Game.Tests
 
         private static IEnumerator WaitFor(Func<bool> condition, string step = null,
             [System.Runtime.CompilerServices.CallerMemberName] string caller = null,
-            [System.Runtime.CompilerServices.CallerLineNumber] int line = 0)
+            [System.Runtime.CompilerServices.CallerLineNumber] int line = 0, Action onFrame = null)
         {
             float deadline = Time.realtimeSinceStartup + 20f;
             while (!condition())
             {
+                onFrame?.Invoke();
                 Assert.That(Time.realtimeSinceStartup, Is.LessThan(deadline), $"UI flow did not complete in 20 seconds. Step={step ?? caller}, Line={line}, Scene={SceneManager.GetActiveScene().name}, Playing={Application.isPlaying}");
                 yield return null;
             }

@@ -82,8 +82,8 @@ namespace Game.View
         private void Refresh()
         {
             CharacterInfo character = _catalog.Character;
-            _nameText.text = character.Name;
-            _rankText.text = character.Rank;
+            _nameText.SetL10n(() => _catalog.Character.Name);
+            _rankText.SetL10n(() => _catalog.Character.Rank);
             _powerText.text = CurrencyFormat.Format(character.Power);
 
             var equips = _catalog.Equips;

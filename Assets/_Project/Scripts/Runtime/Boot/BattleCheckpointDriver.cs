@@ -65,7 +65,7 @@ namespace Game.Boot
             catch (Exception error)
             {
                 Debug.LogException(error); _store.Clear(); _context.Checkpoint = null;
-                _context.ResumeError = "전투 기록을 복원하지 못했습니다. 로비에서 새 전투를 시작해 주세요.";
+                _context.ResumeError = L10n.Get("battle.restoreFailed");
                 await _nav.GoToLobby();
             }
         }

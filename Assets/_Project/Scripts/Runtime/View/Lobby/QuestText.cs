@@ -7,9 +7,9 @@ namespace Game.View
     {
         public static string Title(QuestDefinition quest) => quest.GetKind() switch
         {
-            QuestKind.Login => "로그인하기",
-            QuestKind.SpendEnergy => $"잉크펜 {quest.Target:N0}개 소모하기",
-            QuestKind.KillMonsters => $"요마 {quest.Target:N0}마리 처치하기",
+            QuestKind.Login => L10n.Get("questText.login"),
+            QuestKind.SpendEnergy => L10n.Get("questText.spendEnergy", quest.Target.ToString("N0")),
+            QuestKind.KillMonsters => L10n.Get("questText.killMonsters", quest.Target.ToString("N0")),
             _ => quest.Id
         };
     }

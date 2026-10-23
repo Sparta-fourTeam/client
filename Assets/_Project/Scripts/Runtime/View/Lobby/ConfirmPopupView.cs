@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+using Game.Core;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -16,7 +17,8 @@ namespace Game.View
         public string Message;
         /// <summary>메시지 아래 빨간 글씨 경고. 없으면 숨긴다</summary>
         public string Warning;
-        public string ConfirmLabel = "확인";
+        /// <summary>비우면 공용 "확인" 문구를 쓴다</summary>
+        public string ConfirmLabel;
         public string CancelLabel;
         public string InputPlaceholder;
         public string RequiredInput;
@@ -92,7 +94,8 @@ namespace Game.View
             _message.text = request.Message;
             _warning.gameObject.SetActive(!string.IsNullOrEmpty(request.Warning));
             _warning.text = request.Warning;
-            _confirmLabel.text = request.ConfirmLabel;
+            if (string.IsNullOrEmpty(request.ConfirmLabel)) { _confirmLabel.SetL10n("common.ok"); }
+            else { _confirmLabel.text = request.ConfirmLabel; }
 
             bool single = string.IsNullOrEmpty(request.CancelLabel);
             _cancelButton.gameObject.SetActive(!single);

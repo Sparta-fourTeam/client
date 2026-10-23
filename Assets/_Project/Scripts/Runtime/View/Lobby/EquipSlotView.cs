@@ -26,14 +26,14 @@ namespace Game.View
         public void Bind(EquipInfo info, Action onClick, ComingSoonToastView toast)
         {
             gameObject.SetActive(true);
-            _levelText.text = $"Lv.{info.Level}";
+            _levelText.SetL10n("common.levelShort", info.Level);
             if (_lockedLevelText != null)
             {
-                _lockedLevelText.text = _levelText.text;
+                _lockedLevelText.SetL10n("common.levelShort", info.Level);
             }
             _lock.SetActive(!info.IsUnlocked);
             int unlockLevel = info.UnlockLevel;
-            _onClick = info.IsUnlocked ? onClick : () => toast?.Show($"플레이어 레벨 {unlockLevel}이 되면 열려요");
+            _onClick = info.IsUnlocked ? onClick : () => toast?.Show(L10n.Get("equip.lockedToast", unlockLevel));
         }
 
         public void Hide()

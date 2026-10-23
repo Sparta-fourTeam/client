@@ -7,9 +7,9 @@ namespace Game.View
     {
         public static string Line(MonsterStat stat, int percent) => stat switch
         {
-            MonsterStat.Hp => $"요마의 체력이 {percent}% 증가합니다",
-            MonsterStat.Damage => $"요마의 공격력이 {percent}% 증가합니다",
-            MonsterStat.Speed => $"요마의 이동 속도가 {percent}% 증가합니다",
+            MonsterStat.Hp => L10n.Get("monsterBonus.hp", percent.ToString()),
+            MonsterStat.Damage => L10n.Get("monsterBonus.damage", percent.ToString()),
+            MonsterStat.Speed => L10n.Get("monsterBonus.speed", percent.ToString()),
             _ => string.Empty,
         };
     }

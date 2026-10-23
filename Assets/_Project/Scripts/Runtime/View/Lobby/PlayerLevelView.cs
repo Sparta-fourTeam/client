@@ -52,9 +52,9 @@ namespace Game.View
             _levelText.text = $"Lv.{_profile.Level}";
             if (_nicknameText != null) { _nicknameText.text = _profile.Nickname; }
             SetProgress(_profile.LevelProgress);
-            _expText.text = _profile.IsMaxLevel
-                ? "MAX"
-                : $"{CurrencyFormat.Format(_profile.ExpIntoLevel)} / {CurrencyFormat.Format(_profile.ExpRequiredForNext)}";
+            bool isMaxLevel = _profile.IsMaxLevel;
+            string expInto = CurrencyFormat.Format(_profile.ExpIntoLevel), expNeeded = CurrencyFormat.Format(_profile.ExpRequiredForNext);
+            _expText.SetL10n(() => isMaxLevel ? L10n.Get("label.max") : $"{expInto} / {expNeeded}");
         }
     }
 }

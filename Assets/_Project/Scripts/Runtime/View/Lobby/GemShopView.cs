@@ -61,8 +61,8 @@ namespace Game.View
 
                 int index = i;
                 var pack = packs[i];
-                _items[i].BindCash("잼", _gemIcon, pack.Gems, PriceLabel(pack), pack.BonusPercent, !_busy, () => BuyAsync(index).Forget(Debug.LogException),
-                    () => _detail?.Show(_gemIcon, "잼", $"x{pack.Gems:N0}", ItemInfo.DescriptionOf(RewardRows.GemId)));
+                _items[i].BindCash(() => L10n.Get("currency.gem"), _gemIcon, pack.Gems, PriceLabel(pack), pack.BonusPercent, !_busy, () => BuyAsync(index).Forget(Debug.LogException),
+                    () => _detail?.Show(_gemIcon, L10n.Get("currency.gem"), $"x{pack.Gems:N0}", ItemInfo.DescriptionOf(RewardRows.GemId)));
             }
         }
 
@@ -75,10 +75,10 @@ namespace Game.View
             Refresh();
             bool confirmed = _confirm == null || await _confirm.ShowAsync(new ConfirmRequest
             {
-                Title = "구매",
-                Message = $"잼 x{pack.Gems:N0}을(를)\n{PriceLabel(pack)}에 구매할까요?",
-                ConfirmLabel = "구매",
-                CancelLabel = "취소",
+                Title = L10n.Get("shop.buy"),
+                Message = L10n.Get("shop.buyConfirm", $"{L10n.Get("currency.gem")} x{pack.Gems:N0}", PriceLabel(pack)),
+                ConfirmLabel = L10n.Get("shop.buy"),
+                CancelLabel = L10n.Get("common.cancel"),
             });
             if (!confirmed)
             {
@@ -97,7 +97,7 @@ namespace Game.View
             {
                 Debug.LogWarning($"잼 묶음 구매가 거절됐다: {rejected.Code}");
                 // 서버 진행에서는 결제가 아직 없어 구매가 항상 거절된다. 눌러도 아무 반응이 없어 보이지 않게 알린다
-                _toast?.Show("잼 구매는 아직 준비 중이에요");
+                _toast?.Show(L10n.Get("gemShop.notReady"));
             }
             finally
             {
@@ -107,7 +107,7 @@ namespace Game.View
 
             if (bought)
             {
-                _rewardPopup?.Show(new List<ResultRewardItem> { new(_gemIcon, pack.Gems, RewardRows.GemId) }, "잼을 구매했어요.", "구매 완료");
+                _rewardPopup?.Show(new List<ResultRewardItem> { new(_gemIcon, pack.Gems, RewardRows.GemId) }, L10n.Get("shop.gemPurchased"), L10n.Get("shop.purchaseDone"));
             }
         }
     }

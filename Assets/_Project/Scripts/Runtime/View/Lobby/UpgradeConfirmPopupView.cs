@@ -61,7 +61,7 @@ namespace Game.View
 
             _name = name; _all = all; _visible = true;
             Present(UpgradePurchasePlan.Create(_profile, _data, id, all),
-                HasPendingRecovery ? "미확정 강화가 있습니다. 확인을 누르면 같은 구매를 복구합니다." : null);
+                HasPendingRecovery ? L10n.Get("upgrade.confirm.pending") : null);
             PopupPanel.Set(_panel, _transition, true);
             PopupPanel.FitContent(_scroll, 560f, 1040f);
             _scroll.verticalNormalizedPosition = 1f;
@@ -70,10 +70,21 @@ namespace Game.View
         private void Present(UpgradePurchasePlan plan, string status = null)
         {
             _plan = plan;
-            _title.text = _all ? "일괄 레벨업" : "강화 확인";
-            _description.text = status ?? (plan.Count > 0
-                ? $"{_name}\nLv.{plan.StartLevel} → Lv.{plan.EndLevel} · {plan.Count}회 강화\n아래 재화를 소모해 강화할까요?"
-                : "지금은 강화할 수 없어요. 재화와 최대 레벨을 확인해 주세요.");
+            bool all = _all;
+            _title.SetL10n(() => all ? L10n.Get("skill.levelUpAll") : L10n.Get("upgrade.confirm.title"));
+            if (status != null)
+            {
+                // 호출자가 미리 만든 문구(오류 사유 포함)라 로케일을 따라가지 않는다
+                _description.text = status;
+            }
+            else
+            {
+                string name = _name;
+                int count = plan.Count, startLevel = plan.StartLevel, endLevel = plan.EndLevel;
+                _description.SetL10n(() => count > 0
+                    ? L10n.Get("upgrade.confirm.plan", name, startLevel, endLevel, count)
+                    : L10n.Get("upgrade.confirm.unavailable"));
+            }
             var items = new List<ItemAmount>();
             if (plan.MaterialCost > 0)
             {
@@ -117,13 +128,12 @@ namespace Game.View
             var current = UpgradePurchasePlan.Create(_profile, _data, _plan.UpgradeId, _all);
             if (!_plan.SameQuote(current))
             {
-                Present(current, "재화 또는 레벨이 변경됐어요. 변경된 비용을 확인한 뒤 다시 확인을 눌러 주세요.\n"
-                    + $"{_name} · Lv.{current.StartLevel} → Lv.{current.EndLevel} · {current.Count}회");
+                Present(current, L10n.Get("upgrade.confirm.changed", _name, current.StartLevel, current.EndLevel, current.Count));
                 return;
             }
             var approved = _plan;
             _busy = true; SetButtons();
-            _description.text = $"{_name} 강화 중 · 0/{approved.Count}";
+            _description.SetL10n("upgrade.confirm.progress", _name, 0, approved.Count);
             int completed = 0, spentCoins = 0, spentMaterials = 0;
             try
             {
@@ -138,7 +148,7 @@ namespace Game.View
                     if (next.Count != 1 || next.StartLevel != approved.StartLevel + i
                         || next.CoinCost > approved.CoinCost - spentCoins || next.MaterialCost > approved.MaterialCost - spentMaterials)
                     {
-                        throw new InvalidOperationException("강화 도중 재화 또는 레벨이 변경됐어요.");
+                        throw new InvalidOperationException(L10n.Get("upgrade.confirm.midChanged"));
                     }
 
                     var snapshot = await _api.Purchase(approved.UpgradeId, Guid.NewGuid().ToString("N"));
@@ -151,17 +161,17 @@ namespace Game.View
 
                     if (_profile.UpgradeLevel(approved.UpgradeId) != approved.StartLevel + completed)
                     {
-                        throw new InvalidOperationException("강화 결과가 예상 레벨과 달라요. 최신 상태를 확인해 주세요.");
+                        throw new InvalidOperationException(L10n.Get("upgrade.confirm.levelMismatch"));
                     }
 
-                    _description.text = $"{_name} 강화 중 · {completed}/{approved.Count}";
+                    _description.SetL10n("upgrade.confirm.progress", _name, completed, approved.Count);
                 }
                 if (this != null)
                 {
                     _audio?.PlaySfx(SoundIds.Upgrade);
                     _visible = false;
                     PopupPanel.Set(_panel, _transition, false);
-                    _toast?.Show($"<color=#FFCF5B>{_name} Lv.{_profile.UpgradeLevel(approved.UpgradeId)} 강화 완료!</color>", 1f);
+                    _toast?.Show(L10n.Get("upgrade.confirm.done", _name, _profile.UpgradeLevel(approved.UpgradeId)), 1f);
                 }
             }
             catch (Exception error)
@@ -169,9 +179,8 @@ namespace Game.View
                 if (this != null)
                 {
                     var updated = UpgradePurchasePlan.Create(_profile, _data, approved.UpgradeId, _all);
-                    string reason = error is ApiException ? "강화 요청을 완료하지 못했어요." : error.Message;
-                    Present(updated, $"{completed}회 강화 완료. {reason}\n남은 강화와 비용을 확인한 뒤 다시 시도해 주세요.\n"
-                        + $"Lv.{updated.StartLevel} → Lv.{updated.EndLevel} · {updated.Count}회");
+                    string reason = error is ApiException ? L10n.Get("upgrade.confirm.requestFailed") : error.Message;
+                    Present(updated, L10n.Get("upgrade.confirm.partialRetry", completed, reason, updated.StartLevel, updated.EndLevel, updated.Count));
                 }
             }
             finally
@@ -190,7 +199,7 @@ namespace Game.View
             {
                 var current = UpgradePurchasePlan.Create(_profile, _data, _plan.UpgradeId, _all);
                 if (!_plan.SameQuote(current))
-                { Present(current, "상태가 변경됐습니다. 새 비용을 확인해 주세요."); return; }
+                { Present(current, L10n.Get("upgrade.confirm.stateChanged")); return; }
             }
             var approved = _plan;
             bool recovering = HasPendingRecovery;
@@ -208,12 +217,12 @@ namespace Game.View
                     for (int i = 0; i < approved.Count; i++)
                     {
                         if (this == null) { return; }
-                        if (_all) { _description.text = $"{_name} 강화 중 · {completed}/{approved.Count}"; }
+                        if (_all) { _description.SetL10n("upgrade.confirm.progress", _name, completed, approved.Count); }
                         _profile.Apply(await _api.Purchase(approved.UpgradeId, Guid.NewGuid().ToString("N")));
                         completed++;
                         if (this == null) { return; }
                         if (_profile.UpgradeLevel(approved.UpgradeId) != approved.StartLevel + completed)
-                        { throw new InvalidOperationException("강화 결과가 예상 레벨과 달라요. 최신 상태를 확인해 주세요."); }
+                        { throw new InvalidOperationException(L10n.Get("upgrade.confirm.levelMismatch")); }
                     }
                 }
 
@@ -221,15 +230,15 @@ namespace Game.View
                 _audio?.PlaySfx(SoundIds.Upgrade);
                 _visible = false;
                 PopupPanel.Set(_panel, _transition, false);
-                _toast?.Show(_all && !recovering ? $"<color=#FFCF5B>{_name} Lv.{_profile.UpgradeLevel(approved.UpgradeId)} 강화 완료!</color>"
-                    : "강화 결과와 현재 서버 상태를 확인했습니다.", 1f);
+                _toast?.Show(_all && !recovering ? L10n.Get("upgrade.confirm.done", _name, _profile.UpgradeLevel(approved.UpgradeId))
+                    : L10n.Get("upgrade.confirm.verified"), 1f);
             }
             catch (Exception error)
             {
                 if (this == null) { return; }
                 string status = HasPendingRecovery
-                    ? "구매 결과가 미확정입니다. 확인을 눌러 같은 요청을 복구해 주세요."
-                    : error is ApiException api ? $"{(completed > 0 ? $"{completed}회 강화 완료. " : string.Empty)}강화 요청 실패: {api.Code}" : error.Message;
+                    ? L10n.Get("upgrade.confirm.unconfirmed")
+                    : error is ApiException api ? L10n.Get("upgrade.confirm.requestError", completed > 0 ? L10n.Get("upgrade.confirm.partialDone", completed) : string.Empty, api.Code) : error.Message;
                 // 미확정 구매는 한 건씩 복구하므로 이후 견적과 제목도 한 건 기준으로 맞춘다
                 if (HasPendingRecovery) { _all = false; }
                 Present(UpgradePurchasePlan.Create(_profile, _data, _plan.UpgradeId, _all), status);

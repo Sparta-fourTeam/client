@@ -76,7 +76,8 @@ namespace Game.View
             bool isMax = info.IsMaxLevel;
 
             _nameText.text = info.Name;
-            _levelText.text = isMax ? "MAX" : $"Lv. {info.Level}";
+            int level = info.Level;
+            _levelText.SetL10n(() => isMax ? L10n.Get("label.max") : L10n.Get("label.level", level));
             _descText.text = info.Description;
             SetIcon(_skillIcon, _assets != null ? _assets.GetHudIcon(info.Id) : null);
             var book = _itemIcons != null && info.MaterialItemId != null && _data.Items.Contains(info.MaterialItemId)
@@ -106,7 +107,8 @@ namespace Game.View
             bool locked = !info.IsUnlocked;
             _cost.SetActive(!isMax && !locked && upgradable);
             _maxLevel.SetActive(isMax || locked);
-            _maxLevelLabel.text = locked ? $"레벨 {info.UnlockLevel}에 해금" : "최대 레벨";
+            int unlockLevel = info.UnlockLevel;
+            _maxLevelLabel.SetL10n(() => locked ? L10n.Get("skill.unlockAt", unlockLevel) : L10n.Get("common.maxLevel"));
             _upgradeButton.gameObject.SetActive(!isMax && !locked);
             _upgradeAllButton.gameObject.SetActive(!isMax && !locked);
             if (isMax || locked || !upgradable)

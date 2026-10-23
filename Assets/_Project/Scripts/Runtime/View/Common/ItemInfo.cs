@@ -9,12 +9,12 @@ namespace Game.View
         {
             switch (itemId)
             {
-                case RewardRows.CoinId: return "잉크";
-                case RewardRows.GemId: return "잼";
-                case RewardRows.ExpId: return "경험치";
-                case RewardRows.BonusExpId: return "3성 보너스 경험치";
-                case ItemIds.RandomSkillMaterial: return "랜덤 마법북";
-                case ItemIds.RandomEquipmentMaterial: return "랜덤 인챈트 주문서";
+                case RewardRows.CoinId: return L10n.Get("currency.ink");
+                case RewardRows.GemId: return L10n.Get("currency.gem");
+                case RewardRows.ExpId: return L10n.Get("item.exp");
+                case RewardRows.BonusExpId: return L10n.Get("item.bonusExp");
+                case ItemIds.RandomSkillMaterial: return L10n.Get("item.randomSkillBook");
+                case ItemIds.RandomEquipmentMaterial: return L10n.Get("item.randomEnchantScroll");
             }
 
             return data != null && itemId != null && data.Items.Contains(itemId) ? data.Items.GetOrThrow(itemId).Name : itemId ?? string.Empty;
@@ -23,7 +23,7 @@ namespace Game.View
         /// <summary>추첨 전 보상 미리보기의 이름. 상점·인벤토리의 실제 아이템 이름과 구분한다.</summary>
         public static string RewardNameOf(string itemId, GameDataStore data) =>
             RandomRewardOdds.IsRandom(itemId, data)
-                ? data.RewardRules.Items[itemId].Kind == "SkillMaterial" ? "랜덤 마법북" : "랜덤 인챈트 주문서"
+                ? data.RewardRules.Items[itemId].Kind == "SkillMaterial" ? L10n.Get("item.randomSkillBook") : L10n.Get("item.randomEnchantScroll")
                 : NameOf(itemId, data);
 
         public static string DescriptionOf(string itemId, GameDataStore data = null)
@@ -31,25 +31,25 @@ namespace Game.View
             if (RandomRewardOdds.IsRandom(itemId, data))
             {
                 return data.RewardRules.Items[itemId].Kind == "SkillMaterial"
-                    ? "열린 스킬 중 하나의 마법북을 받아요." : "열린 장비 중 하나의 인챈트 주문서를 받아요.";
+                    ? L10n.Get("itemDesc.randomSkillBook") : L10n.Get("itemDesc.randomEnchantScroll");
             }
             switch (itemId)
             {
-                case RewardRows.CoinId: return "스킬과 장비를 강화할 때 쓰는 재화예요.";
-                case RewardRows.GemId: return "상점에서 물품을 사는 데 쓰는 재화예요.";
-                case ShopRules.EnergyReward: return "스테이지에 입장할 때 쓰는 잉크펜이에요.";
-                case RewardRows.ExpId: return "모으면 플레이어 레벨이 올라요.\n레벨이 오르면 새 스킬과 장비가 열려요.";
-                case RewardRows.BonusExpId: return "3성으로 클리어해서 추가로 받은 경험치예요.\n지급 경험치 합계에 이미 포함되어 있어요.";
-                case ItemIds.RandomSkillMaterial: return "열린 스킬 중 하나의 마법북을 받아요.";
-                case ItemIds.RandomEquipmentMaterial: return "열린 장비 중 하나의 인챈트 주문서를 받아요.";
-                case ItemIds.GemChest: return "보석이 들어 있는 상자예요.";
+                case RewardRows.CoinId: return L10n.Get("itemDesc.ink");
+                case RewardRows.GemId: return L10n.Get("itemDesc.gem");
+                case ShopRules.EnergyReward: return L10n.Get("itemDesc.energy");
+                case RewardRows.ExpId: return L10n.Get("itemDesc.exp");
+                case RewardRows.BonusExpId: return L10n.Get("itemDesc.bonusExp");
+                case ItemIds.RandomSkillMaterial: return L10n.Get("itemDesc.randomSkillBook");
+                case ItemIds.RandomEquipmentMaterial: return L10n.Get("itemDesc.randomEnchantScroll");
+                case ItemIds.GemChest: return L10n.Get("itemDesc.gemChest");
             }
 
             return InventoryItems.CategoryOf(itemId) switch
             {
-                InventoryCategory.SkillMaterial => "스킬을 강화할 때 쓰는 마법북이에요.\n스킬 화면에서 사용해요.",
-                InventoryCategory.EquipmentMaterial => "장비를 강화할 때 쓰는 주문서예요.\n캐릭터 화면에서 사용해요.",
-                _ => "보관 중인 아이템이에요.",
+                InventoryCategory.SkillMaterial => L10n.Get("itemDesc.skillMaterial"),
+                InventoryCategory.EquipmentMaterial => L10n.Get("itemDesc.equipMaterial"),
+                _ => L10n.Get("itemDesc.other"),
             };
         }
     }
