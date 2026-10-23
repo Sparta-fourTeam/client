@@ -1717,6 +1717,45 @@ namespace Game.Tests
         }
 
         [UnityTest]
+        public IEnumerator Language_SelectingDisplayedFallbackPersistsExplicitChoice()
+        {
+            yield return StartFromBoot();
+            var store = new LanguageSelectionStore();
+            var settings = new GameSettings(store, GameLanguage.Japanese);
+            var canvas = new GameObject("LanguageSelectionCanvas", typeof(RectTransform), typeof(Canvas));
+            try
+            {
+                var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/UI/Lobby/SettingsPopup.prefab");
+                var instance = Object.Instantiate(prefab, canvas.transform);
+                var view = instance.GetComponent<SettingsPopupView>();
+                view.Construct(Object.FindAnyObjectByType<RootLifetimeScope>().Container.Resolve<SoundSettings>(), settings);
+                view.Initialize();
+                view.Open();
+                yield return null; // 활성화된 TMP 드롭다운의 Start가 실행된 뒤 실제 선택 목록을 연다.
+                var dropdown = Field<TMP_Dropdown>(view, "_languageDropdown");
+                dropdown.Show();
+                yield return WaitFor(() => dropdown.GetComponentsInChildren<UnityEngine.UI.Toggle>().Any());
+                Assert.IsFalse(store.Values.ContainsKey(GameSettings.LanguageKey), "선택지를 열기만 하면 기본값을 저장하지 않는다");
+                var selected = dropdown.GetComponentsInChildren<UnityEngine.UI.Toggle>().Single(toggle => toggle.isOn);
+                ExecuteEvents.Execute(selected.gameObject, new PointerEventData(EventSystem.current)
+                { button = PointerEventData.InputButton.Left }, ExecuteEvents.pointerClickHandler);
+                yield return null;
+                Assert.AreEqual((int)GameLanguage.Japanese, store.Values[GameSettings.LanguageKey]);
+                Assert.AreEqual(GameLanguage.Japanese, new GameSettings(store, GameLanguage.English).Language,
+                    "같은 항목을 명시적으로 누른 뒤에는 시스템 언어가 달라져도 선택을 유지한다");
+            }
+            finally { Object.Destroy(canvas); }
+            yield return null;
+        }
+
+        private sealed class LanguageSelectionStore : ISettingsStore
+        {
+            public readonly Dictionary<string, int> Values = new();
+            public bool TryGet(string key, out int value) => Values.TryGetValue(key, out value);
+            public void Set(string key, int value) => Values[key] = value;
+        }
+
+        [UnityTest]
         public IEnumerator Language_ChangeUpdatesVisibleTextInPlaceWithoutReload()
         {
             // 언어를 바꿔도 씬을 다시 로드하지 않고, 화면에 보이는 문구가 모두 새 언어로 바뀐다(한글이 남지 않는다)

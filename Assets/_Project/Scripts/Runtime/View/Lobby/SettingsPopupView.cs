@@ -75,7 +75,9 @@ namespace Game.View
             _frameStandardToggle.onValueChanged.AddListener(on => { if (on) { _game.SetFrameRate(FrameRateMode.Standard); } });
             _languageDropdown.ClearOptions();
             _languageDropdown.AddOptions(new System.Collections.Generic.List<string>(LanguageNames));
-            _languageDropdown.onValueChanged.AddListener(value => _game.SetLanguage((GameLanguage)value));
+            _languageDropdown.onValueChanged.AddListener(ConfirmLanguageSelection);
+            _languageDropdown.template.GetComponentInChildren<Toggle>(true).gameObject
+                .AddComponent<LanguageOptionSelection>().Initialize(this);
             for (int i = 0; i < _sliders.Length && i < Channels.Length; i++)
             {
                 int index = i;
@@ -84,6 +86,8 @@ namespace Game.View
                 _sliders[i].onValueChanged.AddListener(value => OnSlider(index, value));
             }
         }
+
+        internal void ConfirmLanguageSelection(int value) => _game.SetLanguage((GameLanguage)value);
 
         public void Open()
         {
