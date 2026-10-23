@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Localization-Asset-Tables-Korean
+  m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
+  m_GroupName: Localization-Asset-Tables-Korean
+  m_GUID: f6b5ff0a9b7d043a4b390c77f7093003
+  m_SerializeEntries:
+  - m_GUID: d44d7034c2a7e452bb18055fbc23be7a
+    m_Address: GameAssets_ko
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-ko
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 1
+  m_Settings: {fileID: 11400000, guid: 02893584ee0004665b357bae07188804, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 935c2f0410a3b4578ac9f213882595bb, type: 2}
+    - {fileID: 11400000, guid: 70cca9e40b41445be8afbce16b7b4b1a, type: 2}
+    - {fileID: 11400000, guid: 5db5f04150247476fa064ead2f3eb471, type: 2}
