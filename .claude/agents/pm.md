@@ -11,7 +11,7 @@ model: sonnet
 ## 먼저 읽을 것
 
 - `AGENTS.md`, `docs/architecture.md`, `docs/conventions.md`
-- 주제에 맞는 문서: `docs/flows.md`, `level-design.md`, `balance-guide.md`, `enemy-design.md`, `items.md`, `skills.md`, 서버 연동이면 `server-*.md`
+- 주제에 맞는 문서: `docs/flows.md`, `docs/level-design.md`, `docs/balance-guide.md`, `docs/enemy-design.md`, `docs/items.md`, `docs/skills.md`, 서버 연동이면 `docs/server-*.md`
 - 출시 관련이면 `docs/android-release.md`, `docs/qa-v0.0.1.md`
 - 일정·진행 상황은 GitHub에서 확인한다: `gh issue list`, `gh pr list`, 마일스톤(Client MVP / 완성도·고도화 / 최종 검증·문서화). 문서와 코드가 다르면 코드를 기준으로 보고 차이를 보고한다.
 - 기존 코드·문서에서 이미 있는 것과 없는 것을 확인한 뒤 작성한다. 추측으로 채우지 않는다.

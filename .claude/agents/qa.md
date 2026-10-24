@@ -47,9 +47,12 @@ model: sonnet
 
 정리된 브랜치의 worktree에서 실행한다. 에디터가 같은 프로젝트를 열고 있으면 충돌할 수 있으니 먼저 확인한다.
 
+결과 파일은 쓰기 가능한 임시 폴더(세션의 scratchpad 경로)에 둔다. 먼저 `OUT`에 그 절대 경로를 넣고, 경로는 따옴표로 감싼다.
+
 ```sh
-unity test . --mode EditMode --output <scratchpad>/nova-editmode-tests.xml --timeout 1200
-unity test . --mode PlayMode --output <scratchpad>/nova-playmode-tests.xml --timeout 1200
+OUT="/절대/경로/scratchpad"
+unity test . --mode EditMode --output "$OUT/nova-editmode-tests.xml" --timeout 1200
+unity test . --mode PlayMode --output "$OUT/nova-playmode-tests.xml" --timeout 1200
 ```
 
 - PlayMode는 변경이 생명주기·Scene·DI 통합에 걸릴 때만 실행한다.
